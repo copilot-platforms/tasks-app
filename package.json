@@ -34,6 +34,7 @@
   "dependencies": {
     "@emotion/react": "^11.11.3",
     "@emotion/styled": "^11.11.0",
+    "@mui/icons-material": "^5.15.15",
     "@mui/material": "^5.15.6",
     "@prisma/client": "^5.12.0",
     "@vercel/postgres": "^0.8.0",
@@ -41,6 +42,8 @@
     "next": "^14.1.4",
     "prisma": "^5.12.0",
     "react": "^18",
+    "react-dnd": "^16.0.1",
+    "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^18",
     "zod": "^3.22.4"
   },

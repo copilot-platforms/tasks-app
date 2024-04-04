@@ -1,5 +1,12 @@
-import { Typography } from '@mui/material';
+import { TaskCard } from '@/components/cards/TaskCard';
+import { TaskColumn } from '@/components/cards/TaskColumn';
 
-export default function Home() {
-  return <Typography variant="md">Copilot Custom App Starter Kit</Typography>;
+export default function Main() {
+  return (
+    <TaskColumn>
+      <TaskCard />
+      <TaskCard />
+      <TaskCard />
+    </TaskColumn>
+  );
 }

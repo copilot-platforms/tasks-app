@@ -132,7 +132,7 @@ export const theme = createTheme({
       fontSize: '14px',
       fontStyle: 'normal',
       fontWeight: 500,
-      lineHeight: '22px',
+      lineHeight: '20px',
       color: '#212B36',
     },
     sm: {
