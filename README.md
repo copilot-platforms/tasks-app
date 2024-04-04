@@ -1,21 +1,29 @@
-## Copilot custom app starter kit
+# Task App
+*This project is managed by the Outside Copilot Team.*
 
-This is a starter kit for Copilot custom apps. It contains a simple app that includes:
+### Task App is part of the Copilot internal App Store. Task App is a comprehensive task management app that allows SB (Service Business) to create and assign tasks to their clients.
 
-- Linting setup with prettier, eslint and husky
-- GitHub actions for linting
-- A basic health check API
-- Prisma ORM support
-- Tailwind config based on Copilot theme
-- Zod setup for validation
-- Copilot SDK setup
-- DB client set up
-- Pull request template
-- MUI setup that includes `ThemeRegistry`, theme config and its type definitions
-- Dockerized PostgreSQL
+Task App uses NextJS for both the frontend UI and API routes. Postgres, coupled with Prisma, powers the database operations. Deployment is seamlessly handled by Vercel. 
 
-Installation
+This project leverages MUI extensively for component design and design system setup. Additionally, Tailwind CSS is integrated, offering flexibility for component and UI design preferences.
 
-```shell
-npx create-copilot-app app-name
-```
+### How to setup the project?
+
+1. First, clone the repository.
+
+2. Install the dependencies using yarn
+
+   ```shell
+    yarn
+   ```
+
+3. Run the project 
+
+   ```shell
+    yarn run dev
+   ```
+
+4. Optionally, to build the project or for other scripts, please refer to the `package.json` file. 
+
+
+

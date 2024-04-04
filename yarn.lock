@@ -412,10 +412,10 @@
     prop-types "^15.8.1"
     react-is "^18.2.0"
 
-"@neondatabase/serverless@0.6.0":
-  version "0.6.0"
-  resolved "https://registry.yarnpkg.com/@neondatabase/serverless/-/serverless-0.6.0.tgz#efe001f571e85af79c8042601ec694f96ca8fb17"
-  integrity sha512-qXxBRYN0m2v8kVQBfMxbzNGn2xFAhTXFibzQlE++NfJ56Shz3m7+MyBBtXDlEH+3Wfa6lToDXf1MElocY4sJ3w==
+"@neondatabase/serverless@0.7.2":
+  version "0.7.2"
+  resolved "https://registry.yarnpkg.com/@neondatabase/serverless/-/serverless-0.7.2.tgz#4deeda842df154e061b8e798dec5d03d1310fa92"
+  integrity sha512-wU3WA2uTyNO7wjPs3Mg0G01jztAxUxzd9/mskMmtPwPTjf7JKWi9AW5/puOGXLxmZ9PVgRFeBVRVYq5nBPhsCg==
   dependencies:
     "@types/pg" "8.6.6"
 
@@ -557,10 +557,10 @@
   resolved "https://registry.yarnpkg.com/@popperjs/core/-/core-2.11.8.tgz#6b79032e760a0899cd4204710beede972a3a185f"
   integrity sha512-P1st0aksCrn9sGZhp8GMYwBnQsbvAWsZAX44oXNNvLHGqAOcoVxmjZiohstwQ7SqKnbR47akdNi+uleWD8+g6A==
 
-"@prisma/client@^5.7.1":
-  version "5.7.1"
-  resolved "https://registry.yarnpkg.com/@prisma/client/-/client-5.7.1.tgz#a124afd05663267f7255a639a81d28303684a063"
-  integrity sha512-TUSa4nUcC4nf/e7X3jyO1pEd6XcI/TLRCA0KjkA46RDIpxUaRsBYEOqITwXRW2c0bMFyKcCRXrH4f7h4q9oOlg==
+"@prisma/client@^5.12.0":
+  version "5.12.0"
+  resolved "https://registry.yarnpkg.com/@prisma/client/-/client-5.12.0.tgz#4d1fb68074307bf9445d06ad387139301aa4bcc4"
+  integrity sha512-bk/+KPpRm0+IzqFCtAxrj+/TNiHzulspnO+OkysaYY/atc/eX0Gx8V3tTLxbHKVX0LKD4Hi8KKCcSbU1U72n7Q==
 
 "@prisma/debug@5.12.0":
   version "5.12.0"
@@ -745,12 +745,12 @@
   resolved "https://registry.yarnpkg.com/@ungap/structured-clone/-/structured-clone-1.2.0.tgz#756641adb587851b5ccb3e095daf27ae581c8406"
   integrity sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==
 
-"@vercel/postgres@^0.5.1":
-  version "0.5.1"
-  resolved "https://registry.yarnpkg.com/@vercel/postgres/-/postgres-0.5.1.tgz#af986133f5ec53b4839561fc3cc2a5fb1867868d"
-  integrity sha512-JKl8QOBIDnifhkxAhIKtY0A5Tb8oWBf2nzZhm0OH7Ffjsl0hGVnDL2w1/FCfpX8xna3JAWM034NGuhZfTFdmiw==
+"@vercel/postgres@^0.8.0":
+  version "0.8.0"
+  resolved "https://registry.yarnpkg.com/@vercel/postgres/-/postgres-0.8.0.tgz#ea658c8b19d883b1225d2e3d195e7251254936cd"
+  integrity sha512-/QUV9ExwaNdKooRjOQqvrKNVnRvsaXeukPNI5DB1ovUTesglfR/fparw7ngo1KUWWKIVpEj2TRrA+ObRHRdaLg==
   dependencies:
-    "@neondatabase/serverless" "0.6.0"
+    "@neondatabase/serverless" "0.7.2"
     bufferutil "4.0.8"
     utf-8-validate "6.0.3"
     ws "8.14.2"
