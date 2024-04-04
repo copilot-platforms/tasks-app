@@ -1,0 +1,67 @@
+{
+  "name": "create-copilot-app",
+  "description": "A custom app starter kit for Copilot",
+  "version": "2.0.0",
+  "keywords": [
+    "nextjs",
+    "nodejs"
+  ],
+  "bin": {
+    "create-copilot-app": "./bin/cli.js"
+  },
+  "repository": {
+    "url": "https://github.com/pagevamp/copilot-custom-app-starter-kit"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "vercel-build": "prisma generate && next build",
+    "prepare": "husky install",
+    "eslint": "eslint './src/**/*.{ts,tsx}'",
+    "lint:check": "eslint \"{src,test}/**/*.{ts,tsx}\"",
+    "lint:fix": "npm run lint:check -- --fix",
+    "prettier:check": "prettier --check \"{src,test}/**/*.{ts,tsx}\"",
+    "prettier:fix": "prettier --write .",
+    "lint-staged": "npx lint-staged",
+    "postinstall": "prisma generate"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.11.3",
+    "@emotion/styled": "^11.11.0",
+    "@mui/material": "^5.15.6",
+    "@prisma/client": "^5.12.0",
+    "@vercel/postgres": "^0.8.0",
+    "copilot-node-sdk": "^2.0.0",
+    "next": "^14.1.4",
+    "prisma": "^5.12.0",
+    "react": "^18",
+    "react-dom": "^18",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "autoprefixer": "^10.0.1",
+    "eslint": "^8",
+    "eslint-config-next": "14.0.4",
+    "husky": "^8.0.0",
+    "lint-staged": "^15.2.0",
+    "postcss": "^8",
+    "prettier": "^3.1.1",
+    "tailwindcss": "^3.3.0",
+    "typescript": "^5"
+  },
+  "lint-staged": {
+    "src/**/*.{ts,tsx}": [
+      "yarn lint:fix",
+      "yarn prettier:fix"
+    ]
+  }
+}

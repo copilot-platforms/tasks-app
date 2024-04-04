@@ -1,0 +1,25 @@
+name: Lint
+
+on: push
+
+jobs:
+  run-linters:
+    name: Run linters
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.17.0
+          cache: yarn
+          cache-dependency-path: './yarn.lock'
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Run linters
+        run: yarn lint:check && yarn prettier:check
