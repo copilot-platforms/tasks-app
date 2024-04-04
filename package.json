@@ -39,6 +39,7 @@
     "@prisma/client": "^5.12.0",
     "@vercel/postgres": "^0.8.0",
     "copilot-node-sdk": "^2.0.0",
+    "immutability-helper": "^3.1.1",
     "next": "^14.1.4",
     "prisma": "^5.12.0",
     "react": "^18",
