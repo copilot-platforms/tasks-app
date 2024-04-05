@@ -1,15 +1,24 @@
 'use client';
 
+import { useState, useCallback } from 'react';
+import update from 'immutability-helper';
+import { Stack } from '@mui/material';
 import { TaskCard } from '@/components/cards/TaskCard';
 import { TaskColumn } from '@/components/cards/TaskColumn';
 import { Droppable } from '@/hoc/Droppable';
-import { useCallback, useState } from 'react';
-import update from 'immutability-helper';
-import { Stack } from '@mui/material';
 
-const mockTaskData = [
+interface Task {
+  assignedTo: string;
+  id: number;
+}
+
+interface Lists {
+  [key: number]: Task[];
+}
+
+const mockTaskTodoData: Task[] = [
   {
-    assignedTo: 'ananta',
+    assignedTo: 'ragnar',
     id: 1,
   },
   {
@@ -22,84 +31,98 @@ const mockTaskData = [
   },
 ];
 
-const mockColumnData = [
+const mockTaskInProgressData: Task[] = [
   {
-    columnName: 'Todo',
-    taskCount: '2',
-    id: 1,
+    assignedTo: 'doe',
+    id: 4,
   },
   {
-    columnName: 'In Progress',
-    taskCount: '5',
-    id: 2,
+    assignedTo: 'floki',
+    id: 5,
   },
   {
-    columnName: 'Completed',
-    taskCount: '2',
-    id: 3,
+    assignedTo: 'professor',
+    id: 6,
+  },
+];
+
+const mockCompletedTask: Task[] = [
+  {
+    assignedTo: 'rock',
+    id: 7,
   },
 ];
 
 export const Canvas = () => {
-  const [task, setTask] = useState(mockTaskData);
-
-  const [columnData, setColumnData] = useState(mockColumnData);
+  const [lists, setLists] = useState<Lists>({
+    1: mockTaskTodoData,
+    2: mockTaskInProgressData,
+    3: mockCompletedTask,
+  });
 
   const moveCard = useCallback(
-    (dragIndex: number, hoverIndex: number) => {
-      const dragCard = task[dragIndex];
-      setTask(
-        update(task, {
+    (dragIndex: number, hoverIndex: number, sourceId: number, targetId: number) => {
+      const sourceList = lists[sourceId];
+      const targetList = lists[targetId];
+
+      if (sourceId === targetId) {
+        const updatedList = update(sourceList, {
           $splice: [
             [dragIndex, 1],
-            [hoverIndex, 0, dragCard],
+            [hoverIndex, 0, sourceList[dragIndex]],
           ],
-        }),
-      );
+        });
+        setLists((prevLists) => ({
+          ...prevLists,
+          [sourceId]: updatedList,
+        }));
+      } else {
+        const dragCard = sourceList[dragIndex];
+        const updatedSourceList = update(sourceList, {
+          $splice: [[dragIndex, 1]],
+        });
+        const updatedTargetList = update(targetList, {
+          $splice: [[hoverIndex, 0, dragCard]],
+        });
+        setLists((prevLists) => ({
+          ...prevLists,
+          [sourceId]: updatedSourceList,
+          [targetId]: updatedTargetList,
+        }));
+      }
     },
-    [task],
+    [lists],
   );
 
-  const moveTaskColumn = useCallback(
-    (dragIndex: number, hoverIndex: number) => {
-      console.log(dragIndex, hoverIndex);
-      const dragCard = columnData[dragIndex];
-      setColumnData(
-        update(columnData, {
-          $splice: [
-            [dragIndex, 1],
-            [hoverIndex, 0, dragCard],
-          ],
-        }),
-      );
+  const onDropItem = useCallback(
+    (listId: number, item: { id: number; index: number }) => {
+      const sourceId = item.id;
+      const targetId = listId;
+      const hoverIndex = lists[targetId].length;
+      moveCard(item.index, hoverIndex, sourceId, targetId);
     },
-    [columnData],
+    [lists, moveCard],
   );
 
   return (
-    <Stack
-      direction="row"
-      columnGap={2}
-      sx={{
-        padding: '0px 20px',
-        width: '100vw',
-      }}
-    >
-      {columnData.map((data, index) => {
-        return (
-          <Droppable key={data.id} accept={'taskColumn'} index={index} id={data.id} moveCard={moveTaskColumn}>
-            <TaskColumn columnName={data.columnName} taskCount={data.taskCount}>
-              {task.map((task, index) => {
-                return (
-                  <Droppable key={task.id} accept={'taskCard'} index={index} id={task.id} moveCard={moveCard}>
-                    <TaskCard assignedTo={task.assignedTo} key={task.id} />
-                  </Droppable>
-                );
-              })}
-            </TaskColumn>
-          </Droppable>
-        );
-      })}
+    <Stack direction="row" columnGap={2} sx={{ padding: '0px 20px', width: '100vw' }}>
+      {Object.entries(lists).map(([listId, listData], index) => (
+        <Droppable
+          key={listId}
+          accept={'taskCard'}
+          index={index}
+          id={Number(listId)}
+          onDropItem={(item) => onDropItem(Number(listId), item)}
+        >
+          <TaskColumn key={listId} columnName={`List ${listId}`} taskCount={String(listData.length)}>
+            {listData.map((task: Task, index: number) => (
+              <Droppable key={task.id} accept={'taskCard'} index={index} id={Number(listId)} moveCard={moveCard}>
+                <TaskCard assignedTo={task.assignedTo} key={task.id} />
+              </Droppable>
+            ))}
+          </TaskColumn>
+        </Droppable>
+      ))}
     </Stack>
   );
 };

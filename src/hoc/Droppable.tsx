@@ -1,62 +1,70 @@
 import { ReactNode } from 'react';
 import { useRef } from 'react';
-import { useDrag, useDrop } from 'react-dnd';
+import { useDrag, useDrop, DropTargetMonitor } from 'react-dnd';
+
+interface IItem {
+  id: number;
+  index: number;
+}
 
 interface Prop {
   children: ReactNode;
   accept: string;
   index: number;
   id: number;
-  moveCard: any;
+  moveCard?: any;
+  onDropItem?: (item: IItem) => void;
 }
 
-export const Droppable = ({ children, accept, index, id, moveCard }: Prop) => {
+export const Droppable = ({ children, accept, index, id, moveCard, onDropItem }: Prop) => {
   const ref = useRef<HTMLDivElement | null>(null);
+
   const [, drop] = useDrop({
     accept: accept,
-    collect(monitor: any) {
+    collect(monitor: DropTargetMonitor) {
       return {
         handlerId: monitor.getHandlerId(),
       };
     },
-    hover(item: any, monitor: any) {
+    drop: (item: any, monitor) => {
+      if (onDropItem && item && typeof item === 'object') {
+        const hoverIndex = monitor.getClientOffset()?.y;
+        if (hoverIndex !== null && ref.current && hoverIndex) {
+          onDropItem(item);
+        }
+      }
+    },
+    hover(item: any, monitor: DropTargetMonitor) {
       if (!ref.current) {
+        return;
+      }
+      if (!moveCard) {
         return;
       }
       const dragIndex = item.index;
       const hoverIndex = index;
-      // Don't replace items with themselves
-      if (dragIndex === hoverIndex) {
+      const sourceId = item.id;
+      const targetId = id;
+
+      if (dragIndex === hoverIndex && sourceId === targetId) {
         return;
       }
-      // Determine rectangle on screen
       const hoverBoundingRect = ref.current?.getBoundingClientRect();
-      // Get vertical middle
       const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
-      // Determine mouse position
       const clientOffset = monitor.getClientOffset();
-      // Get pixels to the top
-      const hoverClientY = clientOffset.y - hoverBoundingRect.top;
-      // Only perform the move when the mouse has crossed half of the items height
-      // When dragging downwards, only move when the cursor is below 50%
-      // When dragging upwards, only move when the cursor is above 50%
-      // Dragging downwards
-      if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
+      const hoverClientY = clientOffset && clientOffset.y - hoverBoundingRect.top;
+      if (dragIndex < hoverIndex && hoverClientY && hoverClientY < hoverMiddleY) {
         return;
       }
-      // Dragging upwards
-      if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) {
+      if (dragIndex > hoverIndex && hoverClientY && hoverClientY > hoverMiddleY) {
         return;
       }
-      // Time to actually perform the action
-      moveCard(dragIndex, hoverIndex);
-      // Note: we're mutating the monitor item here!
-      // Generally it's better to avoid mutations,
-      // but it's good here for the sake of performance
-      // to avoid expensive index searches.
+      moveCard(dragIndex, hoverIndex, sourceId, targetId);
       item.index = hoverIndex;
+      item.id = targetId;
     },
   });
+
   const [{ isDragging }, drag] = useDrag({
     type: accept,
     item: () => {
@@ -66,11 +74,12 @@ export const Droppable = ({ children, accept, index, id, moveCard }: Prop) => {
       isDragging: monitor.isDragging(),
     }),
   });
-  const opacity = isDragging ? 0 : 1;
+
+  const opacity = isDragging ? 0.5 : 1;
   drag(drop(ref));
 
   return (
-    <div ref={ref} style={{ opacity: opacity }}>
+    <div ref={ref} style={{ opacity: opacity, margin: '6px 0px' }}>
       {children}
     </div>
   );

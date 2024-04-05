@@ -11,7 +11,7 @@ const TaskColumnHeader = styled(Stack)({
 });
 
 const TaskColumnContainer = styled(Stack)({
-  maxWidth: '275px',
+  width: '275px',
   height: '100vh',
 });
 
