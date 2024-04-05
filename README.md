@@ -1,5 +1,4 @@
 # Task App
-*This project is managed by the Outside Copilot Team.*
 
 ### Task App is part of the Copilot internal App Store. Task App is a comprehensive task management app that allows SB (Service Business) to create and assign tasks to their clients.
 
