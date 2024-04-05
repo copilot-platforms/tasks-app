@@ -12,7 +12,7 @@ interface Prop {
   accept: string;
   index: number;
   id: number;
-  moveCard?: any;
+  moveCard?: (dragIndex: number, hoverIndex: number, sourceId: number, targetId: number) => void;
   onDropItem?: (item: IItem) => void;
 }
 
@@ -26,24 +26,24 @@ export const Droppable = ({ children, accept, index, id, moveCard, onDropItem }:
         handlerId: monitor.getHandlerId(),
       };
     },
-    drop: (item: any, monitor) => {
+    drop: (item: unknown, monitor) => {
       if (onDropItem && item && typeof item === 'object') {
         const hoverIndex = monitor.getClientOffset()?.y;
         if (hoverIndex !== null && ref.current && hoverIndex) {
-          onDropItem(item);
+          onDropItem(item as IItem);
         }
       }
     },
-    hover(item: any, monitor: DropTargetMonitor) {
+    hover(item: unknown, monitor: DropTargetMonitor) {
       if (!ref.current) {
         return;
       }
       if (!moveCard) {
         return;
       }
-      const dragIndex = item.index;
+      const dragIndex = (item as IItem).index;
       const hoverIndex = index;
-      const sourceId = item.id;
+      const sourceId = (item as IItem).id;
       const targetId = id;
 
       if (dragIndex === hoverIndex && sourceId === targetId) {
@@ -60,8 +60,8 @@ export const Droppable = ({ children, accept, index, id, moveCard, onDropItem }:
         return;
       }
       moveCard(dragIndex, hoverIndex, sourceId, targetId);
-      item.index = hoverIndex;
-      item.id = targetId;
+      (item as IItem).index = hoverIndex;
+      (item as IItem).id = targetId;
     },
   });
 
