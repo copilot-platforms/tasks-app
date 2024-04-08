@@ -1,25 +1,25 @@
-import { z } from 'zod';
+import { z } from 'zod'
 
 export const TokenSchema = z.object({
   clientId: z.string().optional(),
   companyId: z.string().optional(),
   internalUserId: z.string().optional(),
   workspaceId: z.string(),
-});
-export type Token = z.infer<typeof TokenSchema>;
+})
+export type Token = z.infer<typeof TokenSchema>
 
 export const IUTokenSchema = z.object({
   internalUserId: z.string(),
   workspaceId: z.string(),
-});
-export type IUToken = z.infer<typeof IUTokenSchema>;
+})
+export type IUToken = z.infer<typeof IUTokenSchema>
 
 export const ClientTokenSchema = z.object({
   clientId: z.string(),
   companyId: z.string().optional(),
   workspaceId: z.string(),
-});
-export type ClientToken = z.infer<typeof ClientTokenSchema>;
+})
+export type ClientToken = z.infer<typeof ClientTokenSchema>
 
 export const MeResponseSchema = z.object({
   id: z.string(),
@@ -27,8 +27,8 @@ export const MeResponseSchema = z.object({
   familyName: z.string(),
   email: z.string(),
   portalName: z.string().optional(),
-});
-export type MeResponse = z.infer<typeof MeResponseSchema>;
+})
+export type MeResponse = z.infer<typeof MeResponseSchema>
 
 // Response schema for `/workspace` endpoint
 export const WorkspaceResponseSchema = z.object({
@@ -48,8 +48,8 @@ export const WorkspaceResponseSchema = z.object({
   font: z.string().optional(),
   metaTitle: z.string().optional(),
   metaDescription: z.string().optional(),
-});
-export type WorkspaceResponse = z.infer<typeof WorkspaceResponseSchema>;
+})
+export type WorkspaceResponse = z.infer<typeof WorkspaceResponseSchema>
 
 export const ClientResponseSchema = z.object({
   id: z.string(),
@@ -60,26 +60,26 @@ export const ClientResponseSchema = z.object({
   status: z.string(),
   avatarImageUrl: z.string().nullable(),
   customFields: z.record(z.string(), z.union([z.string(), z.array(z.string())]).nullable()).nullish(),
-});
-export type ClientResponse = z.infer<typeof ClientResponseSchema>;
+})
+export type ClientResponse = z.infer<typeof ClientResponseSchema>
 
 export const ClientsResponseSchema = z.object({
   data: z.array(ClientResponseSchema).nullable(),
-});
-export type ClientsResponse = z.infer<typeof ClientsResponseSchema>;
+})
+export type ClientsResponse = z.infer<typeof ClientsResponseSchema>
 
 export const CompanyResponseSchema = z.object({
   id: z.string(),
   name: z.string(),
   iconImageUrl: z.string().nullable(),
   fallbackColor: z.string().nullish(),
-});
-export type CompanyResponse = z.infer<typeof CompanyResponseSchema>;
+})
+export type CompanyResponse = z.infer<typeof CompanyResponseSchema>
 
 export const CompaniesResponseSchema = z.object({
   data: z.array(CompanyResponseSchema).nullable(),
-});
-export type CompaniesResponse = z.infer<typeof CompaniesResponseSchema>;
+})
+export type CompaniesResponse = z.infer<typeof CompaniesResponseSchema>
 
 export const CustomFieldSchema = z.object({
   id: z.string(),
@@ -98,17 +98,17 @@ export const CustomFieldSchema = z.object({
       }),
     )
     .optional(),
-});
-export type CustomField = z.infer<typeof CustomFieldSchema>;
+})
+export type CustomField = z.infer<typeof CustomFieldSchema>
 export const CustomFieldResponseSchema = z.object({
   data: z.array(CustomFieldSchema).nullable(),
-});
-export type CustomFieldResponse = z.infer<typeof CustomFieldResponseSchema>;
+})
+export type CustomFieldResponse = z.infer<typeof CustomFieldResponseSchema>
 
 export const ClientRequestSchema = z.object({
   givenName: z.string().optional(),
   familyName: z.string().optional(),
   companyId: z.string().uuid().optional(),
   customFields: z.record(z.string(), z.union([z.string(), z.array(z.string())]).nullish()).nullish(),
-});
-export type ClientRequest = z.infer<typeof ClientRequestSchema>;
+})
+export type ClientRequest = z.infer<typeof ClientRequestSchema>
