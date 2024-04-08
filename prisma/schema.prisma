@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+enum StatusType {
+  backlog
+  unstarted
+  started
+  completed
+  cancelled
+}
+
+enum ViewMode {
+  board
+  list
+}
+
+enum FilterType {
+  person
+  team
+  client
+  all
+}
+
+enum AssigneeType {
+  iu
+  client
+  company
+}
+
+model StatusSetting {
+  id    String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  type  StatusType
+  name  String
+  key   String
+  color String?
+  tasks Task[]
+
+  @@index([key], name: "key")
+  @@map("StatusSettings")
+}
+
+model Task {
+  id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  assigneeId      String?
+  assigneeType    AssigneeType?
+  title           String
+  body            String?
+  status          StatusSetting @relation(fields: [statusSettingId], references: [id])
+  statusSettingId String        @db.Uuid
+  createdBy       String
+
+  @@map("Tasks")
+}
+
+model ViewSetting {
+  id             String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId         String      @unique
+  viewMode       ViewMode?
+  filterType     FilterType?
+  hiddenStatuses String[]    @default([])
+
+  @@index([userId], name: "userId")
+  @@map("ViewSettings")
+}
