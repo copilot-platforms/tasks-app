@@ -105,7 +105,7 @@ export const Canvas = () => {
   );
 
   return (
-    <Stack direction="row" columnGap={2} sx={{ padding: '0px 20px', width: '100vw' }}>
+    <Stack direction="row" columnGap={2}>
       {Object.entries(lists).map(([listId, listData], index) => (
         <Droppable
           key={listId}
