@@ -53,7 +53,7 @@ const mockCompletedTask: Task[] = [
   },
 ]
 
-export const Canvas = () => {
+export const TaskBoard = () => {
   const [lists, setLists] = useState<Lists>({
     1: mockTaskTodoData,
     2: mockTaskInProgressData,
