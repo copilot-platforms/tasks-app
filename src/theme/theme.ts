@@ -1,7 +1,7 @@
-import { createTheme } from '@mui/material';
-import { Inter } from 'next/font/google';
+import { createTheme } from '@mui/material'
+import { Inter } from 'next/font/google'
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ subsets: ['latin'] })
 
 export const theme = createTheme({
   spacing: 4,
@@ -178,4 +178,4 @@ export const theme = createTheme({
       lineHeight: '18px',
     },
   },
-});
+})
