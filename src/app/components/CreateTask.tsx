@@ -1,26 +1,26 @@
-'use client';
+'use client'
 
-import { PrimaryBtn } from '@/components/buttons/PrimaryBtn';
-import { SecondaryBtn } from '@/components/buttons/SecondaryBtn';
-import { StyledAutocomplete } from '@/components/inputs/Autocomplete';
-import { StyledTextField } from '@/components/inputs/TextField';
-import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin';
-import { useFocusableInput } from '@/hooks/useFocusableInput';
-import { AttachmentIcon, DoneIcon, HumansIcon, InprogressIcon, InreviewIcon, TodoIcon } from '@/icons';
-import { setShowModal } from '@/redux/features/createTaskSlice';
-import store from '@/redux/store';
-import { Close } from '@mui/icons-material';
-import { Avatar, Box, Stack, Typography } from '@mui/material';
-import { ReactNode, useState } from 'react';
+import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
+import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
+import { StyledAutocomplete } from '@/components/inputs/Autocomplete'
+import { StyledTextField } from '@/components/inputs/TextField'
+import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
+import { useFocusableInput } from '@/hooks/useFocusableInput'
+import { AttachmentIcon, DoneIcon, HumansIcon, InprogressIcon, InreviewIcon, TodoIcon } from '@/icons'
+import { setShowModal } from '@/redux/features/createTaskSlice'
+import store from '@/redux/store'
+import { Close } from '@mui/icons-material'
+import { Avatar, Box, Stack, Typography } from '@mui/material'
+import { ReactNode, useState } from 'react'
 
 interface IAssignee {
-  name: string;
-  type: string;
-  img?: string;
+  name: string
+  type: string
+  img?: string
 }
 
 //This is mock data which will be replaced after API integration.
-const status = ['Todo', 'In Progress', 'In review', 'Done'];
+const status = ['Todo', 'In Progress', 'In review', 'Done']
 
 //This is mock data which will be replaced after API integration.
 const statusIcons: { [key: string]: ReactNode } = {
@@ -28,7 +28,7 @@ const statusIcons: { [key: string]: ReactNode } = {
   'In Progress': <InprogressIcon />,
   'In review': <InreviewIcon />,
   Done: <DoneIcon />,
-};
+}
 
 //This is mock data which will be replaced after API integration.
 const assignee: IAssignee[] = [
@@ -51,20 +51,20 @@ const assignee: IAssignee[] = [
     type: 'Clients',
     name: 'Brroklyn Simmons',
   },
-];
+]
 
 export const CreateTask = () => {
-  const [displayStatus, setDisplayStatus] = useState(false);
-  const [statusValue, setStatusValue] = useState<string | null>(status[0]);
-  const [inputStatusValue, setInputStatusValue] = useState('');
+  const [displayStatus, setDisplayStatus] = useState(false)
+  const [statusValue, setStatusValue] = useState<string | null>(status[0])
+  const [inputStatusValue, setInputStatusValue] = useState('')
 
-  const setStatusRef = useFocusableInput(displayStatus);
+  const setStatusRef = useFocusableInput(displayStatus)
 
-  const [displayAssignee, setDisplayAssignee] = useState(false);
-  const [assigneeValue, setAssigneeValue] = useState<IAssignee>(assignee[0]);
-  const [inputAssigneeValue, setInputAssigneeValue] = useState<string>('');
+  const [displayAssignee, setDisplayAssignee] = useState(false)
+  const [assigneeValue, setAssigneeValue] = useState<IAssignee>(assignee[0])
+  const [inputAssigneeValue, setInputAssigneeValue] = useState<string>('')
 
-  const setAssigneeRef = useFocusableInput(displayAssignee);
+  const setAssigneeRef = useFocusableInput(displayAssignee)
 
   return (
     <Box
@@ -123,8 +123,8 @@ export const CreateTask = () => {
                 </Typography>
               }
               handleClick={() => {
-                setDisplayAssignee(false);
-                setDisplayStatus((prev) => !prev);
+                setDisplayAssignee(false)
+                setDisplayStatus((prev) => !prev)
               }}
             />
             <Box
@@ -141,12 +141,12 @@ export const CreateTask = () => {
                 options={status}
                 value={statusValue}
                 onChange={(_, newValue: unknown) => {
-                  setStatusValue(newValue as string);
-                  setDisplayStatus(false);
+                  setStatusValue(newValue as string)
+                  setDisplayStatus(false)
                 }}
                 inputValue={inputStatusValue}
                 onInputChange={(_, newInputValue) => {
-                  setInputStatusValue(newInputValue);
+                  setInputStatusValue(newInputValue)
                 }}
                 renderInput={(params) => {
                   return (
@@ -157,7 +157,7 @@ export const CreateTask = () => {
                       placeholder="Change status..."
                       borderColor="#EDEDF0"
                     />
-                  );
+                  )
                 }}
                 renderOption={(props, option: unknown) => {
                   return (
@@ -180,7 +180,7 @@ export const CreateTask = () => {
                         </Typography>
                       </Stack>
                     </Box>
-                  );
+                  )
                 }}
               />
             </Box>
@@ -194,8 +194,8 @@ export const CreateTask = () => {
                 </Typography>
               }
               handleClick={() => {
-                setDisplayStatus(false);
-                setDisplayAssignee((prev) => !prev);
+                setDisplayStatus(false)
+                setDisplayAssignee((prev) => !prev)
               }}
             />
             <Box
@@ -213,12 +213,12 @@ export const CreateTask = () => {
                 getOptionLabel={(option: unknown) => (option as IAssignee).name}
                 value={assigneeValue}
                 onChange={(_, newValue: unknown) => {
-                  setAssigneeValue(newValue as { type: string; name: string; img?: string });
+                  setAssigneeValue(newValue as { type: string; name: string; img?: string })
                 }}
                 onClose={() => setDisplayAssignee(false)}
                 inputValue={inputAssigneeValue}
                 onInputChange={(_, newInputValue) => {
-                  setInputAssigneeValue(newInputValue);
+                  setInputAssigneeValue(newInputValue)
                 }}
                 groupBy={(option: unknown) => (option as IAssignee).type}
                 renderInput={(params) => {
@@ -230,7 +230,7 @@ export const CreateTask = () => {
                       placeholder="Change status..."
                       borderColor="#EDEDF0"
                     />
-                  );
+                  )
                 }}
                 renderOption={(props, option: unknown) => {
                   return (
@@ -253,7 +253,7 @@ export const CreateTask = () => {
                         </Typography>
                       </Stack>
                     </Box>
-                  );
+                  )
                 }}
               />
             </Box>
@@ -269,7 +269,7 @@ export const CreateTask = () => {
             <Stack direction="row" columnGap={4}>
               <SecondaryBtn
                 handleClick={() => {
-                  store.dispatch(setShowModal());
+                  store.dispatch(setShowModal())
                 }}
                 buttonContent={
                   <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[700] }}>
@@ -283,5 +283,5 @@ export const CreateTask = () => {
         </AppMargin>
       </Box>
     </Box>
-  );
-};
+  )
+}

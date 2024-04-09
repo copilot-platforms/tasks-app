@@ -1,4 +1,4 @@
-import { Autocomplete, styled } from '@mui/material';
+import { Autocomplete, styled } from '@mui/material'
 
 export const StyledAutocomplete = styled(Autocomplete)({
   '& .MuiAutocomplete-endAdornment': {
@@ -15,4 +15,4 @@ export const StyledAutocomplete = styled(Autocomplete)({
     border: '1px solid #EDEDF0',
     padding: 0,
   },
-});
+})

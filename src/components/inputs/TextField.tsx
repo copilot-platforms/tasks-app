@@ -1,6 +1,6 @@
-'use client';
+'use client'
 
-import { TextField, styled } from '@mui/material';
+import { TextField, styled } from '@mui/material'
 
 export const StyledTextField = styled(TextField, {
   shouldForwardProp: (prop) => prop !== 'padding',
@@ -34,4 +34,4 @@ export const StyledTextField = styled(TextField, {
       fontSize: '13px',
     },
   },
-}));
+}))

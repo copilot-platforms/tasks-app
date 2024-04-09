@@ -1,25 +1,25 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react'
 
 export function useFocusableInput(shouldFocus: boolean) {
-  const inputRef = useRef<HTMLInputElement | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null)
   const setInputRef = (instance: HTMLInputElement | null) => {
-    inputRef.current = instance;
-  };
+    inputRef.current = instance
+  }
 
   useEffect(() => {
-    let timeout: NodeJS.Timeout;
+    let timeout: NodeJS.Timeout
     if (shouldFocus) {
       timeout = setTimeout(() => {
-        inputRef.current?.focus();
-      });
+        inputRef.current?.focus()
+      })
     }
 
     return () => {
       if (timeout) {
-        clearTimeout(timeout);
+        clearTimeout(timeout)
       }
-    };
-  }, [shouldFocus]);
+    }
+  }, [shouldFocus])
 
-  return setInputRef;
+  return setInputRef
 }

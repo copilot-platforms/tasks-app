@@ -1,5 +1,5 @@
-import { Canvas } from './canvas/Canvas';
-import { Header } from '@/components/layouts/Header';
+import { Canvas } from './canvas/Canvas'
+import { Header } from '@/components/layouts/Header'
 
 export default function Main() {
   return (
@@ -7,5 +7,5 @@ export default function Main() {
       <Header />
       <Canvas />
     </>
-  );
+  )
 }

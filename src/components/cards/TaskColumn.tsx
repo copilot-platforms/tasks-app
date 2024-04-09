@@ -1,24 +1,24 @@
-'use client';
+'use client'
 
-import { IconButton, Stack, Typography, styled } from '@mui/material';
-import { MoreHoriz, Add } from '@mui/icons-material';
-import { ReactNode } from 'react';
+import { IconButton, Stack, Typography, styled } from '@mui/material'
+import { MoreHoriz, Add } from '@mui/icons-material'
+import { ReactNode } from 'react'
 
 const TaskColumnHeader = styled(Stack)({
   flexDirection: 'row',
   justifyContent: 'space-between',
   alignItems: 'center',
-});
+})
 
 const TaskColumnContainer = styled(Stack)({
   width: '275px',
   height: '100vh',
-});
+})
 
 interface Prop {
-  children: ReactNode;
-  columnName: string;
-  taskCount: string;
+  children: ReactNode
+  columnName: string
+  taskCount: string
 }
 
 export const TaskColumn = ({ children, columnName, taskCount }: Prop) => {
@@ -40,5 +40,5 @@ export const TaskColumn = ({ children, columnName, taskCount }: Prop) => {
       </TaskColumnHeader>
       {children}
     </TaskColumnContainer>
-  );
-};
+  )
+}

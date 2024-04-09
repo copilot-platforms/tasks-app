@@ -1,24 +1,24 @@
-'use client';
+'use client'
 
-import { useState, useCallback } from 'react';
-import update from 'immutability-helper';
-import { Modal, Stack } from '@mui/material';
-import { TaskCard } from '@/components/cards/TaskCard';
-import { TaskColumn } from '@/components/cards/TaskColumn';
-import { Droppable } from '@/hoc/Droppable';
-import { CreateTask } from '../components/CreateTask';
-import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin';
-import { useSelector } from 'react-redux';
-import { selectCreateTask, setShowModal } from '@/redux/features/createTaskSlice';
-import store from '@/redux/store';
+import { useState, useCallback } from 'react'
+import update from 'immutability-helper'
+import { Modal, Stack } from '@mui/material'
+import { TaskCard } from '@/components/cards/TaskCard'
+import { TaskColumn } from '@/components/cards/TaskColumn'
+import { Droppable } from '@/hoc/Droppable'
+import { CreateTask } from '../components/CreateTask'
+import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
+import { useSelector } from 'react-redux'
+import { selectCreateTask, setShowModal } from '@/redux/features/createTaskSlice'
+import store from '@/redux/store'
 
 interface Task {
-  assignedTo: string;
-  id: number;
+  assignedTo: string
+  id: number
 }
 
 interface Lists {
-  [key: number]: Task[];
+  [key: number]: Task[]
 }
 
 const mockTaskTodoData: Task[] = [
@@ -34,7 +34,7 @@ const mockTaskTodoData: Task[] = [
     assignedTo: 'yuki',
     id: 3,
   },
-];
+]
 
 const mockTaskInProgressData: Task[] = [
   {
@@ -49,26 +49,26 @@ const mockTaskInProgressData: Task[] = [
     assignedTo: 'professor',
     id: 6,
   },
-];
+]
 
 const mockCompletedTask: Task[] = [
   {
     assignedTo: 'rock',
     id: 7,
   },
-];
+]
 
 export const Canvas = () => {
   const [lists, setLists] = useState<Lists>({
     1: mockTaskTodoData,
     2: mockTaskInProgressData,
     3: mockCompletedTask,
-  });
+  })
 
   const moveCard = useCallback(
     (dragIndex: number, hoverIndex: number, sourceId: number, targetId: number) => {
-      const sourceList = lists[sourceId];
-      const targetList = lists[targetId];
+      const sourceList = lists[sourceId]
+      const targetList = lists[targetId]
 
       if (sourceId === targetId) {
         const updatedList = update(sourceList, {
@@ -76,40 +76,40 @@ export const Canvas = () => {
             [dragIndex, 1],
             [hoverIndex, 0, sourceList[dragIndex]],
           ],
-        });
+        })
         setLists((prevLists) => ({
           ...prevLists,
           [sourceId]: updatedList,
-        }));
+        }))
       } else {
-        const dragCard = sourceList[dragIndex];
+        const dragCard = sourceList[dragIndex]
         const updatedSourceList = update(sourceList, {
           $splice: [[dragIndex, 1]],
-        });
+        })
         const updatedTargetList = update(targetList, {
           $splice: [[hoverIndex, 0, dragCard]],
-        });
+        })
         setLists((prevLists) => ({
           ...prevLists,
           [sourceId]: updatedSourceList,
           [targetId]: updatedTargetList,
-        }));
+        }))
       }
     },
     [lists],
-  );
+  )
 
   const onDropItem = useCallback(
     (listId: number, item: { id: number; index: number }) => {
-      const sourceId = item.id;
-      const targetId = listId;
-      const hoverIndex = lists[targetId].length;
-      moveCard(item.index, hoverIndex, sourceId, targetId);
+      const sourceId = item.id
+      const targetId = listId
+      const hoverIndex = lists[targetId].length
+      moveCard(item.index, hoverIndex, sourceId, targetId)
     },
     [lists, moveCard],
-  );
+  )
 
-  const { showModal } = useSelector(selectCreateTask);
+  const { showModal } = useSelector(selectCreateTask)
 
   return (
     <AppMargin size={SizeofAppMargin.LARGE} ptb="18.5px">
@@ -140,7 +140,7 @@ export const Canvas = () => {
         <Modal
           open={showModal}
           onClose={() => {
-            store.dispatch(setShowModal());
+            store.dispatch(setShowModal())
           }}
           aria-labelledby="create-task-modal"
           aria-describedby="add-new-task"
@@ -149,5 +149,5 @@ export const Canvas = () => {
         </Modal>
       </Stack>
     </AppMargin>
-  );
-};
+  )
+}

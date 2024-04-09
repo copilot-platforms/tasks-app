@@ -1,14 +1,14 @@
-import { Button } from '@mui/material';
-import { ReactNode } from 'react';
+import { Button } from '@mui/material'
+import { ReactNode } from 'react'
 
 export const SecondaryBtn = ({
   startIcon,
   buttonContent,
   handleClick,
 }: {
-  startIcon?: ReactNode | undefined;
-  buttonContent: ReactNode;
-  handleClick: () => void;
+  startIcon?: ReactNode | undefined
+  buttonContent: ReactNode
+  handleClick: () => void
 }) => {
   return (
     <Button
@@ -29,5 +29,5 @@ export const SecondaryBtn = ({
     >
       {buttonContent}
     </Button>
-  );
-};
+  )
+}

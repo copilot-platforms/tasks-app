@@ -1,15 +1,15 @@
-import { Add } from '@mui/icons-material';
-import { Button, Typography } from '@mui/material';
-import { ReactNode } from 'react';
+import { Add } from '@mui/icons-material'
+import { Button, Typography } from '@mui/material'
+import { ReactNode } from 'react'
 
 export const PrimaryBtn = ({
   startIcon,
   buttonText,
   handleClick,
 }: {
-  startIcon?: ReactNode | undefined;
-  buttonText: string;
-  handleClick: () => void;
+  startIcon?: ReactNode | undefined
+  buttonText: string
+  handleClick: () => void
 }) => {
   return (
     <Button
@@ -24,5 +24,5 @@ export const PrimaryBtn = ({
     >
       <Typography variant="sm">{buttonText}</Typography>
     </Button>
-  );
-};
+  )
+}
