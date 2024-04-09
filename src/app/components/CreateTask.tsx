@@ -74,7 +74,7 @@ export const CreateTask = () => {
         left: '50%',
         transform: 'translate(-50%, -50%)',
         boxShadow: '0px 16px 70px 0px rgba(0, 0, 0, 0.5)',
-        border: '1px solid #EDEDF0',
+        border: (theme) => `1px solid ${theme.color.borders.border2}`,
         borderRadius: '4px',
         width: '685px',
       }}
@@ -255,7 +255,7 @@ export const CreateTask = () => {
           </Stack>
         </Stack>
       </AppMargin>
-      <Box borderTop="1px solid #EDEDF0">
+      <Box sx={{ borderTop: (theme) => `1px solid ${theme.color.borders.border2}` }}>
         <AppMargin size={SizeofAppMargin.MEDIUM} ptb="21px">
           <Stack direction="row" justifyContent="space-between" alignItems="center">
             <Box>
