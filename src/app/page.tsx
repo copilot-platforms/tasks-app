@@ -1,4 +1,4 @@
-import { TaskBoard } from './canvas/TaskBoard'
+import { TaskBoard } from './taskBoard/TaskBoard'
 
 export default function Main() {
   return <TaskBoard />
