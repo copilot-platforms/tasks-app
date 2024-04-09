@@ -8,6 +8,9 @@ import { TaskColumn } from '@/components/cards/TaskColumn';
 import { Droppable } from '@/hoc/Droppable';
 import { CreateTask } from '../components/CreateTask';
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin';
+import { useSelector } from 'react-redux';
+import { selectCreateTask, setShowModal } from '@/redux/features/createTaskSlice';
+import store from '@/redux/store';
 
 interface Task {
   assignedTo: string;
@@ -106,6 +109,8 @@ export const Canvas = () => {
     [lists, moveCard],
   );
 
+  const { showModal } = useSelector(selectCreateTask);
+
   return (
     <AppMargin size={SizeofAppMargin.LARGE} ptb="18.5px">
       <Stack
@@ -132,7 +137,14 @@ export const Canvas = () => {
             </TaskColumn>
           </Droppable>
         ))}
-        <Modal open={true} onClose={() => {}} aria-labelledby="create-task-modal" aria-describedby="add-new-task">
+        <Modal
+          open={showModal}
+          onClose={() => {
+            store.dispatch(setShowModal());
+          }}
+          aria-labelledby="create-task-modal"
+          aria-describedby="add-new-task"
+        >
           <CreateTask />
         </Modal>
       </Stack>

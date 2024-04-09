@@ -7,6 +7,8 @@ import { StyledTextField } from '@/components/inputs/TextField';
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin';
 import { useFocusableInput } from '@/hooks/useFocusableInput';
 import { AttachmentIcon, DoneIcon, HumansIcon, InprogressIcon, InreviewIcon, TodoIcon } from '@/icons';
+import { setShowModal } from '@/redux/features/createTaskSlice';
+import store from '@/redux/store';
 import { Close } from '@mui/icons-material';
 import { Avatar, Box, Stack, Typography } from '@mui/material';
 import { ReactNode, useState } from 'react';
@@ -88,7 +90,10 @@ export const CreateTask = () => {
         }}
       >
         <AppMargin size={SizeofAppMargin.MEDIUM} ptb="12px">
-          <Close sx={{ color: (theme) => theme.color.gray[500] }} />
+          <Close
+            sx={{ color: (theme) => theme.color.gray[500], cursor: 'pointer' }}
+            onClick={() => store.dispatch(setShowModal())}
+          />
         </AppMargin>
       </Stack>
 
@@ -263,7 +268,9 @@ export const CreateTask = () => {
             </Box>
             <Stack direction="row" columnGap={4}>
               <SecondaryBtn
-                handleClick={() => {}}
+                handleClick={() => {
+                  store.dispatch(setShowModal());
+                }}
                 buttonContent={
                   <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[700] }}>
                     Cancel
