@@ -1,20 +1,13 @@
 {
-  "name": "create-copilot-app",
-  "description": "A custom app starter kit for Copilot",
-  "version": "2.0.0",
+  "name": "task-app",
+  "description": "A comprehensive task management app",
+  "version": "0.1.0",
   "keywords": [
     "nextjs",
     "nodejs"
   ],
-  "bin": {
-    "create-copilot-app": "./bin/cli.js"
-  },
   "repository": {
-    "url": "https://github.com/pagevamp/copilot-custom-app-starter-kit"
-  },
-  "publishConfig": {
-    "registry": "https://registry.npmjs.org/",
-    "access": "public"
+    "url": "https://github.com/copilot-platforms/tasks-app"
   },
   "scripts": {
     "dev": "next dev",
