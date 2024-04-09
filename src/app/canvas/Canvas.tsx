@@ -2,10 +2,12 @@
 
 import { useState, useCallback } from 'react';
 import update from 'immutability-helper';
-import { Stack } from '@mui/material';
+import { Modal, Stack } from '@mui/material';
 import { TaskCard } from '@/components/cards/TaskCard';
 import { TaskColumn } from '@/components/cards/TaskColumn';
 import { Droppable } from '@/hoc/Droppable';
+import { CreateTask } from '../components/CreateTask';
+import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin';
 
 interface Task {
   assignedTo: string;
@@ -105,24 +107,35 @@ export const Canvas = () => {
   );
 
   return (
-    <Stack direction="row" columnGap={2}>
-      {Object.entries(lists).map(([listId, listData], index) => (
-        <Droppable
-          key={listId}
-          accept={'taskCard'}
-          index={index}
-          id={Number(listId)}
-          onDropItem={(item) => onDropItem(Number(listId), item)}
-        >
-          <TaskColumn key={listId} columnName={`List ${listId}`} taskCount={String(listData.length)}>
-            {listData.map((task: Task, index: number) => (
-              <Droppable key={task.id} accept={'taskCard'} index={index} id={Number(listId)} moveCard={moveCard}>
-                <TaskCard assignedTo={task.assignedTo} key={task.id} />
-              </Droppable>
-            ))}
-          </TaskColumn>
-        </Droppable>
-      ))}
-    </Stack>
+    <AppMargin size={SizeofAppMargin.LARGE} ptb="18.5px">
+      <Stack
+        direction="row"
+        columnGap={2}
+        sx={{
+          overflowX: 'auto',
+        }}
+      >
+        {Object.entries(lists).map(([listId, listData], index) => (
+          <Droppable
+            key={listId}
+            accept={'taskCard'}
+            index={index}
+            id={Number(listId)}
+            onDropItem={(item) => onDropItem(Number(listId), item)}
+          >
+            <TaskColumn key={listId} columnName={`List ${listId}`} taskCount={String(listData.length)}>
+              {listData.map((task: Task, index: number) => (
+                <Droppable key={task.id} accept={'taskCard'} index={index} id={Number(listId)} moveCard={moveCard}>
+                  <TaskCard assignedTo={task.assignedTo} key={task.id} />
+                </Droppable>
+              ))}
+            </TaskColumn>
+          </Droppable>
+        ))}
+        <Modal open={true} onClose={() => {}} aria-labelledby="create-task-modal" aria-describedby="add-new-task">
+          <CreateTask />
+        </Modal>
+      </Stack>
+    </AppMargin>
   );
 };
