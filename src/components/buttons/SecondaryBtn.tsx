@@ -1,3 +1,5 @@
+'use client'
+
 import { Button } from '@mui/material'
 import { ReactNode } from 'react'
 
@@ -5,10 +7,12 @@ export const SecondaryBtn = ({
   startIcon,
   buttonContent,
   handleClick,
+  enableBackground,
 }: {
   startIcon?: ReactNode | undefined
   buttonContent: ReactNode
-  handleClick: () => void
+  handleClick?: () => void
+  enableBackground?: boolean
 }) => {
   return (
     <Button
@@ -16,9 +20,10 @@ export const SecondaryBtn = ({
       startIcon={startIcon ? startIcon : null}
       sx={(theme) => ({
         textTransform: 'none',
-        border: `1px solid ${theme.color.borders.border}`,
+        border: enableBackground ? 'none' : `1px solid ${theme.color.borders.border}`,
+        bgcolor: enableBackground ? theme.color.gray[150] : '',
         '&:hover': {
-          border: `1px solid ${theme.color.borders.border}`,
+          border: enableBackground ? 'none' : `1px solid ${theme.color.borders.border}`,
           bgcolor: theme.color.gray[150],
         },
         '.MuiTouchRipple-child': {
