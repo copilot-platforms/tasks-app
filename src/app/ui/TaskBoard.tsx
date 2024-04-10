@@ -2,15 +2,16 @@
 
 import { useState, useCallback } from 'react'
 import update from 'immutability-helper'
-import { Modal, Stack } from '@mui/material'
+import { Box, Modal, Stack } from '@mui/material'
 import { TaskCard } from '@/components/cards/TaskCard'
 import { TaskColumn } from '@/components/cards/TaskColumn'
 import { Droppable } from '@/hoc/Droppable'
-import { CreateTask } from '../components/CreateTask'
+import { CreateTask } from '../ui/CreateTask'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { useSelector } from 'react-redux'
 import { selectCreateTask, setShowModal } from '@/redux/features/createTaskSlice'
 import store from '@/redux/store'
+import { useRouter } from 'next/navigation'
 
 interface Task {
   assignedTo: string
@@ -111,6 +112,8 @@ export const TaskBoard = () => {
 
   const { showModal } = useSelector(selectCreateTask)
 
+  const router = useRouter()
+
   return (
     <AppMargin size={SizeofAppMargin.LARGE} ptb="18.5px">
       <Stack
@@ -131,7 +134,9 @@ export const TaskBoard = () => {
             <TaskColumn key={listId} columnName={`List ${listId}`} taskCount={String(listData.length)}>
               {listData.map((task: Task, index: number) => (
                 <Droppable key={task.id} accept={'taskCard'} index={index} id={Number(listId)} moveCard={moveCard}>
-                  <TaskCard assignedTo={task.assignedTo} key={task.id} />
+                  <Box onClick={() => router.push('/detail/WEB-01/my-new-task')}>
+                    <TaskCard assignedTo={task.assignedTo} key={task.id} />
+                  </Box>
                 </Droppable>
               ))}
             </TaskColumn>

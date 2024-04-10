@@ -4,6 +4,7 @@ import { ReactNode } from 'react'
 export enum SizeofAppMargin {
   MEDIUM = 'medium',
   LARGE = 'large',
+  SMALL = 'small',
 }
 
 export const AppMargin = ({
@@ -21,5 +22,9 @@ export const AppMargin = ({
 
   if (size === SizeofAppMargin.MEDIUM) {
     return <Box sx={{ padding: `${ptb ? ptb : '0px'} 28px` }}>{children}</Box>
+  }
+
+  if (size === SizeofAppMargin.SMALL) {
+    return <Box sx={{ padding: `${ptb ? ptb : '0px'} 25px` }}>{children}</Box>
   }
 }
