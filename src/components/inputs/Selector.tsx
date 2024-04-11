@@ -3,7 +3,7 @@ import { SecondaryBtn } from '../buttons/SecondaryBtn'
 import { StyledAutocomplete } from './Autocomplete'
 import { statusIcons } from '@/utils/iconMatcher'
 import { useFocusableInput } from '@/hooks/useFocusableInput'
-import { HTMLAttributes, ReactNode, useState } from 'react'
+import { HTMLAttributes, ReactNode, useEffect, useRef, useState } from 'react'
 import { StyledTextField } from './TextField'
 
 interface IAssignee {
@@ -23,26 +23,15 @@ interface Prop {
   value: unknown
   selectorType: SelectorType.STATUS_SELECTOR | SelectorType.ASSIGNEE_SELECTOR
   options: unknown[]
-  isOpen: boolean
-  handleClick: () => void
   buttonContent: ReactNode
 }
 
-export default function Selector({
-  getSelectedValue,
-  startIcon,
-  value,
-  selectorType,
-  options,
-  isOpen,
-  handleClick,
-  buttonContent,
-}: Prop) {
+export default function Selector({ getSelectedValue, startIcon, value, selectorType, options, buttonContent }: Prop) {
+  const [isOpen, setIsOpen] = useState(false)
+
   const [inputStatusValue, setInputStatusValue] = useState('')
 
   const setSelectorRef = useFocusableInput(isOpen)
-
-  console.log('value', value)
 
   return (
     <Stack direction="column">
@@ -50,8 +39,7 @@ export default function Selector({
         startIcon={startIcon}
         buttonContent={buttonContent}
         handleClick={() => {
-          // setDisplayAssignee(false)
-          handleClick()
+          setIsOpen((prev) => !prev)
         }}
       />
       <Box
@@ -59,52 +47,55 @@ export default function Selector({
           position: 'absolute',
           top: 35,
           width: '180px',
-          display: isOpen ? 'block' : 'none',
+          visibility: isOpen ? 'visible' : 'hidden',
         }}
       >
-        <StyledAutocomplete
-          id="status-box"
-          openOnFocus
-          options={options}
-          value={value}
-          onChange={(_, newValue: unknown) => {
-            getSelectedValue(newValue)
-            handleClick()
-          }}
-          getOptionLabel={(option: unknown) => {
-            if (selectorType === SelectorType.ASSIGNEE_SELECTOR) {
-              return (option as IAssignee).name as string
-            } else return option as string
-          }}
-          groupBy={(option: unknown) => {
-            if (selectorType === SelectorType.ASSIGNEE_SELECTOR) {
-              return (option as IAssignee).type
-            } else {
-              return ''
-            }
-          }}
-          inputValue={inputStatusValue}
-          onInputChange={(_, newInputValue) => {
-            setInputStatusValue(newInputValue)
-          }}
-          renderInput={(params) => {
-            return (
-              <StyledTextField
-                {...params}
-                variant="outlined"
-                inputRef={setSelectorRef}
-                placeholder="Change status..."
-                borderColor="#EDEDF0"
-              />
-            )
-          }}
-          renderOption={(props, option: unknown) => {
-            if (selectorType === SelectorType.ASSIGNEE_SELECTOR)
-              return <AssigneeSelectorRenderer props={props} option={option} />
+        <div>
+          <StyledAutocomplete
+            id="status-box"
+            onBlur={() => setIsOpen(false)}
+            openOnFocus
+            options={options}
+            value={value}
+            onChange={(_, newValue: unknown) => {
+              getSelectedValue(newValue)
+              setIsOpen(false)
+            }}
+            getOptionLabel={(option: unknown) => {
+              if (selectorType === SelectorType.ASSIGNEE_SELECTOR) {
+                return (option as IAssignee).name as string
+              } else return option as string
+            }}
+            groupBy={(option: unknown) => {
+              if (selectorType === SelectorType.ASSIGNEE_SELECTOR) {
+                return (option as IAssignee).type
+              } else {
+                return ''
+              }
+            }}
+            inputValue={inputStatusValue}
+            onInputChange={(_, newInputValue) => {
+              setInputStatusValue(newInputValue)
+            }}
+            renderInput={(params) => {
+              return (
+                <StyledTextField
+                  {...params}
+                  variant="outlined"
+                  inputRef={setSelectorRef}
+                  placeholder="Change status..."
+                  borderColor="#EDEDF0"
+                />
+              )
+            }}
+            renderOption={(props, option: unknown) => {
+              if (selectorType === SelectorType.ASSIGNEE_SELECTOR)
+                return <AssigneeSelectorRenderer props={props} option={option} />
 
-            return <StatusSelectorRenderer props={props} option={option} />
-          }}
-        />
+              return <StatusSelectorRenderer props={props} option={option} />
+            }}
+          />
+        </div>
       </Box>
     </Stack>
   )

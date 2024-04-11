@@ -13,16 +13,18 @@ import store from '@/redux/store'
 import { statusIcons } from '@/utils/iconMatcher'
 import { Close } from '@mui/icons-material'
 import { Avatar, Box, Stack, Typography } from '@mui/material'
-import { useState } from 'react'
+import { ReactNode } from 'react'
 import { status, assignee } from '@/utils/mockData'
 import { IAssignee } from '@/types/interfaces'
+import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 
 export const CreateTask = () => {
-  const [displayStatus, setDisplayStatus] = useState(false)
-  const [statusValue, setStatusValue] = useState<string | null>(status[0])
-
-  const [displayAssignee, setDisplayAssignee] = useState(false)
-  const [assigneeValue, setAssigneeValue] = useState<IAssignee>(assignee[0])
+  const { renderingItem: statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
+    item: status[0],
+  })
+  const { renderingItem: assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
+    item: assignee[0],
+  })
 
   return (
     <Box
@@ -74,40 +76,30 @@ export const CreateTask = () => {
         <Stack direction="row" columnGap={3} position="relative">
           <StatusSelector
             getSelectedValue={(newValue) => {
-              setStatusValue(newValue as string)
+              updateStatusValue(newValue)
             }}
             startIcon={statusIcons[statusValue as string]}
             options={status}
             value={statusValue}
             selectorType={SelectorType.STATUS_SELECTOR}
-            isOpen={displayStatus}
-            handleClick={() => {
-              setDisplayAssignee(false)
-              setDisplayStatus((prev) => !prev)
-            }}
             buttonContent={
               <Typography variant="bodySm" lineHeight="16px" sx={{ color: (theme) => theme.color.gray[600] }}>
-                {statusValue}
+                {statusValue as ReactNode}
               </Typography>
             }
           />
           <Stack alignSelf="flex-start">
             <AssigneeSelector
               getSelectedValue={(newValue) => {
-                setAssigneeValue(newValue as IAssignee)
+                updateAssigneeValue(newValue as IAssignee)
               }}
               startIcon={<Avatar alt="user" src={(assigneeValue as IAssignee).img} sx={{ width: '20px', height: '20px' }} />}
               options={assignee}
               value={assigneeValue}
               selectorType={SelectorType.ASSIGNEE_SELECTOR}
-              isOpen={displayAssignee}
-              handleClick={() => {
-                setDisplayStatus(false)
-                setDisplayAssignee((prev) => !prev)
-              }}
               buttonContent={
                 <Typography variant="bodySm" lineHeight="16px" sx={{ color: (theme) => theme.color.gray[600] }}>
-                  {assigneeValue?.name || 'No Assignee'}
+                  {(assigneeValue as IAssignee)?.name || 'No Assignee'}
                 </Typography>
               }
             />
