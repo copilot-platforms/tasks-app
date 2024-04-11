@@ -8,13 +8,4 @@ const pipe = (...fns: MiddlewareChain) => {
   }
 }
 
-const pipeWithErrorInterceptor = (...fns: MiddlewareChain) => {
-  const errorInterceptor = fns[fns.length - 1]
-  try {
-    return pipe(...fns.slice(0, fns.length - 1))
-  } catch (e) {
-    errorInterceptor(e)
-  }
-}
-
-export { pipe, pipeWithErrorInterceptor }
+export { pipe }
