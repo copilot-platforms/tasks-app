@@ -1,7 +1,7 @@
-import { BaseService } from '../_base/base.service'
+import { BaseService } from '../core/services/base.service'
 
 export class TasksService extends BaseService {
-  async getAllTasks() {
+  async getAllTasks({ workspaceId }: { workspaceId: string }) {
     return this.db.task.findMany()
   }
 }

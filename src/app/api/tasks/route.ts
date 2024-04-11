@@ -1,8 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { TasksService } from './tasks.service'
+import { pipe } from '@/lib/plumber'
+import { authenticateUser } from '../core/middlewares/auth'
+import { getTasks } from './tasks.handler'
 
-export const GET = (req: NextRequest) => {
-  const tasksService = new TasksService()
-  const tasks = tasksService.getAllTasks()
-  return NextResponse.json({ tasks })
-}
+export const GET = pipe(authenticateUser, getTasks)
