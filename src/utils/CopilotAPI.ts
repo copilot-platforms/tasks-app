@@ -31,7 +31,7 @@ export class CopilotAPI {
     this.copilot = copilotApi({ apiKey, token })
   }
 
-  private async getTokenPayload(): Promise<Token | null> {
+  async getTokenPayload(): Promise<Token | null> {
     const getTokenPayload = this.copilot.getTokenPayload
     if (!getTokenPayload) return null
 
