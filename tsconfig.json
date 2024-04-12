@@ -20,7 +20,8 @@
     ],
     "paths": {
       "@/*": ["./src/*"],
-      "@plumber/*": ["./src/lib/plumber/*"]
+      "@plumber/*": ["./src/lib/plumber/*"],
+      "@api/*": ["./src/app/api/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
