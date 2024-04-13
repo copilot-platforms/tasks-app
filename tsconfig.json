@@ -20,7 +20,6 @@
     ],
     "paths": {
       "@/*": ["./src/*"],
-      "@plumber/*": ["./src/lib/plumber/*"],
       "@api/*": ["./src/app/api/*"]
     }
   },
