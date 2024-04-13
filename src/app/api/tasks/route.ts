@@ -1,5 +1,3 @@
-import { pipe } from '@/lib/plumber'
-import { authenticateUser } from '../core/middlewares/auth'
-import { getTasks } from './tasks.handler'
+import { getTasks } from './tasks.controller'
 
-export const GET = pipe(authenticateUser, getTasks)
+export const GET = getTasks

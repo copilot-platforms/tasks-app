@@ -2,6 +2,7 @@ import { UserAction, UserRole } from '@api/core/types/user'
 import { Token } from '@/types/common'
 import { PoliciesService } from '@api/core/services/policies.service'
 import { Routes } from '@api/core/types/api'
+import { NextRequest } from 'next/server'
 
 class User implements Token {
   token: string
