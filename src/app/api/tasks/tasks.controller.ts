@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { TasksService } from '@api/tasks/tasks.service'
 import AuthService from '@api/core/services/auth.service'
 import { CreateTaskRequestSchema, UpdateTaskRequestSchema } from '@/types/dto/tasks.dto'
-import { IdParams } from '../core/types/api'
+import { IdParams } from '@api/core/types/api'
 import httpStatus from 'http-status'
 
 export const getTasks = async (req: NextRequest) => {

@@ -2,6 +2,7 @@ import { CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { BaseService } from '@api/core/services/base.service'
 import { Resource } from '@api/core/types/api'
 import { UserRole } from '@api/core/types/user'
+import APIError from '@api/core/exceptions/api'
 
 export class TasksService extends BaseService {
   async getAllTasks() {

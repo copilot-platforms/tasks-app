@@ -8,3 +8,5 @@ class APIError extends Error {
     this.message = message || 'Something went wrong'
   }
 }
+
+export default APIError

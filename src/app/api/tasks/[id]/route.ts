@@ -1,5 +1,6 @@
-import { deleteTask, getTask, updateTask } from '../tasks.controller'
+import { withErrorHandler } from '@api/core/utils/withErrorHandler'
+import { deleteTask, getTask, updateTask } from '@api/tasks/tasks.controller'
 
-export const GET = getTask
-export const PATCH = updateTask
-export const DELETE = deleteTask
+export const GET = withErrorHandler(getTask)
+export const PATCH = withErrorHandler(updateTask)
+export const DELETE = withErrorHandler(deleteTask)

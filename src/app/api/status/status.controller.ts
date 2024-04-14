@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import AuthService from '@api/core/services/auth.service'
-import { StatusService } from './status.service'
+import { StatusService } from '@api/status/status.service'
 import { CreateStatusRequestSchema } from '@/types/dto/status.dto'
 import httpStatus from 'http-status'
 

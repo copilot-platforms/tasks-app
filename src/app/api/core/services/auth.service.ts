@@ -1,8 +1,9 @@
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { NextRequest } from 'next/server'
-import User from '../models/User.model'
+import User from '@api/core/models/User.model'
 import { z } from 'zod'
 import { TokenSchema } from '@/types/common'
+import APIError from '@api/core/exceptions/api'
 
 /**
  * Token parser and authentication service

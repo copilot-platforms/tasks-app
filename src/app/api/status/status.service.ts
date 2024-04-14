@@ -2,6 +2,7 @@ import { BaseService } from '@api/core/services/base.service'
 import { CreateStatusRequest } from '@/types/dto/status.dto'
 import { Resource } from '@api/core/types/api'
 import { toCamelCase } from '@/utils/string'
+import APIError from '@api/core/exceptions/api'
 
 export class StatusService extends BaseService {
   async getAllStatus() {

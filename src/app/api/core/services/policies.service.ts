@@ -1,6 +1,6 @@
 import { UserAction, UserRole } from '@api/core/types/user'
 import User from '@api/core/models/User.model'
-import { Resource } from '../types/api'
+import { Resource } from '@api/core/types/api'
 
 /**
  * Resource-level policies control service for Users (IU + Client)
