@@ -1,8 +1,7 @@
 import { UserAction, UserRole } from '@api/core/types/user'
 import { Token } from '@/types/common'
 import { PoliciesService } from '@api/core/services/policies.service'
-import { Routes } from '@api/core/types/api'
-import { NextRequest } from 'next/server'
+import { Resource } from '@api/core/types/api'
 
 class User implements Token {
   token: string
@@ -11,7 +10,7 @@ class User implements Token {
   clientId?: string
   companyId?: string
   internalUserId?: string
-  can: (action: UserAction, route: Routes) => boolean
+  can: (action: UserAction, resource: Resource) => boolean
 
   constructor(token: string, tokenPayload: Token) {
     this.token = token

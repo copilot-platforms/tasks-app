@@ -5,7 +5,7 @@ import { z } from 'zod'
 import { TokenSchema } from '@/types/common'
 
 /**
- * Token parser and authentication service for API
+ * Token parser and authentication service
  */
 class AuthService {
   static async authenticate(req: NextRequest) {

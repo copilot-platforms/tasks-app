@@ -1,3 +1,4 @@
-export enum Routes {
-  Tasks = 'tasks',
+export enum Resource {
+  Tasks = 'Task',
+  Status = 'StatusSetting',
 }
