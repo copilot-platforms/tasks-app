@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import AuthService from '@api/core/services/auth.service'
 import { StatusService } from './status.service'
 import { CreateStatusRequestSchema } from '@/types/dto/status.dto'
+import httpStatus from 'http-status'
 
 export const getStatuses = async (req: NextRequest) => {
   const user = await AuthService.authenticate(req)
@@ -19,5 +20,5 @@ export const createStatus = async (req: NextRequest) => {
   const statusService = new StatusService(user)
   const newStatus = await statusService.createStatus(data)
 
-  return NextResponse.json({ newStatus })
+  return NextResponse.json({ newStatus }, { status: httpStatus.CREATED })
 }
