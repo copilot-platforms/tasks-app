@@ -3,14 +3,12 @@ import { BaseService } from '@api/core/services/base.service'
 import { Resource } from '@api/core/types/api'
 import { UserRole } from '@api/core/types/user'
 import APIError from '@api/core/exceptions/api'
+import { PoliciesService } from '../core/services/policies.service'
 
 export class TasksService extends BaseService {
   async getAllTasks() {
     const user = this.user
-
-    if (!user.can('read', Resource.Tasks)) {
-      throw new APIError(401, 'You are not authorized to perform this action')
-    }
+    new PoliciesService(user).authorize('read', Resource.Tasks)
 
     const filters = { where: { workspaceId: user.workspaceId } }
     if (user.role === UserRole.Client) {
@@ -37,10 +35,7 @@ export class TasksService extends BaseService {
 
   async createTask(data: CreateTaskRequest) {
     const user = this.user
-
-    if (!user.can('create', Resource.Tasks)) {
-      throw new APIError(401, 'You are not authorized to perform this action')
-    }
+    new PoliciesService(user).authorize('create', Resource.Tasks)
 
     return await this.db.task.create({
       data: {
@@ -53,10 +48,7 @@ export class TasksService extends BaseService {
 
   async getOneTask() {
     const user = this.user
-
-    if (!user.can('read', Resource.Tasks)) {
-      throw new APIError(401, 'You are not authorized to perform this action')
-    }
+    new PoliciesService(user).authorize('read', Resource.Tasks)
 
     const filters = { where: { workspaceId: user.workspaceId } }
     if (user.role === UserRole.Client) {
@@ -83,10 +75,7 @@ export class TasksService extends BaseService {
 
   async updateOneTask(id: string, data: UpdateTaskRequest) {
     const user = this.user
-
-    if (!user.can('update', Resource.Tasks)) {
-      throw new APIError(401, 'You are not authorized to perform this action')
-    }
+    new PoliciesService(user).authorize('update', Resource.Tasks)
 
     return await this.db.task.update({
       where: { id },
@@ -96,10 +85,7 @@ export class TasksService extends BaseService {
 
   async deleteOneTask(id: string) {
     const user = this.user
-
-    if (!user.can('delete', Resource.Tasks)) {
-      throw new APIError(401, 'You are not authorized to perform this action')
-    }
+    new PoliciesService(user).authorize('delete', Resource.Tasks)
 
     return await this.db.task.delete({ where: { id } })
   }

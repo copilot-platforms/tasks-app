@@ -10,7 +10,6 @@ class User implements Token {
   clientId?: string
   companyId?: string
   internalUserId?: string
-  can: (action: UserAction, resource: Resource) => boolean
 
   constructor(token: string, tokenPayload: Token) {
     this.token = token
@@ -19,9 +18,6 @@ class User implements Token {
     this.clientId = tokenPayload.clientId
     this.companyId = tokenPayload.companyId
     this.workspaceId = tokenPayload.workspaceId
-
-    const policiesService = new PoliciesService(this)
-    this.can = policiesService.can.bind(policiesService)
   }
 }
 
