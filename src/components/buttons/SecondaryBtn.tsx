@@ -9,7 +9,7 @@ export const SecondaryBtn = ({
   handleClick,
   enableBackground,
 }: {
-  startIcon?: ReactNode | undefined
+  startIcon?: ReactNode
   buttonContent: ReactNode
   handleClick?: () => void
   enableBackground?: boolean
