@@ -42,7 +42,6 @@
     "@types/date-fns": "^2.6.0",
     "@vercel/postgres": "^0.8.0",
     "copilot-node-sdk": "^2.0.0",
-    "date-fns": "^3.6.0",
     "dayjs": "^1.11.10",
     "immutability-helper": "^3.1.1",
     "next": "^14.1.4",
