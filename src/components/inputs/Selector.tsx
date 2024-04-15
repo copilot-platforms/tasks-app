@@ -55,11 +55,14 @@ export default function Selector({ getSelectedValue, startIcon, value, selectorT
             id="status-box"
             onBlur={() => setIsOpen(false)}
             openOnFocus
+            autoHighlight
             options={options}
             value={value}
             onChange={(_, newValue: unknown) => {
               getSelectedValue(newValue)
-              setIsOpen(false)
+              if (newValue) {
+                setIsOpen(false)
+              }
             }}
             getOptionLabel={(option: unknown) =>
               selectorType === SelectorType.ASSIGNEE_SELECTOR ? ((option as IAssignee).name as string) : (option as string)

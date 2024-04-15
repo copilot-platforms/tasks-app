@@ -66,7 +66,9 @@ export const NewTaskForm = () => {
               getSelectedValue={(newValue) => {
                 updateAssigneeValue(newValue as IAssignee)
               }}
-              startIcon={<Avatar alt="user" src={(assigneeValue as IAssignee).img} sx={{ width: '20px', height: '20px' }} />}
+              startIcon={
+                <Avatar alt="user" src={(assigneeValue as IAssignee)?.img} sx={{ width: '20px', height: '20px' }} />
+              }
               options={assignee}
               value={assigneeValue}
               selectorType={SelectorType.ASSIGNEE_SELECTOR}
