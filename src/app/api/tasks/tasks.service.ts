@@ -1,8 +1,7 @@
 import { CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { BaseService } from '@api/core/services/base.service'
 import { Resource } from '@api/core/types/api'
-import { UserRole } from '@api/core/types/user'
-import { PoliciesService } from '../core/services/policies.service'
+import { PoliciesService } from '@api/core/services/policies.service'
 import { AssigneeType } from '@prisma/client'
 
 type FilterByAssigneeId = {

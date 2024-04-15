@@ -1,8 +1,7 @@
 import { UserAction, UserRole } from '@api/core/types/user'
-import User from '@api/core/models/User.model'
 import { Resource } from '@api/core/types/api'
 import { BaseService } from './base.service'
-import APIError from '../exceptions/api'
+import APIError from '@api/core/exceptions/api'
 import httpStatus from 'http-status'
 
 /**
