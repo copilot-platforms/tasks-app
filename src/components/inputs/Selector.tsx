@@ -1,7 +1,7 @@
 import { Avatar, Box, Stack, Typography } from '@mui/material'
 import { SecondaryBtn } from '../buttons/SecondaryBtn'
 import { StyledAutocomplete } from './Autocomplete'
-import { statusIcons } from '@/utils/iconMatcher'
+import { StatusKey, statusIcons } from '@/utils/iconMatcher'
 import { useFocusableInput } from '@/hooks/useFocusableInput'
 import { HTMLAttributes, ReactNode, useEffect, useRef, useState } from 'react'
 import { StyledTextField } from './TextField'
@@ -111,7 +111,7 @@ const StatusSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTMLL
       }}
     >
       <Stack direction="row" alignItems="center" columnGap={3}>
-        <Box>{statusIcons[option as string]}</Box>
+        <Box>{statusIcons[option as StatusKey]}</Box>
         <Typography variant="sm" fontWeight={400}>
           {option as string}
         </Typography>
