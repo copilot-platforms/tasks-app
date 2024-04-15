@@ -61,18 +61,12 @@ export default function Selector({ getSelectedValue, startIcon, value, selectorT
               getSelectedValue(newValue)
               setIsOpen(false)
             }}
-            getOptionLabel={(option: unknown) => {
-              if (selectorType === SelectorType.ASSIGNEE_SELECTOR) {
-                return (option as IAssignee).name as string
-              } else return option as string
-            }}
-            groupBy={(option: unknown) => {
-              if (selectorType === SelectorType.ASSIGNEE_SELECTOR) {
-                return (option as IAssignee).type
-              } else {
-                return ''
-              }
-            }}
+            getOptionLabel={(option: unknown) =>
+              selectorType === SelectorType.ASSIGNEE_SELECTOR ? ((option as IAssignee).name as string) : (option as string)
+            }
+            groupBy={(option: unknown) =>
+              selectorType === SelectorType.ASSIGNEE_SELECTOR ? (option as IAssignee).type : ''
+            }
             inputValue={inputStatusValue}
             onInputChange={(_, newInputValue) => {
               setInputStatusValue(newInputValue)
@@ -88,12 +82,13 @@ export default function Selector({ getSelectedValue, startIcon, value, selectorT
                 />
               )
             }}
-            renderOption={(props, option: unknown) => {
-              if (selectorType === SelectorType.ASSIGNEE_SELECTOR)
-                return <AssigneeSelectorRenderer props={props} option={option} />
-
-              return <StatusSelectorRenderer props={props} option={option} />
-            }}
+            renderOption={(props, option: unknown) =>
+              selectorType === SelectorType.ASSIGNEE_SELECTOR ? (
+                <AssigneeSelectorRenderer props={props} option={option} />
+              ) : (
+                <StatusSelectorRenderer props={props} option={option} />
+              )
+            }
           />
         </div>
       </Box>
