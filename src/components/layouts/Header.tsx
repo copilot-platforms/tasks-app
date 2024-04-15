@@ -19,7 +19,7 @@ export const Header = () => {
           <Typography variant="lg">Tasks</Typography>
           <PrimaryBtn
             startIcon={<Add />}
-            buttonText={'New Task'}
+            buttonText="New Task"
             handleClick={() => {
               store.dispatch(setShowModal())
             }}
