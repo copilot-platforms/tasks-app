@@ -2,13 +2,19 @@
 
 import { useState, useCallback } from 'react'
 import update from 'immutability-helper'
-import { Stack } from '@mui/material'
+import { Box, Modal, Stack } from '@mui/material'
 import { TaskCard } from '@/components/cards/TaskCard'
 import { TaskColumn } from '@/components/cards/TaskColumn'
-import { Droppable } from '@/hoc/Droppable'
+import { DragDropHandler } from '@/hoc/DragDropHandler'
+import { NewTaskForm } from '@/app/ui/NewTaskForm'
+import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
+import { useSelector } from 'react-redux'
+import { selectCreateTask, setShowModal } from '@/redux/features/createTaskSlice'
+import store from '@/redux/store'
+import { useRouter } from 'next/navigation'
 
 interface Task {
-  assignedTo: string
+  assignee: string
   id: number
 }
 
@@ -18,37 +24,37 @@ interface Lists {
 
 const mockTaskTodoData: Task[] = [
   {
-    assignedTo: 'ragnar',
+    assignee: 'ragnar',
     id: 1,
   },
   {
-    assignedTo: 'john',
+    assignee: 'john',
     id: 2,
   },
   {
-    assignedTo: 'yuki',
+    assignee: 'yuki',
     id: 3,
   },
 ]
 
 const mockTaskInProgressData: Task[] = [
   {
-    assignedTo: 'doe',
+    assignee: 'doe',
     id: 4,
   },
   {
-    assignedTo: 'floki',
+    assignee: 'floki',
     id: 5,
   },
   {
-    assignedTo: 'professor',
+    assignee: 'professor',
     id: 6,
   },
 ]
 
 const mockCompletedTask: Task[] = [
   {
-    assignedTo: 'rock',
+    assignee: 'rock',
     id: 7,
   },
 ]
@@ -104,25 +110,49 @@ export const TaskBoard = () => {
     [lists, moveCard],
   )
 
+  const { showModal } = useSelector(selectCreateTask)
+
+  const router = useRouter()
+
   return (
-    <Stack direction="row" columnGap={2} sx={{ padding: '0px 20px', width: '100vw' }}>
-      {Object.entries(lists).map(([listId, listData], index) => (
-        <Droppable
-          key={listId}
-          accept={'taskCard'}
-          index={index}
-          id={Number(listId)}
-          onDropItem={(item) => onDropItem(Number(listId), item)}
+    <AppMargin size={SizeofAppMargin.LARGE} py="18.5px">
+      <Stack
+        direction="row"
+        columnGap={2}
+        sx={{
+          overflowX: 'auto',
+        }}
+      >
+        {Object.entries(lists).map(([listId, listData], index) => (
+          <DragDropHandler
+            key={listId}
+            accept={'taskCard'}
+            index={index}
+            id={Number(listId)}
+            onDropItem={(item) => onDropItem(Number(listId), item)}
+          >
+            <TaskColumn key={listId} columnName={`List ${listId}`} taskCount={String(listData.length)}>
+              {listData.map((task: Task, index: number) => (
+                <DragDropHandler key={task.id} accept={'taskCard'} index={index} id={Number(listId)} moveCard={moveCard}>
+                  <Box onClick={() => router.push('/detail/WEB-01/my-new-task')}>
+                    <TaskCard assignee={task.assignee} key={task.id} />
+                  </Box>
+                </DragDropHandler>
+              ))}
+            </TaskColumn>
+          </DragDropHandler>
+        ))}
+        <Modal
+          open={showModal}
+          onClose={() => {
+            store.dispatch(setShowModal())
+          }}
+          aria-labelledby="create-task-modal"
+          aria-describedby="add-new-task"
         >
-          <TaskColumn key={listId} columnName={`List ${listId}`} taskCount={String(listData.length)}>
-            {listData.map((task: Task, index: number) => (
-              <Droppable key={task.id} accept={'taskCard'} index={index} id={Number(listId)} moveCard={moveCard}>
-                <TaskCard assignedTo={task.assignedTo} key={task.id} />
-              </Droppable>
-            ))}
-          </TaskColumn>
-        </Droppable>
-      ))}
-    </Stack>
+          <NewTaskForm />
+        </Modal>
+      </Stack>
+    </AppMargin>
   )
 }

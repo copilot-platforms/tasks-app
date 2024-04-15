@@ -69,6 +69,7 @@ export const theme = createTheme({
       border: '#DFE1E4',
       borderHover: '#C9CBCD',
       borderDisabled: '#EFF1F4',
+      border2: '#EDEDF0',
     },
     background: {
       bgCard: '#DFE1E4',
@@ -137,7 +138,7 @@ export const theme = createTheme({
     },
     sm: {
       fontFamily: inter.style.fontFamily,
-      fontSize: '12px',
+      fontSize: '13px',
       fontStyle: 'normal',
       fontWeight: 500,
       lineHeight: '20px',

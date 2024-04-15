@@ -16,7 +16,7 @@ interface Prop {
   onDropItem?: (item: IItem) => void
 }
 
-export const Droppable = ({ children, accept, index, id, moveCard, onDropItem }: Prop) => {
+export const DragDropHandler = ({ children, accept, index, id, moveCard, onDropItem }: Prop) => {
   const ref = useRef<HTMLDivElement | null>(null)
 
   const [, drop] = useDrop({

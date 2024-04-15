@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import ThemeRegistry from './ThemeRegistry'
-import { DndWrapper } from '@/hoc/DndWrapper'
+import { ProviderWrapper } from '@/redux/ProviderWrapper'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -15,9 +15,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className={inter.className}>
-        <DndWrapper>
+        <ProviderWrapper>
           <ThemeRegistry options={{ key: 'mui' }}>{children}</ThemeRegistry>
-        </DndWrapper>
+        </ProviderWrapper>
       </body>
     </html>
   )
