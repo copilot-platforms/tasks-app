@@ -17,7 +17,7 @@ import { status, assignee } from '@/utils/mockData'
 import { IAssignee } from '@/types/interfaces'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 
-export const CreateTask = () => {
+export const NewTaskForm = () => {
   const { renderingItem: statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
     item: status[0],
   })
@@ -105,12 +105,12 @@ export const CreateTask = () => {
           </Stack>
         </Stack>
       </AppMargin>
-      <CreateTaskFooter />
+      <NewTaskFooter />
     </Box>
   )
 }
 
-const CreateTaskFooter = () => {
+const NewTaskFooter = () => {
   return (
     <Box sx={{ borderTop: (theme) => `1px solid ${theme.color.borders.border2}` }}>
       <AppMargin size={SizeofAppMargin.MEDIUM} ptb="21px">

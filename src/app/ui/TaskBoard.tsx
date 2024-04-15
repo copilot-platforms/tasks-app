@@ -6,7 +6,7 @@ import { Box, Modal, Stack } from '@mui/material'
 import { TaskCard } from '@/components/cards/TaskCard'
 import { TaskColumn } from '@/components/cards/TaskColumn'
 import { Droppable } from '@/hoc/Droppable'
-import { CreateTask } from '@/app/ui/CreateTask'
+import { NewTaskForm } from '@/app/ui/NewTaskForm'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { useSelector } from 'react-redux'
 import { selectCreateTask, setShowModal } from '@/redux/features/createTaskSlice'
@@ -150,7 +150,7 @@ export const TaskBoard = () => {
           aria-labelledby="create-task-modal"
           aria-describedby="add-new-task"
         >
-          <CreateTask />
+          <NewTaskForm />
         </Modal>
       </Stack>
     </AppMargin>
