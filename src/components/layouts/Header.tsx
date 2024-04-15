@@ -15,7 +15,7 @@ export const Header = () => {
       }}
     >
       <AppMargin size={SizeofAppMargin.LARGE} py="18.5px">
-        <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{}}>
+        <Stack direction="row" alignItems="center" justifyContent="space-between">
           <Typography variant="lg">Tasks</Typography>
           <PrimaryBtn
             startIcon={<Add />}
