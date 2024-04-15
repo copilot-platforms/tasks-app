@@ -11,7 +11,7 @@ import { setShowModal } from '@/redux/features/createTaskSlice'
 import store from '@/redux/store'
 import { StatusKey, statusIcons } from '@/utils/iconMatcher'
 import { Close } from '@mui/icons-material'
-import { Avatar, Box, Stack, Typography } from '@mui/material'
+import { Avatar, Box, Stack, Typography, styled } from '@mui/material'
 import { ReactNode } from 'react'
 import { status, assignee } from '@/utils/mockData'
 import { IAssignee } from '@/types/interfaces'
@@ -26,20 +26,7 @@ export const NewTaskForm = () => {
   })
 
   return (
-    <Box
-      sx={{
-        margin: '0 auto',
-        background: '#ffffff',
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        boxShadow: '0px 16px 70px 0px rgba(0, 0, 0, 0.5)',
-        border: (theme) => `1px solid ${theme.color.borders.border2}`,
-        borderRadius: '4px',
-        width: '685px',
-      }}
-    >
+    <NewTaskContainer>
       <Stack
         direction="row"
         alignItems="center"
@@ -57,20 +44,7 @@ export const NewTaskForm = () => {
       </Stack>
 
       <AppMargin size={SizeofAppMargin.MEDIUM} py="16px">
-        <Stack direction="column" rowGap={1}>
-          <Typography variant="md">Task name</Typography>
-          <StyledTextField type="text" padding="8px 0px" />
-        </Stack>
-        <Stack direction="column" rowGap={1} m="16px 0px">
-          <Typography variant="md">Description</Typography>
-          <StyledTextField
-            type="text"
-            placeholder="Add description..."
-            multiline
-            rows={6}
-            inputProps={{ style: { resize: 'vertical' } }}
-          />
-        </Stack>
+        <NewTaskFormInputs />
 
         <Stack direction="row" columnGap={3} position="relative">
           <Selector
@@ -106,7 +80,28 @@ export const NewTaskForm = () => {
         </Stack>
       </AppMargin>
       <NewTaskFooter />
-    </Box>
+    </NewTaskContainer>
+  )
+}
+
+const NewTaskFormInputs = () => {
+  return (
+    <>
+      <Stack direction="column" rowGap={1}>
+        <Typography variant="md">Task name</Typography>
+        <StyledTextField type="text" padding="8px 0px" />
+      </Stack>
+      <Stack direction="column" rowGap={1} m="16px 0px">
+        <Typography variant="md">Description</Typography>
+        <StyledTextField
+          type="text"
+          placeholder="Add description..."
+          multiline
+          rows={6}
+          inputProps={{ style: { resize: 'vertical' } }}
+        />
+      </Stack>
+    </>
   )
 }
 
@@ -136,3 +131,16 @@ const NewTaskFooter = () => {
     </Box>
   )
 }
+
+const NewTaskContainer = styled(Box)(({ theme }) => ({
+  margin: '0 auto',
+  background: '#ffffff',
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  boxShadow: '0px 16px 70px 0px rgba(0, 0, 0, 0.5)',
+  border: `1px solid ${theme.color.borders.border2}`,
+  borderRadius: '4px',
+  width: '685px',
+}))
