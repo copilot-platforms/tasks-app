@@ -7,15 +7,7 @@ export enum SizeofAppMargin {
   SMALL = 'small',
 }
 
-export const AppMargin = ({
-  children,
-  size,
-  py,
-}: {
-  children: ReactNode
-  size: SizeofAppMargin
-  py?: string | undefined
-}) => {
+export const AppMargin = ({ children, size, py }: { children: ReactNode; size: SizeofAppMargin; py?: string }) => {
   if (size === SizeofAppMargin.LARGE) {
     return <Box sx={{ padding: `${py ? py : '0px'} 36px` }}>{children}</Box>
   }
