@@ -14,12 +14,12 @@ export const Header = () => {
         border: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
       }}
     >
-      <AppMargin size={SizeofAppMargin.LARGE} ptb="18.5px">
-        <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{}}>
+      <AppMargin size={SizeofAppMargin.LARGE} py="18.5px">
+        <Stack direction="row" alignItems="center" justifyContent="space-between">
           <Typography variant="lg">Tasks</Typography>
           <PrimaryBtn
             startIcon={<Add />}
-            buttonText={'New Task'}
+            buttonText="New Task"
             handleClick={() => {
               store.dispatch(setShowModal())
             }}

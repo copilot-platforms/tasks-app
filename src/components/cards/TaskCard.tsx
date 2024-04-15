@@ -9,13 +9,13 @@ const TaskCardContainer = styled(Stack)(({ theme }) => ({
   padding: '12px',
 }))
 
-export const TaskCard = ({ assignedTo }: { assignedTo: string }) => {
+export const TaskCard = ({ assignee }: { assignee: string }) => {
   return (
     <TaskCardContainer>
       <Stack direction="row" justifyContent="space-between">
         <Stack direction="row" alignItems="center" columnGap={1}>
           <Avatar alt="user" src="https://avatar.iran.liara.run/public" sx={{ width: '20px', height: '20px' }} />
-          <Typography variant="sm">{assignedTo}</Typography>
+          <Typography variant="sm">{assignee}</Typography>
         </Stack>
         <Typography variant="bodyXs">WEB-01</Typography>
       </Stack>

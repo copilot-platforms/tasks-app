@@ -4,7 +4,7 @@ import { TextField, styled } from '@mui/material'
 
 export const StyledTextField = styled(TextField, {
   shouldForwardProp: (prop) => prop !== 'padding',
-})<{ padding?: string; borderColor?: string }>(({ padding, borderColor, theme }) => ({
+})<{ padding?: string; borderColor?: string; borderLess?: boolean }>(({ padding, borderColor, borderLess, theme }) => ({
   '& .MuiInputBase-root': {
     paddingLeft: '8px',
   },
@@ -17,12 +17,14 @@ export const StyledTextField = styled(TextField, {
   '& .MuiOutlinedInput-root': {
     '& fieldset': {
       borderColor: theme.color.borders.border,
+      border: borderLess && 'none',
     },
     '&:hover fieldset': {
       borderColor: theme.color.borders.border,
+      border: borderLess && 'none',
     },
     '&.Mui-focused fieldset': {
-      border: `1px solid ${borderColor || theme.color.base.black}`,
+      border: borderLess ? 'none' : `1px solid ${borderColor || theme.color.base.black}`,
     },
   },
   '&.MuiTextField-root': {
