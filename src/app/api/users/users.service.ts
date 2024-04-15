@@ -1,8 +1,8 @@
 import { CopilotAPI } from '@/utils/CopilotAPI'
-import { BaseService } from '../core/services/base.service'
-import User from '../core/models/User.model'
-import { PoliciesService } from '../core/services/policies.service'
-import { Resource } from '../core/types/api'
+import { BaseService } from '@api/core/services/base.service'
+import User from '@api/core/models/User.model'
+import { PoliciesService } from '@api/core/services/policies.service'
+import { Resource } from '@api/core/types/api'
 
 class UsersService extends BaseService {
   private copilot: CopilotAPI
