@@ -15,7 +15,7 @@ export default function TaskDetailPageLayout({
   return (
     <>
       <StyledBox>
-        <AppMargin size={SizeofAppMargin.LARGE} ptb="16px">
+        <AppMargin size={SizeofAppMargin.LARGE} py="16px">
           <Stack direction="row" alignItems="center" columnGap={3}>
             <Link href="/">
               <SecondaryBtn buttonContent={<StyledTypography variant="sm">Tasks</StyledTypography>} enableBackground />

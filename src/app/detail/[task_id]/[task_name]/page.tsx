@@ -12,7 +12,7 @@ export default function TaskDetailPage() {
           width: 'calc(100% - 339px)',
         }}
       >
-        <AppMargin size={SizeofAppMargin.LARGE} ptb="30px">
+        <AppMargin size={SizeofAppMargin.LARGE} py="30px">
           <TaskEditor attachment={taskDetail.attachment} title={taskDetail.title} detail={taskDetail.detail} />
         </AppMargin>
       </Box>

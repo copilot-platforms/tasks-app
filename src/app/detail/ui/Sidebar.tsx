@@ -5,7 +5,7 @@ import { Avatar, Box, Stack, Typography, styled } from '@mui/material'
 import Selector, { SelectorType } from '@/components/inputs/Selector'
 import { status, assignee } from '@/utils/mockData'
 import { IAssignee } from '@/types/interfaces'
-import { statusIcons } from '@/utils/iconMatcher'
+import { StatusKey, statusIcons } from '@/utils/iconMatcher'
 import { DatePickerComponent } from '@/components/inputs/DatePickerComponent'
 import { ReactNode } from 'react'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
@@ -30,14 +30,14 @@ export const Sidebar = () => {
         height: '91vh',
       }}
     >
-      <AppMargin size={SizeofAppMargin.SMALL} ptb="31px">
+      <AppMargin size={SizeofAppMargin.SMALL} py="31px">
         <Stack direction="row" alignItems="center" m="16px 0px">
           <StyledText variant="md">Status</StyledText>
           <Selector
             getSelectedValue={(newValue) => {
               updateStatusValue(newValue)
             }}
-            startIcon={statusIcons[statusValue as string]}
+            startIcon={statusIcons[statusValue as StatusKey]}
             options={status}
             value={statusValue}
             selectorType={SelectorType.STATUS_SELECTOR}

@@ -14,7 +14,7 @@ export const Header = () => {
         border: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
       }}
     >
-      <AppMargin size={SizeofAppMargin.LARGE} ptb="18.5px">
+      <AppMargin size={SizeofAppMargin.LARGE} py="18.5px">
         <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{}}>
           <Typography variant="lg">Tasks</Typography>
           <PrimaryBtn

@@ -10,21 +10,21 @@ export enum SizeofAppMargin {
 export const AppMargin = ({
   children,
   size,
-  ptb,
+  py,
 }: {
   children: ReactNode
   size: SizeofAppMargin
-  ptb?: string | undefined
+  py?: string | undefined
 }) => {
   if (size === SizeofAppMargin.LARGE) {
-    return <Box sx={{ padding: `${ptb ? ptb : '0px'} 36px` }}>{children}</Box>
+    return <Box sx={{ padding: `${py ? py : '0px'} 36px` }}>{children}</Box>
   }
 
   if (size === SizeofAppMargin.MEDIUM) {
-    return <Box sx={{ padding: `${ptb ? ptb : '0px'} 28px` }}>{children}</Box>
+    return <Box sx={{ padding: `${py ? py : '0px'} 28px` }}>{children}</Box>
   }
 
   if (size === SizeofAppMargin.SMALL) {
-    return <Box sx={{ padding: `${ptb ? ptb : '0px'} 25px` }}>{children}</Box>
+    return <Box sx={{ padding: `${py ? py : '0px'} 25px` }}>{children}</Box>
   }
 }
