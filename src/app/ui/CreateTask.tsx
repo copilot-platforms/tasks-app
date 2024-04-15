@@ -105,28 +105,34 @@ export const CreateTask = () => {
           </Stack>
         </Stack>
       </AppMargin>
-      <Box sx={{ borderTop: (theme) => `1px solid ${theme.color.borders.border2}` }}>
-        <AppMargin size={SizeofAppMargin.MEDIUM} ptb="21px">
-          <Stack direction="row" justifyContent="space-between" alignItems="center">
-            <Box>
-              <AttachmentIcon />
-            </Box>
-            <Stack direction="row" columnGap={4}>
-              <SecondaryBtn
-                handleClick={() => {
-                  store.dispatch(setShowModal())
-                }}
-                buttonContent={
-                  <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[700] }}>
-                    Cancel
-                  </Typography>
-                }
-              />
-              <PrimaryBtn handleClick={() => {}} buttonText="Create" />
-            </Stack>
+      <CreateTaskFooter />
+    </Box>
+  )
+}
+
+const CreateTaskFooter = () => {
+  return (
+    <Box sx={{ borderTop: (theme) => `1px solid ${theme.color.borders.border2}` }}>
+      <AppMargin size={SizeofAppMargin.MEDIUM} ptb="21px">
+        <Stack direction="row" justifyContent="space-between" alignItems="center">
+          <Box>
+            <AttachmentIcon />
+          </Box>
+          <Stack direction="row" columnGap={4}>
+            <SecondaryBtn
+              handleClick={() => {
+                store.dispatch(setShowModal())
+              }}
+              buttonContent={
+                <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[700] }}>
+                  Cancel
+                </Typography>
+              }
+            />
+            <PrimaryBtn handleClick={() => {}} buttonText="Create" />
           </Stack>
-        </AppMargin>
-      </Box>
+        </Stack>
+      </AppMargin>
     </Box>
   )
 }
