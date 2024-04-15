@@ -1,9 +1,9 @@
 import { Avatar, Box, Stack, Typography } from '@mui/material'
-import { SecondaryBtn } from '../buttons/SecondaryBtn'
-import { StyledAutocomplete } from './Autocomplete'
+import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
+import { StyledAutocomplete } from '@/components/inputs/Autocomplete'
 import { StatusKey, statusIcons } from '@/utils/iconMatcher'
 import { useFocusableInput } from '@/hooks/useFocusableInput'
-import { HTMLAttributes, ReactNode, useEffect, useRef, useState } from 'react'
+import { HTMLAttributes, ReactNode, useState } from 'react'
 import { StyledTextField } from './TextField'
 
 interface IAssignee {
