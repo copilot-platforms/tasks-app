@@ -5,15 +5,13 @@
 ### Changes
 
 - [ ] ...
-- [x] ...
 
 ### Testing Criteria
 
-- [ ] Test Criteria #1 (which perspective / how you tested the new changes) [Video](loom link)
-- [x] Test Criteria #2 (which perspective / how you tested the new changes) [Video](loom link)
+- [ ] Test Criterias (explain how the you did testing for this PR mentioning all the cases you tested for) [Loom](video link going through the test criteria)
 
 ### Notes
 
-- Dependencies on other PRs, if present
-- Changes in config / setup, if required
-- Links to external documentation, messages, etc, if required to review changes
+- Dependencies on other PRs, any required changes in config/setup to test behaviour, or links to external documents, threads, etc -- if any of them are required
+
+![](https://github.com/copilot-platforms/tasks-app/actions/workflows/lint.yml/badge.svg)
