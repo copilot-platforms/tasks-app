@@ -8,7 +8,7 @@
 
 ### Testing Criteria
 
-- [ ] Test Criterias (explain how the you did testing for this PR mentioning all the cases you tested for) [Loom](video link going through the test criteria)
+- [ ] Test Criterias (explain how you did testing for this PR mentioning all the cases you tested for) [Loom](video link going through the test criteria)
 
 ### Notes
 
