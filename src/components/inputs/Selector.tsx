@@ -1,9 +1,9 @@
 import { Avatar, Box, Stack, Typography } from '@mui/material'
-import { SecondaryBtn } from '../buttons/SecondaryBtn'
-import { StyledAutocomplete } from './Autocomplete'
-import { statusIcons } from '@/utils/iconMatcher'
+import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
+import { StyledAutocomplete } from '@/components/inputs/Autocomplete'
+import { StatusKey, statusIcons } from '@/utils/iconMatcher'
 import { useFocusableInput } from '@/hooks/useFocusableInput'
-import { HTMLAttributes, ReactNode, useEffect, useRef, useState } from 'react'
+import { HTMLAttributes, ReactNode, useState } from 'react'
 import { StyledTextField } from './TextField'
 
 interface IAssignee {
@@ -55,24 +55,21 @@ export default function Selector({ getSelectedValue, startIcon, value, selectorT
             id="status-box"
             onBlur={() => setIsOpen(false)}
             openOnFocus
+            autoHighlight
             options={options}
             value={value}
             onChange={(_, newValue: unknown) => {
               getSelectedValue(newValue)
-              setIsOpen(false)
-            }}
-            getOptionLabel={(option: unknown) => {
-              if (selectorType === SelectorType.ASSIGNEE_SELECTOR) {
-                return (option as IAssignee).name as string
-              } else return option as string
-            }}
-            groupBy={(option: unknown) => {
-              if (selectorType === SelectorType.ASSIGNEE_SELECTOR) {
-                return (option as IAssignee).type
-              } else {
-                return ''
+              if (newValue) {
+                setIsOpen(false)
               }
             }}
+            getOptionLabel={(option: unknown) =>
+              selectorType === SelectorType.ASSIGNEE_SELECTOR ? ((option as IAssignee).name as string) : (option as string)
+            }
+            groupBy={(option: unknown) =>
+              selectorType === SelectorType.ASSIGNEE_SELECTOR ? (option as IAssignee).type : ''
+            }
             inputValue={inputStatusValue}
             onInputChange={(_, newInputValue) => {
               setInputStatusValue(newInputValue)
@@ -88,12 +85,13 @@ export default function Selector({ getSelectedValue, startIcon, value, selectorT
                 />
               )
             }}
-            renderOption={(props, option: unknown) => {
-              if (selectorType === SelectorType.ASSIGNEE_SELECTOR)
-                return <AssigneeSelectorRenderer props={props} option={option} />
-
-              return <StatusSelectorRenderer props={props} option={option} />
-            }}
+            renderOption={(props, option: unknown) =>
+              selectorType === SelectorType.ASSIGNEE_SELECTOR ? (
+                <AssigneeSelectorRenderer props={props} option={option} />
+              ) : (
+                <StatusSelectorRenderer props={props} option={option} />
+              )
+            }
           />
         </div>
       </Box>
@@ -116,7 +114,7 @@ const StatusSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTMLL
       }}
     >
       <Stack direction="row" alignItems="center" columnGap={3}>
-        <Box>{statusIcons[option as string]}</Box>
+        <Box>{statusIcons[option as StatusKey]}</Box>
         <Typography variant="sm" fontWeight={400}>
           {option as string}
         </Typography>

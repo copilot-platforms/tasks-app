@@ -7,7 +7,7 @@ export const PrimaryBtn = ({
   buttonText,
   handleClick,
 }: {
-  startIcon?: ReactNode | undefined
+  startIcon?: ReactNode
   buttonText: string
   handleClick: () => void
 }) => {
