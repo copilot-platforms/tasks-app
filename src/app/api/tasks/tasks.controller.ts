@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { TasksService } from '@api/tasks/tasks.service'
-import AuthService from '@api/core/services/auth.service'
 import { CreateTaskRequestSchema, UpdateTaskRequestSchema } from '@/types/dto/tasks.dto'
 import { IdParams } from '@api/core/types/api'
 import httpStatus from 'http-status'
+import authenticate from '@api/core/utils/authenticate'
 
 export const getTasks = async (req: NextRequest) => {
-  const user = await AuthService.authenticate(req)
+  const user = await authenticate(req)
 
   const tasksService = new TasksService(user)
   const tasks = await tasksService.getAllTasks()
@@ -15,7 +15,7 @@ export const getTasks = async (req: NextRequest) => {
 }
 
 export const createTask = async (req: NextRequest) => {
-  const user = await AuthService.authenticate(req)
+  const user = await authenticate(req)
 
   const data = CreateTaskRequestSchema.parse(await req.json())
   const tasksService = new TasksService(user)
@@ -25,7 +25,7 @@ export const createTask = async (req: NextRequest) => {
 }
 
 export const getTask = async (req: NextRequest) => {
-  const user = await AuthService.authenticate(req)
+  const user = await authenticate(req)
 
   const tasksService = new TasksService(user)
   const task = await tasksService.getOneTask()
@@ -34,7 +34,7 @@ export const getTask = async (req: NextRequest) => {
 }
 
 export const updateTask = async (req: NextRequest, { params: { id } }: IdParams) => {
-  const user = await AuthService.authenticate(req)
+  const user = await authenticate(req)
 
   const data = UpdateTaskRequestSchema.parse(await req.json())
   const tasksService = new TasksService(user)
@@ -44,7 +44,7 @@ export const updateTask = async (req: NextRequest, { params: { id } }: IdParams)
 }
 
 export const deleteTask = async (req: NextRequest, { params: { id } }: IdParams) => {
-  const user = await AuthService.authenticate(req)
+  const user = await authenticate(req)
 
   const tasksService = new TasksService(user)
   await tasksService.deleteOneTask(id)
