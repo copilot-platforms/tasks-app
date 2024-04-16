@@ -8,24 +8,12 @@ datasource db {
   directUrl = env("POSTGRES_URL_NON_POOLING")
 }
 
-enum StatusType {
+enum StateType {
   backlog
   unstarted
   started
   completed
   cancelled
-}
-
-enum ViewMode {
-  board
-  list
-}
-
-enum FilterType {
-  person
-  team
-  client
-  all
 }
 
 enum AssigneeType {
@@ -34,17 +22,18 @@ enum AssigneeType {
   company
 }
 
-model StatusSetting {
-  id          String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+model WorkflowState {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   workspaceId String
-  type        StatusType
+  type        StateType
   name        String
   key         String
   color       String?
   tasks       Task[]
 
-  @@index([key], name: "key")
-  @@map("StatusSettings")
+  @@unique([workspaceId, key], name: "UQ_WorkflowStates_workspaceId_key")
+  @@index([workspaceId, key], name: "IX_WorkflowStates_workspaceId_key")
+  @@map("WorkflowStates")
 }
 
 model Task {
@@ -54,20 +43,9 @@ model Task {
   assigneeType    AssigneeType?
   title           String
   body            String?
-  status          StatusSetting @relation(fields: [statusSettingId], references: [id])
-  statusSettingId String        @db.Uuid
   createdBy       String
+  workflowState   WorkflowState @relation(fields: [workflowStateId], references: [id])
+  workflowStateId String        @db.Uuid
 
   @@map("Tasks")
-}
-
-model ViewSetting {
-  id          String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  workspaceId String
-  userId      String      @unique
-  viewMode    ViewMode?
-  filterType  FilterType?
-
-  @@index([userId], name: "userId")
-  @@map("ViewSettings")
 }
