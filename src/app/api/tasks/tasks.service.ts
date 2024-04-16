@@ -37,6 +37,7 @@ export class TasksService extends BaseService {
 
     return filters
   }
+
   async getAllTasks() {
     const user = this.user
     new PoliciesService(user).authorize('read', Resource.Tasks)

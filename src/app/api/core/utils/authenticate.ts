@@ -8,6 +8,10 @@ import httpStatus from 'http-status'
 
 /**
  * Token parser and authentication util
+ *
+ * `authenticate` takes in the current request, parses the "token" searchParam from it,
+ * uses `CopilotAPI` to check if the user token is valid
+ * and finally returns an instance of `User` that is associated with this request
  */
 const authenticate = async (req: NextRequest) => {
   const token = req.nextUrl.searchParams.get('token')
