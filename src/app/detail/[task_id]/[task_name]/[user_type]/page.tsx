@@ -18,7 +18,7 @@ export default function TaskDetailPage({ params }: { params: { task_id: string; 
             attachment={taskDetail.attachment}
             title={taskDetail.title}
             detail={taskDetail.detail}
-            isEditable={params.user_type === UserType.INTERNAL_USER ? true : false}
+            isEditable={params.user_type === UserType.INTERNAL_USER}
           />
         </AppMargin>
       </Box>
