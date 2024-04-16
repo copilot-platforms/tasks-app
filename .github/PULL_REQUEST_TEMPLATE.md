@@ -13,5 +13,3 @@
 ### Notes
 
 - Dependencies on other PRs, any required changes in config/setup to test behaviour, or links to external documents, threads, etc -- if any of them are required
-
-![](https://github.com/copilot-platforms/tasks-app/actions/workflows/lint.yml/badge.svg)
