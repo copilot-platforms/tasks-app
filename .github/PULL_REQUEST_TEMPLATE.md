@@ -1,5 +1,3 @@
-## TaskID | Title
-
 ### References
 
 - [Task](Task Link)
