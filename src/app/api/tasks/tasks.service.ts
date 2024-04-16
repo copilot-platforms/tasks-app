@@ -10,6 +10,12 @@ type FilterByAssigneeId = {
 }
 
 export class TasksService extends BaseService {
+  /**
+   * Builds filter for "get" service methods.
+   * If user is an IU, return filter for all tasks associated with this workspace
+   * If user is a client, return filter for just the tasks assigned to this clientId.
+   * If user is a client and has a companyId, return filter for just the tasks assigned to this clientId `OR` to this companyId
+   */
   private buildReadFilters() {
     const user = this.user
 
