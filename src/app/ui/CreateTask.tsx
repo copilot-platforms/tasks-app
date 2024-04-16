@@ -10,7 +10,7 @@ import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { AttachmentIcon } from '@/icons'
 import { setShowModal } from '@/redux/features/createTaskSlice'
 import store from '@/redux/store'
-import { statusIcons } from '@/utils/iconMatcher'
+import { StatusKey, statusIcons } from '@/utils/iconMatcher'
 import { Close } from '@mui/icons-material'
 import { Avatar, Box, Stack, Typography } from '@mui/material'
 import { ReactNode } from 'react'
@@ -49,7 +49,7 @@ export const CreateTask = () => {
           border: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
         }}
       >
-        <AppMargin size={SizeofAppMargin.MEDIUM} ptb="12px">
+        <AppMargin size={SizeofAppMargin.MEDIUM} py="12px">
           <Close
             sx={{ color: (theme) => theme.color.gray[500], cursor: 'pointer' }}
             onClick={() => store.dispatch(setShowModal())}
@@ -57,7 +57,7 @@ export const CreateTask = () => {
         </AppMargin>
       </Stack>
 
-      <AppMargin size={SizeofAppMargin.MEDIUM} ptb="16px">
+      <AppMargin size={SizeofAppMargin.MEDIUM} py="16px">
         <Stack direction="column" rowGap={1}>
           <Typography variant="md">Task name</Typography>
           <StyledTextField type="text" padding="8px 0px" />
@@ -78,7 +78,7 @@ export const CreateTask = () => {
             getSelectedValue={(newValue) => {
               updateStatusValue(newValue)
             }}
-            startIcon={statusIcons[statusValue as string]}
+            startIcon={statusIcons[statusValue as StatusKey]}
             options={status}
             value={statusValue}
             selectorType={SelectorType.STATUS_SELECTOR}
@@ -107,7 +107,7 @@ export const CreateTask = () => {
         </Stack>
       </AppMargin>
       <Box sx={{ borderTop: (theme) => `1px solid ${theme.color.borders.border2}` }}>
-        <AppMargin size={SizeofAppMargin.MEDIUM} ptb="21px">
+        <AppMargin size={SizeofAppMargin.MEDIUM} py="21px">
           <Stack direction="row" justifyContent="space-between" alignItems="center">
             <Box>
               <AttachmentIcon />
