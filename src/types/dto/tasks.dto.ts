@@ -5,7 +5,7 @@ export const CreateTaskRequestSchema = z.object({
   assigneeType: z.enum(['iu', 'client', 'company']).optional(),
   title: z.string(),
   body: z.string().optional(),
-  statusSettingId: z.string().uuid(),
+  workflowStateId: z.string().uuid(),
 })
 export type CreateTaskRequest = z.infer<typeof CreateTaskRequestSchema>
 
@@ -14,6 +14,6 @@ export const UpdateTaskRequestSchema = z.object({
   assigneeType: z.enum(['iu', 'client', 'company']).optional(),
   title: z.string().optional(),
   body: z.string().optional(),
-  statusSettingId: z.string().uuid().optional(),
+  workflowStateId: z.string().uuid().optional(),
 })
 export type UpdateTaskRequest = z.infer<typeof UpdateTaskRequestSchema>

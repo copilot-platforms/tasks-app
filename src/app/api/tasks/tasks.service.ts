@@ -45,7 +45,7 @@ export class TasksService extends BaseService {
     return await this.db.task.findMany({
       ...filters,
       include: {
-        status: { select: { name: true } },
+        workflowState: { select: { name: true } },
       },
     })
   }
@@ -72,7 +72,7 @@ export class TasksService extends BaseService {
     return await this.db.task.findFirst({
       ...filters,
       include: {
-        status: true,
+        workflowState: true,
       },
     })
   }

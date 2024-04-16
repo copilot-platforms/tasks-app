@@ -1,6 +1,6 @@
 export enum Resource {
   Tasks = 'Task',
-  Status = 'StatusSetting',
+  WorkflowState = 'WorkflowStates',
 }
 
 export type IdParams = {
