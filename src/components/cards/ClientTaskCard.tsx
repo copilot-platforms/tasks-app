@@ -13,7 +13,7 @@ export const ClientTaskCard = () => {
         },
       }}
     >
-      <AppMargin size={SizeofAppMargin.LARGE} ptb="6px">
+      <AppMargin size={SizeofAppMargin.LARGE} py="6px">
         <Stack direction="row" columnGap={8} alignItems="center">
           <Stack sx={{ width: '100%' }} direction="column">
             <Typography variant="sm">Submit your intake info</Typography>
