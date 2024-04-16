@@ -6,7 +6,6 @@ import { taskDetail } from '@/utils/mockData'
 import { UserType } from '@/types/interfaces'
 
 export default function TaskDetailPage({ params }: { params: { task_id: string; task_name: string; user_type: UserType } }) {
-  console.log(params.user_type)
   return (
     <Stack direction="row">
       <Box

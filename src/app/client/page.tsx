@@ -5,7 +5,7 @@ import { Header } from '@/components/layouts/Header'
 export default function ClientPage() {
   return (
     <>
-      <Header dontIncludeCreateTaskButton />
+      <Header showCreateTaskButton={false} />
       <ClientTaskRow />
       <ClientTaskCard />
     </>

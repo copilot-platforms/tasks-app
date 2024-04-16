@@ -6,7 +6,7 @@ export default function Main() {
   return (
     <>
       <DndWrapper>
-        <Header />
+        <Header showCreateTaskButton={true} />
         <TaskBoard />
       </DndWrapper>
     </>
