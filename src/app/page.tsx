@@ -1,5 +1,14 @@
-import { Typography } from '@mui/material'
+import { DndWrapper } from '@/hoc/DndWrapper'
+import { TaskBoard } from './ui/TaskBoard'
+import { Header } from '@/components/layouts/Header'
 
-export default function Home() {
-  return <Typography variant="md">Copilot Custom App Starter Kit</Typography>
+export default function Main() {
+  return (
+    <>
+      <DndWrapper>
+        <Header />
+        <TaskBoard />
+      </DndWrapper>
+    </>
+  )
 }
