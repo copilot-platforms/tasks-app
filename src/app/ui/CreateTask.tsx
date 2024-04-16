@@ -3,8 +3,7 @@
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
 import { SelectorType } from '@/components/inputs/Selector'
-import StatusSelector from '@/components/inputs/Selector'
-import AssigneeSelector from '@/components/inputs/Selector'
+import Selector from '@/components/inputs/Selector'
 import { StyledTextField } from '@/components/inputs/TextField'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { AttachmentIcon } from '@/icons'
@@ -74,7 +73,7 @@ export const CreateTask = () => {
         </Stack>
 
         <Stack direction="row" columnGap={3} position="relative">
-          <StatusSelector
+          <Selector
             getSelectedValue={(newValue) => {
               updateStatusValue(newValue)
             }}
@@ -89,7 +88,7 @@ export const CreateTask = () => {
             }
           />
           <Stack alignSelf="flex-start">
-            <AssigneeSelector
+            <Selector
               getSelectedValue={(newValue) => {
                 updateAssigneeValue(newValue as IAssignee)
               }}
