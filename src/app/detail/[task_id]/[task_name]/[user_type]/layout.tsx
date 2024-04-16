@@ -1,15 +1,16 @@
 import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { Stack, Typography } from '@mui/material'
-import { StyledBox, StyledKeyboardIcon, StyledTypography } from '../../ui/styledComponent'
+import { StyledBox, StyledKeyboardIcon, StyledTypography } from '@/app/detail/ui/styledComponent'
 import Link from 'next/link'
 import { ReactNode } from 'react'
+import { UserType } from '@/types/interfaces'
 
 export default function TaskDetailPageLayout({
   params,
   children,
 }: {
-  params: { task_id: string; task_name: string }
+  params: { task_id: string; task_name: string; user_type: UserType }
   children: ReactNode
 }) {
   return (

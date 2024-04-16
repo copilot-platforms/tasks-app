@@ -3,8 +3,10 @@
 import { Avatar, Box, Stack, Typography } from '@mui/material'
 import { SecondaryBtn } from '../buttons/SecondaryBtn'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
+import { useRouter } from 'next/navigation'
 
 export const ClientTaskCard = () => {
+  const router = useRouter()
   return (
     <Box
       sx={{
@@ -15,7 +17,11 @@ export const ClientTaskCard = () => {
     >
       <AppMargin size={SizeofAppMargin.LARGE} py="6px">
         <Stack direction="row" columnGap={8} alignItems="center">
-          <Stack sx={{ width: '100%' }} direction="column">
+          <Stack
+            sx={{ width: '100%', cursor: 'pointer' }}
+            direction="column"
+            onClick={() => router.push('/detail/WEB-01/my-new-task/cu')}
+          >
             <Typography variant="sm">Submit your intake info</Typography>
             <Typography variant="bodySm">
               On the sidebar you should see a notification besides “Forms” and “Contracts”. There are two onboarding forms to
