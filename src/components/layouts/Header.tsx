@@ -7,7 +7,7 @@ import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import store from '@/redux/store'
 import { setShowModal } from '@/redux/features/createTaskSlice'
 
-export const Header = ({ dontIncludeCreateTaskButton }: { dontIncludeCreateTaskButton: boolean }) => {
+export const Header = ({ dontIncludeCreateTaskButton }: { dontIncludeCreateTaskButton?: boolean }) => {
   return (
     <Box
       sx={{
