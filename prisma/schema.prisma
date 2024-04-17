@@ -1,0 +1,51 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+enum StateType {
+  backlog
+  unstarted
+  started
+  completed
+  cancelled
+}
+
+enum AssigneeType {
+  internalUser
+  client
+  company
+}
+
+model WorkflowState {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  workspaceId String
+  type        StateType
+  name        String
+  key         String
+  color       String?
+  tasks       Task[]
+
+  @@unique([workspaceId, key], name: "UQ_WorkflowStates_workspaceId_key")
+  @@index([workspaceId, key], name: "IX_WorkflowStates_workspaceId_key")
+  @@map("WorkflowStates")
+}
+
+model Task {
+  id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  workspaceId     String
+  assigneeId      String?
+  assigneeType    AssigneeType?
+  title           String
+  body            String?
+  createdBy       String
+  workflowState   WorkflowState @relation(fields: [workflowStateId], references: [id])
+  workflowStateId String        @db.Uuid
+
+  @@map("Tasks")
+}
