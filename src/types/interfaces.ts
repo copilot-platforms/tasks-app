@@ -3,3 +3,8 @@ export interface IAssignee {
   type: string
   img?: string
 }
+
+export enum UserType {
+  INTERNAL_USER = 'iu',
+  CLIENT_USER = 'cu',
+}
