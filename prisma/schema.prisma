@@ -17,7 +17,7 @@ enum StateType {
 }
 
 enum AssigneeType {
-  iu
+  internalUser
   client
   company
 }

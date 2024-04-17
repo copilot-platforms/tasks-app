@@ -2,7 +2,7 @@
 CREATE TYPE "StateType" AS ENUM ('backlog', 'unstarted', 'started', 'completed', 'cancelled');
 
 -- CreateEnum
-CREATE TYPE "AssigneeType" AS ENUM ('iu', 'client', 'company');
+CREATE TYPE "AssigneeType" AS ENUM ('internalUser', 'client', 'company');
 
 -- CreateTable
 CREATE TABLE "WorkflowStates" (
