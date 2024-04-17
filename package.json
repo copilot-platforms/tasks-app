@@ -1,20 +1,13 @@
 {
-  "name": "create-copilot-app",
-  "description": "A custom app starter kit for Copilot",
-  "version": "2.0.0",
+  "name": "task-app",
+  "description": "A comprehensive task management app",
+  "version": "0.1.0",
   "keywords": [
     "nextjs",
     "nodejs"
   ],
-  "bin": {
-    "create-copilot-app": "./bin/cli.js"
-  },
   "repository": {
-    "url": "https://github.com/pagevamp/copilot-custom-app-starter-kit"
-  },
-  "publishConfig": {
-    "registry": "https://registry.npmjs.org/",
-    "access": "public"
+    "url": "https://github.com/copilot-platforms/tasks-app"
   },
   "scripts": {
     "dev": "next dev",
@@ -34,18 +27,28 @@
   "dependencies": {
     "@emotion/react": "^11.11.3",
     "@emotion/styled": "^11.11.0",
+    "@mui/icons-material": "^5.15.15",
     "@mui/material": "^5.15.6",
     "@prisma/client": "^5.12.1",
+    "@mui/x-date-pickers": "^7.1.1",
+    "@reduxjs/toolkit": "^2.2.3",
+    "@types/date-fns": "^2.6.0",
     "@vercel/postgres": "^0.8.0",
     "copilot-node-sdk": "^2.0.0",
     "http-status": "^1.7.4",
+    "dayjs": "^1.11.10",
+    "immutability-helper": "^3.1.1",
     "next": "^14.1.4",
     "prisma": "^5.12.1",
     "react": "^18",
+    "react-dnd": "^16.0.1",
+    "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^18",
+    "react-redux": "^9.1.0",
     "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@svgr/webpack": "^8.1.0",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
