@@ -1,9 +1,7 @@
-import { UserAction, UserRole } from '@api/core/types/user'
+import { UserRole } from '@api/core/types/user'
 import { Token } from '@/types/common'
-import { PoliciesService } from '@api/core/services/policies.service'
-import { Resource } from '@api/core/types/api'
 
-class User implements Token {
+class User {
   token: string
   role: UserRole
   workspaceId: string

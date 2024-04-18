@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { ZodError, ZodIssue } from 'zod'
 import { CopilotApiError } from '@/types/CopilotApiError'
-import APIError from '../exceptions/api'
+import APIError from '@api/core/exceptions/api'
 
 type RequestHandler = (req: NextRequest, params: any) => Promise<NextResponse>
 
@@ -34,7 +34,7 @@ export const withErrorHandler = (handler: RequestHandler): RequestHandler => {
       let message: string | ZodIssue[] = 'Something went wrong'
 
       if (error instanceof ZodError) {
-        status = 400
+        status = 422
         message = error.issues
       } else if (error instanceof CopilotApiError) {
         status = error.status || status

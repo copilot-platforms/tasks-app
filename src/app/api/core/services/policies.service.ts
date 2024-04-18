@@ -10,8 +10,8 @@ import httpStatus from 'http-status'
 export class PoliciesService extends BaseService {
   private defaultPolicies: Record<UserRole.Client, Record<Resource, UserAction[]>> = {
     [UserRole.Client]: {
-      [Resource.Tasks]: ['read'],
-      [Resource.WorkflowState]: ['read'],
+      [Resource.Tasks]: [UserAction.Read],
+      [Resource.WorkflowState]: [UserAction.Read],
       [Resource.Users]: [],
     },
   }
@@ -23,7 +23,7 @@ export class PoliciesService extends BaseService {
     }
 
     const userPolicy = this.defaultPolicies[this.user.role][resource]
-    const isAuthorized = userPolicy.includes('all') || userPolicy.includes(action)
+    const isAuthorized = userPolicy.includes(UserAction.All) || userPolicy.includes(action)
     if (!isAuthorized) {
       throw new APIError(httpStatus.UNAUTHORIZED, 'You are not authorized to perform this action')
     }

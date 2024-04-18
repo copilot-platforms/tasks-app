@@ -1,6 +1,6 @@
 export enum Resource {
   Tasks = 'Task',
-  WorkflowState = 'WorkflowStates',
+  WorkflowState = 'WorkflowState',
   Users = 'User',
 }
 
