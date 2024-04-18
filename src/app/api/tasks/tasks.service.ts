@@ -3,6 +3,7 @@ import { BaseService } from '@api/core/services/base.service'
 import { Resource } from '@api/core/types/api'
 import { PoliciesService } from '@api/core/services/policies.service'
 import { AssigneeType } from '@prisma/client'
+import { UserAction } from '@api/core/types/user'
 
 type FilterByAssigneeId = {
   assigneeId: string
@@ -45,8 +46,9 @@ export class TasksService extends BaseService {
   }
 
   async getAllTasks() {
-    const user = this.user
-    new PoliciesService(user).authorize('read', Resource.Tasks)
+    const policyGate = new PoliciesService(this.user)
+    policyGate.authorize(UserAction.Read, Resource.Tasks)
+
     const filters = this.buildReadFilters()
 
     return await this.db.task.findMany({
@@ -58,8 +60,8 @@ export class TasksService extends BaseService {
   }
 
   async createTask(data: CreateTaskRequest) {
-    const user = this.user
-    new PoliciesService(user).authorize('create', Resource.Tasks)
+    const policyGate = new PoliciesService(this.user)
+    policyGate.authorize(UserAction.Create, Resource.Tasks)
 
     return await this.db.task.create({
       data: {
@@ -71,8 +73,8 @@ export class TasksService extends BaseService {
   }
 
   async getOneTask() {
-    const user = this.user
-    new PoliciesService(user).authorize('read', Resource.Tasks)
+    const policyGate = new PoliciesService(this.user)
+    policyGate.authorize(UserAction.Read, Resource.Tasks)
 
     const filters = this.buildReadFilters()
 
@@ -85,8 +87,8 @@ export class TasksService extends BaseService {
   }
 
   async updateOneTask(id: string, data: UpdateTaskRequest) {
-    const user = this.user
-    new PoliciesService(user).authorize('update', Resource.Tasks)
+    const policyGate = new PoliciesService(this.user)
+    policyGate.authorize(UserAction.Update, Resource.Tasks)
 
     return await this.db.task.update({
       where: { id },
@@ -95,8 +97,8 @@ export class TasksService extends BaseService {
   }
 
   async deleteOneTask(id: string) {
-    const user = this.user
-    new PoliciesService(user).authorize('delete', Resource.Tasks)
+    const policyGate = new PoliciesService(this.user)
+    policyGate.authorize(UserAction.Delete, Resource.Tasks)
 
     return await this.db.task.delete({ where: { id } })
   }

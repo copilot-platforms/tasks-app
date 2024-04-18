@@ -3,19 +3,20 @@ import { CreateWorkflowStateRequest } from '@/types/dto/workflowStates.dto'
 import { Resource } from '@api/core/types/api'
 import { generateRandomString, toCamelCase } from '@/utils/string'
 import { PoliciesService } from '@api/core/services/policies.service'
+import { UserAction } from '@api/core/types/user'
 
 class WorkflowStatesService extends BaseService {
   async getAllWorkflowStates() {
-    const user = this.user
-    new PoliciesService(user).authorize('read', Resource.WorkflowState)
+    const policyGate = new PoliciesService(this.user)
+    policyGate.authorize(UserAction.Read, Resource.Tasks)
 
-    const filters = { where: { workspaceId: user.workspaceId } }
+    const filters = { where: { workspaceId: this.user.workspaceId } }
     return await this.db.workflowState.findMany(filters)
   }
 
   async createWorkflowStates(data: CreateWorkflowStateRequest) {
-    const user = this.user
-    new PoliciesService(user).authorize('create', Resource.WorkflowState)
+    const policyGate = new PoliciesService(this.user)
+    policyGate.authorize(UserAction.Create, Resource.Tasks)
 
     return await this.db.workflowState.create({
       data: {
