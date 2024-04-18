@@ -17,10 +17,13 @@ export class PoliciesService extends BaseService {
 
   authorize(action: UserAction, resource: Resource): boolean | void {
     // In the future if we want configurable permissions, we can set them here
+
+    // If user role is IU, grant them unrestricted access to all resources
     if (this.user.role === UserRole.IU) {
       return true
     }
 
+    // Grab user role policies from `defaultPolicies`
     const userPolicy = this.defaultPolicies[this.user.role][resource]
     const isAuthorized = userPolicy.includes(UserAction.All) || userPolicy.includes(action)
     if (!isAuthorized) {

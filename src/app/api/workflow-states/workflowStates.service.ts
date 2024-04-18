@@ -7,6 +7,7 @@ import { UserAction } from '@api/core/types/user'
 
 class WorkflowStatesService extends BaseService {
   async getAllWorkflowStates() {
+    // Check if current user is authorized to access this resource
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Read, Resource.Tasks)
 

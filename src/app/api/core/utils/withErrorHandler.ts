@@ -6,7 +6,7 @@ import APIError from '@api/core/exceptions/api'
 type RequestHandler = (req: NextRequest, params: any) => Promise<NextResponse>
 
 /**
- * Wraps a given request handler with a global error handler to standardize response structure
+ * Reusable utility that wraps a given request handler with a global error handler to standardize response structure
  * in case of failures. Catches exceptions thrown from the handler, and returns a formatted error response.
  *
  * @param {RequestHandler} handler - The request handler to wrap.
@@ -25,14 +25,17 @@ type RequestHandler = (req: NextRequest, params: any) => Promise<NextResponse>
  */
 export const withErrorHandler = (handler: RequestHandler): RequestHandler => {
   return async (req: NextRequest, params: any) => {
+    // Execute the handler wrapped in a try... catch block
     try {
       return await handler(req, params)
     } catch (error) {
       console.error(error)
 
+      // Default staus and message for JSON error response
       let status = 500
       let message: string | ZodIssue[] = 'Something went wrong'
 
+      // Build a proper response based on the type of Error encountered
       if (error instanceof ZodError) {
         status = 422
         message = error.issues

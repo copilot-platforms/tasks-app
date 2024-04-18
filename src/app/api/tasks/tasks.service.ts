@@ -46,9 +46,12 @@ export class TasksService extends BaseService {
   }
 
   async getAllTasks() {
+    // Check if given user role is authorized access to this resource
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Read, Resource.Tasks)
 
+    // Build query filters based on role of user. IU can access all tasks related to a workspace
+    // while clients can only view the tasks assigned to them or their company
     const filters = this.buildReadFilters()
 
     return await this.db.task.findMany({
@@ -63,6 +66,7 @@ export class TasksService extends BaseService {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Create, Resource.Tasks)
 
+    // Create a new task associated with current workspaceId. Also inject current request user as the creator.
     return await this.db.task.create({
       data: {
         ...data,
@@ -76,6 +80,8 @@ export class TasksService extends BaseService {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Read, Resource.Tasks)
 
+    // Build query filters based on role of user. IU can access all tasks related to a workspace
+    // while clients can only view the tasks assigned to them or their company
     const filters = this.buildReadFilters()
 
     return await this.db.task.findFirst({
