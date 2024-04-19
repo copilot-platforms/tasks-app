@@ -23,11 +23,19 @@ const taskBoardSlice = createSlice({
     setTasks: (state, action) => {
       state.tasks = action.payload
     },
+    updateWorkflowStateIdByTaskId: (state, action) => {
+      let taskToUpdate = state.tasks.find((task) => task.id === action.payload.taskId)
+      if (taskToUpdate) {
+        taskToUpdate.workflowStateId = action.payload.targetWorkflowStateId
+        const updatedTasks = [...state.tasks.filter((task) => task.id !== action.payload.taskId), taskToUpdate]
+        state.tasks = updatedTasks
+      }
+    },
   },
 })
 
 export const selectTaskBoard = (state: RootState) => state.taskBoard
 
-export const { setWorkflowStates, setTasks } = taskBoardSlice.actions
+export const { setWorkflowStates, setTasks, updateWorkflowStateIdByTaskId } = taskBoardSlice.actions
 
 export default taskBoardSlice.reducer
