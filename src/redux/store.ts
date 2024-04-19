@@ -1,9 +1,11 @@
 import { Action, configureStore, ThunkAction } from '@reduxjs/toolkit'
 import createTaskReducer from './features/createTaskSlice'
+import taskBoardReducer from './features/taskBoardSlice'
 
 const store = configureStore({
   reducer: {
     createTask: createTaskReducer,
+    taskBoard: taskBoardReducer,
   },
 })
 

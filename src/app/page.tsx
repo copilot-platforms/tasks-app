@@ -3,6 +3,7 @@ import { TaskBoard } from './ui/TaskBoard'
 import { Header } from '@/components/layouts/Header'
 import { CreateWorkflowStateRequest } from '@/types/dto/workflowStates.dto'
 import { apiUrl } from '@/config'
+import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 
 async function getAllWorkflowStates(token: string): Promise<CreateWorkflowStateRequest[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`)
@@ -21,14 +22,14 @@ export default async function Main({ searchParams }: { searchParams: { token: st
 
   const workflowStates = await getAllWorkflowStates(token)
 
-  console.log(workflowStates)
-
   return (
     <>
-      <DndWrapper>
-        <Header showCreateTaskButton={true} />
-        <TaskBoard />
-      </DndWrapper>
+      <ClientSideStateUpdate workflowStates={workflowStates}>
+        <DndWrapper>
+          <Header showCreateTaskButton={true} />
+          <TaskBoard />
+        </DndWrapper>
+      </ClientSideStateUpdate>
     </>
   )
 }

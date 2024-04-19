@@ -12,6 +12,7 @@ import { useSelector } from 'react-redux'
 import { selectCreateTask, setShowModal } from '@/redux/features/createTaskSlice'
 import store from '@/redux/store'
 import { useRouter } from 'next/navigation'
+import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 
 interface Task {
   assignee: string
@@ -114,6 +115,9 @@ export const TaskBoard = () => {
 
   const router = useRouter()
 
+  const { workflowStates } = useSelector(selectTaskBoard)
+  console.log(workflowStates)
+
   return (
     <AppMargin size={SizeofAppMargin.LARGE} py="18.5px">
       <Stack
@@ -123,25 +127,34 @@ export const TaskBoard = () => {
           overflowX: 'auto',
         }}
       >
-        {Object.entries(lists).map(([listId, listData], index) => (
-          <DragDropHandler
-            key={listId}
-            accept={'taskCard'}
-            index={index}
-            id={Number(listId)}
-            onDropItem={(item) => onDropItem(Number(listId), item)}
-          >
-            <TaskColumn key={listId} columnName={`List ${listId}`} taskCount={String(listData.length)}>
-              {listData.map((task: Task, index: number) => (
-                <DragDropHandler key={task.id} accept={'taskCard'} index={index} id={Number(listId)} moveCard={moveCard}>
-                  <Box onClick={() => router.push('/detail/WEB-01/my-new-task/iu')}>
-                    <TaskCard assignee={task.assignee} key={task.id} />
-                  </Box>
-                </DragDropHandler>
-              ))}
+        {/* {Object.entries(lists).map(([listId, listData], index) => ( */}
+        {/*   <DragDropHandler */}
+        {/*     key={listId} */}
+        {/*     accept={'taskCard'} */}
+        {/*     index={index} */}
+        {/*     id={Number(listId)} */}
+        {/*     onDropItem={(item) => onDropItem(Number(listId), item)} */}
+        {/*   > */}
+        {/*     <TaskColumn key={listId} columnName={`List ${listId}`} taskCount={String(listData.length)}> */}
+        {/* {listData.map((task: Task, index: number) => ( */}
+        {/*   <DragDropHandler key={task.id} accept={'taskCard'} index={index} id={Number(listId)} moveCard={moveCard}> */}
+        {/*     <Box onClick={() => router.push('/detail/WEB-01/my-new-task/iu')}> */}
+        {/*       <TaskCard assignee={task.assignee} key={task.id} /> */}
+        {/*     </Box> */}
+        {/*   </DragDropHandler> */}
+        {/* ))} */}
+        {/*     </TaskColumn> */}
+        {/*   </DragDropHandler> */}
+        {/* ))} */}
+
+        {workflowStates.map((list) => {
+          return (
+            <TaskColumn key={list.id} columnName={list.name} taskCount={'12'}>
+              <p>im card</p>
             </TaskColumn>
-          </DragDropHandler>
-        ))}
+          )
+        })}
+
         <Modal
           open={showModal}
           onClose={() => {
