@@ -4,6 +4,7 @@ import { Box, Stack } from '@mui/material'
 import { Sidebar } from '@/app/detail/ui/Sidebar'
 import { taskDetail } from '@/utils/mockData'
 import { UserType } from '@/types/interfaces'
+import { decodeParamString } from '@/utils/generateParamString'
 
 export default function TaskDetailPage({ params }: { params: { task_id: string; task_name: string; user_type: UserType } }) {
   return (
@@ -16,7 +17,7 @@ export default function TaskDetailPage({ params }: { params: { task_id: string; 
         <AppMargin size={SizeofAppMargin.LARGE} py="30px">
           <TaskEditor
             attachment={taskDetail.attachment}
-            title={taskDetail.title}
+            title={decodeParamString(params.task_name)}
             detail={taskDetail.detail}
             isEditable={params.user_type === UserType.INTERNAL_USER}
           />

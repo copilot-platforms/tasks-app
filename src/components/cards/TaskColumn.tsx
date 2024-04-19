@@ -18,7 +18,7 @@ const TaskColumnContainer = styled(Stack)({
 interface Prop {
   children: ReactNode
   columnName: string
-  taskCount: string
+  taskCount: number
 }
 
 export const TaskColumn = ({ children, columnName, taskCount }: Prop) => {

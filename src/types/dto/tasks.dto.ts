@@ -20,3 +20,17 @@ export const UpdateTaskRequestSchema = z.object({
   workflowStateId: z.string().uuid().optional(),
 })
 export type UpdateTaskRequest = z.infer<typeof UpdateTaskRequestSchema>
+
+export const TaskResponseSchema = z.object({
+  id: z.string(),
+  workspaceId: z.string(),
+  assigneeId: z.string().optional(),
+  assigneeType: AssigneeTypeSchema,
+  title: z.string().optional(),
+  body: z.string().optional(),
+  createdBy: z.string(),
+  workflowStateId: z.string().uuid().optional(),
+  workflowState: z.object({ name: z.string() }),
+})
+
+export type TaskResponse = z.infer<typeof TaskResponseSchema>

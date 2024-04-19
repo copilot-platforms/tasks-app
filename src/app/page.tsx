@@ -4,6 +4,7 @@ import { Header } from '@/components/layouts/Header'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { apiUrl } from '@/config'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
+import { TaskResponse } from '@/types/dto/tasks.dto'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`)
@@ -13,12 +14,12 @@ async function getAllWorkflowStates(token: string): Promise<WorkflowStateRespons
   return data.workflowStates
 }
 
-async function getAllTasks(token: string): Promise<WorkflowStateResponse[]> {
-  const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`)
+async function getAllTasks(token: string): Promise<TaskResponse[]> {
+  const res = await fetch(`${apiUrl}/api/tasks?token=${token}`)
 
   const data = await res.json()
 
-  return data.workflowStates
+  return data.tasks
 }
 
 export default async function Main({ searchParams }: { searchParams: { token: string } }) {
@@ -29,10 +30,11 @@ export default async function Main({ searchParams }: { searchParams: { token: st
   }
 
   const workflowStates = await getAllWorkflowStates(token)
+  const tasks = await getAllTasks(token)
 
   return (
     <>
-      <ClientSideStateUpdate workflowStates={workflowStates}>
+      <ClientSideStateUpdate workflowStates={workflowStates} tasks={tasks}>
         <DndWrapper>
           <Header showCreateTaskButton={true} />
           <TaskBoard />

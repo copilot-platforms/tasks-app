@@ -1,5 +1,6 @@
 'use client'
 
+import { TaskResponse } from '@/types/dto/tasks.dto'
 import { Avatar, Stack, Typography, styled } from '@mui/material'
 
 const TaskCardContainer = styled(Stack)(({ theme }) => ({
@@ -9,17 +10,17 @@ const TaskCardContainer = styled(Stack)(({ theme }) => ({
   padding: '12px',
 }))
 
-export const TaskCard = ({ assignee }: { assignee: string }) => {
+export const TaskCard = ({ task }: { task: TaskResponse }) => {
   return (
     <TaskCardContainer>
       <Stack direction="row" justifyContent="space-between">
         <Stack direction="row" alignItems="center" columnGap={1}>
           <Avatar alt="user" src="https://avatar.iran.liara.run/public" sx={{ width: '20px', height: '20px' }} />
-          <Typography variant="sm">{assignee}</Typography>
+          <Typography variant="sm">{task.assigneeId}</Typography>
         </Stack>
         <Typography variant="bodyXs">WEB-01</Typography>
       </Stack>
-      <Typography variant="sm">Add payment method to your account on the profile page</Typography>
+      <Typography variant="sm">{task.title}</Typography>
     </TaskCardContainer>
   )
 }

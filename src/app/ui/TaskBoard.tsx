@@ -13,6 +13,8 @@ import { selectCreateTask, setShowModal } from '@/redux/features/createTaskSlice
 import store from '@/redux/store'
 import { useRouter } from 'next/navigation'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { encodeToParamString } from '@/utils/generateParamString'
+import { TaskResponse } from '@/types/dto/tasks.dto'
 
 interface Task {
   assignee: string
@@ -115,8 +117,22 @@ export const TaskBoard = () => {
 
   const router = useRouter()
 
-  const { workflowStates } = useSelector(selectTaskBoard)
-  console.log(workflowStates)
+  const { workflowStates, tasks } = useSelector(selectTaskBoard)
+  console.log(tasks)
+
+  /**
+   * This function is responsible for returning the tasks that matches the workflowStateId of the workflowState
+   */
+  const filterTaskWithWorkflowStateId = (workflowStateId: string): TaskResponse[] => {
+    return tasks.filter((task) => task.workflowStateId === workflowStateId)
+  }
+
+  /**
+   * This function is responsible for calculating the task count based on the workflowStateId
+   */
+  const calculateTaskCountBasedOnWorkflowStateId = (workflowStateId: string): number => {
+    return tasks.filter((task) => task.workflowStateId === workflowStateId).length
+  }
 
   return (
     <AppMargin size={SizeofAppMargin.LARGE} py="18.5px">
@@ -149,8 +165,19 @@ export const TaskBoard = () => {
 
         {workflowStates.map((list) => {
           return (
-            <TaskColumn key={list.id} columnName={list.name} taskCount={'12'}>
-              <p>im card</p>
+            <TaskColumn key={list.id} columnName={list.name} taskCount={calculateTaskCountBasedOnWorkflowStateId(list.id)}>
+              {filterTaskWithWorkflowStateId(list.id).map((task, index) => {
+                return (
+                  <DragDropHandler key={task.id} accept={'taskCard'} index={index} id={Number(list.id)} moveCard={moveCard}>
+                    <Box
+                      onClick={() => router.push(`/detail/${task.id}/${encodeToParamString(task.title || '')}/iu`)}
+                      key={task.id}
+                    >
+                      <TaskCard task={task} key={task.id} />
+                    </Box>
+                  </DragDropHandler>
+                )
+              })}
             </TaskColumn>
           )
         })}

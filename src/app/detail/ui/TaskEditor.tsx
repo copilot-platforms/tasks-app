@@ -23,6 +23,7 @@ interface Prop {
 export const TaskEditor = ({ title, detail, attachment, isEditable }: Prop) => {
   const [updateTitle, setUpdateTitle] = useState(title)
   const [updateDetail, setUpdateDetail] = useState(detail)
+  console.log(isEditable)
   return (
     <>
       <Stack direction="row" alignItems="center" columnGap={2}>
@@ -42,7 +43,7 @@ export const TaskEditor = ({ title, detail, attachment, isEditable }: Prop) => {
           }}
           value={updateTitle}
           onChange={(e) => setUpdateTitle(e.target.value)}
-          InputProps={{ readOnly: isEditable }}
+          InputProps={{ readOnly: !isEditable }}
           disabled={!isEditable}
         />
       </Stack>
@@ -64,7 +65,7 @@ export const TaskEditor = ({ title, detail, attachment, isEditable }: Prop) => {
           }}
           value={updateDetail}
           onChange={(e) => setUpdateDetail(e.target.value)}
-          InputProps={{ readOnly: isEditable }}
+          InputProps={{ readOnly: !isEditable }}
           disabled={!isEditable}
         />
       </Box>
