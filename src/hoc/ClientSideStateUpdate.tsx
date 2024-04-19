@@ -2,7 +2,7 @@
 
 import { setWorkflowStates } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
-import { CreateWorkflowStateRequest } from '@/types/dto/workflowStates.dto'
+import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { ReactNode, useEffect } from 'react'
 
 /**
@@ -15,7 +15,7 @@ export const ClientSideStateUpdate = ({
   workflowStates,
 }: {
   children: ReactNode
-  workflowStates: CreateWorkflowStateRequest[]
+  workflowStates: WorkflowStateResponse[]
 }) => {
   useEffect(() => {
     if (workflowStates) {

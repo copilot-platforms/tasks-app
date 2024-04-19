@@ -1,9 +1,9 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { RootState } from '../store'
-import { CreateWorkflowStateRequest } from '@/types/dto/workflowStates.dto'
+import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 
 interface IInitialState {
-  workflowStates: CreateWorkflowStateRequest[]
+  workflowStates: WorkflowStateResponse[]
 }
 
 const initialState: IInitialState = {

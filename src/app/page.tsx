@@ -1,11 +1,19 @@
 import { DndWrapper } from '@/hoc/DndWrapper'
 import { TaskBoard } from './ui/TaskBoard'
 import { Header } from '@/components/layouts/Header'
-import { CreateWorkflowStateRequest } from '@/types/dto/workflowStates.dto'
+import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { apiUrl } from '@/config'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 
-async function getAllWorkflowStates(token: string): Promise<CreateWorkflowStateRequest[]> {
+async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
+  const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`)
+
+  const data = await res.json()
+
+  return data.workflowStates
+}
+
+async function getAllTasks(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`)
 
   const data = await res.json()
