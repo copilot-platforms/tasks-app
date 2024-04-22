@@ -18,7 +18,13 @@ const StyledText = styled(Typography)(({ theme }) => ({
   width: '80px',
 }))
 
-export const Sidebar = ({ selectedWorkflowState }: { selectedWorkflowState: WorkflowStateResponse }) => {
+export const Sidebar = ({
+  selectedWorkflowState,
+  updateWorkflowState,
+}: {
+  selectedWorkflowState: WorkflowStateResponse
+  updateWorkflowState: (workflowState: WorkflowStateResponse) => void
+}) => {
   const { workflowStates } = useSelector(selectTaskBoard)
 
   const { renderingItem: statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
@@ -44,10 +50,10 @@ export const Sidebar = ({ selectedWorkflowState }: { selectedWorkflowState: Work
           <Selector
             getSelectedValue={(newValue) => {
               updateStatusValue(newValue)
+              updateWorkflowState(newValue as WorkflowStateResponse)
               // store.dispatch(setCreateTaskFields({ targetField: 'workflowStateId', value: (newValue as WorkflowStateResponse).id }))
             }}
             startIcon={statusIcons[(statusValue as WorkflowStateResponse)?.type]}
-            // startIcon={statusIcons['unstarted']}
             options={workflowStates}
             value={statusValue}
             selectorType={SelectorType.STATUS_SELECTOR}

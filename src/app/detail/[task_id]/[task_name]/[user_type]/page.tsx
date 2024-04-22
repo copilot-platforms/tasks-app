@@ -70,14 +70,25 @@ export default async function TaskDetailPage({
                     body: detail,
                   }),
                 })
-                revalidateTag('getOneTask')
                 revalidateTag('getAllTasks')
               }}
             />
           </AppMargin>
         </Box>
         <Box>
-          <Sidebar selectedWorkflowState={task.workflowState} />
+          <Sidebar
+            selectedWorkflowState={task.workflowState}
+            updateWorkflowState={async (workflowState) => {
+              'use server'
+              fetch(`${apiUrl}/api/tasks/${task_id}?token=${token}`, {
+                method: 'PATCH',
+                body: JSON.stringify({
+                  workflowStateId: workflowState.id,
+                }),
+              })
+              revalidateTag('getAllTasks')
+            }}
+          />
         </Box>
       </Stack>
     </>
