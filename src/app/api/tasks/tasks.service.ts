@@ -17,10 +17,10 @@ export class TasksService extends BaseService {
    * If user is a client, return filter for just the tasks assigned to this clientId.
    * If user is a client and has a companyId, return filter for just the tasks assigned to this clientId `OR` to this companyId
    */
-  private buildReadFilters() {
+  private buildReadFilters(id?: string) {
     const user = this.user
 
-    let filters = { where: { workspaceId: user.workspaceId, OR: undefined as unknown as FilterByAssigneeId[] } }
+    let filters = { where: { id, workspaceId: user.workspaceId, OR: undefined as unknown as FilterByAssigneeId[] } }
 
     if (user.clientId) {
       filters = {
@@ -76,13 +76,13 @@ export class TasksService extends BaseService {
     })
   }
 
-  async getOneTask() {
+  async getOneTask(id: string) {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Read, Resource.Tasks)
 
     // Build query filters based on role of user. IU can access all tasks related to a workspace
     // while clients can only view the tasks assigned to them or their company
-    const filters = this.buildReadFilters()
+    const filters = this.buildReadFilters(id)
 
     return await this.db.task.findFirst({
       ...filters,
