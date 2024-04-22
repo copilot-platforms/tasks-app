@@ -18,11 +18,12 @@ const StyledText = styled(Typography)(({ theme }) => ({
   width: '80px',
 }))
 
-export const Sidebar = () => {
+export const Sidebar = ({ selectedWorkflowState }: { selectedWorkflowState: WorkflowStateResponse }) => {
   const { workflowStates } = useSelector(selectTaskBoard)
 
   const { renderingItem: statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
-    item: workflowStates[0],
+    // item: workflowStates[0],
+    item: selectedWorkflowState,
     type: SelectorType.STATUS_SELECTOR,
   })
   const { renderingItem: assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({

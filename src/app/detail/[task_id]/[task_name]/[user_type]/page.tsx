@@ -34,6 +34,7 @@ export default async function TaskDetailPage({
   const { task_id } = params
 
   const task = await getOneTask(token, task_id)
+  console.log(task)
 
   return (
     <>
@@ -64,7 +65,7 @@ export default async function TaskDetailPage({
           </AppMargin>
         </Box>
         <Box>
-          <Sidebar />
+          <Sidebar selectedWorkflowState={task.workflowState} />
         </Box>
       </Stack>
     </>
