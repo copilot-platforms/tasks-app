@@ -3,12 +3,15 @@
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { Avatar, Box, Stack, Typography, styled } from '@mui/material'
 import Selector, { SelectorType } from '@/components/inputs/Selector'
-import { status, assignee } from '@/utils/mockData'
+import { assignee } from '@/utils/mockData'
 import { IAssignee } from '@/types/interfaces'
-import { StatusKey, statusIcons } from '@/utils/iconMatcher'
+import { statusIcons } from '@/utils/iconMatcher'
 import { DatePickerComponent } from '@/components/inputs/DatePickerComponent'
 import { ReactNode } from 'react'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
+import { useSelector } from 'react-redux'
+import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 
 const StyledText = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[500],
@@ -16,11 +19,15 @@ const StyledText = styled(Typography)(({ theme }) => ({
 }))
 
 export const Sidebar = () => {
+  const { workflowStates } = useSelector(selectTaskBoard)
+
   const { renderingItem: statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
-    item: status[0],
+    item: workflowStates[0],
+    type: SelectorType.STATUS_SELECTOR,
   })
   const { renderingItem: assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
     item: assignee[0],
+    type: SelectorType.ASSIGNEE_SELECTOR,
   })
 
   return (
@@ -36,14 +43,15 @@ export const Sidebar = () => {
           <Selector
             getSelectedValue={(newValue) => {
               updateStatusValue(newValue)
+              // store.dispatch(setCreateTaskFields({ targetField: 'workflowStateId', value: (newValue as WorkflowStateResponse).id }))
             }}
-            startIcon={statusIcons[statusValue as StatusKey]}
-            options={status}
+            startIcon={statusIcons[(statusValue as WorkflowStateResponse).type]}
+            options={workflowStates}
             value={statusValue}
             selectorType={SelectorType.STATUS_SELECTOR}
             buttonContent={
               <Typography variant="bodySm" lineHeight="16px" sx={{ color: (theme) => theme.color.gray[600] }}>
-                {statusValue as ReactNode}
+                {(statusValue as WorkflowStateResponse).name as ReactNode}
               </Typography>
             }
           />

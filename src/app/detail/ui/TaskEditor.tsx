@@ -23,11 +23,10 @@ interface Prop {
 export const TaskEditor = ({ title, detail, attachment, isEditable }: Prop) => {
   const [updateTitle, setUpdateTitle] = useState(title)
   const [updateDetail, setUpdateDetail] = useState(detail)
-  console.log(isEditable)
   return (
     <>
       <Stack direction="row" alignItems="center" columnGap={2}>
-        <Box pt="5px">{statusIcons['Todo']}</Box>
+        <Box pt="5px">{statusIcons['unstarted']}</Box>
         <StyledTextField
           type="text"
           multiline

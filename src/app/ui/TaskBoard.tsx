@@ -15,21 +15,22 @@ import { selectTaskBoard, updateWorkflowStateIdByTaskId } from '@/redux/features
 import { encodeToParamString } from '@/utils/generateParamString'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 
-export const TaskBoard = ({ handleCreate }: { handleCreate: Function }) => {
+export const TaskBoard = ({
+  handleCreate,
+}: {
+  handleCreate: (title: string, description: string, workflowStateId: string) => void
+}) => {
   const { showModal } = useSelector(selectCreateTask)
   const { workflowStates, tasks } = useSelector(selectTaskBoard)
-  console.log('wwww', workflowStates)
+  const { title, description, workflowStateId } = useSelector(selectCreateTask)
 
   const router = useRouter()
 
-  const onDropItem = useCallback(
-    (payload: { taskId: string; targetWorkflowStateId: string }) => {
-      store.dispatch(
-        updateWorkflowStateIdByTaskId({ taskId: payload.taskId, targetWorkflowStateId: payload.targetWorkflowStateId }),
-      )
-    },
-    [tasks],
-  )
+  const onDropItem = useCallback((payload: { taskId: string; targetWorkflowStateId: string }) => {
+    store.dispatch(
+      updateWorkflowStateIdByTaskId({ taskId: payload.taskId, targetWorkflowStateId: payload.targetWorkflowStateId }),
+    )
+  }, [])
 
   /**
    * This function is responsible for returning the tasks that matches the workflowStateId of the workflowState
@@ -84,7 +85,12 @@ export const TaskBoard = ({ handleCreate }: { handleCreate: Function }) => {
           aria-labelledby="create-task-modal"
           aria-describedby="add-new-task"
         >
-          <NewTaskForm handleCreate={handleCreate} />
+          <NewTaskForm
+            handleCreate={() => {
+              handleCreate(title, description, workflowStateId)
+              store.dispatch(setShowModal())
+            }}
+          />
         </Modal>
       </Stack>
     </AppMargin>

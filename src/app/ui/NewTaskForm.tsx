@@ -5,7 +5,7 @@ import Selector from '@/components/inputs/Selector'
 import { StyledTextField } from '@/components/inputs/TextField'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { AttachmentIcon } from '@/icons'
-import { setShowModal } from '@/redux/features/createTaskSlice'
+import { selectCreateTask, setCreateTaskFields, setShowModal } from '@/redux/features/createTaskSlice'
 import store from '@/redux/store'
 import { statusIcons } from '@/utils/iconMatcher'
 import { Close } from '@mui/icons-material'
@@ -18,17 +18,17 @@ import { useSelector } from 'react-redux'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 
-export const NewTaskForm = ({ handleCreate }: { handleCreate: Function }) => {
+export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
   const { workflowStates } = useSelector(selectTaskBoard)
 
   const { renderingItem: statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
     item: workflowStates[0],
+    type: SelectorType.STATUS_SELECTOR,
   })
   const { renderingItem: assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
     item: assignee[0],
+    type: SelectorType.ASSIGNEE_SELECTOR,
   })
-
-  console.log('ssssss', statusValue)
 
   return (
     <NewTaskContainer>
@@ -55,6 +55,9 @@ export const NewTaskForm = ({ handleCreate }: { handleCreate: Function }) => {
           <Selector
             getSelectedValue={(newValue) => {
               updateStatusValue(newValue)
+              store.dispatch(
+                setCreateTaskFields({ targetField: 'workflowStateId', value: (newValue as WorkflowStateResponse).id }),
+              )
             }}
             startIcon={statusIcons[(statusValue as WorkflowStateResponse).type]}
             options={workflowStates}
@@ -86,17 +89,24 @@ export const NewTaskForm = ({ handleCreate }: { handleCreate: Function }) => {
           </Stack>
         </Stack>
       </AppMargin>
-      <NewTaskFooter />
+      <NewTaskFooter handleCreate={handleCreate} />
     </NewTaskContainer>
   )
 }
 
 const NewTaskFormInputs = () => {
+  const { title, description } = useSelector(selectCreateTask)
+
   return (
     <>
       <Stack direction="column" rowGap={1}>
         <Typography variant="md">Task name</Typography>
-        <StyledTextField type="text" padding="8px 0px" />
+        <StyledTextField
+          type="text"
+          padding="8px 0px"
+          value={title}
+          onChange={(e) => store.dispatch(setCreateTaskFields({ targetField: 'title', value: e.target.value }))}
+        />
       </Stack>
       <Stack direction="column" rowGap={1} m="16px 0px">
         <Typography variant="md">Description</Typography>
@@ -106,13 +116,15 @@ const NewTaskFormInputs = () => {
           multiline
           rows={6}
           inputProps={{ style: { resize: 'vertical' } }}
+          value={description}
+          onChange={(e) => store.dispatch(setCreateTaskFields({ targetField: 'description', value: e.target.value }))}
         />
       </Stack>
     </>
   )
 }
 
-const NewTaskFooter = () => {
+const NewTaskFooter = ({ handleCreate }: { handleCreate: () => void }) => {
   return (
     <Box sx={{ borderTop: (theme) => `1px solid ${theme.color.borders.border2}` }}>
       <AppMargin size={SizeofAppMargin.MEDIUM} py="21px">
@@ -131,7 +143,7 @@ const NewTaskFooter = () => {
                 </Typography>
               }
             />
-            <PrimaryBtn handleClick={() => {}} buttonText="Create" />
+            <PrimaryBtn handleClick={handleCreate} buttonText="Create" />
           </Stack>
         </Stack>
       </AppMargin>

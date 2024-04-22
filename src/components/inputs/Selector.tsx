@@ -33,7 +33,6 @@ export default function Selector({ getSelectedValue, startIcon, value, selectorT
   const [inputStatusValue, setInputStatusValue] = useState('')
 
   const setSelectorRef = useFocusableInput(isOpen)
-  console.log('opppp', options)
 
   return (
     <Stack direction="column">

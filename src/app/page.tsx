@@ -5,12 +5,16 @@ import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { apiUrl } from '@/config'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import { TaskResponse } from '@/types/dto/tasks.dto'
+import { revalidateTag } from 'next/cache'
+
+export const revalidate = 0
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
-  const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`)
+  const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
+    next: { tags: ['getAllWorkflowStates'] },
+  })
 
   const data = await res.json()
-  console.log('datataaa', data)
 
   return data.workflowStates
 }
@@ -39,8 +43,17 @@ export default async function Main({ searchParams }: { searchParams: { token: st
         <DndWrapper>
           <Header showCreateTaskButton={true} />
           <TaskBoard
-            handleCreate={async () => {
+            handleCreate={async (title, description, workflowStateId) => {
               'use server'
+              fetch(`${apiUrl}/api/tasks?token=${token}`, {
+                method: 'POST',
+                body: JSON.stringify({
+                  title,
+                  body: description,
+                  workflowStateId,
+                }),
+              })
+              revalidateTag('getAllWorkflowStates')
             }}
           />
         </DndWrapper>
