@@ -28,6 +28,20 @@ class WorkflowStatesService extends BaseService {
     })
   }
 
+  /**
+   * Sets default workflow states for a fresh workspace
+   */
+  async setDefaultWorkflowStates() {
+    return await this.db.workflowState.createMany({
+      data: [
+        { type: 'unstarted', name: 'Todo', key: 'todo', workspaceId: this.user.workspaceId },
+        { type: 'started', name: 'In Progress', key: 'inProgress', workspaceId: this.user.workspaceId },
+        { type: 'completed', name: 'Done', key: 'completed', workspaceId: this.user.workspaceId },
+        { type: 'backlog', name: 'Archived', key: 'archived', workspaceId: this.user.workspaceId },
+      ],
+    })
+  }
+
   private async generateKey(name: string) {
     let key = toCamelCase(name)
     // If a key matching existing record exists, append a random
