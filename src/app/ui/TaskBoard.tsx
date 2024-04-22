@@ -15,9 +15,10 @@ import { selectTaskBoard, updateWorkflowStateIdByTaskId } from '@/redux/features
 import { encodeToParamString } from '@/utils/generateParamString'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 
-export const TaskBoard = () => {
+export const TaskBoard = ({ handleCreate }: { handleCreate: () => {} }) => {
   const { showModal } = useSelector(selectCreateTask)
   const { workflowStates, tasks } = useSelector(selectTaskBoard)
+  console.log('wwww', workflowStates)
 
   const router = useRouter()
 
@@ -83,7 +84,7 @@ export const TaskBoard = () => {
           aria-labelledby="create-task-modal"
           aria-describedby="add-new-task"
         >
-          <NewTaskForm />
+          <NewTaskForm handleCreate={handleCreate} />
         </Modal>
       </Stack>
     </AppMargin>

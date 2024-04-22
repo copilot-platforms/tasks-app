@@ -1,5 +1,3 @@
-'use client'
-
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
 import { SelectorType } from '@/components/inputs/Selector'
@@ -16,8 +14,12 @@ import { ReactNode } from 'react'
 import { status, assignee } from '@/utils/mockData'
 import { IAssignee } from '@/types/interfaces'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
+import { useSelector } from 'react-redux'
+import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 
-export const NewTaskForm = () => {
+export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
+  const { workflowStates } = useSelector(selectTaskBoard)
+
   const { renderingItem: statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
     item: status[0],
   })

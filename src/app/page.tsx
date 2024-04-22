@@ -10,6 +10,7 @@ async function getAllWorkflowStates(token: string): Promise<WorkflowStateRespons
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`)
 
   const data = await res.json()
+  console.log('datataaa', data)
 
   return data.workflowStates
 }
@@ -37,7 +38,11 @@ export default async function Main({ searchParams }: { searchParams: { token: st
       <ClientSideStateUpdate workflowStates={workflowStates} tasks={tasks}>
         <DndWrapper>
           <Header showCreateTaskButton={true} />
-          <TaskBoard />
+          <TaskBoard
+            handleCreate={async () => {
+              'use server'
+            }}
+          />
         </DndWrapper>
       </ClientSideStateUpdate>
     </>
