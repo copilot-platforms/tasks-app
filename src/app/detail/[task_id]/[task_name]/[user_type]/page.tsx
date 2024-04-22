@@ -10,6 +10,7 @@ import { TaskResponse } from '@/types/dto/tasks.dto'
 import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
 import { StyledBox, StyledKeyboardIcon, StyledTypography } from '@/app/detail/ui/styledComponent'
 import Link from 'next/link'
+import { revalidateTag } from 'next/cache'
 
 export const revalidate = 0
 
@@ -34,7 +35,6 @@ export default async function TaskDetailPage({
   const { task_id } = params
 
   const task = await getOneTask(token, task_id)
-  console.log(task)
 
   return (
     <>
@@ -61,6 +61,18 @@ export default async function TaskDetailPage({
               title={decodeParamString(params.task_name)}
               detail={task.body || ''}
               isEditable={params.user_type === UserType.INTERNAL_USER}
+              updateTaskDetail={async (title, detail) => {
+                'use server'
+                fetch(`${apiUrl}/api/tasks/${task_id}?token=${token}`, {
+                  method: 'PATCH',
+                  body: JSON.stringify({
+                    title,
+                    body: detail,
+                  }),
+                })
+                revalidateTag('getOneTask')
+                revalidateTag('getAllTasks')
+              }}
             />
           </AppMargin>
         </Box>
