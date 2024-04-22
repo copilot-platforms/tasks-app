@@ -5,10 +5,6 @@
 import { IAssignee } from '@/types/interfaces'
 
 //This is mock data which will be replaced after API integration.
-//Enum will be created for this while working on API integration.
-export const status = ['Todo', 'In Progress', 'In review', 'Done']
-
-//This is mock data which will be replaced after API integration.
 export const assignee: IAssignee[] = [
   {
     type: '',

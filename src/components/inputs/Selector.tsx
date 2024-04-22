@@ -1,10 +1,11 @@
 import { Avatar, Box, Stack, Typography } from '@mui/material'
 import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
 import { StyledAutocomplete } from '@/components/inputs/Autocomplete'
-import { StatusKey, statusIcons } from '@/utils/iconMatcher'
+import { statusIcons } from '@/utils/iconMatcher'
 import { useFocusableInput } from '@/hooks/useFocusableInput'
 import { HTMLAttributes, ReactNode, useState } from 'react'
 import { StyledTextField } from './TextField'
+import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 
 interface IAssignee {
   name: string
@@ -32,6 +33,7 @@ export default function Selector({ getSelectedValue, startIcon, value, selectorT
   const [inputStatusValue, setInputStatusValue] = useState('')
 
   const setSelectorRef = useFocusableInput(isOpen)
+  console.log('opppp', options)
 
   return (
     <Stack direction="column">
@@ -65,7 +67,9 @@ export default function Selector({ getSelectedValue, startIcon, value, selectorT
               }
             }}
             getOptionLabel={(option: unknown) =>
-              selectorType === SelectorType.ASSIGNEE_SELECTOR ? ((option as IAssignee).name as string) : (option as string)
+              selectorType === SelectorType.ASSIGNEE_SELECTOR
+                ? ((option as IAssignee).name as string)
+                : ((option as WorkflowStateResponse).name as string)
             }
             groupBy={(option: unknown) =>
               selectorType === SelectorType.ASSIGNEE_SELECTOR ? (option as IAssignee).type : ''
@@ -114,9 +118,9 @@ const StatusSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTMLL
       }}
     >
       <Stack direction="row" alignItems="center" columnGap={3}>
-        <Box>{statusIcons[option as StatusKey]}</Box>
+        <Box>{statusIcons[(option as WorkflowStateResponse).type]}</Box>
         <Typography variant="sm" fontWeight={400}>
-          {option as string}
+          {(option as WorkflowStateResponse).name as string}
         </Typography>
       </Stack>
     </Box>

@@ -7,25 +7,28 @@ import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { AttachmentIcon } from '@/icons'
 import { setShowModal } from '@/redux/features/createTaskSlice'
 import store from '@/redux/store'
-import { StatusKey, statusIcons } from '@/utils/iconMatcher'
+import { statusIcons } from '@/utils/iconMatcher'
 import { Close } from '@mui/icons-material'
 import { Avatar, Box, Stack, Typography, styled } from '@mui/material'
 import { ReactNode } from 'react'
-import { status, assignee } from '@/utils/mockData'
+import { assignee } from '@/utils/mockData'
 import { IAssignee } from '@/types/interfaces'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { useSelector } from 'react-redux'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 
-export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
+export const NewTaskForm = ({ handleCreate }: { handleCreate: Function }) => {
   const { workflowStates } = useSelector(selectTaskBoard)
 
   const { renderingItem: statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
-    item: status[0],
+    item: workflowStates[0],
   })
   const { renderingItem: assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
     item: assignee[0],
   })
+
+  console.log('ssssss', statusValue)
 
   return (
     <NewTaskContainer>
@@ -53,13 +56,13 @@ export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
             getSelectedValue={(newValue) => {
               updateStatusValue(newValue)
             }}
-            startIcon={statusIcons[statusValue as StatusKey]}
-            options={status}
+            startIcon={statusIcons[(statusValue as WorkflowStateResponse).type]}
+            options={workflowStates}
             value={statusValue}
             selectorType={SelectorType.STATUS_SELECTOR}
             buttonContent={
               <Typography variant="bodySm" lineHeight="16px" sx={{ color: (theme) => theme.color.gray[600] }}>
-                {statusValue as ReactNode}
+                {(statusValue as WorkflowStateResponse).name as ReactNode}
               </Typography>
             }
           />

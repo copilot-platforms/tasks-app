@@ -15,7 +15,7 @@ import { selectTaskBoard, updateWorkflowStateIdByTaskId } from '@/redux/features
 import { encodeToParamString } from '@/utils/generateParamString'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 
-export const TaskBoard = ({ handleCreate }: { handleCreate: () => {} }) => {
+export const TaskBoard = ({ handleCreate }: { handleCreate: Function }) => {
   const { showModal } = useSelector(selectCreateTask)
   const { workflowStates, tasks } = useSelector(selectTaskBoard)
   console.log('wwww', workflowStates)
