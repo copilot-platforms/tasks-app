@@ -10,10 +10,6 @@ export const getWorkflowStates = async (req: NextRequest) => {
   const workflowStatesService = new WorkflowStatesService(user)
   const workflowStates = await workflowStatesService.getAllWorkflowStates()
 
-  if (!workflowStates.length) {
-    await workflowStatesService.setDefaultWorkflowStates()
-  }
-
   return NextResponse.json({ workflowStates })
 }
 
