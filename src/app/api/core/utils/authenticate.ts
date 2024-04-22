@@ -14,12 +14,14 @@ import httpStatus from 'http-status'
  * and finally returns an instance of `User` that is associated with this request
  */
 const authenticate = async (req: NextRequest) => {
+  // Fetch token from search param and validate it
   const token = req.nextUrl.searchParams.get('token')
   const tokenParsed = z.string().safeParse(token)
   if (!tokenParsed.success) {
     throw new APIError(httpStatus.UNAUTHORIZED, 'Please provide a valid token')
   }
 
+  // Parse token payload from valid token
   const copilotClient = new CopilotAPI(tokenParsed.data)
   const payload = TokenSchema.safeParse(await copilotClient.getTokenPayload())
 
