@@ -23,7 +23,7 @@ export const TaskBoard = ({
   updateWorkflowStateIdOfTask: (taskId: string, targetWorkflowStateId: string) => void
 }) => {
   const { showModal } = useSelector(selectCreateTask)
-  const { workflowStates, tasks } = useSelector(selectTaskBoard)
+  const { workflowStates, tasks, token } = useSelector(selectTaskBoard)
   const { title, description, workflowStateId } = useSelector(selectCreateTask)
 
   const router = useRouter()
@@ -66,7 +66,9 @@ export const TaskBoard = ({
                   return (
                     <DragDropHandler key={task.id} accept={'taskCard'} index={index} id={task.id || ''}>
                       <Box
-                        onClick={() => router.push(`/detail/${task.id}/${encodeToParamString(task.title || '')}/iu`)}
+                        onClick={() =>
+                          router.push(`/detail/${task.id}/${encodeToParamString(task.title || '')}/iu?token=${token}`)
+                        }
                         key={task.id}
                         m="6px 0px"
                       >

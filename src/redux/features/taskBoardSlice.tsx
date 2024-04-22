@@ -6,11 +6,13 @@ import { TaskResponse } from '@/types/dto/tasks.dto'
 interface IInitialState {
   workflowStates: WorkflowStateResponse[]
   tasks: TaskResponse[]
+  token: string | undefined
 }
 
 const initialState: IInitialState = {
   workflowStates: [],
   tasks: [],
+  token: undefined,
 }
 
 const taskBoardSlice = createSlice({
@@ -22,6 +24,9 @@ const taskBoardSlice = createSlice({
     },
     setTasks: (state, action) => {
       state.tasks = action.payload
+    },
+    setToken: (state, action) => {
+      state.token = action.payload
     },
     updateWorkflowStateIdByTaskId: (state, action) => {
       let taskToUpdate = state.tasks.find((task) => task.id === action.payload.taskId)
@@ -36,6 +41,6 @@ const taskBoardSlice = createSlice({
 
 export const selectTaskBoard = (state: RootState) => state.taskBoard
 
-export const { setWorkflowStates, setTasks, updateWorkflowStateIdByTaskId } = taskBoardSlice.actions
+export const { setWorkflowStates, setTasks, updateWorkflowStateIdByTaskId, setToken } = taskBoardSlice.actions
 
 export default taskBoardSlice.reducer

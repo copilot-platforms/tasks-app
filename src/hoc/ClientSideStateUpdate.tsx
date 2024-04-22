@@ -1,6 +1,6 @@
 'use client'
 
-import { setTasks, setWorkflowStates } from '@/redux/features/taskBoardSlice'
+import { setTasks, setToken, setWorkflowStates } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
@@ -15,10 +15,12 @@ export const ClientSideStateUpdate = ({
   children,
   workflowStates,
   tasks,
+  token,
 }: {
   children: ReactNode
   workflowStates: WorkflowStateResponse[]
   tasks: TaskResponse[]
+  token: string
 }) => {
   useEffect(() => {
     if (workflowStates) {
@@ -27,6 +29,10 @@ export const ClientSideStateUpdate = ({
 
     if (tasks) {
       store.dispatch(setTasks(tasks))
+    }
+
+    if (token) {
+      store.dispatch(setToken(token))
     }
   }, [workflowStates, tasks])
 

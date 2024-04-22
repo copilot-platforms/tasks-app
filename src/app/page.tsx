@@ -39,7 +39,7 @@ export default async function Main({ searchParams }: { searchParams: { token: st
 
   return (
     <>
-      <ClientSideStateUpdate workflowStates={workflowStates} tasks={tasks}>
+      <ClientSideStateUpdate workflowStates={workflowStates} tasks={tasks} token={token}>
         <DndWrapper>
           <Header showCreateTaskButton={true} />
           <TaskBoard
