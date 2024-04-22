@@ -32,7 +32,6 @@ export default async function TaskDetailPage({
 }) {
   const { token } = searchParams
   const { task_id } = params
-  console.log('task_id', params.task_id)
 
   const task = await getOneTask(token, task_id)
 
