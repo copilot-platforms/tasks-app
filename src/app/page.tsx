@@ -7,8 +7,6 @@ import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { revalidateTag } from 'next/cache'
 
-export const revalidate = 0
-
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
     next: { tags: ['getAllWorkflowStates'] },
@@ -20,7 +18,9 @@ async function getAllWorkflowStates(token: string): Promise<WorkflowStateRespons
 }
 
 async function getAllTasks(token: string): Promise<TaskResponse[]> {
-  const res = await fetch(`${apiUrl}/api/tasks?token=${token}`)
+  const res = await fetch(`${apiUrl}/api/tasks?token=${token}`, {
+    next: { tags: ['getAllTasks'] },
+  })
 
   const data = await res.json()
 
@@ -53,7 +53,17 @@ export default async function Main({ searchParams }: { searchParams: { token: st
                   workflowStateId,
                 }),
               })
-              revalidateTag('getAllWorkflowStates')
+              revalidateTag('getAllTasks')
+            }}
+            updateWorkflowStateIdOfTask={async (taskId, targetWorkflowStateId) => {
+              'use server'
+              fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
+                method: 'PATCH',
+                body: JSON.stringify({
+                  workflowStateId: targetWorkflowStateId,
+                }),
+              })
+              revalidateTag('getAllTasks')
             }}
           />
         </DndWrapper>

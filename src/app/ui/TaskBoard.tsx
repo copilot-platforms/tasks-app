@@ -17,8 +17,10 @@ import { TaskResponse } from '@/types/dto/tasks.dto'
 
 export const TaskBoard = ({
   handleCreate,
+  updateWorkflowStateIdOfTask,
 }: {
   handleCreate: (title: string, description: string, workflowStateId: string) => void
+  updateWorkflowStateIdOfTask: (taskId: string, targetWorkflowStateId: string) => void
 }) => {
   const { showModal } = useSelector(selectCreateTask)
   const { workflowStates, tasks } = useSelector(selectTaskBoard)
@@ -30,6 +32,7 @@ export const TaskBoard = ({
     store.dispatch(
       updateWorkflowStateIdByTaskId({ taskId: payload.taskId, targetWorkflowStateId: payload.targetWorkflowStateId }),
     )
+    updateWorkflowStateIdOfTask(payload.taskId, payload.targetWorkflowStateId)
   }, [])
 
   /**
