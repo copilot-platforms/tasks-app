@@ -6,8 +6,8 @@ import { apiUrl } from '@/config'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { revalidateTag } from 'next/cache'
-
-export const revalidate = 0
+import { IAssignee } from '@/types/interfaces'
+import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -29,6 +29,16 @@ async function getAllTasks(token: string): Promise<TaskResponse[]> {
   return data.tasks
 }
 
+async function getAssigneeList(token: string): Promise<IAssignee> {
+  const res = await fetch(`${apiUrl}/api/users?token=${token}`, {
+    next: { tags: ['getAssigneeList'], revalidate: 0 },
+  })
+
+  const data = await res.json()
+
+  return data.users
+}
+
 export default async function Main({ searchParams }: { searchParams: { token: string } }) {
   const token = searchParams.token
 
@@ -38,10 +48,11 @@ export default async function Main({ searchParams }: { searchParams: { token: st
 
   const workflowStates = await getAllWorkflowStates(token)
   const tasks = await getAllTasks(token)
+  const assignee = addTypeToAssignee(await getAssigneeList(token))
 
   return (
     <>
-      <ClientSideStateUpdate workflowStates={workflowStates} tasks={tasks} token={token}>
+      <ClientSideStateUpdate workflowStates={workflowStates} tasks={tasks} token={token} assignee={assignee}>
         <DndWrapper>
           <Header showCreateTaskButton={true} />
           <TaskBoard

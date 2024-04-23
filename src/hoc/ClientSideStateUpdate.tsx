@@ -1,9 +1,11 @@
 'use client'
 
+import { setAssigneeList } from '@/redux/features/createTaskSlice'
 import { setTasks, setToken, setWorkflowStates } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
+import { IAssigneeCombined } from '@/types/interfaces'
 import { ReactNode, useEffect } from 'react'
 
 /**
@@ -15,11 +17,13 @@ export const ClientSideStateUpdate = ({
   children,
   workflowStates,
   tasks,
+  assignee,
   token,
 }: {
   children: ReactNode
   workflowStates: WorkflowStateResponse[]
   tasks: TaskResponse[]
+  assignee: IAssigneeCombined[]
   token: string
 }) => {
   useEffect(() => {
@@ -34,7 +38,11 @@ export const ClientSideStateUpdate = ({
     if (token) {
       store.dispatch(setToken(token))
     }
-  }, [workflowStates, tasks])
+
+    if (assignee) {
+      store.dispatch(setAssigneeList(assignee))
+    }
+  }, [workflowStates, tasks, token, assignee])
 
   return children
 }
