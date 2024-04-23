@@ -13,7 +13,7 @@ export const useHandleSelectorComponent = ({ item, type }: { item: unknown; type
 
   useEffect(() => {
     if (type === SelectorType.STATUS_SELECTOR) {
-      store.dispatch(setCreateTaskFields({ targetField: 'workflowStateId', value: (item as WorkflowStateResponse).id }))
+      store.dispatch(setCreateTaskFields({ targetField: 'workflowStateId', value: (item as WorkflowStateResponse)?.id }))
     }
 
     if (type === SelectorType.ASSIGNEE_SELECTOR) {

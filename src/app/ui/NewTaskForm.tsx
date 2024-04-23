@@ -56,16 +56,16 @@ export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
             getSelectedValue={(newValue) => {
               updateStatusValue(newValue)
               store.dispatch(
-                setCreateTaskFields({ targetField: 'workflowStateId', value: (newValue as WorkflowStateResponse).id }),
+                setCreateTaskFields({ targetField: 'workflowStateId', value: (newValue as WorkflowStateResponse)?.id }),
               )
             }}
-            startIcon={statusIcons[(statusValue as WorkflowStateResponse).type]}
+            startIcon={statusIcons[(statusValue as WorkflowStateResponse)?.type]}
             options={workflowStates}
             value={statusValue}
             selectorType={SelectorType.STATUS_SELECTOR}
             buttonContent={
               <Typography variant="bodySm" lineHeight="16px" sx={{ color: (theme) => theme.color.gray[600] }}>
-                {(statusValue as WorkflowStateResponse).name as ReactNode}
+                {(statusValue as WorkflowStateResponse)?.name as ReactNode}
               </Typography>
             }
           />
