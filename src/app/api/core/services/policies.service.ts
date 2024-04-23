@@ -12,6 +12,7 @@ export class PoliciesService extends BaseService {
     [UserRole.Client]: {
       [Resource.Tasks]: [UserAction.Read],
       [Resource.WorkflowState]: [UserAction.Read],
+      [Resource.Users]: [],
     },
   }
 
