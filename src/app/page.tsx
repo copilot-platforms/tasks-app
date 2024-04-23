@@ -56,7 +56,7 @@ export default async function Main({ searchParams }: { searchParams: { token: st
         <DndWrapper>
           <Header showCreateTaskButton={true} />
           <TaskBoard
-            handleCreate={async (title, description, workflowStateId) => {
+            handleCreate={async (title, description, workflowStateId, assigneeId, assigneeType) => {
               'use server'
               fetch(`${apiUrl}/api/tasks?token=${token}`, {
                 method: 'POST',
@@ -64,6 +64,8 @@ export default async function Main({ searchParams }: { searchParams: { token: st
                   title,
                   body: description,
                   workflowStateId,
+                  assigneeId,
+                  assigneeType,
                 }),
               })
               revalidateTag('getAllTasks')

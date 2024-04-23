@@ -11,15 +11,14 @@ import { statusIcons } from '@/utils/iconMatcher'
 import { Close } from '@mui/icons-material'
 import { Avatar, Box, Stack, Typography, styled } from '@mui/material'
 import { ReactNode } from 'react'
-import { assignee } from '@/utils/mockData'
-import { IAssignee } from '@/types/interfaces'
+import { IAssigneeCombined } from '@/types/interfaces'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { useSelector } from 'react-redux'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 
 export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
-  const { workflowStates } = useSelector(selectTaskBoard)
+  const { workflowStates, assignee } = useSelector(selectTaskBoard)
 
   const { renderingItem: statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
     item: workflowStates[0],
@@ -72,17 +71,41 @@ export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
           <Stack alignSelf="flex-start">
             <Selector
               getSelectedValue={(newValue) => {
-                updateAssigneeValue(newValue as IAssignee)
+                updateAssigneeValue(newValue as IAssigneeCombined)
+                const assigneeType = (newValue as IAssigneeCombined)?.type
+                store.dispatch(
+                  setCreateTaskFields({
+                    targetField: 'assigneeType',
+                    value:
+                      assigneeType === 'ius'
+                        ? 'internalUser'
+                        : assigneeType === 'clients'
+                          ? 'client'
+                          : assigneeType === 'companies'
+                            ? 'company'
+                            : '',
+                  }),
+                )
+                store.dispatch(
+                  setCreateTaskFields({ targetField: 'assigneeId', value: (newValue as IAssigneeCombined)?.id }),
+                )
               }}
               startIcon={
-                <Avatar alt="user" src={(assigneeValue as IAssignee)?.img} sx={{ width: '20px', height: '20px' }} />
+                <Avatar
+                  alt="user"
+                  src={
+                    (assigneeValue as IAssigneeCombined)?.iconImageUrl ||
+                    (assigneeValue as IAssigneeCombined)?.avatarImageUrl
+                  }
+                  sx={{ width: '20px', height: '20px' }}
+                />
               }
               options={assignee}
               value={assigneeValue}
               selectorType={SelectorType.ASSIGNEE_SELECTOR}
               buttonContent={
                 <Typography variant="bodySm" lineHeight="16px" sx={{ color: (theme) => theme.color.gray[600] }}>
-                  {(assigneeValue as IAssignee)?.name || 'No Assignee'}
+                  {(assigneeValue as IAssigneeCombined)?.name || (assigneeValue as IAssigneeCombined)?.givenName}
                 </Typography>
               }
             />

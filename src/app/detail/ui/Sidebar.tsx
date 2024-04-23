@@ -3,8 +3,7 @@
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { Avatar, Box, Stack, Typography, styled } from '@mui/material'
 import Selector, { SelectorType } from '@/components/inputs/Selector'
-import { assignee } from '@/utils/mockData'
-import { IAssignee } from '@/types/interfaces'
+import { IAssigneeCombined } from '@/types/interfaces'
 import { statusIcons } from '@/utils/iconMatcher'
 import { DatePickerComponent } from '@/components/inputs/DatePickerComponent'
 import { ReactNode } from 'react'
@@ -20,20 +19,25 @@ const StyledText = styled(Typography)(({ theme }) => ({
 
 export const Sidebar = ({
   selectedWorkflowState,
+  selectedAssigneeId,
   updateWorkflowState,
+  updateAssignee,
+  assignee,
 }: {
   selectedWorkflowState: WorkflowStateResponse
+  selectedAssigneeId: string | undefined
   updateWorkflowState: (workflowState: WorkflowStateResponse) => void
+  updateAssignee: (assigneeType: string, assigneeId: string) => void
+  assignee: IAssigneeCombined[]
 }) => {
   const { workflowStates } = useSelector(selectTaskBoard)
 
   const { renderingItem: statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
-    // item: workflowStates[0],
     item: selectedWorkflowState,
     type: SelectorType.STATUS_SELECTOR,
   })
   const { renderingItem: assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
-    item: assignee[0],
+    item: selectedAssigneeId ? assignee.find((el) => el.id === selectedAssigneeId) : assignee[0],
     type: SelectorType.ASSIGNEE_SELECTOR,
   })
 
@@ -51,7 +55,6 @@ export const Sidebar = ({
             getSelectedValue={(newValue) => {
               updateStatusValue(newValue)
               updateWorkflowState(newValue as WorkflowStateResponse)
-              // store.dispatch(setCreateTaskFields({ targetField: 'workflowStateId', value: (newValue as WorkflowStateResponse).id }))
             }}
             startIcon={statusIcons[(statusValue as WorkflowStateResponse)?.type]}
             options={workflowStates}
@@ -68,15 +71,33 @@ export const Sidebar = ({
           <StyledText variant="md">Assignee</StyledText>
           <Selector
             getSelectedValue={(newValue) => {
-              updateAssigneeValue(newValue as IAssignee)
+              const assignee = newValue as IAssigneeCombined
+              updateAssigneeValue(assignee)
+              const assigneeType =
+                assignee?.type === 'ius'
+                  ? 'internalUser'
+                  : assignee?.type === 'clients'
+                    ? 'client'
+                    : assignee?.type === 'companies'
+                      ? 'company'
+                      : ''
+              updateAssignee(assigneeType, assignee?.id)
             }}
-            startIcon={<Avatar alt="user" src={(assigneeValue as IAssignee).img} sx={{ width: '20px', height: '20px' }} />}
+            startIcon={
+              <Avatar
+                alt="user"
+                src={
+                  (assigneeValue as IAssigneeCombined)?.iconImageUrl || (assigneeValue as IAssigneeCombined)?.avatarImageUrl
+                }
+                sx={{ width: '20px', height: '20px' }}
+              />
+            }
             options={assignee}
             value={assigneeValue}
             selectorType={SelectorType.ASSIGNEE_SELECTOR}
             buttonContent={
               <Typography variant="bodySm" lineHeight="16px" sx={{ color: (theme) => theme.color.gray[600] }}>
-                {(assigneeValue as IAssignee)?.name || 'No Assignee'}
+                {(assigneeValue as IAssigneeCombined)?.name || (assigneeValue as IAssigneeCombined)?.givenName}
               </Typography>
             }
           />

@@ -4,9 +4,9 @@ export enum UserType {
 }
 
 export interface IAssignee {
-  ius: IIus[]
-  clients: IClient[]
-  companies: ICompany[]
+  ius: Omit<IIus, 'type'>[]
+  clients: Omit<IClient, 'type'>[]
+  companies: Omit<ICompany, 'type'>[]
 }
 
 export interface IIus {
@@ -14,6 +14,7 @@ export interface IIus {
   givenName: string
   familyName: string
   email: string
+  type: AssigneeType
 }
 
 export interface IClient {
@@ -25,6 +26,7 @@ export interface IClient {
   status: string
   avatarImageUrl: string
   customFields: unknown
+  type: AssigneeType
 }
 
 export interface ICompany {
@@ -32,8 +34,22 @@ export interface ICompany {
   name: string
   iconImageUrl: string
   fallbackColor: string
+  type: AssigneeType
 }
 
 export type AssigneeType = keyof IAssignee
 
-export type IAssigneeCombined = (IIus | IClient | ICompany) & { type: AssigneeType }
+export interface IAssigneeCombined {
+  id: string
+  givenName?: string
+  familyName?: string
+  email?: string
+  type: AssigneeType
+  companyId?: string
+  status?: string
+  avatarImageUrl?: string
+  customFields?: unknown
+  name?: string
+  iconImageUrl?: string
+  fallbackColor?: string
+}

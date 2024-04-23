@@ -2,6 +2,7 @@ import { SelectorType } from '@/components/inputs/Selector'
 import { setCreateTaskFields } from '@/redux/features/createTaskSlice'
 import store from '@/redux/store'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
+import { IAssigneeCombined } from '@/types/interfaces'
 import { useEffect, useState } from 'react'
 
 export const useHandleSelectorComponent = ({ item, type }: { item: unknown; type: SelectorType }) => {
@@ -17,9 +18,10 @@ export const useHandleSelectorComponent = ({ item, type }: { item: unknown; type
     }
 
     if (type === SelectorType.ASSIGNEE_SELECTOR) {
-      //do this later while integrating assignee
+      store.dispatch(setCreateTaskFields({ targetField: 'assigneeId', value: (item as IAssigneeCombined)?.id }))
+      store.dispatch(setCreateTaskFields({ targetField: 'assigneeType', value: (item as IAssigneeCombined)?.type }))
     }
-  }, [type])
+  }, [type, item])
 
   return {
     renderingItem,

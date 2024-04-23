@@ -19,12 +19,18 @@ export const TaskBoard = ({
   handleCreate,
   updateWorkflowStateIdOfTask,
 }: {
-  handleCreate: (title: string, description: string, workflowStateId: string) => void
+  handleCreate: (
+    title: string,
+    description: string,
+    workflowStateId: string,
+    assigneeId: string,
+    assigneeType: string,
+  ) => void
   updateWorkflowStateIdOfTask: (taskId: string, targetWorkflowStateId: string) => void
 }) => {
   const { showModal } = useSelector(selectCreateTask)
   const { workflowStates, tasks, token } = useSelector(selectTaskBoard)
-  const { title, description, workflowStateId } = useSelector(selectCreateTask)
+  const { title, description, workflowStateId, assigneeId, assigneeType } = useSelector(selectCreateTask)
 
   const router = useRouter()
 
@@ -92,7 +98,7 @@ export const TaskBoard = ({
         >
           <NewTaskForm
             handleCreate={() => {
-              handleCreate(title, description, workflowStateId)
+              handleCreate(title, description, workflowStateId, assigneeId, assigneeType)
               store.dispatch(setShowModal())
             }}
           />

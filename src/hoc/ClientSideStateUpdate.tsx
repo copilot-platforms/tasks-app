@@ -1,6 +1,6 @@
 'use client'
 
-import { setAssigneeList } from '@/redux/features/createTaskSlice'
+import { setAssigneeList } from '@/redux/features/taskBoardSlice'
 import { setTasks, setToken, setWorkflowStates } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
 import { TaskResponse } from '@/types/dto/tasks.dto'
@@ -21,10 +21,10 @@ export const ClientSideStateUpdate = ({
   token,
 }: {
   children: ReactNode
-  workflowStates: WorkflowStateResponse[]
-  tasks: TaskResponse[]
-  assignee: IAssigneeCombined[]
-  token: string
+  workflowStates?: WorkflowStateResponse[]
+  tasks?: TaskResponse[]
+  assignee?: IAssigneeCombined[]
+  token?: string
 }) => {
   useEffect(() => {
     if (workflowStates) {
