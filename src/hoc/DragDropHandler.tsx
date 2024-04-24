@@ -51,7 +51,7 @@ export const DragDropHandler = ({ children, accept, index, id, moveCard, onDropI
   drag(drop(ref))
 
   return (
-    <div ref={ref} style={{ opacity: opacity }}>
+    <div ref={ref} style={{ opacity }}>
       {children}
     </div>
   )
