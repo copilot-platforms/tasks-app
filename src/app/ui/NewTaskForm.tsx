@@ -20,14 +20,17 @@ import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
   const { workflowStates, assignee } = useSelector(selectTaskBoard)
 
-  const { renderingItem: statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
+  const { renderingItem: _statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
     item: workflowStates[0],
     type: SelectorType.STATUS_SELECTOR,
   })
-  const { renderingItem: assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
+  const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
     item: assignee[0],
     type: SelectorType.ASSIGNEE_SELECTOR,
   })
+
+  const statusValue = _statusValue as WorkflowStateResponse //typecasting
+  const assigneeValue = _assigneeValue as IAssigneeCombined //typecasting
 
   return (
     <NewTaskContainer>
@@ -58,21 +61,22 @@ export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
                 setCreateTaskFields({ targetField: 'workflowStateId', value: (newValue as WorkflowStateResponse)?.id }),
               )
             }}
-            startIcon={statusIcons[(statusValue as WorkflowStateResponse)?.type]}
+            startIcon={statusIcons[statusValue?.type]}
             options={workflowStates}
             value={statusValue}
             selectorType={SelectorType.STATUS_SELECTOR}
             buttonContent={
               <Typography variant="bodySm" lineHeight="16px" sx={{ color: (theme) => theme.color.gray[600] }}>
-                {(statusValue as WorkflowStateResponse)?.name as ReactNode}
+                {statusValue?.name as ReactNode}
               </Typography>
             }
           />
           <Stack alignSelf="flex-start">
             <Selector
-              getSelectedValue={(newValue) => {
-                updateAssigneeValue(newValue as IAssigneeCombined)
-                const assigneeType = (newValue as IAssigneeCombined)?.type
+              getSelectedValue={(_newValue) => {
+                const newValue = _newValue as IAssigneeCombined
+                updateAssigneeValue(newValue)
+                const assigneeType = newValue?.type
                 store.dispatch(
                   setCreateTaskFields({
                     targetField: 'assigneeType',
@@ -86,17 +90,12 @@ export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
                             : '',
                   }),
                 )
-                store.dispatch(
-                  setCreateTaskFields({ targetField: 'assigneeId', value: (newValue as IAssigneeCombined)?.id }),
-                )
+                store.dispatch(setCreateTaskFields({ targetField: 'assigneeId', value: newValue?.id }))
               }}
               startIcon={
                 <Avatar
                   alt="user"
-                  src={
-                    (assigneeValue as IAssigneeCombined)?.iconImageUrl ||
-                    (assigneeValue as IAssigneeCombined)?.avatarImageUrl
-                  }
+                  src={assigneeValue?.iconImageUrl || assigneeValue?.avatarImageUrl}
                   sx={{ width: '20px', height: '20px' }}
                 />
               }
@@ -105,7 +104,7 @@ export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
               selectorType={SelectorType.ASSIGNEE_SELECTOR}
               buttonContent={
                 <Typography variant="bodySm" lineHeight="16px" sx={{ color: (theme) => theme.color.gray[600] }}>
-                  {(assigneeValue as IAssigneeCombined)?.name || (assigneeValue as IAssigneeCombined)?.givenName}
+                  {assigneeValue?.name || assigneeValue?.givenName}
                 </Typography>
               }
             />
