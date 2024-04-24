@@ -134,7 +134,7 @@ export const TaskBoard = () => {
             <TaskColumn key={listId} columnName={`List ${listId}`} taskCount={String(listData.length)}>
               {listData.map((task: Task, index: number) => (
                 <DragDropHandler key={task.id} accept={'taskCard'} index={index} id={Number(listId)} moveCard={moveCard}>
-                  <Box onClick={() => router.push('/detail/WEB-01/my-new-task')}>
+                  <Box onClick={() => router.push('/detail/WEB-01/my-new-task/iu')}>
                     <TaskCard assignee={task.assignee} key={task.id} />
                   </Box>
                 </DragDropHandler>

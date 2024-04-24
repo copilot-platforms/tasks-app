@@ -17,9 +17,10 @@ interface Prop {
   title: string
   detail: string
   attachment: Attachment[]
+  isEditable: boolean
 }
 
-export const TaskEditor = ({ title, detail, attachment }: Prop) => {
+export const TaskEditor = ({ title, detail, attachment, isEditable }: Prop) => {
   const [updateTitle, setUpdateTitle] = useState(title)
   const [updateDetail, setUpdateDetail] = useState(detail)
   return (
@@ -41,6 +42,8 @@ export const TaskEditor = ({ title, detail, attachment }: Prop) => {
           }}
           value={updateTitle}
           onChange={(e) => setUpdateTitle(e.target.value)}
+          InputProps={{ readOnly: isEditable }}
+          disabled={!isEditable}
         />
       </Stack>
       <Box>
@@ -61,6 +64,8 @@ export const TaskEditor = ({ title, detail, attachment }: Prop) => {
           }}
           value={updateDetail}
           onChange={(e) => setUpdateDetail(e.target.value)}
+          InputProps={{ readOnly: isEditable }}
+          disabled={!isEditable}
         />
       </Box>
       <Stack direction="row" columnGap={3} mt={3}>

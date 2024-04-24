@@ -7,7 +7,7 @@ import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import store from '@/redux/store'
 import { setShowModal } from '@/redux/features/createTaskSlice'
 
-export const Header = () => {
+export const Header = ({ showCreateTaskButton }: { showCreateTaskButton: boolean }) => {
   return (
     <Box
       sx={{
@@ -17,13 +17,15 @@ export const Header = () => {
       <AppMargin size={SizeofAppMargin.LARGE} py="18.5px">
         <Stack direction="row" alignItems="center" justifyContent="space-between">
           <Typography variant="lg">Tasks</Typography>
-          <PrimaryBtn
-            startIcon={<Add />}
-            buttonText="New Task"
-            handleClick={() => {
-              store.dispatch(setShowModal())
-            }}
-          />
+          {showCreateTaskButton && (
+            <PrimaryBtn
+              startIcon={<Add />}
+              buttonText="New Task"
+              handleClick={() => {
+                store.dispatch(setShowModal())
+              }}
+            />
+          )}
         </Stack>
       </AppMargin>
     </Box>
