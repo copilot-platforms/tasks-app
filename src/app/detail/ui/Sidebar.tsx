@@ -32,14 +32,17 @@ export const Sidebar = ({
 }) => {
   const { workflowStates } = useSelector(selectTaskBoard)
 
-  const { renderingItem: statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
+  const { renderingItem: _statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
     item: selectedWorkflowState,
     type: SelectorType.STATUS_SELECTOR,
   })
-  const { renderingItem: assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
+  const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
     item: selectedAssigneeId ? assignee.find((el) => el.id === selectedAssigneeId) : assignee[0],
     type: SelectorType.ASSIGNEE_SELECTOR,
   })
+
+  const statusValue = _statusValue as WorkflowStateResponse //typecasting
+  const assigneeValue = _assigneeValue as IAssigneeCombined //typecasting
 
   return (
     <Box
@@ -56,13 +59,13 @@ export const Sidebar = ({
               updateStatusValue(newValue)
               updateWorkflowState(newValue as WorkflowStateResponse)
             }}
-            startIcon={statusIcons[(statusValue as WorkflowStateResponse)?.type]}
+            startIcon={statusIcons[statusValue?.type]}
             options={workflowStates}
             value={statusValue}
             selectorType={SelectorType.STATUS_SELECTOR}
             buttonContent={
               <Typography variant="bodySm" lineHeight="16px" sx={{ color: (theme) => theme.color.gray[600] }}>
-                {(statusValue as WorkflowStateResponse)?.name as ReactNode}
+                {statusValue?.name as ReactNode}
               </Typography>
             }
           />
@@ -86,9 +89,7 @@ export const Sidebar = ({
             startIcon={
               <Avatar
                 alt="user"
-                src={
-                  (assigneeValue as IAssigneeCombined)?.iconImageUrl || (assigneeValue as IAssigneeCombined)?.avatarImageUrl
-                }
+                src={assigneeValue?.iconImageUrl || assigneeValue?.avatarImageUrl}
                 sx={{ width: '20px', height: '20px' }}
               />
             }
@@ -97,7 +98,7 @@ export const Sidebar = ({
             selectorType={SelectorType.ASSIGNEE_SELECTOR}
             buttonContent={
               <Typography variant="bodySm" lineHeight="16px" sx={{ color: (theme) => theme.color.gray[600] }}>
-                {(assigneeValue as IAssigneeCombined)?.name || (assigneeValue as IAssigneeCombined)?.givenName}
+                {assigneeValue?.name || assigneeValue?.givenName}
               </Typography>
             }
           />
