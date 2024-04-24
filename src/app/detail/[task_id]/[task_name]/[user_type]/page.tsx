@@ -13,6 +13,8 @@ import Link from 'next/link'
 import { revalidateTag } from 'next/cache'
 import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
+import { updateAssignee, updateTaskDetail } from './actions'
+import { updateWorkflowStateIdOfTask } from '@/app/actions'
 
 export const revalidate = 0
 
@@ -76,14 +78,7 @@ export default async function TaskDetailPage({
               isEditable={params.user_type === UserType.INTERNAL_USER}
               updateTaskDetail={async (title, detail) => {
                 'use server'
-                fetch(`${apiUrl}/api/tasks/${task_id}?token=${token}`, {
-                  method: 'PATCH',
-                  body: JSON.stringify({
-                    title,
-                    body: detail,
-                  }),
-                })
-                revalidateTag('getAllTasks')
+                updateTaskDetail(token, task_id, title, detail)
               }}
             />
           </AppMargin>
@@ -95,25 +90,11 @@ export default async function TaskDetailPage({
             selectedWorkflowState={task.workflowState}
             updateWorkflowState={async (workflowState) => {
               'use server'
-              fetch(`${apiUrl}/api/tasks/${task_id}?token=${token}`, {
-                method: 'PATCH',
-                body: JSON.stringify({
-                  workflowStateId: workflowState.id,
-                }),
-              })
-              revalidateTag('getAllTasks')
+              updateWorkflowStateIdOfTask(token, task_id, workflowState.id)
             }}
             updateAssignee={async (assigneeType, assigneeId) => {
               'use server'
-              fetch(`${apiUrl}/api/tasks/${task_id}?token=${token}`, {
-                method: 'PATCH',
-                body: JSON.stringify({
-                  assigneeType,
-                  assigneeId,
-                }),
-              })
-              revalidateTag('getOneTask')
-              revalidateTag('getAllTasks')
+              updateAssignee(token, task_id, assigneeType, assigneeId)
             }}
           />
         </Box>
