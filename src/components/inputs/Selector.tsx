@@ -29,6 +29,12 @@ export default function Selector({ getSelectedValue, startIcon, value, selectorT
 
   const setSelectorRef = useFocusableInput(isOpen)
 
+  function detectSelectorType(option: unknown) {
+    return selectorType === SelectorType.ASSIGNEE_SELECTOR
+      ? ((option as IAssigneeCombined).name as string) || ((option as IAssigneeCombined).givenName as string)
+      : ((option as WorkflowStateResponse).name as string)
+  }
+
   return (
     <Stack direction="column">
       <SecondaryBtn
@@ -60,11 +66,7 @@ export default function Selector({ getSelectedValue, startIcon, value, selectorT
                 setIsOpen(false)
               }
             }}
-            getOptionLabel={(option: unknown) =>
-              selectorType === SelectorType.ASSIGNEE_SELECTOR
-                ? ((option as IAssigneeCombined).name as string) || ((option as IAssigneeCombined).givenName as string)
-                : ((option as WorkflowStateResponse).name as string)
-            }
+            getOptionLabel={(option: unknown) => detectSelectorType(option)}
             groupBy={(option: unknown) =>
               selectorType === SelectorType.ASSIGNEE_SELECTOR ? (option as IAssigneeCombined).type : ''
             }
