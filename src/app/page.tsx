@@ -8,6 +8,7 @@ import { TaskResponse } from '@/types/dto/tasks.dto'
 import { revalidateTag } from 'next/cache'
 import { IAssignee } from '@/types/interfaces'
 import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
+import { handleCreate, updateWorkflowStateIdOfTask } from './actions'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -58,27 +59,11 @@ export default async function Main({ searchParams }: { searchParams: { token: st
           <TaskBoard
             handleCreate={async (title, description, workflowStateId, assigneeId, assigneeType) => {
               'use server'
-              fetch(`${apiUrl}/api/tasks?token=${token}`, {
-                method: 'POST',
-                body: JSON.stringify({
-                  title,
-                  body: description,
-                  workflowStateId,
-                  assigneeId,
-                  assigneeType,
-                }),
-              })
-              revalidateTag('getAllTasks')
+              handleCreate(token, title, description, workflowStateId, assigneeId, assigneeType)
             }}
             updateWorkflowStateIdOfTask={async (taskId, targetWorkflowStateId) => {
               'use server'
-              fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
-                method: 'PATCH',
-                body: JSON.stringify({
-                  workflowStateId: targetWorkflowStateId,
-                }),
-              })
-              revalidateTag('getAllTasks')
+              updateWorkflowStateIdOfTask(token, taskId, targetWorkflowStateId)
             }}
           />
         </DndWrapper>
