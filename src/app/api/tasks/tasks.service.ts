@@ -7,6 +7,7 @@ import { UserAction } from '@api/core/types/user'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { NotificationTaskActions } from '@api/core/types/tasks'
 import { getEmailDetails, getInProductNotificationDetails, getNotificationParties } from '@api/tasks/tasks.helpers'
+import APIError from '@api/core/exceptions/api'
 
 type FilterByAssigneeId = {
   assigneeId: string
@@ -93,22 +94,38 @@ export class TasksService extends BaseService {
     // while clients can only view the tasks assigned to them or their company
     const filters = this.buildReadFilters(id)
 
-    return await this.db.task.findFirst({
+    const task = await this.db.task.findFirst({
       ...filters,
       include: {
         workflowState: true,
       },
     })
+    if (!task) throw new APIError(404, 'The requested task was not found')
+
+    return task
   }
 
   async updateOneTask(id: string, data: UpdateTaskRequest) {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Update, Resource.Tasks)
 
-    return await this.db.task.update({
+    const filters = this.buildReadFilters(id)
+
+    const task = await this.db.task.findFirst({
+      ...filters,
+    })
+    if (!task) throw new APIError(404, 'The requested task was not found')
+
+    const updatedTask = await this.db.task.update({
       where: { id },
       data,
     })
+
+    if (task?.assigneeId != updatedTask.assigneeId) {
+      this.createTaskNotification(updatedTask, NotificationTaskActions.Assigned)
+    }
+
+    return updatedTask
   }
 
   async deleteOneTask(id: string) {
