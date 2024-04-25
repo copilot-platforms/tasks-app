@@ -1,7 +1,7 @@
 import { NotificationTaskActions } from '@api/core/types/tasks'
 import { Task } from '@prisma/client'
 import { CopilotAPI } from '@/utils/CopilotAPI'
-import { ClientResponse, CompanyResponse, CopilotUser, InternalUsers } from '@/types/common'
+import { CompanyResponse, CopilotUser } from '@/types/common'
 
 /**
  * Helper function that sets the in-product notification title and body for a given notification trigger
