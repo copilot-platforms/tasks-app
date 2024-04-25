@@ -51,23 +51,23 @@ export default async function TaskDetailPage({
 
   return (
     <ClientSideStateUpdate assignee={assignee}>
-      <StyledBox>
-        <AppMargin size={SizeofAppMargin.LARGE} py="16px">
-          <Stack direction="row" alignItems="center" columnGap={3}>
-            <Link href={`/?token=${token}`}>
-              <SecondaryBtn buttonContent={<StyledTypography variant="sm">Tasks</StyledTypography>} enableBackground />
-            </Link>
-            <StyledKeyboardIcon />
-            <Typography variant="sm">{params.task_id.toLocaleUpperCase()}</Typography>
-          </Stack>
-        </AppMargin>
-      </StyledBox>
       <Stack direction="row">
         <Box
           sx={{
             width: 'calc(100% - 339px)',
           }}
         >
+          <StyledBox>
+            <AppMargin size={SizeofAppMargin.LARGE} py="16px">
+              <Stack direction="row" alignItems="center" columnGap={3}>
+                <Link href={`/?token=${token}`}>
+                  <SecondaryBtn buttonContent={<StyledTypography variant="sm">Tasks</StyledTypography>} enableBackground />
+                </Link>
+                <StyledKeyboardIcon />
+                <Typography variant="sm">{params.task_id.toLocaleUpperCase()}</Typography>
+              </Stack>
+            </AppMargin>
+          </StyledBox>
           <AppMargin size={SizeofAppMargin.LARGE} py="30px">
             <TaskEditor
               attachment={taskDetail.attachment}

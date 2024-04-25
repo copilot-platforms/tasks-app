@@ -11,6 +11,7 @@ import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { useSelector } from 'react-redux'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
+import { StyledBox } from './styledComponent'
 
 const StyledText = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[500],
@@ -51,7 +52,10 @@ export const Sidebar = ({
         height: '91vh',
       }}
     >
-      <AppMargin size={SizeofAppMargin.SMALL} py="31px">
+      <StyledBox p="19px 25px">
+        <Typography variant="sm">Properties</Typography>
+      </StyledBox>
+      <AppMargin size={SizeofAppMargin.SMALL}>
         <Stack direction="row" alignItems="center" m="16px 0px">
           <StyledText variant="md">Status</StyledText>
           <Selector
