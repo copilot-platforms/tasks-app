@@ -4,13 +4,11 @@ import { Box, Stack, Typography } from '@mui/material'
 import { Sidebar } from '@/app/detail/ui/Sidebar'
 import { taskDetail } from '@/utils/mockData'
 import { IAssignee, UserType } from '@/types/interfaces'
-import { decodeParamString } from '@/utils/generateParamString'
 import { apiUrl } from '@/config'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
 import { StyledBox, StyledKeyboardIcon, StyledTypography } from '@/app/detail/ui/styledComponent'
 import Link from 'next/link'
-import { revalidateTag } from 'next/cache'
 import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import { updateAssignee, updateTaskDetail } from './actions'
@@ -73,7 +71,7 @@ export default async function TaskDetailPage({
           <AppMargin size={SizeofAppMargin.LARGE} py="30px">
             <TaskEditor
               attachment={taskDetail.attachment}
-              title={decodeParamString(params.task_name)}
+              title={task?.title || ''}
               detail={task.body || ''}
               isEditable={params.user_type === UserType.INTERNAL_USER}
               updateTaskDetail={async (title, detail) => {

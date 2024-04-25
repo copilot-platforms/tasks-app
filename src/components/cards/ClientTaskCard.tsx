@@ -20,7 +20,7 @@ export const ClientTaskCard = () => {
           <Stack
             sx={{ width: '100%', cursor: 'pointer' }}
             direction="column"
-            onClick={() => router.push('/detail/WEB-01/my-new-task/cu')}
+            onClick={() => router.push('/detail/WEB-01/cu')}
           >
             <Typography variant="sm">Submit your intake info</Typography>
             <Typography variant="bodySm">
