@@ -8,6 +8,7 @@ import { CopilotAPI } from '@/utils/CopilotAPI'
 import { NotificationTaskActions } from '@api/core/types/tasks'
 import { getEmailDetails, getInProductNotificationDetails, getNotificationParties } from '@api/tasks/tasks.helpers'
 import APIError from '@api/core/exceptions/api'
+import httpStatus from 'http-status'
 
 type FilterByAssigneeId = {
   assigneeId: string
@@ -101,7 +102,7 @@ export class TasksService extends BaseService {
         workflowState: true,
       },
     })
-    if (!task) throw new APIError(404, 'The requested task was not found')
+    if (!task) throw new APIError(httpStatus.NOT_FOUND, 'The requested task was not found')
 
     return task
   }
@@ -116,7 +117,7 @@ export class TasksService extends BaseService {
       ...filters,
       include: { workflowState: true },
     })
-    if (!prevTask) throw new APIError(404, 'The requested task was not found')
+    if (!prevTask) throw new APIError(httpStatus.NOT_FOUND, 'The requested task was not found')
 
     // Get the updated task
     const updatedTask = await this.db.task.update({
