@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import authenticate from '@api/core/utils/authenticate'
-import { ViewSettingsService } from './viewSettings.service'
+import { ViewSettingsService } from '@api/view-settings/viewSettings.service'
 import { CreateViewSettingsSchema } from '@/types/dto/viewSettings.dto'
-import httpStatus from 'http-status'
 
 export const getViewSetting = async (req: NextRequest) => {
   const user = await authenticate(req)
