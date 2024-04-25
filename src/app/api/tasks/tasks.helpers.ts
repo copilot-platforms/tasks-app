@@ -64,7 +64,9 @@ export const getNotificationParties = async (copilot: CopilotAPI, task: Task, ac
   } else {
     senderId = task.assigneeId as string
     recipientId = task.createdBy // Report back to the IU who created this task
-    actionUser = await copilot.getClient(recipientId)
+
+    actionUser =
+      task.assigneeType === 'internalUser' ? await copilot.getInternalUser(senderId) : await copilot.getClient(recipientId)
   }
 
   return { senderId, recipientId, actionUser: `${actionUser.givenName} ${actionUser.familyName}` }

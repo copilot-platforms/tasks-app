@@ -79,6 +79,7 @@ export class TasksService extends BaseService {
       },
     })
 
+    // If new task is assigned to someone (IU / Client), send proper notification + email to them
     if (newTask.assigneeId) {
       this.createTaskNotification(newTask, NotificationTaskActions.Assigned)
     }
@@ -109,20 +110,28 @@ export class TasksService extends BaseService {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Update, Resource.Tasks)
 
+    // Query previous task
     const filters = this.buildReadFilters(id)
-
-    const task = await this.db.task.findFirst({
+    const prevTask = await this.db.task.findFirst({
       ...filters,
+      include: { workflowState: true },
     })
-    if (!task) throw new APIError(404, 'The requested task was not found')
+    if (!prevTask) throw new APIError(404, 'The requested task was not found')
 
+    // Get the updated task
     const updatedTask = await this.db.task.update({
       where: { id },
       data,
+      include: { workflowState: true },
     })
 
-    if (task?.assigneeId != updatedTask.assigneeId) {
+    // If task goes from unassigned to assigned, or assigneeId does not match
+    if (prevTask?.assigneeId != updatedTask.assigneeId) {
       this.createTaskNotification(updatedTask, NotificationTaskActions.Assigned)
+    }
+    // If task was previous in another state, and is moved to a 'completed' type WorkflowState
+    if (prevTask?.workflowState?.type !== 'completed' && updatedTask?.workflowState?.type === 'completed') {
+      this.createTaskNotification(updatedTask, NotificationTaskActions.Completed)
     }
 
     return updatedTask
