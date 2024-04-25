@@ -1,0 +1,55 @@
+import { StyledBox } from '@/app/detail/ui/styledComponent'
+import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
+import { Box, Stack, Typography, styled } from '@mui/material'
+import { SecondaryBtn } from '../buttons/SecondaryBtn'
+import { PrimaryBtn } from '../buttons/PrimaryBtn'
+
+interface Prop {
+  handleCancel: () => void
+  handleDelete: () => void
+}
+
+export const ConfirmDeleteUI = ({ handleCancel, handleDelete }: Prop) => {
+  return (
+    <UIContainer>
+      <StyledBox>
+        <AppMargin size={SizeofAppMargin.MEDIUM} py="20px">
+          <Stack direction="column" rowGap={4}>
+            <Typography variant="2xl">Are you sure you want to delete this task?</Typography>
+            <Typography variant="lg" sx={{ color: (theme) => theme.color.gray[500] }}>
+              This action can&apos;t be undone.
+            </Typography>
+          </Stack>
+        </AppMargin>
+      </StyledBox>
+      <AppMargin size={SizeofAppMargin.MEDIUM} py="21px">
+        <Stack direction="row" justifyContent="right" alignItems="center">
+          <Stack direction="row" columnGap={4}>
+            <SecondaryBtn
+              handleClick={handleCancel}
+              buttonContent={
+                <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[700] }}>
+                  Cancel
+                </Typography>
+              }
+            />
+            <PrimaryBtn handleClick={handleDelete} buttonText="Delete" buttonBackground="#CC0000" />
+          </Stack>
+        </Stack>
+      </AppMargin>
+    </UIContainer>
+  )
+}
+
+const UIContainer = styled(Box)(({ theme }) => ({
+  margin: '0 auto',
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: '470px',
+  borderRadius: '4px',
+  backgroundColor: '#ffffff',
+  boxShadow: '0px 16px 70px 0px rgba(0, 0, 0, 0.50)',
+  border: `1px solid ${theme.color.borders.border2}`,
+}))

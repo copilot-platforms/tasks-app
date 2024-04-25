@@ -1,6 +1,6 @@
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { TaskEditor } from '@/app/detail/ui/TaskEditor'
-import { Box, Stack, Typography } from '@mui/material'
+import { Box, IconButton, Menu, Stack, Typography } from '@mui/material'
 import { Sidebar } from '@/app/detail/ui/Sidebar'
 import { taskDetail } from '@/utils/mockData'
 import { IAssignee, UserType } from '@/types/interfaces'
@@ -13,6 +13,7 @@ import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import { updateAssignee, updateTaskDetail } from './actions'
 import { updateWorkflowStateIdOfTask } from '@/app/actions'
+import { MenuBox } from '@/app/detail/ui/MenuBox'
 
 export const revalidate = 0
 
@@ -34,6 +35,14 @@ async function getAssigneeList(token: string): Promise<IAssignee> {
   const data = await res.json()
 
   return data.users
+}
+
+async function deleteTask(token: string, task_id: string) {
+  await fetch(`${apiUrl}/api/tasks/${task_id}?token=${token}`, {
+    method: 'DELETE',
+  })
+  // revalidateTag('getAllTasks')
+  // redirect(`/?token=${token}`)
 }
 
 export default async function TaskDetailPage({
@@ -59,12 +68,15 @@ export default async function TaskDetailPage({
         >
           <StyledBox>
             <AppMargin size={SizeofAppMargin.LARGE} py="16px">
-              <Stack direction="row" alignItems="center" columnGap={3}>
-                <Link href={`/?token=${token}`}>
-                  <SecondaryBtn buttonContent={<StyledTypography variant="sm">Tasks</StyledTypography>} enableBackground />
-                </Link>
-                <StyledKeyboardIcon />
-                <Typography variant="sm">{params.task_id.toLocaleUpperCase()}</Typography>
+              <Stack direction="row" justifyContent="space-between">
+                <Stack direction="row" alignItems="center" columnGap={3}>
+                  <Link href={`/?token=${token}`}>
+                    <SecondaryBtn buttonContent={<StyledTypography variant="sm">Tasks</StyledTypography>} enableBackground />
+                  </Link>
+                  <StyledKeyboardIcon />
+                  <Typography variant="sm">{params.task_id.toLocaleUpperCase()}</Typography>
+                </Stack>
+                <MenuBox />
               </Stack>
             </AppMargin>
           </StyledBox>
@@ -78,6 +90,10 @@ export default async function TaskDetailPage({
                 'use server'
                 updateTaskDetail(token, task_id, title, detail)
               }}
+              deleteTask={async () => {
+                'use server'
+                deleteTask(token, task_id)
+              }}
             />
           </AppMargin>
         </Box>
@@ -88,7 +104,7 @@ export default async function TaskDetailPage({
             selectedWorkflowState={task.workflowState}
             updateWorkflowState={async (workflowState) => {
               'use server'
-              updateWorkflowStateIdOfTask(token, task_id, workflowState.id)
+              updateWorkflowStateIdOfTask(token, task_id, workflowState?.id)
             }}
             updateAssignee={async (assigneeType, assigneeId) => {
               'use server'
