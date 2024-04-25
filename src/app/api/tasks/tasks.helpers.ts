@@ -4,7 +4,7 @@ import { CopilotAPI } from '@/utils/CopilotAPI'
 import { ClientResponse, CompanyResponse, CopilotUser, InternalUsers } from '@/types/common'
 
 /**
- * Helper function that helps you get the in-product notification title and body for a given action
+ * Helper function that sets the in-product notification title and body for a given notification trigger
  * @param actionUser The user's name that triggered this action.
  */
 export const getInProductNotificationDetails = (actionUser: string) => {
@@ -21,7 +21,7 @@ export const getInProductNotificationDetails = (actionUser: string) => {
 }
 
 /**
- * Helper function that helps you get the notification email details for a given action
+ * Helper function that sets the notification email details for a given notification trigger
  * @param actionUser The user's name that triggered this action.
  * TODO: Right now its the same as in-product details, change this after finalizing email details
  */
@@ -43,7 +43,7 @@ export const getEmailDetails = (actionUser: string) => {
 }
 
 /**
- * Figures out the concerned sender and reciever for a notification based on the action that triggered it
+ * Get the concerned sender and reciever for a notification based on the action that triggered it
  */
 export const getNotificationParties = async (copilot: CopilotAPI, task: Task, action: NotificationTaskActions) => {
   let senderId: string
