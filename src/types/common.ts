@@ -106,12 +106,26 @@ export const CustomFieldResponseSchema = z.object({
 export type CustomFieldResponse = z.infer<typeof CustomFieldResponseSchema>
 
 export const ClientRequestSchema = z.object({
+  id: z.string(),
   givenName: z.string().optional(),
   familyName: z.string().optional(),
   companyId: z.string().uuid().optional(),
   customFields: z.record(z.string(), z.union([z.string(), z.array(z.string())]).nullish()).nullish(),
 })
 export type ClientRequest = z.infer<typeof ClientRequestSchema>
+
+export const InternalUsersSchema = z.object({
+  id: z.string(),
+  givenName: z.string(),
+  familyName: z.string(),
+  email: z.string(),
+})
+export type InternalUsers = z.infer<typeof InternalUsersSchema>
+
+export const InternalUsersResponseSchema = z.object({
+  data: z.array(InternalUsersSchema),
+})
+export type InternalUsersResponse = z.infer<typeof InternalUsersResponseSchema>
 
 /**
  * Notification RequestBody schema - accepted by SDK#createNotification

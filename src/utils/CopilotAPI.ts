@@ -22,6 +22,8 @@ import {
   IUTokenSchema,
   IUToken,
   NotificationRequestBody,
+  InternalUsersResponse,
+  InternalUsersResponseSchema,
 } from '@/types/common'
 import { copilotAPIKey as apiKey } from '@/config'
 
@@ -93,6 +95,10 @@ export class CopilotAPI {
 
   async getCustomFields(): Promise<CustomFieldResponse> {
     return CustomFieldResponseSchema.parse(await this.copilot.listCustomFields())
+  }
+
+  async getInternalUsers(): Promise<InternalUsersResponse> {
+    return InternalUsersResponseSchema.parse(await this.copilot.listInternalUsers({}))
   }
 
   async createNotification(requestBody: NotificationRequestBody) {
