@@ -21,6 +21,7 @@ import {
   ClientTokenSchema,
   IUTokenSchema,
   IUToken,
+  NotificationRequestBody,
 } from '@/types/common'
 import { copilotAPIKey as apiKey } from '@/config'
 
@@ -92,5 +93,11 @@ export class CopilotAPI {
 
   async getCustomFields(): Promise<CustomFieldResponse> {
     return CustomFieldResponseSchema.parse(await this.copilot.listCustomFields())
+  }
+
+  async createNotification(requestBody: NotificationRequestBody) {
+    return await this.copilot.createNotification({
+      requestBody,
+    })
   }
 }
