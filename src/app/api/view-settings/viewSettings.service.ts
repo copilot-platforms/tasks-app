@@ -15,18 +15,11 @@ export class ViewSettingsService extends BaseService {
     let viewSettings = await this.db.viewSetting.findFirst({
       where: { userId: this.user.internalUserId, workspaceId: this.user.workspaceId },
     })
-
     // If a viewSetting has not been set for this user, create a new one with default viewMode
-    // This isn't required but will simplify frontend logic and ensure a view setting always exists
-    // We can modify default view settings much easier from the backend or using config vars
+    // This isn't required but will simplify frontend logic and ensure a view setting always exists for a given IU
+    // We can modify default view settings much easier from the backend or using config vars in the future
     if (!viewSettings) {
-      viewSettings = await this.db.viewSetting.create({
-        data: {
-          userId: this.user.internalUserId as string,
-          workspaceId: this.user.workspaceId,
-          viewMode: this.DEFAULT_VIEW_MODE,
-        },
-      })
+      viewSettings = await this.createInitialViewSettings()
     }
 
     return viewSettings
@@ -42,18 +35,27 @@ export class ViewSettingsService extends BaseService {
       workspaceId: this.user.workspaceId,
     }
 
-    // Verify that a view setting exists, or if it doesn't - create a new view setting with provided data
+    // Verify that a view setting exists, or if it doesn't then create a new initial view setting with provided data
     let viewSettings = await this.db.viewSetting.findFirst({
       where: { userId: this.user.internalUserId, workspaceId: this.user.workspaceId },
     })
-
     if (!viewSettings) {
-      viewSettings = await this.db.viewSetting.create({ data: newViewSettingData })
+      return await this.createInitialViewSettings(data)
     }
 
     return await this.db.viewSetting.update({
       where: { id: viewSettings.id },
       data: newViewSettingData,
+    })
+  }
+
+  private async createInitialViewSettings(data?: CreateViewSettingsDTO) {
+    return await this.db.viewSetting.create({
+      data: {
+        userId: this.user.internalUserId as string,
+        workspaceId: this.user.workspaceId,
+        viewMode: this.DEFAULT_VIEW_MODE,
+      },
     })
   }
 }
