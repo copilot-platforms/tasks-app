@@ -1,13 +1,7 @@
 import { NotificationTaskActions } from '@api/core/types/tasks'
-import User from '@api/core/models/User.model'
 import { Task } from '@prisma/client'
 import { CopilotAPI } from '@/utils/CopilotAPI'
-import { ClientResponse, InternalUsers } from '@/types/common'
-
-type GetInProductNotificationDetailsArgs = {
-  assignedBy?: string
-  clientName?: string
-}
+import { ClientResponse, CompanyResponse, CopilotUser, InternalUsers } from '@/types/common'
 
 /**
  * Helper function that helps you get the in-product notification title and body for a given action
@@ -54,20 +48,34 @@ export const getEmailDetails = (actionUser: string) => {
 export const getNotificationParties = async (copilot: CopilotAPI, task: Task, action: NotificationTaskActions) => {
   let senderId: string
   let recipientId: string
-  // the user who assigned task to user OR the client who completed the task. Used to fetch the name of that particular IU/Client
-  let actionUser: InternalUsers | ClientResponse
+  // The IU/client/company that triggered this notification
+  let actionTrigger: CopilotUser | CompanyResponse
 
   if (action === NotificationTaskActions.Assigned) {
+    // Notification is sent by the person creating the task to the one it is assigned to.
     senderId = task.createdBy as string
     recipientId = task.assigneeId as string
-    actionUser = await copilot.getInternalUser(senderId)
+    // Notification action is triggered by the IU creating the task.
+    actionTrigger = await copilot.getInternalUser(senderId)
   } else {
+    // Notify the IU who created this task with the client / company as sender
     senderId = task.assigneeId as string
-    recipientId = task.createdBy // Report back to the IU who created this task
-
-    actionUser =
-      task.assigneeType === 'internalUser' ? await copilot.getInternalUser(senderId) : await copilot.getClient(recipientId)
+    recipientId = task.createdBy
+    // Since assignees can be company / iu / client, query details of who it was assigned to
+    if (task.assigneeType === 'internalUser') {
+      actionTrigger = await copilot.getInternalUser(senderId)
+    } else if (task.assigneeType === 'client') {
+      actionTrigger = await copilot.getClient(recipientId)
+    } else {
+      actionTrigger = await copilot.getCompany(recipientId)
+    }
   }
 
-  return { senderId, recipientId, actionUser: `${actionUser.givenName} ${actionUser.familyName}` }
+  // Get the name of the IU / client / company that triggered this notification
+  const actionUser =
+    task.assigneeType === 'company'
+      ? (actionTrigger as CompanyResponse).name
+      : `${(actionTrigger as CopilotUser).givenName} ${(actionTrigger as CopilotUser).familyName}`
+
+  return { senderId, recipientId, actionUser }
 }

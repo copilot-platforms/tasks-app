@@ -153,4 +153,6 @@ export const NotificationRequestBodySchema = z.object({
     .optional(),
 })
 
+export type CopilotUser = InternalUsers | ClientResponse
+
 export type NotificationRequestBody = z.infer<typeof NotificationRequestBodySchema>
