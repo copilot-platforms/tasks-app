@@ -106,7 +106,7 @@ export const CustomFieldResponseSchema = z.object({
 export type CustomFieldResponse = z.infer<typeof CustomFieldResponseSchema>
 
 export const ClientRequestSchema = z.object({
-  id: z.string(),
+  id: z.string().uuid(),
   givenName: z.string().optional(),
   familyName: z.string().optional(),
   companyId: z.string().uuid().optional(),
@@ -115,10 +115,10 @@ export const ClientRequestSchema = z.object({
 export type ClientRequest = z.infer<typeof ClientRequestSchema>
 
 export const InternalUsersSchema = z.object({
-  id: z.string(),
+  id: z.string().uuid(),
   givenName: z.string(),
   familyName: z.string(),
-  email: z.string(),
+  email: z.string().email(),
 })
 export type InternalUsers = z.infer<typeof InternalUsersSchema>
 
