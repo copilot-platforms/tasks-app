@@ -24,6 +24,8 @@ import {
   NotificationRequestBody,
   InternalUsersResponse,
   InternalUsersResponseSchema,
+  InternalUsers,
+  InternalUsersSchema,
 } from '@/types/common'
 import { copilotAPIKey as apiKey } from '@/config'
 
@@ -99,6 +101,10 @@ export class CopilotAPI {
 
   async getInternalUsers(): Promise<InternalUsersResponse> {
     return InternalUsersResponseSchema.parse(await this.copilot.listInternalUsers({}))
+  }
+
+  async getInternalUser(id: string): Promise<InternalUsers> {
+    return InternalUsersSchema.parse(await this.copilot.retrieveInternalUser({ id }))
   }
 
   async createNotification(requestBody: NotificationRequestBody) {
