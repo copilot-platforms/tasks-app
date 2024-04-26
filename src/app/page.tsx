@@ -60,11 +60,11 @@ export default async function Main({ searchParams }: { searchParams: { token: st
           <TaskBoard
             handleCreate={async (title, description, workflowStateId, assigneeId, assigneeType) => {
               'use server'
-              handleCreate(token, title, description, workflowStateId, assigneeId, assigneeType)
+              await handleCreate(token, title, description, workflowStateId, assigneeId, assigneeType)
             }}
             updateWorkflowStateIdOfTask={async (taskId, targetWorkflowStateId) => {
               'use server'
-              updateWorkflowStateIdOfTask(token, taskId, targetWorkflowStateId)
+              await updateWorkflowStateIdOfTask(token, taskId, targetWorkflowStateId)
             }}
           />
         </DndWrapper>

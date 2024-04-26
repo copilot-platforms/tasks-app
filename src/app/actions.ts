@@ -9,7 +9,7 @@ export const handleCreate = async (
   assigneeId: string,
   assigneeType: string,
 ) => {
-  fetch(`${apiUrl}/api/tasks?token=${token}`, {
+  await fetch(`${apiUrl}/api/tasks?token=${token}`, {
     method: 'POST',
     body: JSON.stringify({
       title,
@@ -23,7 +23,7 @@ export const handleCreate = async (
 }
 
 export const updateWorkflowStateIdOfTask = async (token: string, taskId: string, targetWorkflowStateId: string) => {
-  fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
+  await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
     method: 'PATCH',
     body: JSON.stringify({
       workflowStateId: targetWorkflowStateId,

@@ -101,11 +101,17 @@ export const TaskEditor = ({ title, detail, attachment, isEditable, updateTaskDe
 
       <Modal
         open={showConfirmDeleteModal}
-        onClose={() => {}}
+        onClose={() => store.dispatch(setShowConfirmDeleteModal())}
         aria-labelledby="delete-task-modal"
         aria-describedby="delete-task"
       >
-        <ConfirmDeleteUI handleCancel={() => store.dispatch(setShowConfirmDeleteModal())} handleDelete={deleteTask} />
+        <ConfirmDeleteUI
+          handleCancel={() => store.dispatch(setShowConfirmDeleteModal())}
+          handleDelete={() => {
+            deleteTask()
+            store.dispatch(setShowConfirmDeleteModal())
+          }}
+        />
       </Modal>
     </>
   )

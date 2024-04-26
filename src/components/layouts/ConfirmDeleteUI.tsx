@@ -1,3 +1,5 @@
+'use client'
+
 import { StyledBox } from '@/app/detail/ui/styledComponent'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { Box, Stack, Typography, styled } from '@mui/material'
@@ -33,7 +35,7 @@ export const ConfirmDeleteUI = ({ handleCancel, handleDelete }: Prop) => {
                 </Typography>
               }
             />
-            <PrimaryBtn handleClick={handleDelete} buttonText="Delete" buttonBackground="#CC0000" />
+            <PrimaryBtn handleClick={() => handleDelete()} buttonText="Delete" buttonBackground="#CC0000" />
           </Stack>
         </Stack>
       </AppMargin>

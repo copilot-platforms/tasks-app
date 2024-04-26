@@ -19,7 +19,20 @@ export const useHandleSelectorComponent = ({ item, type }: { item: unknown; type
 
     if (type === SelectorType.ASSIGNEE_SELECTOR) {
       store.dispatch(setCreateTaskFields({ targetField: 'assigneeId', value: (item as IAssigneeCombined)?.id }))
-      store.dispatch(setCreateTaskFields({ targetField: 'assigneeType', value: (item as IAssigneeCombined)?.type }))
+      const assigneeType = (item as IAssigneeCombined).type
+      store.dispatch(
+        setCreateTaskFields({
+          targetField: 'assigneeType',
+          value:
+            assigneeType === 'ius'
+              ? 'internalUser'
+              : assigneeType === 'clients'
+                ? 'client'
+                : assigneeType === 'companies'
+                  ? 'company'
+                  : '',
+        }),
+      )
     }
   }, [type, item])
 

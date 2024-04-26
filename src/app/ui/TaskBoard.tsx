@@ -8,11 +8,10 @@ import { DragDropHandler } from '@/hoc/DragDropHandler'
 import { NewTaskForm } from '@/app/ui/NewTaskForm'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { useSelector } from 'react-redux'
-import { selectCreateTask, setShowModal } from '@/redux/features/createTaskSlice'
+import { clearCreateTaskFields, selectCreateTask, setShowModal } from '@/redux/features/createTaskSlice'
 import store from '@/redux/store'
 import { useRouter } from 'next/navigation'
 import { selectTaskBoard, updateWorkflowStateIdByTaskId } from '@/redux/features/taskBoardSlice'
-import { encodeToParamString } from '@/utils/generateParamString'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 
 export const TaskBoard = ({
@@ -94,6 +93,7 @@ export const TaskBoard = ({
             handleCreate={() => {
               handleCreate(title, description, workflowStateId, assigneeId, assigneeType)
               store.dispatch(setShowModal())
+              store.dispatch(clearCreateTaskFields())
             }}
           />
         </Modal>
