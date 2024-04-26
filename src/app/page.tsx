@@ -1,3 +1,6 @@
+export const dynamic = 'force-dynamic'
+export const dynamicParams = true
+
 import { DndWrapper } from '@/hoc/DndWrapper'
 import { TaskBoard } from './ui/TaskBoard'
 import { Header } from '@/components/layouts/Header'
@@ -8,8 +11,6 @@ import { TaskResponse } from '@/types/dto/tasks.dto'
 import { IAssignee } from '@/types/interfaces'
 import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
 import { handleCreate, updateWorkflowStateIdOfTask } from './actions'
-
-export const revalidate = 0
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {

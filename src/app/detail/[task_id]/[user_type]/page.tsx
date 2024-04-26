@@ -1,6 +1,9 @@
+export const dynamic = 'force-dynamic'
+export const dynamicParams = true
+
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { TaskEditor } from '@/app/detail/ui/TaskEditor'
-import { Box, IconButton, Menu, Stack, Typography } from '@mui/material'
+import { Box, Stack, Typography } from '@mui/material'
 import { Sidebar } from '@/app/detail/ui/Sidebar'
 import { taskDetail } from '@/utils/mockData'
 import { IAssignee, UserType } from '@/types/interfaces'
@@ -14,8 +17,6 @@ import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import { deleteTask, updateAssignee, updateTaskDetail } from './actions'
 import { updateWorkflowStateIdOfTask } from '@/app/actions'
 import { MenuBox } from '@/app/detail/ui/MenuBox'
-
-export const revalidate = 0
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {

@@ -1,3 +1,5 @@
+'use client'
+
 import { TrashIcon } from '@/icons'
 import { Box, Stack, Typography } from '@mui/material'
 

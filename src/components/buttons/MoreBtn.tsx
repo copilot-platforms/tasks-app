@@ -1,3 +1,5 @@
+'use client'
+
 import { MoreHoriz } from '@mui/icons-material'
 import { Stack } from '@mui/material'
 
