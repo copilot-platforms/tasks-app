@@ -27,15 +27,6 @@ export const DragDropHandler = ({ children, accept, index, id, moveCard, onDropI
       }
     },
 
-    // hover(item: unknown, monitor: DropTargetMonitor) {
-    //   if (!ref.current) {
-    //     return
-    //   }
-    //   if (!moveCard) {
-    //     return
-    //   }
-    // },
-
     drop: (item: unknown, monitor) => {
       if (onDropItem) {
         onDropItem({
@@ -60,7 +51,7 @@ export const DragDropHandler = ({ children, accept, index, id, moveCard, onDropI
   drag(drop(ref))
 
   return (
-    <div ref={ref} style={{ opacity: opacity }}>
+    <div ref={ref} style={{ opacity }}>
       {children}
     </div>
   )

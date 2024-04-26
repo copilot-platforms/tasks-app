@@ -5,7 +5,11 @@ import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { apiUrl } from '@/config'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import { TaskResponse } from '@/types/dto/tasks.dto'
-import { revalidateTag } from 'next/cache'
+import { IAssignee } from '@/types/interfaces'
+import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
+import { handleCreate, updateWorkflowStateIdOfTask } from './actions'
+
+export const revalidate = 0
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -27,6 +31,16 @@ async function getAllTasks(token: string): Promise<TaskResponse[]> {
   return data.tasks
 }
 
+async function getAssigneeList(token: string): Promise<IAssignee> {
+  const res = await fetch(`${apiUrl}/api/users?token=${token}`, {
+    next: { tags: ['getAssigneeList'], revalidate: 0 },
+  })
+
+  const data = await res.json()
+
+  return data.users
+}
+
 export default async function Main({ searchParams }: { searchParams: { token: string } }) {
   const token = searchParams.token
 
@@ -36,34 +50,21 @@ export default async function Main({ searchParams }: { searchParams: { token: st
 
   const workflowStates = await getAllWorkflowStates(token)
   const tasks = await getAllTasks(token)
+  const assignee = addTypeToAssignee(await getAssigneeList(token))
 
   return (
     <>
-      <ClientSideStateUpdate workflowStates={workflowStates} tasks={tasks}>
+      <ClientSideStateUpdate workflowStates={workflowStates} tasks={tasks} token={token} assignee={assignee}>
         <DndWrapper>
           <Header showCreateTaskButton={true} />
           <TaskBoard
-            handleCreate={async (title, description, workflowStateId) => {
+            handleCreate={async (title, description, workflowStateId, assigneeId, assigneeType) => {
               'use server'
-              fetch(`${apiUrl}/api/tasks?token=${token}`, {
-                method: 'POST',
-                body: JSON.stringify({
-                  title,
-                  body: description,
-                  workflowStateId,
-                }),
-              })
-              revalidateTag('getAllTasks')
+              handleCreate(token, title, description, workflowStateId, assigneeId, assigneeType)
             }}
             updateWorkflowStateIdOfTask={async (taskId, targetWorkflowStateId) => {
               'use server'
-              fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
-                method: 'PATCH',
-                body: JSON.stringify({
-                  workflowStateId: targetWorkflowStateId,
-                }),
-              })
-              revalidateTag('getAllTasks')
+              updateWorkflowStateIdOfTask(token, taskId, targetWorkflowStateId)
             }}
           />
         </DndWrapper>

@@ -6,6 +6,8 @@ interface IInitialState {
   title: string
   description: string
   workflowStateId: string
+  assigneeType: string
+  assigneeId: string
 }
 
 const initialState: IInitialState = {
@@ -13,6 +15,8 @@ const initialState: IInitialState = {
   title: '',
   workflowStateId: '',
   description: '',
+  assigneeType: '',
+  assigneeId: '',
 }
 
 const createTaskSlice = createSlice({
