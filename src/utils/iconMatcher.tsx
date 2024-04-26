@@ -1,14 +1,13 @@
 import { DoneIcon, InprogressIcon, InreviewIcon, PdfIcon, PngIcon, TodoIcon } from '@/icons'
+import { WorkflowState } from '@/types/dto/workflowStates.dto'
 import { ReactNode } from 'react'
 
-export type StatusKey = 'Todo' | 'In Progress' | 'In Review' | 'Done'
-
-//This is mock data which will be replaced after API integration.
-export const statusIcons: { [key in StatusKey]: ReactNode } = {
-  Todo: <TodoIcon />,
-  'In Progress': <InprogressIcon />,
-  'In Review': <InreviewIcon />,
-  Done: <DoneIcon />,
+export const statusIcons: { [key in WorkflowState]: ReactNode } = {
+  backlog: <TodoIcon />,
+  unstarted: <TodoIcon />,
+  started: <InprogressIcon />,
+  completed: <DoneIcon />,
+  cancelled: <InreviewIcon />,
 }
 
 export const attachmentIcons: { [key: string]: ReactNode } = {

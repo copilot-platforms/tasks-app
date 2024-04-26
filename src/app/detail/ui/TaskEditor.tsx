@@ -18,16 +18,16 @@ interface Prop {
   detail: string
   attachment: Attachment[]
   isEditable: boolean
+  updateTaskDetail: (title: string, detail: string) => void
 }
 
-export const TaskEditor = ({ title, detail, attachment, isEditable }: Prop) => {
+export const TaskEditor = ({ title, detail, attachment, isEditable, updateTaskDetail }: Prop) => {
   const [updateTitle, setUpdateTitle] = useState(title)
   const [updateDetail, setUpdateDetail] = useState(detail)
-  console.log(isEditable)
   return (
     <>
       <Stack direction="row" alignItems="center" columnGap={2}>
-        <Box pt="5px">{statusIcons['Todo']}</Box>
+        <Box pt="5px">{statusIcons['unstarted']}</Box>
         <StyledTextField
           type="text"
           multiline
@@ -45,6 +45,9 @@ export const TaskEditor = ({ title, detail, attachment, isEditable }: Prop) => {
           onChange={(e) => setUpdateTitle(e.target.value)}
           InputProps={{ readOnly: !isEditable }}
           disabled={!isEditable}
+          onBlur={() => {
+            updateTaskDetail(updateTitle, updateDetail)
+          }}
         />
       </Stack>
       <Box>
@@ -67,6 +70,9 @@ export const TaskEditor = ({ title, detail, attachment, isEditable }: Prop) => {
           onChange={(e) => setUpdateDetail(e.target.value)}
           InputProps={{ readOnly: !isEditable }}
           disabled={!isEditable}
+          onBlur={() => {
+            updateTaskDetail(updateTitle, updateDetail)
+          }}
         />
       </Box>
       <Stack direction="row" columnGap={3} mt={3}>

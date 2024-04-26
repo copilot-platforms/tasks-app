@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
 export const WorkflowStateTypeSchema = z.enum(['backlog', 'unstarted', 'started', 'completed', 'cancelled'])
+export type WorkflowState = z.infer<typeof WorkflowStateTypeSchema>
 
 export const CreateWorkflowStateRequestSchema = z.object({
   type: WorkflowStateTypeSchema,
