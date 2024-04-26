@@ -1,7 +1,9 @@
 'use client'
 
+import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { Avatar, Stack, Typography, styled } from '@mui/material'
+import { useSelector } from 'react-redux'
 
 const TaskCardContainer = styled(Stack)(({ theme }) => ({
   border: `1px solid ${theme.color.borders.border}`,
@@ -11,12 +13,20 @@ const TaskCardContainer = styled(Stack)(({ theme }) => ({
 }))
 
 export const TaskCard = ({ task }: { task: TaskResponse }) => {
+  const { assignee } = useSelector(selectTaskBoard)
+
+  const currentAssignee = assignee.find((el) => el.id === task.assigneeId)
+
   return (
     <TaskCardContainer>
       <Stack direction="row" justifyContent="space-between">
         <Stack direction="row" alignItems="center" columnGap={1}>
-          <Avatar alt="user" src="https://avatar.iran.liara.run/public" sx={{ width: '20px', height: '20px' }} />
-          <Typography variant="sm">{task.assigneeId}</Typography>
+          <Avatar
+            alt="user"
+            src={currentAssignee?.iconImageUrl || currentAssignee?.avatarImageUrl}
+            sx={{ width: '20px', height: '20px' }}
+          />
+          <Typography variant="sm">{currentAssignee?.givenName || currentAssignee?.name}</Typography>
         </Stack>
         <Typography variant="bodyXs">WEB-01</Typography>
       </Stack>

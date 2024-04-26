@@ -6,12 +6,7 @@ import { useFocusableInput } from '@/hooks/useFocusableInput'
 import { HTMLAttributes, ReactNode, useState } from 'react'
 import { StyledTextField } from './TextField'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-
-interface IAssignee {
-  name: string
-  type: string
-  img?: string
-}
+import { IAssigneeCombined } from '@/types/interfaces'
 
 export enum SelectorType {
   ASSIGNEE_SELECTOR = 'assigneeSelector',
@@ -33,6 +28,12 @@ export default function Selector({ getSelectedValue, startIcon, value, selectorT
   const [inputStatusValue, setInputStatusValue] = useState('')
 
   const setSelectorRef = useFocusableInput(isOpen)
+
+  function detectSelectorType(option: unknown) {
+    return selectorType === SelectorType.ASSIGNEE_SELECTOR
+      ? ((option as IAssigneeCombined).name as string) || ((option as IAssigneeCombined).givenName as string)
+      : ((option as WorkflowStateResponse).name as string)
+  }
 
   return (
     <Stack direction="column">
@@ -65,13 +66,9 @@ export default function Selector({ getSelectedValue, startIcon, value, selectorT
                 setIsOpen(false)
               }
             }}
-            getOptionLabel={(option: unknown) =>
-              selectorType === SelectorType.ASSIGNEE_SELECTOR
-                ? ((option as IAssignee).name as string)
-                : ((option as WorkflowStateResponse).name as string)
-            }
+            getOptionLabel={(option: unknown) => detectSelectorType(option)}
             groupBy={(option: unknown) =>
-              selectorType === SelectorType.ASSIGNEE_SELECTOR ? (option as IAssignee).type : ''
+              selectorType === SelectorType.ASSIGNEE_SELECTOR ? (option as IAssigneeCombined).type : ''
             }
             inputValue={inputStatusValue}
             onInputChange={(_, newInputValue) => {
@@ -140,9 +137,13 @@ const AssigneeSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTM
       }}
     >
       <Stack direction="row" alignItems="center" columnGap={3}>
-        <Avatar alt="user" src={(option as IAssignee).img} sx={{ width: '20px', height: '20px' }} />
+        <Avatar
+          alt="user"
+          src={(option as IAssigneeCombined).avatarImageUrl || (option as IAssigneeCombined).iconImageUrl}
+          sx={{ width: '20px', height: '20px' }}
+        />
         <Typography variant="sm" fontWeight={400}>
-          {(option as IAssignee).name}
+          {(option as IAssigneeCombined)?.name || (option as IAssigneeCombined)?.givenName}
         </Typography>
       </Stack>
     </Box>

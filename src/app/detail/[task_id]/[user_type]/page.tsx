@@ -3,14 +3,16 @@ import { TaskEditor } from '@/app/detail/ui/TaskEditor'
 import { Box, Stack, Typography } from '@mui/material'
 import { Sidebar } from '@/app/detail/ui/Sidebar'
 import { taskDetail } from '@/utils/mockData'
-import { UserType } from '@/types/interfaces'
-import { decodeParamString } from '@/utils/generateParamString'
+import { IAssignee, UserType } from '@/types/interfaces'
 import { apiUrl } from '@/config'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
 import { StyledBox, StyledKeyboardIcon, StyledTypography } from '@/app/detail/ui/styledComponent'
 import Link from 'next/link'
-import { revalidateTag } from 'next/cache'
+import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
+import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
+import { updateAssignee, updateTaskDetail } from './actions'
+import { updateWorkflowStateIdOfTask } from '@/app/actions'
 
 export const revalidate = 0
 
@@ -24,6 +26,16 @@ async function getOneTask(token: string, taskId: string): Promise<TaskResponse> 
   return data.task
 }
 
+async function getAssigneeList(token: string): Promise<IAssignee> {
+  const res = await fetch(`${apiUrl}/api/users?token=${token}`, {
+    next: { tags: ['getAssigneeList'], revalidate: 0 },
+  })
+
+  const data = await res.json()
+
+  return data.users
+}
+
 export default async function TaskDetailPage({
   params,
   searchParams,
@@ -35,9 +47,10 @@ export default async function TaskDetailPage({
   const { task_id } = params
 
   const task = await getOneTask(token, task_id)
+  const assignee = addTypeToAssignee(await getAssigneeList(token))
 
   return (
-    <>
+    <ClientSideStateUpdate assignee={assignee}>
       <StyledBox>
         <AppMargin size={SizeofAppMargin.LARGE} py="16px">
           <Stack direction="row" alignItems="center" columnGap={3}>
@@ -58,39 +71,32 @@ export default async function TaskDetailPage({
           <AppMargin size={SizeofAppMargin.LARGE} py="30px">
             <TaskEditor
               attachment={taskDetail.attachment}
-              title={decodeParamString(params.task_name)}
+              title={task?.title || ''}
               detail={task.body || ''}
               isEditable={params.user_type === UserType.INTERNAL_USER}
               updateTaskDetail={async (title, detail) => {
                 'use server'
-                fetch(`${apiUrl}/api/tasks/${task_id}?token=${token}`, {
-                  method: 'PATCH',
-                  body: JSON.stringify({
-                    title,
-                    body: detail,
-                  }),
-                })
-                revalidateTag('getAllTasks')
+                updateTaskDetail(token, task_id, title, detail)
               }}
             />
           </AppMargin>
         </Box>
         <Box>
           <Sidebar
+            assignee={assignee}
+            selectedAssigneeId={task?.assigneeId}
             selectedWorkflowState={task.workflowState}
             updateWorkflowState={async (workflowState) => {
               'use server'
-              fetch(`${apiUrl}/api/tasks/${task_id}?token=${token}`, {
-                method: 'PATCH',
-                body: JSON.stringify({
-                  workflowStateId: workflowState.id,
-                }),
-              })
-              revalidateTag('getAllTasks')
+              updateWorkflowStateIdOfTask(token, task_id, workflowState.id)
+            }}
+            updateAssignee={async (assigneeType, assigneeId) => {
+              'use server'
+              updateAssignee(token, task_id, assigneeType, assigneeId)
             }}
           />
         </Box>
       </Stack>
-    </>
+    </ClientSideStateUpdate>
   )
 }

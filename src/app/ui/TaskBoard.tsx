@@ -19,12 +19,18 @@ export const TaskBoard = ({
   handleCreate,
   updateWorkflowStateIdOfTask,
 }: {
-  handleCreate: (title: string, description: string, workflowStateId: string) => void
+  handleCreate: (
+    title: string,
+    description: string,
+    workflowStateId: string,
+    assigneeId: string,
+    assigneeType: string,
+  ) => void
   updateWorkflowStateIdOfTask: (taskId: string, targetWorkflowStateId: string) => void
 }) => {
   const { showModal } = useSelector(selectCreateTask)
   const { workflowStates, tasks, token } = useSelector(selectTaskBoard)
-  const { title, description, workflowStateId } = useSelector(selectCreateTask)
+  const { title, description, workflowStateId, assigneeId, assigneeType } = useSelector(selectCreateTask)
 
   const router = useRouter()
 
@@ -65,13 +71,7 @@ export const TaskBoard = ({
                 {filterTaskWithWorkflowStateId(list.id).map((task, index) => {
                   return (
                     <DragDropHandler key={task.id} accept={'taskCard'} index={index} id={task.id || ''}>
-                      <Box
-                        onClick={() =>
-                          router.push(`/detail/${task.id}/${encodeToParamString(task.title || '')}/iu?token=${token}`)
-                        }
-                        key={task.id}
-                        m="6px 0px"
-                      >
+                      <Box onClick={() => router.push(`/detail/${task.id}/iu?token=${token}`)} key={task.id} m="6px 0px">
                         <TaskCard task={task} key={task.id} />
                       </Box>
                     </DragDropHandler>
@@ -92,7 +92,7 @@ export const TaskBoard = ({
         >
           <NewTaskForm
             handleCreate={() => {
-              handleCreate(title, description, workflowStateId)
+              handleCreate(title, description, workflowStateId, assigneeId, assigneeType)
               store.dispatch(setShowModal())
             }}
           />
