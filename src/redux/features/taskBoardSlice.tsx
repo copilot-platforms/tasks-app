@@ -2,13 +2,14 @@ import { createSlice } from '@reduxjs/toolkit'
 import { RootState } from '../store'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { TaskResponse } from '@/types/dto/tasks.dto'
-import { IAssigneeCombined } from '@/types/interfaces'
+import { IAssigneeCombined, View } from '@/types/interfaces'
 
 interface IInitialState {
   workflowStates: WorkflowStateResponse[]
   assignee: IAssigneeCombined[]
   tasks: TaskResponse[]
   token: string | undefined
+  view: View
 }
 
 const initialState: IInitialState = {
@@ -16,6 +17,7 @@ const initialState: IInitialState = {
   tasks: [],
   token: undefined,
   assignee: [],
+  view: View.LIST_VIEW,
 }
 
 const taskBoardSlice = createSlice({
