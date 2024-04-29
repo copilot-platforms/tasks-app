@@ -6,8 +6,9 @@ export default function ClientPage() {
   return (
     <>
       <Header showCreateTaskButton={false} />
-      <TaskRow showConfigurableIcons={false} />
-      <ClientTaskCard />
+      <TaskRow showConfigurableIcons={false} columnName="To do" taskCount={4}>
+        <ClientTaskCard />
+      </TaskRow>
     </>
   )
 }
