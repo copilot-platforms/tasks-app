@@ -2,11 +2,11 @@ services:
   postgres:
     image: postgres:15-alpine
     ports:
-      - $DATABASE_PORT:5432
+      - 5432:5432
     environment:
-      POSTGRES_USER: $DATABASE_USER
-      POSTGRES_PASSWORD: $DATABASE_PASSWORD
-      POSTGRES_DB: $DATABASE_NAME
+      POSTGRES_USER: 'postgres'
+      POSTGRES_PASSWORD: 'postgres'
+      POSTGRES_DB: 'copilot'
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
