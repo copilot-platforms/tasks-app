@@ -13,6 +13,8 @@ import store from '@/redux/store'
 import { useRouter } from 'next/navigation'
 import { selectTaskBoard, updateWorkflowStateIdByTaskId } from '@/redux/features/taskBoardSlice'
 import { TaskResponse } from '@/types/dto/tasks.dto'
+import { ListViewTaskCard } from '@/components/cards/ListViewTaskCard'
+import { TaskRow } from '@/components/cards/TaskRow'
 
 export const TaskBoard = ({
   handleCreate,
@@ -98,6 +100,8 @@ export const TaskBoard = ({
           />
         </Modal>
       </Stack>
+      <TaskRow showConfigurableIcons />
+      <ListViewTaskCard />
     </AppMargin>
   )
 }
