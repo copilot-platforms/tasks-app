@@ -6,16 +6,17 @@ import { Token } from '@/types/common'
  * This model is used to repressent the current user based on the token payload decrypted by Copilot SDK
  */
 class User {
-  token: string
-  role: UserRole
-  workspaceId: string
-  clientId?: string
-  companyId?: string
-  internalUserId?: string
+  readonly role: UserRole
+  readonly workspaceId: string
+  readonly clientId?: string
+  readonly companyId?: string
+  readonly internalUserId?: string
 
   // Instantiate a User from a request token & decrypted payload
-  constructor(token: string, tokenPayload: Token) {
-    this.token = token
+  constructor(
+    public readonly token: string,
+    tokenPayload: Token,
+  ) {
     this.role = tokenPayload.clientId ? UserRole.Client : UserRole.IU
     this.internalUserId = tokenPayload.internalUserId
     this.clientId = tokenPayload.clientId

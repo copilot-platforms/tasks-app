@@ -6,14 +6,13 @@ import httpStatus from 'http-status'
 
 /**
  * Resource-level policies control service for Users (IU + Client)
+ * Designed to be called at the service level to check if the actions the service is going to do is permitted for this user
  */
 export class PoliciesService extends BaseService {
-  private defaultPolicies: Record<UserRole.Client, Record<Resource, UserAction[]>> = {
-    [UserRole.Client]: {
-      [Resource.Tasks]: [UserAction.Read],
-      [Resource.WorkflowState]: [UserAction.Read],
-      [Resource.ViewSetting]: [],
-    },
+  private readonly defaultClientPolicies: Record<Resource, UserAction[]> = {
+    [Resource.Tasks]: [UserAction.Read],
+    [Resource.WorkflowState]: [UserAction.Read],
+    [Resource.ViewSetting]: [],
   }
 
   authorize(action: UserAction, resource: Resource): boolean | void {
@@ -24,9 +23,9 @@ export class PoliciesService extends BaseService {
       return true
     }
 
-    // Grab user role policies from `defaultPolicies`
-    const userPolicy = this.defaultPolicies[this.user.role][resource]
-    const isAuthorized = userPolicy.includes(UserAction.All) || userPolicy.includes(action)
+    // Grab client policies from `defaultClientPolicies`
+    const clientPolicyForResource = this.defaultClientPolicies[resource]
+    const isAuthorized = clientPolicyForResource.includes(UserAction.All) || clientPolicyForResource.includes(action)
     if (!isAuthorized) {
       throw new APIError(httpStatus.UNAUTHORIZED, 'You are not authorized to perform this action')
     }

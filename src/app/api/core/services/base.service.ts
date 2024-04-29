@@ -3,13 +3,10 @@ import { PrismaClient } from '@prisma/client'
 import User from '@api/core/models/User.model'
 
 /**
- * Base Service with access to db and current user
+ * Abstract Base Service with access to db and current user
  */
-export class BaseService {
-  protected db: PrismaClient = DBClient.getInstance()
-  public user: User
+export abstract class BaseService {
+  protected readonly db: PrismaClient = DBClient.getInstance()
 
-  constructor(user: User) {
-    this.user = user
-  }
+  constructor(public readonly user: User) {}
 }
