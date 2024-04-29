@@ -100,8 +100,6 @@ export const TaskBoard = ({
           />
         </Modal>
       </Stack>
-      <TaskRow showConfigurableIcons />
-      <ListViewTaskCard />
     </AppMargin>
   )
 }
