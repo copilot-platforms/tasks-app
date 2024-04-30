@@ -24,6 +24,13 @@ class WorkflowStatesService extends BaseService {
     return workflowStates
   }
 
+  async getOneWorkflowState(id: string) {
+    const policyGate = new PoliciesService(this.user)
+    policyGate.authorize(UserAction.Read, Resource.Tasks)
+
+    return await this.db.workflowState.findFirst({ where: { id } })
+  }
+
   async createWorkflowStates(data: CreateWorkflowStateRequest) {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Create, Resource.Tasks)
