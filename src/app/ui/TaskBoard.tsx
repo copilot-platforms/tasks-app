@@ -36,12 +36,15 @@ export const TaskBoard = ({
 
   const router = useRouter()
 
-  const onDropItem = useCallback((payload: { taskId: string; targetWorkflowStateId: string }) => {
-    store.dispatch(
-      updateWorkflowStateIdByTaskId({ taskId: payload.taskId, targetWorkflowStateId: payload.targetWorkflowStateId }),
-    )
-    updateTask(payload.taskId, { workflowStateId: payload.targetWorkflowStateId })
-  }, [])
+  const onDropItem = useCallback(
+    (payload: { taskId: string; targetWorkflowStateId: string }) => {
+      store.dispatch(
+        updateWorkflowStateIdByTaskId({ taskId: payload.taskId, targetWorkflowStateId: payload.targetWorkflowStateId }),
+      )
+      updateTask(payload.taskId, { workflowStateId: payload.targetWorkflowStateId })
+    },
+    [updateTask],
+  )
 
   /**
    * This function is responsible for returning the tasks that matches the workflowStateId of the workflowState
