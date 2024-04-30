@@ -4,7 +4,7 @@ export enum UserType {
 }
 
 export interface IAssignee {
-  ius: Omit<IIus, 'type'>[]
+  internalUsers: Omit<IIus, 'type'>[]
   clients: Omit<IClient, 'type'>[]
   companies: Omit<ICompany, 'type'>[]
 }

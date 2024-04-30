@@ -81,7 +81,7 @@ export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
                   setCreateTaskFields({
                     targetField: 'assigneeType',
                     value:
-                      assigneeType === 'ius'
+                      assigneeType === 'internalUsers'
                         ? 'internalUser'
                         : assigneeType === 'clients'
                           ? 'client'

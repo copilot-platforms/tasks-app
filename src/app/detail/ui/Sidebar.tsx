@@ -77,7 +77,7 @@ export const Sidebar = ({
               const assignee = newValue as IAssigneeCombined
               updateAssigneeValue(assignee)
               const assigneeType =
-                assignee?.type === 'ius'
+                assignee?.type === 'internalUsers'
                   ? 'internalUser'
                   : assignee?.type === 'clients'
                     ? 'client'
