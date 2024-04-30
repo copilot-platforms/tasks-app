@@ -3,6 +3,8 @@ import { AssigneeType, Task } from '@prisma/client'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { CompanyResponse, CopilotUser } from '@/types/common'
 import { z } from 'zod'
+import { CreateTaskRequest } from '@/types/dto/tasks.dto'
+import User from '@api/core/models/User.model'
 
 /**
  * Helper function that sets the in-product notification title and body for a given notification trigger
@@ -48,40 +50,74 @@ export const getEmailDetails = (actionUser: string) => {
  */
 export const getNotificationParties = async (copilot: CopilotAPI, task: Task, action: NotificationTaskActions) => {
   let senderId: string
-  let recipientId: string
+  let recipientIds: string[]
   // The IU/client/company that triggered this notification
-  let actionTrigger: CopilotUser | CompanyResponse
+  let sender: CopilotUser | CompanyResponse
 
   // Get info of the iu/client/company that a task was assigned to
-  const getAssignedTo = async () => {
+  const getAssignedTo = async (id: string) => {
     if (task.assigneeType === AssigneeType.internalUser) {
-      return await copilot.getInternalUser(senderId)
+      return await copilot.getInternalUser(id)
     } else if (task.assigneeType === AssigneeType.client) {
-      return await copilot.getClient(recipientId)
+      return await copilot.getClient(id)
     } else {
-      return await copilot.getCompany(recipientId)
+      return await copilot.getCompany(id)
     }
+  }
+
+  const getTaskCompletionRecipients = async (task: Task) => {
+    // What happens if client does not have a company id?
+    const associatedCompanyId = z.string().parse(task.associatedCompanyId)
+
+    return (await copilot.getInternalUsers()).data
+      .filter(
+        (internalUser) =>
+          !internalUser.isClientAccessLimited && internalUser.companyAccessList.includes(associatedCompanyId),
+      )
+      .map((internalUser) => internalUser.id)
   }
 
   if (action === NotificationTaskActions.Assigned) {
     // Notification is sent by the person creating the task to the one it is assigned to.
     senderId = task.createdBy
-    recipientId = z.string().parse(task.assigneeId)
+    recipientIds = [z.string().parse(task.assigneeId)]
     // Notification action is triggered by the IU creating the task.
-    actionTrigger = await copilot.getInternalUser(senderId)
+    sender = await copilot.getInternalUser(senderId)
   } else {
     // Notify the IU who created this task with the client / company as sender
     senderId = z.string().parse(task.assigneeId)
-    recipientId = task.createdBy
+    recipientIds = await getTaskCompletionRecipients(task)
     // Since assignees can be company / iu / client, query details of who it was assigned to
-    actionTrigger = await getAssignedTo()
+    sender = await getAssignedTo(senderId)
   }
 
   // Get the name of the IU / client / company that triggered this notification
-  const actionUser =
+  const senderName =
     task.assigneeType === AssigneeType.company
-      ? (actionTrigger as CompanyResponse).name
-      : `${(actionTrigger as CopilotUser).givenName} ${(actionTrigger as CopilotUser).familyName}`
+      ? (sender as CompanyResponse).name
+      : `${(sender as CopilotUser).givenName} ${(sender as CopilotUser).familyName}`
 
-  return { senderId, recipientId, actionUser }
+  return { senderId, recipientIds, senderName }
+}
+
+/**
+ * Gets the companyId associated with an assignee based on its type (internalUser / client / company)
+ * @param data Task payload for create / update
+ * @param user Current request user
+ * @returns companyId if exists else `null`
+ */
+export const getAssociatedCompanyId = async (data: CreateTaskRequest, user: User): Promise<string | null> => {
+  const { assigneeId, assigneeType } = data
+
+  if (!assigneeId || !assigneeType || assigneeType === AssigneeType.internalUser) {
+    return null
+  }
+
+  if (assigneeType === AssigneeType.company) {
+    return assigneeId
+  }
+
+  const copilotClient = new CopilotAPI(user.token)
+  const client = await copilotClient.getClient(assigneeId)
+  return client.companyId
 }
