@@ -4,7 +4,7 @@ import { Header } from '@/components/layouts/Header'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { apiUrl } from '@/config'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
-import { TaskResponse } from '@/types/dto/tasks.dto'
+import { TaskResponse, AssigneeType } from '@/types/dto/tasks.dto'
 import { IAssignee } from '@/types/interfaces'
 import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
 import { handleCreate, updateWorkflowStateIdOfTask } from './actions'
@@ -60,7 +60,17 @@ export default async function Main({ searchParams }: { searchParams: { token: st
           <TaskBoard
             handleCreate={async (title, description, workflowStateId, assigneeId, assigneeType) => {
               'use server'
-              handleCreate(token, title, description, workflowStateId, assigneeId, assigneeType)
+              //This type casting should be removed in the later PR by assigning the AssigneeType type
+              //for the assigneeType variable. This is not done in this PR to avoid changes and prevent conflicts
+              //in multiple files.
+              const _assigneeType = assigneeType as AssigneeType
+              handleCreate(token, {
+                title,
+                body: description,
+                workflowStateId,
+                assigneeId,
+                assigneeType: _assigneeType,
+              })
             }}
             updateWorkflowStateIdOfTask={async (taskId, targetWorkflowStateId) => {
               'use server'
