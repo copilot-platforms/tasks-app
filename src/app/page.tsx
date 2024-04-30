@@ -58,19 +58,9 @@ export default async function Main({ searchParams }: { searchParams: { token: st
         <DndWrapper>
           <Header showCreateTaskButton={true} />
           <TaskBoard
-            handleCreate={async (title, description, workflowStateId, assigneeId, assigneeType) => {
+            handleCreate={async (createTaskPayload) => {
               'use server'
-              //This type casting should be removed in the later PR by assigning the AssigneeType type
-              //for the assigneeType variable. This is not done in this PR to avoid changes and prevent conflicts
-              //in multiple files.
-              const _assigneeType = assigneeType as AssigneeType
-              handleCreate(token, {
-                title,
-                body: description,
-                workflowStateId,
-                assigneeId,
-                assigneeType: _assigneeType,
-              })
+              handleCreate(token, createTaskPayload)
             }}
             updateWorkflowStateIdOfTask={async (taskId, targetWorkflowStateId) => {
               'use server'

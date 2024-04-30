@@ -1,12 +1,13 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { RootState } from '../store'
+import { AssigneeType } from '@/types/dto/tasks.dto'
 
 interface IInitialState {
   showModal: boolean
   title: string
   description: string
   workflowStateId: string
-  assigneeType: string
+  assigneeType: AssigneeType
   assigneeId: string
 }
 
@@ -15,7 +16,7 @@ const initialState: IInitialState = {
   title: '',
   workflowStateId: '',
   description: '',
-  assigneeType: '',
+  assigneeType: undefined,
   assigneeId: '',
 }
 

@@ -13,19 +13,13 @@ import store from '@/redux/store'
 import { useRouter } from 'next/navigation'
 import { selectTaskBoard, updateWorkflowStateIdByTaskId } from '@/redux/features/taskBoardSlice'
 import { encodeToParamString } from '@/utils/generateParamString'
-import { TaskResponse } from '@/types/dto/tasks.dto'
+import { CreateTaskRequest, TaskResponse } from '@/types/dto/tasks.dto'
 
 export const TaskBoard = ({
   handleCreate,
   updateWorkflowStateIdOfTask,
 }: {
-  handleCreate: (
-    title: string,
-    description: string,
-    workflowStateId: string,
-    assigneeId: string,
-    assigneeType: string,
-  ) => void
+  handleCreate: (createTaskPayload: CreateTaskRequest) => void
   updateWorkflowStateIdOfTask: (taskId: string, targetWorkflowStateId: string) => void
 }) => {
   const { showModal } = useSelector(selectCreateTask)
@@ -92,7 +86,7 @@ export const TaskBoard = ({
         >
           <NewTaskForm
             handleCreate={() => {
-              handleCreate(title, description, workflowStateId, assigneeId, assigneeType)
+              handleCreate({ title, body: description, workflowStateId, assigneeType, assigneeId })
               store.dispatch(setShowModal())
             }}
           />
