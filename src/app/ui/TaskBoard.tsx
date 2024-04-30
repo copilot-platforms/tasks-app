@@ -56,7 +56,7 @@ export const TaskBoard = ({
   /**
    * This function is responsible for calculating the task count based on the workflowStateId
    */
-  const calculateTaskCountBasedOnWorkflowStateId = (workflowStateId: string): number => {
+  const taskCountForWorkflowStateId = (workflowStateId: string): number => {
     return tasks.filter((task) => task.workflowStateId === workflowStateId).length
   }
 
@@ -73,11 +73,7 @@ export const TaskBoard = ({
           if (view === View.BOARD_VIEW) {
             return (
               <DragDropHandler key={list.id} accept={'taskCard'} index={index} id={list.id} onDropItem={onDropItem}>
-                <TaskColumn
-                  key={list.id}
-                  columnName={list.name}
-                  taskCount={calculateTaskCountBasedOnWorkflowStateId(list.id)}
-                >
+                <TaskColumn key={list.id} columnName={list.name} taskCount={taskCountForWorkflowStateId(list.id)}>
                   {filterTaskWithWorkflowStateId(list.id).map((task, index) => {
                     return (
                       <DragDropHandler key={task.id} accept={'taskCard'} index={index} id={task.id || ''}>
@@ -97,7 +93,7 @@ export const TaskBoard = ({
                 <TaskRow
                   key={list.id}
                   columnName={list.name}
-                  taskCount={calculateTaskCountBasedOnWorkflowStateId(list.id)}
+                  taskCount={taskCountForWorkflowStateId(list.id)}
                   showConfigurableIcons
                 >
                   {filterTaskWithWorkflowStateId(list.id).map((task, index) => {
