@@ -119,6 +119,8 @@ export const InternalUsersSchema = z.object({
   givenName: z.string(),
   familyName: z.string(),
   email: z.string(),
+  isClientAccessLimited: z.boolean(),
+  companyAccessList: z.array(z.string()),
 })
 export type InternalUsers = z.infer<typeof InternalUsersSchema>
 
