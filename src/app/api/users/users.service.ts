@@ -3,7 +3,7 @@ import { BaseService } from '@api/core/services/base.service'
 import User from '@api/core/models/User.model'
 import { PoliciesService } from '@api/core/services/policies.service'
 import { Resource } from '@api/core/types/api'
-import { UserAction } from '../core/types/user'
+import { UserAction } from '@api/core/types/user'
 
 class UsersService extends BaseService {
   private copilot: CopilotAPI
@@ -23,7 +23,7 @@ class UsersService extends BaseService {
       this.copilot.getCompanies(),
     ])
 
-    return { ius: ius.data, clients: clients.data, companies: companies.data }
+    return { internalUsers: ius.data, clients: clients.data, companies: companies.data }
   }
 }
 
