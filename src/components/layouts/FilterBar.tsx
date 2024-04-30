@@ -11,9 +11,7 @@ import { setFilteredTasks } from '@/redux/features/taskBoardSlice'
 export const FilterBar = ({}: {}) => {
   const [searchText, setSearchText] = useState('')
 
-  useEffect(() => {
-    store.dispatch(setFilteredTasks(searchText))
-  }, [searchText])
+  useEffect(() => {}, [searchText])
   return (
     <Box
       sx={{
@@ -23,7 +21,13 @@ export const FilterBar = ({}: {}) => {
       <AppMargin size={SizeofAppMargin.LARGE} py="18.5px">
         <Stack direction="row" alignItems="center" justifyContent="space-between">
           <Typography variant="lg">Filter Bar Here</Typography>
-          <SearchBar value={searchText} getSearchKeyword={(keyword) => setSearchText(keyword)} />
+          <SearchBar
+            value={searchText}
+            getSearchKeyword={(keyword) => {
+              setSearchText(keyword)
+              store.dispatch(setFilteredTasks(keyword))
+            }}
+          />
         </Stack>
       </AppMargin>
     </Box>
