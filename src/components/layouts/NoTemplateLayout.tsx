@@ -1,6 +1,8 @@
 'use client'
 
-import { Stack, Typography } from '@mui/material'
+import { PlusIcon, TemplateIcon } from '@/icons'
+import { Box, Stack, Typography } from '@mui/material'
+import { PrimaryBtn } from '../buttons/PrimaryBtn'
 
 export const NoTemplateLayout = () => {
   return (
@@ -26,13 +28,25 @@ export const NoTemplateLayout = () => {
           height: '40px',
         }}
       >
-        <h1>icon here</h1>
+        <Stack
+          direction="row"
+          justifyContent="center"
+          alignItems="center"
+          sx={{
+            borderRadius: '6px',
+          }}
+        >
+          <TemplateIcon />
+        </Stack>
       </Stack>
 
-      <Typography variant="2xl">Advanced Profile Settings</Typography>
+      <Typography variant="2xl">No templates have been created yet</Typography>
       <Typography variant="bodyMd" fontSize="15px" sx={{ color: (theme) => theme.color.gray[500] }}>
-        Advanced settings for your profile will show here if you are given access to them.
+        Templates will be shown here
       </Typography>
+      <Box width="fit-content">
+        <PrimaryBtn handleClick={() => {}} buttonText="New Template" startIcon={<PlusIcon />} />
+      </Box>
     </Stack>
   )
 }
