@@ -1,8 +1,7 @@
 import { InputAdornment, styled } from '@mui/material'
 import { useState } from 'react'
-
-import { Search } from '@mui/icons-material'
 import { StyledTextField } from '../inputs/TextField'
+import { SearchIcon } from '@/icons'
 
 interface ISearchBar {
   value: string
@@ -24,10 +23,10 @@ const SearchBar = ({ value, getSearchKeyword }: ISearchBar) => {
           <InputAdornment
             position="start"
             sx={{
-              cursor: 'pointer',
+              cursor: 'text',
             }}
           >
-            <Search />
+            <SearchIcon />
           </InputAdornment>
         ),
       }}

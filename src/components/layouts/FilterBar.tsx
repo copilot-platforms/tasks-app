@@ -3,10 +3,9 @@
 import { Box, Stack, Typography } from '@mui/material'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { useEffect, useState } from 'react'
-import SearchBar from '../searchBar/SearchBar'
 import store from '@/redux/store'
-import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import { setFilteredTasks } from '@/redux/features/taskBoardSlice'
+import SearchBar from '@/components/searchBar'
 
 export const FilterBar = ({}: {}) => {
   const [searchText, setSearchText] = useState('')
@@ -20,7 +19,7 @@ export const FilterBar = ({}: {}) => {
     >
       <AppMargin size={SizeofAppMargin.LARGE} py="18.5px">
         <Stack direction="row" alignItems="center" justifyContent="space-between">
-          <Typography variant="lg">Filter Bar Here</Typography>
+          <div> </div>
           <SearchBar
             value={searchText}
             getSearchKeyword={(keyword) => {
