@@ -1,23 +1,11 @@
 import { apiUrl } from '@/config'
+import { CreateTaskRequest } from '@/types/dto/tasks.dto'
 import { revalidateTag } from 'next/cache'
 
-export const handleCreate = async (
-  token: string,
-  title: string,
-  description: string,
-  workflowStateId: string,
-  assigneeId: string,
-  assigneeType: string,
-) => {
+export const handleCreate = async (token: string, payload: CreateTaskRequest) => {
   fetch(`${apiUrl}/api/tasks?token=${token}`, {
     method: 'POST',
-    body: JSON.stringify({
-      title,
-      body: description,
-      workflowStateId,
-      assigneeId,
-      assigneeType,
-    }),
+    body: JSON.stringify(payload),
   })
   revalidateTag('getAllTasks')
 }

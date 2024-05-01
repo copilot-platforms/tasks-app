@@ -4,7 +4,7 @@ import { Header } from '@/components/layouts/Header'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { apiUrl } from '@/config'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
-import { TaskResponse } from '@/types/dto/tasks.dto'
+import { TaskResponse, AssigneeType } from '@/types/dto/tasks.dto'
 import { IAssignee } from '@/types/interfaces'
 import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
 import { handleCreate, updateWorkflowStateIdOfTask } from './actions'
@@ -60,9 +60,9 @@ export default async function Main({ searchParams }: { searchParams: { token: st
           <Header showCreateTaskButton={true} />
           <FilterBar />
           <TaskBoard
-            handleCreate={async (title, description, workflowStateId, assigneeId, assigneeType) => {
+            handleCreate={async (createTaskPayload) => {
               'use server'
-              handleCreate(token, title, description, workflowStateId, assigneeId, assigneeType)
+              handleCreate(token, createTaskPayload)
             }}
             updateWorkflowStateIdOfTask={async (taskId, targetWorkflowStateId) => {
               'use server'
