@@ -1,3 +1,5 @@
+'use client'
+
 export { default as TodoIcon } from './todo.svg'
 export { default as InprogressIcon } from './inprogress.svg'
 export { default as InreviewIcon } from './inreview.svg'
@@ -11,3 +13,4 @@ export { default as CalenderIcon } from './calendar-edit.svg'
 export { default as TrashIcon } from './trash.svg'
 export { default as PlusIcon } from './plus.svg'
 export { default as TemplateIcon } from './template.svg'
+export { default as EditIcon } from './edit.svg'

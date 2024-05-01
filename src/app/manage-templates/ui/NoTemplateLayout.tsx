@@ -1,8 +1,8 @@
 'use client'
 
+import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 import { PlusIcon, TemplateIcon } from '@/icons'
 import { Box, Stack, Typography } from '@mui/material'
-import { PrimaryBtn } from '../buttons/PrimaryBtn'
 
 export const NoTemplateLayout = () => {
   return (
