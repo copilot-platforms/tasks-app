@@ -7,10 +7,9 @@ import store from '@/redux/store'
 import { setFilteredTasks } from '@/redux/features/taskBoardSlice'
 import SearchBar from '@/components/searchBar'
 
-export const FilterBar = ({}: {}) => {
+export const FilterBar = () => {
   const [searchText, setSearchText] = useState('')
 
-  useEffect(() => {}, [searchText])
   return (
     <Box
       sx={{
