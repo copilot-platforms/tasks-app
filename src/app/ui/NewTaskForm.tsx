@@ -33,6 +33,9 @@ export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
   const statusValue = _statusValue as WorkflowStateResponse //typecasting
   const assigneeValue = _assigneeValue as IAssigneeCombined //typecasting
 
+  const { assigneeType } = useSelector(selectCreateTask)
+  console.log('hereee', assigneeType)
+
   return (
     <NewTaskContainer>
       <Stack
