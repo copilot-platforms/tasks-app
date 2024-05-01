@@ -1,6 +1,8 @@
+'use client'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { TemplateCard } from '@/components/cards/TemplateCard'
 import { Stack } from '@mui/material'
+import { TemplateForm } from './ui/TemplateForm'
 
 export default async function ManageTemplatesPage() {
   return (
@@ -17,6 +19,8 @@ export default async function ManageTemplatesPage() {
         <TemplateCard templateName={'Onboarding'} />
         <TemplateCard templateName={'Sessions'} />
       </Stack>
+
+      <TemplateForm handleCreate={() => {}} />
     </AppMargin>
   )
 }
