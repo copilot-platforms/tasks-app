@@ -1,14 +1,11 @@
 'use client'
 
-import { ListBtn } from '@/components/buttons/ListBtn'
 import { MoreBtn } from '@/components/buttons/MoreBtn'
 import { Box, Popper } from '@mui/material'
-import { useState } from 'react'
+import { ReactNode, useState } from 'react'
 import { ClickAwayListener } from '@mui/base'
-import store from '@/redux/store'
-import { setShowConfirmDeleteModal } from '@/redux/features/taskDetailsSlice'
 
-export const MenuBox = () => {
+export const MenuBox = ({ menuContent }: { menuContent: ReactNode }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -16,7 +13,7 @@ export const MenuBox = () => {
   }
 
   const open = Boolean(anchorEl)
-  const id = open ? 'trash-button-popper' : undefined
+  const id = open ? 'menu-box-popper' : undefined
 
   return (
     <ClickAwayListener
@@ -47,7 +44,7 @@ export const MenuBox = () => {
               boxShadow: '0px 6px 20px 0px rgba(0, 0, 0, 0.12)',
             }}
           >
-            <ListBtn content="Delete" handleClick={() => store.dispatch(setShowConfirmDeleteModal())} />
+            {menuContent}
           </Box>
         </Popper>
       </Box>

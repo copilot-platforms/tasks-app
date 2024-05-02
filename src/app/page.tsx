@@ -7,10 +7,10 @@ import { Header } from '@/components/layouts/Header'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { apiUrl } from '@/config'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
-import { TaskResponse } from '@/types/dto/tasks.dto'
+import { TaskResponse, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { IAssignee } from '@/types/interfaces'
 import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
-import { handleCreate, updateWorkflowStateIdOfTask } from './actions'
+import { handleCreate, updateTask, updateWorkflowStateIdOfTask } from './actions'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -63,9 +63,9 @@ export default async function Main({ searchParams }: { searchParams: { token: st
               'use server'
               await handleCreate(token, title, description, workflowStateId, assigneeId, assigneeType)
             }}
-            updateWorkflowStateIdOfTask={async (taskId, targetWorkflowStateId) => {
+            updateTask={async (taskId: string, payload: UpdateTaskRequest) => {
               'use server'
-              await updateWorkflowStateIdOfTask(token, taskId, targetWorkflowStateId)
+              await updateTask({ token, taskId, payload })
             }}
           />
         </DndWrapper>
