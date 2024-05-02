@@ -51,3 +51,19 @@ model Task {
 
   @@map("Tasks")
 }
+
+enum ViewMode {
+  board
+  list
+}
+
+model ViewSetting {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId      String
+  viewMode    ViewMode @default(board)
+  workspaceId String
+
+  @@unique([userId, workspaceId], name: "UQ_ViewSettings_userId_workspaceId")
+  @@index([userId, workspaceId], name: "IX_ViewSettings_userId_workspaceId")
+  @@map("ViewSettings")
+}

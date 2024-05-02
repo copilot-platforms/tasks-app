@@ -23,7 +23,7 @@ class UsersService extends BaseService {
       this.copilot.getCompanies(),
     ])
 
-    return { ius: ius.data, clients: clients.data, companies: companies.data }
+    return { internalUsers: ius.data, clients: clients.data, companies: companies.data }
   }
 }
 
