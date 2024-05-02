@@ -23,7 +23,7 @@ export const TaskBoard = ({
   updateWorkflowStateIdOfTask: (taskId: string, targetWorkflowStateId: string) => void
 }) => {
   const { showModal } = useSelector(selectCreateTask)
-  const { workflowStates, tasks, token } = useSelector(selectTaskBoard)
+  const { workflowStates, tasks, token, filteredTasks } = useSelector(selectTaskBoard)
   const { title, description, workflowStateId, assigneeId, assigneeType } = useSelector(selectCreateTask)
 
   const router = useRouter()
@@ -39,7 +39,7 @@ export const TaskBoard = ({
    * This function is responsible for returning the tasks that matches the workflowStateId of the workflowState
    */
   const filterTaskWithWorkflowStateId = (workflowStateId: string): TaskResponse[] => {
-    return tasks.filter((task) => task.workflowStateId === workflowStateId)
+    return filteredTasks.filter((task) => task.workflowStateId === workflowStateId)
   }
 
   /**

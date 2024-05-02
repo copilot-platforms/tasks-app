@@ -8,6 +8,7 @@ import { TaskResponse, AssigneeType } from '@/types/dto/tasks.dto'
 import { IAssignee } from '@/types/interfaces'
 import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
 import { handleCreate, updateWorkflowStateIdOfTask } from './actions'
+import { FilterBar } from '@/components/layouts/FilterBar'
 
 export const revalidate = 0
 
@@ -57,6 +58,7 @@ export default async function Main({ searchParams }: { searchParams: { token: st
       <ClientSideStateUpdate workflowStates={workflowStates} tasks={tasks} token={token} assignee={assignee}>
         <DndWrapper>
           <Header showCreateTaskButton={true} />
+          <FilterBar />
           <TaskBoard
             handleCreate={async (createTaskPayload) => {
               'use server'
