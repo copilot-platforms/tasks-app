@@ -14,7 +14,7 @@ interface Prop {
 
 export const TaskRow = ({ children, columnName, taskCount, showConfigurableIcons }: Prop) => {
   return (
-    <>
+    <Box>
       <Box
         sx={{
           background: (theme) => theme.color.gray[100],
@@ -58,6 +58,6 @@ export const TaskRow = ({ children, columnName, taskCount, showConfigurableIcons
         </AppMargin>
       </Box>
       {children}
-    </>
+    </Box>
   )
 }

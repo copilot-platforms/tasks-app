@@ -1,9 +1,19 @@
 'use client'
 
-import { TrashIcon } from '@/icons'
 import { Box, Stack, Typography } from '@mui/material'
+import { ReactNode } from 'react'
 
-export const ListBtn = ({ content, handleClick }: { content: string; handleClick: () => void }) => {
+export const ListBtn = ({
+  content,
+  handleClick,
+  icon,
+  contentColor,
+}: {
+  content: string
+  handleClick: () => void
+  icon: ReactNode
+  contentColor: string
+}) => {
   return (
     <Box
       p="4px 0px"
@@ -19,14 +29,15 @@ export const ListBtn = ({ content, handleClick }: { content: string; handleClick
         direction="row"
         columnGap={'10px'}
         sx={{
-          backgroundColor: (theme) => theme.color.background.bgCallout,
+          background: '#ffffff',
+          ':hover': {
+            backgroundColor: (theme) => theme.color.background.bgCallout,
+          },
         }}
         p="9px 12px"
       >
-        <Box>
-          <TrashIcon />
-        </Box>
-        <Typography variant="bodySm" color="#CC0000">
+        <Box>{icon}</Box>
+        <Typography variant="bodySm" color={contentColor}>
           {content}
         </Typography>
       </Stack>

@@ -16,7 +16,7 @@ import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import { deleteTask, updateAssignee, updateTaskDetail } from './actions'
 import { updateWorkflowStateIdOfTask } from '@/app/actions'
-import { MenuBox } from '@/app/detail/ui/MenuBox'
+import { MenuBoxContainer } from '../../ui/MenuBoxContainer'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
@@ -69,7 +69,7 @@ export default async function TaskDetailPage({
                   <StyledKeyboardIcon />
                   <Typography variant="sm">{params.task_id.toLocaleUpperCase()}</Typography>
                 </Stack>
-                <MenuBox />
+                <MenuBoxContainer />
               </Stack>
             </AppMargin>
           </StyledBox>

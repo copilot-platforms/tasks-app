@@ -1,4 +1,4 @@
-import { Avatar, Box, Stack, Typography } from '@mui/material'
+import { Avatar, Box, Popper, Stack, Typography } from '@mui/material'
 import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
 import { StyledAutocomplete } from '@/components/inputs/Autocomplete'
 import { statusIcons } from '@/utils/iconMatcher'
@@ -23,11 +23,18 @@ interface Prop {
 }
 
 export default function Selector({ getSelectedValue, startIcon, value, selectorType, options, buttonContent }: Prop) {
-  const [isOpen, setIsOpen] = useState(false)
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+
+  const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    setAnchorEl(anchorEl ? null : event.currentTarget)
+  }
+
+  const open = Boolean(anchorEl)
+  const id = open ? 'autocomplete-popper' : undefined
 
   const [inputStatusValue, setInputStatusValue] = useState('')
 
-  const setSelectorRef = useFocusableInput(isOpen)
+  const setSelectorRef = useFocusableInput(open)
 
   function detectSelectorType(option: unknown) {
     return selectorType === SelectorType.ASSIGNEE_SELECTOR
@@ -37,64 +44,61 @@ export default function Selector({ getSelectedValue, startIcon, value, selectorT
 
   return (
     <Stack direction="column">
-      <SecondaryBtn
-        startIcon={startIcon}
-        buttonContent={buttonContent}
-        handleClick={() => {
-          setIsOpen((prev) => !prev)
-        }}
-      />
-      <Box
-        sx={{
-          position: 'absolute',
-          top: 35,
-          width: '180px',
-          visibility: isOpen ? 'visible' : 'hidden',
-        }}
-      >
-        <div>
-          <StyledAutocomplete
-            id="status-box"
-            onBlur={() => setIsOpen(false)}
-            openOnFocus
-            autoHighlight
-            options={options}
-            value={value}
-            onChange={(_, newValue: unknown) => {
-              getSelectedValue(newValue)
-              if (newValue) {
-                setIsOpen(false)
-              }
-            }}
-            getOptionLabel={(option: unknown) => detectSelectorType(option)}
-            groupBy={(option: unknown) =>
-              selectorType === SelectorType.ASSIGNEE_SELECTOR ? (option as IAssigneeCombined).type : ''
-            }
-            inputValue={inputStatusValue}
-            onInputChange={(_, newInputValue) => {
-              setInputStatusValue(newInputValue)
-            }}
-            renderInput={(params) => {
-              return (
-                <StyledTextField
-                  {...params}
-                  variant="outlined"
-                  inputRef={setSelectorRef}
-                  placeholder="Change status..."
-                  borderColor="#EDEDF0"
-                />
-              )
-            }}
-            renderOption={(props, option: unknown) =>
-              selectorType === SelectorType.ASSIGNEE_SELECTOR ? (
-                <AssigneeSelectorRenderer props={props} option={option} />
-              ) : (
-                <StatusSelectorRenderer props={props} option={option} />
-              )
-            }
-          />
-        </div>
+      <Box onClick={handleClick} aria-describedby={id}>
+        <SecondaryBtn startIcon={startIcon} buttonContent={buttonContent} />
       </Box>
+      <Popper
+        id={id}
+        open={open}
+        anchorEl={anchorEl}
+        sx={{
+          width: '180px',
+        }}
+        placement="bottom-end"
+      >
+        <StyledAutocomplete
+          id="status-box"
+          onBlur={() => {
+            setAnchorEl(null)
+          }}
+          openOnFocus
+          autoHighlight
+          options={options}
+          value={value}
+          onChange={(_, newValue: unknown) => {
+            getSelectedValue(newValue)
+            if (newValue) {
+              setAnchorEl(null)
+            }
+          }}
+          getOptionLabel={(option: unknown) => detectSelectorType(option)}
+          groupBy={(option: unknown) =>
+            selectorType === SelectorType.ASSIGNEE_SELECTOR ? (option as IAssigneeCombined).type : ''
+          }
+          inputValue={inputStatusValue}
+          onInputChange={(_, newInputValue) => {
+            setInputStatusValue(newInputValue)
+          }}
+          renderInput={(params) => {
+            return (
+              <StyledTextField
+                {...params}
+                variant="outlined"
+                inputRef={setSelectorRef}
+                placeholder="Change status..."
+                borderColor="#EDEDF0"
+              />
+            )
+          }}
+          renderOption={(props, option: unknown) =>
+            selectorType === SelectorType.ASSIGNEE_SELECTOR ? (
+              <AssigneeSelectorRenderer props={props} option={option} />
+            ) : (
+              <StatusSelectorRenderer props={props} option={option} />
+            )
+          }
+        />
+      </Popper>
     </Stack>
   )
 }
