@@ -166,16 +166,20 @@ export class TasksService extends BaseService {
     // the request succeeds even if notification for some reason fails.
     try {
       const copilotClient = new CopilotAPI(this.user.token)
-      const { senderId, recipientId, actionUser } = await getNotificationParties(copilotClient, task, action)
+      const { senderId, recipientIds, actionUser } = await getNotificationParties(copilotClient, task, action)
 
-      await copilotClient.createNotification({
-        senderId,
-        recipientId,
-        deliveryTargets: {
-          inProduct: getInProductNotificationDetails(actionUser)[action],
-          email: getEmailDetails(actionUser)[action],
-        },
-      })
+      await Promise.all(
+        recipientIds.map((recipientId) =>
+          copilotClient.createNotification({
+            senderId,
+            recipientId,
+            deliveryTargets: {
+              inProduct: getInProductNotificationDetails(actionUser)[action],
+              email: getEmailDetails(actionUser)[action],
+            },
+          }),
+        ),
+      )
     } catch (e: unknown) {
       console.error('TasksService.createTaskNotification : Failed to send task notification\n', e)
     }
