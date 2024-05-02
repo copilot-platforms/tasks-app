@@ -1,11 +1,11 @@
 import { NotificationTaskActions, TaskTimestamps } from '@api/core/types/tasks'
 import { AssigneeType, StateType, Task, WorkflowState } from '@prisma/client'
 import { CopilotAPI } from '@/utils/CopilotAPI'
-import { CompanyResponse, CopilotUser } from '@/types/common'
+import { ClientResponseSchema, CompanyResponse, CompanyResponseSchema, CopilotUser } from '@/types/common'
 import { z } from 'zod'
 import User from '@api/core/models/User.model'
 import { CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
-import WorkflowStatesService from '../workflow-states/workflowStates.service'
+import WorkflowStatesService from '@api/workflow-states/workflowStates.service'
 
 /**
  * Helper function that sets the in-product notification title and body for a given notification trigger
@@ -51,42 +51,66 @@ export const getEmailDetails = (actionUser: string) => {
  */
 export const getNotificationParties = async (copilot: CopilotAPI, task: Task, action: NotificationTaskActions) => {
   let senderId: string
-  let recipientId: string
+  let recipientIds: string[]
   // The IU/client/company that triggered this notification
-  let actionTrigger: CopilotUser | CompanyResponse
+  let sender: CopilotUser | CompanyResponse
+  const assigneeId = z.string().parse(task.assigneeId)
+
+  const getTaskCompletionRecipients = async (task: Task, sender: CopilotUser | CompanyResponse): Promise<string[]> => {
+    // If task is completed by IU, only notify the IU that created the task
+    if (task.assigneeType === AssigneeType.internalUser) {
+      return [task.createdBy]
+    }
+
+    let companyId: string
+    if (task.assigneeType === AssigneeType.client) {
+      // If task is completed by client, fetch all IUs with company access to client's company
+      // NOTE: If client does not have a company, a unique companyId is still provided to that client
+      companyId = ClientResponseSchema.parse(sender).companyId
+    } else {
+      companyId = CompanyResponseSchema.parse(sender).id
+    }
+    const internalUsers = (await copilot.getInternalUsers()).data
+    return (
+      internalUsers
+        // If client access is limited then check their companyAccessList if it has been specifically provided
+        .filter((internalUser) => !internalUser.isClientAccessLimited || internalUser.companyAccessList?.includes(companyId))
+        .map((internalUser) => internalUser.id)
+    )
+  }
 
   // Get info of the iu/client/company that a task was assigned to
-  const getAssignedTo = async () => {
+  const getAssignedTo = async (id: string) => {
     if (task.assigneeType === AssigneeType.internalUser) {
-      return await copilot.getInternalUser(senderId)
+      return await copilot.getInternalUser(id)
     } else if (task.assigneeType === AssigneeType.client) {
-      return await copilot.getClient(recipientId)
+      return await copilot.getClient(id)
     } else {
-      return await copilot.getCompany(recipientId)
+      return await copilot.getCompany(id)
     }
   }
 
   if (action === NotificationTaskActions.Assigned) {
     // Notification is sent by the person creating the task to the one it is assigned to.
     senderId = task.createdBy
-    recipientId = z.string().parse(task.assigneeId)
+    recipientIds = [assigneeId]
     // Notification action is triggered by the IU creating the task.
-    actionTrigger = await copilot.getInternalUser(senderId)
+    sender = await copilot.getInternalUser(senderId)
   } else {
-    // Notify the IU who created this task with the client / company as sender
-    senderId = z.string().parse(task.assigneeId)
-    recipientId = task.createdBy
+    senderId = assigneeId
+    // Notify all IUs who have access to this client's company
     // Since assignees can be company / iu / client, query details of who it was assigned to
-    actionTrigger = await getAssignedTo()
+    sender = await getAssignedTo(senderId)
+    recipientIds = await getTaskCompletionRecipients(task, sender)
   }
 
   // Get the name of the IU / client / company that triggered this notification
   const actionUser =
     task.assigneeType === AssigneeType.company
-      ? (actionTrigger as CompanyResponse).name
-      : `${(actionTrigger as CopilotUser).givenName} ${(actionTrigger as CopilotUser).familyName}`
+      ? CompanyResponseSchema.parse(sender).name
+      : `${(sender as CopilotUser).givenName} ${(sender as CopilotUser).familyName}`
 
-  return { senderId, recipientId, actionUser }
+  return { senderId, recipientIds, actionUser }
 }
 
 /**
