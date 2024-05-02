@@ -1,6 +1,6 @@
 import { InputAdornment, styled } from '@mui/material'
 import { useState } from 'react'
-import { StyledTextField } from '../inputs/TextField'
+import { StyledTextField } from '@/components/inputs/TextField'
 import { SearchIcon } from '@/icons'
 
 interface ISearchBar {
