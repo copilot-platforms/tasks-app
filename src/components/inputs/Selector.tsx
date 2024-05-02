@@ -13,7 +13,7 @@ export enum SelectorType {
   STATUS_SELECTOR = 'statusSelector',
 }
 
-interface customOptions {
+type ExtraOption = {
   id: string
   name: string
   value?: string
@@ -28,7 +28,12 @@ interface Prop {
   options: unknown[]
   buttonContent: ReactNode
   placeholder?: string
-  customOptions?: customOptions
+  extraOption?: ExtraOption
+  extraOptionRenderer?: (
+    setAnchorEl: React.Dispatch<React.SetStateAction<HTMLElement | null>>,
+    anchorEl: null | HTMLElement,
+    props?: HTMLAttributes<HTMLLIElement>,
+  ) => ReactNode
 }
 
 export default function Selector({
@@ -39,7 +44,8 @@ export default function Selector({
   options,
   buttonContent,
   placeholder = 'Change status...',
-  customOptions,
+  extraOption,
+  extraOptionRenderer,
 }: Prop) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
@@ -81,7 +87,7 @@ export default function Selector({
           }}
           openOnFocus
           autoHighlight
-          options={customOptions ? [customOptions, ...options] : options}
+          options={extraOption ? [extraOption, ...options] : options}
           value={value}
           onChange={(_, newValue: unknown) => {
             getSelectedValue(newValue)
@@ -109,7 +115,9 @@ export default function Selector({
             )
           }}
           renderOption={(props, option: unknown) =>
-            selectorType === SelectorType.ASSIGNEE_SELECTOR ? (
+            extraOption && extraOptionRenderer ? (
+              extraOptionRenderer(setAnchorEl, anchorEl, props)
+            ) : selectorType === SelectorType.ASSIGNEE_SELECTOR ? (
               <AssigneeSelectorRenderer props={props} option={option} />
             ) : (
               <StatusSelectorRenderer props={props} option={option} />

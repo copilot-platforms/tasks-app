@@ -1,6 +1,6 @@
 'use client'
 
-import { Avatar, Box, IconButton, Stack, Typography } from '@mui/material'
+import { Avatar, Box, Stack, Typography } from '@mui/material'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { useState } from 'react'
 import store from '@/redux/store'
@@ -11,7 +11,8 @@ import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { useSelector } from 'react-redux'
 import { IAssigneeCombined } from '@/types/interfaces'
-import { CrossIcon, FilterByAsigneeIcon } from '@/icons'
+import { FilterByAsigneeIcon } from '@/icons'
+import { FilterByAssigneeBtn } from '../buttons/FilterByAssigneeBtn'
 
 export const FilterBar = ({}: {}) => {
   const { assignee } = useSelector(selectTaskBoard)
@@ -23,6 +24,7 @@ export const FilterBar = ({}: {}) => {
   })
 
   const assigneeValue = _assigneeValue as IAssigneeCombined
+
   return (
     <Box
       sx={{
@@ -43,45 +45,40 @@ export const FilterBar = ({}: {}) => {
               placeholder="Assignee"
               value={assigneeValue}
               selectorType={SelectorType.ASSIGNEE_SELECTOR}
-              customOptions={{ id: '', name: 'No assignee', value: '' }}
-              buttonContent={
-                <Typography
-                  variant="bodySm"
-                  lineHeight="32px"
-                  fontWeight={500}
-                  fontSize="12px"
-                  sx={{ color: (theme) => theme.color.gray[600] }}
-                >
-                  <Stack direction="row" alignItems="center" columnGap={1}>
-                    <> Filter by</>
-                    {assigneeValue?.name || assigneeValue?.givenName ? (
-                      <Stack direction="row" alignItems="center" columnGap={1}>
-                        <Avatar
-                          alt="user"
-                          src={
-                            (assigneeValue as IAssigneeCombined).avatarImageUrl ||
-                            (assigneeValue as IAssigneeCombined).iconImageUrl
-                          }
-                          sx={{ width: '20px', height: '20px' }}
-                        />
-                        {assigneeValue?.name || assigneeValue?.givenName}
-                        <IconButton
-                          aria-label="remove"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            updateAssigneeValue(null)
-                            store.dispatch(setFilteredAsignee(null))
-                          }}
-                        >
-                          <CrossIcon />
-                        </IconButton>
-                      </Stack>
-                    ) : (
-                      <> assignee</>
-                    )}
-                  </Stack>
-                </Typography>
-              }
+              extraOption={{
+                id: '',
+                name: 'No assignee',
+                value: '',
+              }}
+              extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
+                return (
+                  <Box
+                    component="li"
+                    {...props}
+                    sx={{
+                      '&.MuiAutocomplete-option[aria-selected="true"]': {
+                        bgcolor: (theme) => theme.color.gray[100],
+                      },
+                      '&.MuiAutocomplete-option[aria-selected="true"].Mui-focused': {
+                        bgcolor: (theme) => theme.color.gray[100],
+                      },
+                    }}
+                    onClick={(e) => {
+                      updateAssigneeValue({ id: '', name: 'No assignee' })
+                      setAnchorEl(anchorEl ? null : e.currentTarget)
+                      store.dispatch(setFilteredAsignee(e.currentTarget))
+                    }}
+                  >
+                    <Stack direction="row" alignItems="center" columnGap={3}>
+                      <Avatar alt="user" sx={{ width: '20px', height: '20px' }} />
+                      <Typography variant="sm" fontWeight={400}>
+                        No assignee
+                      </Typography>
+                    </Stack>
+                  </Box>
+                )
+              }}
+              buttonContent={<FilterByAssigneeBtn assigneeValue={assigneeValue} updateAssigneeValue={updateAssigneeValue} />}
             />
           </Stack>
 
