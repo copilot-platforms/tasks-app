@@ -23,7 +23,6 @@ export const FilterBar = ({}: {}) => {
   })
 
   const assigneeValue = _assigneeValue as IAssigneeCombined
-
   return (
     <Box
       sx={{
@@ -44,6 +43,7 @@ export const FilterBar = ({}: {}) => {
               placeholder="Assignee"
               value={assigneeValue}
               selectorType={SelectorType.ASSIGNEE_SELECTOR}
+              customOptions={{ id: '', name: 'No assignee', value: '' }}
               buttonContent={
                 <Typography
                   variant="bodySm"
@@ -65,7 +65,12 @@ export const FilterBar = ({}: {}) => {
                           sx={{ width: '20px', height: '20px' }}
                         />
                         {assigneeValue?.name || assigneeValue?.givenName}
-                        <IconButton aria-label="remove" onClick={() => updateAssigneeValue({})}>
+                        <IconButton
+                          aria-label="remove"
+                          onClick={() => {
+                            updateAssigneeValue(null)
+                          }}
+                        >
                           <CrossIcon />
                         </IconButton>
                       </Stack>

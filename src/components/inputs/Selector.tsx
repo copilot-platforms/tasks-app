@@ -13,6 +13,13 @@ export enum SelectorType {
   STATUS_SELECTOR = 'statusSelector',
 }
 
+interface customOptions {
+  id: string
+  name: string
+  value?: string
+  //other custom types..
+}
+
 interface Prop {
   getSelectedValue: (value: unknown) => void
   startIcon: ReactNode
@@ -21,6 +28,7 @@ interface Prop {
   options: unknown[]
   buttonContent: ReactNode
   placeholder?: string
+  customOptions?: customOptions
 }
 
 export default function Selector({
@@ -31,6 +39,7 @@ export default function Selector({
   options,
   buttonContent,
   placeholder = 'Change status...',
+  customOptions,
 }: Prop) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
@@ -72,7 +81,7 @@ export default function Selector({
           }}
           openOnFocus
           autoHighlight
-          options={options}
+          options={customOptions ? [customOptions, ...options] : options}
           value={value}
           onChange={(_, newValue: unknown) => {
             getSelectedValue(newValue)
