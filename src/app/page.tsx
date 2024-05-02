@@ -7,10 +7,13 @@ import { Header } from '@/components/layouts/Header'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { apiUrl } from '@/config'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
-import { TaskResponse, UpdateTaskRequest } from '@/types/dto/tasks.dto'
+import { TaskResponse, AssigneeType, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { IAssignee } from '@/types/interfaces'
 import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
 import { handleCreate, updateTask, updateWorkflowStateIdOfTask } from './actions'
+import { FilterBar } from '@/components/layouts/FilterBar'
+
+export const revalidate = 0
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -58,14 +61,15 @@ export default async function Main({ searchParams }: { searchParams: { token: st
       <ClientSideStateUpdate workflowStates={workflowStates} tasks={tasks} token={token} assignee={assignee}>
         <DndWrapper>
           <Header showCreateTaskButton={true} />
+          <FilterBar />
           <TaskBoard
-            handleCreate={async (title, description, workflowStateId, assigneeId, assigneeType) => {
+            handleCreate={async (createTaskPayload) => {
               'use server'
-              await handleCreate(token, title, description, workflowStateId, assigneeId, assigneeType)
+              handleCreate(token, createTaskPayload)
             }}
-            updateTask={async (taskId: string, payload: UpdateTaskRequest) => {
+            updateTask={async (taskId, payload) => {
               'use server'
-              await updateTask({ token, taskId, payload })
+              updateTask({ token, taskId, payload })
             }}
           />
         </DndWrapper>

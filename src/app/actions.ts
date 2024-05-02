@@ -1,24 +1,11 @@
 import { apiUrl } from '@/config'
-import { UpdateTaskRequest } from '@/types/dto/tasks.dto'
+import { CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { revalidateTag } from 'next/cache'
 
-export const handleCreate = async (
-  token: string,
-  title: string,
-  description: string,
-  workflowStateId: string,
-  assigneeId: string,
-  assigneeType: string,
-) => {
-  await fetch(`${apiUrl}/api/tasks?token=${token}`, {
+export const handleCreate = async (token: string, payload: CreateTaskRequest) => {
+  fetch(`${apiUrl}/api/tasks?token=${token}`, {
     method: 'POST',
-    body: JSON.stringify({
-      title,
-      body: description,
-      workflowStateId,
-      assigneeId,
-      assigneeType,
-    }),
+    body: JSON.stringify(payload),
   })
   revalidateTag('getAllTasks')
 }
@@ -46,6 +33,7 @@ export const updateTask = async ({
   taskId: string
   payload: UpdateTaskRequest
 }) => {
+  console.log(payload)
   await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
     method: 'PATCH',
     body: JSON.stringify({
@@ -53,7 +41,7 @@ export const updateTask = async ({
       assigneeId: payload.assigneeId,
       assigneeType: payload.assigneeType,
       body: payload.body,
-      title: payload.body,
+      title: payload.title,
     }),
   })
   revalidateTag('getAllTasks')

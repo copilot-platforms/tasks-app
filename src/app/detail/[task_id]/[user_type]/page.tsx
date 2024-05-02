@@ -1,6 +1,3 @@
-export const dynamic = 'force-dynamic'
-export const dynamicParams = true
-
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { TaskEditor } from '@/app/detail/ui/TaskEditor'
 import { Box, Stack, Typography } from '@mui/material'
@@ -17,6 +14,8 @@ import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import { deleteTask, updateAssignee, updateTaskDetail } from './actions'
 import { updateWorkflowStateIdOfTask } from '@/app/actions'
 import { MenuBoxContainer } from '../../ui/MenuBoxContainer'
+
+export const revalidate = 0
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
@@ -53,26 +52,23 @@ export default async function TaskDetailPage({
 
   return (
     <ClientSideStateUpdate assignee={assignee}>
+      <StyledBox>
+        <AppMargin size={SizeofAppMargin.LARGE} py="16px">
+          <Stack direction="row" alignItems="center" columnGap={3}>
+            <Link href={`/?token=${token}`}>
+              <SecondaryBtn buttonContent={<StyledTypography variant="sm">Tasks</StyledTypography>} enableBackground />
+            </Link>
+            <StyledKeyboardIcon />
+            <Typography variant="sm">{params.task_id.toLocaleUpperCase()}</Typography>
+          </Stack>
+        </AppMargin>
+      </StyledBox>
       <Stack direction="row">
         <Box
           sx={{
             width: 'calc(100% - 339px)',
           }}
         >
-          <StyledBox>
-            <AppMargin size={SizeofAppMargin.LARGE} py="16px">
-              <Stack direction="row" justifyContent="space-between">
-                <Stack direction="row" alignItems="center" columnGap={3}>
-                  <Link href={`/?token=${token}`}>
-                    <SecondaryBtn buttonContent={<StyledTypography variant="sm">Tasks</StyledTypography>} enableBackground />
-                  </Link>
-                  <StyledKeyboardIcon />
-                  <Typography variant="sm">{params.task_id.toLocaleUpperCase()}</Typography>
-                </Stack>
-                <MenuBoxContainer />
-              </Stack>
-            </AppMargin>
-          </StyledBox>
           <AppMargin size={SizeofAppMargin.LARGE} py="30px">
             <TaskEditor
               attachment={taskDetail.attachment}

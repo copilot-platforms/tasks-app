@@ -12,6 +12,7 @@ import { useSelector } from 'react-redux'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { StyledBox } from './styledComponent'
+import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 
 const StyledText = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[500],
@@ -80,14 +81,7 @@ export const Sidebar = ({
             getSelectedValue={(newValue) => {
               const assignee = newValue as IAssigneeCombined
               updateAssigneeValue(assignee)
-              const assigneeType =
-                assignee?.type === 'ius'
-                  ? 'internalUser'
-                  : assignee?.type === 'clients'
-                    ? 'client'
-                    : assignee?.type === 'companies'
-                      ? 'company'
-                      : ''
+              const assigneeType = getAssigneeTypeCorrected(assignee)
               updateAssignee(assigneeType, assignee?.id)
             }}
             startIcon={

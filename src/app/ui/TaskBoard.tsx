@@ -12,7 +12,7 @@ import { clearCreateTaskFields, selectCreateTask, setShowModal } from '@/redux/f
 import store from '@/redux/store'
 import { useRouter } from 'next/navigation'
 import { selectTaskBoard, updateWorkflowStateIdByTaskId } from '@/redux/features/taskBoardSlice'
-import { TaskResponse, UpdateTaskRequest } from '@/types/dto/tasks.dto'
+import { CreateTaskRequest, TaskResponse, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { ListViewTaskCard } from '@/components/cards/ListViewTaskCard'
 import { TaskRow } from '@/components/cards/TaskRow'
 import { View } from '@/types/interfaces'
@@ -21,17 +21,11 @@ export const TaskBoard = ({
   handleCreate,
   updateTask,
 }: {
-  handleCreate: (
-    title: string,
-    description: string,
-    workflowStateId: string,
-    assigneeId: string,
-    assigneeType: string,
-  ) => void
+  handleCreate: (createTaskPayload: CreateTaskRequest) => void
   updateTask: (taskId: string, payload: UpdateTaskRequest) => void
 }) => {
   const { showModal } = useSelector(selectCreateTask)
-  const { workflowStates, tasks, token, view } = useSelector(selectTaskBoard)
+  const { workflowStates, tasks, token, filteredTasks, view } = useSelector(selectTaskBoard)
   const { title, description, workflowStateId, assigneeId, assigneeType } = useSelector(selectCreateTask)
 
   const router = useRouter()
@@ -50,7 +44,7 @@ export const TaskBoard = ({
    * This function is responsible for returning the tasks that matches the workflowStateId of the workflowState
    */
   const filterTaskWithWorkflowStateId = (workflowStateId: string): TaskResponse[] => {
-    return tasks.filter((task) => task.workflowStateId === workflowStateId)
+    return filteredTasks.filter((task) => task.workflowStateId === workflowStateId)
   }
 
   /**
@@ -128,9 +122,9 @@ export const TaskBoard = ({
         >
           <NewTaskForm
             handleCreate={() => {
-              handleCreate(title, description, workflowStateId, assigneeId, assigneeType)
               store.dispatch(setShowModal())
               store.dispatch(clearCreateTaskFields())
+              handleCreate({ title, body: description, workflowStateId, assigneeType, assigneeId })
             }}
           />
         </Modal>

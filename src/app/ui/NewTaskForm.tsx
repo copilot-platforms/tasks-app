@@ -16,6 +16,7 @@ import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { useSelector } from 'react-redux'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
+import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 
 export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
   const { workflowStates, assignee } = useSelector(selectTaskBoard)
@@ -31,6 +32,9 @@ export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
 
   const statusValue = _statusValue as WorkflowStateResponse //typecasting
   const assigneeValue = _assigneeValue as IAssigneeCombined //typecasting
+
+  const { assigneeType } = useSelector(selectCreateTask)
+  console.log('hereee', assigneeType)
 
   return (
     <NewTaskContainer>
@@ -76,18 +80,10 @@ export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
               getSelectedValue={(_newValue) => {
                 const newValue = _newValue as IAssigneeCombined
                 updateAssigneeValue(newValue)
-                const assigneeType = newValue?.type
                 store.dispatch(
                   setCreateTaskFields({
                     targetField: 'assigneeType',
-                    value:
-                      assigneeType === 'ius'
-                        ? 'internalUser'
-                        : assigneeType === 'clients'
-                          ? 'client'
-                          : assigneeType === 'companies'
-                            ? 'company'
-                            : '',
+                    value: getAssigneeTypeCorrected(newValue),
                   }),
                 )
                 store.dispatch(setCreateTaskFields({ targetField: 'assigneeId', value: newValue?.id }))

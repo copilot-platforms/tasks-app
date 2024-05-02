@@ -29,9 +29,7 @@ interface Prop {
 export const TaskEditor = ({ title, detail, attachment, isEditable, updateTaskDetail, deleteTask }: Prop) => {
   const [updateTitle, setUpdateTitle] = useState(title)
   const [updateDetail, setUpdateDetail] = useState(detail)
-
   const { showConfirmDeleteModal } = useSelector(selectTaskDetails)
-
   return (
     <>
       <Stack direction="row" alignItems="center" columnGap={2}>

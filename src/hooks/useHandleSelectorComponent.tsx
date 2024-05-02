@@ -3,6 +3,7 @@ import { setCreateTaskFields } from '@/redux/features/createTaskSlice'
 import store from '@/redux/store'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { IAssigneeCombined } from '@/types/interfaces'
+import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { useEffect, useState } from 'react'
 
 export const useHandleSelectorComponent = ({ item, type }: { item: unknown; type: SelectorType }) => {
@@ -19,19 +20,8 @@ export const useHandleSelectorComponent = ({ item, type }: { item: unknown; type
 
     if (type === SelectorType.ASSIGNEE_SELECTOR) {
       store.dispatch(setCreateTaskFields({ targetField: 'assigneeId', value: (item as IAssigneeCombined)?.id }))
-      const assigneeType = (item as IAssigneeCombined).type
       store.dispatch(
-        setCreateTaskFields({
-          targetField: 'assigneeType',
-          value:
-            assigneeType === 'ius'
-              ? 'internalUser'
-              : assigneeType === 'clients'
-                ? 'client'
-                : assigneeType === 'companies'
-                  ? 'company'
-                  : '',
-        }),
+        setCreateTaskFields({ targetField: 'assigneeType', value: getAssigneeTypeCorrected(item as IAssigneeCombined) }),
       )
     }
   }, [type, item])

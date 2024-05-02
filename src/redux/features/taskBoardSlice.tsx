@@ -10,6 +10,7 @@ interface IInitialState {
   tasks: TaskResponse[]
   token: string | undefined
   view: View
+  filteredTasks: TaskResponse[]
 }
 
 const initialState: IInitialState = {
@@ -17,7 +18,8 @@ const initialState: IInitialState = {
   tasks: [],
   token: undefined,
   assignee: [],
-  view: View.LIST_VIEW,
+  view: View.BOARD_VIEW,
+  filteredTasks: [],
 }
 
 const taskBoardSlice = createSlice({
@@ -30,8 +32,19 @@ const taskBoardSlice = createSlice({
     setTasks: (state, action) => {
       state.tasks = action.payload
     },
+
     setToken: (state, action) => {
       state.token = action.payload
+    },
+    setFilteredTasks: (state, action) => {
+      const keyword = action.payload?.toLowerCase()
+      const filteredTasks =
+        keyword != ''
+          ? state.tasks.filter(
+              (task) => task.title?.toLowerCase().includes(keyword) || task.body?.toLowerCase().includes(keyword),
+            )
+          : state.tasks
+      state.filteredTasks = filteredTasks
     },
     updateWorkflowStateIdByTaskId: (state, action) => {
       let taskToUpdate = state.tasks.find((task) => task.id === action.payload.taskId)
@@ -49,7 +62,7 @@ const taskBoardSlice = createSlice({
 
 export const selectTaskBoard = (state: RootState) => state.taskBoard
 
-export const { setWorkflowStates, setTasks, updateWorkflowStateIdByTaskId, setToken, setAssigneeList } =
+export const { setWorkflowStates, setTasks, updateWorkflowStateIdByTaskId, setToken, setFilteredTasks, setAssigneeList } =
   taskBoardSlice.actions
 
 export default taskBoardSlice.reducer
