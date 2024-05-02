@@ -4,7 +4,7 @@ import { Avatar, Box, IconButton, Stack, Typography } from '@mui/material'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { useState } from 'react'
 import store from '@/redux/store'
-import { setFilteredTasks } from '@/redux/features/taskBoardSlice'
+import { setFilteredAsignee, setFilteredTasks } from '@/redux/features/taskBoardSlice'
 import SearchBar from '@/components/searchBar'
 import Selector, { SelectorType } from '@/components/inputs/Selector'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
@@ -36,7 +36,7 @@ export const FilterBar = ({}: {}) => {
               getSelectedValue={(_newValue) => {
                 const newValue = _newValue as IAssigneeCombined
                 updateAssigneeValue(newValue)
-                //additional logic to apply filter
+                store.dispatch(setFilteredAsignee(_newValue))
               }}
               startIcon={<FilterByAsigneeIcon />}
               options={assignee}
@@ -67,8 +67,10 @@ export const FilterBar = ({}: {}) => {
                         {assigneeValue?.name || assigneeValue?.givenName}
                         <IconButton
                           aria-label="remove"
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation()
                             updateAssigneeValue(null)
+                            store.dispatch(setFilteredAsignee(null))
                           }}
                         >
                           <CrossIcon />
