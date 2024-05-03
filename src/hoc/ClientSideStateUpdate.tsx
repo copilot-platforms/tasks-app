@@ -5,7 +5,7 @@ import { setTasks, setToken, setWorkflowStates } from '@/redux/features/taskBoar
 import store from '@/redux/store'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { IAssigneeCombined } from '@/types/interfaces'
+import { IAssigneeCombined, View } from '@/types/interfaces'
 import { ViewMode } from '@prisma/client'
 import { ReactNode, useEffect } from 'react'
 
@@ -26,7 +26,7 @@ export const ClientSideStateUpdate = ({
   workflowStates?: WorkflowStateResponse[]
   tasks?: TaskResponse[]
   assignee?: IAssigneeCombined[]
-  viewSettings?: ViewMode
+  viewSettings?: View
   token?: string
 }) => {
   useEffect(() => {

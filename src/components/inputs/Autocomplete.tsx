@@ -7,6 +7,7 @@ export const StyledAutocomplete = styled(Autocomplete)({
   '& .MuiOutlinedInput-root': {
     padding: 0,
     border: '1px solid #EDEDF0',
+    height: '20px',
   },
   '&:hover .MuiOutlinedInput-notchedOutline': {
     border: '1px solid #EDEDF0',

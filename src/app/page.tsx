@@ -44,12 +44,13 @@ async function getAssigneeList(token: string): Promise<IAssignee> {
   return data.users
 }
 
-async function getViewSettings(token: string): Promise<CreateViewSettingsDTO> {
+async function getViewSettings(token: string): Promise<View> {
   const res = await fetch(`${apiUrl}/api/view-settings?token=${token}`, {
     next: { tags: ['getViewSettings'], revalidate: 0 },
   })
 
-  return await res.json()
+  const data = await res.json()
+  return data.viewMode
 }
 
 export default async function Main({ searchParams }: { searchParams: { token: string } }) {
@@ -71,7 +72,7 @@ export default async function Main({ searchParams }: { searchParams: { token: st
         tasks={tasks}
         token={token}
         assignee={assignee}
-        viewSettings={viewSettings?.viewMode || View.BOARD_VIEW}
+        viewSettings={viewSettings || View.BOARD_VIEW}
       >
         <DndWrapper>
           <Header showCreateTaskButton={true} />

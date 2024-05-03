@@ -30,7 +30,7 @@ export default function Selector({ getSelectedValue, startIcon, value, selectorT
   }
 
   const open = Boolean(anchorEl)
-  const id = open ? 'autocomplete-popper' : undefined
+  const id = open ? 'autocomplete-popper' : ''
 
   const [inputStatusValue, setInputStatusValue] = useState('')
 
@@ -53,6 +53,7 @@ export default function Selector({ getSelectedValue, startIcon, value, selectorT
         anchorEl={anchorEl}
         sx={{
           width: '180px',
+          zIndex: '9999',
         }}
         placement="bottom-end"
       >
