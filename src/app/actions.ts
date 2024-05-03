@@ -33,7 +33,6 @@ export const updateTask = async ({
   taskId: string
   payload: UpdateTaskRequest
 }) => {
-  console.log(payload)
   await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
     method: 'PATCH',
     body: JSON.stringify({

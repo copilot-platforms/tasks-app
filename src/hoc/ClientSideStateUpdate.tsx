@@ -1,6 +1,6 @@
 'use client'
 
-import { setAssigneeList, setFilteredTasks, setInitialFilteredTasks } from '@/redux/features/taskBoardSlice'
+import { setAssigneeList, setFilteredTasks } from '@/redux/features/taskBoardSlice'
 import { setTasks, setToken, setWorkflowStates } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
 import { TaskResponse } from '@/types/dto/tasks.dto'

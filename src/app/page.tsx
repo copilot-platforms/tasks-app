@@ -13,8 +13,6 @@ import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
 import { handleCreate, updateTask, updateWorkflowStateIdOfTask } from './actions'
 import { FilterBar } from '@/components/layouts/FilterBar'
 
-export const revalidate = 0
-
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
     next: { tags: ['getAllWorkflowStates'] },
@@ -27,7 +25,7 @@ async function getAllWorkflowStates(token: string): Promise<WorkflowStateRespons
 
 async function getAllTasks(token: string): Promise<TaskResponse[]> {
   const res = await fetch(`${apiUrl}/api/tasks?token=${token}`, {
-    next: { tags: ['getAllTasks'], revalidate: 0 },
+    next: { tags: ['getAllTasks'] },
   })
 
   const data = await res.json()

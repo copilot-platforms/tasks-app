@@ -31,6 +31,7 @@ const taskBoardSlice = createSlice({
     },
     setTasks: (state, action) => {
       state.tasks = action.payload
+      state.filteredTasks = action.payload
     },
 
     setToken: (state, action) => {
@@ -52,6 +53,7 @@ const taskBoardSlice = createSlice({
         taskToUpdate.workflowStateId = action.payload.targetWorkflowStateId
         const updatedTasks = [...state.tasks.filter((task) => task.id !== action.payload.taskId), taskToUpdate]
         state.tasks = updatedTasks
+        state.filteredTasks = updatedTasks
       }
     },
     setAssigneeList: (state, action) => {
