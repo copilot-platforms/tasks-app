@@ -1,5 +1,3 @@
-'use client'
-
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
 import { SelectorType } from '@/components/inputs/Selector'
@@ -7,23 +5,36 @@ import Selector from '@/components/inputs/Selector'
 import { StyledTextField } from '@/components/inputs/TextField'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { AttachmentIcon } from '@/icons'
-import { setShowModal } from '@/redux/features/createTaskSlice'
+import { selectCreateTask, setCreateTaskFields, setShowModal } from '@/redux/features/createTaskSlice'
 import store from '@/redux/store'
-import { StatusKey, statusIcons } from '@/utils/iconMatcher'
+import { statusIcons } from '@/utils/iconMatcher'
 import { Close } from '@mui/icons-material'
 import { Avatar, Box, Stack, Typography, styled } from '@mui/material'
 import { ReactNode } from 'react'
-import { status, assignee } from '@/utils/mockData'
-import { IAssignee } from '@/types/interfaces'
+import { IAssigneeCombined } from '@/types/interfaces'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
+import { useSelector } from 'react-redux'
+import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
+import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 
-export const NewTaskForm = () => {
-  const { renderingItem: statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
-    item: status[0],
+export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
+  const { workflowStates, assignee } = useSelector(selectTaskBoard)
+
+  const { renderingItem: _statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
+    item: workflowStates[0],
+    type: SelectorType.STATUS_SELECTOR,
   })
-  const { renderingItem: assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
+  const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
     item: assignee[0],
+    type: SelectorType.ASSIGNEE_SELECTOR,
   })
+
+  const statusValue = _statusValue as WorkflowStateResponse //typecasting
+  const assigneeValue = _assigneeValue as IAssigneeCombined //typecasting
+
+  const { assigneeType } = useSelector(selectCreateTask)
+  console.log('hereee', assigneeType)
 
   return (
     <NewTaskContainer>
@@ -50,48 +61,70 @@ export const NewTaskForm = () => {
           <Selector
             getSelectedValue={(newValue) => {
               updateStatusValue(newValue)
+              store.dispatch(
+                setCreateTaskFields({ targetField: 'workflowStateId', value: (newValue as WorkflowStateResponse)?.id }),
+              )
             }}
-            startIcon={statusIcons[statusValue as StatusKey]}
-            options={status}
+            startIcon={statusIcons[statusValue?.type]}
+            options={workflowStates}
             value={statusValue}
             selectorType={SelectorType.STATUS_SELECTOR}
             buttonContent={
               <Typography variant="bodySm" lineHeight="16px" sx={{ color: (theme) => theme.color.gray[600] }}>
-                {statusValue as ReactNode}
+                {statusValue?.name as ReactNode}
               </Typography>
             }
           />
           <Stack alignSelf="flex-start">
             <Selector
-              getSelectedValue={(newValue) => {
-                updateAssigneeValue(newValue as IAssignee)
+              getSelectedValue={(_newValue) => {
+                const newValue = _newValue as IAssigneeCombined
+                updateAssigneeValue(newValue)
+                store.dispatch(
+                  setCreateTaskFields({
+                    targetField: 'assigneeType',
+                    value: getAssigneeTypeCorrected(newValue),
+                  }),
+                )
+                store.dispatch(setCreateTaskFields({ targetField: 'assigneeId', value: newValue?.id }))
               }}
               startIcon={
-                <Avatar alt="user" src={(assigneeValue as IAssignee)?.img} sx={{ width: '20px', height: '20px' }} />
+                <Avatar
+                  alt="user"
+                  src={assigneeValue?.iconImageUrl || assigneeValue?.avatarImageUrl}
+                  sx={{ width: '20px', height: '20px' }}
+                />
               }
               options={assignee}
               value={assigneeValue}
               selectorType={SelectorType.ASSIGNEE_SELECTOR}
               buttonContent={
                 <Typography variant="bodySm" lineHeight="16px" sx={{ color: (theme) => theme.color.gray[600] }}>
-                  {(assigneeValue as IAssignee)?.name || 'No Assignee'}
+                  {assigneeValue?.name || assigneeValue?.givenName}
                 </Typography>
               }
             />
           </Stack>
         </Stack>
       </AppMargin>
-      <NewTaskFooter />
+      <NewTaskFooter handleCreate={handleCreate} />
     </NewTaskContainer>
   )
 }
 
 const NewTaskFormInputs = () => {
+  const { title, description } = useSelector(selectCreateTask)
+
   return (
     <>
       <Stack direction="column" rowGap={1}>
         <Typography variant="md">Task name</Typography>
-        <StyledTextField type="text" padding="8px 0px" />
+        <StyledTextField
+          type="text"
+          padding="8px 0px"
+          value={title}
+          onChange={(e) => store.dispatch(setCreateTaskFields({ targetField: 'title', value: e.target.value }))}
+        />
       </Stack>
       <Stack direction="column" rowGap={1} m="16px 0px">
         <Typography variant="md">Description</Typography>
@@ -101,13 +134,15 @@ const NewTaskFormInputs = () => {
           multiline
           rows={6}
           inputProps={{ style: { resize: 'vertical' } }}
+          value={description}
+          onChange={(e) => store.dispatch(setCreateTaskFields({ targetField: 'description', value: e.target.value }))}
         />
       </Stack>
     </>
   )
 }
 
-const NewTaskFooter = () => {
+const NewTaskFooter = ({ handleCreate }: { handleCreate: () => void }) => {
   return (
     <Box sx={{ borderTop: (theme) => `1px solid ${theme.color.borders.border2}` }}>
       <AppMargin size={SizeofAppMargin.MEDIUM} py="21px">
@@ -126,7 +161,7 @@ const NewTaskFooter = () => {
                 </Typography>
               }
             />
-            <PrimaryBtn handleClick={() => {}} buttonText="Create" />
+            <PrimaryBtn handleClick={handleCreate} buttonText="Create" />
           </Stack>
         </Stack>
       </AppMargin>

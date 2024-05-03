@@ -3,9 +3,13 @@
 import { AttachmentCard } from '@/components/cards/AttachmentCard'
 import { StyledTextField } from '@/components/inputs/TextField'
 import { AttachmentIcon } from '@/icons'
+import { selectTaskDetails, setShowConfirmDeleteModal } from '@/redux/features/taskDetailsSlice'
 import { statusIcons } from '@/utils/iconMatcher'
-import { Box, Stack } from '@mui/material'
+import { Box, Modal, Stack } from '@mui/material'
 import { useState } from 'react'
+import { useSelector } from 'react-redux'
+import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
+import store from '@/redux/store'
 
 type Attachment = {
   name: string
@@ -18,15 +22,18 @@ interface Prop {
   detail: string
   attachment: Attachment[]
   isEditable: boolean
+  updateTaskDetail: (title: string, detail: string) => void
+  deleteTask: () => void
 }
 
-export const TaskEditor = ({ title, detail, attachment, isEditable }: Prop) => {
+export const TaskEditor = ({ title, detail, attachment, isEditable, updateTaskDetail, deleteTask }: Prop) => {
   const [updateTitle, setUpdateTitle] = useState(title)
   const [updateDetail, setUpdateDetail] = useState(detail)
+  const { showConfirmDeleteModal } = useSelector(selectTaskDetails)
   return (
     <>
       <Stack direction="row" alignItems="center" columnGap={2}>
-        <Box pt="5px">{statusIcons['Todo']}</Box>
+        <Box pt="5px">{statusIcons['unstarted']}</Box>
         <StyledTextField
           type="text"
           multiline
@@ -42,8 +49,11 @@ export const TaskEditor = ({ title, detail, attachment, isEditable }: Prop) => {
           }}
           value={updateTitle}
           onChange={(e) => setUpdateTitle(e.target.value)}
-          InputProps={{ readOnly: isEditable }}
+          InputProps={{ readOnly: !isEditable }}
           disabled={!isEditable}
+          onBlur={() => {
+            updateTaskDetail(updateTitle, updateDetail)
+          }}
         />
       </Stack>
       <Box>
@@ -64,8 +74,11 @@ export const TaskEditor = ({ title, detail, attachment, isEditable }: Prop) => {
           }}
           value={updateDetail}
           onChange={(e) => setUpdateDetail(e.target.value)}
-          InputProps={{ readOnly: isEditable }}
+          InputProps={{ readOnly: !isEditable }}
           disabled={!isEditable}
+          onBlur={() => {
+            updateTaskDetail(updateTitle, updateDetail)
+          }}
         />
       </Box>
       <Stack direction="row" columnGap={3} mt={3}>
@@ -83,6 +96,21 @@ export const TaskEditor = ({ title, detail, attachment, isEditable }: Prop) => {
           <AttachmentIcon />
         </Box>
       </Stack>
+
+      <Modal
+        open={showConfirmDeleteModal}
+        onClose={() => store.dispatch(setShowConfirmDeleteModal())}
+        aria-labelledby="delete-task-modal"
+        aria-describedby="delete-task"
+      >
+        <ConfirmDeleteUI
+          handleCancel={() => store.dispatch(setShowConfirmDeleteModal())}
+          handleDelete={() => {
+            deleteTask()
+            store.dispatch(setShowConfirmDeleteModal())
+          }}
+        />
+      </Modal>
     </>
   )
 }
