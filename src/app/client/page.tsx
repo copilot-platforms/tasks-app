@@ -1,13 +1,66 @@
-import { ClientTaskCard } from '@/components/cards/ClientTaskCard'
-// import { TaskRow } from '@/components/cards/TaskRow'
-import { Header } from '@/components/layouts/Header'
+export const dynamic = 'force-dynamic'
+export const dynamicParams = true
 
-export default function ClientPage() {
+import { Header } from '@/components/layouts/Header'
+import { apiUrl } from '@/config'
+import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
+import { TaskResponse } from '@/types/dto/tasks.dto'
+import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
+import { IAssignee, IAssigneeCombined } from '@/types/interfaces'
+import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
+import { ClientTaskBoard } from './ui/ClientTaskBoard'
+import { updateTask } from '../actions'
+
+async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
+  const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
+    next: { tags: ['getAllWorkflowStates'] },
+  })
+
+  const data = await res.json()
+
+  return data.workflowStates
+}
+
+async function getAllTasks(token: string): Promise<TaskResponse[]> {
+  const res = await fetch(`${apiUrl}/api/tasks?token=${token}`, {
+    next: { tags: ['getAllTasks'] },
+  })
+
+  const data = await res.json()
+
+  return data.tasks
+}
+
+async function getAssigneeList(token: string): Promise<IAssignee> {
+  const res = await fetch(`${apiUrl}/api/users?token=${token}`, {
+    next: { tags: ['getAssigneeList'], revalidate: 0 },
+  })
+
+  const data = await res.json()
+
+  return data.users
+}
+
+export default async function ClientPage({ searchParams }: { searchParams: { token: string } }) {
+  const token = searchParams.token
+
+  const [workflowStates, tasks, assignee] = await Promise.all([
+    await getAllWorkflowStates(token),
+    await getAllTasks(token),
+    addTypeToAssignee(await getAssigneeList(token)),
+  ])
+
   return (
     <>
-      <Header showCreateTaskButton={false} />
-      {/* <TaskRow showConfigurableIcons={false} /> */}
-      <ClientTaskCard />
+      <ClientSideStateUpdate workflowStates={workflowStates} tasks={tasks} token={token} assignee={assignee}>
+        <Header showCreateTaskButton={false} />
+        <ClientTaskBoard
+          updateTask={async (taskId, payload) => {
+            'use server'
+            updateTask({ token, taskId, payload })
+          }}
+        />
+      </ClientSideStateUpdate>
     </>
   )
 }

@@ -55,4 +55,6 @@ export const updateViewModeSettings = async (token: string, mode: View) => {
     }),
   })
   revalidateTag('getViewSettings')
+  revalidateTag('getAllTasks')
+  revalidateTag('getAllWorkflowStates')
 }

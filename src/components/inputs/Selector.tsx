@@ -20,13 +20,24 @@ interface Prop {
   selectorType: SelectorType.STATUS_SELECTOR | SelectorType.ASSIGNEE_SELECTOR
   options: unknown[]
   buttonContent: ReactNode
+  disabled?: boolean
 }
 
-export default function Selector({ getSelectedValue, startIcon, value, selectorType, options, buttonContent }: Prop) {
+export default function Selector({
+  getSelectedValue,
+  startIcon,
+  value,
+  selectorType,
+  options,
+  buttonContent,
+  disabled,
+}: Prop) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
   const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
-    setAnchorEl(anchorEl ? null : event.currentTarget)
+    if (!disabled) {
+      setAnchorEl(anchorEl ? null : event.currentTarget)
+    }
   }
 
   const open = Boolean(anchorEl)

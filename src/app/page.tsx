@@ -7,12 +7,11 @@ import { Header } from '@/components/layouts/Header'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { apiUrl } from '@/config'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
-import { TaskResponse, AssigneeType, UpdateTaskRequest } from '@/types/dto/tasks.dto'
+import { TaskResponse } from '@/types/dto/tasks.dto'
 import { IAssignee, View } from '@/types/interfaces'
 import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
-import { handleCreate, updateTask, updateViewModeSettings, updateWorkflowStateIdOfTask } from './actions'
+import { handleCreate, updateTask, updateViewModeSettings } from './actions'
 import { FilterBar } from '@/components/layouts/FilterBar'
-import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -60,10 +59,12 @@ export default async function Main({ searchParams }: { searchParams: { token: st
     throw new Error('Please pass the token!')
   }
 
-  const workflowStates = await getAllWorkflowStates(token)
-  const tasks = await getAllTasks(token)
-  const assignee = addTypeToAssignee(await getAssigneeList(token))
-  const viewSettings = await getViewSettings(token)
+  const [workflowStates, tasks, assignee, viewSettings] = await Promise.all([
+    await getAllWorkflowStates(token),
+    await getAllTasks(token),
+    addTypeToAssignee(await getAssigneeList(token)),
+    await getViewSettings(token),
+  ])
 
   return (
     <>

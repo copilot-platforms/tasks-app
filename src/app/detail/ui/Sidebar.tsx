@@ -25,12 +25,14 @@ export const Sidebar = ({
   updateWorkflowState,
   updateAssignee,
   assignee,
+  disabled,
 }: {
   selectedWorkflowState: WorkflowStateResponse
   selectedAssigneeId: string | undefined
   updateWorkflowState: (workflowState: WorkflowStateResponse) => void
   updateAssignee: (assigneeType: string, assigneeId: string) => void
   assignee: IAssigneeCombined[]
+  disabled: boolean
 }) => {
   const { workflowStates } = useSelector(selectTaskBoard)
 
@@ -73,6 +75,7 @@ export const Sidebar = ({
                 {statusValue?.name as ReactNode}
               </Typography>
             }
+            disabled
           />
         </Stack>
         <Stack direction="row" m="16px 0px" alignItems="center">
@@ -99,6 +102,7 @@ export const Sidebar = ({
                 {assigneeValue?.name || assigneeValue?.givenName}
               </Typography>
             }
+            disabled
           />
         </Stack>
         <Stack direction="row" m="16px 0px" alignItems="center">
