@@ -1,5 +1,5 @@
 import { apiUrl } from '@/config'
-import { CreateTaskRequest } from '@/types/dto/tasks.dto'
+import { CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { revalidateTag } from 'next/cache'
 
 export const handleCreate = async (token: string, payload: CreateTaskRequest) => {
@@ -10,11 +10,37 @@ export const handleCreate = async (token: string, payload: CreateTaskRequest) =>
   revalidateTag('getAllTasks')
 }
 
+/**
+ * @deprecated
+ * Use the new update task function instead. This will be completely removed in the upcoming PRs.
+ */
 export const updateWorkflowStateIdOfTask = async (token: string, taskId: string, targetWorkflowStateId: string) => {
-  fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
+  await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
     method: 'PATCH',
     body: JSON.stringify({
       workflowStateId: targetWorkflowStateId,
+    }),
+  })
+  revalidateTag('getAllTasks')
+}
+
+export const updateTask = async ({
+  token,
+  taskId,
+  payload,
+}: {
+  token: string
+  taskId: string
+  payload: UpdateTaskRequest
+}) => {
+  await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
+    method: 'PATCH',
+    body: JSON.stringify({
+      workflowStateId: payload.workflowStateId,
+      assigneeId: payload.assigneeId,
+      assigneeType: payload.assigneeType,
+      body: payload.body,
+      title: payload.title,
     }),
   })
   revalidateTag('getAllTasks')

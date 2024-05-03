@@ -2,13 +2,14 @@ import { createSlice } from '@reduxjs/toolkit'
 import { RootState } from '../store'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { TaskResponse } from '@/types/dto/tasks.dto'
-import { IAssigneeCombined } from '@/types/interfaces'
+import { IAssigneeCombined, View } from '@/types/interfaces'
 
 interface IInitialState {
   workflowStates: WorkflowStateResponse[]
   assignee: IAssigneeCombined[]
   tasks: TaskResponse[]
   token: string | undefined
+  view: View
   filteredTasks: TaskResponse[]
 }
 
@@ -17,6 +18,7 @@ const initialState: IInitialState = {
   tasks: [],
   token: undefined,
   assignee: [],
+  view: View.BOARD_VIEW,
   filteredTasks: [],
 }
 
@@ -31,6 +33,7 @@ const taskBoardSlice = createSlice({
       state.tasks = action.payload
       state.filteredTasks = action.payload
     },
+
     setToken: (state, action) => {
       state.token = action.payload
     },
@@ -50,6 +53,7 @@ const taskBoardSlice = createSlice({
         taskToUpdate.workflowStateId = action.payload.targetWorkflowStateId
         const updatedTasks = [...state.tasks.filter((task) => task.id !== action.payload.taskId), taskToUpdate]
         state.tasks = updatedTasks
+        state.filteredTasks = updatedTasks
       }
     },
     setAssigneeList: (state, action) => {

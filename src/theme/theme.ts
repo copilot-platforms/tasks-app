@@ -70,6 +70,7 @@ export const theme = createTheme({
       borderHover: '#C9CBCD',
       borderDisabled: '#EFF1F4',
       border2: '#EDEDF0',
+      border3: '#DADBDC',
     },
     background: {
       bgCard: '#DFE1E4',

@@ -3,7 +3,13 @@ export enum UserType {
   CLIENT_USER = 'cu',
 }
 
+export enum View {
+  LIST_VIEW,
+  BOARD_VIEW,
+}
+
 export interface IAssignee {
+  ius: Omit<IIus, 'type'>[]
   internalUsers: Omit<IIus, 'type'>[]
   clients: Omit<IClient, 'type'>[]
   companies: Omit<ICompany, 'type'>[]
