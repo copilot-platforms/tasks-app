@@ -5,7 +5,7 @@ import { CompanyResponse, CopilotUser } from '@/types/common'
 import { z } from 'zod'
 import User from '@api/core/models/User.model'
 import { CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
-import WorkflowStatesService from '../workflow-states/workflowStates.service'
+import WorkflowStatesService from '@api/workflow-states/workflowStates.service'
 
 /**
  * Helper function that sets the in-product notification title and body for a given notification trigger
