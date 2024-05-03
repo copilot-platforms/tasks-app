@@ -33,6 +33,7 @@ export default function Selector({
   disabled,
 }: Prop) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+  console.log('hello', disabled)
 
   const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
     if (!disabled) {

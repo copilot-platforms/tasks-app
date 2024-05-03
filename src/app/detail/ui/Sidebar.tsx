@@ -75,7 +75,7 @@ export const Sidebar = ({
                 {statusValue?.name as ReactNode}
               </Typography>
             }
-            disabled
+            disabled={disabled}
           />
         </Stack>
         <Stack direction="row" m="16px 0px" alignItems="center">
@@ -102,7 +102,7 @@ export const Sidebar = ({
                 {assigneeValue?.name || assigneeValue?.givenName}
               </Typography>
             }
-            disabled
+            disabled={disabled}
           />
         </Stack>
         <Stack direction="row" m="16px 0px" alignItems="center">

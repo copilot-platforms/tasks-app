@@ -99,7 +99,7 @@ export default async function TaskDetailPage({
               'use server'
               await updateAssignee(token, task_id, assigneeType, assigneeId)
             }}
-            disabled={params.user_type === UserType.INTERNAL_USER}
+            disabled={params.user_type === UserType.CLIENT_USER}
           />
         </Box>
       </Stack>
