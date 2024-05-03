@@ -37,7 +37,7 @@ export const TaskBoard = ({
       )
       updateTask(payload.taskId, { workflowStateId: payload.targetWorkflowStateId })
     },
-    [updateTask, tasks],
+    [updateTask],
   )
 
   /**
