@@ -49,6 +49,7 @@ export const FilterBar = () => {
                 id: '',
                 name: 'No assignee',
                 value: '',
+                extraOptionFlag: true,
               }}
               extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
                 return (

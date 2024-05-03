@@ -17,6 +17,7 @@ type ExtraOption = {
   id: string
   name: string
   value?: string
+  extraOptionFlag: true
   //other custom types..
 }
 
@@ -115,7 +116,7 @@ export default function Selector({
             )
           }}
           renderOption={(props, option: unknown) =>
-            extraOption && extraOptionRenderer ? (
+            extraOption && extraOptionRenderer && (option as ExtraOption)?.extraOptionFlag ? (
               extraOptionRenderer(setAnchorEl, anchorEl, props)
             ) : selectorType === SelectorType.ASSIGNEE_SELECTOR ? (
               <AssigneeSelectorRenderer props={props} option={option} />
