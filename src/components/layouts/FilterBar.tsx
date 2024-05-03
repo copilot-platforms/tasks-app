@@ -4,7 +4,7 @@ import { Box, Stack, Typography } from '@mui/material'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { useEffect, useState } from 'react'
 import store from '@/redux/store'
-import { selectTaskBoard, setFilteredTasks } from '@/redux/features/taskBoardSlice'
+import { selectTaskBoard, setFilteredTasks, setViewSettings } from '@/redux/features/taskBoardSlice'
 import SearchBar from '@/components/searchBar'
 import { ViewModeSelector } from '../inputs/ViewModeSelector'
 import { useSelector } from 'react-redux'
@@ -33,7 +33,13 @@ export const FilterBar = ({ updateViewModeSetting }: { updateViewModeSetting: (m
               }}
             />
 
-            <ViewModeSelector selectedMode={view} handleModeChange={(mode) => updateViewModeSetting(mode)} />
+            <ViewModeSelector
+              selectedMode={view}
+              handleModeChange={(mode) => {
+                store.dispatch(setViewSettings(mode))
+                updateViewModeSetting(mode)
+              }}
+            />
           </Stack>
         </Stack>
       </AppMargin>
