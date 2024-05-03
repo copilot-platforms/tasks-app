@@ -61,7 +61,7 @@ model TaskTemplate {
   workspaceId     String
   templateName    String
   title           String
-  body            String
+  body            String?
   assigneeId      String?
   assigneeType    AssigneeType?
   workflowState   WorkflowState @relation(fields: [workflowStateId], references: [id])

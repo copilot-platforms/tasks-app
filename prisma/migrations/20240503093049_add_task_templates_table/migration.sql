@@ -4,7 +4,7 @@ CREATE TABLE "TaskTemplates" (
     "workspaceId" TEXT NOT NULL,
     "templateName" TEXT NOT NULL,
     "title" TEXT NOT NULL,
-    "body" TEXT NOT NULL,
+    "body" TEXT,
     "assigneeId" TEXT,
     "assigneeType" "AssigneeType",
     "workflowStateId" UUID NOT NULL,
