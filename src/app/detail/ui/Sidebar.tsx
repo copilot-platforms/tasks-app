@@ -3,25 +3,50 @@
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { Avatar, Box, Stack, Typography, styled } from '@mui/material'
 import Selector, { SelectorType } from '@/components/inputs/Selector'
-import { status, assignee } from '@/utils/mockData'
-import { IAssignee } from '@/types/interfaces'
-import { StatusKey, statusIcons } from '@/utils/iconMatcher'
+import { IAssigneeCombined } from '@/types/interfaces'
+import { statusIcons } from '@/utils/iconMatcher'
 import { DatePickerComponent } from '@/components/inputs/DatePickerComponent'
 import { ReactNode } from 'react'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
+import { useSelector } from 'react-redux'
+import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
+import { StyledBox } from './styledComponent'
+import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 
 const StyledText = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[500],
   width: '80px',
 }))
 
-export const Sidebar = () => {
-  const { renderingItem: statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
-    item: status[0],
+export const Sidebar = ({
+  selectedWorkflowState,
+  selectedAssigneeId,
+  updateWorkflowState,
+  updateAssignee,
+  assignee,
+  disabled,
+}: {
+  selectedWorkflowState: WorkflowStateResponse
+  selectedAssigneeId: string | undefined
+  updateWorkflowState: (workflowState: WorkflowStateResponse) => void
+  updateAssignee: (assigneeType: string, assigneeId: string) => void
+  assignee: IAssigneeCombined[]
+  disabled: boolean
+}) => {
+  const { workflowStates } = useSelector(selectTaskBoard)
+
+  const { renderingItem: _statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
+    item: selectedWorkflowState,
+    type: SelectorType.STATUS_SELECTOR,
   })
-  const { renderingItem: assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
-    item: assignee[0],
+  const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
+    item: selectedAssigneeId ? assignee.find((el) => el.id === selectedAssigneeId) : assignee[0],
+    type: SelectorType.ASSIGNEE_SELECTOR,
   })
+
+  const statusValue = _statusValue as WorkflowStateResponse //typecasting
+  const assigneeValue = _assigneeValue as IAssigneeCombined //typecasting
 
   return (
     <Box
@@ -30,39 +55,54 @@ export const Sidebar = () => {
         height: '91vh',
       }}
     >
-      <AppMargin size={SizeofAppMargin.SMALL} py="31px">
+      <StyledBox p="19px 25px">
+        <Typography variant="sm">Properties</Typography>
+      </StyledBox>
+      <AppMargin size={SizeofAppMargin.SMALL}>
         <Stack direction="row" alignItems="center" m="16px 0px">
           <StyledText variant="md">Status</StyledText>
           <Selector
             getSelectedValue={(newValue) => {
               updateStatusValue(newValue)
+              updateWorkflowState(newValue as WorkflowStateResponse)
             }}
-            startIcon={statusIcons[statusValue as StatusKey]}
-            options={status}
+            startIcon={statusIcons[statusValue?.type]}
+            options={workflowStates}
             value={statusValue}
             selectorType={SelectorType.STATUS_SELECTOR}
             buttonContent={
               <Typography variant="bodySm" lineHeight="16px" sx={{ color: (theme) => theme.color.gray[600] }}>
-                {statusValue as ReactNode}
+                {statusValue?.name as ReactNode}
               </Typography>
             }
+            disabled={disabled}
           />
         </Stack>
         <Stack direction="row" m="16px 0px" alignItems="center">
           <StyledText variant="md">Assignee</StyledText>
           <Selector
             getSelectedValue={(newValue) => {
-              updateAssigneeValue(newValue as IAssignee)
+              const assignee = newValue as IAssigneeCombined
+              updateAssigneeValue(assignee)
+              const assigneeType = getAssigneeTypeCorrected(assignee)
+              updateAssignee(assigneeType, assignee?.id)
             }}
-            startIcon={<Avatar alt="user" src={(assigneeValue as IAssignee).img} sx={{ width: '20px', height: '20px' }} />}
+            startIcon={
+              <Avatar
+                alt="user"
+                src={assigneeValue?.iconImageUrl || assigneeValue?.avatarImageUrl}
+                sx={{ width: '20px', height: '20px' }}
+              />
+            }
             options={assignee}
             value={assigneeValue}
             selectorType={SelectorType.ASSIGNEE_SELECTOR}
             buttonContent={
               <Typography variant="bodySm" lineHeight="16px" sx={{ color: (theme) => theme.color.gray[600] }}>
-                {(assigneeValue as IAssignee)?.name || 'No Assignee'}
+                {assigneeValue?.name || assigneeValue?.givenName}
               </Typography>
             }
+            disabled={disabled}
           />
         </Stack>
         <Stack direction="row" m="16px 0px" alignItems="center">

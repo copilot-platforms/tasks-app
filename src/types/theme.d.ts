@@ -68,6 +68,7 @@ export declare module '@mui/material/styles' {
         borderHover: string
         borderDisabled: string
         border2: string
+        border3: string
       }
       background: {
         bgCard: string
@@ -142,6 +143,7 @@ export declare module '@mui/material/styles' {
         borderHover: React.CSSProperties['color']
         borderDisabled: React.CSSProperties['color']
         border2: React.CSSProperties['color']
+        border3: React.CSSProperties['color']
       }
       background: {
         bgCard: React.CSSProperties['color']
