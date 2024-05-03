@@ -26,18 +26,18 @@ const taskBoardSlice = createSlice({
   name: 'taskBoard',
   initialState,
   reducers: {
-    setWorkflowStates: (state, action) => {
+    setWorkflowStates: (state, action: { payload: WorkflowStateResponse[] }) => {
       state.workflowStates = action.payload
     },
-    setTasks: (state, action) => {
+    setTasks: (state, action: { payload: TaskResponse[] }) => {
       state.tasks = action.payload
       state.filteredTasks = action.payload
     },
 
-    setToken: (state, action) => {
+    setToken: (state, action: { payload: string }) => {
       state.token = action.payload
     },
-    setFilteredTasks: (state, action) => {
+    setFilteredTasks: (state, action: { payload: string }) => {
       const keyword = action.payload?.toLowerCase()
       const filteredTasks =
         keyword != ''
@@ -47,7 +47,7 @@ const taskBoardSlice = createSlice({
           : state.tasks
       state.filteredTasks = filteredTasks
     },
-    updateWorkflowStateIdByTaskId: (state, action) => {
+    updateWorkflowStateIdByTaskId: (state, action: { payload: { taskId: string; targetWorkflowStateId: string } }) => {
       let taskToUpdate = state.tasks.find((task) => task.id === action.payload.taskId)
       if (taskToUpdate) {
         taskToUpdate.workflowStateId = action.payload.targetWorkflowStateId
@@ -56,10 +56,10 @@ const taskBoardSlice = createSlice({
         state.filteredTasks = updatedTasks
       }
     },
-    setAssigneeList: (state, action) => {
+    setAssigneeList: (state, action: { payload: IAssigneeCombined[] }) => {
       state.assignee = action.payload
     },
-    setViewSettings: (state, action) => {
+    setViewSettings: (state, action: { payload: View }) => {
       state.view = action.payload
     },
   },
