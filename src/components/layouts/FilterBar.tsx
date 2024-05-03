@@ -14,7 +14,7 @@ import { IAssigneeCombined } from '@/types/interfaces'
 import { FilterByAsigneeIcon } from '@/icons'
 import { FilterByAssigneeBtn } from '../buttons/FilterByAssigneeBtn'
 
-export const FilterBar = ({}: {}) => {
+export const FilterBar = () => {
   const { assignee } = useSelector(selectTaskBoard)
   const [searchText, setSearchText] = useState('')
 
