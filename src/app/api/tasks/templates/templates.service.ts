@@ -20,7 +20,7 @@ export class TemplatesService extends BaseService {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Read, Resource.TaskTemplates)
 
-    let templates = await this.db.taskTemplate.findFirst({
+    let templates = await this.db.taskTemplate.findFirstOrThrow({
       where: { id, workspaceId: this.user.workspaceId },
     })
     return templates
