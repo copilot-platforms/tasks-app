@@ -13,11 +13,11 @@ export enum SelectorType {
   STATUS_SELECTOR = 'statusSelector',
 }
 
-interface customOptions {
+type ExtraOption = {
   id: string
   name: string
   value?: string
-  //other custom types..
+  extraOptionFlag: true
 }
 
 interface Prop {
@@ -27,8 +27,14 @@ interface Prop {
   selectorType: SelectorType.STATUS_SELECTOR | SelectorType.ASSIGNEE_SELECTOR
   options: unknown[]
   buttonContent: ReactNode
+  disabled?: boolean
   placeholder?: string
-  customOptions?: customOptions
+  extraOption?: ExtraOption
+  extraOptionRenderer?: (
+    setAnchorEl: React.Dispatch<React.SetStateAction<HTMLElement | null>>,
+    anchorEl: null | HTMLElement,
+    props?: HTMLAttributes<HTMLLIElement>,
+  ) => ReactNode
 }
 
 export default function Selector({
@@ -38,17 +44,22 @@ export default function Selector({
   selectorType,
   options,
   buttonContent,
+  disabled,
   placeholder = 'Change status...',
-  customOptions,
+  extraOption,
+  extraOptionRenderer,
 }: Prop) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+  console.log('hello', disabled)
 
   const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
-    setAnchorEl(anchorEl ? null : event.currentTarget)
+    if (!disabled) {
+      setAnchorEl(anchorEl ? null : event.currentTarget)
+    }
   }
 
   const open = Boolean(anchorEl)
-  const id = open ? 'autocomplete-popper' : undefined
+  const id = open ? 'autocomplete-popper' : ''
 
   const [inputStatusValue, setInputStatusValue] = useState('')
 
@@ -71,6 +82,7 @@ export default function Selector({
         anchorEl={anchorEl}
         sx={{
           width: '180px',
+          zIndex: '9999',
         }}
         placement="bottom-end"
       >
@@ -81,7 +93,7 @@ export default function Selector({
           }}
           openOnFocus
           autoHighlight
-          options={customOptions ? [customOptions, ...options] : options}
+          options={options}
           value={value}
           onChange={(_, newValue: unknown) => {
             getSelectedValue(newValue)
@@ -109,7 +121,9 @@ export default function Selector({
             )
           }}
           renderOption={(props, option: unknown) =>
-            selectorType === SelectorType.ASSIGNEE_SELECTOR ? (
+            extraOption && extraOptionRenderer && (option as ExtraOption)?.extraOptionFlag ? (
+              extraOptionRenderer(setAnchorEl, anchorEl, props)
+            ) : selectorType === SelectorType.ASSIGNEE_SELECTOR ? (
               <AssigneeSelectorRenderer props={props} option={option} />
             ) : (
               <StatusSelectorRenderer props={props} option={option} />

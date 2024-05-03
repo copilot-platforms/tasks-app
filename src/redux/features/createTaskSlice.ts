@@ -28,16 +28,24 @@ const createTaskSlice = createSlice({
       state.showModal = !state.showModal
     },
 
-    setCreateTaskFields: (state, action) => {
+    setCreateTaskFields: (state, action: { payload: { targetField: string; value: string } }) => {
       const { targetField, value } = action.payload
       //@ts-ignore
       state[targetField] = value
+    },
+
+    clearCreateTaskFields: (state) => {
+      state.title = ''
+      state.workflowStateId = ''
+      state.description = ''
+      state.assigneeType = undefined
+      state.assigneeId = ''
     },
   },
 })
 
 export const selectCreateTask = (state: RootState) => state.createTask
 
-export const { setShowModal, setCreateTaskFields } = createTaskSlice.actions
+export const { setShowModal, setCreateTaskFields, clearCreateTaskFields } = createTaskSlice.actions
 
 export default createTaskSlice.reducer

@@ -4,18 +4,23 @@ import { Avatar, Box, IconButton, Stack, Typography } from '@mui/material'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { useState } from 'react'
 import store from '@/redux/store'
-import { setFilteredAsignee, setFilteredTasks } from '@/redux/features/taskBoardSlice'
+import { setFilteredAsignee, setFilteredTasks, setViewSettings } from '@/redux/features/taskBoardSlice'
 import SearchBar from '@/components/searchBar'
 import Selector, { SelectorType } from '@/components/inputs/Selector'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { useSelector } from 'react-redux'
-import { IAssigneeCombined } from '@/types/interfaces'
+import { IAssigneeCombined, View } from '@/types/interfaces'
 import { CrossIcon, FilterByAsigneeIcon } from '@/icons'
+import { ViewModeSelector } from '../inputs/ViewModeSelector'
+import { FilterByAssigneeBtn } from '../buttons/FilterByAssigneeBtn'
 
-export const FilterBar = ({}: {}) => {
-  const { assignee } = useSelector(selectTaskBoard)
+export const FilterBar = ({ updateViewModeSetting }: { updateViewModeSetting: (mode: View) => void }) => {
   const [searchText, setSearchText] = useState('')
+
+  const { view } = useSelector(selectTaskBoard)
+
+  const { assignee } = useSelector(selectTaskBoard)
 
   const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
     item: assignee[0],
@@ -23,6 +28,7 @@ export const FilterBar = ({}: {}) => {
   })
 
   const assigneeValue = _assigneeValue as IAssigneeCombined
+
   return (
     <Box
       sx={{
@@ -43,55 +49,60 @@ export const FilterBar = ({}: {}) => {
               placeholder="Assignee"
               value={assigneeValue}
               selectorType={SelectorType.ASSIGNEE_SELECTOR}
-              customOptions={{ id: '', name: 'No assignee', value: '' }}
-              buttonContent={
-                <Typography
-                  variant="bodySm"
-                  lineHeight="32px"
-                  fontWeight={500}
-                  fontSize="12px"
-                  sx={{ color: (theme) => theme.color.gray[600] }}
-                >
-                  <Stack direction="row" alignItems="center" columnGap={1}>
-                    <> Filter by</>
-                    {assigneeValue?.name || assigneeValue?.givenName ? (
-                      <Stack direction="row" alignItems="center" columnGap={1}>
-                        <Avatar
-                          alt="user"
-                          src={
-                            (assigneeValue as IAssigneeCombined).avatarImageUrl ||
-                            (assigneeValue as IAssigneeCombined).iconImageUrl
-                          }
-                          sx={{ width: '20px', height: '20px' }}
-                        />
-                        {assigneeValue?.name || assigneeValue?.givenName}
-                        <IconButton
-                          aria-label="remove"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            updateAssigneeValue(null)
-                            store.dispatch(setFilteredAsignee(null))
-                          }}
-                        >
-                          <CrossIcon />
-                        </IconButton>
-                      </Stack>
-                    ) : (
-                      <> assignee</>
-                    )}
-                  </Stack>
-                </Typography>
-              }
+              extraOption={{
+                id: '',
+                name: 'No assignee',
+                value: '',
+                extraOptionFlag: true,
+              }}
+              extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
+                return (
+                  <Box
+                    component="li"
+                    {...props}
+                    sx={{
+                      '&.MuiAutocomplete-option[aria-selected="true"]': {
+                        bgcolor: (theme) => theme.color.gray[100],
+                      },
+                      '&.MuiAutocomplete-option[aria-selected="true"].Mui-focused': {
+                        bgcolor: (theme) => theme.color.gray[100],
+                      },
+                    }}
+                    onClick={(e) => {
+                      updateAssigneeValue({ id: '', name: 'No assignee' })
+                      setAnchorEl(anchorEl ? null : e.currentTarget)
+                      store.dispatch(setFilteredAsignee(e.currentTarget))
+                    }}
+                  >
+                    <Stack direction="row" alignItems="center" columnGap={3}>
+                      <Avatar alt="user" sx={{ width: '20px', height: '20px' }} />
+                      <Typography variant="sm" fontWeight={400}>
+                        No assignee
+                      </Typography>
+                    </Stack>
+                  </Box>
+                )
+              }}
+              buttonContent={<FilterByAssigneeBtn assigneeValue={assigneeValue} updateAssigneeValue={updateAssigneeValue} />}
             />
           </Stack>
+          <Stack direction="row" alignItems="center" columnGap={3}>
+            <SearchBar
+              value={searchText}
+              getSearchKeyword={(keyword) => {
+                setSearchText(keyword)
+                store.dispatch(setFilteredTasks(keyword))
+              }}
+            />
 
-          <SearchBar
-            value={searchText}
-            getSearchKeyword={(keyword) => {
-              setSearchText(keyword)
-              store.dispatch(setFilteredTasks(keyword))
-            }}
-          />
+            <ViewModeSelector
+              selectedMode={view}
+              handleModeChange={(mode) => {
+                store.dispatch(setViewSettings(mode))
+                updateViewModeSetting(mode)
+              }}
+            />
+          </Stack>
         </Stack>
       </AppMargin>
     </Box>

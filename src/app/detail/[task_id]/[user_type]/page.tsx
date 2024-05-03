@@ -11,8 +11,9 @@ import { StyledBox, StyledKeyboardIcon, StyledTypography } from '@/app/detail/ui
 import Link from 'next/link'
 import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
-import { updateAssignee, updateTaskDetail } from './actions'
+import { deleteTask, updateAssignee, updateTaskDetail } from './actions'
 import { updateWorkflowStateIdOfTask } from '@/app/actions'
+import { MenuBoxContainer } from '../../ui/MenuBoxContainer'
 
 export const revalidate = 0
 
@@ -51,23 +52,26 @@ export default async function TaskDetailPage({
 
   return (
     <ClientSideStateUpdate assignee={assignee}>
-      <StyledBox>
-        <AppMargin size={SizeofAppMargin.LARGE} py="16px">
-          <Stack direction="row" alignItems="center" columnGap={3}>
-            <Link href={`/?token=${token}`}>
-              <SecondaryBtn buttonContent={<StyledTypography variant="sm">Tasks</StyledTypography>} enableBackground />
-            </Link>
-            <StyledKeyboardIcon />
-            <Typography variant="sm">{params.task_id.toLocaleUpperCase()}</Typography>
-          </Stack>
-        </AppMargin>
-      </StyledBox>
       <Stack direction="row">
         <Box
           sx={{
             width: 'calc(100% - 339px)',
           }}
         >
+          <StyledBox>
+            <AppMargin size={SizeofAppMargin.LARGE} py="16px">
+              <Stack direction="row" justifyContent="space-between">
+                <Stack direction="row" alignItems="center" columnGap={3}>
+                  <Link href={params.user_type === UserType.INTERNAL_USER ? `/?token=${token}` : `/client?token=${token}`}>
+                    <SecondaryBtn buttonContent={<StyledTypography variant="sm">Tasks</StyledTypography>} enableBackground />
+                  </Link>
+                  <StyledKeyboardIcon />
+                  <Typography variant="sm">{params.task_id.toLocaleUpperCase()}</Typography>
+                </Stack>
+                {params.user_type === UserType.INTERNAL_USER && <MenuBoxContainer />}
+              </Stack>
+            </AppMargin>
+          </StyledBox>
           <AppMargin size={SizeofAppMargin.LARGE} py="30px">
             <TaskEditor
               attachment={taskDetail.attachment}
@@ -76,7 +80,11 @@ export default async function TaskDetailPage({
               isEditable={params.user_type === UserType.INTERNAL_USER}
               updateTaskDetail={async (title, detail) => {
                 'use server'
-                updateTaskDetail(token, task_id, title, detail)
+                await updateTaskDetail(token, task_id, title, detail)
+              }}
+              deleteTask={async () => {
+                'use server'
+                await deleteTask(token, task_id)
               }}
             />
           </AppMargin>
@@ -88,12 +96,13 @@ export default async function TaskDetailPage({
             selectedWorkflowState={task.workflowState}
             updateWorkflowState={async (workflowState) => {
               'use server'
-              updateWorkflowStateIdOfTask(token, task_id, workflowState.id)
+              await updateWorkflowStateIdOfTask(token, task_id, workflowState?.id)
             }}
             updateAssignee={async (assigneeType, assigneeId) => {
               'use server'
-              updateAssignee(token, task_id, assigneeType, assigneeId)
+              await updateAssignee(token, task_id, assigneeType, assigneeId)
             }}
+            disabled={params.user_type === UserType.CLIENT_USER}
           />
         </Box>
       </Stack>
