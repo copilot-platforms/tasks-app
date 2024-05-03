@@ -50,7 +50,6 @@ export default function Selector({
   extraOptionRenderer,
 }: Prop) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-  console.log('hello', disabled)
 
   const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
     if (!disabled) {
@@ -93,7 +92,7 @@ export default function Selector({
           }}
           openOnFocus
           autoHighlight
-          options={options}
+          options={extraOption ? [extraOption, ...options] : options}
           value={value}
           onChange={(_, newValue: unknown) => {
             getSelectedValue(newValue)
