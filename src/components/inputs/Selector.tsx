@@ -13,6 +13,13 @@ export enum SelectorType {
   STATUS_SELECTOR = 'statusSelector',
 }
 
+type ExtraOption = {
+  id: string
+  name: string
+  value?: string
+  extraOptionFlag: true
+}
+
 interface Prop {
   getSelectedValue: (value: unknown) => void
   startIcon: ReactNode
@@ -21,6 +28,13 @@ interface Prop {
   options: unknown[]
   buttonContent: ReactNode
   disabled?: boolean
+  placeholder?: string
+  extraOption?: ExtraOption
+  extraOptionRenderer?: (
+    setAnchorEl: React.Dispatch<React.SetStateAction<HTMLElement | null>>,
+    anchorEl: null | HTMLElement,
+    props?: HTMLAttributes<HTMLLIElement>,
+  ) => ReactNode
 }
 
 export default function Selector({
@@ -31,9 +45,11 @@ export default function Selector({
   options,
   buttonContent,
   disabled,
+  placeholder = 'Change status...',
+  extraOption,
+  extraOptionRenderer,
 }: Prop) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-  console.log('hello', disabled)
 
   const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
     if (!disabled) {
@@ -76,7 +92,7 @@ export default function Selector({
           }}
           openOnFocus
           autoHighlight
-          options={options}
+          options={extraOption ? [extraOption, ...options] : options}
           value={value}
           onChange={(_, newValue: unknown) => {
             getSelectedValue(newValue)
@@ -98,13 +114,15 @@ export default function Selector({
                 {...params}
                 variant="outlined"
                 inputRef={setSelectorRef}
-                placeholder="Change status..."
+                placeholder={placeholder}
                 borderColor="#EDEDF0"
               />
             )
           }}
           renderOption={(props, option: unknown) =>
-            selectorType === SelectorType.ASSIGNEE_SELECTOR ? (
+            extraOption && extraOptionRenderer && (option as ExtraOption)?.extraOptionFlag ? (
+              extraOptionRenderer(setAnchorEl, anchorEl, props)
+            ) : selectorType === SelectorType.ASSIGNEE_SELECTOR ? (
               <AssigneeSelectorRenderer props={props} option={option} />
             ) : (
               <StatusSelectorRenderer props={props} option={option} />

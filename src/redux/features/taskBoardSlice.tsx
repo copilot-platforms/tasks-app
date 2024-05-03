@@ -47,7 +47,16 @@ const taskBoardSlice = createSlice({
           : state.tasks
       state.filteredTasks = filteredTasks
     },
-    updateWorkflowStateIdByTaskId: (state, action: { payload: { taskId: string; targetWorkflowStateId: string } }) => {
+    setFilteredAsignee: (state, action) => {
+      const assigneeId = action.payload?.id
+      const filteredTasks = !action.payload
+        ? state.tasks
+        : assigneeId
+          ? state.tasks.filter((task) => task.assigneeId == assigneeId)
+          : state.tasks.filter((task) => !task.assigneeId)
+      state.filteredTasks = filteredTasks
+    },
+    updateWorkflowStateIdByTaskId: (state, action) => {
       let taskToUpdate = state.tasks.find((task) => task.id === action.payload.taskId)
       if (taskToUpdate) {
         taskToUpdate.workflowStateId = action.payload.targetWorkflowStateId
@@ -74,6 +83,7 @@ export const {
   setToken,
   setFilteredTasks,
   setAssigneeList,
+  setFilteredAsignee,
   setViewSettings,
 } = taskBoardSlice.actions
 
