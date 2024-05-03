@@ -4,8 +4,8 @@ export enum UserType {
 }
 
 export enum View {
-  LIST_VIEW,
-  BOARD_VIEW,
+  LIST_VIEW = 'list',
+  BOARD_VIEW = 'board',
 }
 
 export interface IAssignee {

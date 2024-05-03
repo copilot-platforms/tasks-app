@@ -8,10 +8,11 @@ import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { apiUrl } from '@/config'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import { TaskResponse, AssigneeType, UpdateTaskRequest } from '@/types/dto/tasks.dto'
-import { IAssignee } from '@/types/interfaces'
+import { IAssignee, View } from '@/types/interfaces'
 import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
-import { handleCreate, updateTask, updateWorkflowStateIdOfTask } from './actions'
+import { handleCreate, updateTask, updateViewModeSettings, updateWorkflowStateIdOfTask } from './actions'
 import { FilterBar } from '@/components/layouts/FilterBar'
+import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -43,6 +44,14 @@ async function getAssigneeList(token: string): Promise<IAssignee> {
   return data.users
 }
 
+async function getViewSettings(token: string): Promise<CreateViewSettingsDTO> {
+  const res = await fetch(`${apiUrl}/api/view-settings?token=${token}`, {
+    next: { tags: ['getViewSettings'], revalidate: 0 },
+  })
+
+  return await res.json()
+}
+
 export default async function Main({ searchParams }: { searchParams: { token: string } }) {
   const token = searchParams.token
 
@@ -53,21 +62,33 @@ export default async function Main({ searchParams }: { searchParams: { token: st
   const workflowStates = await getAllWorkflowStates(token)
   const tasks = await getAllTasks(token)
   const assignee = addTypeToAssignee(await getAssigneeList(token))
+  const viewSettings = await getViewSettings(token)
 
   return (
     <>
-      <ClientSideStateUpdate workflowStates={workflowStates} tasks={tasks} token={token} assignee={assignee}>
+      <ClientSideStateUpdate
+        workflowStates={workflowStates}
+        tasks={tasks}
+        token={token}
+        assignee={assignee}
+        viewSettings={viewSettings?.viewMode || View.BOARD_VIEW}
+      >
         <DndWrapper>
           <Header showCreateTaskButton={true} />
-          <FilterBar />
+          <FilterBar
+            updateViewModeSetting={async (mode) => {
+              'use server'
+              await updateViewModeSettings(token, mode)
+            }}
+          />
           <TaskBoard
             handleCreate={async (createTaskPayload) => {
               'use server'
-              handleCreate(token, createTaskPayload)
+              await handleCreate(token, createTaskPayload)
             }}
             updateTask={async (taskId, payload) => {
               'use server'
-              updateTask({ token, taskId, payload })
+              await updateTask({ token, taskId, payload })
             }}
           />
         </DndWrapper>

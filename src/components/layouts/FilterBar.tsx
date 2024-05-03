@@ -4,11 +4,16 @@ import { Box, Stack, Typography } from '@mui/material'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { useEffect, useState } from 'react'
 import store from '@/redux/store'
-import { setFilteredTasks } from '@/redux/features/taskBoardSlice'
+import { selectTaskBoard, setFilteredTasks } from '@/redux/features/taskBoardSlice'
 import SearchBar from '@/components/searchBar'
+import { ViewModeSelector } from '../inputs/ViewModeSelector'
+import { useSelector } from 'react-redux'
+import { View } from '@/types/interfaces'
 
-export const FilterBar = () => {
+export const FilterBar = ({ updateViewModeSetting }: { updateViewModeSetting: (mode: View) => void }) => {
   const [searchText, setSearchText] = useState('')
+
+  const { view } = useSelector(selectTaskBoard)
 
   return (
     <Box
@@ -19,13 +24,17 @@ export const FilterBar = () => {
       <AppMargin size={SizeofAppMargin.LARGE} py="18.5px">
         <Stack direction="row" alignItems="center" justifyContent="space-between">
           <div> </div>
-          <SearchBar
-            value={searchText}
-            getSearchKeyword={(keyword) => {
-              setSearchText(keyword)
-              store.dispatch(setFilteredTasks(keyword))
-            }}
-          />
+          <Stack direction="row" alignItems="center" columnGap={3}>
+            <SearchBar
+              value={searchText}
+              getSearchKeyword={(keyword) => {
+                setSearchText(keyword)
+                store.dispatch(setFilteredTasks(keyword))
+              }}
+            />
+
+            <ViewModeSelector selectedMode={view} handleModeChange={(mode) => updateViewModeSetting(mode)} />
+          </Stack>
         </Stack>
       </AppMargin>
     </Box>

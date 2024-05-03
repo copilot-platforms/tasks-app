@@ -1,11 +1,12 @@
 'use client'
 
-import { setAssigneeList, setFilteredTasks } from '@/redux/features/taskBoardSlice'
+import { setAssigneeList, setViewSettings } from '@/redux/features/taskBoardSlice'
 import { setTasks, setToken, setWorkflowStates } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { IAssigneeCombined } from '@/types/interfaces'
+import { ViewMode } from '@prisma/client'
 import { ReactNode, useEffect } from 'react'
 
 /**
@@ -19,11 +20,13 @@ export const ClientSideStateUpdate = ({
   tasks,
   assignee,
   token,
+  viewSettings,
 }: {
   children: ReactNode
   workflowStates?: WorkflowStateResponse[]
   tasks?: TaskResponse[]
   assignee?: IAssigneeCombined[]
+  viewSettings?: ViewMode
   token?: string
 }) => {
   useEffect(() => {
@@ -42,7 +45,11 @@ export const ClientSideStateUpdate = ({
     if (assignee) {
       store.dispatch(setAssigneeList(assignee))
     }
-  }, [workflowStates, tasks, token, assignee])
+
+    if (viewSettings) {
+      store.dispatch(setViewSettings(viewSettings))
+    }
+  }, [workflowStates, tasks, token, assignee, viewSettings])
 
   return children
 }

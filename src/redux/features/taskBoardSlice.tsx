@@ -59,12 +59,22 @@ const taskBoardSlice = createSlice({
     setAssigneeList: (state, action) => {
       state.assignee = action.payload
     },
+    setViewSettings: (state, action) => {
+      state.view = action.payload
+    },
   },
 })
 
 export const selectTaskBoard = (state: RootState) => state.taskBoard
 
-export const { setWorkflowStates, setTasks, updateWorkflowStateIdByTaskId, setToken, setFilteredTasks, setAssigneeList } =
-  taskBoardSlice.actions
+export const {
+  setWorkflowStates,
+  setTasks,
+  updateWorkflowStateIdByTaskId,
+  setToken,
+  setFilteredTasks,
+  setAssigneeList,
+  setViewSettings,
+} = taskBoardSlice.actions
 
 export default taskBoardSlice.reducer
