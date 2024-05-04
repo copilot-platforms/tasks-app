@@ -23,14 +23,14 @@ enum AssigneeType {
 }
 
 model WorkflowState {
-  id           String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  workspaceId  String
-  type         StateType
-  name         String
-  key          String
-  color        String?
-  tasks        Task[]
-  TaskTemplate TaskTemplate[]
+  id            String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  workspaceId   String
+  type          StateType
+  name          String
+  key           String
+  color         String?
+  tasks         Task[]
+  taskTemplates TaskTemplate[]
 
   @@unique([workspaceId, key], name: "UQ_WorkflowStates_workspaceId_key")
   @@index([workspaceId, key], name: "IX_WorkflowStates_workspaceId_key")
@@ -69,6 +69,7 @@ model TaskTemplate {
   createdBy       String
 
   @@unique([workspaceId, templateName], name: "UQ_TaskTemplates_workspaceId_templateName")
+  @@index([workspaceId, templateName], name: "IX_TaskTemplates_workspaceId_templateName")
   @@map("TaskTemplates")
 }
 
