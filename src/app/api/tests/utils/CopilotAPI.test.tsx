@@ -1,4 +1,3 @@
-import { CopilotApiError } from '@/types/CopilotApiError'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { mockCopilotAPI } from '@api/tests/__mocks__/CopilotAPI.mock'
 

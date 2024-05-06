@@ -1,10 +1,9 @@
 import authenticate from '@api/core/utils/authenticate'
 import { buildNextRequest } from '@api/core/utils/testUtils'
 import httpStatus from 'http-status'
-import { CopilotApiError } from '@/types/CopilotApiError'
 import { mockTokenPayloads } from '@/app/api/tests/__mocks__/mockData'
 import { mockCopilotAPI } from '@api/tests/__mocks__/CopilotAPI.mock'
-import APIError from '../../core/exceptions/api'
+import APIError from '@api/core/exceptions/api'
 
 jest.mock('@/utils/CopilotAPI', () => ({
   CopilotAPI: jest.fn().mockImplementation((token: string) => mockCopilotAPI(token)),

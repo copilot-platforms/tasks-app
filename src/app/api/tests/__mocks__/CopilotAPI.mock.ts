@@ -1,7 +1,5 @@
-import { CopilotApiError } from '@/types/CopilotApiError'
 import { jest } from '@jest/globals'
 import { UserRole } from '@/app/api/core/types/user'
-import httpStatus from 'http-status'
 import { mockTokenPayloads, validMockTokens } from '@api/tests/__mocks__/mockData'
 
 // Mock implementation with explicit types
