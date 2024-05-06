@@ -1,5 +1,5 @@
 import authenticate from '@api/core/utils/authenticate'
-import { buildNextRequest } from '@api/core/utils/testUtils'
+import { buildNextRequest } from '@api/tests/__utils__/testUtils'
 import httpStatus from 'http-status'
 import { mockTokenPayloads } from '@/app/api/tests/__mocks__/mockData'
 import { mockCopilotAPI } from '@api/tests/__mocks__/CopilotAPI.mock'
