@@ -2,8 +2,9 @@ import authenticate from '@api/core/utils/authenticate'
 import { buildNextRequest } from '@api/core/utils/testUtils'
 import httpStatus from 'http-status'
 import { CopilotApiError } from '@/types/CopilotApiError'
-import { mockTokenPayloads } from '@api/__mocks__/mockData'
-import { mockCopilotAPI } from '@api/__mocks__/CopilotAPI.mock'
+import { mockTokenPayloads } from '@/app/api/tests/__mocks__/mockData'
+import { mockCopilotAPI } from '@api/tests/__mocks__/CopilotAPI.mock'
+import APIError from '../../core/exceptions/api'
 
 jest.mock('@/utils/CopilotAPI', () => ({
   CopilotAPI: jest.fn().mockImplementation((token: string) => mockCopilotAPI(token)),
@@ -32,8 +33,8 @@ describe('authenticate util', () => {
       await authenticate(req)
       fail('Expected authenticate function to throw an error, but it did not')
     } catch (error: unknown) {
-      expect(error).toBeInstanceOf(CopilotApiError)
-      expect((error as CopilotApiError).status).toBe(httpStatus.UNAUTHORIZED)
+      expect(error).toBeInstanceOf(APIError)
+      expect((error as APIError).status).toBe(httpStatus.UNAUTHORIZED)
       expect((error as Error).message).toBe('Failed to authenticate token')
     }
   })
@@ -44,7 +45,7 @@ describe('authenticate util', () => {
       await authenticate(req)
       fail('Expected authenticate function to throw an error, but it did not')
     } catch (error: unknown) {
-      expect(error).toBeInstanceOf(CopilotApiError)
+      expect(error).toBeInstanceOf(APIError)
       expect((error as Error).message).toBe('Failed to authenticate token')
     }
   })
