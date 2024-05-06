@@ -9,6 +9,8 @@ import { IAssignee } from '@/types/interfaces'
 import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
 import { handleCreate, updateWorkflowStateIdOfTask } from './actions'
 import { FilterBar } from '@/components/layouts/FilterBar'
+import { CopilotAPI } from '@/utils/CopilotAPI'
+import { Token, TokenSchema } from '@/types/common'
 
 export const revalidate = 0
 
@@ -32,6 +34,12 @@ async function getAllTasks(token: string): Promise<TaskResponse[]> {
   return data.tasks
 }
 
+async function getTokenPayload(token: string): Promise<Token> {
+  const copilotClient = new CopilotAPI(token)
+  const payload = TokenSchema.safeParse(await copilotClient.getTokenPayload())
+  return payload.data as Token
+}
+
 async function getAssigneeList(token: string): Promise<IAssignee> {
   const res = await fetch(`${apiUrl}/api/users?token=${token}`, {
     next: { tags: ['getAssigneeList'], revalidate: 0 },
@@ -44,7 +52,6 @@ async function getAssigneeList(token: string): Promise<IAssignee> {
 
 export default async function Main({ searchParams }: { searchParams: { token: string } }) {
   const token = searchParams.token
-
   if (!token) {
     throw new Error('Please pass the token!')
   }
@@ -58,7 +65,12 @@ export default async function Main({ searchParams }: { searchParams: { token: st
       <ClientSideStateUpdate workflowStates={workflowStates} tasks={tasks} token={token} assignee={assignee}>
         <DndWrapper>
           <Header showCreateTaskButton={true} />
-          <FilterBar />
+          <FilterBar
+            getTokenPayload={async (): Promise<Token> => {
+              'use server'
+              return getTokenPayload(token)
+            }}
+          />
           <TaskBoard
             handleCreate={async (createTaskPayload) => {
               'use server'

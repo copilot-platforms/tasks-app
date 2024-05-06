@@ -4,7 +4,7 @@ import { Avatar, Box, Stack, Typography } from '@mui/material'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { useState } from 'react'
 import store from '@/redux/store'
-import { setFilteredAsignee, setFilteredTasks } from '@/redux/features/taskBoardSlice'
+import { setFilteredAsignee, setFilteredTaskByType, setFilteredTasks } from '@/redux/features/taskBoardSlice'
 import SearchBar from '@/components/searchBar'
 import Selector, { SelectorType } from '@/components/inputs/Selector'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
@@ -13,16 +13,50 @@ import { useSelector } from 'react-redux'
 import { IAssigneeCombined } from '@/types/interfaces'
 import { FilterByAsigneeIcon } from '@/icons'
 import { FilterByAssigneeBtn } from '../buttons/FilterByAssigneeBtn'
+import FilterButtonGroup from '@/components/buttonsGroup/FilterButtonsGroup'
+import { Token } from '@/types/common'
 
-export const FilterBar = () => {
+export const FilterBar = ({ getTokenPayload }: { getTokenPayload: () => Promise<Token> }) => {
   const { assignee } = useSelector(selectTaskBoard)
   const [searchText, setSearchText] = useState('')
+  const [activeButtonIndex, setActiveButtonIndex] = useState<number>()
 
   const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
     item: assignee[0],
     type: SelectorType.ASSIGNEE_SELECTOR,
   })
 
+  const filterButtons = [
+    {
+      name: 'My tasks',
+      onClick: async (index: number) => {
+        const payload = await getTokenPayload()
+        store.dispatch(setFilteredAsignee({ id: payload.internalUserId }))
+        setActiveButtonIndex(index)
+      },
+    },
+    {
+      name: "My team's tasks",
+      onClick: (index: number) => {
+        store.dispatch(setFilteredTaskByType({ assigneeType: ['internalUser'] }))
+        setActiveButtonIndex(index)
+      },
+    },
+    {
+      name: 'Client tasks',
+      onClick: (index: number) => {
+        store.dispatch(setFilteredTaskByType({ assigneeType: ['client', 'company'] }))
+        setActiveButtonIndex(index)
+      },
+    },
+    {
+      name: 'All tasks',
+      onClick: (index: number) => {
+        store.dispatch(setFilteredTaskByType({ assigneeType: ['all'] }))
+        setActiveButtonIndex(index)
+      },
+    },
+  ]
   const assigneeValue = _assigneeValue as IAssigneeCombined
 
   return (
@@ -31,9 +65,10 @@ export const FilterBar = () => {
         border: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
       }}
     >
-      <AppMargin size={SizeofAppMargin.LARGE} py="18.5px">
+      <AppMargin size={SizeofAppMargin.LARGE} py="14px">
         <Stack direction="row" alignItems="center" justifyContent="space-between">
           <Stack direction="row" columnGap={3}>
+            <FilterButtonGroup filterButtons={filterButtons} activeButtonIndex={activeButtonIndex} />
             <Selector
               getSelectedValue={(_newValue) => {
                 const newValue = _newValue as IAssigneeCombined

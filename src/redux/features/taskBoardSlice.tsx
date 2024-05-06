@@ -53,6 +53,13 @@ const taskBoardSlice = createSlice({
           : state.tasks.filter((task) => !task.assigneeId)
       state.filteredTasks = filteredTasks
     },
+    setFilteredTaskByType: (state, action) => {
+      const assigneeType: string[] = action.payload?.assigneeType
+      const filteredTask = assigneeType.includes('all')
+        ? state.tasks
+        : state.tasks.filter((task) => assigneeType.includes(task.assigneeType as string))
+      state.filteredTasks = filteredTask
+    },
     updateWorkflowStateIdByTaskId: (state, action) => {
       let taskToUpdate = state.tasks.find((task) => task.id === action.payload.taskId)
       if (taskToUpdate) {
@@ -77,6 +84,7 @@ export const {
   setFilteredTasks,
   setAssigneeList,
   setFilteredAsignee,
+  setFilteredTaskByType,
 } = taskBoardSlice.actions
 
 export default taskBoardSlice.reducer
