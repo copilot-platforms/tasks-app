@@ -51,7 +51,7 @@ export default async function ManageTemplatesPage({ searchParams }: { searchPara
   return (
     <ClientSideStateUpdate workflowStates={workflowStates} token={token} assignee={assignee} templates={templates}>
       <AppMargin size={SizeofAppMargin.LARGE}>
-        {templates && templates.length > 0 && <ManageTemplateHeader showNewTemplateButton={true} />}
+        <ManageTemplateHeader showNewTemplateButton={templates.length > 0} />
         <TemplateBoard
           handleCreateTemplate={async (payload) => {
             'use server'

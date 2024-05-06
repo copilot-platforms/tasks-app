@@ -3,16 +3,13 @@
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 import { PlusIcon, TemplateIcon } from '@/icons'
 import { Box, Stack, Typography } from '@mui/material'
-import { ManageTemplateHeader } from './Header'
 import store from '@/redux/store'
-import { selectCreateTemplate, setShowTemplateModal } from '@/redux/features/templateSlice'
+import { setShowTemplateModal } from '@/redux/features/templateSlice'
 import { TargetMethod } from '@/types/interfaces'
-import { useSelector } from 'react-redux'
 
 export const NoTemplateLayout = () => {
   return (
     <>
-      <ManageTemplateHeader showNewTemplateButton={false} />
       <Stack
         direction="column"
         rowGap={3}

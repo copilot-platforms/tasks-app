@@ -5,6 +5,7 @@ import {
   selectCreateTemplate,
   setCreateTemplateFields,
   setShowTemplateModal,
+  setTargetTemplateId,
 } from '@/redux/features/templateSlice'
 import { Modal, Stack } from '@mui/material'
 import { useSelector } from 'react-redux'
@@ -13,6 +14,8 @@ import store from '@/redux/store'
 import { CreateTemplateRequest } from '@/types/dto/templates.dto'
 import { TargetMethod } from '@/types/interfaces'
 import { NoTemplateLayout } from './NoTemplateLayout'
+import { selectTaskDetails, setShowConfirmDeleteModal } from '@/redux/features/taskDetailsSlice'
+import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
 
 export const TemplateBoard = ({
   handleCreateTemplate,
@@ -36,10 +39,11 @@ export const TemplateBoard = ({
     assigneeType,
   } = useSelector(selectCreateTemplate)
 
+  const { showConfirmDeleteModal } = useSelector(selectTaskDetails)
+
   return (
     <>
-      {templates && templates.length === 0 && <NoTemplateLayout />}
-      {templates && templates.length > 0 && (
+      {templates.length > 0 ? (
         <Stack
           direction="column"
           py="40px"
@@ -54,7 +58,10 @@ export const TemplateBoard = ({
               <TemplateCard
                 templateName={template.templateName}
                 key={key}
-                handleDelete={() => handleDeleteTemplate(template.id)}
+                handleDelete={() => {
+                  store.dispatch(setShowConfirmDeleteModal())
+                  store.dispatch(setTargetTemplateId(template.id))
+                }}
                 handleEdit={() => {
                   store.dispatch(setShowTemplateModal({ targetMethod: TargetMethod.EDIT, targetTemplateId: template.id }))
                   store.dispatch(setCreateTemplateFields({ targetField: 'templateName', value: template.templateName }))
@@ -70,6 +77,8 @@ export const TemplateBoard = ({
             )
           })}
         </Stack>
+      ) : (
+        <NoTemplateLayout />
       )}
 
       <Modal
@@ -106,6 +115,21 @@ export const TemplateBoard = ({
                 targetTemplateId,
               )
             }
+          }}
+        />
+      </Modal>
+
+      <Modal
+        open={showConfirmDeleteModal}
+        onClose={() => store.dispatch(setShowConfirmDeleteModal())}
+        aria-labelledby="delete-task-modal"
+        aria-describedby="delete-task"
+      >
+        <ConfirmDeleteUI
+          handleCancel={() => store.dispatch(setShowConfirmDeleteModal())}
+          handleDelete={() => {
+            store.dispatch(setShowConfirmDeleteModal())
+            handleDeleteTemplate(targetTemplateId)
           }}
         />
       </Modal>

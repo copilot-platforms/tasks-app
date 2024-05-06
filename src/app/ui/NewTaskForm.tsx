@@ -5,7 +5,7 @@ import Selector from '@/components/inputs/Selector'
 import { StyledTextField } from '@/components/inputs/TextField'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { ArrowLinkIcon, AttachmentIcon, TemplateIcon, TemplateIconSm } from '@/icons'
-import { selectCreateTask, setCreateTaskFields, setShowModal } from '@/redux/features/createTaskSlice'
+import { clearCreateTaskFields, selectCreateTask, setCreateTaskFields, setShowModal } from '@/redux/features/createTaskSlice'
 import store from '@/redux/store'
 import { statusIcons } from '@/utils/iconMatcher'
 import { Close } from '@mui/icons-material'
@@ -34,7 +34,7 @@ export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
     type: SelectorType.ASSIGNEE_SELECTOR,
   })
   const { renderingItem: _templateValue, updateRenderingItem: updateTemplateValue } = useHandleSelectorComponent({
-    item: templates[0],
+    item: undefined, //initially we don't want any value to be selected
     type: SelectorType.TEMPLATE_SELECTOR,
   })
 
@@ -58,12 +58,12 @@ export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
                 getSelectedValue={(_newValue) => {
                   const newValue = _newValue as ITemplate
                   updateTemplateValue(newValue)
-                  store.dispatch(setCreateTaskFields({ targetField: 'title', value: newValue.title }))
-                  store.dispatch(setCreateTaskFields({ targetField: 'description', value: newValue.body }))
                   const selectedAssignee = assignee.find((el) => el.id === newValue.assigneeId)
                   const selectedWorkflowState = workflowStates.find((el) => el.id === newValue.workflowStateId)
                   updateAssigneeValue(selectedAssignee)
                   updateStatusValue(selectedWorkflowState)
+                  store.dispatch(setCreateTaskFields({ targetField: 'title', value: newValue.title }))
+                  store.dispatch(setCreateTaskFields({ targetField: 'description', value: newValue.body }))
                   store.dispatch(setCreateTaskFields({ targetField: 'assigneeId', value: newValue?.assigneeId }))
                   store.dispatch(setCreateTaskFields({ targetField: 'workflowStateId', value: newValue?.workflowStateId }))
                 }}
@@ -104,14 +104,17 @@ export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
                 }}
                 buttonContent={
                   <Typography variant="bodySm" sx={{ color: (theme) => theme.color.gray[600] }}>
-                    Select template
+                    {templateValue ? templateValue.templateName : 'Select template'}
                   </Typography>
                 }
               />
             </Box>
             <Close
               sx={{ color: (theme) => theme.color.gray[500], cursor: 'pointer' }}
-              onClick={() => store.dispatch(setShowModal())}
+              onClick={() => {
+                store.dispatch(setShowModal())
+                store.dispatch(clearCreateTaskFields())
+              }}
             />
           </Stack>
         </AppMargin>
@@ -217,6 +220,7 @@ const NewTaskFooter = ({ handleCreate }: { handleCreate: () => void }) => {
             <SecondaryBtn
               handleClick={() => {
                 store.dispatch(setShowModal())
+                store.dispatch(clearCreateTaskFields())
               }}
               buttonContent={
                 <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[700] }}>

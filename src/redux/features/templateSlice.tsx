@@ -58,12 +58,15 @@ const createTemplateSlice = createSlice({
       state.taskName = ''
       state.targetTemplateId = ''
     },
+    setTargetTemplateId: (state, action: { payload: string }) => {
+      state.targetTemplateId = action.payload
+    },
   },
 })
 
 export const selectCreateTemplate = (state: RootState) => state.createTemplate
 
-export const { setShowTemplateModal, setCreateTemplateFields, setTemplates, clearTemplateFields } =
+export const { setShowTemplateModal, setCreateTemplateFields, setTemplates, clearTemplateFields, setTargetTemplateId } =
   createTemplateSlice.actions
 
 export default createTemplateSlice.reducer
