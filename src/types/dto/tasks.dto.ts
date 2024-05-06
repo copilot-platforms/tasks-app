@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { WorkflowStateResponseSchema } from './workflowStates.dto'
 
 export const AssigneeTypeSchema = z.nativeEnum(PrismaAssigneeType).nullish()
+export type AssigneeType = z.infer<typeof AssigneeTypeSchema>
 
 export const CreateTaskRequestSchema = z.object({
   assigneeId: z.string().optional(),

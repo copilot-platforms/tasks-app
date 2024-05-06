@@ -7,6 +7,7 @@ import { PlusIcon } from '@/icons'
 import { StyledBox, StyledKeyboardIcon, StyledTypography } from '@/app/detail/ui/styledComponent'
 import store from '@/redux/store'
 import { setShowTemplateModal } from '@/redux/features/templateSlice'
+import { TargetMethod } from '@/types/interfaces'
 
 export const ManageTemplateHeader = ({ showNewTemplateButton }: { showNewTemplateButton: boolean }) => {
   return (
@@ -21,7 +22,7 @@ export const ManageTemplateHeader = ({ showNewTemplateButton }: { showNewTemplat
           {showNewTemplateButton && (
             <PrimaryBtn
               handleClick={() => {
-                store.dispatch(setShowTemplateModal())
+                store.dispatch(setShowTemplateModal({ targetMethod: TargetMethod.POST }))
               }}
               buttonText="New Template"
               startIcon={<PlusIcon />}

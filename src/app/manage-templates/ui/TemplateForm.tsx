@@ -17,19 +17,25 @@ import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { useSelector } from 'react-redux'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { selectCreateTask, setCreateTaskFields } from '@/redux/features/createTaskSlice'
-import { selectCreateTemplate, setShowTemplateModal } from '@/redux/features/templateSlice'
+import {
+  clearTemplateFields,
+  selectCreateTemplate,
+  setCreateTemplateFields,
+  setShowTemplateModal,
+} from '@/redux/features/templateSlice'
+import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 
 export const TemplateForm = ({ handleCreate }: { handleCreate: () => void }) => {
   const { workflowStates, assignee } = useSelector(selectTaskBoard)
   const { showTemplateModal } = useSelector(selectCreateTemplate)
+  const { assigneeId, workflowStateId } = useSelector(selectCreateTemplate)
 
   const { renderingItem: _statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
-    item: workflowStates[0],
+    item: workflowStateId ? workflowStates.find((el) => el.id === workflowStateId) : workflowStates[0],
     type: SelectorType.STATUS_SELECTOR,
   })
   const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
-    item: assignee[0],
+    item: assigneeId ? assignee.find((el) => el.id === assigneeId) : assignee[0],
     type: SelectorType.ASSIGNEE_SELECTOR,
   })
 
@@ -40,7 +46,7 @@ export const TemplateForm = ({ handleCreate }: { handleCreate: () => void }) => 
     <Modal
       open={showTemplateModal}
       onClose={() => {
-        store.dispatch(setShowTemplateModal())
+        store.dispatch(setShowTemplateModal({}))
       }}
       aria-labelledby="create-task-modal"
       aria-describedby="add-new-task"
@@ -58,7 +64,7 @@ export const TemplateForm = ({ handleCreate }: { handleCreate: () => void }) => 
           <Typography variant="md">Create Template</Typography>
           <Close
             sx={{ color: (theme) => theme.color.gray[500], cursor: 'pointer' }}
-            onClick={() => store.dispatch(setShowTemplateModal())}
+            onClick={() => store.dispatch(setShowTemplateModal({}))}
           />
         </Stack>
 
@@ -70,7 +76,10 @@ export const TemplateForm = ({ handleCreate }: { handleCreate: () => void }) => 
               getSelectedValue={(newValue) => {
                 updateStatusValue(newValue)
                 store.dispatch(
-                  setCreateTaskFields({ targetField: 'workflowStateId', value: (newValue as WorkflowStateResponse)?.id }),
+                  setCreateTemplateFields({
+                    targetField: 'workflowStateId',
+                    value: (newValue as WorkflowStateResponse)?.id,
+                  }),
                 )
               }}
               startIcon={statusIcons[statusValue?.type]}
@@ -88,21 +97,13 @@ export const TemplateForm = ({ handleCreate }: { handleCreate: () => void }) => 
                 getSelectedValue={(_newValue) => {
                   const newValue = _newValue as IAssigneeCombined
                   updateAssigneeValue(newValue)
-                  const assigneeType = newValue?.type
                   store.dispatch(
-                    setCreateTaskFields({
+                    setCreateTemplateFields({
                       targetField: 'assigneeType',
-                      value:
-                        assigneeType === 'ius'
-                          ? 'internalUser'
-                          : assigneeType === 'clients'
-                            ? 'client'
-                            : assigneeType === 'companies'
-                              ? 'company'
-                              : '',
+                      value: getAssigneeTypeCorrected(newValue),
                     }),
                   )
-                  store.dispatch(setCreateTaskFields({ targetField: 'assigneeId', value: newValue?.id }))
+                  store.dispatch(setCreateTemplateFields({ targetField: 'assigneeId', value: newValue?.id }))
                 }}
                 startIcon={
                   <Avatar
@@ -130,7 +131,7 @@ export const TemplateForm = ({ handleCreate }: { handleCreate: () => void }) => 
 }
 
 const NewTaskFormInputs = () => {
-  const { title, description } = useSelector(selectCreateTask)
+  const { templateName, taskName, description } = useSelector(selectCreateTemplate)
 
   return (
     <>
@@ -139,16 +140,16 @@ const NewTaskFormInputs = () => {
         <StyledTextField
           type="text"
           padding="8px 0px"
-          value={title}
-          onChange={(e) => store.dispatch(setCreateTaskFields({ targetField: 'title', value: e.target.value }))}
+          value={templateName}
+          onChange={(e) => store.dispatch(setCreateTemplateFields({ targetField: 'templateName', value: e.target.value }))}
         />
 
         <Typography variant="md">Task name</Typography>
         <StyledTextField
           type="text"
           padding="8px 0px"
-          value={title}
-          onChange={(e) => store.dispatch(setCreateTaskFields({ targetField: 'title', value: e.target.value }))}
+          value={taskName}
+          onChange={(e) => store.dispatch(setCreateTemplateFields({ targetField: 'taskName', value: e.target.value }))}
         />
       </Stack>
       <Stack direction="column" rowGap={1} m="16px 0px">
@@ -160,7 +161,7 @@ const NewTaskFormInputs = () => {
           rows={6}
           inputProps={{ style: { resize: 'vertical' } }}
           value={description}
-          onChange={(e) => store.dispatch(setCreateTaskFields({ targetField: 'description', value: e.target.value }))}
+          onChange={(e) => store.dispatch(setCreateTemplateFields({ targetField: 'description', value: e.target.value }))}
         />
       </Stack>
     </>
@@ -178,7 +179,8 @@ const NewTaskFooter = ({ handleCreate }: { handleCreate: () => void }) => {
           <Stack direction="row" columnGap={4}>
             <SecondaryBtn
               handleClick={() => {
-                store.dispatch(setShowTemplateModal())
+                store.dispatch(setShowTemplateModal({}))
+                store.dispatch(clearTemplateFields())
               }}
               buttonContent={
                 <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[700] }}>
