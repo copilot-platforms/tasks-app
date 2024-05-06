@@ -35,7 +35,7 @@ describe('authenticate util', () => {
     } catch (error: unknown) {
       expect(error).toBeInstanceOf(APIError)
       expect((error as APIError).status).toBe(httpStatus.UNAUTHORIZED)
-      expect((error as Error).message).toBe('Failed to authenticate token')
+      expect((error as Error).message).toBe('Please provide a valid token')
     }
   })
 
