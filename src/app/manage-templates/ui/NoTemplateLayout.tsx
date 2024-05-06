@@ -5,8 +5,9 @@ import { PlusIcon, TemplateIcon } from '@/icons'
 import { Box, Stack, Typography } from '@mui/material'
 import { ManageTemplateHeader } from './Header'
 import store from '@/redux/store'
-import { setShowTemplateModal } from '@/redux/features/templateSlice'
+import { selectCreateTemplate, setShowTemplateModal } from '@/redux/features/templateSlice'
 import { TargetMethod } from '@/types/interfaces'
+import { useSelector } from 'react-redux'
 
 export const NoTemplateLayout = () => {
   return (

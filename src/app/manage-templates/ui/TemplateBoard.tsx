@@ -38,7 +38,8 @@ export const TemplateBoard = ({
 
   return (
     <>
-      {templates.length > 0 ? (
+      {templates && templates.length === 0 && <NoTemplateLayout />}
+      {templates && templates.length > 0 && (
         <Stack
           direction="column"
           py="40px"
@@ -69,8 +70,6 @@ export const TemplateBoard = ({
             )
           })}
         </Stack>
-      ) : (
-        <NoTemplateLayout />
       )}
 
       <Modal
