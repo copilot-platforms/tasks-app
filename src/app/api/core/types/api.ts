@@ -3,6 +3,7 @@
  */
 export enum Resource {
   Tasks = 'Task',
+  TaskTemplates = 'TaskTemplates',
   WorkflowState = 'WorkflowState',
   ViewSetting = 'ViewSetting',
   Users = 'User',

@@ -23,13 +23,14 @@ enum AssigneeType {
 }
 
 model WorkflowState {
-  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  workspaceId String
-  type        StateType
-  name        String
-  key         String
-  color       String?
-  tasks       Task[]
+  id            String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  workspaceId   String
+  type          StateType
+  name          String
+  key           String
+  color         String?
+  tasks         Task[]
+  taskTemplates TaskTemplate[]
 
   @@unique([workspaceId, key], name: "UQ_WorkflowStates_workspaceId_key")
   @@index([workspaceId, key], name: "IX_WorkflowStates_workspaceId_key")
@@ -53,6 +54,23 @@ model Task {
 enum ViewMode {
   board
   list
+}
+
+model TaskTemplate {
+  id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  workspaceId     String
+  templateName    String
+  title           String
+  body            String?
+  assigneeId      String?
+  assigneeType    AssigneeType?
+  workflowState   WorkflowState @relation(fields: [workflowStateId], references: [id])
+  workflowStateId String        @db.Uuid
+  createdBy       String
+
+  @@unique([workspaceId, templateName], name: "UQ_TaskTemplates_workspaceId_templateName")
+  @@index([workspaceId, templateName], name: "IX_TaskTemplates_workspaceId_templateName")
+  @@map("TaskTemplates")
 }
 
 model ViewSetting {
