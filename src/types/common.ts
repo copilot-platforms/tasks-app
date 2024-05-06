@@ -106,9 +106,53 @@ export const CustomFieldResponseSchema = z.object({
 export type CustomFieldResponse = z.infer<typeof CustomFieldResponseSchema>
 
 export const ClientRequestSchema = z.object({
+  id: z.string().uuid(),
   givenName: z.string().optional(),
   familyName: z.string().optional(),
   companyId: z.string().uuid().optional(),
   customFields: z.record(z.string(), z.union([z.string(), z.array(z.string())]).nullish()).nullish(),
 })
 export type ClientRequest = z.infer<typeof ClientRequestSchema>
+
+export const InternalUsersSchema = z.object({
+  id: z.string().uuid(),
+  givenName: z.string(),
+  familyName: z.string(),
+  email: z.string().email(),
+})
+export type InternalUsers = z.infer<typeof InternalUsersSchema>
+
+export const InternalUsersResponseSchema = z.object({
+  data: z.array(InternalUsersSchema),
+})
+export type InternalUsersResponse = z.infer<typeof InternalUsersResponseSchema>
+
+/**
+ * Notification RequestBody schema - accepted by SDK#createNotification
+ */
+export const NotificationRequestBodySchema = z.object({
+  senderId: z.string(),
+  recipientId: z.string(),
+  deliveryTargets: z
+    .object({
+      inProduct: z
+        .object({
+          title: z.string(),
+          body: z.string().optional(),
+        })
+        .optional(),
+      email: z
+        .object({
+          subject: z.string().optional(),
+          header: z.string().optional(),
+          title: z.string().optional(),
+          body: z.string().optional(),
+        })
+        .optional(),
+    })
+    .optional(),
+})
+
+export type CopilotUser = InternalUsers | ClientResponse
+
+export type NotificationRequestBody = z.infer<typeof NotificationRequestBodySchema>

@@ -6,10 +6,12 @@ export const PrimaryBtn = ({
   startIcon,
   buttonText,
   handleClick,
+  buttonBackground,
 }: {
   startIcon?: ReactNode
   buttonText: string
   handleClick: () => void
+  buttonBackground?: string
 }) => {
   return (
     <Button
@@ -17,10 +19,10 @@ export const PrimaryBtn = ({
       startIcon={startIcon ? <Add /> : null}
       sx={(theme) => ({
         textTransform: 'none',
-        bgcolor: theme.color.gray[600],
-        '&:hover': { backgroundColor: theme.color.gray[600] },
+        bgcolor: buttonBackground || theme.color.gray[600],
+        '&:hover': { backgroundColor: buttonBackground || theme.color.gray[600] },
       })}
-      onClick={handleClick}
+      onClick={() => handleClick()}
     >
       <Typography variant="sm">{buttonText}</Typography>
     </Button>
