@@ -2,8 +2,13 @@ import { CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { BaseService } from '@api/core/services/base.service'
 import { Resource } from '@api/core/types/api'
 import { PoliciesService } from '@api/core/services/policies.service'
-import { AssigneeType } from '@prisma/client'
+import { AssigneeType, Task } from '@prisma/client'
 import { UserAction } from '@api/core/types/user'
+import { CopilotAPI } from '@/utils/CopilotAPI'
+import { NotificationTaskActions } from '@api/core/types/tasks'
+import { getEmailDetails, getInProductNotificationDetails, getNotificationParties } from '@api/tasks/tasks.helpers'
+import APIError from '@api/core/exceptions/api'
+import httpStatus from 'http-status'
 
 type FilterByAssigneeId = {
   assigneeId: string
@@ -67,13 +72,20 @@ export class TasksService extends BaseService {
     policyGate.authorize(UserAction.Create, Resource.Tasks)
 
     // Create a new task associated with current workspaceId. Also inject current request user as the creator.
-    return await this.db.task.create({
+    const newTask = await this.db.task.create({
       data: {
         ...data,
         workspaceId: this.user.workspaceId,
         createdBy: this.user.internalUserId as string,
       },
     })
+
+    // If new task is assigned to someone (IU / Client), send proper notification + email to them
+    if (newTask.assigneeId) {
+      this.createTaskNotification(newTask, NotificationTaskActions.Assigned)
+    }
+
+    return newTask
   }
 
   async getOneTask(id: string) {
@@ -84,22 +96,46 @@ export class TasksService extends BaseService {
     // while clients can only view the tasks assigned to them or their company
     const filters = this.buildReadFilters(id)
 
-    return await this.db.task.findFirst({
+    const task = await this.db.task.findFirst({
       ...filters,
       include: {
         workflowState: true,
       },
     })
+    if (!task) throw new APIError(httpStatus.NOT_FOUND, 'The requested task was not found')
+
+    return task
   }
 
   async updateOneTask(id: string, data: UpdateTaskRequest) {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Update, Resource.Tasks)
 
-    return await this.db.task.update({
+    // Query previous task
+    const filters = this.buildReadFilters(id)
+    const prevTask = await this.db.task.findFirst({
+      ...filters,
+      include: { workflowState: true },
+    })
+    if (!prevTask) throw new APIError(httpStatus.NOT_FOUND, 'The requested task was not found')
+
+    // Get the updated task
+    const updatedTask = await this.db.task.update({
       where: { id },
       data,
+      include: { workflowState: true },
     })
+
+    // If task goes from unassigned to assigned, or assigneeId does not match
+    if (prevTask?.assigneeId != updatedTask.assigneeId) {
+      this.createTaskNotification(updatedTask, NotificationTaskActions.Assigned)
+    }
+    // If task was previous in another state, and is moved to a 'completed' type WorkflowState
+    if (prevTask?.workflowState?.type !== 'completed' && updatedTask?.workflowState?.type === 'completed') {
+      this.createTaskNotification(updatedTask, NotificationTaskActions.Completed)
+    }
+
+    return updatedTask
   }
 
   async deleteOneTask(id: string) {
@@ -107,5 +143,31 @@ export class TasksService extends BaseService {
     policyGate.authorize(UserAction.Delete, Resource.Tasks)
 
     return await this.db.task.delete({ where: { id } })
+  }
+
+  /**
+   * Send a new task assigned / completed notification to concerned parties
+   * Sends an in-product notification + email
+   * @param task Task concerning this action
+   * @param action The action which triggered this notification
+   */
+  private async createTaskNotification(task: Task, action: NotificationTaskActions) {
+    // Use another try catch block here so that it doesn't get caught by the global `withErrorHandler` - this way
+    // the request succeeds even if notification for some reason fails.
+    try {
+      const copilotClient = new CopilotAPI(this.user.token)
+      const { senderId, recipientId, actionUser } = await getNotificationParties(copilotClient, task, action)
+
+      await copilotClient.createNotification({
+        senderId,
+        recipientId,
+        deliveryTargets: {
+          inProduct: getInProductNotificationDetails(actionUser)[action],
+          email: getEmailDetails(actionUser)[action],
+        },
+      })
+    } catch (e: unknown) {
+      console.error('TasksService.createTaskNotification : Failed to send task notification\n', e)
+    }
   }
 }

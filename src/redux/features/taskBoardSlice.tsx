@@ -2,13 +2,14 @@ import { createSlice } from '@reduxjs/toolkit'
 import { RootState } from '../store'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { TaskResponse } from '@/types/dto/tasks.dto'
-import { IAssigneeCombined } from '@/types/interfaces'
+import { IAssigneeCombined, View } from '@/types/interfaces'
 
 interface IInitialState {
   workflowStates: WorkflowStateResponse[]
   assignee: IAssigneeCombined[]
   tasks: TaskResponse[]
   token: string | undefined
+  view: View
   filteredTasks: TaskResponse[]
 }
 
@@ -17,6 +18,7 @@ const initialState: IInitialState = {
   tasks: [],
   token: undefined,
   assignee: [],
+  view: View.BOARD_VIEW,
   filteredTasks: [],
 }
 
@@ -24,17 +26,18 @@ const taskBoardSlice = createSlice({
   name: 'taskBoard',
   initialState,
   reducers: {
-    setWorkflowStates: (state, action) => {
+    setWorkflowStates: (state, action: { payload: WorkflowStateResponse[] }) => {
       state.workflowStates = action.payload
     },
-    setTasks: (state, action) => {
+    setTasks: (state, action: { payload: TaskResponse[] }) => {
       state.tasks = action.payload
       state.filteredTasks = action.payload
     },
-    setToken: (state, action) => {
+
+    setToken: (state, action: { payload: string }) => {
       state.token = action.payload
     },
-    setFilteredTasks: (state, action) => {
+    setFilteredTasks: (state, action: { payload: string }) => {
       const keyword = action.payload?.toLowerCase()
       const filteredTasks =
         keyword != ''
@@ -66,10 +69,14 @@ const taskBoardSlice = createSlice({
         taskToUpdate.workflowStateId = action.payload.targetWorkflowStateId
         const updatedTasks = [...state.tasks.filter((task) => task.id !== action.payload.taskId), taskToUpdate]
         state.tasks = updatedTasks
+        state.filteredTasks = updatedTasks
       }
     },
-    setAssigneeList: (state, action) => {
+    setAssigneeList: (state, action: { payload: IAssigneeCombined[] }) => {
       state.assignee = action.payload
+    },
+    setViewSettings: (state, action: { payload: View }) => {
+      state.view = action.payload
     },
   },
 })
@@ -85,6 +92,7 @@ export const {
   setAssigneeList,
   setFilteredAsignee,
   setFilteredTaskByType,
+  setViewSettings,
 } = taskBoardSlice.actions
 
 export default taskBoardSlice.reducer

@@ -18,7 +18,6 @@ type ExtraOption = {
   name: string
   value?: string
   extraOptionFlag: true
-  //other custom types..
 }
 
 interface Prop {
@@ -28,6 +27,7 @@ interface Prop {
   selectorType: SelectorType.STATUS_SELECTOR | SelectorType.ASSIGNEE_SELECTOR
   options: unknown[]
   buttonContent: ReactNode
+  disabled?: boolean
   placeholder?: string
   extraOption?: ExtraOption
   extraOptionRenderer?: (
@@ -44,6 +44,7 @@ export default function Selector({
   selectorType,
   options,
   buttonContent,
+  disabled,
   placeholder = 'Change status...',
   extraOption,
   extraOptionRenderer,
@@ -51,11 +52,13 @@ export default function Selector({
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
   const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
-    setAnchorEl(anchorEl ? null : event.currentTarget)
+    if (!disabled) {
+      setAnchorEl(anchorEl ? null : event.currentTarget)
+    }
   }
 
   const open = Boolean(anchorEl)
-  const id = open ? 'autocomplete-popper' : undefined
+  const id = open ? 'autocomplete-popper' : ''
 
   const [inputStatusValue, setInputStatusValue] = useState('')
 
@@ -78,6 +81,7 @@ export default function Selector({
         anchorEl={anchorEl}
         sx={{
           width: '180px',
+          zIndex: '9999',
         }}
         placement="bottom-end"
       >

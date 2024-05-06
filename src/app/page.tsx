@@ -1,18 +1,19 @@
+export const dynamic = 'force-dynamic'
+export const dynamicParams = true
+
 import { DndWrapper } from '@/hoc/DndWrapper'
 import { TaskBoard } from './ui/TaskBoard'
 import { Header } from '@/components/layouts/Header'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { apiUrl } from '@/config'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
-import { TaskResponse, AssigneeType } from '@/types/dto/tasks.dto'
-import { IAssignee } from '@/types/interfaces'
+import { TaskResponse } from '@/types/dto/tasks.dto'
+import { IAssignee, View } from '@/types/interfaces'
 import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
-import { handleCreate, updateWorkflowStateIdOfTask } from './actions'
+import { handleCreate, updateTask, updateViewModeSettings } from './actions'
 import { FilterBar } from '@/components/layouts/FilterBar'
-import { CopilotAPI } from '@/utils/CopilotAPI'
 import { Token, TokenSchema } from '@/types/common'
-
-export const revalidate = 0
+import { CopilotAPI } from '@/utils/CopilotAPI'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -26,7 +27,7 @@ async function getAllWorkflowStates(token: string): Promise<WorkflowStateRespons
 
 async function getAllTasks(token: string): Promise<TaskResponse[]> {
   const res = await fetch(`${apiUrl}/api/tasks?token=${token}`, {
-    next: { tags: ['getAllTasks'], revalidate: 0 },
+    next: { tags: ['getAllTasks'] },
   })
 
   const data = await res.json()
@@ -50,22 +51,45 @@ async function getAssigneeList(token: string): Promise<IAssignee> {
   return data.users
 }
 
+async function getViewSettings(token: string): Promise<View> {
+  const res = await fetch(`${apiUrl}/api/view-settings?token=${token}`, {
+    next: { tags: ['getViewSettings'], revalidate: 0 },
+  })
+
+  const data = await res.json()
+  return data.viewMode
+}
+
 export default async function Main({ searchParams }: { searchParams: { token: string } }) {
   const token = searchParams.token
+
   if (!token) {
     throw new Error('Please pass the token!')
   }
 
-  const workflowStates = await getAllWorkflowStates(token)
-  const tasks = await getAllTasks(token)
-  const assignee = addTypeToAssignee(await getAssigneeList(token))
+  const [workflowStates, tasks, assignee, viewSettings] = await Promise.all([
+    await getAllWorkflowStates(token),
+    await getAllTasks(token),
+    addTypeToAssignee(await getAssigneeList(token)),
+    await getViewSettings(token),
+  ])
 
   return (
     <>
-      <ClientSideStateUpdate workflowStates={workflowStates} tasks={tasks} token={token} assignee={assignee}>
+      <ClientSideStateUpdate
+        workflowStates={workflowStates}
+        tasks={tasks}
+        token={token}
+        assignee={assignee}
+        viewSettings={viewSettings || View.BOARD_VIEW}
+      >
         <DndWrapper>
           <Header showCreateTaskButton={true} />
           <FilterBar
+            updateViewModeSetting={async (mode) => {
+              'use server'
+              await updateViewModeSettings(token, mode)
+            }}
             getTokenPayload={async (): Promise<Token> => {
               'use server'
               return getTokenPayload(token)
@@ -74,11 +98,11 @@ export default async function Main({ searchParams }: { searchParams: { token: st
           <TaskBoard
             handleCreate={async (createTaskPayload) => {
               'use server'
-              handleCreate(token, createTaskPayload)
+              await handleCreate(token, createTaskPayload)
             }}
-            updateWorkflowStateIdOfTask={async (taskId, targetWorkflowStateId) => {
+            updateTask={async (taskId, payload) => {
               'use server'
-              updateWorkflowStateIdOfTask(token, taskId, targetWorkflowStateId)
+              await updateTask({ token, taskId, payload })
             }}
           />
         </DndWrapper>

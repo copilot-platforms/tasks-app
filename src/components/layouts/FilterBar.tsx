@@ -1,25 +1,38 @@
 'use client'
 
-import { Avatar, Box, Stack, Typography } from '@mui/material'
+import { Avatar, Box, IconButton, Stack, Typography } from '@mui/material'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { useState } from 'react'
 import store from '@/redux/store'
-import { setFilteredAsignee, setFilteredTaskByType, setFilteredTasks } from '@/redux/features/taskBoardSlice'
+import {
+  setFilteredAsignee,
+  setFilteredTasks,
+  setViewSettings,
+  setFilteredTaskByType,
+} from '@/redux/features/taskBoardSlice'
 import SearchBar from '@/components/searchBar'
 import Selector, { SelectorType } from '@/components/inputs/Selector'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { useSelector } from 'react-redux'
-import { IAssigneeCombined } from '@/types/interfaces'
-import { FilterByAsigneeIcon } from '@/icons'
+import { IAssigneeCombined, View } from '@/types/interfaces'
+import { CrossIcon, FilterByAsigneeIcon } from '@/icons'
+import { ViewModeSelector } from '../inputs/ViewModeSelector'
 import { FilterByAssigneeBtn } from '../buttons/FilterByAssigneeBtn'
-import FilterButtonGroup from '@/components/buttonsGroup/FilterButtonsGroup'
 import { Token } from '@/types/common'
+import FilterButtonGroup from '@/components/buttonsGroup/FilterButtonsGroup'
 
-export const FilterBar = ({ getTokenPayload }: { getTokenPayload: () => Promise<Token> }) => {
-  const { assignee } = useSelector(selectTaskBoard)
+export const FilterBar = ({
+  updateViewModeSetting,
+  getTokenPayload,
+}: {
+  updateViewModeSetting: (mode: View) => void
+  getTokenPayload: () => Promise<Token>
+}) => {
   const [searchText, setSearchText] = useState('')
   const [activeButtonIndex, setActiveButtonIndex] = useState<number>()
+  const { view } = useSelector(selectTaskBoard)
+  const { assignee } = useSelector(selectTaskBoard)
 
   const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
     item: assignee[0],
@@ -117,14 +130,23 @@ export const FilterBar = ({ getTokenPayload }: { getTokenPayload: () => Promise<
               buttonContent={<FilterByAssigneeBtn assigneeValue={assigneeValue} updateAssigneeValue={updateAssigneeValue} />}
             />
           </Stack>
+          <Stack direction="row" alignItems="center" columnGap={3}>
+            <SearchBar
+              value={searchText}
+              getSearchKeyword={(keyword) => {
+                setSearchText(keyword)
+                store.dispatch(setFilteredTasks(keyword))
+              }}
+            />
 
-          <SearchBar
-            value={searchText}
-            getSearchKeyword={(keyword) => {
-              setSearchText(keyword)
-              store.dispatch(setFilteredTasks(keyword))
-            }}
-          />
+            <ViewModeSelector
+              selectedMode={view}
+              handleModeChange={(mode) => {
+                store.dispatch(setViewSettings(mode))
+                updateViewModeSetting(mode)
+              }}
+            />
+          </Stack>
         </Stack>
       </AppMargin>
     </Box>

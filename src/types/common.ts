@@ -126,3 +126,33 @@ export const InternalUsersResponseSchema = z.object({
   data: z.array(InternalUsersSchema),
 })
 export type InternalUsersResponse = z.infer<typeof InternalUsersResponseSchema>
+
+/**
+ * Notification RequestBody schema - accepted by SDK#createNotification
+ */
+export const NotificationRequestBodySchema = z.object({
+  senderId: z.string(),
+  recipientId: z.string(),
+  deliveryTargets: z
+    .object({
+      inProduct: z
+        .object({
+          title: z.string(),
+          body: z.string().optional(),
+        })
+        .optional(),
+      email: z
+        .object({
+          subject: z.string().optional(),
+          header: z.string().optional(),
+          title: z.string().optional(),
+          body: z.string().optional(),
+        })
+        .optional(),
+    })
+    .optional(),
+})
+
+export type CopilotUser = InternalUsers | ClientResponse
+
+export type NotificationRequestBody = z.infer<typeof NotificationRequestBodySchema>

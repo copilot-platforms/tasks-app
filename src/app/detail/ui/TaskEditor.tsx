@@ -3,9 +3,13 @@
 import { AttachmentCard } from '@/components/cards/AttachmentCard'
 import { StyledTextField } from '@/components/inputs/TextField'
 import { AttachmentIcon } from '@/icons'
+import { selectTaskDetails, setShowConfirmDeleteModal } from '@/redux/features/taskDetailsSlice'
 import { statusIcons } from '@/utils/iconMatcher'
-import { Box, Stack } from '@mui/material'
+import { Box, Modal, Stack } from '@mui/material'
 import { useState } from 'react'
+import { useSelector } from 'react-redux'
+import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
+import store from '@/redux/store'
 
 type Attachment = {
   name: string
@@ -19,11 +23,14 @@ interface Prop {
   attachment: Attachment[]
   isEditable: boolean
   updateTaskDetail: (title: string, detail: string) => void
+  deleteTask: () => void
 }
 
-export const TaskEditor = ({ title, detail, attachment, isEditable, updateTaskDetail }: Prop) => {
+export const TaskEditor = ({ title, detail, attachment, isEditable, updateTaskDetail, deleteTask }: Prop) => {
   const [updateTitle, setUpdateTitle] = useState(title)
   const [updateDetail, setUpdateDetail] = useState(detail)
+  const { showConfirmDeleteModal } = useSelector(selectTaskDetails)
+
   return (
     <>
       <Stack direction="row" alignItems="center" columnGap={2}>
@@ -90,6 +97,21 @@ export const TaskEditor = ({ title, detail, attachment, isEditable, updateTaskDe
           <AttachmentIcon />
         </Box>
       </Stack>
+
+      <Modal
+        open={showConfirmDeleteModal}
+        onClose={() => store.dispatch(setShowConfirmDeleteModal())}
+        aria-labelledby="delete-task-modal"
+        aria-describedby="delete-task"
+      >
+        <ConfirmDeleteUI
+          handleCancel={() => store.dispatch(setShowConfirmDeleteModal())}
+          handleDelete={() => {
+            deleteTask()
+            store.dispatch(setShowConfirmDeleteModal())
+          }}
+        />
+      </Modal>
     </>
   )
 }
