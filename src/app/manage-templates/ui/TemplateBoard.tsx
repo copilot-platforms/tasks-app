@@ -85,6 +85,7 @@ export const TemplateBoard = ({
         open={showTemplateModal}
         onClose={() => {
           store.dispatch(setShowTemplateModal({}))
+          store.dispatch(clearTemplateFields())
         }}
         aria-labelledby="create-task-modal"
         aria-describedby="add-new-task"

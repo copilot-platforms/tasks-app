@@ -64,7 +64,10 @@ export const TemplateForm = ({ handleCreate }: { handleCreate: () => void }) => 
           <Typography variant="md">Create Template</Typography>
           <Close
             sx={{ color: (theme) => theme.color.gray[500], cursor: 'pointer' }}
-            onClick={() => store.dispatch(setShowTemplateModal({}))}
+            onClick={() => {
+              store.dispatch(setShowTemplateModal({}))
+              store.dispatch(clearTemplateFields())
+            }}
           />
         </Stack>
 
