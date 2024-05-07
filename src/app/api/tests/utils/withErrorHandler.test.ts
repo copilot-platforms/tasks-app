@@ -10,6 +10,7 @@ import { z } from 'zod'
 jest.mock('@/utils/CopilotAPI', () => ({
   CopilotAPI: jest.fn().mockImplementation((token: string) => mockCopilotAPI(token)),
 }))
+const mockConsoleError = jest.spyOn(console, 'error').mockImplementation(() => {})
 
 describe('withErrorHandler util', () => {
   let req: NextRequest
@@ -18,6 +19,8 @@ describe('withErrorHandler util', () => {
     jest.clearAllMocks()
     req = buildNextRequest(`/?token=iu-token`)
   })
+
+  afterAll(mockConsoleError.mockReset)
 
   it('catches and builds proper response for APIError', async () => {
     const handler = async (_req: NextRequest, _params: any) => {
