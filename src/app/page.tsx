@@ -67,11 +67,12 @@ export default async function Main({ searchParams }: { searchParams: { token: st
     throw new Error('Please pass the token!')
   }
 
-  const [workflowStates, tasks, assignee, viewSettings] = await Promise.all([
+  const [workflowStates, tasks, assignee, viewSettings, tokenPayload] = await Promise.all([
     await getAllWorkflowStates(token),
     await getAllTasks(token),
     addTypeToAssignee(await getAssigneeList(token)),
     await getViewSettings(token),
+    await getTokenPayload(token),
   ])
 
   return (
@@ -82,6 +83,7 @@ export default async function Main({ searchParams }: { searchParams: { token: st
         token={token}
         assignee={assignee}
         viewSettings={viewSettings || View.BOARD_VIEW}
+        tokenPayload={tokenPayload}
       >
         <DndWrapper>
           <Header showCreateTaskButton={true} />
@@ -89,10 +91,6 @@ export default async function Main({ searchParams }: { searchParams: { token: st
             updateViewModeSetting={async (mode) => {
               'use server'
               await updateViewModeSettings(token, mode)
-            }}
-            getTokenPayload={async (): Promise<Token> => {
-              'use server'
-              return getTokenPayload(token)
             }}
           />
           <TaskBoard

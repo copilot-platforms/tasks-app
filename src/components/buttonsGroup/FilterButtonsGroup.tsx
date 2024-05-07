@@ -1,4 +1,4 @@
-import { Box, Typography } from '@mui/material'
+import { Stack, Typography } from '@mui/material'
 import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
 import { ReactNode } from 'react'
 
@@ -15,7 +15,7 @@ const FilterButtonGroup = ({
   activeButtonIndex: number | undefined
 }) => {
   return (
-    <Box
+    <Stack
       sx={(theme) => ({
         border: `1px solid ${theme.color.borders.border}`,
         borderRadius: 1,
@@ -24,6 +24,7 @@ const FilterButtonGroup = ({
         alignItems: 'center',
         padding: '4px',
       })}
+      direction={'row'}
     >
       {filterButtons.map((item, index) => {
         return (
@@ -42,12 +43,12 @@ const FilterButtonGroup = ({
               </Typography>
             }
             handleClick={() => item.onClick(index)}
-            noBackground
-            enableBackground={index === activeButtonIndex ? true : false}
+            outlined
+            enableBackground={index === activeButtonIndex}
           />
         )
       })}
-    </Box>
+    </Stack>
   )
 }
 

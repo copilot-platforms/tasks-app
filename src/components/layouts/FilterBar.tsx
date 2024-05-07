@@ -21,18 +21,15 @@ import { ViewModeSelector } from '../inputs/ViewModeSelector'
 import { FilterByAssigneeBtn } from '../buttons/FilterByAssigneeBtn'
 import { Token } from '@/types/common'
 import FilterButtonGroup from '@/components/buttonsGroup/FilterButtonsGroup'
+import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 
-export const FilterBar = ({
-  updateViewModeSetting,
-  getTokenPayload,
-}: {
-  updateViewModeSetting: (mode: View) => void
-  getTokenPayload: () => Promise<Token>
-}) => {
+export const FilterBar = ({ updateViewModeSetting }: { updateViewModeSetting: (mode: View) => void }) => {
   const [searchText, setSearchText] = useState('')
-  const [activeButtonIndex, setActiveButtonIndex] = useState<number>()
+  const [activeButtonIndex, setActiveButtonIndex] = useState<number>(3)
   const { view } = useSelector(selectTaskBoard)
   const { assignee } = useSelector(selectTaskBoard)
+
+  const { internalUserId } = useSelector(selectAuthDetails)
 
   const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
     item: assignee[0],
@@ -43,8 +40,7 @@ export const FilterBar = ({
     {
       name: 'My tasks',
       onClick: async (index: number) => {
-        const payload = await getTokenPayload()
-        store.dispatch(setFilteredAsignee({ id: payload.internalUserId }))
+        store.dispatch(setFilteredAsignee({ id: internalUserId }))
         setActiveButtonIndex(index)
       },
     },
