@@ -1,6 +1,6 @@
 'use client'
 
-import { setInternalUserId, setTokenPayload } from '@/redux/features/authDetailsSlice'
+import { setTokenPayload } from '@/redux/features/authDetailsSlice'
 import { setAssigneeList, setViewSettings } from '@/redux/features/taskBoardSlice'
 import { setTasks, setToken, setWorkflowStates } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
@@ -55,7 +55,6 @@ export const ClientSideStateUpdate = ({
     }
     if (tokenPayload) {
       store.dispatch(setTokenPayload(tokenPayload))
-      tokenPayload.internalUserId && store.dispatch(setInternalUserId(tokenPayload.internalUserId))
     }
   }, [workflowStates, tasks, token, assignee, viewSettings])
 

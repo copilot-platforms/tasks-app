@@ -29,7 +29,7 @@ export const FilterBar = ({ updateViewModeSetting }: { updateViewModeSetting: (m
   const { view } = useSelector(selectTaskBoard)
   const { assignee } = useSelector(selectTaskBoard)
 
-  const { internalUserId } = useSelector(selectAuthDetails)
+  const { tokenPayload } = useSelector(selectAuthDetails)
 
   const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
     item: assignee[0],
@@ -40,7 +40,7 @@ export const FilterBar = ({ updateViewModeSetting }: { updateViewModeSetting: (m
     {
       name: 'My tasks',
       onClick: async (index: number) => {
-        store.dispatch(setFilteredAsignee({ id: internalUserId }))
+        store.dispatch(setFilteredAsignee({ id: tokenPayload?.internalUserId }))
         setActiveButtonIndex(index)
       },
     },
