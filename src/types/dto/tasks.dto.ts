@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { WorkflowStateResponseSchema } from './workflowStates.dto'
 
-export const AssigneeTypeSchema = z.enum(['internalUser', 'client', 'company']).optional()
+export const AssigneeTypeSchema = z.enum(['internalUser', 'client', 'company']).nullish()
 export type AssigneeType = z.infer<typeof AssigneeTypeSchema>
 
 export const CreateTaskRequestSchema = z.object({
@@ -14,7 +14,7 @@ export const CreateTaskRequestSchema = z.object({
 export type CreateTaskRequest = z.infer<typeof CreateTaskRequestSchema>
 
 export const UpdateTaskRequestSchema = z.object({
-  assigneeId: z.string().optional(),
+  assigneeId: z.string().nullish(),
   assigneeType: AssigneeTypeSchema,
   title: z.string().optional(),
   body: z.string().optional(),
