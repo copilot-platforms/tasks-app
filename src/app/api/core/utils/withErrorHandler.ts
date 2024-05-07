@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { ZodError, ZodIssue } from 'zod'
 import { CopilotApiError } from '@/types/CopilotApiError'
 import APIError from '@api/core/exceptions/api'
+import httpStatus from 'http-status'
 
 type RequestHandler = (req: NextRequest, params: any) => Promise<NextResponse>
 
@@ -32,12 +33,12 @@ export const withErrorHandler = (handler: RequestHandler): RequestHandler => {
       console.error(error)
 
       // Default staus and message for JSON error response
-      let status = 500
+      let status: number = httpStatus.BAD_REQUEST
       let message: string | ZodIssue[] = 'Something went wrong'
 
       // Build a proper response based on the type of Error encountered
       if (error instanceof ZodError) {
-        status = 422
+        status = httpStatus.UNPROCESSABLE_ENTITY
         message = error.issues
       } else if (error instanceof CopilotApiError) {
         status = error.status || status
