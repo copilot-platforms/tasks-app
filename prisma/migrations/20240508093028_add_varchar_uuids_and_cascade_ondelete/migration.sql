@@ -28,7 +28,7 @@ ALTER TABLE "Tasks" DROP CONSTRAINT "Tasks_workflowStateId_fkey";
 
 -- AlterTable
 ALTER TABLE "TaskTemplates" DROP COLUMN "createdBy",
-ADD COLUMN     "createdById" TEXT NOT NULL,
+ADD COLUMN     "createdById" UUID NOT NULL,
 ALTER COLUMN "workspaceId" SET DATA TYPE VARCHAR(24),
 ALTER COLUMN "templateName" SET DATA TYPE VARCHAR(100),
 ALTER COLUMN "title" SET DATA TYPE VARCHAR(100),
@@ -37,7 +37,7 @@ ADD COLUMN     "assigneeId" UUID;
 
 -- AlterTable
 ALTER TABLE "Tasks" DROP COLUMN "createdBy",
-ADD COLUMN     "createdById" VARCHAR(36) NOT NULL,
+ADD COLUMN     "createdById" UUID NOT NULL,
 ALTER COLUMN "workspaceId" SET DATA TYPE VARCHAR(24),
 DROP COLUMN "assigneeId",
 ADD COLUMN     "assigneeId" UUID,

@@ -44,7 +44,7 @@ model Task {
   assigneeType    AssigneeType?
   title           String        @db.VarChar(100)
   body            String?
-  createdById     String        @db.VarChar(36)
+  createdById     String        @db.Uuid
   workflowState   WorkflowState @relation(fields: [workflowStateId], references: [id], onDelete: Cascade)
   workflowStateId String        @db.Uuid
   assignedAt      DateTime?
@@ -68,7 +68,7 @@ model TaskTemplate {
   assigneeType    AssigneeType?
   workflowState   WorkflowState @relation(fields: [workflowStateId], references: [id], onDelete: Cascade)
   workflowStateId String        @db.Uuid
-  createdById     String
+  createdById     String        @db.Uuid
 
   @@unique([workspaceId, templateName], name: "UQ_TaskTemplates_workspaceId_templateName")
   @@index([workspaceId, templateName], name: "IX_TaskTemplates_workspaceId_templateName")
