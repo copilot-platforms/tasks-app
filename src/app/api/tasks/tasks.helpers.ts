@@ -68,14 +68,14 @@ export const getNotificationParties = async (copilot: CopilotAPI, task: Task, ac
 
   if (action === NotificationTaskActions.Assigned) {
     // Notification is sent by the person creating the task to the one it is assigned to.
-    senderId = task.createdBy
+    senderId = task.createdById
     recipientId = z.string().parse(task.assigneeId)
     // Notification action is triggered by the IU creating the task.
     actionTrigger = await copilot.getInternalUser(senderId)
   } else {
     // Notify the IU who created this task with the client / company as sender
     senderId = z.string().parse(task.assigneeId)
-    recipientId = task.createdBy
+    recipientId = task.createdById
     // Since assignees can be company / iu / client, query details of who it was assigned to
     actionTrigger = await getAssignedTo()
   }
