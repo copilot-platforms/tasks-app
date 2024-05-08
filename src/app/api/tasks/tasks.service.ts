@@ -6,7 +6,12 @@ import { AssigneeType, Task } from '@prisma/client'
 import { UserAction } from '@api/core/types/user'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { NotificationTaskActions } from '@api/core/types/tasks'
-import { getEmailDetails, getInProductNotificationDetails, getNotificationParties } from '@api/tasks/tasks.helpers'
+import {
+  getEmailDetails,
+  getInProductNotificationDetails,
+  getNotificationParties,
+  getTaskTimestamps,
+} from '@api/tasks/tasks.helpers'
 import APIError from '@api/core/exceptions/api'
 import httpStatus from 'http-status'
 
@@ -77,7 +82,9 @@ export class TasksService extends BaseService {
         ...data,
         workspaceId: this.user.workspaceId,
         createdBy: this.user.internalUserId as string,
+        ...(await getTaskTimestamps('create', this.user, data)),
       },
+      include: { workflowState: true },
     })
 
     // If new task is assigned to someone (IU / Client), send proper notification + email to them
@@ -122,7 +129,10 @@ export class TasksService extends BaseService {
     // Get the updated task
     const updatedTask = await this.db.task.update({
       where: { id },
-      data,
+      data: {
+        ...data,
+        ...(await getTaskTimestamps('update', this.user, data, prevTask)),
+      },
       include: { workflowState: true },
     })
 

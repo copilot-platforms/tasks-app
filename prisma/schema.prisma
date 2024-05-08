@@ -47,6 +47,8 @@ model Task {
   createdBy       String
   workflowState   WorkflowState @relation(fields: [workflowStateId], references: [id])
   workflowStateId String        @db.Uuid
+  assignedAt      DateTime?
+  completedAt     DateTime?
 
   @@map("Tasks")
 }

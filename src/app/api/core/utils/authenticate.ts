@@ -17,7 +17,7 @@ const authenticate = async (req: NextRequest) => {
   // Fetch token from search param and validate it
   const token = req.nextUrl.searchParams.get('token')
   const tokenParsed = z.string().safeParse(token)
-  if (!tokenParsed.success) {
+  if (!tokenParsed.success || !tokenParsed.data) {
     throw new APIError(httpStatus.UNAUTHORIZED, 'Please provide a valid token')
   }
 
