@@ -50,7 +50,7 @@ export const withErrorHandler = (handler: RequestHandler): RequestHandler => {
       } else if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2025') {
           // Code for NOT FOUND in Prisma
-          status = 404
+          status = httpStatus.NOT_FOUND
           message = 'The requested resource was not found'
         }
       }
