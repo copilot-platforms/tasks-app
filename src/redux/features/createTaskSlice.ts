@@ -1,13 +1,13 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { RootState } from '../store'
-import { AssigneeType } from '@/types/dto/tasks.dto'
+import { AssigneeType } from '@prisma/client'
 
 interface IInitialState {
   showModal: boolean
   title: string
   description: string
   workflowStateId: string
-  assigneeType: AssigneeType
+  assigneeType?: AssigneeType
   assigneeId: string
 }
 

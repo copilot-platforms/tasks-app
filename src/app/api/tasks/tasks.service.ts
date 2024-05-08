@@ -81,7 +81,7 @@ export class TasksService extends BaseService {
       data: {
         ...data,
         workspaceId: this.user.workspaceId,
-        createdBy: this.user.internalUserId as string,
+        createdById: this.user.internalUserId as string,
         ...(await getTaskTimestamps('create', this.user, data)),
       },
       include: { workflowState: true },
