@@ -11,6 +11,7 @@ export class PoliciesService extends BaseService {
   private defaultPolicies: Record<UserRole.Client, Record<Resource, UserAction[]>> = {
     [UserRole.Client]: {
       [Resource.Tasks]: [UserAction.Read],
+      [Resource.TaskTemplates]: [],
       [Resource.WorkflowState]: [UserAction.Read],
       [Resource.ViewSetting]: [],
       [Resource.Users]: [],
