@@ -59,3 +59,7 @@ export interface IAssigneeCombined {
   iconImageUrl?: string
   fallbackColor?: string
 }
+export interface IFilterOptions {
+  type: 'filterButton' | 'filterSearch' | 'filterAssignee'
+  payload: string | string[] | null
+}

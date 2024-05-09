@@ -1,5 +1,5 @@
 import { CrossIcon } from '@/icons'
-import { setFilteredAsignee } from '@/redux/features/taskBoardSlice'
+import { setFilterOptions } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
 import { IAssigneeCombined } from '@/types/interfaces'
 import { Avatar, IconButton, Stack, Typography } from '@mui/material'
@@ -43,7 +43,7 @@ export const FilterByAssigneeBtn = ({
             onClick={(e) => {
               e.stopPropagation()
               updateAssigneeValue(null)
-              store.dispatch(setFilteredAsignee(null))
+              store.dispatch(setFilterOptions({ type: 'filterAssignee', payload: null }))
             }}
           >
             <CrossIcon />
