@@ -4,6 +4,7 @@ import { ReactNode } from 'react'
 
 export type FilterButtons = {
   name: string
+  id: string
   onClick: (index: number) => void
 }
 
@@ -29,7 +30,7 @@ const FilterButtonGroup = ({
       {filterButtons.map((item, index) => {
         return (
           <SecondaryBtn
-            key={index}
+            key={item.id}
             buttonContent={
               <Typography
                 variant="bodySm"

@@ -68,11 +68,11 @@ export default async function Main({ searchParams }: { searchParams: { token: st
   }
 
   const [workflowStates, tasks, assignee, viewSettings, tokenPayload] = await Promise.all([
-    await getAllWorkflowStates(token),
-    await getAllTasks(token),
+    getAllWorkflowStates(token),
+    getAllTasks(token),
     addTypeToAssignee(await getAssigneeList(token)),
-    await getViewSettings(token),
-    await getTokenPayload(token),
+    getViewSettings(token),
+    getTokenPayload(token),
   ])
 
   return (
