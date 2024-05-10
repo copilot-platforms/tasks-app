@@ -30,7 +30,7 @@ export const TaskResponseSchema = z.object({
   assigneeType: AssigneeTypeSchema,
   title: z.string().optional(),
   body: z.string().optional(),
-  createdBy: z.string(),
+  createdById: z.string(),
   workflowStateId: z.string().uuid().optional(),
   workflowState: WorkflowStateResponseSchema,
 })

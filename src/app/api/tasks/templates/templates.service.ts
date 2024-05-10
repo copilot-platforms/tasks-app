@@ -34,7 +34,7 @@ export class TemplatesService extends BaseService {
       data: {
         ...payload,
         workspaceId: this.user.workspaceId,
-        createdBy: z.string().parse(this.user.internalUserId),
+        createdById: z.string().parse(this.user.internalUserId),
       },
     })
     return templates
