@@ -37,8 +37,8 @@ async function getAllTasks(token: string): Promise<TaskResponse[]> {
 
 async function getTokenPayload(token: string): Promise<Token> {
   const copilotClient = new CopilotAPI(token)
-  const payload = TokenSchema.safeParse(await copilotClient.getTokenPayload())
-  return payload.data as Token
+  const payload = TokenSchema.parse(await copilotClient.getTokenPayload())
+  return payload as Token
 }
 
 async function getAssigneeList(token: string): Promise<IAssignee> {
