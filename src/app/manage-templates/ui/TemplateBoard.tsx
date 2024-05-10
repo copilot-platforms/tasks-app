@@ -94,27 +94,18 @@ export const TemplateBoard = ({
           handleCreate={() => {
             store.dispatch(setShowTemplateModal({}))
             store.dispatch(clearTemplateFields())
+            const temp = {
+              templateName,
+              title: taskName,
+              body: description,
+              workflowStateId,
+              assigneeId,
+              assigneeType,
+            }
             if (targetMethod === TargetMethod.POST) {
-              handleCreateTemplate({
-                templateName,
-                title: taskName,
-                body: description,
-                workflowStateId,
-                assigneeId,
-                assigneeType,
-              })
+              handleCreateTemplate(temp)
             } else {
-              handleEditTemplate(
-                {
-                  templateName,
-                  title: taskName,
-                  body: description,
-                  workflowStateId,
-                  assigneeId,
-                  assigneeType,
-                },
-                targetTemplateId,
-              )
+              handleEditTemplate(temp, targetTemplateId)
             }
           }}
         />

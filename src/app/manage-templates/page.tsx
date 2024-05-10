@@ -21,7 +21,7 @@ async function getAllWorkflowStates(token: string): Promise<WorkflowStateRespons
 
 async function getAssigneeList(token: string): Promise<IAssignee> {
   const res = await fetch(`${apiUrl}/api/users?token=${token}`, {
-    next: { tags: ['getAssigneeList'], revalidate: 0 },
+    next: { tags: ['getAssigneeList'] },
   })
 
   const data = await res.json()
@@ -31,7 +31,7 @@ async function getAssigneeList(token: string): Promise<IAssignee> {
 
 async function getAllTemplates(token: string): Promise<ITemplate[]> {
   const res = await fetch(`${apiUrl}/api/tasks/templates?token=${token}`, {
-    next: { tags: ['getAllTemplates'] },
+    next: { tags: ['getAllTemplates'], revalidate: 0 },
   })
 
   const templates = await res.json()
@@ -51,7 +51,7 @@ export default async function ManageTemplatesPage({ searchParams }: { searchPara
   return (
     <ClientSideStateUpdate workflowStates={workflowStates} token={token} assignee={assignee} templates={templates}>
       <AppMargin size={SizeofAppMargin.LARGE}>
-        <ManageTemplateHeader showNewTemplateButton={templates.length > 0} />
+        <ManageTemplateHeader showNewTemplateButton={templates?.length > 0} />
         <TemplateBoard
           handleCreateTemplate={async (payload) => {
             'use server'

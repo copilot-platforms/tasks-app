@@ -16,7 +16,7 @@ import { IAssigneeCombined } from '@/types/interfaces'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { useSelector } from 'react-redux'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
-import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
+import { WorkflowStateResponse, WorkflowStateResponseSchema } from '@/types/dto/workflowStates.dto'
 import {
   clearTemplateFields,
   selectCreateTemplate,
@@ -39,7 +39,7 @@ export const TemplateForm = ({ handleCreate }: { handleCreate: () => void }) => 
     type: SelectorType.ASSIGNEE_SELECTOR,
   })
 
-  const statusValue = _statusValue as WorkflowStateResponse //typecasting
+  const statusValue = WorkflowStateResponseSchema.safeParse(_statusValue) //typecasting
   const assigneeValue = _assigneeValue as IAssigneeCombined //typecasting
 
   return (
@@ -85,13 +85,13 @@ export const TemplateForm = ({ handleCreate }: { handleCreate: () => void }) => 
                   }),
                 )
               }}
-              startIcon={statusIcons[statusValue?.type]}
+              startIcon={statusValue?.data?.type ? statusIcons[statusValue?.data?.type] : null}
               options={workflowStates}
               value={statusValue}
               selectorType={SelectorType.STATUS_SELECTOR}
               buttonContent={
                 <Typography variant="bodySm" lineHeight="16px" sx={{ color: (theme) => theme.color.gray[600] }}>
-                  {statusValue?.name as ReactNode}
+                  {statusValue?.data?.name as ReactNode}
                 </Typography>
               }
             />
