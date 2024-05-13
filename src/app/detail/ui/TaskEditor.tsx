@@ -10,8 +10,7 @@ import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
 import store from '@/redux/store'
-import { NotionLike, TiptapEditorUtils } from 'notion-like'
-import { type PutBlobResult } from '@vercel/blob'
+import { NotionLike } from 'notion-like'
 import { upload } from '@vercel/blob/client'
 
 type Attachment = {

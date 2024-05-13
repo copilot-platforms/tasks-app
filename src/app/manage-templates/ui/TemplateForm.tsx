@@ -39,7 +39,7 @@ export const TemplateForm = ({ handleCreate }: { handleCreate: () => void }) => 
     type: SelectorType.ASSIGNEE_SELECTOR,
   })
 
-  const statusValue = WorkflowStateResponseSchema.safeParse(_statusValue) //typecasting
+  const statusValue = _statusValue as WorkflowStateResponse //typecasting
   const assigneeValue = _assigneeValue as IAssigneeCombined //typecasting
 
   return (
@@ -85,13 +85,13 @@ export const TemplateForm = ({ handleCreate }: { handleCreate: () => void }) => 
                   }),
                 )
               }}
-              startIcon={statusValue?.data?.type ? statusIcons[statusValue?.data?.type] : null}
+              startIcon={statusValue?.type ? statusIcons[statusValue?.type] : null}
               options={workflowStates}
               value={statusValue}
               selectorType={SelectorType.STATUS_SELECTOR}
               buttonContent={
                 <Typography variant="bodySm" lineHeight="16px" sx={{ color: (theme) => theme.color.gray[600] }}>
-                  {statusValue?.data?.name as ReactNode}
+                  {statusValue?.name as ReactNode}
                 </Typography>
               }
             />
