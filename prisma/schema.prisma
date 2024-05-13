@@ -47,8 +47,6 @@ model Task {
   createdById     String        @db.Uuid
   workflowState   WorkflowState @relation(fields: [workflowStateId], references: [id], onDelete: Cascade)
   workflowStateId String        @db.Uuid
-  attachments     Attachment[]
-
   assignedAt      DateTime?
   completedAt     DateTime?
 
@@ -86,14 +84,4 @@ model ViewSetting {
   @@unique([userId, workspaceId], name: "UQ_ViewSettings_userId_workspaceId")
   @@index([userId, workspaceId], name: "IX_ViewSettings_userId_workspaceId")
   @@map("ViewSettings")
-}
-
-model Attachment {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  task        Task     @relation(fields :[taskId], references : [id])
-  taskId      String   @db.Uuid
-  url         String   
-  createdById String   @db.Uuid
-
-  @@map("attachments")
 }
