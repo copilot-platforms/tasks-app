@@ -45,7 +45,7 @@ export const FilterBar = ({ updateViewModeSetting }: { updateViewModeSetting: (m
     {
       name: 'My tasks',
       onClick: async (index: number) => {
-        handleFilterOptionsChange(FilterOptions.TYPE, tokenPayload?.internalUserId as string)
+        handleFilterOptionsChange(FilterOptions.TYPE, tokenPayload?.internalUserId ?? '')
         setActiveButtonIndex(index)
       },
       id: 'MyTasks',

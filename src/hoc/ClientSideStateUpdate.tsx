@@ -56,7 +56,7 @@ export const ClientSideStateUpdate = ({
     if (tokenPayload) {
       store.dispatch(setTokenPayload(tokenPayload))
     }
-  }, [workflowStates, tasks, token, assignee, viewSettings])
+  }, [workflowStates, tasks, token, assignee, viewSettings, tokenPayload])
 
   return children
 }

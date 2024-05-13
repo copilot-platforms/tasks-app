@@ -14,33 +14,28 @@ const FilterFunctions = {
 
 function filterByAssignee(filteredTasks: TaskResponse[], filterValue: string | null) {
   const assigneeId = filterValue
-  filteredTasks = !assigneeId
-    ? filteredTasks
-    : assigneeId === 'none'
+  filteredTasks =
+    assigneeId === 'none'
       ? filteredTasks.filter((task) => !task.assigneeId)
       : filteredTasks.filter((task) => task.assigneeId == assigneeId)
   return filteredTasks as TaskResponse[]
 }
 function filterByKeyword(filteredTasks: TaskResponse[], filterValue: string) {
   const keyword = (filterValue as string).toLowerCase()
-  filteredTasks =
-    filterValue !== ''
-      ? filteredTasks.filter(
-          (task) => task.title?.toLowerCase().includes(keyword) || task.body?.toLowerCase().includes(keyword),
-        )
-      : filteredTasks
+  filteredTasks = filteredTasks.filter(
+    (task) => task.title?.toLowerCase().includes(keyword) || task.body?.toLowerCase().includes(keyword),
+  )
   return filteredTasks as TaskResponse[]
 }
 function filterByType(filteredTasks: TaskResponse[], filterValue: string) {
   const assigneeType = filterValue
-  filteredTasks =
-    !assigneeType || assigneeType.includes('all')
-      ? filteredTasks
-      : assigneeType == FilterOptionsKeywords.CLIENTS
-        ? filteredTasks.filter((task) => task?.assigneeType?.includes('client') || task?.assigneeType?.includes('company'))
-        : assigneeType == FilterOptionsKeywords.TEAM
-          ? filteredTasks.filter((task) => task?.assigneeType?.includes('internalUser'))
-          : filteredTasks.filter((task) => task.assigneeId == assigneeType)
+  filteredTasks = assigneeType.includes('all')
+    ? filteredTasks
+    : assigneeType == FilterOptionsKeywords.CLIENTS
+      ? filteredTasks.filter((task) => task?.assigneeType?.includes('client') || task?.assigneeType?.includes('company'))
+      : assigneeType == FilterOptionsKeywords.TEAM
+        ? filteredTasks.filter((task) => task?.assigneeType?.includes('internalUser'))
+        : filteredTasks.filter((task) => task.assigneeId == assigneeType)
 
   return filteredTasks as TaskResponse[]
 }
