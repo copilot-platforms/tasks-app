@@ -5218,11 +5218,6 @@ normalize-range@^0.1.2:
   resolved "https://registry.yarnpkg.com/normalize-range/-/normalize-range-0.1.2.tgz#2d10c06bdfd312ea9777695a4d28439456b75942"
   integrity sha512-bdok/XvKII3nUpklnV6P2hxtMNrCboOjAcyBuQnWEhO665FwrSNRxU+AqpsyvO6LgGYPspN+lu5CLtw4jPRKNA==
 
-notion-like@^0.1.3:
-  version "0.1.3"
-  resolved "https://registry.yarnpkg.com/notion-like/-/notion-like-0.1.3.tgz#f9cbb4a443478118f9f165de776aa7c93516819c"
-  integrity sha512-BpTlh7hCDqJGJ0yxUUJpJSYvssSvGsAqTR67BZunKPleKsjEzyhgw72FhFgSTfSSu2S6xzCkrRWnH7SLTZ0kSA==
-
 npm-run-path@^4.0.1:
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/npm-run-path/-/npm-run-path-4.0.1.tgz#b7ecd1e5ed53da8e37a55e1c2269e0b97ed748ea"
@@ -6299,6 +6294,11 @@ tapable@^2.2.0:
   version "2.2.1"
   resolved "https://registry.yarnpkg.com/tapable/-/tapable-2.2.1.tgz#1967a73ef4060a82f12ab96af86d52fdb76eeca0"
   integrity sha512-GNzQvQTOIP6RyTfE2Qxb8ZVlNmw0n88vp1szwWRimP02mnTsx3Wtn5qRdqY9w2XduFNUgvOwhNnQsjwCp+kqaQ==
+
+tapwrite@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/tapwrite/-/tapwrite-1.0.0.tgz#98afc193f02f01def905c1a5d2512f82b1b564c1"
+  integrity sha512-MCLfa6ZdpCEouZtOG2PivXtSVLHuh9C288rLLOtzXNM2McviGc72w8X1fIYsumPU0vUbgaRgdhHJNKJbxMJhzg==
 
 test-exclude@^6.0.0:
   version "6.0.0"

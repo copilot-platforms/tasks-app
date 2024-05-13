@@ -10,7 +10,7 @@ import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
 import store from '@/redux/store'
-import { NotionLike, TiptapEditorUtils } from 'notion-like'
+import { Tapwrite, TiptapEditorUtils } from 'tapwrite'
 import { upload } from '@vercel/blob/client'
 
 type Attachment = {
@@ -60,7 +60,7 @@ export const TaskEditor = ({ title, detail, attachment, isEditable, updateTaskDe
         />
       </Stack>
       <Box>
-        <NotionLike
+        <Tapwrite
           uploadFn={async (file, tiptapEditorUtils) => {
             const newBlob = await upload(file.name, file, {
               access: 'public',
