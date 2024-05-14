@@ -116,6 +116,7 @@ export const TaskBoard = ({
           open={showModal}
           onClose={() => {
             store.dispatch(setShowModal())
+            store.dispatch(clearCreateTaskFields())
           }}
           aria-labelledby="create-task-modal"
           aria-describedby="add-new-task"

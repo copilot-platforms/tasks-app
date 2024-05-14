@@ -5,7 +5,15 @@ import { ListBtn } from '../buttons/ListBtn'
 import { EditIcon, TrashIcon } from '@/icons'
 import { MenuBox } from '../inputs/MenuBox'
 
-export const TemplateCard = ({ templateName }: { templateName: string }) => {
+export const TemplateCard = ({
+  templateName,
+  handleDelete,
+  handleEdit,
+}: {
+  templateName: string
+  handleDelete: () => void
+  handleEdit: () => void
+}) => {
   return (
     <Stack
       direction="row"
@@ -24,8 +32,13 @@ export const TemplateCard = ({ templateName }: { templateName: string }) => {
         <MenuBox
           menuContent={
             <>
-              <ListBtn content="Edit template" handleClick={() => {}} icon={<EditIcon />} contentColor={'#212B36'} />
-              <ListBtn content="Delete" handleClick={() => {}} icon={<TrashIcon />} contentColor={'#CC0000'} />
+              <ListBtn
+                content="Edit template"
+                handleClick={() => handleEdit()}
+                icon={<EditIcon />}
+                contentColor={'#212B36'}
+              />
+              <ListBtn content="Delete" handleClick={() => handleDelete()} icon={<TrashIcon />} contentColor={'#CC0000'} />
             </>
           }
         />

@@ -2,12 +2,14 @@ import { Action, configureStore, ThunkAction } from '@reduxjs/toolkit'
 import createTaskReducer from './features/createTaskSlice'
 import taskBoardReducer from './features/taskBoardSlice'
 import taskDetailReducer from './features/taskDetailsSlice'
+import templateReducer from './features/templateSlice'
 
 const store = configureStore({
   reducer: {
     createTask: createTaskReducer,
     taskBoard: taskBoardReducer,
     taskDetail: taskDetailReducer,
+    createTemplate: templateReducer,
   },
 })
 
