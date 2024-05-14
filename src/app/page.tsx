@@ -13,6 +13,7 @@ import { IAssignee, View } from '@/types/interfaces'
 import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
 import { handleCreate, updateTask, updateViewModeSettings } from './actions'
 import { FilterBar } from '@/components/layouts/FilterBar'
+import InvalidToken from '@/components/invalidToken'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -59,7 +60,7 @@ export default async function Main({ searchParams }: { searchParams: { token: st
   const parsedToken = z.string().safeParse(searchParams.token)
 
   if (!parsedToken.success) {
-    throw new Error('Please provide a Valid Token')
+    return <InvalidToken />
   }
 
   const [workflowStates, tasks, assignee, viewSettings] = await Promise.all([

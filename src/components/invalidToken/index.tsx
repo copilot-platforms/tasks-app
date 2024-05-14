@@ -2,7 +2,7 @@
 
 import React from 'react'
 
-const ClientErrorBoundary = ({ error }: { error: Error & { digest: string } }) => {
+const InvalidToken = () => {
   return (
     <div
       style={{
@@ -14,9 +14,9 @@ const ClientErrorBoundary = ({ error }: { error: Error & { digest: string } }) =
         fontFamily: 'monospace',
       }}
     >
-      {error.message}
+      Please provide a Valid Token
     </div>
   )
 }
 
-export default ClientErrorBoundary
+export default InvalidToken
