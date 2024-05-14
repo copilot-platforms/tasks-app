@@ -10,6 +10,8 @@ import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
 import store from '@/redux/store'
+import { Tapwrite, TiptapEditorUtils } from 'tapwrite'
+import { upload } from '@vercel/blob/client'
 
 type Attachment = {
   name: string
@@ -58,28 +60,16 @@ export const TaskEditor = ({ title, detail, attachment, isEditable, updateTaskDe
         />
       </Stack>
       <Box>
-        <StyledTextField
-          type="text"
-          placeholder="Add description..."
-          multiline
-          borderLess
-          minRows={8}
-          sx={{
-            width: '100%',
-            '& .MuiInputBase-input': {
-              fontSize: '16px',
-              lineHeight: '24px',
-              color: (theme) => theme.color.gray[500],
-              fontWeight: 400,
-            },
+        <Tapwrite
+          uploadFn={async (file, tiptapEditorUtils) => {
+            const newBlob = await upload(file.name, file, {
+              access: 'public',
+              handleUploadUrl: '/api/upload',
+            })
+            tiptapEditorUtils.setImage(newBlob.url as string)
           }}
-          value={updateDetail}
-          onChange={(e) => setUpdateDetail(e.target.value)}
-          InputProps={{ readOnly: !isEditable }}
-          disabled={!isEditable}
-          onBlur={() => {
-            updateTaskDetail(updateTitle, updateDetail)
-          }}
+          content={detail}
+          getContent={(content) => setUpdateDetail(content)}
         />
       </Box>
       <Stack direction="row" columnGap={3} mt={3}>

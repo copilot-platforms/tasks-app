@@ -6,11 +6,12 @@ import { useFocusableInput } from '@/hooks/useFocusableInput'
 import { HTMLAttributes, ReactNode, useState } from 'react'
 import { StyledTextField } from './TextField'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { IAssigneeCombined } from '@/types/interfaces'
+import { IAssigneeCombined, ITemplate } from '@/types/interfaces'
 
 export enum SelectorType {
   ASSIGNEE_SELECTOR = 'assigneeSelector',
   STATUS_SELECTOR = 'statusSelector',
+  TEMPLATE_SELECTOR = 'templateSelected',
 }
 
 type ExtraOption = {
@@ -24,7 +25,7 @@ interface Prop {
   getSelectedValue: (value: unknown) => void
   startIcon: ReactNode
   value: unknown
-  selectorType: SelectorType.STATUS_SELECTOR | SelectorType.ASSIGNEE_SELECTOR
+  selectorType: SelectorType
   options: unknown[]
   buttonContent: ReactNode
   disabled?: boolean
@@ -65,9 +66,15 @@ export default function Selector({
   const setSelectorRef = useFocusableInput(open)
 
   function detectSelectorType(option: unknown) {
-    return selectorType === SelectorType.ASSIGNEE_SELECTOR
-      ? ((option as IAssigneeCombined).name as string) || ((option as IAssigneeCombined).givenName as string)
-      : ((option as WorkflowStateResponse).name as string)
+    if (selectorType === SelectorType.ASSIGNEE_SELECTOR) {
+      return ((option as IAssigneeCombined).name as string) || ((option as IAssigneeCombined).givenName as string)
+    }
+
+    if (selectorType === SelectorType.STATUS_SELECTOR) {
+      return (option as WorkflowStateResponse).name as string
+    } else {
+      return ''
+    }
   }
 
   return (
@@ -124,13 +131,39 @@ export default function Selector({
               extraOptionRenderer(setAnchorEl, anchorEl, props)
             ) : selectorType === SelectorType.ASSIGNEE_SELECTOR ? (
               <AssigneeSelectorRenderer props={props} option={option} />
-            ) : (
+            ) : selectorType === SelectorType.STATUS_SELECTOR ? (
               <StatusSelectorRenderer props={props} option={option} />
+            ) : selectorType === SelectorType.TEMPLATE_SELECTOR ? (
+              <TemplateSelectorRenderer props={props} option={option} />
+            ) : (
+              <></>
             )
           }
         />
       </Popper>
     </Stack>
+  )
+}
+const TemplateSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTMLLIElement>; option: unknown }) => {
+  return (
+    <Box
+      component="li"
+      {...props}
+      sx={{
+        '&.MuiAutocomplete-option[aria-selected="true"]': {
+          bgcolor: (theme) => theme.color.gray[100],
+        },
+        '&.MuiAutocomplete-option[aria-selected="true"].Mui-focused': {
+          bgcolor: (theme) => theme.color.gray[100],
+        },
+      }}
+    >
+      <Stack direction="row" alignItems="center" columnGap={3}>
+        <Typography variant="sm" fontWeight={400}>
+          {(option as ITemplate).templateName as string}
+        </Typography>
+      </Stack>
+    </Box>
   )
 }
 

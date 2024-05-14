@@ -1,3 +1,8 @@
+export enum TargetMethod {
+  EDIT = 'edit',
+  POST = 'post',
+}
+
 export enum UserType {
   INTERNAL_USER = 'iu',
   CLIENT_USER = 'cu',
@@ -74,4 +79,16 @@ export interface IAssigneeCombined {
   name?: string
   iconImageUrl?: string
   fallbackColor?: string
+}
+
+export interface ITemplate {
+  id: string
+  workspaceId: string
+  templateName: string
+  title: string
+  body: string
+  assigneeId: string
+  assigneeType: string
+  workflowStateId: string
+  createdBy: string
 }

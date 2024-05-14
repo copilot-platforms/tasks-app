@@ -17,6 +17,7 @@ import { FilterByAssigneeBtn } from '../buttons/FilterByAssigneeBtn'
 import FilterButtonGroup from '@/components/buttonsGroup/FilterButtonsGroup'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { useFilter } from '@/hooks/useFilter'
+import { IUTokenSchema } from '@/types/common'
 
 export const FilterBar = ({ updateViewModeSetting }: { updateViewModeSetting: (mode: View) => void }) => {
   const [filterOptions, setFilterOptions] = useState<IFilterOptions>({
@@ -45,7 +46,7 @@ export const FilterBar = ({ updateViewModeSetting }: { updateViewModeSetting: (m
     {
       name: 'My tasks',
       onClick: async (index: number) => {
-        handleFilterOptionsChange(FilterOptions.TYPE, tokenPayload?.internalUserId ?? '')
+        handleFilterOptionsChange(FilterOptions.TYPE, IUTokenSchema.parse(tokenPayload)?.internalUserId)
         setActiveButtonIndex(index)
       },
       id: 'MyTasks',

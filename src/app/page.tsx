@@ -8,7 +8,7 @@ import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { apiUrl } from '@/config'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import { TaskResponse } from '@/types/dto/tasks.dto'
-import { IAssignee, View } from '@/types/interfaces'
+import { IAssignee, ITemplate, View } from '@/types/interfaces'
 import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
 import { handleCreate, updateTask, updateViewModeSettings } from './actions'
 import { FilterBar } from '@/components/layouts/FilterBar'
@@ -60,6 +60,14 @@ async function getViewSettings(token: string): Promise<View> {
   return data.viewMode
 }
 
+async function getAllTemplates(token: string): Promise<ITemplate[]> {
+  const res = await fetch(`${apiUrl}/api/tasks/templates?token=${token}`)
+
+  const templates = await res.json()
+
+  return templates.data
+}
+
 export default async function Main({ searchParams }: { searchParams: { token: string } }) {
   const token = searchParams.token
 
@@ -67,12 +75,13 @@ export default async function Main({ searchParams }: { searchParams: { token: st
     throw new Error('Please pass the token!')
   }
 
-  const [workflowStates, tasks, assignee, viewSettings, tokenPayload] = await Promise.all([
+  const [workflowStates, tasks, assignee, viewSettings, tokenPayload, templates] = await Promise.all([
     getAllWorkflowStates(token),
     getAllTasks(token),
     addTypeToAssignee(await getAssigneeList(token)),
     getViewSettings(token),
     getTokenPayload(token),
+    getAllTemplates(token),
   ])
 
   return (
@@ -84,6 +93,7 @@ export default async function Main({ searchParams }: { searchParams: { token: st
         assignee={assignee}
         viewSettings={viewSettings || View.BOARD_VIEW}
         tokenPayload={tokenPayload}
+        templates={templates}
       >
         <DndWrapper>
           <Header showCreateTaskButton={true} />
