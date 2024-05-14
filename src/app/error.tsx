@@ -3,7 +3,7 @@
 import React from 'react'
 
 const getErrorMessage = (error: Error & { digest: string }) => {
-  console.log('UUU', error.message)
+  console.log('UUU', error)
   return error.message === 'Please provide a Valid Token' ? error.message : 'Something went wrong'
 }
 
