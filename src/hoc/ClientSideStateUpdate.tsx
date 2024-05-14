@@ -2,10 +2,11 @@
 
 import { setAssigneeList, setViewSettings } from '@/redux/features/taskBoardSlice'
 import { setTasks, setToken, setWorkflowStates } from '@/redux/features/taskBoardSlice'
+import { setTemplates } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { IAssigneeCombined, View } from '@/types/interfaces'
+import { IAssigneeCombined, ITemplate, View } from '@/types/interfaces'
 import { ViewMode } from '@prisma/client'
 import { ReactNode, useEffect } from 'react'
 
@@ -21,6 +22,7 @@ export const ClientSideStateUpdate = ({
   assignee,
   token,
   viewSettings,
+  templates,
 }: {
   children: ReactNode
   workflowStates?: WorkflowStateResponse[]
@@ -28,6 +30,7 @@ export const ClientSideStateUpdate = ({
   assignee?: IAssigneeCombined[]
   viewSettings?: View
   token?: string
+  templates?: ITemplate[]
 }) => {
   useEffect(() => {
     if (workflowStates) {
@@ -49,7 +52,11 @@ export const ClientSideStateUpdate = ({
     if (viewSettings) {
       store.dispatch(setViewSettings(viewSettings))
     }
-  }, [workflowStates, tasks, token, assignee, viewSettings])
+
+    if (templates) {
+      store.dispatch(setTemplates(templates))
+    }
+  }, [workflowStates, tasks, token, assignee, viewSettings, templates])
 
   return children
 }

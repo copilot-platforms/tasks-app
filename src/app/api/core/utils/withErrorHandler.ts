@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { ZodError, ZodIssue } from 'zod'
 import { CopilotApiError } from '@/types/CopilotApiError'
 import APIError from '@api/core/exceptions/api'
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
+import httpStatus from 'http-status'
 
 type RequestHandler = (req: NextRequest, params: any) => Promise<NextResponse>
 
@@ -32,12 +34,12 @@ export const withErrorHandler = (handler: RequestHandler): RequestHandler => {
       console.error(error)
 
       // Default staus and message for JSON error response
-      let status = 500
+      let status: number = httpStatus.BAD_REQUEST
       let message: string | ZodIssue[] = 'Something went wrong'
 
       // Build a proper response based on the type of Error encountered
       if (error instanceof ZodError) {
-        status = 422
+        status = httpStatus.UNPROCESSABLE_ENTITY
         message = error.issues
       } else if (error instanceof CopilotApiError) {
         status = error.status || status
@@ -45,6 +47,12 @@ export const withErrorHandler = (handler: RequestHandler): RequestHandler => {
       } else if (error instanceof APIError) {
         status = error.status
         message = error.message || message
+      } else if (error instanceof PrismaClientKnownRequestError) {
+        if (error.code === 'P2025') {
+          // Code for NOT FOUND in Prisma
+          status = httpStatus.NOT_FOUND
+          message = 'The requested resource was not found'
+        }
       }
 
       return NextResponse.json({ error: message }, { status })

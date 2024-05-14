@@ -4,22 +4,26 @@ import { SelectorType } from '@/components/inputs/Selector'
 import Selector from '@/components/inputs/Selector'
 import { StyledTextField } from '@/components/inputs/TextField'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
-import { AttachmentIcon } from '@/icons'
-import { selectCreateTask, setCreateTaskFields, setShowModal } from '@/redux/features/createTaskSlice'
+import { ArrowLinkIcon, AttachmentIcon, TemplateIcon, TemplateIconSm } from '@/icons'
+import { clearCreateTaskFields, selectCreateTask, setCreateTaskFields, setShowModal } from '@/redux/features/createTaskSlice'
 import store from '@/redux/store'
 import { statusIcons } from '@/utils/iconMatcher'
 import { Close } from '@mui/icons-material'
 import { Avatar, Box, Stack, Typography, styled } from '@mui/material'
 import { ReactNode } from 'react'
-import { IAssigneeCombined } from '@/types/interfaces'
+import { IAssigneeCombined, ITemplate } from '@/types/interfaces'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { useSelector } from 'react-redux'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
+import { useRouter } from 'next/navigation'
+import { selectCreateTemplate } from '@/redux/features/templateSlice'
 
 export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
-  const { workflowStates, assignee } = useSelector(selectTaskBoard)
+  const { workflowStates, assignee, token } = useSelector(selectTaskBoard)
+
+  const { templates } = useSelector(selectCreateTemplate)
 
   const { renderingItem: _statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
     item: workflowStates[0],
@@ -29,28 +33,90 @@ export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
     item: assignee[0],
     type: SelectorType.ASSIGNEE_SELECTOR,
   })
+  const { renderingItem: _templateValue, updateRenderingItem: updateTemplateValue } = useHandleSelectorComponent({
+    item: undefined, //initially we don't want any value to be selected
+    type: SelectorType.TEMPLATE_SELECTOR,
+  })
 
   const statusValue = _statusValue as WorkflowStateResponse //typecasting
   const assigneeValue = _assigneeValue as IAssigneeCombined //typecasting
+  const templateValue = _templateValue as ITemplate //typecasting
 
-  const { assigneeType } = useSelector(selectCreateTask)
-  console.log('hereee', assigneeType)
+  const router = useRouter()
 
   return (
     <NewTaskContainer>
       <Stack
-        direction="row"
-        alignItems="center"
-        justifyContent="end"
         sx={{
           border: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
         }}
       >
         <AppMargin size={SizeofAppMargin.MEDIUM} py="12px">
-          <Close
-            sx={{ color: (theme) => theme.color.gray[500], cursor: 'pointer' }}
-            onClick={() => store.dispatch(setShowModal())}
-          />
+          <Stack direction="row" alignItems="center" justifyContent="space-between">
+            <Box>
+              <Selector
+                getSelectedValue={(_newValue) => {
+                  const newValue = _newValue as ITemplate
+                  updateTemplateValue(newValue)
+                  const selectedAssignee = assignee.find((el) => el.id === newValue.assigneeId)
+                  const selectedWorkflowState = workflowStates.find((el) => el.id === newValue.workflowStateId)
+                  updateAssigneeValue(selectedAssignee)
+                  updateStatusValue(selectedWorkflowState)
+                  store.dispatch(setCreateTaskFields({ targetField: 'title', value: newValue.title }))
+                  store.dispatch(setCreateTaskFields({ targetField: 'description', value: newValue.body }))
+                  store.dispatch(setCreateTaskFields({ targetField: 'assigneeId', value: newValue?.assigneeId }))
+                  store.dispatch(setCreateTaskFields({ targetField: 'workflowStateId', value: newValue?.workflowStateId }))
+                }}
+                startIcon={<TemplateIconSm />}
+                options={templates}
+                placeholder="Select template"
+                value={templateValue}
+                selectorType={SelectorType.TEMPLATE_SELECTOR}
+                extraOption={{
+                  id: '',
+                  name: 'Manage templates',
+                  value: '',
+                  extraOptionFlag: true,
+                }}
+                extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
+                  return (
+                    <Stack
+                      direction="row"
+                      pl="20px"
+                      py="6px"
+                      justifyContent="space-between"
+                      sx={{
+                        borderBottom: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
+                        cursor: 'pointer',
+                      }}
+                      onClick={() => {
+                        setAnchorEl(null)
+                        store.dispatch(setShowModal())
+                        router.push(`/manage-templates?token=${token}`)
+                      }}
+                    >
+                      <Typography variant="sm">Manage templates</Typography>
+                      <Box>
+                        <ArrowLinkIcon />
+                      </Box>
+                    </Stack>
+                  )
+                }}
+                buttonContent={
+                  <Typography variant="bodySm" sx={{ color: (theme) => theme.color.gray[600] }}>
+                    {templateValue ? templateValue.templateName : 'Select template'}
+                  </Typography>
+                }
+              />
+            </Box>
+            <Close
+              sx={{ color: (theme) => theme.color.gray[500], cursor: 'pointer' }}
+              onClick={() => {
+                store.dispatch(setShowModal())
+                store.dispatch(clearCreateTaskFields())
+              }}
+            />
+          </Stack>
         </AppMargin>
       </Stack>
 
@@ -154,6 +220,7 @@ const NewTaskFooter = ({ handleCreate }: { handleCreate: () => void }) => {
             <SecondaryBtn
               handleClick={() => {
                 store.dispatch(setShowModal())
+                store.dispatch(clearCreateTaskFields())
               }}
               buttonContent={
                 <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[700] }}>

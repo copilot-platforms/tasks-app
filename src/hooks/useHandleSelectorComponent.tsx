@@ -1,5 +1,6 @@
 import { SelectorType } from '@/components/inputs/Selector'
 import { setCreateTaskFields } from '@/redux/features/createTaskSlice'
+import { setCreateTemplateFields } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { IAssigneeCombined } from '@/types/interfaces'
@@ -16,12 +17,16 @@ export const useHandleSelectorComponent = ({ item, type }: { item: unknown; type
   useEffect(() => {
     if (type === SelectorType.STATUS_SELECTOR) {
       store.dispatch(setCreateTaskFields({ targetField: 'workflowStateId', value: (item as WorkflowStateResponse)?.id }))
+      store.dispatch(setCreateTemplateFields({ targetField: 'workflowStateId', value: (item as WorkflowStateResponse)?.id }))
     }
 
     if (type === SelectorType.ASSIGNEE_SELECTOR) {
       store.dispatch(setCreateTaskFields({ targetField: 'assigneeId', value: (item as IAssigneeCombined)?.id }))
       store.dispatch(
         setCreateTaskFields({ targetField: 'assigneeType', value: getAssigneeTypeCorrected(item as IAssigneeCombined) }),
+      )
+      store.dispatch(
+        setCreateTemplateFields({ targetField: 'assigneeType', value: getAssigneeTypeCorrected(item as IAssigneeCombined) }),
       )
     }
   }, [type, item])
