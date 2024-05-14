@@ -18,3 +18,8 @@ export type IdParams = {
     id: string
   }
 }
+export type TaskIdParams = {
+  params: {
+    taskId: string
+  }
+}

@@ -92,8 +92,11 @@ model Attachment {
   id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   task        Task     @relation(fields :[taskId], references : [id])
   taskId      String   @db.Uuid
+  workspaceId String   @db.VarChar(32)
   url         String   
   createdById String   @db.Uuid
 
-  @@map("attachments")
+   createdAt DateTime @default(now())
+
+  @@map("Attachments")
 }
