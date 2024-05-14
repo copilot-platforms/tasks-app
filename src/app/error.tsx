@@ -2,8 +2,10 @@
 
 import React from 'react'
 
-const getErrorMessage = (error: Error & { digest: string }) =>
-  error.message === 'Please provide a Valid Token' ? error.message : 'Something went wrong'
+const getErrorMessage = (error: Error & { digest: string }) => {
+  console.log('UUU', error.message)
+  return error.message === 'Please provide a Valid Token' ? error.message : 'Something went wrong'
+}
 
 const ClientErrorBoundary = ({ error }: { error: Error & { digest: string } }) => {
   return (
