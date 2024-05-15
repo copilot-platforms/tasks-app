@@ -11,6 +11,7 @@ export const CreateTaskRequestSchema = z.object({
   title: z.string(),
   body: z.string().optional(),
   workflowStateId: z.string().uuid(),
+  dueDate: z.any(), // Optional precise datetime string
 })
 export type CreateTaskRequest = z.infer<typeof CreateTaskRequestSchema>
 
@@ -20,6 +21,7 @@ export const UpdateTaskRequestSchema = z.object({
   title: z.string().optional(),
   body: z.string().nullish(),
   workflowStateId: z.string().uuid().optional(),
+  dueDate: z.any(), // Optional precise datetime string
 })
 export type UpdateTaskRequest = z.infer<typeof UpdateTaskRequestSchema>
 
@@ -33,6 +35,7 @@ export const TaskResponseSchema = z.object({
   createdById: z.string(),
   workflowStateId: z.string().uuid().optional(),
   workflowState: WorkflowStateResponseSchema,
+  dueDate: z.any(), // Optional precise datetime string
 })
 
 export type TaskResponse = z.infer<typeof TaskResponseSchema>

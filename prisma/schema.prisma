@@ -49,6 +49,7 @@ model Task {
   workflowStateId String        @db.Uuid
   assignedAt      DateTime?
   completedAt     DateTime?
+  dueDate         DateTime?
 
   @@map("Tasks")
 }

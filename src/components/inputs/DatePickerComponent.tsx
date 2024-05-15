@@ -7,11 +7,11 @@ import { CalenderIcon } from '@/icons'
 
 interface Prop {
   getDate: (value: string) => void
-  dateValue: string
+  dateValue: string | undefined
 }
 
 export const DatePickerComponent = ({ getDate, dateValue }: Prop) => {
-  const [value, setValue] = React.useState<Dayjs | null>(dayjs(dateValue))
+  const [value, setValue] = React.useState<Dayjs | null>(dateValue ? dayjs(dateValue) : null)
 
   const formatDate = (date: Dayjs | null) => {
     return date ? date.format('MMM DD, YYYY') : '' // Format the date as "Mar 08, 2024"
@@ -22,7 +22,7 @@ export const DatePickerComponent = ({ getDate, dateValue }: Prop) => {
       <DatePicker
         value={value}
         onChange={(newValue) => {
-          getDate(formatDate(value))
+          getDate(formatDate(newValue))
           setValue(newValue)
         }}
         sx={{
@@ -49,7 +49,7 @@ export const DatePickerComponent = ({ getDate, dateValue }: Prop) => {
           },
         }}
         slots={{ openPickerIcon: CalenderIcon }}
-        format="MMM DD, YYYY"
+        format={dateValue ? 'MMM DD, YYYY' : ''}
       />
     </LocalizationProvider>
   )
