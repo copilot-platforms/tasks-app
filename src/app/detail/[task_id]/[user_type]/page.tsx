@@ -3,7 +3,7 @@ import { TaskEditor } from '@/app/detail/ui/TaskEditor'
 import { Box, Stack, Typography } from '@mui/material'
 import { Sidebar } from '@/app/detail/ui/Sidebar'
 import { taskDetail } from '@/utils/mockData'
-import { IAssignee, UserType } from '@/types/interfaces'
+import { IAssignee, IAttachment, UserType } from '@/types/interfaces'
 import { apiUrl } from '@/config'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
@@ -11,7 +11,7 @@ import { StyledBox, StyledKeyboardIcon, StyledTypography } from '@/app/detail/ui
 import Link from 'next/link'
 import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
-import { deleteTask, updateAssignee, updateTaskDetail } from './actions'
+import { deleteTask, postAttachment, updateAssignee, updateTaskDetail } from './actions'
 import { updateWorkflowStateIdOfTask } from '@/app/actions'
 import { MenuBoxContainer } from '../../ui/MenuBoxContainer'
 
@@ -37,6 +37,15 @@ async function getAssigneeList(token: string): Promise<IAssignee> {
   return data.users
 }
 
+async function getAttachments(token: string, taskId: string): Promise<IAttachment[]> {
+  const res = await fetch(`${apiUrl}/api/attachments/${taskId}?token=${token}`, {
+    next: { tags: ['getAttachments'], revalidate: 0 },
+  })
+  const data = await res.json()
+
+  return data.attachments
+}
+
 export default async function TaskDetailPage({
   params,
   searchParams,
@@ -49,7 +58,7 @@ export default async function TaskDetailPage({
 
   const task = await getOneTask(token, task_id)
   const assignee = addTypeToAssignee(await getAssigneeList(token))
-
+  const attachments = await getAttachments(token, task_id)
   return (
     <ClientSideStateUpdate assignee={assignee}>
       <Stack direction="row">
@@ -74,8 +83,9 @@ export default async function TaskDetailPage({
           </StyledBox>
           <AppMargin size={SizeofAppMargin.LARGE} py="30px">
             <TaskEditor
-              attachment={taskDetail.attachment}
+              attachment={attachments}
               title={task?.title || ''}
+              task_id={task_id}
               detail={task.body || ''}
               isEditable={params.user_type === UserType.INTERNAL_USER}
               updateTaskDetail={async (title, detail) => {
@@ -85,6 +95,10 @@ export default async function TaskDetailPage({
               deleteTask={async () => {
                 'use server'
                 await deleteTask(token, task_id)
+              }}
+              postAttachment={async (postAttachmentPayload) => {
+                'use server'
+                await postAttachment(token, postAttachmentPayload)
               }}
             />
           </AppMargin>

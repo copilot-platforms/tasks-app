@@ -5,34 +5,65 @@ import { StyledTextField } from '@/components/inputs/TextField'
 import { AttachmentIcon } from '@/icons'
 import { selectTaskDetails, setShowConfirmDeleteModal } from '@/redux/features/taskDetailsSlice'
 import { statusIcons } from '@/utils/iconMatcher'
-import { Box, Modal, Stack } from '@mui/material'
+import { Box, IconButton, Modal, Stack } from '@mui/material'
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
 import store from '@/redux/store'
 import { Tapwrite, TiptapEditorUtils } from 'tapwrite'
 import { upload } from '@vercel/blob/client'
-
-type Attachment = {
-  name: string
-  fileSize: string
-  fileType: string
-}
+import { supabase } from '@/lib/supabase'
+import { supabaseBucket } from '@/config'
+import { CreateAttachmentRequest, CreateAttachmentRequestSchema } from '@/types/dto/attachments.dto'
+import { AttachmentInput } from '@/components/inputs/AttachmentInput'
+import { IAttachment } from '@/types/interfaces'
 
 interface Prop {
   title: string
   detail: string
-  attachment: Attachment[]
+  task_id: string
+  attachment: IAttachment[]
   isEditable: boolean
   updateTaskDetail: (title: string, detail: string) => void
   deleteTask: () => void
+  postAttachment: (postAttachmentPayload: CreateAttachmentRequest) => void
 }
 
-export const TaskEditor = ({ title, detail, attachment, isEditable, updateTaskDetail, deleteTask }: Prop) => {
+export const TaskEditor = ({
+  title,
+  detail,
+  task_id,
+  attachment,
+  isEditable,
+  updateTaskDetail,
+  deleteTask,
+  postAttachment,
+}: Prop) => {
   const [updateTitle, setUpdateTitle] = useState(title)
   const [updateDetail, setUpdateDetail] = useState(detail)
   const { showConfirmDeleteModal } = useSelector(selectTaskDetails)
 
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    event.preventDefault()
+    const files = event.target.files
+    if (files && files.length > 0) {
+      const file = files[0]
+      const { data, error } = await supabase.storage.from(supabaseBucket).upload(file.name, file, {
+        cacheControl: '3600',
+        upsert: true,
+      })
+      if (data) {
+        const filePayload = {
+          fileSize: file.size,
+          fileName: file.name,
+          fileType: file.type,
+          taskId: task_id,
+          filePath: data.path,
+        }
+        postAttachment(filePayload)
+      }
+    }
+  }
   return (
     <>
       <Stack direction="row" alignItems="center" columnGap={2}>
@@ -73,19 +104,17 @@ export const TaskEditor = ({ title, detail, attachment, isEditable, updateTaskDe
         />
       </Box>
       <Stack direction="row" columnGap={3} mt={3}>
-        {attachment.map((el, key) => {
+        {attachment?.map((el, key) => {
           return (
             <Box key={key}>
-              <AttachmentCard name={el.name} fileSize={el.fileSize} fileType={el.fileType} />
+              <AttachmentCard name={el.fileName} fileSize={el.fileSize} fileType={el.fileType} filePath={el.filePath} />
             </Box>
           )
         })}
       </Stack>
 
       <Stack direction="row" mt={3} justifyContent="flex-end">
-        <Box>
-          <AttachmentIcon />
-        </Box>
+        <AttachmentInput handleFileSelect={handleFileSelect} />
       </Stack>
 
       <Modal

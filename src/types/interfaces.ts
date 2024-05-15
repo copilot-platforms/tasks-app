@@ -76,3 +76,13 @@ export interface ITemplate {
   workflowStateId: string
   createdBy: string
 }
+
+export interface IAttachment {
+  id: string
+  taskId: string
+  workspaceId: string
+  filePath: string
+  fileSize: number
+  fileType: string
+  fileName: string
+}

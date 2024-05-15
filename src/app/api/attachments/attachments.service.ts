@@ -9,7 +9,6 @@ export class AttachmentsService extends BaseService {
   async getAttachments(taskId: string) {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Read, Resource.Attachments)
-
     const attachments = await this.db.attachment.findMany({
       where: {
         taskId: taskId,

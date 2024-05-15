@@ -1,4 +1,5 @@
 import { apiUrl } from '@/config'
+import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { revalidateTag } from 'next/cache'
 import { redirect } from 'next/navigation'
 
@@ -31,4 +32,11 @@ export const deleteTask = async (token: string, task_id: string) => {
   })
   revalidateTag('getAllTasks')
   redirect(`/?token=${token}`)
+}
+
+export const postAttachment = async (token: string, payload: CreateAttachmentRequest) => {
+  await fetch(`${apiUrl}/api/attachments/?token=${token}`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
 }
