@@ -1,40 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
 import authenticate from '@api/core/utils/authenticate'
-import { CreateAttachmentRequest, CustomUploadBodySchema, CustomUploadPayloadSchema } from '@/types/dto/attachments.dto'
+import {
+  CreateAttachmentRequest,
+  CreateAttachmentRequestSchema,
+  CustomUploadBodySchema,
+  CustomUploadPayloadSchema,
+} from '@/types/dto/attachments.dto'
 import { AttachmentsService } from '@api/attachments/attachments.service'
 import httpStatus from 'http-status'
-import { handleUpload, type HandleUploadBody } from '@vercel/blob/client'
+// import { handleUpload, type HandleUploadBody } from '@vercel/blob/client'
 import { IdParams, TaskIdParams } from '@api/core/types/api'
 import APIError from '../core/exceptions/api'
+import { supabase } from '@/lib/supabase'
 
 export const createAttachment = async (request: NextRequest) => {
   const user = await authenticate(request)
-  const body = CustomUploadBodySchema.parse(await request.json()) as HandleUploadBody
+  const body = CreateAttachmentRequestSchema.parse(await request.json())
   const attachmentsService = new AttachmentsService(user)
-
-  const fileUploadResponse = await handleUpload({
-    body,
-    request,
-    onBeforeGenerateToken: async (pathname: string, clientPayload: string | null) => {
-      if (!user.internalUserId) {
-        throw new APIError(httpStatus.UNAUTHORIZED, 'User not authorized to create an attachment')
-      }
-      return {
-        tokenPayload: JSON.stringify({
-          data: clientPayload,
-        }),
-      }
-    },
-    onUploadCompleted: async ({ blob, tokenPayload }) => {
-      const data: CreateAttachmentRequest = {
-        taskId: tokenPayload && JSON.parse(CustomUploadPayloadSchema.parse(JSON.parse(tokenPayload))?.data)?.taskId,
-        url: blob.url,
-      }
-      await attachmentsService.createAttachments(data)
-    },
-  })
-
-  return NextResponse.json(fileUploadResponse, { status: httpStatus.CREATED })
+  const newAttachment = await attachmentsService.createAttachments(body)
+  return NextResponse.json(newAttachment)
 }
 
 export const getAttachments = async (req: NextRequest, { params: { taskId } }: TaskIdParams) => {

@@ -93,10 +93,11 @@ model Attachment {
   task        Task     @relation(fields :[taskId], references : [id])
   taskId      String   @db.Uuid
   workspaceId String   @db.VarChar(32)
-  url         String   
+  filePath    String   
+  fileSize    Int
+  fileType    String
+  fileName    String
   createdById String   @db.Uuid
-
-   createdAt DateTime @default(now())
-
+  createdAt DateTime @default(now())
   @@map("Attachments")
 }

@@ -1,20 +1,12 @@
-/*
-  Warnings:
-
-  - You are about to drop the `attachments` table. If the table is not empty, all the data it contains will be lost.
-
-*/
--- DropForeignKey
-ALTER TABLE "attachments" DROP CONSTRAINT "attachments_taskId_fkey";
-
--- DropTable
-DROP TABLE "attachments";
-
 -- CreateTable
 CREATE TABLE "Attachments" (
     "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "taskId" UUID NOT NULL,
-    "url" TEXT NOT NULL,
+    "workspaceId" VARCHAR(32) NOT NULL,
+    "filePath" TEXT NOT NULL,
+    "fileSize" INTEGER NOT NULL,
+    "fileType" TEXT NOT NULL,
+    "fileName" TEXT NOT NULL,
     "createdById" UUID NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 

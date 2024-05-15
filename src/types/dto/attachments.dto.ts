@@ -2,7 +2,10 @@ import { boolean, z } from 'zod'
 
 export const CreateAttachmentRequestSchema = z.object({
   taskId: z.string().uuid(),
-  url: z.string(),
+  filePath: z.string(),
+  fileSize: z.number(),
+  fileType: z.string(),
+  fileName: z.string(),
 })
 
 export type CreateAttachmentRequest = z.infer<typeof CreateAttachmentRequestSchema>
