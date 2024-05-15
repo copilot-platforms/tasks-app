@@ -4,10 +4,11 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import dayjs, { Dayjs } from 'dayjs'
 import { CalenderIcon } from '@/icons'
+import { IsoDate } from '@/types/dto/tasks.dto'
 
 interface Prop {
   getDate: (value: string) => void
-  dateValue: string | undefined
+  dateValue: IsoDate | undefined
 }
 
 export const DatePickerComponent = ({ getDate, dateValue }: Prop) => {

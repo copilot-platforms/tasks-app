@@ -1,4 +1,6 @@
-export function isoToReadableDate(isoString: string): string {
+import { IsoDate, IsoDateSchema } from '@/types/dto/tasks.dto'
+
+export function isoToReadableDate(isoString: IsoDate): IsoDate {
   // Create a Date object from the ISO string
   const date = new Date(isoString)
 
@@ -11,10 +13,10 @@ export function isoToReadableDate(isoString: string): string {
   // Format the date to a readable format
   const readableDate = date.toLocaleDateString('en-US', options)
 
-  return readableDate
+  return IsoDateSchema.parse(readableDate)
 }
 
-export function formatDate(dateString: string): string {
+export function formatDate(dateString: string): IsoDate {
   // Parse the date from the input format
   const date = new Date(dateString)
 
@@ -25,5 +27,5 @@ export function formatDate(dateString: string): string {
   const isoDate = date.toISOString()
 
   // Return only the date part with time reset to midnight UTC
-  return `${isoDate.substring(0, 10)}T00:00:00Z`
+  return IsoDateSchema.parse(`${isoDate.substring(0, 10)}T00:00:00Z`)
 }

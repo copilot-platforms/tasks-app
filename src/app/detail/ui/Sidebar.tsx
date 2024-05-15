@@ -13,7 +13,7 @@ import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { StyledBox } from './styledComponent'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
-import { UpdateTaskRequest } from '@/types/dto/tasks.dto'
+import { IsoDate, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { formatDate, isoToReadableDate } from '@/utils/dateHelper'
 
 const StyledText = styled(Typography)(({ theme }) => ({
@@ -33,7 +33,7 @@ export const Sidebar = ({
 }: {
   selectedWorkflowState: WorkflowStateResponse
   selectedAssigneeId: string | undefined
-  dueDate: string | undefined
+  dueDate: IsoDate | undefined
   updateWorkflowState: (workflowState: WorkflowStateResponse) => void
   updateAssignee: (assigneeType: string, assigneeId: string) => void
   updateTask: (payload: UpdateTaskRequest) => void
@@ -53,8 +53,6 @@ export const Sidebar = ({
 
   const statusValue = _statusValue as WorkflowStateResponse //typecasting
   const assigneeValue = _assigneeValue as IAssigneeCombined //typecasting
-
-  console.log(isoToReadableDate(dueDate || ''))
 
   return (
     <Box
