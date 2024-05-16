@@ -50,9 +50,9 @@ model Task {
   workflowStateId String        @db.Uuid
   attachments     Attachment[]
 
-  assignedAt      DateTime?
-  completedAt     DateTime?
-  deletedAt       DateTime?
+  assignedAt  DateTime?
+  completedAt DateTime?
+  deletedAt   DateTime?
 
   @@map("Tasks")
 }
@@ -93,15 +93,21 @@ model ViewSetting {
 }
 
 model Attachment {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  task        Task     @relation(fields :[taskId], references : [id])
-  taskId      String   @db.Uuid
-  workspaceId String   @db.VarChar(32)
-  filePath    String   
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  task        Task      @relation(fields: [taskId], references: [id])
+  taskId      String    @db.Uuid
+  workspaceId String    @db.VarChar(32)
+  filePath    String
   fileSize    Int
   fileType    String
   fileName    String
-  createdById String   @db.Uuid
-  createdAt DateTime @default(now())
+  createdById String    @db.Uuid
+  createdAt   DateTime  @default(now())
+  deletedAt   DateTime?
+
+  @@unique([filePath], name: "UQ_Attachments_filePath")
+  @@unique([fileName], name: "UQ_Attachments_fileName")
+  @@index([filePath], name: "IX_Attachments_filePath")
+  @@index([fileName], name: "IX_Attachments_fileName")
   @@map("Attachments")
 }
