@@ -31,6 +31,7 @@ model WorkflowState {
   color         String?        @db.VarChar(32)
   tasks         Task[]
   taskTemplates TaskTemplate[]
+  deletedAt     DateTime?
 
   @@unique([workspaceId, key], name: "UQ_WorkflowStates_workspaceId_key")
   @@index([workspaceId, key], name: "IX_WorkflowStates_workspaceId_key")
@@ -50,6 +51,7 @@ model Task {
   assignedAt      DateTime?
   completedAt     DateTime?
   dueDate         DateTime?
+  deletedAt       DateTime?
 
   @@map("Tasks")
 }
@@ -70,6 +72,7 @@ model TaskTemplate {
   workflowState   WorkflowState @relation(fields: [workflowStateId], references: [id], onDelete: Cascade)
   workflowStateId String        @db.Uuid
   createdById     String        @db.Uuid
+  deletedAt       DateTime?
 
   @@unique([workspaceId, templateName], name: "UQ_TaskTemplates_workspaceId_templateName")
   @@index([workspaceId, templateName], name: "IX_TaskTemplates_workspaceId_templateName")
@@ -77,10 +80,11 @@ model TaskTemplate {
 }
 
 model ViewSetting {
-  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId      String   @db.Uuid
-  viewMode    ViewMode @default(board)
-  workspaceId String   @db.VarChar(32)
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId      String    @db.Uuid
+  viewMode    ViewMode  @default(board)
+  workspaceId String    @db.VarChar(32)
+  deletedAt   DateTime?
 
   @@unique([userId, workspaceId], name: "UQ_ViewSettings_userId_workspaceId")
   @@index([userId, workspaceId], name: "IX_ViewSettings_userId_workspaceId")
