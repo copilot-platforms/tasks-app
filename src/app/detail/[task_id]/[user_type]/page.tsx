@@ -11,7 +11,7 @@ import { StyledBox, StyledKeyboardIcon, StyledTypography } from '@/app/detail/ui
 import Link from 'next/link'
 import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
-import { deleteTask, postAttachment, updateAssignee, updateTaskDetail } from './actions'
+import { deleteAttachment, deleteTask, postAttachment, updateAssignee, updateTaskDetail } from './actions'
 import { updateWorkflowStateIdOfTask } from '@/app/actions'
 import { MenuBoxContainer } from '../../ui/MenuBoxContainer'
 
@@ -38,7 +38,7 @@ async function getAssigneeList(token: string): Promise<IAssignee> {
 }
 
 async function getAttachments(token: string, taskId: string): Promise<IAttachment[]> {
-  const res = await fetch(`${apiUrl}/api/attachments/${taskId}?token=${token}`, {
+  const res = await fetch(`${apiUrl}/api/attachments/?taskId=${taskId}&token=${token}`, {
     next: { tags: ['getAttachments'], revalidate: 0 },
   })
   const data = await res.json()
@@ -99,6 +99,10 @@ export default async function TaskDetailPage({
               postAttachment={async (postAttachmentPayload) => {
                 'use server'
                 await postAttachment(token, postAttachmentPayload)
+              }}
+              deleteAttachment={async (id: string) => {
+                'use server'
+                await deleteAttachment(token, id)
               }}
             />
           </AppMargin>

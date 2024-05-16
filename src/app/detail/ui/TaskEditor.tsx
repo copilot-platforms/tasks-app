@@ -12,11 +12,10 @@ import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
 import store from '@/redux/store'
 import { Tapwrite, TiptapEditorUtils } from 'tapwrite'
 import { upload } from '@vercel/blob/client'
-import { supabase } from '@/lib/supabase'
-import { supabaseBucket } from '@/config'
-import { CreateAttachmentRequest, CreateAttachmentRequestSchema } from '@/types/dto/attachments.dto'
+import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { AttachmentInput } from '@/components/inputs/AttachmentInput'
 import { IAttachment } from '@/types/interfaces'
+import { uploadAttachment } from '@/utils/SupabaseActions'
 
 interface Prop {
   title: string
@@ -27,6 +26,7 @@ interface Prop {
   updateTaskDetail: (title: string, detail: string) => void
   deleteTask: () => void
   postAttachment: (postAttachmentPayload: CreateAttachmentRequest) => void
+  deleteAttachment: (id: string) => void
 }
 
 export const TaskEditor = ({
@@ -38,6 +38,7 @@ export const TaskEditor = ({
   updateTaskDetail,
   deleteTask,
   postAttachment,
+  deleteAttachment,
 }: Prop) => {
   const [updateTitle, setUpdateTitle] = useState(title)
   const [updateDetail, setUpdateDetail] = useState(detail)
@@ -45,23 +46,9 @@ export const TaskEditor = ({
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     event.preventDefault()
-    const files = event.target.files
-    if (files && files.length > 0) {
-      const file = files[0]
-      const { data, error } = await supabase.storage.from(supabaseBucket).upload(file.name, file, {
-        cacheControl: '3600',
-        upsert: true,
-      })
-      if (data) {
-        const filePayload = {
-          fileSize: file.size,
-          fileName: file.name,
-          fileType: file.type,
-          taskId: task_id,
-          filePath: data.path,
-        }
-        postAttachment(filePayload)
-      }
+    const filePayload = await uploadAttachment(event, task_id)
+    if (filePayload) {
+      postAttachment(filePayload)
     }
   }
   return (
@@ -107,7 +94,7 @@ export const TaskEditor = ({
         {attachment?.map((el, key) => {
           return (
             <Box key={key}>
-              <AttachmentCard name={el.fileName} fileSize={el.fileSize} fileType={el.fileType} filePath={el.filePath} />
+              <AttachmentCard file={el} deleteAttachment={deleteAttachment} />
             </Box>
           )
         })}

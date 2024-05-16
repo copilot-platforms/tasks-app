@@ -8,20 +8,22 @@ import {
 } from '@/types/dto/attachments.dto'
 import { AttachmentsService } from '@api/attachments/attachments.service'
 import httpStatus from 'http-status'
-// import { handleUpload, type HandleUploadBody } from '@vercel/blob/client'
-import { IdParams, TaskIdParams } from '@api/core/types/api'
+import { IdParams } from '@api/core/types/api'
 import APIError from '../core/exceptions/api'
-import { supabase } from '@/lib/supabase'
 
-export const createAttachment = async (request: NextRequest) => {
-  const user = await authenticate(request)
-  const body = CreateAttachmentRequestSchema.parse(await request.json())
+export const createAttachment = async (req: NextRequest) => {
+  const user = await authenticate(req)
+  const body = CreateAttachmentRequestSchema.parse(await req.json())
   const attachmentsService = new AttachmentsService(user)
   const newAttachment = await attachmentsService.createAttachments(body)
   return NextResponse.json(newAttachment)
 }
 
-export const getAttachments = async (req: NextRequest, { params: { taskId } }: TaskIdParams) => {
+export const getAttachments = async (req: NextRequest) => {
+  const taskId = req.nextUrl.searchParams.get('taskId')
+  if (!taskId) {
+    throw new APIError(httpStatus.BAD_REQUEST)
+  }
   const user = await authenticate(req)
   const attachmentsService = new AttachmentsService(user)
   const attachments = await attachmentsService.getAttachments(taskId)

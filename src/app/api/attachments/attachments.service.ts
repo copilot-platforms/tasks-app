@@ -35,9 +35,7 @@ export class AttachmentsService extends BaseService {
   async deleteAttachment(id: string) {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Delete, Resource.Attachments)
-
     const deletedAttachment = await this.db.attachment.delete({ where: { id: id, workspaceId: this.user.workspaceId } })
-
     return deletedAttachment
   }
 }
