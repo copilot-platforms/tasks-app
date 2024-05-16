@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client'
+import { filterSoftDeleted, softDelete, softDeleteMany } from '@/lib/prismaExtensions'
 
 class DBClient {
   private static client: PrismaClient
@@ -19,7 +20,8 @@ class DBClient {
     if (!this.client) {
       if (!this.isInitialized) {
         // Make sure that prisma client is only created once
-        this.client = new PrismaClient()
+        // @ts-expect-error $use is deprecated but it is expected
+        this.client = new PrismaClient().$extends(softDelete).$extends(softDeleteMany).$extends(filterSoftDeleted)
         this.isInitialized = true
 
         // disconnect the client when the Node.js process exits
