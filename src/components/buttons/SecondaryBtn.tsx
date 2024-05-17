@@ -8,11 +8,13 @@ export const SecondaryBtn = ({
   buttonContent,
   handleClick,
   enableBackground,
+  outlined,
 }: {
   startIcon?: ReactNode
   buttonContent: ReactNode
   handleClick?: () => void
   enableBackground?: boolean
+  outlined?: boolean
 }) => {
   return (
     <Button
@@ -20,10 +22,10 @@ export const SecondaryBtn = ({
       startIcon={startIcon ? startIcon : null}
       sx={(theme) => ({
         textTransform: 'none',
-        border: enableBackground ? 'none' : `1px solid ${theme.color.borders.border}`,
+        border: enableBackground || outlined ? 'none' : `1px solid ${theme.color.borders.border}`,
         bgcolor: enableBackground ? theme.color.gray[150] : '',
         '&:hover': {
-          border: enableBackground ? 'none' : `1px solid ${theme.color.borders.border}`,
+          border: enableBackground || outlined ? 'none' : `1px solid ${theme.color.borders.border}`,
           bgcolor: theme.color.gray[150],
         },
         '.MuiTouchRipple-child': {

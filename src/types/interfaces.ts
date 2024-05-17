@@ -13,6 +13,22 @@ export enum View {
   BOARD_VIEW = 'board',
 }
 
+export enum FilterOptions {
+  ASSIGNEE = 'assignee',
+  KEYWORD = 'keyword',
+  TYPE = 'type',
+}
+
+export enum FilterOptionsKeywords {
+  CLIENTS = 'clients_companies',
+  TEAM = 'ius',
+  ALL = 'all',
+}
+
+export type IFilterOptions = {
+  [key in FilterOptions]: string
+}
+
 export interface IAssignee {
   ius: Omit<IIus, 'type'>[]
   internalUsers: Omit<IIus, 'type'>[]
