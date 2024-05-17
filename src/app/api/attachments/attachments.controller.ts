@@ -15,8 +15,10 @@ export const createAttachment = async (req: NextRequest) => {
   const user = await authenticate(req)
   console.log(user)
   const body = CreateAttachmentRequestSchema.parse(await req.json())
+  console.log('body', body)
   const attachmentsService = new AttachmentsService(user)
   const newAttachment = await attachmentsService.createAttachments(body)
+  console.log('new attachment pls work', newAttachment)
   return NextResponse.json(newAttachment)
 }
 
