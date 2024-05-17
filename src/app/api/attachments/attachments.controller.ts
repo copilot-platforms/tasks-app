@@ -21,7 +21,7 @@ export const createAttachment = async (req: NextRequest) => {
   const body = bodyParsed.data
   console.log('body', body)
   const attachmentsService = new AttachmentsService(user)
-  const newAttachment = await attachmentsService.createAttachments(body)
+  const newAttachment = await attachmentsService.createAttachments(body!)
   console.log('new attachment pls work', newAttachment)
   return NextResponse.json(newAttachment)
 }
