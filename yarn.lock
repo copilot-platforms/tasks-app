@@ -6295,10 +6295,10 @@ tapable@^2.2.0:
   resolved "https://registry.yarnpkg.com/tapable/-/tapable-2.2.1.tgz#1967a73ef4060a82f12ab96af86d52fdb76eeca0"
   integrity sha512-GNzQvQTOIP6RyTfE2Qxb8ZVlNmw0n88vp1szwWRimP02mnTsx3Wtn5qRdqY9w2XduFNUgvOwhNnQsjwCp+kqaQ==
 
-tapwrite@^1.0.7:
-  version "1.0.7"
-  resolved "https://registry.yarnpkg.com/tapwrite/-/tapwrite-1.0.7.tgz#8b6f4dfb7f37d08d14f59f567994140ec3aa8142"
-  integrity sha512-DLMsAbbvIXk61G0vInYeykmfrFK7hNoGKUyolXTnUZHv3BNDegW8qVLVyVVZa2bB2xULU4GU4W5yvQGJoIirZg==
+tapwrite@^1.0.11:
+  version "1.0.11"
+  resolved "https://registry.yarnpkg.com/tapwrite/-/tapwrite-1.0.11.tgz#00a158cd3f48a31ac49e4e7e44917f97e059755e"
+  integrity sha512-ndPjwGHSyMDHfzh3esbo/L+xz2jHDVuHXwMn5nN8BIQ+a6V8AyuZlYIPLXn+Twk42GJOiJ+1eiNLha/cvBg15A==
 
 test-exclude@^6.0.0:
   version "6.0.0"

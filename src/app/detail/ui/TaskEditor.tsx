@@ -59,7 +59,11 @@ export const TaskEditor = ({ title, detail, attachment, isEditable, updateTaskDe
           }}
         />
       </Stack>
-      <Box>
+      <Box
+        sx={{
+          minHeight: '30vh',
+        }}
+      >
         <Tapwrite
           uploadFn={async (file, tiptapEditorUtils) => {
             const newBlob = await upload(file.name, file, {
@@ -71,16 +75,16 @@ export const TaskEditor = ({ title, detail, attachment, isEditable, updateTaskDe
           content={detail}
           getContent={(content) => setUpdateDetail(content)}
         />
-        <Stack direction="row" columnGap={3} mt={3}>
-          {attachment.map((el, key) => {
-            return (
-              <Box key={key}>
-                <AttachmentCard name={el.name} fileSize={el.fileSize} fileType={el.fileType} />
-              </Box>
-            )
-          })}
-        </Stack>
       </Box>
+      <Stack direction="row" columnGap={3} mt={3}>
+        {attachment.map((el, key) => {
+          return (
+            <Box key={key}>
+              <AttachmentCard name={el.name} fileSize={el.fileSize} fileType={el.fileType} />
+            </Box>
+          )
+        })}
+      </Stack>
 
       <Stack direction="row" mt={3} justifyContent="flex-end">
         <Box>
