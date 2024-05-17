@@ -12,6 +12,8 @@ import { IAssignee, ITemplate, View } from '@/types/interfaces'
 import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
 import { handleCreate, updateTask, updateViewModeSettings } from './actions'
 import { FilterBar } from '@/components/layouts/FilterBar'
+import { Token, TokenSchema } from '@/types/common'
+import { CopilotAPI } from '@/utils/CopilotAPI'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -31,6 +33,12 @@ async function getAllTasks(token: string): Promise<TaskResponse[]> {
   const data = await res.json()
 
   return data.tasks
+}
+
+async function getTokenPayload(token: string): Promise<Token> {
+  const copilotClient = new CopilotAPI(token)
+  const payload = TokenSchema.parse(await copilotClient.getTokenPayload())
+  return payload as Token
 }
 
 async function getAssigneeList(token: string): Promise<IAssignee> {
@@ -67,12 +75,13 @@ export default async function Main({ searchParams }: { searchParams: { token: st
     throw new Error('Please pass the token!')
   }
 
-  const [workflowStates, tasks, assignee, viewSettings, templates] = await Promise.all([
-    await getAllWorkflowStates(token),
-    await getAllTasks(token),
+  const [workflowStates, tasks, assignee, viewSettings, tokenPayload, templates] = await Promise.all([
+    getAllWorkflowStates(token),
+    getAllTasks(token),
     addTypeToAssignee(await getAssigneeList(token)),
-    await getViewSettings(token),
-    await getAllTemplates(token),
+    getViewSettings(token),
+    getTokenPayload(token),
+    getAllTemplates(token),
   ])
 
   return (
@@ -83,6 +92,7 @@ export default async function Main({ searchParams }: { searchParams: { token: st
         token={token}
         assignee={assignee}
         viewSettings={viewSettings || View.BOARD_VIEW}
+        tokenPayload={tokenPayload}
         templates={templates}
       >
         <DndWrapper>
