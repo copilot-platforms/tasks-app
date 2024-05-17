@@ -9,6 +9,7 @@ export class SupabaseActions extends SupabaseService {
   async downloadAttachment(filePath: string, fileName: string) {
     const { data, error } = await this.supabase.storage.from(supabaseBucket).download(filePath)
     if (error) {
+      console.log(error)
       throw new APIError(httpStatus.BAD_REQUEST, error.message)
     }
     if (data) {
@@ -33,6 +34,7 @@ export class SupabaseActions extends SupabaseService {
         upsert: true,
       })
       if (error) {
+        console.log(error)
         throw new APIError(httpStatus.BAD_REQUEST, error.message)
       }
       if (data) {
@@ -51,6 +53,7 @@ export class SupabaseActions extends SupabaseService {
   async removeAttachment(id: string, filePath: string) {
     const { data, error } = await this.supabase.storage.from(supabaseBucket).remove([filePath])
     if (error) {
+      console.log(error)
       throw new APIError(httpStatus.BAD_REQUEST, error.message)
     }
     return { data }
