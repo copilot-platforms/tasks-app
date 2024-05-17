@@ -246,5 +246,6 @@ const NewTaskContainer = styled(Box)(({ theme }) => ({
   boxShadow: '0px 16px 70px 0px rgba(0, 0, 0, 0.5)',
   border: `1px solid ${theme.color.borders.border2}`,
   borderRadius: '4px',
-  width: '685px',
+  width: '80%',
+  maxWidth: '650px',
 }))
