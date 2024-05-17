@@ -3,7 +3,7 @@ import { TaskEditor } from '@/app/detail/ui/TaskEditor'
 import { Box, Stack, Typography } from '@mui/material'
 import { Sidebar } from '@/app/detail/ui/Sidebar'
 import { taskDetail } from '@/utils/mockData'
-import { IAssignee, IAttachment, UserType } from '@/types/interfaces'
+import { IAssignee, UserType } from '@/types/interfaces'
 import { apiUrl } from '@/config'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
@@ -14,6 +14,7 @@ import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import { deleteAttachment, deleteTask, postAttachment, updateAssignee, updateTaskDetail } from './actions'
 import { updateWorkflowStateIdOfTask } from '@/app/actions'
 import { MenuBoxContainer } from '../../ui/MenuBoxContainer'
+import { AttachmentResponseSchema } from '@/types/dto/attachments.dto'
 
 export const revalidate = 0
 
@@ -37,7 +38,7 @@ async function getAssigneeList(token: string): Promise<IAssignee> {
   return data.users
 }
 
-async function getAttachments(token: string, taskId: string): Promise<IAttachment[]> {
+async function getAttachments(token: string, taskId: string): Promise<AttachmentResponseSchema[]> {
   const res = await fetch(`${apiUrl}/api/attachments/?taskId=${taskId}&token=${token}`, {
     next: { tags: ['getAttachments'], revalidate: 0 },
   })

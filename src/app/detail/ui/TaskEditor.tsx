@@ -12,16 +12,15 @@ import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
 import store from '@/redux/store'
 import { Tapwrite, TiptapEditorUtils } from 'tapwrite'
 import { upload } from '@vercel/blob/client'
-import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
+import { AttachmentResponseSchema, CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { AttachmentInput } from '@/components/inputs/AttachmentInput'
-import { IAttachment } from '@/types/interfaces'
-import { uploadAttachment } from '@/utils/SupabaseActions'
+import { SupabaseActions } from '@/utils/SupabaseActions'
 
 interface Prop {
   title: string
   detail: string
   task_id: string
-  attachment: IAttachment[]
+  attachment: AttachmentResponseSchema[]
   isEditable: boolean
   updateTaskDetail: (title: string, detail: string) => void
   deleteTask: () => void
@@ -46,7 +45,8 @@ export const TaskEditor = ({
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     event.preventDefault()
-    const filePayload = await uploadAttachment(event, task_id)
+    const supabaseActions = new SupabaseActions()
+    const filePayload = await supabaseActions.uploadAttachment(event, task_id)
     if (filePayload) {
       postAttachment(filePayload)
     }

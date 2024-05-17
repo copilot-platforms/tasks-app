@@ -1,26 +1,32 @@
 import { CancelFilledIcon } from '@/icons'
-import { IAttachment } from '@/types/interfaces'
-import { downloadAttachment, removeAttachment } from '@/utils/SupabaseActions'
+import { AttachmentResponseSchema } from '@/types/dto/attachments.dto'
+import { SupabaseActions } from '@/utils/SupabaseActions'
 import { attachmentIcons } from '@/utils/iconMatcher'
 import { truncateText } from '@/utils/truncateText'
 import { Box, Hidden, Stack, Tooltip, Typography } from '@mui/material'
 
 interface Prop {
-  file: IAttachment
+  file: AttachmentResponseSchema
   deleteAttachment: (id: string) => void
 }
 
 export const AttachmentCard = ({ file, deleteAttachment }: Prop) => {
   const { id, fileName, filePath, fileType, fileSize } = file
+  const supabaseActions = new SupabaseActions()
   const handleDelete = async (event: any) => {
     event.stopPropagation()
-    const { data } = await removeAttachment(id, filePath)
+    const { data } = await supabaseActions.removeAttachment(id, filePath)
     if (data) {
       deleteAttachment(id)
     }
   }
   return (
-    <div onClick={() => downloadAttachment(filePath, fileName)} style={{ cursor: 'pointer', padding: 0, margin: 0 }}>
+    <div
+      onClick={() => {
+        supabaseActions.downloadAttachment(filePath, fileName)
+      }}
+      style={{ cursor: 'pointer', padding: 0, margin: 0 }}
+    >
       <Stack
         direction="row"
         columnGap={3}
@@ -45,7 +51,7 @@ export const AttachmentCard = ({ file, deleteAttachment }: Prop) => {
         <Box>{attachmentIcons[fileType]}</Box>
         <Stack direction="column" rowGap="7px">
           <Typography variant="sm" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {truncateText(fileName, 18)}
+            {truncateText(fileName, 15)}
           </Typography>
           <Typography variant="bodySm">{Math.floor(fileSize / 1024)} KB</Typography>
         </Stack>

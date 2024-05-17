@@ -10,6 +10,18 @@ export const CreateAttachmentRequestSchema = z.object({
 
 export type CreateAttachmentRequest = z.infer<typeof CreateAttachmentRequestSchema>
 
+export const AttachmentResponseSchema = z.object({
+  id: z.string().uuid(),
+  taskId: z.string().uuid(),
+  workspaceId: z.string().uuid(),
+  filePath: z.string(),
+  fileSize: z.number(),
+  fileType: z.string(),
+  fileName: z.string(),
+})
+
+export type AttachmentResponseSchema = z.infer<typeof AttachmentResponseSchema>
+
 export const CustomUploadBodySchema = z.object({
   type: z.string(),
   payload: z.object({
