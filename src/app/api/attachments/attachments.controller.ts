@@ -14,7 +14,11 @@ import APIError from '../core/exceptions/api'
 export const createAttachment = async (req: NextRequest) => {
   const user = await authenticate(req)
   console.log(user)
-  const body = CreateAttachmentRequestSchema.parse(await req.json())
+  const bodyParsed = CreateAttachmentRequestSchema.safeParse(await req.json())
+  if (!bodyParsed.success) {
+    console.log('MEOWWW', bodyParsed.error)
+  }
+  const body = bodyParsed.data
   console.log('body', body)
   const attachmentsService = new AttachmentsService(user)
   const newAttachment = await attachmentsService.createAttachments(body)
