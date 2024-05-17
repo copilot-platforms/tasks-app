@@ -6,6 +6,7 @@ import { Add } from '@mui/icons-material'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import store from '@/redux/store'
 import { setShowModal } from '@/redux/features/createTaskSlice'
+import { IconBtn } from '../buttons/IconBtn'
 
 export const Header = ({ showCreateTaskButton }: { showCreateTaskButton: boolean }) => {
   return (
@@ -18,14 +19,28 @@ export const Header = ({ showCreateTaskButton }: { showCreateTaskButton: boolean
         <Stack direction="row" alignItems="center" justifyContent="space-between">
           <Typography variant="lg">Tasks</Typography>
           {showCreateTaskButton && (
-            <PrimaryBtn
-              startIcon={<Add />}
-              buttonText="New Task"
+            <Box
+              sx={{
+                display: { xs: 'none', sm: 'block' },
+              }}
+            >
+              <PrimaryBtn
+                startIcon={<Add />}
+                buttonText="New Task"
+                handleClick={() => {
+                  store.dispatch(setShowModal())
+                }}
+              />
+            </Box>
+          )}
+          <Box sx={{ display: { xs: 'block', sm: 'none' } }}>
+            <IconBtn
               handleClick={() => {
                 store.dispatch(setShowModal())
               }}
+              icon={<Add sx={{ color: '#fff' }} />}
             />
-          )}
+          </Box>
         </Stack>
       </AppMargin>
     </Box>

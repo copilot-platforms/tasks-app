@@ -87,13 +87,19 @@ export const FilterBar = ({ updateViewModeSetting }: { updateViewModeSetting: (m
             />
           </Stack>
           <Stack direction="row" alignItems="center" columnGap={3}>
-            <SearchBar
-              value={searchText}
-              getSearchKeyword={(keyword) => {
-                setSearchText(keyword)
-                store.dispatch(setFilteredTasks(keyword))
+            <Box
+              sx={{
+                display: { xs: 'none', sm: 'block' },
               }}
-            />
+            >
+              <SearchBar
+                value={searchText}
+                getSearchKeyword={(keyword) => {
+                  setSearchText(keyword)
+                  store.dispatch(setFilteredTasks(keyword))
+                }}
+              />
+            </Box>
 
             <ViewModeSelector
               selectedMode={view}
