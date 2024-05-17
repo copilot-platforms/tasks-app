@@ -29,6 +29,7 @@ export const getTask = async (req: NextRequest, { params: { id } }: IdParams) =>
 
   const tasksService = new TasksService(user)
   const task = await tasksService.getOneTask(id)
+  console.log('xxx', task)
 
   return NextResponse.json({ task })
 }
