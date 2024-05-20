@@ -4,6 +4,7 @@ export const dynamicParams = true
 import { DndWrapper } from '@/hoc/DndWrapper'
 import { TaskBoard } from './ui/TaskBoard'
 import { Header } from '@/components/layouts/Header'
+import { z } from 'zod'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { apiUrl } from '@/config'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
@@ -12,6 +13,7 @@ import { IAssignee, ITemplate, View } from '@/types/interfaces'
 import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
 import { handleCreate, updateTask, updateViewModeSettings } from './actions'
 import { FilterBar } from '@/components/layouts/FilterBar'
+import ClientError from '@/components/clientError'
 import { Token, TokenSchema } from '@/types/common'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 
@@ -71,8 +73,10 @@ async function getAllTemplates(token: string): Promise<ITemplate[]> {
 export default async function Main({ searchParams }: { searchParams: { token: string } }) {
   const token = searchParams.token
 
-  if (!token) {
-    throw new Error('Please pass the token!')
+  const parsedToken = z.string().safeParse(searchParams.token)
+
+  if (!parsedToken.success) {
+    return <ClientError message={'Please provide a Valid Token'} />
   }
 
   const [workflowStates, tasks, assignee, viewSettings, tokenPayload, templates] = await Promise.all([
