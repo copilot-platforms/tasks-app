@@ -12,9 +12,14 @@ import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
 import store from '@/redux/store'
 import { Tapwrite, TiptapEditorUtils } from 'tapwrite'
 import { upload } from '@vercel/blob/client'
-import { AttachmentResponseSchema, CreateAttachmentRequest } from '@/types/dto/attachments.dto'
+import {
+  AttachmentResponseSchema,
+  CreateAttachmentRequest,
+  CreateAttachmentRequestSchema,
+} from '@/types/dto/attachments.dto'
 import { AttachmentInput } from '@/components/inputs/AttachmentInput'
 import { SupabaseActions } from '@/utils/SupabaseActions'
+import { CreateTaskRequestSchema } from '@/types/dto/tasks.dto'
 
 interface Prop {
   title: string
@@ -48,7 +53,7 @@ export const TaskEditor = ({
     const supabaseActions = new SupabaseActions()
     const filePayload = await supabaseActions.uploadAttachment(event, task_id)
     if (filePayload) {
-      postAttachment(filePayload)
+      postAttachment(CreateAttachmentRequestSchema.parse(filePayload))
     }
   }
   return (
