@@ -4,6 +4,7 @@ import { supabaseBucket } from '@/config'
 import httpStatus from 'http-status'
 import { Url } from 'next/dist/shared/lib/router/router'
 import React from 'react'
+import { generateRandomString } from '@/utils/generateRandomString'
 
 export class SupabaseActions extends SupabaseService {
   async downloadAttachment(filePath: string, fileName: string) {
@@ -28,10 +29,12 @@ export class SupabaseActions extends SupabaseService {
     let filePayload
     if (files && files.length > 0) {
       const file = files[0]
-      const { data, error } = await this.supabase.storage.from(supabaseBucket).upload(file.name, file, {
-        cacheControl: '3600',
-        upsert: false,
-      })
+      const { data, error } = await this.supabase.storage
+        .from(supabaseBucket)
+        .upload(generateRandomString(file.name), file, {
+          cacheControl: '3600',
+          upsert: false,
+        })
       if (error) {
         throw new APIError(httpStatus.BAD_REQUEST, error.message)
       }
