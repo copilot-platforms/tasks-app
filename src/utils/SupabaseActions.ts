@@ -36,7 +36,6 @@ export class SupabaseActions extends SupabaseService {
         throw new APIError(httpStatus.BAD_REQUEST, error.message)
       }
       if (data) {
-        console.log(data)
         filePayload = {
           fileSize: file.size,
           fileName: file.name,
