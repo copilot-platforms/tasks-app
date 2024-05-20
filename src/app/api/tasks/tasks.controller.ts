@@ -26,11 +26,8 @@ export const createTask = async (req: NextRequest) => {
 
 export const getTask = async (req: NextRequest, { params: { id } }: IdParams) => {
   const user = await authenticate(req)
-
   const tasksService = new TasksService(user)
   const task = await tasksService.getOneTask(id)
-  console.log('xxx', task)
-
   return NextResponse.json({ task })
 }
 

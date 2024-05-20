@@ -30,7 +30,7 @@ export class SupabaseActions extends SupabaseService {
       const file = files[0]
       const { data, error } = await this.supabase.storage.from(supabaseBucket).upload(file.name, file, {
         cacheControl: '3600',
-        upsert: true,
+        upsert: false,
       })
       if (error) {
         throw new APIError(httpStatus.BAD_REQUEST, error.message)
