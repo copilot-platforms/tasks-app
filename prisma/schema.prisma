@@ -50,16 +50,10 @@ model Task {
   workflowStateId String        @db.Uuid
   attachments     Attachment[]
 
-<<<<<<< HEAD
-  assignedAt  DateTime?
-  completedAt DateTime?
-  deletedAt   DateTime?
-=======
   assignedAt      DateTime?
   completedAt     DateTime?
   dueDate         DateTime?
   deletedAt       DateTime?
->>>>>>> 011ea3cea3bd47682b96cfbf0bd8a3631eeb0b99
 
   @@map("Tasks")
 }
