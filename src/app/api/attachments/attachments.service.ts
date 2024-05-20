@@ -20,8 +20,10 @@ export class AttachmentsService extends BaseService {
   }
 
   async createAttachments(data: CreateAttachmentRequest) {
+    console.log('hit')
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Create, Resource.Attachments)
+    console.log('hit 2')
     const newAttachment = await this.db.attachment.create({
       data: {
         ...data,
