@@ -48,7 +48,7 @@
     "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^18",
     "react-redux": "^9.1.0",
-    "tapwrite": "^1.0.7",
+    "tapwrite": "^1.0.11",
     "zod": "^3.22.4"
   },
   "devDependencies": {

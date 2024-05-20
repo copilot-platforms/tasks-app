@@ -99,7 +99,7 @@ export const TemplateBoard = ({
               title: taskName,
               body: description,
               workflowStateId,
-              assigneeId,
+              assigneeId: assigneeId || null,
               assigneeType,
             }
             if (targetMethod === TargetMethod.POST) {

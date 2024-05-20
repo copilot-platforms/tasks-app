@@ -12,7 +12,7 @@ import Link from 'next/link'
 import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import { deleteAttachment, deleteTask, postAttachment, updateAssignee, updateTaskDetail } from './actions'
-import { updateWorkflowStateIdOfTask } from '@/app/actions'
+import { updateTask, updateWorkflowStateIdOfTask } from '@/app/actions'
 import { MenuBoxContainer } from '../../ui/MenuBoxContainer'
 import { AttachmentResponseSchema } from '@/types/dto/attachments.dto'
 
@@ -113,6 +113,7 @@ export default async function TaskDetailPage({
             assignee={assignee}
             selectedAssigneeId={task?.assigneeId}
             selectedWorkflowState={task.workflowState}
+            dueDate={task?.dueDate}
             updateWorkflowState={async (workflowState) => {
               'use server'
               await updateWorkflowStateIdOfTask(token, task_id, workflowState?.id)
@@ -120,6 +121,10 @@ export default async function TaskDetailPage({
             updateAssignee={async (assigneeType, assigneeId) => {
               'use server'
               await updateAssignee(token, task_id, assigneeType, assigneeId)
+            }}
+            updateTask={async (payload) => {
+              'use server'
+              await updateTask({ token, taskId: task_id, payload })
             }}
             disabled={params.user_type === UserType.CLIENT_USER}
           />
