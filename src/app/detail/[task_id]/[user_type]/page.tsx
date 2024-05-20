@@ -1,6 +1,6 @@
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { TaskEditor } from '@/app/detail/ui/TaskEditor'
-import { Box, Stack, Typography } from '@mui/material'
+import { Box, Stack, ToggleButton, Typography } from '@mui/material'
 import { Sidebar } from '@/app/detail/ui/Sidebar'
 import { taskDetail } from '@/utils/mockData'
 import { IAssignee, UserType } from '@/types/interfaces'
@@ -14,6 +14,10 @@ import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import { deleteTask, updateAssignee, updateTaskDetail } from './actions'
 import { updateTask, updateWorkflowStateIdOfTask } from '@/app/actions'
 import { MenuBoxContainer } from '../../ui/MenuBoxContainer'
+import { MenuIcon } from '@/icons'
+import { ToggleBtn } from '@/components/buttons/ToggleBtn'
+import { ToggleButtonContainer } from '../../ui/ToggleButtonContainer'
+import { ToggleController } from '../../ui/ToggleController'
 
 export const revalidate = 0
 
@@ -53,11 +57,7 @@ export default async function TaskDetailPage({
   return (
     <ClientSideStateUpdate assignee={assignee}>
       <Stack direction="row">
-        <Box
-          sx={{
-            width: 'calc(100% - 339px)',
-          }}
-        >
+        <ToggleController>
           <StyledBox>
             <AppMargin size={SizeofAppMargin.LARGE} py="16px">
               <Stack direction="row" justifyContent="space-between">
@@ -68,7 +68,10 @@ export default async function TaskDetailPage({
                   <StyledKeyboardIcon />
                   <Typography variant="sm">{params.task_id.toLocaleUpperCase()}</Typography>
                 </Stack>
-                {params.user_type === UserType.INTERNAL_USER && <MenuBoxContainer />}
+                <Stack direction="row" alignItems="center" columnGap="8px">
+                  {params.user_type === UserType.INTERNAL_USER && <MenuBoxContainer />}
+                  <ToggleButtonContainer />
+                </Stack>
               </Stack>
             </AppMargin>
           </StyledBox>
@@ -76,7 +79,7 @@ export default async function TaskDetailPage({
             <TaskEditor
               attachment={taskDetail.attachment}
               title={task?.title || ''}
-              detail={task.body || ''}
+              detail={task?.body || ''}
               isEditable={params.user_type === UserType.INTERNAL_USER}
               updateTaskDetail={async (title, detail) => {
                 'use server'
@@ -88,12 +91,12 @@ export default async function TaskDetailPage({
               }}
             />
           </AppMargin>
-        </Box>
+        </ToggleController>
         <Box>
           <Sidebar
             assignee={assignee}
             selectedAssigneeId={task?.assigneeId}
-            selectedWorkflowState={task.workflowState}
+            selectedWorkflowState={task?.workflowState}
             dueDate={task?.dueDate}
             updateWorkflowState={async (workflowState) => {
               'use server'

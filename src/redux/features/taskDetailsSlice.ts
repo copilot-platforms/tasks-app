@@ -3,10 +3,12 @@ import { RootState } from '../store'
 
 interface IInitialState {
   showConfirmDeleteModal: boolean
+  showSidebar: boolean
 }
 
 const initialState: IInitialState = {
   showConfirmDeleteModal: false,
+  showSidebar: true,
 }
 
 const taskDetailsSlice = createSlice({
@@ -16,11 +18,14 @@ const taskDetailsSlice = createSlice({
     setShowConfirmDeleteModal: (state) => {
       state.showConfirmDeleteModal = !state.showConfirmDeleteModal
     },
+    setShowSidebar: (state) => {
+      state.showSidebar = !state.showSidebar
+    },
   },
 })
 
 export const selectTaskDetails = (state: RootState) => state.taskDetail
 
-export const { setShowConfirmDeleteModal } = taskDetailsSlice.actions
+export const { setShowConfirmDeleteModal, setShowSidebar } = taskDetailsSlice.actions
 
 export default taskDetailsSlice.reducer
