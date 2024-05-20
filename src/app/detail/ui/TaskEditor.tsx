@@ -53,7 +53,7 @@ export const TaskEditor = ({
     const supabaseActions = new SupabaseActions()
     const filePayload = await supabaseActions.uploadAttachment(event, task_id)
     if (filePayload) {
-      postAttachment(CreateAttachmentRequestSchema.parse(filePayload))
+      postAttachment(filePayload)
     }
   }
   return (

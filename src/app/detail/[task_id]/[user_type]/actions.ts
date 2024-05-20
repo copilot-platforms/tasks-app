@@ -35,9 +35,9 @@ export const deleteTask = async (token: string, task_id: string) => {
 }
 
 export const postAttachment = async (token: string, payload: CreateAttachmentRequest) => {
-  await fetch(`${apiUrl}/api/attachments/?token=${token}`, {
+  await fetch(`${apiUrl}/api/attachments?token=${token}`, {
     method: 'POST',
-    body: JSON.stringify(payload),
+    body: JSON.stringify({ payload }),
   })
   revalidateTag('getAttachments')
 }
