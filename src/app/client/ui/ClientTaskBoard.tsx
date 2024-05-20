@@ -8,6 +8,7 @@ import { TaskResponse, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { Box } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
 
 export const ClientTaskBoard = ({ updateTask }: { updateTask: (taskId: string, payload: UpdateTaskRequest) => void }) => {
   const { workflowStates, tasks, filteredTasks, token } = useSelector(selectTaskBoard)
@@ -18,7 +19,7 @@ export const ClientTaskBoard = ({ updateTask }: { updateTask: (taskId: string, p
    * This function is responsible for returning the tasks that matches the workflowStateId of the workflowState
    */
   const filterTaskWithWorkflowStateId = (workflowStateId: string): TaskResponse[] => {
-    return filteredTasks.filter((task) => task.workflowStateId === workflowStateId)
+    return tasks.filter((task) => task.workflowStateId === workflowStateId)
   }
 
   /**
