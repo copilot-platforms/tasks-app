@@ -99,7 +99,7 @@ export const TaskEditor = ({
           getContent={(content) => setUpdateDetail(content)}
         />
       </Box>
-      <Stack direction="row" columnGap={3} mt={3}>
+      <Stack direction="row" columnGap={3} rowGap={3} mt={3} flexWrap={'wrap'}>
         {attachment?.map((el, key) => {
           return (
             <Box key={key}>
