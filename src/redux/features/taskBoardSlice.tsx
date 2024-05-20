@@ -2,7 +2,7 @@ import { createSlice } from '@reduxjs/toolkit'
 import { RootState } from '../store'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { TaskResponse } from '@/types/dto/tasks.dto'
-import { IAssigneeCombined, View } from '@/types/interfaces'
+import { AssigneeType, IAssigneeCombined, View } from '@/types/interfaces'
 
 interface IInitialState {
   workflowStates: WorkflowStateResponse[]
@@ -31,30 +31,12 @@ const taskBoardSlice = createSlice({
     },
     setTasks: (state, action: { payload: TaskResponse[] }) => {
       state.tasks = action.payload
+    },
+    setFilteredTasks: (state, action: { payload: TaskResponse[] }) => {
       state.filteredTasks = action.payload
     },
-
     setToken: (state, action: { payload: string }) => {
       state.token = action.payload
-    },
-    setFilteredTasks: (state, action: { payload: string }) => {
-      const keyword = action.payload?.toLowerCase()
-      const filteredTasks =
-        keyword != ''
-          ? state.tasks.filter(
-              (task) => task.title?.toLowerCase().includes(keyword) || task.body?.toLowerCase().includes(keyword),
-            )
-          : state.tasks
-      state.filteredTasks = filteredTasks
-    },
-    setFilteredAsignee: (state, action) => {
-      const assigneeId = action.payload?.id
-      const filteredTasks = !action.payload
-        ? state.tasks
-        : assigneeId
-          ? state.tasks.filter((task) => task.assigneeId == assigneeId)
-          : state.tasks.filter((task) => !task.assigneeId)
-      state.filteredTasks = filteredTasks
     },
     updateWorkflowStateIdByTaskId: (state, action) => {
       let taskToUpdate = state.tasks.find((task) => task.id === action.payload.taskId)
@@ -81,9 +63,8 @@ export const {
   setTasks,
   updateWorkflowStateIdByTaskId,
   setToken,
-  setFilteredTasks,
   setAssigneeList,
-  setFilteredAsignee,
+  setFilteredTasks,
   setViewSettings,
 } = taskBoardSlice.actions
 

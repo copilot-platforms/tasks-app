@@ -1,9 +1,11 @@
 'use client'
 
+import { setTokenPayload } from '@/redux/features/authDetailsSlice'
 import { setAssigneeList, setViewSettings } from '@/redux/features/taskBoardSlice'
 import { setTasks, setToken, setWorkflowStates } from '@/redux/features/taskBoardSlice'
 import { setTemplates } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
+import { Token } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { IAssigneeCombined, ITemplate, View } from '@/types/interfaces'
@@ -22,6 +24,7 @@ export const ClientSideStateUpdate = ({
   assignee,
   token,
   viewSettings,
+  tokenPayload,
   templates,
 }: {
   children: ReactNode
@@ -30,6 +33,7 @@ export const ClientSideStateUpdate = ({
   assignee?: IAssigneeCombined[]
   viewSettings?: View
   token?: string
+  tokenPayload?: Token
   templates?: ITemplate[]
 }) => {
   useEffect(() => {
@@ -52,11 +56,14 @@ export const ClientSideStateUpdate = ({
     if (viewSettings) {
       store.dispatch(setViewSettings(viewSettings))
     }
+    if (tokenPayload) {
+      store.dispatch(setTokenPayload(tokenPayload))
+    }
 
     if (templates) {
       store.dispatch(setTemplates(templates))
     }
-  }, [workflowStates, tasks, token, assignee, viewSettings, templates])
+  }, [workflowStates, tasks, token, assignee, viewSettings, tokenPayload, templates])
 
   return children
 }

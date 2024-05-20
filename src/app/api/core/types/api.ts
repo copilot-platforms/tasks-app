@@ -7,6 +7,7 @@ export enum Resource {
   WorkflowState = 'WorkflowState',
   ViewSetting = 'ViewSetting',
   Users = 'User',
+  Attachments = 'Attachments',
 }
 
 /**

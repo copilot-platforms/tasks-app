@@ -4,6 +4,7 @@ export const dynamicParams = true
 import { DndWrapper } from '@/hoc/DndWrapper'
 import { TaskBoard } from './ui/TaskBoard'
 import { Header } from '@/components/layouts/Header'
+import { z } from 'zod'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { apiUrl } from '@/config'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
@@ -12,6 +13,9 @@ import { IAssignee, ITemplate, View } from '@/types/interfaces'
 import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
 import { handleCreate, updateTask, updateViewModeSettings } from './actions'
 import { FilterBar } from '@/components/layouts/FilterBar'
+import ClientError from '@/components/clientError'
+import { Token, TokenSchema } from '@/types/common'
+import { CopilotAPI } from '@/utils/CopilotAPI'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -31,6 +35,12 @@ async function getAllTasks(token: string): Promise<TaskResponse[]> {
   const data = await res.json()
 
   return data.tasks
+}
+
+async function getTokenPayload(token: string): Promise<Token> {
+  const copilotClient = new CopilotAPI(token)
+  const payload = TokenSchema.parse(await copilotClient.getTokenPayload())
+  return payload as Token
 }
 
 async function getAssigneeList(token: string): Promise<IAssignee> {
@@ -63,16 +73,19 @@ async function getAllTemplates(token: string): Promise<ITemplate[]> {
 export default async function Main({ searchParams }: { searchParams: { token: string } }) {
   const token = searchParams.token
 
-  if (!token) {
-    throw new Error('Please pass the token!')
+  const parsedToken = z.string().safeParse(searchParams.token)
+
+  if (!parsedToken.success) {
+    return <ClientError message={'Please provide a Valid Token'} />
   }
 
-  const [workflowStates, tasks, assignee, viewSettings, templates] = await Promise.all([
-    await getAllWorkflowStates(token),
-    await getAllTasks(token),
+  const [workflowStates, tasks, assignee, viewSettings, tokenPayload, templates] = await Promise.all([
+    getAllWorkflowStates(token),
+    getAllTasks(token),
     addTypeToAssignee(await getAssigneeList(token)),
-    await getViewSettings(token),
-    await getAllTemplates(token),
+    getViewSettings(token),
+    getTokenPayload(token),
+    getAllTemplates(token),
   ])
 
   return (
@@ -83,6 +96,7 @@ export default async function Main({ searchParams }: { searchParams: { token: st
         token={token}
         assignee={assignee}
         viewSettings={viewSettings || View.BOARD_VIEW}
+        tokenPayload={tokenPayload}
         templates={templates}
       >
         <DndWrapper>

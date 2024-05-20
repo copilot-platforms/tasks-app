@@ -4,29 +4,78 @@ import { Avatar, Box, IconButton, Stack, Typography } from '@mui/material'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { useState } from 'react'
 import store from '@/redux/store'
-import { setFilteredAsignee, setFilteredTasks, setViewSettings } from '@/redux/features/taskBoardSlice'
+import { setViewSettings } from '@/redux/features/taskBoardSlice'
 import SearchBar from '@/components/searchBar'
 import Selector, { SelectorType } from '@/components/inputs/Selector'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { useSelector } from 'react-redux'
-import { IAssigneeCombined, View } from '@/types/interfaces'
-import { CrossIcon, FilterByAsigneeIcon } from '@/icons'
+import { FilterOptions, FilterOptionsKeywords, IAssigneeCombined, IFilterOptions, View } from '@/types/interfaces'
+import { FilterByAsigneeIcon } from '@/icons'
 import { ViewModeSelector } from '../inputs/ViewModeSelector'
 import { FilterByAssigneeBtn } from '../buttons/FilterByAssigneeBtn'
+import FilterButtonGroup from '@/components/buttonsGroup/FilterButtonsGroup'
+import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
+import { useFilter } from '@/hooks/useFilter'
+import { IUTokenSchema } from '@/types/common'
 
 export const FilterBar = ({ updateViewModeSetting }: { updateViewModeSetting: (mode: View) => void }) => {
-  const [searchText, setSearchText] = useState('')
-
-  const { view } = useSelector(selectTaskBoard)
-
-  const { assignee } = useSelector(selectTaskBoard)
+  const [filterOptions, setFilterOptions] = useState<IFilterOptions>({
+    [FilterOptions.ASSIGNEE]: '',
+    [FilterOptions.KEYWORD]: '',
+    [FilterOptions.TYPE]: 'all',
+  })
+  const handleFilterOptionsChange = (optionType: FilterOptions, newValue: string | null) => {
+    setFilterOptions((prevOptions) => ({
+      ...prevOptions,
+      [optionType]: newValue,
+    }))
+  }
+  const [activeButtonIndex, setActiveButtonIndex] = useState<number>(3)
+  const { view, assignee } = useSelector(selectTaskBoard)
+  const { tokenPayload } = useSelector(selectAuthDetails)
 
   const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
     item: assignee[0],
     type: SelectorType.ASSIGNEE_SELECTOR,
   })
 
+  useFilter(filterOptions)
+
+  const filterButtons = [
+    {
+      name: 'My tasks',
+      onClick: async (index: number) => {
+        handleFilterOptionsChange(FilterOptions.TYPE, IUTokenSchema.parse(tokenPayload)?.internalUserId)
+        setActiveButtonIndex(index)
+      },
+      id: 'MyTasks',
+    },
+    {
+      name: "My team's tasks",
+      onClick: (index: number) => {
+        handleFilterOptionsChange(FilterOptions.TYPE, FilterOptionsKeywords.TEAM)
+        setActiveButtonIndex(index)
+      },
+      id: 'TeamTasks',
+    },
+    {
+      name: 'Client tasks',
+      onClick: (index: number) => {
+        handleFilterOptionsChange(FilterOptions.TYPE, FilterOptionsKeywords.CLIENTS)
+        setActiveButtonIndex(index)
+      },
+      id: 'ClientTasks',
+    },
+    {
+      name: 'All tasks',
+      onClick: (index: number) => {
+        handleFilterOptionsChange(FilterOptions.TYPE, FilterOptionsKeywords.ALL)
+        setActiveButtonIndex(index)
+      },
+      id: 'AllTasks',
+    },
+  ]
   const assigneeValue = _assigneeValue as IAssigneeCombined
 
   return (
@@ -35,14 +84,15 @@ export const FilterBar = ({ updateViewModeSetting }: { updateViewModeSetting: (m
         border: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
       }}
     >
-      <AppMargin size={SizeofAppMargin.LARGE} py="18.5px">
+      <AppMargin size={SizeofAppMargin.LARGE} py="14px">
         <Stack direction="row" alignItems="center" justifyContent="space-between">
           <Stack direction="row" columnGap={3}>
+            <FilterButtonGroup filterButtons={filterButtons} activeButtonIndex={activeButtonIndex} />
             <Selector
               getSelectedValue={(_newValue) => {
                 const newValue = _newValue as IAssigneeCombined
                 updateAssigneeValue(newValue)
-                store.dispatch(setFilteredAsignee(_newValue))
+                handleFilterOptionsChange(FilterOptions.ASSIGNEE, newValue.id as string)
               }}
               startIcon={<FilterByAsigneeIcon />}
               options={assignee}
@@ -71,7 +121,7 @@ export const FilterBar = ({ updateViewModeSetting }: { updateViewModeSetting: (m
                     onClick={(e) => {
                       updateAssigneeValue({ id: '', name: 'No assignee' })
                       setAnchorEl(anchorEl ? null : e.currentTarget)
-                      store.dispatch(setFilteredAsignee(e.currentTarget))
+                      handleFilterOptionsChange(FilterOptions.ASSIGNEE, 'none')
                     }}
                   >
                     <Stack direction="row" alignItems="center" columnGap={3}>
@@ -83,7 +133,13 @@ export const FilterBar = ({ updateViewModeSetting }: { updateViewModeSetting: (m
                   </Box>
                 )
               }}
-              buttonContent={<FilterByAssigneeBtn assigneeValue={assigneeValue} updateAssigneeValue={updateAssigneeValue} />}
+              buttonContent={
+                <FilterByAssigneeBtn
+                  assigneeValue={assigneeValue}
+                  updateAssigneeValue={updateAssigneeValue}
+                  handleClick={handleFilterOptionsChange}
+                />
+              }
             />
           </Stack>
           <Stack direction="row" alignItems="center" columnGap={3}>
@@ -93,10 +149,9 @@ export const FilterBar = ({ updateViewModeSetting }: { updateViewModeSetting: (m
               }}
             >
               <SearchBar
-                value={searchText}
+                value={filterOptions.keyword}
                 getSearchKeyword={(keyword) => {
-                  setSearchText(keyword)
-                  store.dispatch(setFilteredTasks(keyword))
+                  handleFilterOptionsChange(FilterOptions.KEYWORD, keyword)
                 }}
               />
             </Box>

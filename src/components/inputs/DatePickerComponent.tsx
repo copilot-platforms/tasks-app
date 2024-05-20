@@ -8,7 +8,7 @@ import { IsoDate } from '@/types/dto/tasks.dto'
 
 interface Prop {
   getDate: (value: string) => void
-  dateValue: IsoDate | undefined
+  dateValue?: IsoDate
 }
 
 export const DatePickerComponent = ({ getDate, dateValue }: Prop) => {
