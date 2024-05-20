@@ -52,6 +52,7 @@ model Task {
 
   assignedAt      DateTime?
   completedAt     DateTime?
+  dueDate         DateTime?
   deletedAt       DateTime?
 
   @@map("Tasks")

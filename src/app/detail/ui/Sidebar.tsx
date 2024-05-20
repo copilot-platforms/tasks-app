@@ -13,6 +13,8 @@ import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { StyledBox } from './styledComponent'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
+import { IsoDate, UpdateTaskRequest } from '@/types/dto/tasks.dto'
+import { formatDate, isoToReadableDate } from '@/utils/dateHelper'
 
 const StyledText = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[500],
@@ -23,14 +25,18 @@ export const Sidebar = ({
   selectedWorkflowState,
   selectedAssigneeId,
   updateWorkflowState,
+  dueDate,
   updateAssignee,
+  updateTask,
   assignee,
   disabled,
 }: {
   selectedWorkflowState: WorkflowStateResponse
   selectedAssigneeId: string | undefined
+  dueDate: IsoDate | undefined
   updateWorkflowState: (workflowState: WorkflowStateResponse) => void
   updateAssignee: (assigneeType: string, assigneeId: string) => void
+  updateTask: (payload: UpdateTaskRequest) => void
   assignee: IAssigneeCombined[]
   disabled: boolean
 }) => {
@@ -109,9 +115,12 @@ export const Sidebar = ({
           <StyledText variant="md">Due Date</StyledText>
           <DatePickerComponent
             getDate={(date) => {
-              console.log(date)
+              const isoDate = formatDate(date)
+              updateTask({
+                dueDate: isoDate,
+              })
             }}
-            dateValue="Apr 05, 2024"
+            dateValue={dueDate ? isoToReadableDate(dueDate) : undefined}
           />
         </Stack>
       </AppMargin>

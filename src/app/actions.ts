@@ -42,6 +42,7 @@ export const updateTask = async ({
       assigneeType: payload.assigneeType,
       body: payload.body,
       title: payload.title,
+      dueDate: payload.dueDate,
     }),
   })
   revalidateTag('getAllTasks')
