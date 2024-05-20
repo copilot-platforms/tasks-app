@@ -12,12 +12,13 @@ import { IdParams } from '@api/core/types/api'
 import APIError from '../core/exceptions/api'
 
 export const createAttachment = async (req: NextRequest) => {
+  console.log(req)
   const user = await authenticate(req)
   console.log(user)
   const body = CreateAttachmentRequestSchema.parse(await req.json())
   const attachmentsService = new AttachmentsService(user)
   const newAttachment = await attachmentsService.createAttachments(body)
-  return NextResponse.json({ newAttachment })
+  return NextResponse.json({ newAttachment }, { status: httpStatus.CREATED })
 }
 
 export const getAttachments = async (req: NextRequest) => {
