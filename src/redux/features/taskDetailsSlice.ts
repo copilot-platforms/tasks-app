@@ -8,7 +8,7 @@ interface IInitialState {
 
 const initialState: IInitialState = {
   showConfirmDeleteModal: false,
-  showSidebar: true,
+  showSidebar: false,
 }
 
 const taskDetailsSlice = createSlice({
@@ -18,8 +18,8 @@ const taskDetailsSlice = createSlice({
     setShowConfirmDeleteModal: (state) => {
       state.showConfirmDeleteModal = !state.showConfirmDeleteModal
     },
-    setShowSidebar: (state) => {
-      state.showSidebar = !state.showSidebar
+    setShowSidebar: (state, action: { payload: boolean }) => {
+      state.showSidebar = action.payload
     },
   },
 })

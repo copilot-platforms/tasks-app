@@ -1,8 +1,10 @@
 'use client'
 import { ToggleBtn } from '@/components/buttons/ToggleBtn'
-import { setShowSidebar } from '@/redux/features/taskDetailsSlice'
+import { selectTaskDetails, setShowSidebar } from '@/redux/features/taskDetailsSlice'
 import store from '@/redux/store'
+import { useSelector } from 'react-redux'
 
 export const ToggleButtonContainer = () => {
-  return <ToggleBtn onClick={() => store.dispatch(setShowSidebar())} />
+  const { showSidebar } = useSelector(selectTaskDetails)
+  return <ToggleBtn onClick={() => store.dispatch(setShowSidebar(!showSidebar))} />
 }

@@ -1,13 +1,20 @@
 'use client'
 
-import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
+import { selectTaskDetails, setShowSidebar } from '@/redux/features/taskDetailsSlice'
+import store from '@/redux/store'
 import { Box, useMediaQuery } from '@mui/material'
-import { ReactNode } from 'react'
+import { ReactNode, useEffect } from 'react'
 import { useSelector } from 'react-redux'
 
 export const ToggleController = ({ children }: { children: ReactNode }) => {
   const { showSidebar } = useSelector(selectTaskDetails)
   const matches = useMediaQuery('(max-width:600px)')
+
+  useEffect(() => {
+    if (matches && !matches) {
+      store.dispatch(setShowSidebar(true))
+    }
+  }, [matches])
 
   return (
     <Box

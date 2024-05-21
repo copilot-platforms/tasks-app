@@ -68,8 +68,8 @@ export const Sidebar = ({
         width: matches && showSidebar ? '100vw' : '25vw',
       }}
     >
-      <Stack direction="row" justifyContent="space-between" alignItems="center">
-        <StyledBox p="19px 25px">
+      <Stack direction="row" justifyContent="space-between" alignItems="center" p="19px 25px">
+        <StyledBox>
           <Typography variant="sm">Properties</Typography>
         </StyledBox>
         <Box
