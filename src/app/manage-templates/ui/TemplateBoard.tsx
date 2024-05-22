@@ -48,7 +48,7 @@ export const TemplateBoard = ({
           direction="column"
           py="40px"
           sx={{
-            width: '60%',
+            width: { xs: '90%', sm: '60%' },
             margin: '0 auto',
           }}
           rowGap={4}
