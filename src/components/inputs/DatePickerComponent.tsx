@@ -34,13 +34,13 @@ export const DatePickerComponent = ({ getDate, dateValue }: Prop) => {
           },
           '& .MuiOutlinedInput-root': {
             '& fieldset': {
-              border: 'none',
+              borderColor: (theme) => theme.color.gray[400],
             },
             '&:hover fieldset': {
-              border: 'none',
+              borderColor: (theme) => theme.color.gray[400],
             },
             '&.Mui-focused fieldset': {
-              border: 'none',
+              borderColor: (theme) => theme.color.gray[400],
             },
           },
         }}

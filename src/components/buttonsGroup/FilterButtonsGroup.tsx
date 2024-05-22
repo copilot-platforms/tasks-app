@@ -20,8 +20,7 @@ const FilterButtonGroup = ({
       sx={(theme) => ({
         border: `1px solid ${theme.color.borders.border}`,
         borderRadius: 1,
-        display: 'flex',
-        gap: '12px',
+        columnGap: { xs: '3px', sm: '12px' },
         alignItems: 'center',
         padding: '4px',
       })}

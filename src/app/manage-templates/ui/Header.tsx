@@ -1,6 +1,6 @@
 'use client'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
-import { Stack, Typography } from '@mui/material'
+import { Box, Stack, Typography } from '@mui/material'
 import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 import { PlusIcon } from '@/icons'
@@ -11,6 +11,8 @@ import { TargetMethod } from '@/types/interfaces'
 import { useRouter } from 'next/navigation'
 import { useSelector } from 'react-redux'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { IconBtn } from '@/components/buttons/IconBtn'
+import { Add } from '@mui/icons-material'
 
 export const ManageTemplateHeader = ({ showNewTemplateButton }: { showNewTemplateButton: boolean }) => {
   const router = useRouter()
@@ -32,13 +34,29 @@ export const ManageTemplateHeader = ({ showNewTemplateButton }: { showNewTemplat
             <Typography variant="sm">Manage Templates</Typography>
           </Stack>
           {showNewTemplateButton && (
-            <PrimaryBtn
-              handleClick={() => {
-                store.dispatch(setShowTemplateModal({ targetMethod: TargetMethod.POST }))
-              }}
-              buttonText="New Template"
-              startIcon={<PlusIcon />}
-            />
+            <>
+              <Box
+                sx={{
+                  display: { xs: 'none', sm: 'block' },
+                }}
+              >
+                <PrimaryBtn
+                  handleClick={() => {
+                    store.dispatch(setShowTemplateModal({ targetMethod: TargetMethod.POST }))
+                  }}
+                  buttonText="New Template"
+                  startIcon={<PlusIcon />}
+                />
+              </Box>
+              <Box sx={{ display: { xs: 'block', sm: 'none' } }}>
+                <IconBtn
+                  handleClick={() => {
+                    store.dispatch(setShowTemplateModal({ targetMethod: TargetMethod.POST }))
+                  }}
+                  icon={<Add sx={{ color: '#fff' }} />}
+                />
+              </Box>
+            </>
           )}
         </Stack>
       </AppMargin>

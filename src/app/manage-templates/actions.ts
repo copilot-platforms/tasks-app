@@ -3,7 +3,7 @@ import { CreateTemplateRequest } from '@/types/dto/templates.dto'
 import { revalidateTag } from 'next/cache'
 
 export const createNewTemplate = async (token: string, payload: CreateTemplateRequest) => {
-  await fetch(`${apiUrl}/api/tasks/templates/?token=${token}`, {
+  await fetch(`${apiUrl}/api/tasks/templates?token=${token}`, {
     method: 'POST',
     body: JSON.stringify(payload),
   })
