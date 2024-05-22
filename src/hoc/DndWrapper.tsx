@@ -12,7 +12,6 @@ export const DndWrapper = ({ children }: { children: ReactNode }) => {
   const options = {
     scrollAngleRanges: [{ start: 300 }, { end: 60 }, { start: 120, end: 240 }],
   }
-  console.log(matches)
 
   return (
     <DndProvider backend={matches ? TouchBackend : HTML5Backend} options={options}>
