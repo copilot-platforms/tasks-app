@@ -47,7 +47,6 @@ export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
   const todoWorkflowState = workflowStates.find((el) => el.key === 'todo') || workflowStates[0]
 
   const { assigneeId, workflowStateId } = useSelector(selectCreateTask)
-  console.log('here', assigneeId, workflowStateId)
 
   return (
     <NewTaskContainer>
