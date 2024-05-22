@@ -8,7 +8,6 @@ import SupabaseClient from '@/lib/supabase'
  */
 export class BaseService {
   protected db: PrismaClient = DBClient.getInstance()
-  protected supabase: any = SupabaseClient.getInstance()
   public user: User
 
   constructor(user: User) {
