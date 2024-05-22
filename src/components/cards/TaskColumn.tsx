@@ -29,14 +29,6 @@ export const TaskColumn = ({ children, columnName, taskCount }: Prop) => {
           <Typography variant="md">{columnName}</Typography>
           <Typography variant="sm">{taskCount}</Typography>
         </Stack>
-        <Stack direction="row" alignItems="center">
-          <IconButton aria-label="menu">
-            <MoreHoriz fontSize="medium" />
-          </IconButton>
-          <IconButton aria-label="add">
-            <Add fontSize="medium" />
-          </IconButton>
-        </Stack>
       </TaskColumnHeader>
       {children}
     </TaskColumnContainer>
