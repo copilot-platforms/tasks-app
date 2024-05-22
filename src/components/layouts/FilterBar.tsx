@@ -28,7 +28,7 @@ export const FilterBar = ({ updateViewModeSetting }: { updateViewModeSetting: (m
   const { tokenPayload } = useSelector(selectAuthDetails)
 
   const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
-    item: assignee[0],
+    item: '',
     type: SelectorType.ASSIGNEE_SELECTOR,
   })
 
