@@ -25,8 +25,8 @@ export const ClientTaskBoard = ({ updateTask }: { updateTask: (taskId: string, p
   /**
    * This function is responsible for calculating the task count based on the workflowStateId
    */
-  const taskCountForWorkflowStateId = (workflowStateId: string): number => {
-    return tasks.filter((task) => task.workflowStateId === workflowStateId).length
+  const taskCountForWorkflowStateId = (workflowStateId: string): string => {
+    return tasks.filter((task) => task.workflowStateId === workflowStateId).length.toString()
   }
 
   const completedTypeWorkflowState = workflowStates.find((el) => el.type === 'completed')
