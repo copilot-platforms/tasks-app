@@ -32,7 +32,7 @@ export const ClientTaskCard = ({
         <Stack direction="row" columnGap={8} alignItems="center" justifyContent="space-between">
           <Stack sx={{ width: '100%', cursor: 'pointer' }} direction="column" onClick={() => handleRouteChange()}>
             <Typography variant="sm">{task?.title}</Typography>
-            <Typography variant="bodySm">{task?.body}</Typography>
+            {/* <Typography variant="bodySm">{task?.body}</Typography> */}
           </Stack>
           <Stack direction="row" alignItems="center" minWidth="fit-content" columnGap="20px">
             <Box minWidth="fit-content">
