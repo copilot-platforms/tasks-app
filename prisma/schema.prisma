@@ -107,8 +107,6 @@ model Attachment {
   deletedAt   DateTime?
 
   @@unique([filePath], name: "UQ_Attachments_filePath")
-  @@unique([fileName], name: "UQ_Attachments_fileName")
   @@index([filePath], name: "IX_Attachments_filePath")
-  @@index([fileName], name: "IX_Attachments_fileName")
   @@map("Attachments")
 }

@@ -47,6 +47,12 @@ async function getAttachments(token: string, taskId: string): Promise<Attachment
   return data.attachments
 }
 
+async function getSignedUrlUpload(token: string, fileName: string) {
+  const res = await fetch(`${apiUrl}/api/attachments/upload?token=${token}&fileName=${fileName}`)
+  const data = await res.json()
+  return data.signedUrl
+}
+
 export default async function TaskDetailPage({
   params,
   searchParams,
@@ -104,6 +110,11 @@ export default async function TaskDetailPage({
               deleteAttachment={async (id: string) => {
                 'use server'
                 await deleteAttachment(token, id)
+              }}
+              getSignedUrlUpload={async (fileName: string) => {
+                'use server'
+                const data = await getSignedUrlUpload(token, fileName)
+                return data
               }}
             />
           </AppMargin>

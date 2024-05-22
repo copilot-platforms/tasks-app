@@ -92,3 +92,9 @@ export interface ITemplate {
   workflowStateId: string
   createdBy: string
 }
+
+export interface ISignedUrlUpload {
+  signedUrl: string
+  token: string
+  path: string
+}

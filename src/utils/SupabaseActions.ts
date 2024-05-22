@@ -5,6 +5,7 @@ import httpStatus from 'http-status'
 import { Url } from 'next/dist/shared/lib/router/router'
 import React from 'react'
 import { generateRandomString } from '@/utils/generateRandomString'
+import { ISignedUrlUpload } from '@/types/interfaces'
 
 export class SupabaseActions extends SupabaseService {
   async downloadAttachment(filePath: string, fileName: string) {
@@ -24,28 +25,21 @@ export class SupabaseActions extends SupabaseService {
     }
   }
 
-  async uploadAttachment(event: React.ChangeEvent<HTMLInputElement>, task_id: string) {
-    const files = event.target.files
+  async uploadAttachment(file: File, task_id: string, signedUrl: ISignedUrlUpload) {
     let filePayload
-    if (files && files.length > 0) {
-      const file = files[0]
-      const { data, error } = await this.supabase.storage
-        .from(supabaseBucket)
-        .upload(generateRandomString(file.name), file, {
-          cacheControl: '3600',
-          upsert: false,
-        })
-      if (error) {
-        throw new APIError(httpStatus.BAD_REQUEST, error.message)
-      }
-      if (data) {
-        filePayload = {
-          fileSize: file.size,
-          fileName: file.name,
-          fileType: file.type,
-          taskId: task_id,
-          filePath: data.path,
-        }
+    const { data, error } = await this.supabase.storage
+      .from(supabaseBucket)
+      .uploadToSignedUrl(signedUrl.path, signedUrl.token, file)
+    if (error) {
+      throw new APIError(httpStatus.BAD_REQUEST, error.message)
+    }
+    if (data) {
+      filePayload = {
+        fileSize: file.size,
+        fileName: file.name,
+        fileType: file.type,
+        taskId: task_id,
+        filePath: data.path,
       }
     }
     return filePayload

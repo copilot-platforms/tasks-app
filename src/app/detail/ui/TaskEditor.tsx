@@ -20,6 +20,8 @@ import {
 import { AttachmentInput } from '@/components/inputs/AttachmentInput'
 import { SupabaseActions } from '@/utils/SupabaseActions'
 import { CreateTaskRequestSchema } from '@/types/dto/tasks.dto'
+import { generateRandomString } from '@/utils/generateRandomString'
+import { ISignedUrlUpload } from '@/types/interfaces'
 
 interface Prop {
   title: string
@@ -31,6 +33,7 @@ interface Prop {
   deleteTask: () => void
   postAttachment: (postAttachmentPayload: CreateAttachmentRequest) => void
   deleteAttachment: (id: string) => void
+  getSignedUrlUpload: (fileName: string) => Promise<ISignedUrlUpload>
 }
 
 export const TaskEditor = ({
@@ -43,6 +46,7 @@ export const TaskEditor = ({
   deleteTask,
   postAttachment,
   deleteAttachment,
+  getSignedUrlUpload,
 }: Prop) => {
   const [updateTitle, setUpdateTitle] = useState(title)
   const [updateDetail, setUpdateDetail] = useState(detail)
@@ -50,10 +54,15 @@ export const TaskEditor = ({
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     event.preventDefault()
-    const supabaseActions = new SupabaseActions()
-    const filePayload = await supabaseActions.uploadAttachment(event, task_id)
-    if (filePayload) {
-      postAttachment(filePayload)
+    const files = event.target.files
+    if (files && files.length > 0) {
+      const file = files[0]
+      const supabaseActions = new SupabaseActions()
+      const signedUrl: ISignedUrlUpload = await getSignedUrlUpload(generateRandomString(file.name))
+      const filePayload = await supabaseActions.uploadAttachment(file, task_id, signedUrl)
+      if (filePayload) {
+        postAttachment(filePayload)
+      }
     }
   }
   return (

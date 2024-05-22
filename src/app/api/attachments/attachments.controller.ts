@@ -36,3 +36,14 @@ export const deleteAttachment = async (req: NextRequest, { params: { id } }: IdP
   await attachmentsService.deleteAttachment(id)
   return new NextResponse(null, { status: httpStatus.NO_CONTENT })
 }
+
+export const getSignedUrlUpload = async (req: NextRequest) => {
+  const fileName = req.nextUrl.searchParams.get('fileName')
+  if (!fileName) {
+    throw new APIError(httpStatus.BAD_REQUEST)
+  }
+  const user = await authenticate(req)
+  const attachmentsService = new AttachmentsService(user)
+  const signedUrl = await attachmentsService.signUrlUpload(fileName)
+  return NextResponse.json({ signedUrl })
+}

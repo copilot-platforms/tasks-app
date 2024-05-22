@@ -4,6 +4,9 @@ import { UserAction } from '@api/core/types/user'
 import { Resource } from '@api/core/types/api'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { z } from 'zod'
+import { supabaseBucket } from '@/config'
+import APIError from '../core/exceptions/api'
+import httpStatus from 'http-status'
 
 export class AttachmentsService extends BaseService {
   async getAttachments(taskId: string) {
@@ -37,5 +40,16 @@ export class AttachmentsService extends BaseService {
     policyGate.authorize(UserAction.Delete, Resource.Attachments)
     const deletedAttachment = await this.db.attachment.delete({ where: { id: id, workspaceId: this.user.workspaceId } })
     return deletedAttachment
+  }
+
+  async signUrlUpload(fileName: string) {
+    const policyGate = new PoliciesService(this.user)
+    policyGate.authorize(UserAction.Create, Resource.Attachments)
+    const { data, error } = await this.supabase.storage.from(supabaseBucket).createSignedUploadUrl(fileName)
+    if (error) {
+      console.log(error)
+      throw new APIError(httpStatus.BAD_REQUEST)
+    }
+    return data
   }
 }
