@@ -1,6 +1,6 @@
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { TaskEditor } from '@/app/detail/ui/TaskEditor'
-import { Box, Stack, ToggleButton, Typography } from '@mui/material'
+import { Box, Stack, Typography } from '@mui/material'
 import { Sidebar } from '@/app/detail/ui/Sidebar'
 import { taskDetail } from '@/utils/mockData'
 import { IAssignee, UserType } from '@/types/interfaces'
@@ -13,11 +13,9 @@ import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import { deleteTask, updateAssignee, updateTaskDetail } from './actions'
 import { updateTask, updateWorkflowStateIdOfTask } from '@/app/actions'
-import { MenuBoxContainer } from '../../ui/MenuBoxContainer'
-import { MenuIcon } from '@/icons'
-import { ToggleBtn } from '@/components/buttons/ToggleBtn'
-import { ToggleButtonContainer } from '../../ui/ToggleButtonContainer'
-import { ToggleController } from '../../ui/ToggleController'
+import { MenuBoxContainer } from '@/app/detail/ui/MenuBoxContainer'
+import { ToggleButtonContainer } from '@/app/detail/ui/ToggleButtonContainer'
+import { ToggleController } from '@/app/detail/ui/ToggleController'
 
 export const revalidate = 0
 
