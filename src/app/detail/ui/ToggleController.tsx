@@ -10,11 +10,13 @@ export const ToggleController = ({ children }: { children: ReactNode }) => {
   const { showSidebar } = useSelector(selectTaskDetails)
   const matches = useMediaQuery('(max-width:600px)')
 
+  const nonMobile = useMediaQuery('(min-width:600px)')
+
   useEffect(() => {
-    if (matches && !matches) {
+    if (nonMobile) {
       store.dispatch(setShowSidebar(true))
     }
-  }, [matches])
+  }, [nonMobile])
 
   return (
     <Box
