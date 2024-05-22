@@ -26,18 +26,8 @@ export const TemplateBoard = ({
   handleDeleteTemplate: (templateId: string) => void
   handleEditTemplate: (payload: CreateTemplateRequest, templateId: string) => void
 }) => {
-  const {
-    targetTemplateId,
-    targetMethod,
-    templates,
-    showTemplateModal,
-    templateName,
-    taskName,
-    description,
-    workflowStateId,
-    assigneeId,
-    assigneeType,
-  } = useSelector(selectCreateTemplate)
+  const { targetTemplateId, targetMethod, templates, showTemplateModal, templateName, taskName, description } =
+    useSelector(selectCreateTemplate)
 
   const { showConfirmDeleteModal } = useSelector(selectTaskDetails)
 
@@ -67,11 +57,6 @@ export const TemplateBoard = ({
                   store.dispatch(setCreateTemplateFields({ targetField: 'templateName', value: template.templateName }))
                   store.dispatch(setCreateTemplateFields({ targetField: 'taskName', value: template.title }))
                   store.dispatch(setCreateTemplateFields({ targetField: 'description', value: template.body }))
-                  store.dispatch(setCreateTemplateFields({ targetField: 'assigneeType', value: template.assigneeType }))
-                  store.dispatch(setCreateTemplateFields({ targetField: 'assigneeId', value: template.assigneeId }))
-                  store.dispatch(
-                    setCreateTemplateFields({ targetField: 'workflowStateId', value: template.workflowStateId }),
-                  )
                 }}
               />
             )
@@ -98,9 +83,6 @@ export const TemplateBoard = ({
               templateName,
               title: taskName,
               body: description,
-              workflowStateId,
-              assigneeId: assigneeId || null,
-              assigneeType,
             }
             if (targetMethod === TargetMethod.POST) {
               handleCreateTemplate(temp)
