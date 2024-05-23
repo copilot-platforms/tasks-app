@@ -53,7 +53,7 @@ export const TaskBoard = ({
   const taskCountForWorkflowStateId = (workflowStateId: string): string => {
     const taskCount = tasks.filter((task) => task.workflowStateId === workflowStateId).length
     const filteredTaskCount = filteredTasks.filter((task) => task.workflowStateId === workflowStateId).length
-    const isFilterOn = Object.values(filterOptions).some((value) => value !== '' && value !== null)
+    const isFilterOn = Object.values(filterOptions).some((value) => !!value)
     if (!isFilterOn) {
       return taskCount.toString()
     }
