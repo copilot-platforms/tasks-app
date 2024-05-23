@@ -5,34 +5,66 @@ import { StyledTextField } from '@/components/inputs/TextField'
 import { AttachmentIcon } from '@/icons'
 import { selectTaskDetails, setShowConfirmDeleteModal } from '@/redux/features/taskDetailsSlice'
 import { statusIcons } from '@/utils/iconMatcher'
-import { Box, Modal, Stack } from '@mui/material'
+import { Box, IconButton, Modal, Stack } from '@mui/material'
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
 import store from '@/redux/store'
 import { Tapwrite, TiptapEditorUtils } from 'tapwrite'
 import { upload } from '@vercel/blob/client'
-
-type Attachment = {
-  name: string
-  fileSize: string
-  fileType: string
-}
+import {
+  AttachmentResponseSchema,
+  CreateAttachmentRequest,
+  CreateAttachmentRequestSchema,
+} from '@/types/dto/attachments.dto'
+import { AttachmentInput } from '@/components/inputs/AttachmentInput'
+import { SupabaseActions } from '@/utils/SupabaseActions'
+import { CreateTaskRequestSchema } from '@/types/dto/tasks.dto'
+import { generateRandomString } from '@/utils/generateRandomString'
+import { ISignedUrlUpload } from '@/types/interfaces'
 
 interface Prop {
   title: string
   detail: string
-  attachment: Attachment[]
+  task_id: string
+  attachment: AttachmentResponseSchema[]
   isEditable: boolean
   updateTaskDetail: (title: string, detail: string) => void
   deleteTask: () => void
+  postAttachment: (postAttachmentPayload: CreateAttachmentRequest) => void
+  deleteAttachment: (id: string) => void
+  getSignedUrlUpload: (fileName: string) => Promise<ISignedUrlUpload>
 }
 
-export const TaskEditor = ({ title, detail, attachment, isEditable, updateTaskDetail, deleteTask }: Prop) => {
+export const TaskEditor = ({
+  title,
+  detail,
+  task_id,
+  attachment,
+  isEditable,
+  updateTaskDetail,
+  deleteTask,
+  postAttachment,
+  deleteAttachment,
+  getSignedUrlUpload,
+}: Prop) => {
   const [updateTitle, setUpdateTitle] = useState(title)
   const [updateDetail, setUpdateDetail] = useState(detail)
   const { showConfirmDeleteModal } = useSelector(selectTaskDetails)
 
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    event.preventDefault()
+    const files = event.target.files
+    if (files && files.length > 0) {
+      const file = files[0]
+      const supabaseActions = new SupabaseActions()
+      const signedUrl: ISignedUrlUpload = await getSignedUrlUpload(generateRandomString(file.name))
+      const filePayload = await supabaseActions.uploadAttachment(file, task_id, signedUrl)
+      if (filePayload) {
+        postAttachment(filePayload)
+      }
+    }
+  }
   return (
     <>
       <Stack direction="row" alignItems="center" columnGap={2}>
@@ -76,20 +108,18 @@ export const TaskEditor = ({ title, detail, attachment, isEditable, updateTaskDe
           getContent={(content) => setUpdateDetail(content)}
         />
       </Box>
-      <Stack direction="row" columnGap={3} mt={3}>
-        {attachment.map((el, key) => {
+      <Stack direction="row" columnGap={3} rowGap={3} mt={3} flexWrap={'wrap'}>
+        {attachment?.map((el, key) => {
           return (
             <Box key={key}>
-              <AttachmentCard name={el.name} fileSize={el.fileSize} fileType={el.fileType} />
+              <AttachmentCard file={el} deleteAttachment={deleteAttachment} />
             </Box>
           )
         })}
       </Stack>
 
       <Stack direction="row" mt={3} justifyContent="flex-end">
-        <Box>
-          <AttachmentIcon />
-        </Box>
+        <AttachmentInput handleFileSelect={handleFileSelect} />
       </Stack>
 
       <Modal

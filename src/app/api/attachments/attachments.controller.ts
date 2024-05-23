@@ -8,20 +8,22 @@ import {
 } from '@/types/dto/attachments.dto'
 import { AttachmentsService } from '@api/attachments/attachments.service'
 import httpStatus from 'http-status'
-// import { handleUpload, type HandleUploadBody } from '@vercel/blob/client'
-import { IdParams, TaskIdParams } from '@api/core/types/api'
+import { IdParams } from '@api/core/types/api'
 import APIError from '../core/exceptions/api'
-import { supabase } from '@/lib/supabase'
 
-export const createAttachment = async (request: NextRequest) => {
-  const user = await authenticate(request)
-  const body = CreateAttachmentRequestSchema.parse(await request.json())
+export const createAttachment = async (req: NextRequest) => {
+  const user = await authenticate(req)
+  const body = CreateAttachmentRequestSchema.parse(await req.json())
   const attachmentsService = new AttachmentsService(user)
   const newAttachment = await attachmentsService.createAttachments(body)
-  return NextResponse.json(newAttachment)
+  return NextResponse.json({ newAttachment }, { status: httpStatus.CREATED })
 }
 
-export const getAttachments = async (req: NextRequest, { params: { taskId } }: TaskIdParams) => {
+export const getAttachments = async (req: NextRequest) => {
+  const taskId = req.nextUrl.searchParams.get('taskId')
+  if (!taskId) {
+    throw new APIError(httpStatus.BAD_REQUEST, 'taskId is required')
+  }
   const user = await authenticate(req)
   const attachmentsService = new AttachmentsService(user)
   const attachments = await attachmentsService.getAttachments(taskId)
@@ -33,4 +35,15 @@ export const deleteAttachment = async (req: NextRequest, { params: { id } }: IdP
   const attachmentsService = new AttachmentsService(user)
   await attachmentsService.deleteAttachment(id)
   return new NextResponse(null, { status: httpStatus.NO_CONTENT })
+}
+
+export const getSignedUrlUpload = async (req: NextRequest) => {
+  const fileName = req.nextUrl.searchParams.get('fileName')
+  if (!fileName) {
+    throw new APIError(httpStatus.BAD_REQUEST, 'fileName is required')
+  }
+  const user = await authenticate(req)
+  const attachmentsService = new AttachmentsService(user)
+  const signedUrl = await attachmentsService.signUrlUpload(fileName)
+  return NextResponse.json({ signedUrl })
 }
