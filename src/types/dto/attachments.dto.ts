@@ -1,4 +1,5 @@
 import { boolean, z } from 'zod'
+import { FileTypes } from '@/types/interfaces'
 
 export const CreateAttachmentRequestSchema = z.object({
   taskId: z.string().uuid(),
@@ -16,7 +17,7 @@ export const AttachmentResponseSchema = z.object({
   workspaceId: z.string().uuid(),
   filePath: z.string(),
   fileSize: z.number(),
-  fileType: z.string(),
+  fileType: z.nativeEnum(FileTypes),
   fileName: z.string(),
 })
 
