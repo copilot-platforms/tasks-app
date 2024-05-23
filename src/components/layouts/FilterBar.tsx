@@ -4,7 +4,7 @@ import { Avatar, Box, IconButton, Stack, Typography } from '@mui/material'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { useState } from 'react'
 import store from '@/redux/store'
-import { setViewSettings } from '@/redux/features/taskBoardSlice'
+import { setFilterOptions, setViewSettings } from '@/redux/features/taskBoardSlice'
 import SearchBar from '@/components/searchBar'
 import Selector, { SelectorType } from '@/components/inputs/Selector'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
@@ -20,23 +20,15 @@ import { useFilter } from '@/hooks/useFilter'
 import { IUTokenSchema } from '@/types/common'
 
 export const FilterBar = ({ updateViewModeSetting }: { updateViewModeSetting: (mode: View) => void }) => {
-  const [filterOptions, setFilterOptions] = useState<IFilterOptions>({
-    [FilterOptions.ASSIGNEE]: '',
-    [FilterOptions.KEYWORD]: '',
-    [FilterOptions.TYPE]: 'all',
-  })
+  const { view, assignee, filterOptions } = useSelector(selectTaskBoard)
   const handleFilterOptionsChange = (optionType: FilterOptions, newValue: string | null) => {
-    setFilterOptions((prevOptions) => ({
-      ...prevOptions,
-      [optionType]: newValue,
-    }))
+    store.dispatch(setFilterOptions({ optionType, newValue }))
   }
   const [activeButtonIndex, setActiveButtonIndex] = useState<number>(3)
-  const { view, assignee } = useSelector(selectTaskBoard)
   const { tokenPayload } = useSelector(selectAuthDetails)
 
   const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
-    item: assignee[0],
+    item: null,
     type: SelectorType.ASSIGNEE_SELECTOR,
   })
 
@@ -70,7 +62,7 @@ export const FilterBar = ({ updateViewModeSetting }: { updateViewModeSetting: (m
     {
       name: 'All tasks',
       onClick: (index: number) => {
-        handleFilterOptionsChange(FilterOptions.TYPE, FilterOptionsKeywords.ALL)
+        handleFilterOptionsChange(FilterOptions.TYPE, '')
         setActiveButtonIndex(index)
       },
       id: 'AllTasks',

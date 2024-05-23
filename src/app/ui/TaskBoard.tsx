@@ -25,7 +25,7 @@ export const TaskBoard = ({
   updateTask: (taskId: string, payload: UpdateTaskRequest) => void
 }) => {
   const { showModal } = useSelector(selectCreateTask)
-  const { workflowStates, tasks, token, filteredTasks, view } = useSelector(selectTaskBoard)
+  const { workflowStates, tasks, token, filteredTasks, view, filterOptions } = useSelector(selectTaskBoard)
   const { title, description, workflowStateId, assigneeId, assigneeType } = useSelector(selectCreateTask)
 
   const router = useRouter()
@@ -50,8 +50,14 @@ export const TaskBoard = ({
   /**
    * This function is responsible for calculating the task count based on the workflowStateId
    */
-  const taskCountForWorkflowStateId = (workflowStateId: string): number => {
-    return tasks.filter((task) => task.workflowStateId === workflowStateId).length
+  const taskCountForWorkflowStateId = (workflowStateId: string): string => {
+    const taskCount = tasks.filter((task) => task.workflowStateId === workflowStateId).length
+    const filteredTaskCount = filteredTasks.filter((task) => task.workflowStateId === workflowStateId).length
+    const isFilterOn = Object.values(filterOptions).some((value) => !!value)
+    if (!isFilterOn) {
+      return taskCount.toString()
+    }
+    return filteredTaskCount.toString() + '/' + taskCount.toString()
   }
 
   return (
