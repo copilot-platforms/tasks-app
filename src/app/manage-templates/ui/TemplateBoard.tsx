@@ -48,7 +48,7 @@ export const TemplateBoard = ({
           direction="column"
           py="40px"
           sx={{
-            width: '60%',
+            width: { xs: '90%', sm: '60%' },
             margin: '0 auto',
           }}
           rowGap={4}
@@ -99,7 +99,7 @@ export const TemplateBoard = ({
               title: taskName,
               body: description,
               workflowStateId,
-              assigneeId,
+              assigneeId: assigneeId || null,
               assigneeType,
             }
             if (targetMethod === TargetMethod.POST) {

@@ -50,8 +50,15 @@ export const ListViewTaskCard = ({
             <Typography variant="bodyXs">WEB-01</Typography>
             <Typography variant="bodySm">{task?.title}</Typography>
           </Stack>
-          <Stack direction="row" alignItems="center" columnGap="20px" minWidth="200px">
-            <Box minWidth="fit-content">
+          <Stack
+            direction="row"
+            alignItems="center"
+            columnGap="20px"
+            sx={{
+              minWidth: { xs: 'none', sm: '200px' },
+            }}
+          >
+            <Box minWidth="fit-content" sx={{ display: { xs: 'none', sm: 'block' } }}>
               <Typography variant="bodySm">Apr 05, 2024</Typography>
             </Box>
             <Box minWidth="fit-content">

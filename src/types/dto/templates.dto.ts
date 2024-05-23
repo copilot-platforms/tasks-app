@@ -6,7 +6,7 @@ export const CreateTemplateRequestSchema = z.object({
   title: z.string(),
   body: z.string().nullish(),
   workflowStateId: z.string().uuid(),
-  assigneeId: z.string().nullish(),
+  assigneeId: z.string().uuid().nullish(),
   assigneeType: AssigneeTypeSchema,
 })
 export type CreateTemplateRequest = z.infer<typeof CreateTemplateRequestSchema>

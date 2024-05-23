@@ -59,7 +59,11 @@ export const TaskEditor = ({ title, detail, attachment, isEditable, updateTaskDe
           }}
         />
       </Stack>
-      <Box>
+      <Box
+        sx={{
+          minHeight: '30vh',
+        }}
+      >
         <Tapwrite
           uploadFn={async (file, tiptapEditorUtils) => {
             const newBlob = await upload(file.name, file, {

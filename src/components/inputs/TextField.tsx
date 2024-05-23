@@ -6,7 +6,7 @@ export const StyledTextField = styled(TextField, {
   shouldForwardProp: (prop) => prop !== 'padding',
 })<{ padding?: string; borderColor?: string; borderLess?: boolean }>(({ padding, borderColor, borderLess, theme }) => ({
   '& .MuiInputBase-root': {
-    paddingLeft: '8px',
+    padding: '0px 8px',
   },
   '& .MuiOutlinedInput-input': {
     padding: padding ? padding : '3px 8px 3px 0px',
