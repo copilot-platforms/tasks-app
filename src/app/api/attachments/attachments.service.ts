@@ -5,9 +5,9 @@ import { Resource } from '@api/core/types/api'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { z } from 'zod'
 import { supabaseBucket } from '@/config'
-import APIError from '../core/exceptions/api'
+import APIError from '@api/core/exceptions/api'
 import httpStatus from 'http-status'
-import { SupabaseService } from '../core/services/supabase.service'
+import { SupabaseService } from '@api/core/services/supabase.service'
 
 export class AttachmentsService extends BaseService {
   async getAttachments(taskId: string) {
@@ -49,7 +49,6 @@ export class AttachmentsService extends BaseService {
     policyGate.authorize(UserAction.Create, Resource.Attachments)
     const { data, error } = await supabase.supabase.storage.from(supabaseBucket).createSignedUploadUrl(fileName)
     if (error) {
-      console.log(error)
       throw new APIError(httpStatus.BAD_REQUEST)
     }
     return data

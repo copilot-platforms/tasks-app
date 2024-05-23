@@ -22,7 +22,7 @@ export const createAttachment = async (req: NextRequest) => {
 export const getAttachments = async (req: NextRequest) => {
   const taskId = req.nextUrl.searchParams.get('taskId')
   if (!taskId) {
-    throw new APIError(httpStatus.BAD_REQUEST)
+    throw new APIError(httpStatus.BAD_REQUEST, 'taskId is required')
   }
   const user = await authenticate(req)
   const attachmentsService = new AttachmentsService(user)
@@ -40,7 +40,7 @@ export const deleteAttachment = async (req: NextRequest, { params: { id } }: IdP
 export const getSignedUrlUpload = async (req: NextRequest) => {
   const fileName = req.nextUrl.searchParams.get('fileName')
   if (!fileName) {
-    throw new APIError(httpStatus.BAD_REQUEST)
+    throw new APIError(httpStatus.BAD_REQUEST, 'fileName is required')
   }
   const user = await authenticate(req)
   const attachmentsService = new AttachmentsService(user)
