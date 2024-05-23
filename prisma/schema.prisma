@@ -23,15 +23,14 @@ enum AssigneeType {
 }
 
 model WorkflowState {
-  id            String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  workspaceId   String         @db.VarChar(32)
-  type          StateType
-  name          String         @db.VarChar(255)
-  key           String         @db.VarChar(255)
-  color         String?        @db.VarChar(32)
-  tasks         Task[]
-  taskTemplates TaskTemplate[]
-  deletedAt     DateTime?
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  workspaceId String    @db.VarChar(32)
+  type        StateType
+  name        String    @db.VarChar(255)
+  key         String    @db.VarChar(255)
+  color       String?   @db.VarChar(32)
+  tasks       Task[]
+  deletedAt   DateTime?
 
   @@unique([workspaceId, key], name: "UQ_WorkflowStates_workspaceId_key")
   @@index([workspaceId, key], name: "IX_WorkflowStates_workspaceId_key")
@@ -50,10 +49,10 @@ model Task {
   workflowStateId String        @db.Uuid
   attachments     Attachment[]
 
-  assignedAt      DateTime?
-  completedAt     DateTime?
-  dueDate         DateTime?
-  deletedAt       DateTime?
+  assignedAt  DateTime?
+  completedAt DateTime?
+  dueDate     DateTime?
+  deletedAt   DateTime?
 
   @@map("Tasks")
 }
@@ -64,17 +63,13 @@ enum ViewMode {
 }
 
 model TaskTemplate {
-  id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  workspaceId     String        @db.VarChar(32)
-  templateName    String        @db.VarChar(255)
-  title           String        @db.VarChar(255)
-  body            String?
-  assigneeId      String?       @db.Uuid
-  assigneeType    AssigneeType?
-  workflowState   WorkflowState @relation(fields: [workflowStateId], references: [id], onDelete: Cascade)
-  workflowStateId String        @db.Uuid
-  createdById     String        @db.Uuid
-  deletedAt       DateTime?
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  workspaceId  String    @db.VarChar(32)
+  templateName String    @db.VarChar(255)
+  title        String    @db.VarChar(255)
+  body         String?
+  createdById  String    @db.Uuid
+  deletedAt    DateTime?
 
   @@unique([workspaceId, templateName], name: "UQ_TaskTemplates_workspaceId_templateName")
   @@index([workspaceId, templateName], name: "IX_TaskTemplates_workspaceId_templateName")

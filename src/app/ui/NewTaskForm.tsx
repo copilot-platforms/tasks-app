@@ -44,6 +44,10 @@ export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
 
   const router = useRouter()
 
+  const todoWorkflowState = workflowStates.find((el) => el.key === 'todo') || workflowStates[0]
+
+  const { assigneeId, workflowStateId } = useSelector(selectCreateTask)
+
   return (
     <NewTaskContainer>
       <Stack
@@ -64,8 +68,7 @@ export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
                   updateStatusValue(selectedWorkflowState)
                   store.dispatch(setCreateTaskFields({ targetField: 'title', value: newValue.title }))
                   store.dispatch(setCreateTaskFields({ targetField: 'description', value: newValue.body }))
-                  store.dispatch(setCreateTaskFields({ targetField: 'assigneeId', value: newValue?.assigneeId }))
-                  store.dispatch(setCreateTaskFields({ targetField: 'workflowStateId', value: newValue?.workflowStateId }))
+                  updateStatusValue(todoWorkflowState)
                 }}
                 startIcon={<TemplateIconSm />}
                 options={templates}

@@ -28,19 +28,6 @@ import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 export const TemplateForm = ({ handleCreate }: { handleCreate: () => void }) => {
   const { workflowStates, assignee } = useSelector(selectTaskBoard)
   const { showTemplateModal } = useSelector(selectCreateTemplate)
-  const { assigneeId, workflowStateId } = useSelector(selectCreateTemplate)
-
-  const { renderingItem: _statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
-    item: workflowStateId ? workflowStates.find((el) => el.id === workflowStateId) : workflowStates[0],
-    type: SelectorType.STATUS_SELECTOR,
-  })
-  const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
-    item: assigneeId ? assignee.find((el) => el.id === assigneeId) : assignee[0],
-    type: SelectorType.ASSIGNEE_SELECTOR,
-  })
-
-  const statusValue = _statusValue as WorkflowStateResponse //typecasting
-  const assigneeValue = _assigneeValue as IAssigneeCombined //typecasting
 
   return (
     <Modal
@@ -73,59 +60,6 @@ export const TemplateForm = ({ handleCreate }: { handleCreate: () => void }) => 
 
         <AppMargin size={SizeofAppMargin.MEDIUM} py="16px">
           <NewTaskFormInputs />
-
-          <Stack direction="row" columnGap={3} position="relative">
-            <Selector
-              getSelectedValue={(newValue) => {
-                updateStatusValue(newValue)
-                store.dispatch(
-                  setCreateTemplateFields({
-                    targetField: 'workflowStateId',
-                    value: (newValue as WorkflowStateResponse)?.id,
-                  }),
-                )
-              }}
-              startIcon={statusValue?.type ? statusIcons[statusValue?.type] : null}
-              options={workflowStates}
-              value={statusValue}
-              selectorType={SelectorType.STATUS_SELECTOR}
-              buttonContent={
-                <Typography variant="bodySm" lineHeight="16px" sx={{ color: (theme) => theme.color.gray[600] }}>
-                  {statusValue?.name as ReactNode}
-                </Typography>
-              }
-            />
-            <Stack alignSelf="flex-start">
-              <Selector
-                getSelectedValue={(_newValue) => {
-                  const newValue = _newValue as IAssigneeCombined
-                  updateAssigneeValue(newValue)
-                  store.dispatch(
-                    setCreateTemplateFields({
-                      targetField: 'assigneeType',
-                      value: getAssigneeTypeCorrected(newValue),
-                    }),
-                  )
-                  store.dispatch(setCreateTemplateFields({ targetField: 'assigneeId', value: newValue?.id }))
-                }}
-                startIcon={
-                  <Avatar
-                    alt="user"
-                    src={assigneeValue?.iconImageUrl || assigneeValue?.avatarImageUrl}
-                    sx={{ width: '20px', height: '20px' }}
-                  />
-                }
-                options={assignee}
-                value={assigneeValue}
-                selectorType={SelectorType.ASSIGNEE_SELECTOR}
-                buttonContent={
-                  <Typography variant="bodySm" lineHeight="16px" sx={{ color: (theme) => theme.color.gray[600] }}>
-                    {assigneeValue?.name || assigneeValue?.givenName}
-                  </Typography>
-                }
-              />
-            </Stack>
-          </Stack>
         </AppMargin>
         <NewTaskFooter handleCreate={handleCreate} />
       </NewTaskContainer>
