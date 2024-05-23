@@ -40,7 +40,6 @@ export enum FilterOptions {
 export enum FilterOptionsKeywords {
   CLIENTS = 'clients_companies',
   TEAM = 'ius',
-  ALL = 'all',
 }
 
 export type IFilterOptions = {

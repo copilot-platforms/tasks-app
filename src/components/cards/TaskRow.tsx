@@ -8,7 +8,7 @@ import { ReactNode } from 'react'
 interface Prop {
   children: ReactNode
   columnName: string
-  taskCount: number
+  taskCount: string
   showConfigurableIcons: boolean
 }
 
