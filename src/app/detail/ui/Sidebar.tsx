@@ -1,7 +1,7 @@
 'use client'
 
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
-import { Avatar, Box, Stack, Typography, styled } from '@mui/material'
+import { Avatar, Box, Stack, Typography, styled, useMediaQuery } from '@mui/material'
 import Selector, { SelectorType } from '@/components/inputs/Selector'
 import { IAssigneeCombined } from '@/types/interfaces'
 import { statusIcons } from '@/utils/iconMatcher'
@@ -15,6 +15,8 @@ import { StyledBox } from './styledComponent'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { IsoDate, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { formatDate, isoToReadableDate } from '@/utils/dateHelper'
+import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
+import { ToggleButtonContainer } from './ToggleButtonContainer'
 
 const StyledText = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[500],
@@ -41,6 +43,7 @@ export const Sidebar = ({
   disabled: boolean
 }) => {
   const { workflowStates } = useSelector(selectTaskBoard)
+  const { showSidebar } = useSelector(selectTaskDetails)
 
   const { renderingItem: _statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
     item: selectedWorkflowState,
@@ -54,18 +57,38 @@ export const Sidebar = ({
   const statusValue = _statusValue as WorkflowStateResponse //typecasting
   const assigneeValue = _assigneeValue as IAssigneeCombined //typecasting
 
+  const matches = useMediaQuery('(max-width:600px)')
+
   return (
     <Box
       sx={{
         borderLeft: (theme) => `1px solid ${theme.color.borders.border2}`,
         height: '91vh',
+        display: showSidebar ? 'block' : 'none',
+        width: matches && showSidebar ? '100vw' : '25vw',
       }}
     >
-      <StyledBox p="19px 25px">
-        <Typography variant="sm">Properties</Typography>
-      </StyledBox>
+      <Stack direction="row" justifyContent="space-between" alignItems="center" p="19px 25px">
+        <StyledBox>
+          <Typography variant="sm">Properties</Typography>
+        </StyledBox>
+        <Box
+          sx={{
+            display: matches ? 'block' : 'none',
+          }}
+        >
+          <ToggleButtonContainer />
+        </Box>
+      </Stack>
       <AppMargin size={SizeofAppMargin.SMALL}>
-        <Stack direction="row" alignItems="center" m="16px 0px">
+        <Stack
+          direction="row"
+          alignItems="center"
+          m="16px 0px"
+          sx={{
+            justifyContent: 'space-between',
+          }}
+        >
           <StyledText variant="md">Status</StyledText>
           <Selector
             getSelectedValue={(newValue) => {
@@ -84,7 +107,7 @@ export const Sidebar = ({
             disabled={disabled}
           />
         </Stack>
-        <Stack direction="row" m="16px 0px" alignItems="center">
+        <Stack direction="row" m="16px 0px" alignItems="center" justifyContent="space-between">
           <StyledText variant="md">Assignee</StyledText>
           <Selector
             getSelectedValue={(newValue) => {
@@ -111,17 +134,19 @@ export const Sidebar = ({
             disabled={disabled}
           />
         </Stack>
-        <Stack direction="row" m="16px 0px" alignItems="center">
+        <Stack direction="row" m="16px 0px" alignItems="center" justifyContent="space-between">
           <StyledText variant="md">Due Date</StyledText>
-          <DatePickerComponent
-            getDate={(date) => {
-              const isoDate = formatDate(date)
-              updateTask({
-                dueDate: isoDate,
-              })
-            }}
-            dateValue={dueDate ? isoToReadableDate(dueDate) : undefined}
-          />
+          <Box>
+            <DatePickerComponent
+              getDate={(date) => {
+                const isoDate = formatDate(date)
+                updateTask({
+                  dueDate: isoDate,
+                })
+              }}
+              dateValue={dueDate ? isoToReadableDate(dueDate) : undefined}
+            />
+          </Box>
         </Stack>
       </AppMargin>
     </Box>

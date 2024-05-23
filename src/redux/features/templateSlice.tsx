@@ -7,9 +7,6 @@ interface IInitialState {
   showTemplateModal: boolean
   taskName: string
   description: string
-  workflowStateId: string
-  assigneeType: AssigneeType
-  assigneeId: string
   templateName: string
   templates: ITemplate[]
   targetMethod: TargetMethod.EDIT | TargetMethod.POST //the target method for which modal is evoked
@@ -19,10 +16,7 @@ interface IInitialState {
 const initialState: IInitialState = {
   showTemplateModal: false,
   taskName: '',
-  workflowStateId: '',
   description: '',
-  assigneeType: undefined,
-  assigneeId: '',
   templateName: '',
   templates: [],
   targetMethod: TargetMethod.POST,
@@ -50,10 +44,6 @@ const createTemplateSlice = createSlice({
     },
     clearTemplateFields: (state) => {
       state.templateName = ''
-      state.assigneeId = ''
-      state.workflowStateId = ''
-      state.assigneeId = ''
-      state.assigneeType = undefined
       state.description = ''
       state.taskName = ''
       state.targetTemplateId = ''

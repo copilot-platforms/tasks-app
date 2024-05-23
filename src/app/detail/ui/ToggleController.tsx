@@ -1,0 +1,31 @@
+'use client'
+
+import { selectTaskDetails, setShowSidebar } from '@/redux/features/taskDetailsSlice'
+import store from '@/redux/store'
+import { Box, useMediaQuery } from '@mui/material'
+import { ReactNode, useEffect } from 'react'
+import { useSelector } from 'react-redux'
+
+export const ToggleController = ({ children }: { children: ReactNode }) => {
+  const { showSidebar } = useSelector(selectTaskDetails)
+  const matches = useMediaQuery('(max-width:600px)')
+
+  const nonMobile = useMediaQuery('(min-width:600px)')
+
+  useEffect(() => {
+    if (nonMobile) {
+      store.dispatch(setShowSidebar(true))
+    }
+  }, [nonMobile])
+
+  return (
+    <Box
+      sx={{
+        width: showSidebar ? 'calc(100% - 339px)' : '100%',
+        display: matches && showSidebar ? 'none' : 'block',
+      }}
+    >
+      {children}
+    </Box>
+  )
+}

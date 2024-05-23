@@ -88,7 +88,7 @@ export const TaskBoard = ({
                   key={list.id}
                   columnName={list.name}
                   taskCount={taskCountForWorkflowStateId(list.id)}
-                  showConfigurableIcons
+                  showConfigurableIcons={false}
                 >
                   {filterTaskWithWorkflowStateId(list.id).map((task, index) => {
                     return (

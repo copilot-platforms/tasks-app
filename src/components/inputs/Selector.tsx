@@ -123,6 +123,7 @@ export default function Selector({
                 inputRef={setSelectorRef}
                 placeholder={placeholder}
                 borderColor="#EDEDF0"
+                sx={{ visibility: { xs: 'none', sm: 'visible' } }}
               />
             )
           }}
