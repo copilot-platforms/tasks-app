@@ -89,11 +89,19 @@ model ViewSetting {
 }
 
 model Attachment {
-  id          String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  task        Task   @relation(fields: [taskId], references: [id])
-  taskId      String @db.Uuid
-  url         String
-  createdById String @db.Uuid
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  task        Task      @relation(fields: [taskId], references: [id])
+  taskId      String    @db.Uuid
+  workspaceId String    @db.VarChar(32)
+  filePath    String
+  fileSize    Int
+  fileType    String
+  fileName    String
+  createdById String    @db.Uuid
+  createdAt   DateTime  @default(now())
+  deletedAt   DateTime?
 
-  @@map("attachments")
+  @@unique([filePath], name: "UQ_Attachments_filePath")
+  @@index([filePath], name: "IX_Attachments_filePath")
+  @@map("Attachments")
 }

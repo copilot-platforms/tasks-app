@@ -13,6 +13,24 @@ export enum View {
   BOARD_VIEW = 'board',
 }
 
+export enum FileTypes {
+  PNG = 'image/png',
+  PDF = 'application/pdf',
+  SVG = 'image/svg+xml',
+  CSV = 'text/csv',
+  ZIP = 'application/zip',
+  MSWORD = 'application/msword',
+  AVI = 'video/vnd.avi',
+  JPEG = 'image/jpeg',
+  QUICKTIME = 'video/quicktime',
+  MP4 = 'video/mp4',
+  EXCEL = 'application/vnd.ms-excel',
+  ISO = 'application/vnd.efi.iso',
+  PLAIN = 'text/plain',
+  GIF = 'image/gif',
+  MPEG = 'audio/mpeg',
+}
+
 export enum FilterOptions {
   ASSIGNEE = 'assignee',
   KEYWORD = 'keyword',
@@ -91,4 +109,10 @@ export interface ITemplate {
   assigneeType: string
   workflowStateId: string
   createdBy: string
+}
+
+export interface ISignedUrlUpload {
+  signedUrl: string
+  token: string
+  path: string
 }
