@@ -31,6 +31,11 @@ export enum FileTypes {
   MPEG = 'audio/mpeg',
 }
 
+export enum TruncateMaxNumber {
+  ATTACHMENT = 15,
+  SELECTOR = 16,
+}
+
 export enum FilterOptions {
   ASSIGNEE = 'assignee',
   KEYWORD = 'keyword',

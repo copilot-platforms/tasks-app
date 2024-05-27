@@ -6,7 +6,7 @@ import { useFocusableInput } from '@/hooks/useFocusableInput'
 import { HTMLAttributes, ReactNode, useState } from 'react'
 import { StyledTextField } from './TextField'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { IAssigneeCombined, ITemplate } from '@/types/interfaces'
+import { IAssigneeCombined, ITemplate, TruncateMaxNumber } from '@/types/interfaces'
 import { truncateText } from '@/utils/truncateText'
 
 export enum SelectorType {
@@ -222,7 +222,7 @@ const AssigneeSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTM
           {truncateText(
             (option as IAssigneeCombined)?.name ||
               `${(option as IAssigneeCombined)?.givenName ?? ''}  ${(option as IAssigneeCombined)?.familyName ?? ''}`.trim(),
-            16,
+            TruncateMaxNumber.SELECTOR,
           )}
         </Typography>
       </Stack>
