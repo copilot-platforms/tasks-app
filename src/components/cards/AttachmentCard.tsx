@@ -1,5 +1,6 @@
 import { CancelFilledIcon } from '@/icons'
 import { AttachmentResponseSchema } from '@/types/dto/attachments.dto'
+import { TruncateMaxNumber } from '@/types/interfaces'
 import { SupabaseActions } from '@/utils/SupabaseActions'
 import { attachmentIcons } from '@/utils/iconMatcher'
 import { truncateText } from '@/utils/truncateText'
@@ -51,7 +52,7 @@ export const AttachmentCard = ({ file, deleteAttachment }: Prop) => {
         <Box>{attachmentIcons[fileType]}</Box>
         <Stack direction="column" rowGap="7px">
           <Typography variant="sm" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {truncateText(fileName, 15)}
+            {truncateText(fileName, TruncateMaxNumber.ATTACHMENT)}
           </Typography>
           <Typography variant="bodySm">{Math.floor(fileSize / 1024)} KB</Typography>
         </Stack>

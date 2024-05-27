@@ -31,7 +31,6 @@ export const FilterBar = ({ updateViewModeSetting }: { updateViewModeSetting: (m
     item: null,
     type: SelectorType.ASSIGNEE_SELECTOR,
   })
-
   useFilter(filterOptions)
 
   const filterButtons = [
