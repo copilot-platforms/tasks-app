@@ -22,7 +22,7 @@ const FilterButtonGroup = ({
         borderRadius: 1,
         columnGap: { xs: '3px', sm: '12px' },
         alignItems: 'center',
-        padding: '4px',
+        padding: '6px',
       })}
       direction={'row'}
     >
