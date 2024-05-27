@@ -88,10 +88,18 @@ export default function Selector({
         open={open}
         anchorEl={anchorEl}
         sx={{
-          width: '180px',
+          width: 'fit-content',
           zIndex: '9999',
         }}
-        placement="bottom-end"
+        placement="bottom-start"
+        modifiers={[
+          {
+            name: 'offset',
+            options: {
+              offset: [0, 4],
+            },
+          },
+        ]}
       >
         <StyledAutocomplete
           id="status-box"
