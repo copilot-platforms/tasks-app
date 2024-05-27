@@ -68,7 +68,6 @@ export const FilterBar = ({ updateViewModeSetting }: { updateViewModeSetting: (m
     },
   ]
   const assigneeValue = _assigneeValue as IAssigneeCombined
-
   return (
     <Box>
       <Box
@@ -79,66 +78,74 @@ export const FilterBar = ({ updateViewModeSetting }: { updateViewModeSetting: (m
         <AppMargin size={SizeofAppMargin.LARGE} py="14px">
           <Stack direction="row" alignItems="center" justifyContent="space-between">
             <Stack direction="row" columnGap={3}>
-              <FilterButtonGroup filterButtons={filterButtons} activeButtonIndex={activeButtonIndex} />
               <Box
                 sx={{
                   display: { xs: 'none', sm: 'block' },
                 }}
               >
-                <Selector
-                  getSelectedValue={(_newValue) => {
-                    const newValue = _newValue as IAssigneeCombined
-                    updateAssigneeValue(newValue)
-                    handleFilterOptionsChange(FilterOptions.ASSIGNEE, newValue.id as string)
-                  }}
-                  startIcon={<FilterByAsigneeIcon />}
-                  options={assignee}
-                  placeholder="Assignee"
-                  value={assigneeValue}
-                  selectorType={SelectorType.ASSIGNEE_SELECTOR}
-                  extraOption={{
-                    id: '',
-                    name: 'No assignee',
-                    value: '',
-                    extraOptionFlag: true,
-                  }}
-                  extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
-                    return (
-                      <Box
-                        component="li"
-                        {...props}
-                        sx={{
-                          '&.MuiAutocomplete-option[aria-selected="true"]': {
-                            bgcolor: (theme) => theme.color.gray[100],
-                          },
-                          '&.MuiAutocomplete-option[aria-selected="true"].Mui-focused': {
-                            bgcolor: (theme) => theme.color.gray[100],
-                          },
-                        }}
-                        onClick={(e) => {
-                          updateAssigneeValue({ id: '', name: 'No assignee' })
-                          setAnchorEl(anchorEl ? null : e.currentTarget)
-                          handleFilterOptionsChange(FilterOptions.ASSIGNEE, 'none')
-                        }}
-                      >
-                        <Stack direction="row" alignItems="center" columnGap={3}>
-                          <Avatar alt="user" sx={{ width: '20px', height: '20px' }} />
-                          <Typography variant="sm" fontWeight={400}>
-                            No assignee
-                          </Typography>
-                        </Stack>
-                      </Box>
-                    )
-                  }}
-                  buttonContent={
-                    <FilterByAssigneeBtn
-                      assigneeValue={assigneeValue}
-                      updateAssigneeValue={updateAssigneeValue}
-                      handleClick={handleFilterOptionsChange}
-                    />
-                  }
-                />
+                <FilterButtonGroup filterButtons={filterButtons} activeButtonIndex={activeButtonIndex} />
               </Box>
+              {filterOptions[FilterOptions.TYPE] !== tokenPayload?.internalUserId && (
+                <Box
+                  sx={{
+                    display: { xs: 'none', sm: 'block' },
+                  }}
+                >
+                  <Selector
+                    getSelectedValue={(_newValue) => {
+                      const newValue = _newValue as IAssigneeCombined
+                      updateAssigneeValue(newValue)
+                      handleFilterOptionsChange(FilterOptions.ASSIGNEE, newValue.id as string)
+                    }}
+                    startIcon={<FilterByAsigneeIcon />}
+                    options={assignee}
+                    placeholder="Assignee"
+                    value={assigneeValue}
+                    selectorType={SelectorType.ASSIGNEE_SELECTOR}
+                    extraOption={{
+                      id: '',
+                      name: 'No assignee',
+                      value: '',
+                      extraOptionFlag: true,
+                    }}
+                    extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
+                      return (
+                        <Box
+                          component="li"
+                          {...props}
+                          sx={{
+                            '&.MuiAutocomplete-option[aria-selected="true"]': {
+                              bgcolor: (theme) => theme.color.gray[100],
+                            },
+                            '&.MuiAutocomplete-option[aria-selected="true"].Mui-focused': {
+                              bgcolor: (theme) => theme.color.gray[100],
+                            },
+                          }}
+                          onClick={(e) => {
+                            updateAssigneeValue({ id: '', name: 'No assignee' })
+                            setAnchorEl(anchorEl ? null : e.currentTarget)
+                            handleFilterOptionsChange(FilterOptions.ASSIGNEE, 'none')
+                          }}
+                        >
+                          <Stack direction="row" alignItems="center" columnGap={3}>
+                            <Avatar alt="user" sx={{ width: '20px', height: '20px' }} />
+                            <Typography variant="sm" fontWeight={400}>
+                              No assignee
+                            </Typography>
+                          </Stack>
+                        </Box>
+                      )
+                    }}
+                    buttonContent={
+                      <FilterByAssigneeBtn
+                        assigneeValue={assigneeValue}
+                        updateAssigneeValue={updateAssigneeValue}
+                        handleClick={handleFilterOptionsChange}
+                      />
+                    }
+                  />
+                </Box>
+              )}
             </Stack>
             <Stack direction="row" alignItems="center" columnGap={3}>
               <Box
