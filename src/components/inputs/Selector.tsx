@@ -7,6 +7,7 @@ import { HTMLAttributes, ReactNode, useState } from 'react'
 import { StyledTextField } from './TextField'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { IAssigneeCombined, ITemplate } from '@/types/interfaces'
+import { truncateText } from '@/utils/truncateText'
 
 export enum SelectorType {
   ASSIGNEE_SELECTOR = 'assigneeSelector',
@@ -123,7 +124,10 @@ export default function Selector({
                 inputRef={setSelectorRef}
                 placeholder={placeholder}
                 borderColor="#EDEDF0"
-                sx={{ visibility: { xs: 'none', sm: 'visible' } }}
+                sx={{
+                  width: '200px',
+                  visibility: { xs: 'none', sm: 'visible' },
+                }}
               />
             )
           }}
@@ -197,6 +201,9 @@ const AssigneeSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTM
       component="li"
       {...props}
       sx={{
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        whiteSpace: 'nowrap',
         '&.MuiAutocomplete-option[aria-selected="true"]': {
           bgcolor: (theme) => theme.color.gray[100],
         },
@@ -212,7 +219,11 @@ const AssigneeSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTM
           sx={{ width: '20px', height: '20px' }}
         />
         <Typography variant="sm" fontWeight={400}>
-          {(option as IAssigneeCombined)?.name || (option as IAssigneeCombined)?.givenName}
+          {truncateText(
+            (option as IAssigneeCombined)?.name ||
+              `${(option as IAssigneeCombined)?.givenName ?? ''}  ${(option as IAssigneeCombined)?.familyName ?? ''}`.trim(),
+            16,
+          )}
         </Typography>
       </Stack>
     </Box>
