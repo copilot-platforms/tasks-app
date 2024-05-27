@@ -100,7 +100,6 @@ export const FilterBar = ({ updateViewModeSetting }: { updateViewModeSetting: (m
                     }}
                     startIcon={<FilterByAsigneeIcon />}
                     options={assignee}
-                    disabled={filterOptions[FilterOptions.TYPE] == tokenPayload?.internalUserId}
                     placeholder="Assignee"
                     value={assigneeValue}
                     selectorType={SelectorType.ASSIGNEE_SELECTOR}
