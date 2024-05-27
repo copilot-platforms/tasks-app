@@ -18,7 +18,7 @@ const TaskColumnContainer = styled(Stack)({
 interface Prop {
   children: ReactNode
   columnName: string
-  taskCount: number
+  taskCount: string
 }
 
 export const TaskColumn = ({ children, columnName, taskCount }: Prop) => {
@@ -28,14 +28,6 @@ export const TaskColumn = ({ children, columnName, taskCount }: Prop) => {
         <Stack direction="row" alignItems="center" columnGap={2}>
           <Typography variant="md">{columnName}</Typography>
           <Typography variant="sm">{taskCount}</Typography>
-        </Stack>
-        <Stack direction="row" alignItems="center">
-          <IconButton aria-label="menu">
-            <MoreHoriz fontSize="medium" />
-          </IconButton>
-          <IconButton aria-label="add">
-            <Add fontSize="medium" />
-          </IconButton>
         </Stack>
       </TaskColumnHeader>
       {children}

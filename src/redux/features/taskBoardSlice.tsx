@@ -2,7 +2,7 @@ import { createSlice } from '@reduxjs/toolkit'
 import { RootState } from '../store'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { TaskResponse } from '@/types/dto/tasks.dto'
-import { AssigneeType, IAssigneeCombined, View } from '@/types/interfaces'
+import { AssigneeType, FilterOptions, IAssigneeCombined, IFilterOptions, View } from '@/types/interfaces'
 
 interface IInitialState {
   workflowStates: WorkflowStateResponse[]
@@ -11,6 +11,7 @@ interface IInitialState {
   token: string | undefined
   view: View
   filteredTasks: TaskResponse[]
+  filterOptions: IFilterOptions
 }
 
 const initialState: IInitialState = {
@@ -20,6 +21,11 @@ const initialState: IInitialState = {
   assignee: [],
   view: View.BOARD_VIEW,
   filteredTasks: [],
+  filterOptions: {
+    [FilterOptions.ASSIGNEE]: '',
+    [FilterOptions.KEYWORD]: '',
+    [FilterOptions.TYPE]: '',
+  },
 }
 
 const taskBoardSlice = createSlice({
@@ -53,6 +59,12 @@ const taskBoardSlice = createSlice({
     setViewSettings: (state, action: { payload: View }) => {
       state.view = action.payload
     },
+    setFilterOptions: (state, action: { payload: { optionType: FilterOptions; newValue: string | null } }) => {
+      state.filterOptions = {
+        ...state.filterOptions,
+        [action.payload.optionType]: action.payload.newValue,
+      }
+    },
   },
 })
 
@@ -66,6 +78,7 @@ export const {
   setAssigneeList,
   setFilteredTasks,
   setViewSettings,
+  setFilterOptions,
 } = taskBoardSlice.actions
 
 export default taskBoardSlice.reducer
