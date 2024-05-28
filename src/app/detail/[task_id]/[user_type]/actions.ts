@@ -14,7 +14,12 @@ export const updateTaskDetail = async (token: string, task_id: string, title: st
   revalidateTag('getAllTasks')
 }
 
-export const updateAssignee = async (token: string, task_id: string, assigneeType: string, assigneeId: string) => {
+export const updateAssignee = async (
+  token: string,
+  task_id: string,
+  assigneeType: string | null,
+  assigneeId: string | null,
+) => {
   await fetch(`${apiUrl}/api/tasks/${task_id}?token=${token}`, {
     method: 'PATCH',
     body: JSON.stringify({

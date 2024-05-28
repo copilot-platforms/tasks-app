@@ -9,6 +9,7 @@ import { SelectorType } from '@/components/inputs/Selector'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import Selector from '@/components/inputs/Selector'
 import { IAssigneeCombined } from '@/types/interfaces'
+import { NoAssignee } from '@/utils/noAssignee'
 
 export const ListViewTaskCard = ({
   task,
@@ -21,7 +22,7 @@ export const ListViewTaskCard = ({
 }) => {
   const { assignee } = useSelector(selectTaskBoard)
 
-  const currentAssignee = assignee.find((el) => el.id === task.assigneeId)
+  const currentAssignee = assignee.find((el) => el.id === task.assigneeId) ?? NoAssignee
 
   const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
     item: currentAssignee,
@@ -93,6 +94,47 @@ export const ListViewTaskCard = ({
                 options={assignee}
                 value={assigneeValue}
                 selectorType={SelectorType.ASSIGNEE_SELECTOR}
+                extraOption={{
+                  id: '',
+                  name: 'No assignee',
+                  value: '',
+                  extraOptionFlag: true,
+                }}
+                extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
+                  return (
+                    <Box
+                      component="li"
+                      {...props}
+                      sx={{
+                        '&.MuiAutocomplete-option[aria-selected="true"]': {
+                          bgcolor: (theme) => theme.color.gray[100],
+                        },
+                        '&.MuiAutocomplete-option[aria-selected="true"].Mui-focused': {
+                          bgcolor: (theme) => theme.color.gray[100],
+                        },
+                      }}
+                      onClick={(e) => {
+                        updateAssigneeValue({ id: '', name: 'No assignee' })
+                        setAnchorEl(anchorEl ? null : e.currentTarget)
+                        if (updateTask) {
+                          updateTask({
+                            payload: {
+                              assigneeType: null,
+                              assigneeId: null,
+                            },
+                          })
+                        }
+                      }}
+                    >
+                      <Stack direction="row" alignItems="center" columnGap={3}>
+                        <Avatar alt="user" sx={{ width: '20px', height: '20px' }} />
+                        <Typography variant="sm" fontWeight={400}>
+                          No assignee
+                        </Typography>
+                      </Stack>
+                    </Box>
+                  )
+                }}
                 buttonContent={
                   <Typography variant="bodySm" lineHeight="16px" sx={{ color: (theme) => theme.color.gray[600] }}>
                     {assigneeValue?.name || assigneeValue?.givenName}

@@ -19,6 +19,7 @@ import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { useRouter } from 'next/navigation'
 import { selectCreateTemplate } from '@/redux/features/templateSlice'
+import { NoAssignee } from '@/utils/noAssignee'
 
 export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
   const { workflowStates, assignee, token } = useSelector(selectTaskBoard)
@@ -30,7 +31,7 @@ export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
     type: SelectorType.STATUS_SELECTOR,
   })
   const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
-    item: assignee[0],
+    item: NoAssignee,
     type: SelectorType.ASSIGNEE_SELECTOR,
   })
   const { renderingItem: _templateValue, updateRenderingItem: updateTemplateValue } = useHandleSelectorComponent({
@@ -166,6 +167,40 @@ export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
               }
               options={assignee}
               value={assigneeValue}
+              extraOption={{
+                id: '',
+                name: 'No assignee',
+                value: '',
+                extraOptionFlag: true,
+              }}
+              extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
+                return (
+                  <Box
+                    component="li"
+                    {...props}
+                    sx={{
+                      '&.MuiAutocomplete-option[aria-selected="true"]': {
+                        bgcolor: (theme) => theme.color.gray[100],
+                      },
+                      '&.MuiAutocomplete-option[aria-selected="true"].Mui-focused': {
+                        bgcolor: (theme) => theme.color.gray[100],
+                      },
+                    }}
+                    onClick={(e) => {
+                      updateAssigneeValue({ id: '', name: 'No assignee' })
+                      setAnchorEl(anchorEl ? null : e.currentTarget)
+                      store.dispatch(setCreateTaskFields({ targetField: 'assigneeId', value: null }))
+                    }}
+                  >
+                    <Stack direction="row" alignItems="center" columnGap={3}>
+                      <Avatar alt="user" sx={{ width: '20px', height: '20px' }} />
+                      <Typography variant="sm" fontWeight={400}>
+                        No assignee
+                      </Typography>
+                    </Stack>
+                  </Box>
+                )
+              }}
               selectorType={SelectorType.ASSIGNEE_SELECTOR}
               buttonContent={
                 <Typography variant="bodySm" lineHeight="16px" sx={{ color: (theme) => theme.color.gray[600] }}>

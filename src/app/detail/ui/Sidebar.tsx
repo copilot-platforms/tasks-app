@@ -17,6 +17,7 @@ import { IsoDate, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { formatDate, isoToReadableDate } from '@/utils/dateHelper'
 import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 import { ToggleButtonContainer } from './ToggleButtonContainer'
+import { NoAssignee } from '@/utils/noAssignee'
 
 const StyledText = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[500],
@@ -37,7 +38,7 @@ export const Sidebar = ({
   selectedAssigneeId: string | undefined
   dueDate: IsoDate | undefined
   updateWorkflowState: (workflowState: WorkflowStateResponse) => void
-  updateAssignee: (assigneeType: string, assigneeId: string) => void
+  updateAssignee: (assigneeType: string | null, assigneeId: string | null) => void
   updateTask: (payload: UpdateTaskRequest) => void
   assignee: IAssigneeCombined[]
   disabled: boolean
@@ -50,7 +51,7 @@ export const Sidebar = ({
     type: SelectorType.STATUS_SELECTOR,
   })
   const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
-    item: selectedAssigneeId ? assignee.find((el) => el.id === selectedAssigneeId) : assignee[0],
+    item: selectedAssigneeId ? assignee.find((el) => el.id === selectedAssigneeId) : NoAssignee,
     type: SelectorType.ASSIGNEE_SELECTOR,
   })
 
@@ -126,6 +127,40 @@ export const Sidebar = ({
             options={assignee}
             value={assigneeValue}
             selectorType={SelectorType.ASSIGNEE_SELECTOR}
+            extraOption={{
+              id: '',
+              name: 'No assignee',
+              value: '',
+              extraOptionFlag: true,
+            }}
+            extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
+              return (
+                <Box
+                  component="li"
+                  {...props}
+                  sx={{
+                    '&.MuiAutocomplete-option[aria-selected="true"]': {
+                      bgcolor: (theme) => theme.color.gray[100],
+                    },
+                    '&.MuiAutocomplete-option[aria-selected="true"].Mui-focused': {
+                      bgcolor: (theme) => theme.color.gray[100],
+                    },
+                  }}
+                  onClick={(e) => {
+                    updateAssigneeValue({ id: '', name: 'No assignee' })
+                    setAnchorEl(anchorEl ? null : e.currentTarget)
+                    updateAssignee(null, null)
+                  }}
+                >
+                  <Stack direction="row" alignItems="center" columnGap={3}>
+                    <Avatar alt="user" sx={{ width: '20px', height: '20px' }} />
+                    <Typography variant="sm" fontWeight={400}>
+                      No assignee
+                    </Typography>
+                  </Stack>
+                </Box>
+              )
+            }}
             buttonContent={
               <Typography variant="bodySm" lineHeight="16px" sx={{ color: (theme) => theme.color.gray[600] }}>
                 {assigneeValue?.name || assigneeValue?.givenName}

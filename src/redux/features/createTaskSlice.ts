@@ -28,7 +28,7 @@ const createTaskSlice = createSlice({
       state.showModal = !state.showModal
     },
 
-    setCreateTaskFields: (state, action: { payload: { targetField: string; value: string } }) => {
+    setCreateTaskFields: (state, action: { payload: { targetField: string; value: string | null } }) => {
       const { targetField, value } = action.payload
       //@ts-ignore
       state[targetField] = value
