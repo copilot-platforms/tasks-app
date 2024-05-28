@@ -11,7 +11,7 @@ import { statusIcons } from '@/utils/iconMatcher'
 import { Close } from '@mui/icons-material'
 import { Avatar, Box, Stack, Typography, styled } from '@mui/material'
 import { ReactNode } from 'react'
-import { IAssigneeCombined, ITemplate } from '@/types/interfaces'
+import { FilterOptions, IAssigneeCombined, ITemplate } from '@/types/interfaces'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { useSelector } from 'react-redux'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
@@ -22,7 +22,7 @@ import { selectCreateTemplate } from '@/redux/features/templateSlice'
 import { NoAssignee } from '@/utils/noAssignee'
 
 export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
-  const { workflowStates, assignee, token } = useSelector(selectTaskBoard)
+  const { workflowStates, assignee, token, filterOptions } = useSelector(selectTaskBoard)
 
   const { templates } = useSelector(selectCreateTemplate)
 
@@ -31,7 +31,7 @@ export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
     type: SelectorType.STATUS_SELECTOR,
   })
   const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
-    item: NoAssignee,
+    item: assignee.find((item) => item.id == filterOptions[FilterOptions.ASSIGNEE]) ?? NoAssignee,
     type: SelectorType.ASSIGNEE_SELECTOR,
   })
   const { renderingItem: _templateValue, updateRenderingItem: updateTemplateValue } = useHandleSelectorComponent({
@@ -48,7 +48,6 @@ export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
   const todoWorkflowState = workflowStates.find((el) => el.key === 'todo') || workflowStates[0]
 
   const { assigneeId, workflowStateId } = useSelector(selectCreateTask)
-
   return (
     <NewTaskContainer>
       <Stack
