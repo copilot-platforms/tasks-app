@@ -1,5 +1,5 @@
 export const NoAssignee = {
-  id: '',
+  id: null,
   name: 'No assignee',
   value: '',
   avatarImageUrl: '',

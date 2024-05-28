@@ -7,8 +7,8 @@ interface IInitialState {
   title: string
   description: string
   workflowStateId: string
-  assigneeType?: AssigneeType
-  assigneeId: string
+  assigneeType?: AssigneeType | null
+  assigneeId: string | null
 }
 
 const initialState: IInitialState = {
@@ -16,8 +16,8 @@ const initialState: IInitialState = {
   title: '',
   workflowStateId: '',
   description: '',
-  assigneeType: undefined,
-  assigneeId: '',
+  assigneeType: null,
+  assigneeId: null,
 }
 
 const createTaskSlice = createSlice({
@@ -38,8 +38,8 @@ const createTaskSlice = createSlice({
       state.title = ''
       state.workflowStateId = ''
       state.description = ''
-      state.assigneeType = undefined
-      state.assigneeId = ''
+      state.assigneeType = null
+      state.assigneeId = null
     },
   },
 })

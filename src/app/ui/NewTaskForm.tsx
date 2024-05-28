@@ -188,6 +188,7 @@ export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
                     onClick={(e) => {
                       updateAssigneeValue({ id: '', name: 'No assignee' })
                       setAnchorEl(anchorEl ? null : e.currentTarget)
+                      store.dispatch(setCreateTaskFields({ targetField: 'assigneeType', value: null }))
                       store.dispatch(setCreateTaskFields({ targetField: 'assigneeId', value: null }))
                     }}
                   >
