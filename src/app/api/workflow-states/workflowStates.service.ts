@@ -12,7 +12,7 @@ class WorkflowStatesService extends BaseService {
     policyGate.authorize(UserAction.Read, Resource.Tasks)
 
     const filters = { where: { workspaceId: this.user.workspaceId } }
-    let workflowStates = await this.db.workflowState.findMany(filters)
+    let workflowStates = await this.db.workflowState.findMany({ ...filters, orderBy: { type: 'asc' } })
 
     if (!workflowStates.length) {
       await this.setDefaultWorkflowStates()
@@ -53,7 +53,6 @@ class WorkflowStatesService extends BaseService {
         { type: 'unstarted', name: 'Todo', key: 'todo', workspaceId: this.user.workspaceId },
         { type: 'started', name: 'In Progress', key: 'inProgress', workspaceId: this.user.workspaceId },
         { type: 'completed', name: 'Done', key: 'completed', workspaceId: this.user.workspaceId },
-        { type: 'backlog', name: 'Archived', key: 'archived', workspaceId: this.user.workspaceId },
       ],
     })
   }
