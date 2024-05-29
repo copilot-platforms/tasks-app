@@ -117,6 +117,7 @@ export default async function TaskDetailPage({
                 const data = await getSignedUrlUpload(token, fileName)
                 return data
               }}
+              userType={params.user_type}
             />
           </AppMargin>
         </ToggleController>
