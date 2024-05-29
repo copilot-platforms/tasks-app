@@ -21,7 +21,7 @@ import { AttachmentInput } from '@/components/inputs/AttachmentInput'
 import { SupabaseActions } from '@/utils/SupabaseActions'
 import { CreateTaskRequestSchema } from '@/types/dto/tasks.dto'
 import { generateRandomString } from '@/utils/generateRandomString'
-import { ISignedUrlUpload } from '@/types/interfaces'
+import { ISignedUrlUpload, UserType } from '@/types/interfaces'
 
 interface Prop {
   title: string
@@ -34,6 +34,7 @@ interface Prop {
   postAttachment: (postAttachmentPayload: CreateAttachmentRequest) => void
   deleteAttachment: (id: string) => void
   getSignedUrlUpload: (fileName: string) => Promise<ISignedUrlUpload>
+  userType: UserType
 }
 
 export const TaskEditor = ({
@@ -47,6 +48,7 @@ export const TaskEditor = ({
   postAttachment,
   deleteAttachment,
   getSignedUrlUpload,
+  userType,
 }: Prop) => {
   const [updateTitle, setUpdateTitle] = useState(title)
   const [updateDetail, setUpdateDetail] = useState(detail)
@@ -106,6 +108,7 @@ export const TaskEditor = ({
           }}
           content={detail}
           getContent={(content) => setUpdateDetail(content)}
+          readonly={userType === UserType.CLIENT_USER}
         />
       </Box>
       <Stack direction="row" columnGap={3} rowGap={3} mt={3} flexWrap={'wrap'}>
