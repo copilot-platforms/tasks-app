@@ -18,6 +18,8 @@ import FilterButtonGroup from '@/components/buttonsGroup/FilterButtonsGroup'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { useFilter } from '@/hooks/useFilter'
 import { IUTokenSchema } from '@/types/common'
+import { NoAssigneeExtraOptions } from '@/utils/noAssignee'
+import ExtraOptionRendererAssignee from '@/components/inputs/ExtraOptionRendererAssignee'
 
 export const FilterBar = ({ updateViewModeSetting }: { updateViewModeSetting: (mode: View) => void }) => {
   const { view, assignee, filterOptions } = useSelector(selectTaskBoard)
@@ -102,38 +104,17 @@ export const FilterBar = ({ updateViewModeSetting }: { updateViewModeSetting: (m
                     placeholder="Assignee"
                     value={assigneeValue}
                     selectorType={SelectorType.ASSIGNEE_SELECTOR}
-                    extraOption={{
-                      id: '',
-                      name: 'No assignee',
-                      value: '',
-                      extraOptionFlag: true,
-                    }}
+                    extraOption={NoAssigneeExtraOptions}
                     extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
                       return (
-                        <Box
-                          component="li"
-                          {...props}
-                          sx={{
-                            '&.MuiAutocomplete-option[aria-selected="true"]': {
-                              bgcolor: (theme) => theme.color.gray[100],
-                            },
-                            '&.MuiAutocomplete-option[aria-selected="true"].Mui-focused': {
-                              bgcolor: (theme) => theme.color.gray[100],
-                            },
-                          }}
+                        <ExtraOptionRendererAssignee
+                          props={props}
                           onClick={(e) => {
                             updateAssigneeValue({ id: '', name: 'No assignee' })
                             setAnchorEl(anchorEl ? null : e.currentTarget)
                             handleFilterOptionsChange(FilterOptions.ASSIGNEE, 'none')
                           }}
-                        >
-                          <Stack direction="row" alignItems="center" columnGap={3}>
-                            <Avatar alt="user" sx={{ width: '20px', height: '20px' }} />
-                            <Typography variant="sm" fontWeight={400}>
-                              No assignee
-                            </Typography>
-                          </Stack>
-                        </Box>
+                        />
                       )
                     }}
                     buttonContent={
@@ -191,38 +172,17 @@ export const FilterBar = ({ updateViewModeSetting }: { updateViewModeSetting: (m
             placeholder="Assignee"
             value={assigneeValue}
             selectorType={SelectorType.ASSIGNEE_SELECTOR}
-            extraOption={{
-              id: '',
-              name: 'No assignee',
-              value: '',
-              extraOptionFlag: true,
-            }}
+            extraOption={NoAssigneeExtraOptions}
             extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
               return (
-                <Box
-                  component="li"
-                  {...props}
-                  sx={{
-                    '&.MuiAutocomplete-option[aria-selected="true"]': {
-                      bgcolor: (theme) => theme.color.gray[100],
-                    },
-                    '&.MuiAutocomplete-option[aria-selected="true"].Mui-focused': {
-                      bgcolor: (theme) => theme.color.gray[100],
-                    },
-                  }}
+                <ExtraOptionRendererAssignee
+                  props={props}
                   onClick={(e) => {
                     updateAssigneeValue({ id: '', name: 'No assignee' })
                     setAnchorEl(anchorEl ? null : e.currentTarget)
                     handleFilterOptionsChange(FilterOptions.ASSIGNEE, 'none')
                   }}
-                >
-                  <Stack direction="row" alignItems="center" columnGap={3}>
-                    <Avatar alt="user" sx={{ width: '20px', height: '20px' }} />
-                    <Typography variant="sm" fontWeight={400}>
-                      No assignee
-                    </Typography>
-                  </Stack>
-                </Box>
+                />
               )
             }}
             buttonContent={

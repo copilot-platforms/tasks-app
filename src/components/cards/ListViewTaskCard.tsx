@@ -9,6 +9,8 @@ import { SelectorType } from '@/components/inputs/Selector'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import Selector from '@/components/inputs/Selector'
 import { IAssigneeCombined } from '@/types/interfaces'
+import { NoAssignee, NoAssigneeExtraOptions } from '@/utils/noAssignee'
+import ExtraOptionRendererAssignee from '@/components/inputs/ExtraOptionRendererAssignee'
 
 export const ListViewTaskCard = ({
   task,
@@ -21,7 +23,7 @@ export const ListViewTaskCard = ({
 }) => {
   const { assignee } = useSelector(selectTaskBoard)
 
-  const currentAssignee = assignee.find((el) => el.id === task.assigneeId)
+  const currentAssignee = assignee.find((el) => el.id === task.assigneeId) ?? NoAssignee
 
   const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
     item: currentAssignee,
@@ -93,6 +95,26 @@ export const ListViewTaskCard = ({
                 options={assignee}
                 value={assigneeValue}
                 selectorType={SelectorType.ASSIGNEE_SELECTOR}
+                extraOption={NoAssigneeExtraOptions}
+                extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
+                  return (
+                    <ExtraOptionRendererAssignee
+                      props={props}
+                      onClick={(e) => {
+                        updateAssigneeValue({ id: '', name: 'No assignee' })
+                        setAnchorEl(anchorEl ? null : e.currentTarget)
+                        if (updateTask) {
+                          updateTask({
+                            payload: {
+                              assigneeType: null,
+                              assigneeId: null,
+                            },
+                          })
+                        }
+                      }}
+                    />
+                  )
+                }}
                 buttonContent={
                   <Typography variant="bodySm" lineHeight="16px" sx={{ color: (theme) => theme.color.gray[600] }}>
                     {assigneeValue?.name || assigneeValue?.givenName}

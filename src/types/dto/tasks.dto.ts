@@ -21,7 +21,7 @@ export const IsoDateSchema = z
 export type IsoDate = z.infer<typeof IsoDateSchema>
 
 export const CreateTaskRequestSchema = z.object({
-  assigneeId: z.string().optional(),
+  assigneeId: z.string().optional().nullish(),
   assigneeType: AssigneeTypeSchema,
   title: z.string(),
   body: z.string().optional(),

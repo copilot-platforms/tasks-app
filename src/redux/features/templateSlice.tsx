@@ -34,7 +34,7 @@ const createTemplateSlice = createSlice({
         state.targetTemplateId = action.payload.targetTemplateId
       }
     },
-    setCreateTemplateFields: (state, action: { payload: { targetField: string; value: string } }) => {
+    setCreateTemplateFields: (state, action: { payload: { targetField: string; value: string | null } }) => {
       const { targetField, value } = action.payload
       //@ts-ignore
       state[targetField] = value

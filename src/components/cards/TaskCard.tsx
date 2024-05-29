@@ -2,6 +2,7 @@
 
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { TaskResponse } from '@/types/dto/tasks.dto'
+import { NoAssignee } from '@/utils/noAssignee'
 import { Avatar, Stack, Typography, styled } from '@mui/material'
 import { useSelector } from 'react-redux'
 
@@ -15,7 +16,7 @@ const TaskCardContainer = styled(Stack)(({ theme }) => ({
 export const TaskCard = ({ task }: { task: TaskResponse }) => {
   const { assignee } = useSelector(selectTaskBoard)
 
-  const currentAssignee = assignee.find((el) => el.id === task.assigneeId)
+  const currentAssignee = assignee.find((el) => el.id === task.assigneeId) ?? NoAssignee
 
   return (
     <TaskCardContainer>

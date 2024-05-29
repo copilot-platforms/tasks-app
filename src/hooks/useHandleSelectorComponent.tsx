@@ -21,12 +21,15 @@ export const useHandleSelectorComponent = ({ item, type }: { item: unknown; type
     }
 
     if (type === SelectorType.ASSIGNEE_SELECTOR) {
-      store.dispatch(setCreateTaskFields({ targetField: 'assigneeId', value: (item as IAssigneeCombined)?.id }))
+      store.dispatch(setCreateTaskFields({ targetField: 'assigneeId', value: (item as IAssigneeCombined)?.id }) ?? null)
       store.dispatch(
         setCreateTaskFields({ targetField: 'assigneeType', value: getAssigneeTypeCorrected(item as IAssigneeCombined) }),
       )
       store.dispatch(
-        setCreateTemplateFields({ targetField: 'assigneeType', value: getAssigneeTypeCorrected(item as IAssigneeCombined) }),
+        setCreateTemplateFields({
+          targetField: 'assigneeType',
+          value: getAssigneeTypeCorrected(item as IAssigneeCombined),
+        }),
       )
     }
   }, [type, item])

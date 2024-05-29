@@ -6,20 +6,13 @@ import { useFocusableInput } from '@/hooks/useFocusableInput'
 import { HTMLAttributes, ReactNode, useState } from 'react'
 import { StyledTextField } from './TextField'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { IAssigneeCombined, ITemplate, TruncateMaxNumber } from '@/types/interfaces'
+import { IAssigneeCombined, IExtraOption, ITemplate, TruncateMaxNumber } from '@/types/interfaces'
 import { truncateText } from '@/utils/truncateText'
 
 export enum SelectorType {
   ASSIGNEE_SELECTOR = 'assigneeSelector',
   STATUS_SELECTOR = 'statusSelector',
   TEMPLATE_SELECTOR = 'templateSelected',
-}
-
-type ExtraOption = {
-  id: string
-  name: string
-  value?: string
-  extraOptionFlag: true
 }
 
 interface Prop {
@@ -31,7 +24,7 @@ interface Prop {
   buttonContent: ReactNode
   disabled?: boolean
   placeholder?: string
-  extraOption?: ExtraOption
+  extraOption?: IExtraOption
   extraOptionRenderer?: (
     setAnchorEl: React.Dispatch<React.SetStateAction<HTMLElement | null>>,
     anchorEl: null | HTMLElement,
@@ -140,7 +133,7 @@ export default function Selector({
             )
           }}
           renderOption={(props, option: unknown) =>
-            extraOption && extraOptionRenderer && (option as ExtraOption)?.extraOptionFlag ? (
+            extraOption && extraOptionRenderer && (option as IExtraOption)?.extraOptionFlag ? (
               extraOptionRenderer(setAnchorEl, anchorEl, props)
             ) : selectorType === SelectorType.ASSIGNEE_SELECTOR ? (
               <AssigneeSelectorRenderer props={props} option={option} />
