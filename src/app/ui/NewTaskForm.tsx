@@ -71,7 +71,7 @@ export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
                 }}
                 startIcon={<TemplateIconSm />}
                 options={templates}
-                placeholder="Select template"
+                placeholder="Apply template..."
                 value={templateValue}
                 selectorType={SelectorType.TEMPLATE_SELECTOR}
                 extraOption={{
