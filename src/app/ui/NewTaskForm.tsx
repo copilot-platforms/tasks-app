@@ -20,7 +20,7 @@ import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { useRouter } from 'next/navigation'
 import { selectCreateTemplate } from '@/redux/features/templateSlice'
 import { NoAssignee, NoAssigneeExtraOptions } from '@/utils/noAssignee'
-import ExtraOptionRenderer from '@/components/inputs/ExtraOptionRenderer'
+import ExtraOptionRendererAssignee from '@/components/inputs/ExtraOptionRendererAssignee'
 
 export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
   const { workflowStates, assignee, token, filterOptions } = useSelector(selectTaskBoard)
@@ -170,7 +170,7 @@ export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
               extraOption={NoAssigneeExtraOptions}
               extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
                 return (
-                  <ExtraOptionRenderer
+                  <ExtraOptionRendererAssignee
                     props={props}
                     onClick={(e) => {
                       updateAssigneeValue({ id: '', name: 'No assignee' })

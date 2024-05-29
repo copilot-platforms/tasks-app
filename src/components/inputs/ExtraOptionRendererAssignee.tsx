@@ -1,12 +1,12 @@
 import { Avatar, Box, Stack, Typography } from '@mui/material'
 import React, { HTMLAttributes, MouseEvent } from 'react'
 
-interface ExtraOptionRendererProps {
+interface ExtraOptionRendererAssigneeProps {
   props?: HTMLAttributes<HTMLElement>
   onClick: (e: MouseEvent<HTMLLIElement>) => void
 }
 
-const ExtraOptionRenderer: React.FC<ExtraOptionRendererProps> = ({ props, onClick }) => {
+const ExtraOptionRendererAssignee: React.FC<ExtraOptionRendererAssigneeProps> = ({ props, onClick }) => {
   return (
     <Box
       component="li"
@@ -31,4 +31,4 @@ const ExtraOptionRenderer: React.FC<ExtraOptionRendererProps> = ({ props, onClic
   )
 }
 
-export default ExtraOptionRenderer
+export default ExtraOptionRendererAssignee

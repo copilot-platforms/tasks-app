@@ -10,7 +10,7 @@ import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import Selector from '@/components/inputs/Selector'
 import { IAssigneeCombined } from '@/types/interfaces'
 import { NoAssignee, NoAssigneeExtraOptions } from '@/utils/noAssignee'
-import ExtraOptionRenderer from '@/components/inputs/ExtraOptionRenderer'
+import ExtraOptionRendererAssignee from '@/components/inputs/ExtraOptionRendererAssignee'
 
 export const ListViewTaskCard = ({
   task,
@@ -98,7 +98,7 @@ export const ListViewTaskCard = ({
                 extraOption={NoAssigneeExtraOptions}
                 extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
                   return (
-                    <ExtraOptionRenderer
+                    <ExtraOptionRendererAssignee
                       props={props}
                       onClick={(e) => {
                         updateAssigneeValue({ id: '', name: 'No assignee' })

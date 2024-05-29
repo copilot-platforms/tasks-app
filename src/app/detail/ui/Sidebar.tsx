@@ -18,7 +18,7 @@ import { formatDate, isoToReadableDate } from '@/utils/dateHelper'
 import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 import { ToggleButtonContainer } from './ToggleButtonContainer'
 import { NoAssignee, NoAssigneeExtraOptions } from '@/utils/noAssignee'
-import ExtraOptionRenderer from '@/components/inputs/ExtraOptionRenderer'
+import ExtraOptionRendererAssignee from '@/components/inputs/ExtraOptionRendererAssignee'
 
 const StyledText = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[500],
@@ -131,7 +131,7 @@ export const Sidebar = ({
             extraOption={NoAssigneeExtraOptions}
             extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
               return (
-                <ExtraOptionRenderer
+                <ExtraOptionRendererAssignee
                   props={props}
                   onClick={(e) => {
                     updateAssigneeValue({ id: '', name: 'No assignee' })

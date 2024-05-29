@@ -19,7 +19,7 @@ import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { useFilter } from '@/hooks/useFilter'
 import { IUTokenSchema } from '@/types/common'
 import { NoAssigneeExtraOptions } from '@/utils/noAssignee'
-import ExtraOptionRenderer from '@/components/inputs/ExtraOptionRenderer'
+import ExtraOptionRendererAssignee from '@/components/inputs/ExtraOptionRendererAssignee'
 
 export const FilterBar = ({ updateViewModeSetting }: { updateViewModeSetting: (mode: View) => void }) => {
   const { view, assignee, filterOptions } = useSelector(selectTaskBoard)
@@ -107,7 +107,7 @@ export const FilterBar = ({ updateViewModeSetting }: { updateViewModeSetting: (m
                     extraOption={NoAssigneeExtraOptions}
                     extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
                       return (
-                        <ExtraOptionRenderer
+                        <ExtraOptionRendererAssignee
                           props={props}
                           onClick={(e) => {
                             updateAssigneeValue({ id: '', name: 'No assignee' })
@@ -175,7 +175,7 @@ export const FilterBar = ({ updateViewModeSetting }: { updateViewModeSetting: (m
             extraOption={NoAssigneeExtraOptions}
             extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
               return (
-                <ExtraOptionRenderer
+                <ExtraOptionRendererAssignee
                   props={props}
                   onClick={(e) => {
                     updateAssigneeValue({ id: '', name: 'No assignee' })
