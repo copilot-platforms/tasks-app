@@ -17,7 +17,8 @@ import { IsoDate, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { formatDate, isoToReadableDate } from '@/utils/dateHelper'
 import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 import { ToggleButtonContainer } from './ToggleButtonContainer'
-import { NoAssignee } from '@/utils/noAssignee'
+import { NoAssignee, NoAssigneeExtraOptions } from '@/utils/noAssignee'
+import ExtraOptionRenderer from '@/components/inputs/ExtraOptionRenderer'
 
 const StyledText = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[500],
@@ -127,38 +128,17 @@ export const Sidebar = ({
             options={assignee}
             value={assigneeValue}
             selectorType={SelectorType.ASSIGNEE_SELECTOR}
-            extraOption={{
-              id: '',
-              name: 'No assignee',
-              value: '',
-              extraOptionFlag: true,
-            }}
+            extraOption={NoAssigneeExtraOptions}
             extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
               return (
-                <Box
-                  component="li"
-                  {...props}
-                  sx={{
-                    '&.MuiAutocomplete-option[aria-selected="true"]': {
-                      bgcolor: (theme) => theme.color.gray[100],
-                    },
-                    '&.MuiAutocomplete-option[aria-selected="true"].Mui-focused': {
-                      bgcolor: (theme) => theme.color.gray[100],
-                    },
-                  }}
+                <ExtraOptionRenderer
+                  props={props}
                   onClick={(e) => {
                     updateAssigneeValue({ id: '', name: 'No assignee' })
                     setAnchorEl(anchorEl ? null : e.currentTarget)
                     updateAssignee(null, null)
                   }}
-                >
-                  <Stack direction="row" alignItems="center" columnGap={3}>
-                    <Avatar alt="user" sx={{ width: '20px', height: '20px' }} />
-                    <Typography variant="sm" fontWeight={400}>
-                      No assignee
-                    </Typography>
-                  </Stack>
-                </Box>
+                />
               )
             }}
             buttonContent={
