@@ -120,3 +120,10 @@ export interface ISignedUrlUpload {
   token: string
   path: string
 }
+
+export interface IExtraOption {
+  id: string
+  name: string
+  value?: string
+  extraOptionFlag: true
+}

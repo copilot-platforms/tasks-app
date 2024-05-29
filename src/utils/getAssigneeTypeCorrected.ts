@@ -7,5 +7,5 @@ export const getAssigneeTypeCorrected = (assignee: IAssigneeCombined) => {
       ? 'client'
       : assignee?.type === 'companies'
         ? 'company'
-        : ''
+        : null
 }
