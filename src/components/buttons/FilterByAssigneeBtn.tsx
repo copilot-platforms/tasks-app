@@ -29,6 +29,7 @@ export const FilterByAssigneeBtn = ({
             alt="user"
             src={(assigneeValue as IAssigneeCombined).avatarImageUrl || (assigneeValue as IAssigneeCombined).iconImageUrl}
             sx={{ width: '20px', height: '20px' }}
+            variant={assigneeValue?.type === 'companies' ? 'rounded' : 'circular'}
           />
           <Typography
             variant="bodySm"

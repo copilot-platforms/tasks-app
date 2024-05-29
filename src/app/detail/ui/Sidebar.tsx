@@ -121,6 +121,7 @@ export const Sidebar = ({
                 alt="user"
                 src={assigneeValue?.iconImageUrl || assigneeValue?.avatarImageUrl}
                 sx={{ width: '20px', height: '20px' }}
+                variant={assigneeValue?.type === 'companies' ? 'rounded' : 'circular'}
               />
             }
             options={assignee}

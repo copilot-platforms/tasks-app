@@ -204,6 +204,7 @@ const StatusSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTMLL
   )
 }
 const AssigneeSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTMLLIElement>; option: unknown }) => {
+  console.log('optionsss', option)
   return (
     <Box
       component="li"
@@ -225,6 +226,7 @@ const AssigneeSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTM
           alt="user"
           src={(option as IAssigneeCombined).avatarImageUrl || (option as IAssigneeCombined).iconImageUrl}
           sx={{ width: '20px', height: '20px' }}
+          variant={(option as IAssigneeCombined).type === 'companies' ? 'rounded' : 'circular'}
         />
         <Typography variant="sm" fontWeight={400}>
           {truncateText(

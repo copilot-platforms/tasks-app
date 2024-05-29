@@ -161,6 +161,7 @@ export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
                   alt="user"
                   src={assigneeValue?.iconImageUrl || assigneeValue?.avatarImageUrl}
                   sx={{ width: '20px', height: '20px' }}
+                  variant={assigneeValue?.type === 'companies' ? 'square' : 'circular'}
                 />
               }
               options={assignee}
