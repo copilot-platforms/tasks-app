@@ -1,5 +1,5 @@
 import DBClient from '@/lib/db'
-import { PrismaClient } from '@prisma/client/edge'
+import { PrismaClient } from '@prisma/client'
 import User from '@api/core/models/User.model'
 
 /**
