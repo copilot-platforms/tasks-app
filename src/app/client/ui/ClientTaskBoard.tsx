@@ -45,7 +45,7 @@ export const ClientTaskBoard = ({ updateTask }: { updateTask: (taskId: string, p
               <ClientTaskCard
                 task={task}
                 key={task.id}
-                markdoneFlag={list.type == StateType.completed ? true : false}
+                markdoneFlag={list.type == StateType.completed}
                 handleMarkDone={() => {
                   if (completedTypeWorkflowState?.id) {
                     store.dispatch(

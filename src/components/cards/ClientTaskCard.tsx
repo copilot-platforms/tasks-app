@@ -23,7 +23,6 @@ export const ClientTaskCard = ({
   const { assignee } = useSelector(selectTaskBoard)
 
   const currentAssignee = assignee.find((el) => el.id === task.assigneeId)
-  console.log(task)
   return (
     <Box
       sx={{

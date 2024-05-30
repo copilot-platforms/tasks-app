@@ -170,7 +170,6 @@ export class TasksService extends BaseService {
     try {
       const copilotClient = new CopilotAPI(this.user.token)
       const { senderId, recipientId, actionUser } = await getNotificationParties(copilotClient, task, action)
-      console.log(senderId, recipientId, actionUser)
       await copilotClient.createNotification({
         senderId,
         recipientId,
