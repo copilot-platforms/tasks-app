@@ -4,6 +4,8 @@ import { CreateTaskRequestSchema, UpdateTaskRequestSchema } from '@/types/dto/ta
 import { IdParams } from '@api/core/types/api'
 import httpStatus from 'http-status'
 import authenticate from '@api/core/utils/authenticate'
+import { ActivityLogger } from '../core/services/activityLog.service'
+import { ActivityType } from '@prisma/client'
 
 export const getTasks = async (req: NextRequest) => {
   const user = await authenticate(req)
@@ -20,6 +22,10 @@ export const createTask = async (req: NextRequest) => {
   const data = CreateTaskRequestSchema.parse(await req.json())
   const tasksService = new TasksService(user)
   const newTask = await tasksService.createTask(data)
+
+  //log activity for create task
+  const activityLog = new ActivityLogger({ taskId: newTask.id, user })
+  await activityLog.createTaskLog()
 
   return NextResponse.json({ newTask }, { status: httpStatus.CREATED })
 }

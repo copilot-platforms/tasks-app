@@ -1,7 +1,6 @@
 import DBClient from '@/lib/db'
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from '@prisma/client/edge'
 import User from '@api/core/models/User.model'
-import SupabaseClient from '@/lib/supabase'
 
 /**
  * Base Service with access to db and current user
