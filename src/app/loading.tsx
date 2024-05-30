@@ -1,7 +1,7 @@
 import LoaderComponent from '@/components/layouts/Loader'
 
-const loading = () => {
+const Loading = () => {
   return <LoaderComponent />
 }
 
-export default loading
+export default Loading
