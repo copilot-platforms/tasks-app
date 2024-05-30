@@ -23,14 +23,16 @@ enum AssigneeType {
 }
 
 model WorkflowState {
-  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  workspaceId String    @db.VarChar(32)
-  type        StateType
-  name        String    @db.VarChar(255)
-  key         String    @db.VarChar(255)
-  color       String?   @db.VarChar(32)
-  tasks       Task[]
-  deletedAt   DateTime?
+  id                   String                 @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  workspaceId          String                 @db.VarChar(32)
+  type                 StateType
+  name                 String                 @db.VarChar(255)
+  key                  String                 @db.VarChar(255)
+  color                String?                @db.VarChar(32)
+  tasks                Task[]
+  deletedAt            DateTime?
+  prevWorkflowState    WorkflowStateTracker[] @relation("RL_WorkflowStateTracker_prev_workflowState")
+  currentWorkflowState WorkflowStateTracker[] @relation("RL_WorkflowStateTracker_current_workflowState")
 
   @@unique([workspaceId, key], name: "UQ_WorkflowStates_workspaceId_key")
   @@index([workspaceId, key], name: "IX_WorkflowStates_workspaceId_key")
@@ -48,6 +50,7 @@ model Task {
   workflowState   WorkflowState @relation(fields: [workflowStateId], references: [id], onDelete: Cascade)
   workflowStateId String        @db.Uuid
   attachments     Attachment[]
+  activityLog     ActivityLog[]
 
   assignedAt  DateTime?
   completedAt DateTime?
@@ -104,4 +107,55 @@ model Attachment {
   @@unique([filePath], name: "UQ_Attachments_filePath")
   @@index([filePath], name: "IX_Attachments_filePath")
   @@map("Attachments")
+}
+
+model ActivityLog {
+  id                   String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdAt            DateTime              @default(now())
+  taskId               String                @db.Uuid
+  workspaceId          String                @db.VarChar(32)
+  activityType         ActivityType
+  createTaskTracker    CreateTaskTracker?
+  assigneeTracker      AssignTracker?
+  workflowStateTracker WorkflowStateTracker?
+  task                 Task                  @relation(fields: [taskId], references: [id])
+
+  @@index([createdAt])
+  @@map("ActivityLogs")
+}
+
+model CreateTaskTracker {
+  id            String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  activityLogId String      @unique @db.Uuid
+  createdBy     String
+  createdById   String      @db.Uuid
+  activityLog   ActivityLog @relation(fields: [activityLogId], references: [id])
+}
+
+model AssignTracker {
+  id            String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  activityLogId String      @unique @db.Uuid
+  initiator     String
+  initiatorId   String      @db.Uuid
+  assignedTo    String
+  assignedToId  String      @db.Uuid
+  activityLog   ActivityLog @relation(fields: [activityLogId], references: [id])
+}
+
+model WorkflowStateTracker {
+  id                     String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  activityLog            ActivityLog    @relation(fields: [activityLogId], references: [id])
+  activityLogId          String         @unique @db.Uuid
+  initiator              String
+  initiatorId            String         @db.Uuid
+  prevWorkflowStateId    String?        @db.Uuid
+  currentWorkflowStateId String         @db.Uuid
+  prevWorkflowState      WorkflowState? @relation(name: "RL_WorkflowStateTracker_prev_workflowState", fields: [prevWorkflowStateId], references: [id])
+  currentWorkflowState   WorkflowState  @relation(name: "RL_WorkflowStateTracker_current_workflowState", fields: [currentWorkflowStateId], references: [id])
+}
+
+enum ActivityType {
+  CREATE_TASK
+  ASSIGN_TASK
+  WORKFLOWSTATE_UPDATE
 }
