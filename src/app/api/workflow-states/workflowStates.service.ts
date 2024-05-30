@@ -53,7 +53,6 @@ class WorkflowStatesService extends BaseService {
         { type: 'unstarted', name: 'Todo', key: 'todo', workspaceId: this.user.workspaceId },
         { type: 'started', name: 'In Progress', key: 'inProgress', workspaceId: this.user.workspaceId },
         { type: 'completed', name: 'Done', key: 'completed', workspaceId: this.user.workspaceId },
-        { type: 'backlog', name: 'Archived', key: 'archived', workspaceId: this.user.workspaceId },
       ],
     })
   }
