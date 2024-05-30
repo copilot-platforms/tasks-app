@@ -9,6 +9,7 @@ import { Box } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
+import { StateType } from '@prisma/client'
 
 export const ClientTaskBoard = ({ updateTask }: { updateTask: (taskId: string, payload: UpdateTaskRequest) => void }) => {
   const { workflowStates, tasks, filteredTasks, token } = useSelector(selectTaskBoard)
@@ -30,7 +31,6 @@ export const ClientTaskBoard = ({ updateTask }: { updateTask: (taskId: string, p
   }
 
   const completedTypeWorkflowState = workflowStates.find((el) => el.type === 'completed')
-
   return workflowStates.map((list) => {
     return (
       <TaskRow
@@ -45,6 +45,7 @@ export const ClientTaskBoard = ({ updateTask }: { updateTask: (taskId: string, p
               <ClientTaskCard
                 task={task}
                 key={task.id}
+                markdoneFlag={list.type == StateType.completed ? true : false}
                 handleMarkDone={() => {
                   if (completedTypeWorkflowState?.id) {
                     store.dispatch(
