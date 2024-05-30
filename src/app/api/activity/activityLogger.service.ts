@@ -1,9 +1,9 @@
-import { ActivityType, AssigneeType } from '@prisma/client'
-import { BaseService } from './base.service'
+import { ActivityType, AssigneeType, Task } from '@prisma/client'
+import { BaseService } from '@/app/api/core/services/base.service'
 import { CopilotAPI } from '@/utils/CopilotAPI'
-import User from '../models/User.model'
+import User from '../core/models/User.model'
 import { ClientResponse, CompanyResponse, InternalUsers, MeResponse } from '@/types/common'
-import { TaskResponse, TaskResponseSchema, UpdateTaskRequest, UpdateTaskRequestSchema } from '@/types/dto/tasks.dto'
+import { TaskResponse, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 
 export class ActivityLogger extends BaseService {
   public taskId: string
@@ -65,8 +65,8 @@ export class ActivityLogger extends BaseService {
     }
   }
 
-  async createWorkflowStateLog(payload: UpdateTaskRequest, prevTaskPayload: any) {
-    if (payload.workflowStateId && prevTaskPayload.workflowStateId) {
+  async createWorkflowStateLog(payload: UpdateTaskRequest, prevTaskPayload: Task | null) {
+    if (payload.workflowStateId && prevTaskPayload?.workflowStateId) {
       await this.getUserInfo(this.user.token)
 
       await this.db.activityLog.create({
@@ -88,11 +88,12 @@ export class ActivityLogger extends BaseService {
   }
 
   async initiateLogging(payload: UpdateTaskRequest) {
-    const currentTask = await this.db.task.findUnique({
+    const currentTask: Task | null = await this.db.task.findUnique({
       where: {
         id: this.taskId,
       },
     })
+    console.log('current task', currentTask)
     if (payload.assigneeId !== currentTask?.assigneeId) {
       await this.createAssignLog(payload)
     }
@@ -104,8 +105,12 @@ export class ActivityLogger extends BaseService {
 
   async getUserInfo(token: string) {
     const copilotUtils = new CopilotAPI(token)
-    const userInfo = await copilotUtils.me()
-    this.userInfo = userInfo
+    try {
+      const userInfo = await copilotUtils.me()
+      this.userInfo = userInfo
+    } catch (e: unknown) {
+      console.error('Something went wrong!')
+    }
   }
 
   async getUserInfoById(payload: UpdateTaskRequest, token: string) {
@@ -125,7 +130,7 @@ export class ActivityLogger extends BaseService {
         return userInfo as ClientResponse
       }
     } catch (e: unknown) {
-      console.log('Something went wrong!')
+      console.error('Something went wrong!')
     }
   }
 }

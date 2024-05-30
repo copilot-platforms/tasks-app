@@ -1,3 +1,4 @@
+import { UserRole } from '@/app/api/core/types/user'
 import { z } from 'zod'
 
 export const TokenSchema = z.object({
@@ -156,3 +157,12 @@ export const NotificationRequestBodySchema = z.object({
 export type CopilotUser = InternalUsers | ClientResponse
 
 export type NotificationRequestBody = z.infer<typeof NotificationRequestBodySchema>
+
+export const UserSchema = z.object({
+  token: z.string(),
+  role: z.nativeEnum(UserRole),
+  workspaceId: z.string(),
+  clientId: z.string().optional(),
+  companyId: z.string().optional(),
+  internalUserId: z.string().optional(),
+})

@@ -4,8 +4,7 @@ import { CreateTaskRequestSchema, UpdateTaskRequestSchema } from '@/types/dto/ta
 import { IdParams } from '@api/core/types/api'
 import httpStatus from 'http-status'
 import authenticate from '@api/core/utils/authenticate'
-import { ActivityLogger } from '../core/services/activityLog.service'
-import { ActivityType } from '@prisma/client'
+import { ActivityLogger } from '@/app/api/activity/activityLogger.service'
 
 export const getTasks = async (req: NextRequest) => {
   const user = await authenticate(req)
