@@ -1,8 +1,8 @@
-import { ActivityType } from '@prisma/client'
+import { ActivityType, AssigneeType } from '@prisma/client'
 import { BaseService } from './base.service'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import User from '../models/User.model'
-import { MeResponse } from '@/types/common'
+import { ClientResponse, CompanyResponse, InternalUsers, MeResponse } from '@/types/common'
 import { TaskResponse, TaskResponseSchema, UpdateTaskRequest, UpdateTaskRequestSchema } from '@/types/dto/tasks.dto'
 
 export class ActivityLogger extends BaseService {
@@ -37,7 +37,15 @@ export class ActivityLogger extends BaseService {
     if (payload.assigneeId) {
       await this.getUserInfo(this.user.token)
 
-      const clientInfo = await this.getUserInfoById(payload.assigneeId, this.user.token)
+      const clientInfo = await this.getUserInfoById(payload, this.user.token)
+
+      let assignedTo = ''
+
+      if (isCompanyResponse(clientInfo)) {
+        assignedTo = clientInfo.name
+      } else if (isInternalUsers(clientInfo) || isClientResponse(clientInfo)) {
+        assignedTo = `${clientInfo.givenName} ${clientInfo.familyName}`
+      }
 
       await this.db.activityLog.create({
         data: {
@@ -46,9 +54,9 @@ export class ActivityLogger extends BaseService {
           activityType: ActivityType.ASSIGN_TASK,
           assigneeTracker: {
             create: {
-              initiator: this.userInfo?.givenName || '' + ' ' + this.userInfo?.familyName || '',
+              initiator: this.userInfo?.givenName + ' ' + this.userInfo?.familyName,
               initiatorId: this.user.internalUserId as string,
-              assignedTo: clientInfo.givenName + ' ' + clientInfo.familyName,
+              assignedTo: assignedTo,
               assignedToId: payload.assigneeId,
             },
           },
@@ -100,9 +108,37 @@ export class ActivityLogger extends BaseService {
     this.userInfo = userInfo
   }
 
-  async getUserInfoById(id: string, token: string) {
+  async getUserInfoById(payload: UpdateTaskRequest, token: string) {
     const copilotUtils = new CopilotAPI(token)
-    const userInfo = await copilotUtils.getInternalUser(id)
-    return userInfo
+    const id = payload.assigneeId as string
+    try {
+      if (payload.assigneeType === AssigneeType.internalUser) {
+        const userInfo = await copilotUtils.getInternalUser(id)
+        return userInfo as InternalUsers
+      }
+      if (payload.assigneeType === AssigneeType.company) {
+        const userInfo = await copilotUtils.getCompany(id)
+        return userInfo as CompanyResponse
+      }
+      if (payload.assigneeType === AssigneeType.client) {
+        const userInfo = await copilotUtils.getClient(id)
+        return userInfo as ClientResponse
+      }
+    } catch (e: unknown) {
+      console.log('Something went wrong!')
+    }
   }
+}
+
+// Type guard functions
+function isInternalUsers(user: any): user is InternalUsers {
+  return (user as InternalUsers).givenName !== undefined
+}
+
+function isCompanyResponse(user: any): user is CompanyResponse {
+  return (user as CompanyResponse).name !== undefined
+}
+
+function isClientResponse(user: any): user is ClientResponse {
+  return (user as ClientResponse).givenName !== undefined && (user as ClientResponse).familyName !== undefined
 }
