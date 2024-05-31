@@ -83,6 +83,9 @@ export class ActivityLogger extends BaseService {
   }
 
   async initiateLogging(payload: UpdateTaskRequest, prevTask: Task) {
+    console.log('from logger: payload', payload.assigneeId)
+    console.log('from logger: prevTask', prevTask.assigneeId)
+
     if (payload.assigneeId !== prevTask.assigneeId) {
       await this.createAssignLog(payload)
     }
