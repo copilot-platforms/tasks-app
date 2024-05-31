@@ -35,6 +35,7 @@ export class ActivityLogger extends BaseService {
 
   async createAssignLog(payload: UpdateTaskRequest) {
     if (payload.assigneeId) {
+      console.log('assign log is running')
       await this.getUserInfo(this.user.token)
 
       const clientInfo = await this.getUserInfoById(payload, this.user.token)
@@ -46,6 +47,7 @@ export class ActivityLogger extends BaseService {
       } else if (isInternalUsers(clientInfo) || isClientResponse(clientInfo)) {
         assignedTo = `${clientInfo.givenName} ${clientInfo.familyName}`
       }
+      console.log('assignedTo', assignedTo)
 
       await this.db.activityLog.create({
         data: {

@@ -20,6 +20,7 @@ activityEvents.on(
     }
 
     if (eventType === ActivityEventType.PATCH) {
+      console.log('patch is running')
       const activityLogger = new ActivityLogger({ taskId, user: user })
       await activityLogger.initiateLogging(payload, prevTask)
     }
