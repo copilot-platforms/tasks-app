@@ -23,7 +23,10 @@ class UsersService extends BaseService {
       this.copilot.getCompanies(),
     ])
 
-    return { internalUsers: ius.data, clients: clients.data, companies: companies.data }
+    // Filter out companies where isPlaceholder is true if companies.data is not null
+    const filteredCompanies = companies.data ? companies.data.filter((company) => !company.isPlaceholder) : []
+
+    return { internalUsers: ius.data, clients: clients.data, companies: filteredCompanies }
   }
 }
 
