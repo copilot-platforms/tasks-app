@@ -143,9 +143,9 @@ export class TasksService extends BaseService {
     })
 
     if (updatedTask) {
-      // activityEvents.emit('patch', id, this.user, data, prevTask)
-      const activityLogger = new ActivityLogger({ taskId: id, user: this.user })
-      await activityLogger.initiateLogging(data, prevTask)
+      activityEvents.emit('patch', id, this.user, data, prevTask)
+      // const activityLogger = new ActivityLogger({ taskId: id, user: this.user })
+      // await activityLogger.initiateLogging(data, prevTask)
     }
 
     // If task goes from unassigned to assigned, or assigneeId does not match
