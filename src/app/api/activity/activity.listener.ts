@@ -1,4 +1,4 @@
-import { EventEmitter } from 'node:events'
+import { EventEmitter } from 'stream'
 import User from '../core/models/User.model'
 import { UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { Task } from '@prisma/client'
