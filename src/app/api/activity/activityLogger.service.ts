@@ -38,15 +38,11 @@ export class ActivityLogger extends BaseService {
       console.log('assign log is running')
       await this.getUserInfo(this.user.token)
 
-      const clientInfo = await this.getUserInfoById(payload, this.user.token)
+      const clientInfo: any = await this.getUserInfoById(payload, this.user.token)
 
-      let assignedTo = ''
+      let assignedTo =
+        payload.assigneeType === AssigneeType.company ? clientInfo.name : `${clientInfo.givenName} ${clientInfo.familyName}`
 
-      if (isCompanyResponse(clientInfo)) {
-        assignedTo = clientInfo.name
-      } else if (isInternalUsers(clientInfo) || isClientResponse(clientInfo)) {
-        assignedTo = `${clientInfo.givenName} ${clientInfo.familyName}`
-      }
       console.log('assignedTo', assignedTo)
 
       await this.db.activityLog.create({
@@ -129,17 +125,4 @@ export class ActivityLogger extends BaseService {
       console.error('Something went wrong!')
     }
   }
-}
-
-// Type guard functions
-function isInternalUsers(user: any): user is InternalUsers {
-  return (user as InternalUsers).givenName !== undefined
-}
-
-function isCompanyResponse(user: any): user is CompanyResponse {
-  return (user as CompanyResponse).name !== undefined
-}
-
-function isClientResponse(user: any): user is ClientResponse {
-  return (user as ClientResponse).givenName !== undefined && (user as ClientResponse).familyName !== undefined
 }
