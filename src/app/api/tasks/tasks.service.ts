@@ -14,7 +14,7 @@ import {
 } from '@api/tasks/tasks.helpers'
 import APIError from '@api/core/exceptions/api'
 import httpStatus from 'http-status'
-import { ActivityEventType, activityEvents } from '../activity/activity.listener'
+import { activityEvents } from '../activity/activity.listener'
 import { ActivityLogger } from '../activity/activityLogger.service'
 
 type FilterByAssigneeId = {
@@ -90,7 +90,7 @@ export class TasksService extends BaseService {
     })
 
     if (newTask) {
-      activityEvents.emit('logActivity', newTask.id, this.user, ActivityEventType.POST)
+      activityEvents.emit('post', newTask.id, this.user)
     }
 
     // If new task is assigned to someone (IU / Client), send proper notification + email to them
@@ -143,9 +143,7 @@ export class TasksService extends BaseService {
     })
 
     if (updatedTask) {
-      // activityEvents.emit('logActivity', id, this.user, ActivityEventType.PATCH, data, prevTask)
-      const activityLogger = new ActivityLogger({ taskId: id, user: this.user })
-      await activityLogger.initiateLogging(data, prevTask)
+      activityEvents.emit('patch', id, this.user, data, prevTask)
     }
 
     // If task goes from unassigned to assigned, or assigneeId does not match
