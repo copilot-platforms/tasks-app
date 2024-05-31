@@ -7,16 +7,14 @@ import { UpdateTaskRequest } from '@/types/dto/tasks.dto'
 
 export class ActivityLogger extends BaseService {
   public taskId: string
-  protected userInfo: MeResponse | null
 
   constructor({ taskId, user }: { taskId: string; user: User }) {
     super(user)
     this.taskId = taskId
-    this.userInfo = null
   }
 
   async createTaskLog() {
-    await this.getUserInfo(this.user.token)
+    const userInfo = await this.getUserInfo(this.user.token)
 
     await this.db.activityLog.create({
       data: {
@@ -25,7 +23,7 @@ export class ActivityLogger extends BaseService {
         activityType: ActivityType.CREATE_TASK,
         createTaskTracker: {
           create: {
-            createdBy: this.userInfo?.givenName || '' + ' ' + this.userInfo?.familyName || '',
+            createdBy: userInfo?.givenName || '' + ' ' + userInfo?.familyName || '',
             createdById: this.user.internalUserId as string,
           },
         },
@@ -36,12 +34,14 @@ export class ActivityLogger extends BaseService {
   async createAssignLog(payload: UpdateTaskRequest) {
     if (payload.assigneeId) {
       console.log('assign log is running')
-      await this.getUserInfo(this.user.token)
+      const userInfo = await this.getUserInfo(this.user.token)
 
-      const clientInfo: any = await this.getUserInfoById(payload, this.user.token)
+      const clientInfo: unknown = await this.getUserInfoById(payload, this.user.token)
 
       let assignedTo =
-        payload.assigneeType === AssigneeType.company ? clientInfo.name : `${clientInfo.givenName} ${clientInfo.familyName}`
+        payload.assigneeType === AssigneeType.company
+          ? (clientInfo as CompanyResponse).name
+          : `${(clientInfo as InternalUsers).givenName} ${(clientInfo as InternalUsers).familyName}`
 
       console.log('assignedTo', assignedTo)
 
@@ -52,7 +52,7 @@ export class ActivityLogger extends BaseService {
           activityType: ActivityType.ASSIGN_TASK,
           assigneeTracker: {
             create: {
-              initiator: this.userInfo?.givenName + ' ' + this.userInfo?.familyName,
+              initiator: userInfo?.givenName + ' ' + userInfo?.familyName,
               initiatorId: this.user.internalUserId as string,
               assignedTo: assignedTo,
               assignedToId: payload.assigneeId,
@@ -65,7 +65,7 @@ export class ActivityLogger extends BaseService {
 
   async createWorkflowStateLog(payload: UpdateTaskRequest, prevTaskPayload: Task | null) {
     if (payload.workflowStateId && prevTaskPayload?.workflowStateId) {
-      await this.getUserInfo(this.user.token)
+      const userInfo = await this.getUserInfo(this.user.token)
 
       await this.db.activityLog.create({
         data: {
@@ -74,7 +74,7 @@ export class ActivityLogger extends BaseService {
           activityType: ActivityType.WORKFLOWSTATE_UPDATE,
           workflowStateTracker: {
             create: {
-              initiator: this.userInfo?.givenName || ' ' + this.userInfo?.familyName || '',
+              initiator: userInfo?.givenName || ' ' + userInfo?.familyName || '',
               initiatorId: this.user.internalUserId as string,
               prevWorkflowStateId: prevTaskPayload.workflowStateId,
               currentWorkflowStateId: payload.workflowStateId,
@@ -99,7 +99,7 @@ export class ActivityLogger extends BaseService {
     const copilotUtils = new CopilotAPI(token)
     try {
       const userInfo = await copilotUtils.me()
-      this.userInfo = userInfo
+      return userInfo
     } catch (e: unknown) {
       console.error('Something went wrong!')
     }
