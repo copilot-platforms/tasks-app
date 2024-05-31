@@ -23,8 +23,8 @@ export class ActivityLogger extends BaseService {
         workspaceId: this.user.workspaceId,
         activityType: ActivityType.CREATE_TASK,
         details: {
-          createdBy: userInfo?.givenName || '' + ' ' + userInfo?.familyName || '',
-          createdById: this.user.internalUserId as string,
+          initiator: userInfo?.givenName || '' + ' ' + userInfo?.familyName || '',
+          initiatorId: this.user.internalUserId as string,
         },
       },
     })
