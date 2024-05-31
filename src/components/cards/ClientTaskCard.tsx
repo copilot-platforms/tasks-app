@@ -46,6 +46,7 @@ export const ClientTaskCard = ({
               <Avatar
                 src={currentAssignee?.iconImageUrl || currentAssignee?.avatarImageUrl}
                 sx={{ width: '20px', height: '20px' }}
+                variant={currentAssignee?.type === 'companies' ? 'rounded' : 'circular'}
               />
 
               <Typography variant="bodySm" lineHeight="16px" sx={{ color: (theme) => theme.color.gray[600] }}>
