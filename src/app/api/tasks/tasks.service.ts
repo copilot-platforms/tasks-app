@@ -135,13 +135,16 @@ export class TasksService extends BaseService {
       },
       include: { workflowState: true },
     })
-
     // If task goes from unassigned to assigned, or assigneeId does not match
     if (prevTask?.assigneeId != updatedTask.assigneeId && updatedTask.assigneeId) {
       this.createTaskNotification(updatedTask, NotificationTaskActions.Assigned)
     }
     // If task was previous in another state, and is moved to a 'completed' type WorkflowState
-    if (prevTask?.workflowState?.type !== 'completed' && updatedTask?.workflowState?.type === 'completed') {
+    if (
+      prevTask?.workflowState?.type !== 'completed' &&
+      updatedTask?.workflowState?.type === 'completed' &&
+      updatedTask.assigneeId
+    ) {
       this.createTaskNotification(updatedTask, NotificationTaskActions.Completed)
     }
 
