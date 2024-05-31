@@ -22,10 +22,6 @@ export const createTask = async (req: NextRequest) => {
   const tasksService = new TasksService(user)
   const newTask = await tasksService.createTask(data)
 
-  //log activity for create task
-  const activityLog = new ActivityLogger({ taskId: newTask.id, user })
-  await activityLog.createTaskLog()
-
   return NextResponse.json({ newTask }, { status: httpStatus.CREATED })
 }
 

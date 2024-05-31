@@ -14,6 +14,7 @@ import {
 } from '@api/tasks/tasks.helpers'
 import APIError from '@api/core/exceptions/api'
 import httpStatus from 'http-status'
+import { ActivityEventType, activityEvents } from '../activity/activity.listener'
 
 type FilterByAssigneeId = {
   assigneeId: string
@@ -87,6 +88,10 @@ export class TasksService extends BaseService {
       include: { workflowState: true },
     })
 
+    if (newTask) {
+      activityEvents.emit('logActivity', newTask.id, this.user, ActivityEventType.POST)
+    }
+
     // If new task is assigned to someone (IU / Client), send proper notification + email to them
     if (newTask.assigneeId) {
       this.createTaskNotification(newTask, NotificationTaskActions.Assigned)
@@ -135,6 +140,10 @@ export class TasksService extends BaseService {
       },
       include: { workflowState: true },
     })
+
+    if (updatedTask) {
+      activityEvents.emit('logActivity', id, this.user, ActivityEventType.PATCH, data, prevTask)
+    }
 
     // If task goes from unassigned to assigned, or assigneeId does not match
     if (prevTask?.assigneeId != updatedTask.assigneeId && updatedTask.assigneeId) {

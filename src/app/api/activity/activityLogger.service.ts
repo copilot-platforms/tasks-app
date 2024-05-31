@@ -3,7 +3,7 @@ import { BaseService } from '@/app/api/core/services/base.service'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import User from '../core/models/User.model'
 import { ClientResponse, CompanyResponse, InternalUsers, MeResponse } from '@/types/common'
-import { TaskResponse, UpdateTaskRequest } from '@/types/dto/tasks.dto'
+import { UpdateTaskRequest } from '@/types/dto/tasks.dto'
 
 export class ActivityLogger extends BaseService {
   public taskId: string
@@ -87,19 +87,13 @@ export class ActivityLogger extends BaseService {
     }
   }
 
-  async initiateLogging(payload: UpdateTaskRequest) {
-    const currentTask: Task | null = await this.db.task.findUnique({
-      where: {
-        id: this.taskId,
-      },
-    })
-    console.log('current task', currentTask)
-    if (payload.assigneeId !== currentTask?.assigneeId) {
+  async initiateLogging(payload: UpdateTaskRequest, prevTask: Task) {
+    if (payload.assigneeId !== prevTask.assigneeId) {
       await this.createAssignLog(payload)
     }
 
-    if (payload.workflowStateId !== currentTask?.workflowStateId) {
-      await this.createWorkflowStateLog(payload, currentTask)
+    if (payload.workflowStateId !== prevTask.workflowStateId) {
+      await this.createWorkflowStateLog(payload, prevTask)
     }
   }
 
