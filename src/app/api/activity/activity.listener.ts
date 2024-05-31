@@ -12,6 +12,8 @@ activityEvents.on('post', async (taskId: string, user: User) => {
 })
 
 activityEvents.on('patch', async (taskId: string, user: User, payload: UpdateTaskRequest, prevTask: Task) => {
+  console.log('from listener: payload', payload.assigneeId)
+  console.log('listener: prevTask', prevTask.assigneeId)
   const activityLogger = new ActivityLogger({ taskId, user: user })
   await activityLogger.initiateLogging(payload, prevTask)
 })

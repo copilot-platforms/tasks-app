@@ -143,6 +143,8 @@ export class TasksService extends BaseService {
     })
 
     if (updatedTask) {
+      console.log('new', data.assigneeId)
+      console.log('old', prevTask.assigneeId)
       activityEvents.emit('patch', id, this.user, data, prevTask)
     }
 
