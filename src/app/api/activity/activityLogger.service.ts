@@ -60,6 +60,7 @@ export class ActivityLogger extends BaseService {
           },
         },
       })
+      console.log('createAssignLog completed with new assignee:', assignedTo)
     }
   }
 

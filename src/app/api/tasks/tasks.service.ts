@@ -15,6 +15,7 @@ import {
 import APIError from '@api/core/exceptions/api'
 import httpStatus from 'http-status'
 import { ActivityEventType, activityEvents } from '../activity/activity.listener'
+import { ActivityLogger } from '../activity/activityLogger.service'
 
 type FilterByAssigneeId = {
   assigneeId: string
@@ -142,7 +143,9 @@ export class TasksService extends BaseService {
     })
 
     if (updatedTask) {
-      activityEvents.emit('logActivity', id, this.user, ActivityEventType.PATCH, data, prevTask)
+      // activityEvents.emit('logActivity', id, this.user, ActivityEventType.PATCH, data, prevTask)
+      const activityLogger = new ActivityLogger({ taskId: id, user: this.user })
+      await activityLogger.initiateLogging(data, prevTask)
     }
 
     // If task goes from unassigned to assigned, or assigneeId does not match
