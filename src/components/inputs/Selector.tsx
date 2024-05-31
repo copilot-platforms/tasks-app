@@ -204,7 +204,6 @@ const StatusSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTMLL
   )
 }
 const AssigneeSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTMLLIElement>; option: unknown }) => {
-  console.log('optionsss', option)
   return (
     <Box
       component="li"
