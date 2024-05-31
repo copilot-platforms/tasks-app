@@ -6,6 +6,7 @@ export const NoAssignee = {
   avatarImageUrl: '',
   iconImageUrl: '',
   givenName: 'No assignee',
+  type: '',
 }
 
 export const NoAssigneeExtraOptions: IExtraOption = {
