@@ -91,8 +91,10 @@ model ViewSetting {
 
 model Attachment {
   id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  task        Task      @relation(fields: [taskId], references: [id])
-  taskId      String    @db.Uuid
+  task        Task?     @relation(fields: [taskId], references: [id])
+  taskId      String?   @db.Uuid
+  comment     Comment?  @relation(fields: [commentId], references: [id])
+  commentId   String?   @db.Uuid
   workspaceId String    @db.VarChar(32)
   filePath    String
   fileSize    Int
@@ -119,6 +121,20 @@ model ActivityLog {
 
   @@index([createdAt])
   @@map("ActivityLogs")
+}
+
+model Comment {
+  id          String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  content     String
+  parentId    String?      @db.Uuid
+  parent      Comment?     @relation("ChildComments", fields: [parentId], references: [id])
+  children    Comment[]    @relation("ChildComments")
+  attachments Attachment[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @default(now())
+  deletedAt   DateTime?
+
+  @@map("Comments")
 }
 
 enum ActivityType {
