@@ -1,9 +1,10 @@
-import { CreateComment, UpdateComment } from '@/types/dto/comment.dto'
+import { CommentResponseSchema, CreateComment, UpdateComment } from '@/types/dto/comment.dto'
 import { BaseService } from '../core/services/base.service'
 import { PoliciesService } from '../core/services/policies.service'
 import { UserAction } from '../core/types/user'
 import { Resource } from '../core/types/api'
 import { CopilotAPI } from '@/utils/CopilotAPI'
+import { z } from 'zod'
 
 export class CommentService extends BaseService {
   async createComment(data: CreateComment) {
@@ -45,5 +46,25 @@ export class CommentService extends BaseService {
     })
 
     return updatedComment
+  }
+
+  async getAllComments(taskId: string) {
+    const comments = await this.db.comment.findMany({
+      where: {
+        workspaceId: this.user.workspaceId,
+        taskId: taskId,
+        parentId: null,
+      },
+      include: {
+        attachments: true,
+        children: {
+          where: {
+            deletedAt: null,
+          },
+          include: { attachments: true },
+        },
+      },
+    })
+    return z.array(CommentResponseSchema).parse(comments)
   }
 }

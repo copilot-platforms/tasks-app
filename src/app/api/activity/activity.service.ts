@@ -11,6 +11,7 @@ import { Resource } from '../core/types/api'
 import { z } from 'zod'
 import { CommentResponseSchema } from '@/types/dto/comment.dto'
 import { ActivityLogResponseSchema } from '@/types/dto/activity.dto'
+import { CommentService } from '../comment/comment.service'
 
 export class ActivityLogger extends BaseService {
   public taskId: string
@@ -128,39 +129,26 @@ export class ActivityLogger extends BaseService {
     }
   }
 
-  async getActivityWithComment() {
-    const policyGate = new PoliciesService(this.user)
-    policyGate.authorize(UserAction.Read, Resource.Comment)
-
-    const comments = await this.db.comment.findMany({
-      where: {
-        workspaceId: this.user.workspaceId,
-        taskId: this.taskId,
-        parentId: null,
-      },
-      include: {
-        attachments: true,
-        children: {
-          where: {
-            deletedAt: null,
-          },
-          include: { attachments: true },
-        },
-      },
-    })
-
+  async getActivityLogs() {
     const activityLogs = await this.db.activityLog.findMany({
       where: {
         workspaceId: this.user.workspaceId,
         taskId: this.taskId,
       },
     })
+    return z.array(ActivityLogResponseSchema).parse(activityLogs)
+  }
+
+  async getActivityWithComment() {
+    const policyGate = new PoliciesService(this.user)
+    policyGate.authorize(UserAction.Read, Resource.Comment)
+
+    const commentService = new CommentService(this.user)
+    const comments = await commentService.getAllComments(this.taskId)
+    const activityLogs = await this.getActivityLogs()
 
     // Combine comments and activity logs
-    const combinedResults = [
-      ...z.array(CommentResponseSchema).parse(comments),
-      ...z.array(ActivityLogResponseSchema).parse(activityLogs),
-    ]
+    const combinedResults = [...comments, ...activityLogs]
 
     // Sort combined results by createdAt field in descending order
     combinedResults.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
