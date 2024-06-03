@@ -16,6 +16,7 @@ export class PoliciesService extends BaseService {
       [Resource.ViewSetting]: [],
       [Resource.Users]: [],
       [Resource.Attachments]: [UserAction.Read],
+      [Resource.Comment]: [UserAction.Create, UserAction.Read, UserAction.Update],
     },
   }
 
