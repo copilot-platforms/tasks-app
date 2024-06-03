@@ -5,6 +5,9 @@ import User from '../core/models/User.model'
 import { ClientResponse, CompanyResponse, InternalUsers, MeResponse } from '@/types/common'
 import { UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import WorkflowStatesService from '../workflow-states/workflowStates.service'
+import { PoliciesService } from '../core/services/policies.service'
+import { UserAction } from '../core/types/user'
+import { Resource } from '../core/types/api'
 
 export class ActivityLogger extends BaseService {
   public taskId: string
@@ -120,5 +123,42 @@ export class ActivityLogger extends BaseService {
     } catch (e: unknown) {
       console.error('Something went wrong!')
     }
+  }
+
+  async getActivityWithComment() {
+    const policyGate = new PoliciesService(this.user)
+    policyGate.authorize(UserAction.Read, Resource.Comment)
+
+    const comments = await this.db.comment.findMany({
+      where: {
+        workspaceId: this.user.workspaceId,
+        taskId: this.taskId,
+        parentId: null,
+      },
+      include: {
+        attachments: true,
+        children: {
+          where: {
+            deletedAt: null,
+          },
+          include: { attachments: true },
+        },
+      },
+    })
+
+    const activityLogs = await this.db.activityLog.findMany({
+      where: {
+        workspaceId: this.user.workspaceId,
+        taskId: this.taskId,
+      },
+    })
+
+    // Combine comments and activity logs
+    const combinedResults = [...comments, ...activityLogs]
+
+    // Sort combined results by createdAt field in descending order
+    combinedResults.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+
+    return combinedResults
   }
 }
