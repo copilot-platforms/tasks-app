@@ -114,7 +114,7 @@ model ActivityLog {
   id           String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   createdAt    DateTime     @default(now())
   taskId       String       @db.Uuid
-  task         Task         @relation(fields: [taskId], references: [id])
+  task         Task         @relation(fields: [taskId], references: [id], onDelete: Cascade)
   workspaceId  String       @db.VarChar(32)
   activityType ActivityType
   details      Json         @db.JsonB
@@ -128,14 +128,14 @@ model Comment {
   id          String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   content     String
   parentId    String?      @db.Uuid
-  parent      Comment?     @relation("ChildComments", fields: [parentId], references: [id])
+  parent      Comment?     @relation("ChildComments", fields: [parentId], references: [id], onDelete: Cascade)
   children    Comment[]    @relation("ChildComments")
   taskId      String       @db.Uuid
-  task        Task         @relation(fields: [taskId], references: [id])
+  task        Task         @relation(fields: [taskId], references: [id], onDelete: Cascade)
   workspaceId String       @db.VarChar(32)
   attachments Attachment[]
   createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
   deletedAt   DateTime?
 
   @@map("Comments")
