@@ -26,6 +26,7 @@ export const TaskCard = ({ task }: { task: TaskResponse }) => {
             alt="user"
             src={currentAssignee?.iconImageUrl || currentAssignee?.avatarImageUrl}
             sx={{ width: '20px', height: '20px' }}
+            variant={currentAssignee?.type === 'companies' ? 'rounded' : 'circular'}
           />
           <Typography variant="sm">{currentAssignee?.givenName || currentAssignee?.name}</Typography>
         </Stack>
