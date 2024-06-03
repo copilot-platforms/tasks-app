@@ -17,16 +17,6 @@ export const createComment = async (req: NextRequest) => {
   return NextResponse.json({ comment }, { status: httpStatus.CREATED })
 }
 
-export const getComments = async (req: NextRequest, { params: { id } }: IdParams) => {
-  const user = await authenticate(req)
-
-  const commentService = new CommentService(user)
-
-  const logs = await commentService.getComments(id)
-
-  return NextResponse.json({ logs }, { status: httpStatus.OK })
-}
-
 export const deleteComment = async (req: NextRequest, { params: { id } }: IdParams) => {
   const user = await authenticate(req)
 
