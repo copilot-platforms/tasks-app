@@ -1,5 +1,6 @@
 'use client'
 
+import { EmojiIcon, ReplyIcon } from '@/icons'
 import { KeyboardArrowRight } from '@mui/icons-material'
 import { Box, Stack, Typography, styled } from '@mui/material'
 
@@ -35,3 +36,21 @@ export const WrapperStack = styled(Stack)({
   alignItems: 'flex-start',
   gap: '4px',
 })
+
+export const StyledEmojiIcon = styled(EmojiIcon)(({ theme }) => ({
+  '&:hover': {
+    background: theme.color.gray[200],
+  },
+  '&:active': {
+    transform: 'scale(0.95)',
+  },
+}))
+
+export const StyledReplyIcon = styled(ReplyIcon)(({ theme }) => ({
+  '&:hover': {
+    background: theme.color.gray[200],
+  },
+  '&:active': {
+    transform: 'scale(0.95)',
+  },
+}))

@@ -2,6 +2,9 @@
 
 import { Box, Stack, Typography } from '@mui/material'
 import { ActivityLog } from './ActivityLog'
+import { Comments } from './Comments'
+import { StyledTextField } from '@/components/inputs/TextField'
+import { CommentInput } from '@/components/inputs/CommentInput'
 
 interface Prop {
   activities: any
@@ -22,11 +25,16 @@ export const TaskActivityComponent = ({ activities }: Prop) => {
                 }}
                 key={item.id}
               >
-                <ActivityLog log={item} isLast={index == activities.length - 1} />
+                {item.activityType ? (
+                  <ActivityLog log={item} isLast={index == activities.length - 1} />
+                ) : (
+                  <Comments comment={item} />
+                )}
               </Box>
             )
           })}
         </Stack>
+        <CommentInput />
       </Stack>
     </>
   )

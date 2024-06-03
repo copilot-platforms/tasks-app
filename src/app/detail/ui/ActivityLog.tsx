@@ -23,7 +23,7 @@ export const ActivityLog = ({ log, isLast }: Prop) => {
       <Stack direction="row" columnGap={4}>
         {!isLast && <VerticalLine />}
 
-        <Avatar alt="user" src={log?.iconImageUrl || log?.avatarImageUrl} sx={{ width: '20px', height: '20px' }} />
+        <Avatar alt="user" src={log?.iconImageUrl || log?.avatarImageUrl} sx={{ width: '25px', height: '25px' }} />
         <Stack direction="row" columnGap={1}>
           <BoldTypography>{log.details.initiator}</BoldTypography>
           <ActivityDescription activityType={log.activityType} args={renderArgs} />
