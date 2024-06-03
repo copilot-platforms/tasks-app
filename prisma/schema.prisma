@@ -112,6 +112,7 @@ model Attachment {
 
 model ActivityLog {
   id           String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  type         LogType      @default(ACTIVITY)
   createdAt    DateTime     @default(now())
   taskId       String       @db.Uuid
   task         Task         @relation(fields: [taskId], references: [id], onDelete: Cascade)
@@ -126,7 +127,10 @@ model ActivityLog {
 
 model Comment {
   id          String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  type        LogType      @default(COMMENT)
   content     String
+  initiator   String
+  initiatorId String       @db.Uuid
   parentId    String?      @db.Uuid
   parent      Comment?     @relation("ChildComments", fields: [parentId], references: [id], onDelete: Cascade)
   children    Comment[]    @relation("ChildComments")
@@ -145,4 +149,9 @@ enum ActivityType {
   CREATE_TASK
   ASSIGN_TASK
   WORKFLOWSTATE_UPDATE
+}
+
+enum LogType {
+  COMMENT
+  ACTIVITY
 }
