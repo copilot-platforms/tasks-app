@@ -3,3 +3,7 @@
   margin: 0;
   box-sizing: border-box;
 }
+
+.tiptap {
+  min-height: 30vh;
+}

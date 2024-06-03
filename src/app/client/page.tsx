@@ -37,7 +37,6 @@ async function getAssigneeList(token: string): Promise<IAssignee> {
   })
 
   const data = await res.json()
-
   return data.users
 }
 

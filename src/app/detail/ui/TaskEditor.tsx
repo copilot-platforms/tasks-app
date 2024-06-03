@@ -94,8 +94,8 @@ export const TaskEditor = ({
         />
       </Stack>
       <Box
-        sx={{
-          minHeight: '30vh',
+        onBlur={() => {
+          updateTaskDetail(updateTitle, updateDetail)
         }}
       >
         <Tapwrite
