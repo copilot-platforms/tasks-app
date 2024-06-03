@@ -2,7 +2,7 @@ import { EventEmitter } from 'node:events'
 import User from '../core/models/User.model'
 import { UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { Task } from '@prisma/client'
-import { ActivityLogger } from './activityLogger.service'
+import { ActivityLogger } from './activity.service'
 
 export const activityEvents = new EventEmitter()
 
