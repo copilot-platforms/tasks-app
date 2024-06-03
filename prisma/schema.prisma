@@ -49,6 +49,7 @@ model Task {
   workflowStateId String        @db.Uuid
   attachments     Attachment[]
   activityLog     ActivityLog[]
+  comments        Comment[]
 
   assignedAt  DateTime?
   completedAt DateTime?
@@ -113,10 +114,10 @@ model ActivityLog {
   id           String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   createdAt    DateTime     @default(now())
   taskId       String       @db.Uuid
+  task         Task         @relation(fields: [taskId], references: [id])
   workspaceId  String       @db.VarChar(32)
   activityType ActivityType
   details      Json         @db.JsonB
-  task         Task         @relation(fields: [taskId], references: [id])
   deletedAt    DateTime?
 
   @@index([createdAt])
@@ -129,6 +130,9 @@ model Comment {
   parentId    String?      @db.Uuid
   parent      Comment?     @relation("ChildComments", fields: [parentId], references: [id])
   children    Comment[]    @relation("ChildComments")
+  taskId      String       @db.Uuid
+  task        Task         @relation(fields: [taskId], references: [id])
+  workspaceId String       @db.VarChar(32)
   attachments Attachment[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @default(now())

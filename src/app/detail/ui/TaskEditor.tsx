@@ -63,7 +63,7 @@ export const TaskEditor = ({
       const signedUrl: ISignedUrlUpload = await getSignedUrlUpload(generateRandomString(file.name))
       const filePayload = await supabaseActions.uploadAttachment(file, task_id, signedUrl)
       if (filePayload) {
-        postAttachment(filePayload)
+        postAttachment({ ...filePayload, taskId: filePayload.id })
       }
     }
   }

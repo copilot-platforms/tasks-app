@@ -8,6 +8,7 @@ export enum Resource {
   ViewSetting = 'ViewSetting',
   Users = 'User',
   Attachments = 'Attachments',
+  Comment = 'Comment',
 }
 
 /**

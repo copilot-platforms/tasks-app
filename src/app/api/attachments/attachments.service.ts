@@ -19,6 +19,7 @@ export class AttachmentsService extends BaseService {
         workspaceId: this.user.workspaceId,
       },
     })
+    console.log('attt', attachments)
 
     return attachments
   }
