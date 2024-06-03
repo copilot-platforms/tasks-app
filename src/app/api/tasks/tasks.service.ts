@@ -15,7 +15,7 @@ import {
 import APIError from '@api/core/exceptions/api'
 import httpStatus from 'http-status'
 import { activityEvents } from '../activity/activity.listener'
-import { ActivityLogger } from '../activity/activityLogger.service'
+import { ActivityLogger } from '../activity/activity.service'
 
 type FilterByAssigneeId = {
   assigneeId: string
