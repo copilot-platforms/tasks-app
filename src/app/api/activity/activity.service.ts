@@ -32,6 +32,7 @@ export class ActivityLogger extends BaseService {
         details: {
           initiator: userInfo?.givenName || '' + ' ' + userInfo?.familyName || '',
           initiatorId: this.user.internalUserId as string,
+          type: ActivityType.CREATE_TASK,
         },
       },
     })
@@ -58,6 +59,7 @@ export class ActivityLogger extends BaseService {
             initiatorId: this.user.internalUserId as string,
             assignedTo: assignedTo,
             assignedToId: payload.assigneeId,
+            type: ActivityType.ASSIGN_TASK,
           },
         },
       })
@@ -82,6 +84,7 @@ export class ActivityLogger extends BaseService {
             initiatorId: this.user.internalUserId as string,
             prevWorkflowState,
             currentWorkflowState,
+            type: ActivityType.WORKFLOWSTATE_UPDATE,
           },
         },
       })
