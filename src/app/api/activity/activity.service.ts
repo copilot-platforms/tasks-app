@@ -8,6 +8,9 @@ import WorkflowStatesService from '../workflow-states/workflowStates.service'
 import { PoliciesService } from '../core/services/policies.service'
 import { UserAction } from '../core/types/user'
 import { Resource } from '../core/types/api'
+import { z } from 'zod'
+import { CommentResponseSchema } from '@/types/dto/comment.dto'
+import { ActivityLogResponseSchema } from '@/types/dto/activity.dto'
 
 export class ActivityLogger extends BaseService {
   public taskId: string
@@ -154,7 +157,10 @@ export class ActivityLogger extends BaseService {
     })
 
     // Combine comments and activity logs
-    const combinedResults = [...comments, ...activityLogs]
+    const combinedResults = [
+      ...z.array(CommentResponseSchema).parse(comments),
+      ...z.array(ActivityLogResponseSchema).parse(activityLogs),
+    ]
 
     // Sort combined results by createdAt field in descending order
     combinedResults.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
