@@ -28,11 +28,13 @@ const createTemplateSlice = createSlice({
   initialState,
   reducers: {
     setShowTemplateModal: (state, action: { payload: { targetMethod?: TargetMethod; targetTemplateId?: string } }) => {
-      state.showTemplateModal = !state.showTemplateModal
-      if (action.payload.targetMethod && action.payload.targetTemplateId) {
+      if (action.payload.targetMethod) {
         state.targetMethod = action.payload.targetMethod
+      }
+      if (action.payload.targetTemplateId) {
         state.targetTemplateId = action.payload.targetTemplateId
       }
+      state.showTemplateModal = !state.showTemplateModal
     },
     setCreateTemplateFields: (state, action: { payload: { targetField: string; value: string | null } }) => {
       const { targetField, value } = action.payload
