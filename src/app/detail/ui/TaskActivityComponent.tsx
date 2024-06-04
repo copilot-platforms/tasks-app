@@ -33,8 +33,9 @@ export const TaskActivityComponent = ({ activities }: Prop) => {
               </Box>
             )
           })}
+
+          <CommentInput />
         </Stack>
-        <CommentInput />
       </Stack>
     </>
   )

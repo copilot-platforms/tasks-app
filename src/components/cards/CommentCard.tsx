@@ -1,12 +1,5 @@
 import { ToggleController } from '@/app/detail/ui/ToggleController'
-import {
-  BoldTypography,
-  StyledEmojiIcon,
-  StyledReplyIcon,
-  StyledTypography,
-  VerticalLine,
-  WrapperStack,
-} from '@/app/detail/ui/styledComponent'
+import { BoldTypography, StyledEmojiIcon, StyledReplyIcon, StyledTypography } from '@/app/detail/ui/styledComponent'
 import { getTimeDifference } from '@/utils/getTimeDifference'
 import { Avatar, Box, Divider, InputAdornment, Stack, Typography, styled } from '@mui/material'
 import { StyledTextField } from '../inputs/TextField'
@@ -49,9 +42,10 @@ export const CommentCard = ({ comment }: { comment: any }) => {
             <Stack direction="row" columnGap={2} sx={{ height: '10px' }}>
               <StyledEmojiIcon />
               <StyledReplyIcon
-                onClick={() => {
-                  setIsFocused(true)
-                  setShowReply(true)
+                onClick={(event: React.MouseEvent<HTMLElement>) => {
+                  event.stopPropagation()
+                  setIsFocused(!showReply)
+                  setShowReply(!showReply)
                 }}
               />
               <MenuBox menuContent={'options'} />
@@ -63,22 +57,19 @@ export const CommentCard = ({ comment }: { comment: any }) => {
 
         {comment.children?.map((item: any) => {
           return (
-            <>
+            <Stack direction="column" rowGap={3} key={item.id}>
               <CustomDivider />
-
-              <Stack direction="column" rowGap={3}>
-                <Stack direction="row" columnGap={2} alignItems={'center'}>
-                  <Avatar
-                    alt="user"
-                    src={comment?.iconImageUrl || comment?.avatarImageUrl}
-                    sx={{ width: '20px', height: '20px' }}
-                  />
-                  <BoldTypography>{item.details?.initiator}</BoldTypography>
-                  <StyledTypography> {getTimeDifference(item.createdAt)}</StyledTypography>
-                </Stack>
-                <Typography> {item.content}</Typography>
+              <Stack direction="row" columnGap={2} alignItems={'center'}>
+                <Avatar
+                  alt="user"
+                  src={comment?.iconImageUrl || comment?.avatarImageUrl}
+                  sx={{ width: '20px', height: '20px' }}
+                />
+                <BoldTypography>{item.details?.initiator}</BoldTypography>
+                <StyledTypography> {getTimeDifference(item.createdAt)}</StyledTypography>
               </Stack>
-            </>
+              <Typography> {item.content}</Typography>
+            </Stack>
           )
         })}
 

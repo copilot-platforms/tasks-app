@@ -22,24 +22,20 @@ export const StyledBox = styled(Box)(({ theme }) => ({
 
 export const VerticalLine = styled('div')(({ theme }) => ({
   position: 'absolute',
-  left: '10px',
+  left: '12px',
   top: 0,
   bottom: 0,
   width: '1px',
-  height: 'auto',
+  height: 'calc(100% + 20px)',
   backgroundColor: theme.palette.divider,
-  transform: 'translateY(80%)',
 }))
-
-export const WrapperStack = styled(Stack)({
-  position: 'relative',
-  alignItems: 'flex-start',
-  gap: '4px',
-})
 
 export const StyledEmojiIcon = styled(EmojiIcon)(({ theme }) => ({
   '&:hover': {
     background: theme.color.gray[200],
+    borderRadius: '5px',
+    padding: '2px',
+    transform: 'scale(1.2)',
   },
   '&:active': {
     transform: 'scale(0.95)',
@@ -49,6 +45,9 @@ export const StyledEmojiIcon = styled(EmojiIcon)(({ theme }) => ({
 export const StyledReplyIcon = styled(ReplyIcon)(({ theme }) => ({
   '&:hover': {
     background: theme.color.gray[200],
+    borderRadius: '5px',
+    padding: '2px',
+    transform: 'scale(1.2)',
   },
   '&:active': {
     transform: 'scale(0.95)',

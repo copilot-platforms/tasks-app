@@ -5,7 +5,7 @@ import { AttachmentIcon } from '@/icons'
 
 export const CommentInput = () => {
   return (
-    <Stack direction="row" columnGap={2} alignItems="flex-start">
+    <Stack direction="row" columnGap={3} alignItems="flex-start">
       <Avatar alt="user" src={''} sx={{ width: '25px', height: '25px' }} />
       <StyledTextField
         type="text"
