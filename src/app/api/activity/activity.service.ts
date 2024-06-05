@@ -182,42 +182,27 @@ export class ActivityLogger extends BaseService {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Read, Resource.Comment)
 
+    const { workspaceId } = this.user
+    const { taskId } = this
+
     const logs = await this.db.log.findMany({
       where: {
-        workspaceId: this.user.workspaceId,
-        OR: [
-          {
-            activityLog: {
-              taskId: this.taskId,
-            },
-          },
-          {
-            comment: {
-              taskId: this.taskId,
-              parentId: null, // Filter for top-level comments
-            },
-          },
-        ],
+        workspaceId,
+        OR: [{ activityLog: { taskId } }, { comment: { taskId, parentId: null } }],
       },
       include: {
-        activityLog: true, // Include associated activity logs
+        activityLog: true,
         comment: {
           include: {
-            attachments: true, // Include attachments for comments
+            attachments: true,
             children: {
-              where: {
-                deletedAt: null, // Only include non-deleted child comments
-              },
-              include: {
-                attachments: true, // Include attachments for child comments
-              },
+              where: { deletedAt: null },
+              include: { attachments: true },
             },
           },
         },
       },
-      orderBy: {
-        createdAt: 'asc', // Order logs by creation date
-      },
+      orderBy: { createdAt: 'asc' },
     })
 
     return logs

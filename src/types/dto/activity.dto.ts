@@ -50,7 +50,6 @@ export const ActivityLogResponseSchema = z.object({
     Activity_WorkflowState_UpdateSchema,
     Activity_AssignTaskSchema,
   ]),
-  deletedAt: z.date().nullable(),
 })
 
 export const LogResponseSchema = z.object({
@@ -60,6 +59,5 @@ export const LogResponseSchema = z.object({
   workspaceId: z.string(),
   activityLog: ActivityLogResponseSchema.nullable(),
   comment: CommentResponseSchema.nullable(),
-  deletedAt: z.date().nullable(),
   createdAt: z.date().default(() => new Date()),
 })
