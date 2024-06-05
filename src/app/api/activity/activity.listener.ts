@@ -6,12 +6,12 @@ import { ActivityLogger } from '@/app/api/activity/activity.service'
 
 export const activityEvents = new EventEmitter()
 
-activityEvents.on('post', async (taskId: string, user: User) => {
+activityEvents.on('TASK_CREATED', async (taskId: string, user: User) => {
   const activityLog = new ActivityLogger({ taskId, user })
   await activityLog.createTaskLog()
 })
 
-activityEvents.on('patch', async (taskId: string, user: User, payload: UpdateTaskRequest, prevTask: Task) => {
+activityEvents.on('TASK_UPDATED', async (taskId: string, user: User, payload: UpdateTaskRequest, prevTask: Task) => {
   const activityLogger = new ActivityLogger({ taskId, user: user })
   await activityLogger.initiateLogging(payload, prevTask)
 })
