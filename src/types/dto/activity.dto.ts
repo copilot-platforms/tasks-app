@@ -44,10 +44,7 @@ export const Activity_AssignTaskSchema = z.object({
 export const ActivityLogResponseSchema = z.object({
   id: z.string().uuid(),
   createdAt: z.date().default(() => new Date()),
-  type: z.nativeEnum(LogType),
-  taskId: z.string().uuid(),
-  workspaceId: z.string(),
-  activityType: z.nativeEnum(ActivityType),
+  activityType: z.nativeEnum(ActivityType).nullable(),
   details: z.discriminatedUnion('type', [
     Activity_CreateTaskSchema,
     Activity_WorkflowState_UpdateSchema,
@@ -56,4 +53,13 @@ export const ActivityLogResponseSchema = z.object({
   deletedAt: z.date().nullable(),
 })
 
-export const LogSchema = z.array(z.union([ActivityLogResponseSchema, CommentResponseSchema]))
+export const LogResponseSchema = z.object({
+  id: z.string().uuid(),
+  logType: z.nativeEnum(LogType),
+  taskId: z.string().uuid(),
+  workspaceId: z.string(),
+  activityLog: ActivityLogResponseSchema.nullable(),
+  comment: CommentResponseSchema.nullable(),
+  deletedAt: z.date().nullable(),
+  createdAt: z.date().default(() => new Date()),
+})

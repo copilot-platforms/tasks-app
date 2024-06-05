@@ -1,4 +1,4 @@
-import { ActivityType, AssigneeType, Task } from '@prisma/client'
+import { ActivityType, AssigneeType, LogType, Task } from '@prisma/client'
 import { BaseService } from '@/app/api/core/services/base.service'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import User from '../core/models/User.model'
@@ -24,15 +24,22 @@ export class ActivityLogger extends BaseService {
   async createTaskLog() {
     const userInfo = await this.getUserInfo(this.user.token)
 
-    await this.db.activityLog.create({
+    await this.db.log.create({
       data: {
         taskId: this.taskId,
         workspaceId: this.user.workspaceId,
-        activityType: ActivityType.CREATE_TASK,
-        details: {
-          initiator: userInfo?.givenName || '' + ' ' + userInfo?.familyName || '',
-          initiatorId: this.user.internalUserId as string,
-          type: ActivityType.CREATE_TASK,
+        logType: LogType.ACTIVITY,
+        activityLog: {
+          create: {
+            taskId: this.taskId,
+            workspaceId: this.user.workspaceId,
+            activityType: ActivityType.CREATE_TASK,
+            details: {
+              initiator: userInfo?.givenName || '' + ' ' + userInfo?.familyName || '',
+              initiatorId: this.user.internalUserId as string,
+              type: ActivityType.CREATE_TASK,
+            },
+          },
         },
       },
     })
@@ -49,17 +56,24 @@ export class ActivityLogger extends BaseService {
           ? (clientInfo as CompanyResponse).name
           : `${(clientInfo as InternalUsers)?.givenName} ${(clientInfo as InternalUsers)?.familyName}`
 
-      await this.db.activityLog.create({
+      await this.db.log.create({
         data: {
           taskId: this.taskId,
           workspaceId: this.user.workspaceId,
-          activityType: ActivityType.ASSIGN_TASK,
-          details: {
-            initiator: userInfo?.givenName + ' ' + userInfo?.familyName,
-            initiatorId: this.user.internalUserId as string,
-            assignedTo: assignedTo,
-            assignedToId: payload.assigneeId,
-            type: ActivityType.ASSIGN_TASK,
+          logType: LogType.ACTIVITY,
+          activityLog: {
+            create: {
+              taskId: this.taskId,
+              workspaceId: this.user.workspaceId,
+              activityType: ActivityType.ASSIGN_TASK,
+              details: {
+                initiator: userInfo?.givenName + ' ' + userInfo?.familyName,
+                initiatorId: this.user.internalUserId as string,
+                assignedTo: assignedTo,
+                assignedToId: payload.assigneeId,
+                type: ActivityType.ASSIGN_TASK,
+              },
+            },
           },
         },
       })
@@ -74,17 +88,24 @@ export class ActivityLogger extends BaseService {
       const prevWorkflowState = await workflowStateService.getOneWorkflowState(prevTaskPayload.workflowStateId)
       const currentWorkflowState = await workflowStateService.getOneWorkflowState(payload.workflowStateId)
 
-      await this.db.activityLog.create({
+      await this.db.log.create({
         data: {
           taskId: this.taskId,
           workspaceId: this.user.workspaceId,
-          activityType: ActivityType.WORKFLOWSTATE_UPDATE,
-          details: {
-            initiator: userInfo?.givenName || ' ' + userInfo?.familyName || '',
-            initiatorId: this.user.internalUserId as string,
-            prevWorkflowState,
-            currentWorkflowState,
-            type: ActivityType.WORKFLOWSTATE_UPDATE,
+          logType: LogType.ACTIVITY,
+          activityLog: {
+            create: {
+              taskId: this.taskId,
+              workspaceId: this.user.workspaceId,
+              activityType: ActivityType.WORKFLOWSTATE_UPDATE,
+              details: {
+                initiator: userInfo?.givenName || ' ' + userInfo?.familyName || '',
+                initiatorId: this.user.internalUserId as string,
+                prevWorkflowState,
+                currentWorkflowState,
+                type: ActivityType.WORKFLOWSTATE_UPDATE,
+              },
+            },
           },
         },
       })
@@ -146,16 +167,54 @@ export class ActivityLogger extends BaseService {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Read, Resource.Comment)
 
-    const commentService = new CommentService(this.user)
-    const comments = await commentService.getAllComments(this.taskId)
-    const activityLogs = await this.getActivityLogs()
+    // const commentService = new CommentService(this.user)
+    // const comments = await commentService.getAllComments(this.taskId)
+    // const activityLogs = await this.getActivityLogs()
 
-    // Combine comments and activity logs
-    const combinedResults = [...comments, ...activityLogs]
+    // // Combine comments and activity logs
+    // const combinedResults = [...comments, ...activityLogs]
 
-    // Sort combined results by createdAt field in descending order
-    combinedResults.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+    // // Sort combined results by createdAt field in descending order
+    // combinedResults.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
 
-    return combinedResults
+    const logs = await this.db.log.findMany({
+      where: {
+        workspaceId: this.user.workspaceId,
+        OR: [
+          {
+            activityLog: {
+              taskId: this.taskId,
+            },
+          },
+          {
+            comment: {
+              taskId: this.taskId,
+              parentId: null, // Filter for top-level comments
+            },
+          },
+        ],
+      },
+      include: {
+        activityLog: true, // Include associated activity logs
+        comment: {
+          include: {
+            attachments: true, // Include attachments for comments
+            children: {
+              where: {
+                deletedAt: null, // Only include non-deleted child comments
+              },
+              include: {
+                attachments: true, // Include attachments for child comments
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'asc', // Order logs by creation date
+      },
+    })
+
+    return logs
   }
 }

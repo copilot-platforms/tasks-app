@@ -3,7 +3,8 @@ import authenticate from '../core/utils/authenticate'
 import { ActivityLogger } from './activity.service'
 import { IdParams } from '../core/types/api'
 import httpStatus from 'http-status'
-import { LogSchema } from '@/types/dto/activity.dto'
+import { LogResponseSchema } from '@/types/dto/activity.dto'
+import { z } from 'zod'
 
 export const getActivityWithComment = async (req: NextRequest, { params: { id } }: IdParams) => {
   const user = await authenticate(req)
@@ -12,5 +13,6 @@ export const getActivityWithComment = async (req: NextRequest, { params: { id } 
 
   const log = await activityService.getActivityWithComment()
 
-  return NextResponse.json({ log: LogSchema.parse(log) }, { status: httpStatus.OK })
+  return NextResponse.json({ log: z.array(LogResponseSchema).parse(log) }, { status: httpStatus.OK })
+  // return NextResponse.json({ log }, { status: httpStatus.OK })
 }
