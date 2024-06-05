@@ -95,7 +95,7 @@ export const CommentCard = ({ comment }: { comment: any }) => {
                   <label htmlFor="fileInput">
                     <AttachmentIcon />
                   </label>
-                  <PrimaryBtn buttonText="Comment" handleClick={() => {}} />
+                  <PrimaryBtn buttonText="Reply" handleClick={() => {}} />
                 </Stack>
               </InputAdornment>
             </Stack>
