@@ -14,7 +14,6 @@ import {
 } from '@api/tasks/tasks.helpers'
 import APIError from '@api/core/exceptions/api'
 import httpStatus from 'http-status'
-import { activityEvents } from '../activity/activity.listener'
 import { ActivityLogger, IActivityType } from '../activity/activity.service'
 
 type FilterByAssigneeId = {

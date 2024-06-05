@@ -1,4 +1,4 @@
-import { CommentResponseSchema, CreateComment, UpdateComment } from '@/types/dto/comment.dto'
+import { CreateComment, UpdateComment } from '@/types/dto/comment.dto'
 import { BaseService } from '../core/services/base.service'
 import { PoliciesService } from '../core/services/policies.service'
 import { UserAction } from '../core/types/user'
@@ -54,26 +54,4 @@ export class CommentService extends BaseService {
 
     return updatedComment
   }
-
-  // async getAllComments(taskId: string) {
-  //   const comments = await this.db.log.findMany({
-  //     where: {
-  //       workspaceId: this.user.workspaceId,
-  //       taskId: taskId,
-  //       comment: {
-  //         parentId: null,
-  //       }
-  //     },
-  //     include: {
-  //       attachments: true,
-  //       children: {
-  //         where: {
-  //           deletedAt: null,
-  //         },
-  //         include: { attachments: true },
-  //       },
-  //     },
-  //   })
-  //   return z.array(CommentResponseSchema).parse(comments)
-  // }
 }

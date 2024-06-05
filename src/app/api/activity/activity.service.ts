@@ -2,16 +2,14 @@ import { ActivityType, AssigneeType, LogType, Task } from '@prisma/client'
 import { BaseService } from '@/app/api/core/services/base.service'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import User from '@/app/api/core/models/User.model'
-import { ClientResponse, CompanyResponse, InternalUsers, MeResponse } from '@/types/common'
+import { ClientResponse, CompanyResponse, InternalUsers } from '@/types/common'
 import { UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import WorkflowStatesService from '@/app/api/workflow-states/workflowStates.service'
 import { PoliciesService } from '@/app/api/core/services/policies.service'
 import { UserAction } from '@/app/api/core/types/user'
 import { Resource } from '@/app/api/core/types/api'
 import { z } from 'zod'
-import { CommentResponseSchema } from '@/types/dto/comment.dto'
 import { ActivityLogResponseSchema } from '@/types/dto/activity.dto'
-import { CommentService } from '../comment/comment.service'
 
 export enum IActivityType {
   CREATE_TASK,
@@ -183,16 +181,6 @@ export class ActivityLogger extends BaseService {
   async getActivityWithComment() {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Read, Resource.Comment)
-
-    // const commentService = new CommentService(this.user)
-    // const comments = await commentService.getAllComments(this.taskId)
-    // const activityLogs = await this.getActivityLogs()
-
-    // // Combine comments and activity logs
-    // const combinedResults = [...comments, ...activityLogs]
-
-    // // Sort combined results by createdAt field in descending order
-    // combinedResults.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
 
     const logs = await this.db.log.findMany({
       where: {
