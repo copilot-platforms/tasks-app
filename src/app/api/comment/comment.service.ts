@@ -7,7 +7,7 @@ import { CopilotAPI } from '@/utils/CopilotAPI'
 import { LogType } from '@prisma/client'
 
 export class CommentService extends BaseService {
-  async createComment(data: CreateComment) {
+  async create(data: CreateComment) {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Create, Resource.Comment)
 
@@ -34,14 +34,14 @@ export class CommentService extends BaseService {
     return comment
   }
 
-  async deleteComment(id: string) {
+  async delete(id: string) {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Delete, Resource.Comment)
 
     return await this.db.log.delete({ where: { id } })
   }
 
-  async updateComment(id: string, data: UpdateComment) {
+  async update(id: string, data: UpdateComment) {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Update, Resource.Comment)
 

@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import authenticate from '../core/utils/authenticate'
-import { CommentService } from './comment.service'
+import authenticate from '@api/core/utils/authenticate'
+import { CommentService } from '@api/comment/comment.service'
 import { CreateCommentSchema, UpdateCommentSchema } from '@/types/dto/comment.dto'
 import httpStatus from 'http-status'
-import { IdParams } from '../core/types/api'
+import { IdParams } from '@api/core/types/api'
 
 export const createComment = async (req: NextRequest) => {
   const user = await authenticate(req)
@@ -12,7 +12,7 @@ export const createComment = async (req: NextRequest) => {
 
   const data = CreateCommentSchema.parse(await req.json())
 
-  const comment = await commentService.createComment(data)
+  const comment = await commentService.create(data)
 
   return NextResponse.json({ comment }, { status: httpStatus.CREATED })
 }
@@ -22,7 +22,7 @@ export const deleteComment = async (req: NextRequest, { params: { id } }: IdPara
 
   const commentService = new CommentService(user)
 
-  await commentService.deleteComment(id)
+  await commentService.delete(id)
 
   return NextResponse.json({ message: 'Comment deleted!' }, { status: httpStatus.OK })
 }
@@ -33,7 +33,7 @@ export const updateComment = async (req: NextRequest, { params: { id } }: IdPara
 
   const commentService = new CommentService(user)
 
-  const updatedComment = await commentService.updateComment(id, data)
+  const updatedComment = await commentService.update(id, data)
 
   return NextResponse.json({ comment: updatedComment }, { status: httpStatus.OK })
 }
