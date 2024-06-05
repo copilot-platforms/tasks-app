@@ -1,22 +1,20 @@
 import { ToggleController } from '@/app/detail/ui/ToggleController'
-import { BoldTypography, StyledEmojiIcon, StyledReplyIcon, StyledTypography } from '@/app/detail/ui/styledComponent'
+import {
+  BoldTypography,
+  CommentCardContainer,
+  StyledEmojiIcon,
+  StyledReplyIcon,
+  StyledTypography,
+  TapWriteComment,
+  TapWriteReplyInput,
+} from '@/app/detail/ui/styledComponent'
 import { getTimeDifference } from '@/utils/getTimeDifference'
-import { Avatar, Box, Divider, InputAdornment, Stack, Typography, styled } from '@mui/material'
-import { StyledTextField } from '../inputs/TextField'
+import { Avatar, Box, Divider, InputAdornment, Stack, styled } from '@mui/material'
 import { AttachmentIcon, EmojiIcon, ReplyIcon, TrashIcon } from '@/icons'
-import { PrimaryBtn } from '../buttons/PrimaryBtn'
+import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 import { useState } from 'react'
-import { ListBtn } from '../buttons/ListBtn'
-import { MenuBox } from '../inputs/MenuBox'
-
-const CommentCardContainer = styled(Stack)(({ theme }) => ({
-  border: `1px solid ${theme.color.borders.border}`,
-  borderRadius: theme.spacing(theme.shape.radius100),
-  background: theme.color.base.white,
-  padding: '10px',
-  width: '100%',
-  backgroundColor: `${theme.color.gray[100]}`,
-}))
+import { ListBtn } from '@/components/buttons/ListBtn'
+import { MenuBox } from '@/components/inputs/MenuBox'
 
 const CustomDivider = styled(Box)(({ theme }) => ({
   height: '1px',
@@ -27,9 +25,9 @@ const CustomDivider = styled(Box)(({ theme }) => ({
 }))
 
 export const CommentCard = ({ comment }: { comment: any }) => {
-  const [isFocused, setIsFocused] = useState(false)
   const [showReply, setShowReply] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
+  const [detail, setDetail] = useState('')
   return (
     <CommentCardContainer onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
       <Stack direction="column" rowGap={3}>
@@ -45,7 +43,7 @@ export const CommentCard = ({ comment }: { comment: any }) => {
               <StyledReplyIcon
                 onClick={(event: React.MouseEvent<HTMLElement>) => {
                   event.stopPropagation()
-                  setIsFocused(!showReply)
+
                   setShowReply(!showReply)
                 }}
               />
@@ -57,7 +55,7 @@ export const CommentCard = ({ comment }: { comment: any }) => {
           )}
         </Stack>
 
-        <Typography> {comment.content}</Typography>
+        <TapWriteComment content={comment.content} getContent={() => {}} readonly />
 
         {comment.children?.map((item: any) => {
           return (
@@ -72,7 +70,7 @@ export const CommentCard = ({ comment }: { comment: any }) => {
                 <BoldTypography>{item.details?.initiator}</BoldTypography>
                 <StyledTypography> {getTimeDifference(item.createdAt)}</StyledTypography>
               </Stack>
-              <Typography> {item.content}</Typography>
+              <TapWriteComment content={item.content} getContent={() => {}} readonly />
             </Stack>
           )
         })}
@@ -82,44 +80,24 @@ export const CommentCard = ({ comment }: { comment: any }) => {
             <CustomDivider />
             <Stack direction="row" columnGap={1} alignItems="flex-start">
               <Avatar alt="user" src={''} sx={{ width: '20px', height: '20px', marginTop: '5px' }} />
-              <StyledTextField
-                type="text"
-                multiline
-                borderLess
+              <TapWriteReplyInput content={''} getContent={(content) => setDetail(content)} />
+              <InputAdornment
+                position="end"
                 sx={{
-                  width: '100%',
-                  '& .MuiInputBase-input': {
-                    fontSize: '16px',
-                    lineHeight: '28px',
-                    color: (theme) => theme.color.gray[600],
-                    fontWeight: 400,
-                  },
+                  alignSelf: 'flex-end',
+                  display: 'flex',
+                  alignItems: 'flex-end',
+                  paddingBottom: '10px',
                 }}
-                rows={isFocused ? 2 : 1}
-                placeholder={'Leave a reply...'}
-                onFocus={() => setIsFocused(true)}
-                onBlur={() => setIsFocused(false)}
-                InputProps={{
-                  endAdornment: isFocused && (
-                    <InputAdornment
-                      position="end"
-                      sx={{
-                        alignSelf: 'flex-end',
-                        display: 'flex',
-                        alignItems: 'flex-end',
-                      }}
-                    >
-                      <Stack direction="row" columnGap={6}>
-                        <input id="fileInput" type="file" style={{ display: 'none' }} onChange={() => {}} />
-                        <label htmlFor="fileInput">
-                          <AttachmentIcon />
-                        </label>
-                        <PrimaryBtn buttonText="Reply" handleClick={() => {}} />
-                      </Stack>
-                    </InputAdornment>
-                  ),
-                }}
-              />
+              >
+                <Stack direction="row" columnGap={6}>
+                  <input id="fileInput" type="file" style={{ display: 'none' }} onChange={() => {}} />
+                  <label htmlFor="fileInput">
+                    <AttachmentIcon />
+                  </label>
+                  <PrimaryBtn buttonText="Comment" handleClick={() => {}} />
+                </Stack>
+              </InputAdornment>
             </Stack>
           </>
         ) : null}
