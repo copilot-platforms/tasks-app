@@ -36,7 +36,7 @@ export class ActivityLogger extends BaseService {
             activityType: ActivityType.CREATE_TASK,
             details: {
               initiator: `${userInfo?.givenName || ''} ${userInfo?.familyName || ''}`.trim(),
-              initiatorId: this.user.internalUserId as string,
+              initiatorId: z.string().parse(this.user.internalUserId),
               type: ActivityType.CREATE_TASK,
             },
           },
@@ -68,7 +68,7 @@ export class ActivityLogger extends BaseService {
               activityType: ActivityType.ASSIGN_TASK,
               details: {
                 initiator: `${userInfo?.givenName || ''} ${userInfo?.familyName || ''}`.trim(),
-                initiatorId: this.user.internalUserId as string,
+                initiatorId: z.string().parse(this.user.internalUserId),
                 assignedTo: assignedTo,
                 assignedToId: payload.assigneeId,
                 type: ActivityType.ASSIGN_TASK,
@@ -100,7 +100,7 @@ export class ActivityLogger extends BaseService {
               activityType: ActivityType.WORKFLOWSTATE_UPDATE,
               details: {
                 initiator: `${userInfo?.givenName || ''} ${userInfo?.familyName || ''}`.trim(),
-                initiatorId: this.user.internalUserId as string,
+                initiatorId: z.string().parse(this.user.internalUserId),
                 prevWorkflowState,
                 currentWorkflowState,
                 type: ActivityType.WORKFLOWSTATE_UPDATE,
