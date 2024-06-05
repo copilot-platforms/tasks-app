@@ -13,12 +13,29 @@ import { CommentResponseSchema } from '@/types/dto/comment.dto'
 import { ActivityLogResponseSchema } from '@/types/dto/activity.dto'
 import { CommentService } from '../comment/comment.service'
 
+export enum IActivityType {
+  CREATE_TASK,
+  UPDATE_TASK,
+}
+
 export class ActivityLogger extends BaseService {
   public taskId: string
 
   constructor({ taskId, user }: { taskId: string; user: User }) {
     super(user)
     this.taskId = taskId
+  }
+
+  async log({ type, payload, prevTask }: { type: IActivityType; payload?: UpdateTaskRequest; prevTask?: Task }) {
+    switch (type) {
+      case IActivityType.CREATE_TASK:
+        await this.createTaskLog()
+
+      case IActivityType.UPDATE_TASK:
+        if (payload && prevTask) {
+          await this.initiateLogging(payload, prevTask)
+        }
+    }
   }
 
   async createTaskLog() {

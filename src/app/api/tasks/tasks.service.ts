@@ -2,7 +2,7 @@ import { CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { BaseService } from '@api/core/services/base.service'
 import { Resource } from '@api/core/types/api'
 import { PoliciesService } from '@api/core/services/policies.service'
-import { AssigneeType, Task } from '@prisma/client'
+import { ActivityType, AssigneeType, Task } from '@prisma/client'
 import { UserAction } from '@api/core/types/user'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { NotificationTaskActions } from '@api/core/types/tasks'
@@ -15,7 +15,7 @@ import {
 import APIError from '@api/core/exceptions/api'
 import httpStatus from 'http-status'
 import { activityEvents } from '../activity/activity.listener'
-import { ActivityLogger } from '../activity/activity.service'
+import { ActivityLogger, IActivityType } from '../activity/activity.service'
 
 type FilterByAssigneeId = {
   assigneeId: string
@@ -90,9 +90,8 @@ export class TasksService extends BaseService {
     })
 
     if (newTask) {
-      // activityEvents.emit('post', newTask.id, this.user)
       const activityLog = new ActivityLogger({ taskId: newTask.id, user: this.user })
-      await activityLog.createTaskLog()
+      await activityLog.log({ type: IActivityType.CREATE_TASK })
     }
 
     // If new task is assigned to someone (IU / Client), send proper notification + email to them
@@ -145,9 +144,8 @@ export class TasksService extends BaseService {
     })
 
     if (updatedTask) {
-      // activityEvents.emit('patch', id, this.user, data, prevTask)
       const activityLogger = new ActivityLogger({ taskId: id, user: this.user })
-      await activityLogger.initiateLogging(data, prevTask)
+      await activityLogger.log({ type: IActivityType.UPDATE_TASK, payload: data, prevTask })
     }
 
     // If task goes from unassigned to assigned, or assigneeId does not match
