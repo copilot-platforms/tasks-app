@@ -8,10 +8,12 @@ import { Tapwrite } from 'tapwrite'
 
 export const StyledTypography = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[500],
+  fontSize: theme.typography.md.fontSize,
 }))
 
 export const BoldTypography = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[700],
+  fontSize: theme.typography.md.fontSize,
 }))
 
 export const StyledKeyboardIcon = styled(KeyboardArrowRight)(({ theme }) => ({
