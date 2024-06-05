@@ -134,6 +134,7 @@ model ActivityLog {
   workspaceId  String       @db.VarChar(32)
   activityType ActivityType
   details      Json         @db.JsonB
+  updatedAt    DateTime     @updatedAt
   deletedAt    DateTime?
 
   @@index([createdAt])
