@@ -5,7 +5,15 @@ import { Box, Popper } from '@mui/material'
 import { ReactNode, useState } from 'react'
 import { ClickAwayListener } from '@mui/base'
 
-export const MenuBox = ({ menuContent }: { menuContent: ReactNode }) => {
+export const MenuBox = ({
+  menuContent,
+  className,
+  isSecondary = false,
+}: {
+  menuContent: ReactNode
+  className?: string
+  isSecondary?: boolean
+}) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -22,8 +30,8 @@ export const MenuBox = ({ menuContent }: { menuContent: ReactNode }) => {
       }}
     >
       <Box>
-        <Box aria-describedby={id}>
-          <MoreBtn handleClick={(e) => handleClick(e)} />
+        <Box aria-describedby={id} className={className}>
+          <MoreBtn handleClick={(e) => handleClick(e)} isSecondary={isSecondary} />
         </Box>
         <Popper
           id={id}

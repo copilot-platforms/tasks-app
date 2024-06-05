@@ -1,5 +1,6 @@
 'use client'
 
+import { MenuBox } from '@/components/inputs/MenuBox'
 import { EmojiIcon, ReplyIcon } from '@/icons'
 import { KeyboardArrowRight } from '@mui/icons-material'
 import { Box, Stack, Typography, styled } from '@mui/material'

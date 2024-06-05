@@ -3,9 +3,10 @@ import { BoldTypography, StyledEmojiIcon, StyledReplyIcon, StyledTypography } fr
 import { getTimeDifference } from '@/utils/getTimeDifference'
 import { Avatar, Box, Divider, InputAdornment, Stack, Typography, styled } from '@mui/material'
 import { StyledTextField } from '../inputs/TextField'
-import { AttachmentIcon, EmojiIcon, ReplyIcon } from '@/icons'
+import { AttachmentIcon, EmojiIcon, ReplyIcon, TrashIcon } from '@/icons'
 import { PrimaryBtn } from '../buttons/PrimaryBtn'
 import { useState } from 'react'
+import { ListBtn } from '../buttons/ListBtn'
 import { MenuBox } from '../inputs/MenuBox'
 
 const CommentCardContainer = styled(Stack)(({ theme }) => ({
@@ -48,7 +49,10 @@ export const CommentCard = ({ comment }: { comment: any }) => {
                   setShowReply(!showReply)
                 }}
               />
-              <MenuBox menuContent={'options'} />
+              <MenuBox
+                menuContent={<ListBtn content="Delete" handleClick={() => {}} icon={<TrashIcon />} contentColor="#CC0000" />}
+                isSecondary
+              />
             </Stack>
           )}
         </Stack>
