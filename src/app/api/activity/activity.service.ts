@@ -35,7 +35,7 @@ export class ActivityLogger extends BaseService {
             workspaceId: this.user.workspaceId,
             activityType: ActivityType.CREATE_TASK,
             details: {
-              initiator: userInfo?.givenName || '' + ' ' + userInfo?.familyName || '',
+              initiator: `${userInfo?.givenName || ''} ${userInfo?.familyName || ''}`.trim(),
               initiatorId: this.user.internalUserId as string,
               type: ActivityType.CREATE_TASK,
             },
@@ -67,7 +67,7 @@ export class ActivityLogger extends BaseService {
               workspaceId: this.user.workspaceId,
               activityType: ActivityType.ASSIGN_TASK,
               details: {
-                initiator: userInfo?.givenName + ' ' + userInfo?.familyName,
+                initiator: `${userInfo?.givenName || ''} ${userInfo?.familyName || ''}`.trim(),
                 initiatorId: this.user.internalUserId as string,
                 assignedTo: assignedTo,
                 assignedToId: payload.assigneeId,
@@ -99,7 +99,7 @@ export class ActivityLogger extends BaseService {
               workspaceId: this.user.workspaceId,
               activityType: ActivityType.WORKFLOWSTATE_UPDATE,
               details: {
-                initiator: userInfo?.givenName || ' ' + userInfo?.familyName || '',
+                initiator: `${userInfo?.givenName || ''} ${userInfo?.familyName || ''}`.trim(),
                 initiatorId: this.user.internalUserId as string,
                 prevWorkflowState,
                 currentWorkflowState,
