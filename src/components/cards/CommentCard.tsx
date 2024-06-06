@@ -1,22 +1,22 @@
 'use client'
 
-import { ToggleController } from '@/app/detail/ui/ToggleController'
 import {
   BoldTypography,
   CommentCardContainer,
-  StyledEmojiIcon,
   StyledReplyIcon,
   StyledTypography,
   TapWriteComment,
   TapWriteReplyInput,
 } from '@/app/detail/ui/styledComponent'
 import { getTimeDifference } from '@/utils/getTimeDifference'
-import { Avatar, Box, Divider, InputAdornment, Stack, styled } from '@mui/material'
-import { AttachmentIcon, EmojiIcon, ReplyIcon, TrashIcon } from '@/icons'
+import { Avatar, Box, InputAdornment, Stack, styled } from '@mui/material'
+import { TrashIcon } from '@/icons'
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 import { useState } from 'react'
 import { ListBtn } from '@/components/buttons/ListBtn'
 import { MenuBox } from '@/components/inputs/MenuBox'
+import { useSelector } from 'react-redux'
+import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 
 const CustomDivider = styled(Box)(({ theme }) => ({
   height: '1px',
@@ -30,6 +30,9 @@ export const CommentCard = ({ comment }: { comment: any }) => {
   const [showReply, setShowReply] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
   const [detail, setDetail] = useState('')
+  const { tokenPayload } = useSelector(selectAuthDetails)
+  const canEdit = tokenPayload?.internalUserId == comment.details.initiatorId
+  console.log(canEdit)
   return (
     <CommentCardContainer onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
       <Stack direction="column" rowGap={3}>
@@ -41,7 +44,6 @@ export const CommentCard = ({ comment }: { comment: any }) => {
 
           {isHovered && (
             <Stack direction="row" columnGap={2} sx={{ height: '10px' }}>
-              <StyledEmojiIcon />
               <StyledReplyIcon
                 onClick={(event: React.MouseEvent<HTMLElement>) => {
                   event.stopPropagation()
@@ -49,10 +51,14 @@ export const CommentCard = ({ comment }: { comment: any }) => {
                   setShowReply(!showReply)
                 }}
               />
-              <MenuBox
-                menuContent={<ListBtn content="Delete" handleClick={() => {}} icon={<TrashIcon />} contentColor="#CC0000" />}
-                isSecondary
-              />
+              {canEdit && (
+                <MenuBox
+                  menuContent={
+                    <ListBtn content="Delete" handleClick={() => {}} icon={<TrashIcon />} contentColor="#CC0000" />
+                  }
+                  isSecondary
+                />
+              )}
             </Stack>
           )}
         </Stack>
@@ -92,13 +98,7 @@ export const CommentCard = ({ comment }: { comment: any }) => {
                   paddingBottom: '10px',
                 }}
               >
-                <Stack direction="row" columnGap={6}>
-                  <input id="fileInput" type="file" style={{ display: 'none' }} onChange={() => {}} />
-                  <label htmlFor="fileInput">
-                    <AttachmentIcon />
-                  </label>
-                  <PrimaryBtn buttonText="Reply" handleClick={() => {}} />
-                </Stack>
+                <PrimaryBtn buttonText="Reply" handleClick={() => {}} />
               </InputAdornment>
             </Stack>
           </>

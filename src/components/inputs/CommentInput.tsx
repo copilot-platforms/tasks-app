@@ -23,13 +23,7 @@ export const CommentInput = () => {
             paddingBottom: '10px',
           }}
         >
-          <Stack direction="row" columnGap={6}>
-            <input id="fileInput" type="file" style={{ display: 'none' }} onChange={() => {}} />
-            <label htmlFor="fileInput">
-              <AttachmentIcon />
-            </label>
-            <PrimaryBtn buttonText="Comment" handleClick={() => {}} />
-          </Stack>
+          <PrimaryBtn buttonText="Comment" handleClick={() => {}} />
         </InputAdornment>
       </CommentCardContainer>
     </Stack>

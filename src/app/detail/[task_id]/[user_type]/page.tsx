@@ -71,6 +71,7 @@ export default async function TaskDetailPage({
   const task = await getOneTask(token, task_id)
   const assignee = addTypeToAssignee(await getAssigneeList(token))
   const attachments = await getAttachments(token, task_id)
+
   return (
     <ClientSideStateUpdate assignee={assignee}>
       <Stack direction="row">
