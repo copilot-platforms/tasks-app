@@ -1,9 +1,9 @@
 import { z } from 'zod'
-import { UpdateTaskRequestSchema } from './tasks.dto'
+import { UpdateTaskRequestSchema } from '@/types/dto/tasks.dto'
 import { UserRole } from '@/app/api/core/types/user'
 import { ActivityType, LogType } from '@prisma/client'
-import { WorkspaceResponseSchema } from '../common'
-import { CommentResponseSchema } from './comment.dto'
+import { WorkflowStateResponseSchema } from '@/types/dto/workflowStates.dto'
+import { CommentResponseSchema } from '@/types/dto/comment.dto'
 
 export const UserSchema = z.object({
   token: z.string(),
@@ -29,8 +29,8 @@ export const Activity_WorkflowState_UpdateSchema = z.object({
   type: z.literal(ActivityType.WORKFLOWSTATE_UPDATE),
   initiator: z.string(),
   initiatorId: z.string().uuid(),
-  prevWorkflowState: WorkspaceResponseSchema,
-  currentWorkflowState: WorkspaceResponseSchema,
+  prevWorkflowState: WorkflowStateResponseSchema,
+  currentWorkflowState: WorkflowStateResponseSchema,
 })
 
 export const Activity_AssignTaskSchema = z.object({
