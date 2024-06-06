@@ -1,3 +1,6 @@
+import { ActivityType } from '@/types/interfaces'
+import { string } from 'zod'
+
 export const taskDetail = {
   title: 'my new task',
   detail: '',
@@ -13,6 +16,23 @@ export const taskDetail = {
       fileType: 'png',
     },
   ],
+}
+
+export interface mockActivitiesInterface {
+  iconImageUrl?: string
+  avatarImageUrl?: string
+  details: {
+    initiator: string
+    prevWorkflowState: {
+      type: string
+    }
+    currentWorkflowState: {
+      type: string
+    }
+    assignedTo: string
+  }
+  activityType: ActivityType
+  createdAt: Date
 }
 
 export const activities = [

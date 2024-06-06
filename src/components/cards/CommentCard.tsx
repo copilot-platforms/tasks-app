@@ -1,3 +1,5 @@
+'use client'
+
 import { ToggleController } from '@/app/detail/ui/ToggleController'
 import {
   BoldTypography,

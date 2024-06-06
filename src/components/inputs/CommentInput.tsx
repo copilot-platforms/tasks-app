@@ -1,3 +1,5 @@
+'use client'
+
 import { Avatar, Box, InputAdornment, Stack } from '@mui/material'
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 import { AttachmentIcon } from '@/icons'

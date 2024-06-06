@@ -17,7 +17,9 @@ import { MenuBoxContainer } from '@/app/detail/ui/MenuBoxContainer'
 import { ToggleButtonContainer } from '@/app/detail/ui/ToggleButtonContainer'
 import { ToggleController } from '@/app/detail/ui/ToggleController'
 import { AttachmentResponseSchema } from '@/types/dto/attachments.dto'
-import { TaskActivityComponent } from '@/app/detail/ui/TaskActivityComponent'
+import { ActivityLog } from '@/app/detail/ui/ActivityLog'
+import { Comments } from '@/app/detail/ui/Comments'
+import { CommentInput } from '@/components/inputs/CommentInput'
 
 export const revalidate = 0
 
@@ -124,7 +126,26 @@ export default async function TaskDetailPage({
             </AppMargin>
           </StyledBox>
           <AppMargin size={SizeofAppMargin.LARGE} py="18.5px">
-            <TaskActivityComponent activities={activities} />
+            <Stack direction="column" alignItems="left" p="10px 5px" rowGap={5}>
+              <Typography variant="xl">Activity</Typography>
+              <Stack direction="column" alignItems="left" p="10px 5px" rowGap={4}>
+                {activities.map((item: any, index: number) => {
+                  return (
+                    <Box
+                      sx={{
+                        height: 'auto',
+                        display: 'block',
+                      }}
+                      key={item.id}
+                    >
+                      {item.activityType ? <ActivityLog log={item} /> : <Comments comment={item} />}
+                    </Box>
+                  )
+                })}
+
+                <CommentInput />
+              </Stack>
+            </Stack>
           </AppMargin>
         </ToggleController>
         <Box>
