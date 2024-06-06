@@ -16,6 +16,6 @@ export const WorkflowStateResponseSchema = z.object({
   type: WorkflowStateTypeSchema,
   name: z.string(),
   key: z.string(),
-  color: z.string().optional(),
+  color: z.string().nullable(),
 })
 export type WorkflowStateResponse = z.infer<typeof WorkflowStateResponseSchema>
