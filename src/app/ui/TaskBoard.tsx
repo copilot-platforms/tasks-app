@@ -21,7 +21,7 @@ export const TaskBoard = ({
   handleCreate,
   updateTask,
 }: {
-  handleCreate: (createTaskPayload: CreateTaskRequest) => void
+  handleCreate: (createTaskPayload: CreateTaskRequest) => Promise<TaskResponse>
   updateTask: (taskId: string, payload: UpdateTaskRequest) => void
 }) => {
   const { showModal } = useSelector(selectCreateTask)
@@ -128,10 +128,10 @@ export const TaskBoard = ({
           aria-describedby="add-new-task"
         >
           <NewTaskForm
-            handleCreate={() => {
+            handleCreate={async () => {
               store.dispatch(setShowModal())
               store.dispatch(clearCreateTaskFields())
-              handleCreate({ title, body: description, workflowStateId, assigneeType, assigneeId })
+              const createdTask = await handleCreate({ title, body: description, workflowStateId, assigneeType, assigneeId })
             }}
           />
         </Modal>

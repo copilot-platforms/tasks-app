@@ -10,7 +10,7 @@ import store from '@/redux/store'
 import { statusIcons } from '@/utils/iconMatcher'
 import { Close } from '@mui/icons-material'
 import { Avatar, Box, Stack, Typography, styled } from '@mui/material'
-import { ReactNode } from 'react'
+import React, { Dispatch, ReactNode, SetStateAction, useState } from 'react'
 import { FilterOptions, IAssigneeCombined, ITemplate } from '@/types/interfaces'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { useSelector } from 'react-redux'
@@ -21,6 +21,7 @@ import { useRouter } from 'next/navigation'
 import { selectCreateTemplate } from '@/redux/features/templateSlice'
 import { NoAssignee, NoAssigneeExtraOptions } from '@/utils/noAssignee'
 import ExtraOptionRendererAssignee from '@/components/inputs/ExtraOptionRendererAssignee'
+import { AttachmentInput } from '@/components/inputs/AttachmentInput'
 
 export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
   const { workflowStates, assignee, token, filterOptions } = useSelector(selectTaskBoard)
@@ -49,6 +50,9 @@ export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
   const todoWorkflowState = workflowStates.find((el) => el.key === 'todo') || workflowStates[0]
 
   const { assigneeId, workflowStateId } = useSelector(selectCreateTask)
+
+  const [attachments, setAttachments] = useState<File[]>([])
+
   return (
     <NewTaskContainer>
       <Stack
@@ -192,7 +196,7 @@ export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
           </Stack>
         </Stack>
       </AppMargin>
-      <NewTaskFooter handleCreate={handleCreate} />
+      <NewTaskFooter handleCreate={handleCreate} setAttachments={setAttachments} attachments={attachments} />
     </NewTaskContainer>
   )
 }
@@ -223,17 +227,34 @@ const NewTaskFormInputs = () => {
           onChange={(e) => store.dispatch(setCreateTaskFields({ targetField: 'description', value: e.target.value }))}
         />
       </Stack>
+      <Stack direction="row" columnGap={2} m="16px 0px"></Stack>
     </>
   )
 }
 
-const NewTaskFooter = ({ handleCreate }: { handleCreate: () => void }) => {
+const NewTaskFooter = ({
+  handleCreate,
+  setAttachments,
+  attachments,
+}: {
+  handleCreate: () => void
+  setAttachments: React.Dispatch<React.SetStateAction<File[]>>
+  attachments: File[]
+}) => {
   return (
     <Box sx={{ borderTop: (theme) => `1px solid ${theme.color.borders.border2}` }}>
       <AppMargin size={SizeofAppMargin.MEDIUM} py="21px">
         <Stack direction="row" justifyContent="space-between" alignItems="center">
           <Box>
-            <AttachmentIcon />
+            <AttachmentInput
+              handleFileSelect={(event: React.ChangeEvent<HTMLInputElement>) => {
+                event.preventDefault()
+                const files = event.target.files
+                if (files && files.length > 0) {
+                  setAttachments([...attachments, files[0]])
+                }
+              }}
+            />
           </Box>
           <Stack direction="row" columnGap={4}>
             <SecondaryBtn

@@ -1,14 +1,15 @@
 import { apiUrl } from '@/config'
-import { CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
+import { CreateTaskRequest, TaskResponse, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { View } from '@/types/interfaces'
 import { revalidateTag } from 'next/cache'
 
-export const handleCreate = async (token: string, payload: CreateTaskRequest) => {
-  fetch(`${apiUrl}/api/tasks?token=${token}`, {
+export const handleCreate = async (token: string, payload: CreateTaskRequest): Promise<TaskResponse> => {
+  const response = await fetch(`${apiUrl}/api/tasks?token=${token}`, {
     method: 'POST',
     body: JSON.stringify(payload),
   })
   revalidateTag('getAllTasks')
+  return await response.json()
 }
 
 /**

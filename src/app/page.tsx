@@ -110,7 +110,8 @@ export default async function Main({ searchParams }: { searchParams: { token: st
           <TaskBoard
             handleCreate={async (createTaskPayload) => {
               'use server'
-              await handleCreate(token, createTaskPayload)
+              const response = await handleCreate(token, createTaskPayload)
+              return response
             }}
             updateTask={async (taskId, payload) => {
               'use server'
