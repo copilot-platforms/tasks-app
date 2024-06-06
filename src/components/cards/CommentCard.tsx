@@ -32,7 +32,6 @@ export const CommentCard = ({ comment }: { comment: any }) => {
   const [detail, setDetail] = useState('')
   const { tokenPayload } = useSelector(selectAuthDetails)
   const canEdit = tokenPayload?.internalUserId == comment.details.initiatorId
-  console.log(canEdit)
   return (
     <CommentCardContainer onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
       <Stack direction="column" rowGap={3}>
