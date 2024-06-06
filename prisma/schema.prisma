@@ -50,7 +50,6 @@ model Task {
   attachments     Attachment[]
   activityLog     ActivityLog[]
   comments        Comment[]
-  logs            Log[]
 
   assignedAt  DateTime?
   completedAt DateTime?
@@ -111,29 +110,15 @@ model Attachment {
   @@map("Attachments")
 }
 
-model Log {
-  id          String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  logType     LogType
-  activityLog ActivityLog?
-  comment     Comment?
-  taskId      String       @db.Uuid
-  task        Task         @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  workspaceId String       @db.VarChar(32)
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  deletedAt   DateTime?
-}
-
 model ActivityLog {
   id           String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   createdAt    DateTime     @default(now())
-  logId        String       @unique @db.Uuid
-  log          Log          @relation(fields: [logId], references: [id], onDelete: Cascade)
   taskId       String       @db.Uuid
   task         Task         @relation(fields: [taskId], references: [id], onDelete: Cascade)
   workspaceId  String       @db.VarChar(32)
   activityType ActivityType
   details      Json         @db.JsonB
+  userId       String       @db.Uuid
   updatedAt    DateTime     @updatedAt
   deletedAt    DateTime?
 
@@ -149,8 +134,6 @@ model Comment {
   parentId    String?      @db.Uuid
   parent      Comment?     @relation("ChildComments", fields: [parentId], references: [id], onDelete: Cascade)
   children    Comment[]    @relation("ChildComments")
-  logId       String       @unique @db.Uuid
-  log         Log          @relation(fields: [logId], references: [id], onDelete: Cascade)
   taskId      String       @db.Uuid
   task        Task         @relation(fields: [taskId], references: [id], onDelete: Cascade)
   workspaceId String       @db.VarChar(32)
