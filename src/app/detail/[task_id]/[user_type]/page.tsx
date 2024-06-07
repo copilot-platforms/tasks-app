@@ -12,7 +12,7 @@ import Link from 'next/link'
 import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import { deleteAttachment, deleteTask, postAttachment, updateAssignee, updateTaskDetail } from './actions'
-import { updateTask, updateWorkflowStateIdOfTask } from '@/app/actions'
+import { getSignedUrlUpload, updateTask, updateWorkflowStateIdOfTask } from '@/app/actions'
 import { MenuBoxContainer } from '@/app/detail/ui/MenuBoxContainer'
 import { ToggleButtonContainer } from '@/app/detail/ui/ToggleButtonContainer'
 import { ToggleController } from '@/app/detail/ui/ToggleController'
@@ -47,12 +47,6 @@ async function getAttachments(token: string, taskId: string): Promise<Attachment
   const data = await res.json()
 
   return data.attachments
-}
-
-async function getSignedUrlUpload(token: string, fileName: string) {
-  const res = await fetch(`${apiUrl}/api/attachments/upload?token=${token}&fileName=${fileName}`)
-  const data = await res.json()
-  return data.signedUrl
 }
 
 export default async function TaskDetailPage({

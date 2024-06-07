@@ -2,7 +2,7 @@ import { boolean, z } from 'zod'
 import { FileTypes } from '@/types/interfaces'
 
 export const CreateAttachmentRequestSchema = z.object({
-  taskId: z.string().uuid(),
+  taskId: z.string(),
   filePath: z.string(),
   fileSize: z.number(),
   fileType: z.string(),

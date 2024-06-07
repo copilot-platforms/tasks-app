@@ -15,18 +15,24 @@ import { selectTaskBoard, updateWorkflowStateIdByTaskId } from '@/redux/features
 import { CreateTaskRequest, TaskResponse, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { ListViewTaskCard } from '@/components/cards/ListViewTaskCard'
 import { TaskRow } from '@/components/cards/TaskRow'
-import { View } from '@/types/interfaces'
+import { ISignedUrlUpload, View } from '@/types/interfaces'
+import { bulkRemoveAttachments } from '@/utils/bulkRemoveAttachments'
+import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 
 export const TaskBoard = ({
   handleCreate,
   updateTask,
+  getSignedUrlUpload,
+  handleCreateMultipleAttachments,
 }: {
   handleCreate: (createTaskPayload: CreateTaskRequest) => Promise<TaskResponse>
   updateTask: (taskId: string, payload: UpdateTaskRequest) => void
+  getSignedUrlUpload: (fileName: string) => Promise<ISignedUrlUpload>
+  handleCreateMultipleAttachments: (attachments: CreateAttachmentRequest[]) => Promise<void>
 }) => {
   const { showModal } = useSelector(selectCreateTask)
   const { workflowStates, tasks, token, filteredTasks, view, filterOptions } = useSelector(selectTaskBoard)
-  const { title, description, workflowStateId, assigneeId, assigneeType } = useSelector(selectCreateTask)
+  const { title, description, workflowStateId, assigneeId, assigneeType, attachments } = useSelector(selectCreateTask)
 
   const router = useRouter()
 
@@ -120,9 +126,10 @@ export const TaskBoard = ({
 
         <Modal
           open={showModal}
-          onClose={() => {
+          onClose={async () => {
             store.dispatch(setShowModal())
             store.dispatch(clearCreateTaskFields())
+            await bulkRemoveAttachments(attachments)
           }}
           aria-labelledby="create-task-modal"
           aria-describedby="add-new-task"
@@ -130,9 +137,17 @@ export const TaskBoard = ({
           <NewTaskForm
             handleCreate={async () => {
               store.dispatch(setShowModal())
-              store.dispatch(clearCreateTaskFields())
               const createdTask = await handleCreate({ title, body: description, workflowStateId, assigneeType, assigneeId })
+              const toUploadAttachments: CreateAttachmentRequest[] = attachments.map((el) => {
+                return {
+                  ...el,
+                  taskId: createdTask.id,
+                }
+              })
+              store.dispatch(clearCreateTaskFields())
+              await handleCreateMultipleAttachments(toUploadAttachments)
             }}
+            getSignedUrlUpload={getSignedUrlUpload}
           />
         </Modal>
       </Stack>

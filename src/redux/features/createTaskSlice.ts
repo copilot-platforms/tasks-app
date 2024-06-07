@@ -1,6 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { RootState } from '../store'
 import { AssigneeType } from '@prisma/client'
+import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 
 interface IInitialState {
   showModal: boolean
@@ -9,6 +10,7 @@ interface IInitialState {
   workflowStateId: string
   assigneeType?: AssigneeType | null
   assigneeId: string | null
+  attachments: CreateAttachmentRequest[]
 }
 
 const initialState: IInitialState = {
@@ -18,6 +20,7 @@ const initialState: IInitialState = {
   description: '',
   assigneeType: null,
   assigneeId: null,
+  attachments: [],
 }
 
 const createTaskSlice = createSlice({
@@ -28,7 +31,15 @@ const createTaskSlice = createSlice({
       state.showModal = !state.showModal
     },
 
-    setCreateTaskFields: (state, action: { payload: { targetField: string; value: string | null } }) => {
+    removeOneAttachment: (state, action: { payload: { attachment: CreateAttachmentRequest } }) => {
+      const { attachment } = action.payload
+      state.attachments = state.attachments.filter((el) => el.filePath !== attachment.filePath)
+    },
+
+    setCreateTaskFields: (
+      state,
+      action: { payload: { targetField: string; value: string | null | CreateAttachmentRequest[] } },
+    ) => {
       const { targetField, value } = action.payload
       //@ts-ignore
       state[targetField] = value
@@ -40,12 +51,13 @@ const createTaskSlice = createSlice({
       state.description = ''
       state.assigneeType = null
       state.assigneeId = null
+      state.attachments = []
     },
   },
 })
 
 export const selectCreateTask = (state: RootState) => state.createTask
 
-export const { setShowModal, setCreateTaskFields, clearCreateTaskFields } = createTaskSlice.actions
+export const { setShowModal, setCreateTaskFields, clearCreateTaskFields, removeOneAttachment } = createTaskSlice.actions
 
 export default createTaskSlice.reducer
