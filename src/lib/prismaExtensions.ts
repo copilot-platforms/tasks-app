@@ -54,7 +54,9 @@ export const filterSoftDeleted = Prisma.defineExtension({
     $allModels: {
       async $allOperations({ model, operation, args, query }) {
         if (operation === 'findUnique' || operation === 'findFirst' || operation === 'findMany') {
-          args.where = { ...args.where, deletedAt: null }
+          if (model.hasOwnProperty('deletedAt')) {
+            args.where = { ...args.where, deletedAt: null }
+          }
           return query(args)
         }
         return query(args)

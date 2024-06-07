@@ -6,5 +6,11 @@ export class ActivityLogService extends BaseService {
     super(user)
   }
 
-  get(taskId: string) {}
+  get(taskId: string) {
+    return this.db.activityLog.findMany({
+      where: {
+        taskId,
+      },
+    })
+  }
 }
