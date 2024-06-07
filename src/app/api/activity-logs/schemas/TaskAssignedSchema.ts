@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
 export const TaskAssignedSchema = z.object({
-  oldAssigneeId: z.string().uuid(),
-  newAssigneeId: z.string().uuid(),
+  oldAssigneeId: z.string().uuid().nullable(),
+  newAssigneeId: z.string().uuid().nullable(),
 })
