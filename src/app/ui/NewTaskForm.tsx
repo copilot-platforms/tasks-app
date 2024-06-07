@@ -10,7 +10,7 @@ import store from '@/redux/store'
 import { statusIcons } from '@/utils/iconMatcher'
 import { Close } from '@mui/icons-material'
 import { Avatar, Box, Stack, Typography, styled } from '@mui/material'
-import { ReactNode } from 'react'
+import { ReactNode, useEffect } from 'react'
 import { FilterOptions, IAssigneeCombined, ITemplate } from '@/types/interfaces'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { useSelector } from 'react-redux'
@@ -47,6 +47,20 @@ export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
   const router = useRouter()
 
   const todoWorkflowState = workflowStates.find((el) => el.key === 'todo') || workflowStates[0]
+
+  useEffect(() => {
+    function handleCloseModal(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        store.dispatch(setShowModal())
+      }
+    }
+
+    document.addEventListener('keydown', handleCloseModal)
+
+    return () => {
+      document.removeEventListener('keydown', handleCloseModal)
+    }
+  }, [])
 
   const { assigneeId, workflowStateId } = useSelector(selectCreateTask)
   return (
