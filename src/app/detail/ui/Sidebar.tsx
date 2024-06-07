@@ -112,6 +112,7 @@ export const Sidebar = ({
         <Stack direction="row" m="16px 0px" alignItems="center" justifyContent="space-between">
           <StyledText variant="md">Assignee</StyledText>
           <Selector
+            placeholder="Change assignee"
             getSelectedValue={(newValue) => {
               const assignee = newValue as IAssigneeCombined
               updateAssigneeValue(assignee)

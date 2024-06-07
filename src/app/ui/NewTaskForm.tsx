@@ -143,6 +143,7 @@ export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
           />
           <Stack alignSelf="flex-start">
             <Selector
+              placeholder="Change assignee"
               getSelectedValue={(_newValue) => {
                 const newValue = _newValue as IAssigneeCombined
                 updateAssigneeValue(newValue)
