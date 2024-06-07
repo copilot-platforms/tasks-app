@@ -13,7 +13,7 @@ export const CommentInput = () => {
     <Stack direction="row" columnGap={3} alignItems="flex-start">
       <Avatar alt="user" src={''} sx={{ width: '25px', height: '25px' }} />
       <CommentCardContainer>
-        <TapWriteCommentInput content={''} getContent={(content) => setDetail(content)} />
+        <TapWriteCommentInput content={''} getContent={(content) => setDetail(content)} placeholder="Leave a comment..." />
         <InputAdornment
           position="end"
           sx={{
