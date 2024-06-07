@@ -2,7 +2,7 @@ import { CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { BaseService } from '@api/core/services/base.service'
 import { Resource } from '@api/core/types/api'
 import { PoliciesService } from '@api/core/services/policies.service'
-import { ActivityType, AssigneeType, Prisma, Task } from '@prisma/client'
+import { ActivityType, AssigneeType, Task } from '@prisma/client'
 import { UserAction } from '@api/core/types/user'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { NotificationTaskActions } from '@api/core/types/tasks'
@@ -16,8 +16,9 @@ import APIError from '@api/core/exceptions/api'
 import httpStatus from 'http-status'
 import { ActivityLogger } from '@api/activity/services/activity.service'
 import { TaskCreatedSchema } from '@api/activity/schemas/TaskCreatedSchema'
+import { TaskAssignedSchema } from '@api/activity/schemas/TaskAssignedSchema'
+import { WorkflowStateUpdatedSchema } from '@api/activity/schemas/WorkflowStateUpdatedSchema'
 import { z } from 'zod'
-import { da } from 'date-fns/locale'
 
 type FilterByAssigneeId = {
   assigneeId: string
@@ -92,6 +93,7 @@ export class TasksService extends BaseService {
     })
 
     if (newTask) {
+      // @todo move this logic to any pub/sub service like event bus
       const activityLogger = new ActivityLogger({ taskId: newTask.id, user: this.user })
       await activityLogger.log(
         ActivityType.TASK_CREATED,
@@ -157,8 +159,43 @@ export class TasksService extends BaseService {
     })
 
     if (updatedTask) {
-      const activityLogger = new ActivityLogger({ taskId: id, user: this.user })
-      // await activityLogger.log({ type: IActivityType.UPDATE_TASK, payload: data, prevTask })
+      const activityLogger = new ActivityLogger({ taskId: updatedTask.id, user: this.user })
+
+      if (updatedTask.assigneeId !== prevTask.assigneeId) {
+        await activityLogger.log(
+          ActivityType.TASK_ASSIGNED,
+          TaskAssignedSchema.parse({
+            oldAssigneeId: prevTask.assigneeId,
+            newAssigneeId: updatedTask.assigneeId,
+          }),
+        )
+      }
+
+      if (updatedTask.workflowStateId !== prevTask?.workflowStateId) {
+        const prevWorkflowState = prevTask.workflowState
+        const currentWorkflowState = updatedTask.workflowState
+
+        await activityLogger.log(
+          ActivityType.WORKFLOW_STATE_UPDATED,
+          WorkflowStateUpdatedSchema.parse({
+            id: z.string(),
+            oldWorkflowState: {
+              id: prevWorkflowState.id,
+              type: prevWorkflowState.type,
+              name: prevWorkflowState.name,
+              key: prevWorkflowState.key,
+              color: prevWorkflowState.color,
+            },
+            newWorkflowState: {
+              id: currentWorkflowState.id,
+              type: currentWorkflowState.type,
+              name: currentWorkflowState.name,
+              key: currentWorkflowState.key,
+              color: currentWorkflowState.color,
+            },
+          }),
+        )
+      }
     }
 
     // If task goes from unassigned to assigned, or assigneeId does not match
