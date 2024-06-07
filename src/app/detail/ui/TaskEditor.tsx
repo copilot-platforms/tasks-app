@@ -22,10 +22,12 @@ import { SupabaseActions } from '@/utils/SupabaseActions'
 import { CreateTaskRequestSchema } from '@/types/dto/tasks.dto'
 import { generateRandomString } from '@/utils/generateRandomString'
 import { ISignedUrlUpload, UserType } from '@/types/interfaces'
+import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 
 interface Prop {
   title: string
   detail: string
+  workflowState: WorkflowStateResponse
   task_id: string
   attachment: AttachmentResponseSchema[]
   isEditable: boolean
@@ -40,6 +42,7 @@ interface Prop {
 export const TaskEditor = ({
   title,
   detail,
+  workflowState,
   task_id,
   attachment,
   isEditable,
@@ -70,7 +73,7 @@ export const TaskEditor = ({
   return (
     <>
       <Stack direction="row" alignItems="center" columnGap={2}>
-        <Box pt="5px">{statusIcons['unstarted']}</Box>
+        <Box pt="5px">{statusIcons[workflowState.type]}</Box>
         <StyledTextField
           type="text"
           multiline

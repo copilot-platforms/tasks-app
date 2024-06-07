@@ -95,6 +95,7 @@ export default async function TaskDetailPage({
               title={task?.title || ''}
               task_id={task_id}
               detail={task?.body || ''}
+              workflowState={task?.workflowState}
               isEditable={params.user_type === UserType.INTERNAL_USER}
               updateTaskDetail={async (title, detail) => {
                 'use server'
