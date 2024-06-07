@@ -14,10 +14,10 @@ import {
 } from '@api/tasks/tasks.helpers'
 import APIError from '@api/core/exceptions/api'
 import httpStatus from 'http-status'
-import { ActivityLogger } from '@api/activity/services/activity-logger.service'
-import { TaskCreatedSchema } from '@api/activity/schemas/TaskCreatedSchema'
-import { TaskAssignedSchema } from '@api/activity/schemas/TaskAssignedSchema'
-import { WorkflowStateUpdatedSchema } from '@api/activity/schemas/WorkflowStateUpdatedSchema'
+import { ActivityLogger } from '@api/activity-logs/services/activity-logger.service'
+import { TaskCreatedSchema } from '@api/activity-logs/schemas/TaskCreatedSchema'
+import { TaskAssignedSchema } from '@api/activity-logs/schemas/TaskAssignedSchema'
+import { WorkflowStateUpdatedSchema } from '@api/activity-logs/schemas/WorkflowStateUpdatedSchema'
 import { z } from 'zod'
 
 type FilterByAssigneeId = {

@@ -1,18 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import authenticate from '../core/utils/authenticate'
-import { ActivityLogger } from './activity.service'
+import { ActivityLogService } from '@api/activity-logs/services/activity-log.service'
 import { IdParams } from '../core/types/api'
 import httpStatus from 'http-status'
 import { LogResponseSchema } from '@/types/dto/activity.dto'
 import { z } from 'zod'
 
-export const getActivityWithComment = async (req: NextRequest, { params: { id } }: IdParams) => {
+export const get = async (req: NextRequest, { params: { id } }: IdParams) => {
   const user = await authenticate(req)
 
-  const activityService = new ActivityLogger({ taskId: id, user })
-
-  const log = await activityService.getActivityWithComment()
+  const activityService = new ActivityLogService(user)
+  const log = await activityService.get(id)
 
   return NextResponse.json({ log: z.array(LogResponseSchema).parse(log) }, { status: httpStatus.OK })
-  // return NextResponse.json({ log }, { status: httpStatus.OK })
 }

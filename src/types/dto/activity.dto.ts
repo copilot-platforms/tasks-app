@@ -26,7 +26,7 @@ export const Activity_CreateTaskSchema = z.object({
 })
 
 export const Activity_WorkflowState_UpdateSchema = z.object({
-  type: z.literal(ActivityType.WORKFLOWSTATE_UPDATED),
+  type: z.literal(ActivityType.WORKFLOW_STATE_UPDATED),
   initiator: z.string(),
   initiatorId: z.string().uuid(),
   prevWorkflowState: WorkflowStateResponseSchema,
