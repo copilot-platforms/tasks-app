@@ -1,4 +1,4 @@
-import { ActivityType, AssigneeType, LogType, Task } from '@prisma/client'
+// import { ActivityType, AssigneeType, LogType, Task } from '@prisma/client'
 import { BaseService } from '@/app/api/core/services/base.service'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import User from '@/app/api/core/models/User.model'
@@ -24,187 +24,187 @@ export class ActivityLogger extends BaseService {
     this.taskId = taskId
   }
 
-  async log({ type, payload, prevTask }: { type: IActivityType; payload?: UpdateTaskRequest; prevTask?: Task }) {
-    switch (type) {
-      case IActivityType.CREATE_TASK:
-        await this.createTaskLog()
+  // async log({ type, payload, prevTask }: { type: IActivityType; payload?: UpdateTaskRequest; prevTask?: Task }) {
+  //   switch (type) {
+  //     case IActivityType.CREATE_TASK:
+  //       await this.createTaskLog()
+  //
+  //     case IActivityType.UPDATE_TASK:
+  //       if (payload && prevTask) {
+  //         await this.initiateLogging(payload, prevTask)
+  //       }
+  //   }
+  // }
 
-      case IActivityType.UPDATE_TASK:
-        if (payload && prevTask) {
-          await this.initiateLogging(payload, prevTask)
-        }
-    }
-  }
-
-  async createTaskLog() {
-    const userInfo = await this.getUserInfo(this.user.token)
-
-    await this.db.log.create({
-      data: {
-        taskId: this.taskId,
-        workspaceId: this.user.workspaceId,
-        logType: LogType.ACTIVITY,
-        activityLog: {
-          create: {
-            taskId: this.taskId,
-            workspaceId: this.user.workspaceId,
-            activityType: ActivityType.CREATE_TASK,
-            details: {
-              initiator: `${userInfo?.givenName || ''} ${userInfo?.familyName || ''}`.trim(),
-              initiatorId: z.string().parse(this.user.internalUserId),
-              type: ActivityType.CREATE_TASK,
-            },
-          },
-        },
-      },
-    })
-  }
-
-  async createAssignLog(payload: UpdateTaskRequest) {
-    if (payload.assigneeId) {
-      const userInfo = await this.getUserInfo(this.user.token)
-
-      const clientInfo: unknown = await this.getUserInfoById(payload, this.user.token)
-
-      let assignedTo =
-        payload.assigneeType === AssigneeType.company
-          ? (clientInfo as CompanyResponse).name
-          : `${(clientInfo as InternalUsers)?.givenName} ${(clientInfo as InternalUsers)?.familyName}`
-
-      await this.db.log.create({
-        data: {
-          taskId: this.taskId,
-          workspaceId: this.user.workspaceId,
-          logType: LogType.ACTIVITY,
-          activityLog: {
-            create: {
-              taskId: this.taskId,
-              workspaceId: this.user.workspaceId,
-              activityType: ActivityType.ASSIGN_TASK,
-              details: {
-                initiator: `${userInfo?.givenName || ''} ${userInfo?.familyName || ''}`.trim(),
-                initiatorId: z.string().parse(this.user.internalUserId),
-                assignedTo: assignedTo,
-                assignedToId: payload.assigneeId,
-                type: ActivityType.ASSIGN_TASK,
-              },
-            },
-          },
-        },
-      })
-    }
-  }
-
-  async createWorkflowStateLog(payload: UpdateTaskRequest, prevTaskPayload: Task | null) {
-    if (payload.workflowStateId && prevTaskPayload?.workflowStateId) {
-      const userInfo = await this.getUserInfo(this.user.token)
-
-      const workflowStateService = new WorkflowStatesService(this.user)
-      const prevWorkflowState = await workflowStateService.getOneWorkflowState(prevTaskPayload.workflowStateId)
-      const currentWorkflowState = await workflowStateService.getOneWorkflowState(payload.workflowStateId)
-
-      await this.db.log.create({
-        data: {
-          taskId: this.taskId,
-          workspaceId: this.user.workspaceId,
-          logType: LogType.ACTIVITY,
-          activityLog: {
-            create: {
-              taskId: this.taskId,
-              workspaceId: this.user.workspaceId,
-              activityType: ActivityType.WORKFLOWSTATE_UPDATE,
-              details: {
-                initiator: `${userInfo?.givenName || ''} ${userInfo?.familyName || ''}`.trim(),
-                initiatorId: z.string().parse(this.user.internalUserId),
-                prevWorkflowState,
-                currentWorkflowState,
-                type: ActivityType.WORKFLOWSTATE_UPDATE,
-              },
-            },
-          },
-        },
-      })
-    }
-  }
-
-  async initiateLogging(payload: UpdateTaskRequest, prevTask: Task) {
-    if (payload.assigneeId !== prevTask.assigneeId) {
-      await this.createAssignLog(payload)
-    }
-
-    if (payload.workflowStateId !== prevTask.workflowStateId) {
-      await this.createWorkflowStateLog(payload, prevTask)
-    }
-  }
-
-  async getUserInfo(token: string) {
-    const copilotUtils = new CopilotAPI(token)
-    try {
-      const userInfo = await copilotUtils.me()
-      return userInfo
-    } catch (e: unknown) {
-      console.error('Something went wrong!')
-    }
-  }
-
-  async getUserInfoById(payload: UpdateTaskRequest, token: string) {
-    const copilotUtils = new CopilotAPI(token)
-    const id = payload.assigneeId as string
-    try {
-      if (payload.assigneeType === AssigneeType.internalUser) {
-        const userInfo = await copilotUtils.getInternalUser(id)
-        return userInfo as InternalUsers
-      }
-      if (payload.assigneeType === AssigneeType.company) {
-        const userInfo = await copilotUtils.getCompany(id)
-        return userInfo as CompanyResponse
-      }
-      if (payload.assigneeType === AssigneeType.client) {
-        const userInfo = await copilotUtils.getClient(id)
-        return userInfo as ClientResponse
-      }
-    } catch (e: unknown) {
-      console.error('Something went wrong!')
-    }
-  }
-
-  async getActivityLogs() {
-    const activityLogs = await this.db.activityLog.findMany({
-      where: {
-        workspaceId: this.user.workspaceId,
-        taskId: this.taskId,
-      },
-    })
-    return z.array(ActivityLogResponseSchema).parse(activityLogs)
-  }
-
-  async getActivityWithComment() {
-    const policyGate = new PoliciesService(this.user)
-    policyGate.authorize(UserAction.Read, Resource.Comment)
-
-    const { workspaceId } = this.user
-    const { taskId } = this
-
-    const logs = await this.db.log.findMany({
-      where: {
-        workspaceId,
-        OR: [{ activityLog: { taskId } }, { comment: { taskId, parentId: null } }],
-      },
-      include: {
-        activityLog: true,
-        comment: {
-          include: {
-            attachments: true,
-            children: {
-              where: { deletedAt: null },
-              include: { attachments: true },
-            },
-          },
-        },
-      },
-      orderBy: { createdAt: 'asc' },
-    })
-
-    return logs
-  }
+  // async createTaskLog() {
+  //   const userInfo = await this.getUserInfo(this.user.token)
+  //
+  //   await this.db.log.create({
+  //     data: {
+  //       taskId: this.taskId,
+  //       workspaceId: this.user.workspaceId,
+  //       logType: LogType.ACTIVITY,
+  //       activityLog: {
+  //         create: {
+  //           taskId: this.taskId,
+  //           workspaceId: this.user.workspaceId,
+  //           activityType: ActivityType.CREATE_TASK,
+  //           details: {
+  //             initiator: `${userInfo?.givenName || ''} ${userInfo?.familyName || ''}`.trim(),
+  //             initiatorId: z.string().parse(this.user.internalUserId),
+  //             type: ActivityType.CREATE_TASK,
+  //           },
+  //         },
+  //       },
+  //     },
+  //   })
+  // }
+  //
+  // async createAssignLog(payload: UpdateTaskRequest) {
+  //   if (payload.assigneeId) {
+  //     const userInfo = await this.getUserInfo(this.user.token)
+  //
+  //     const clientInfo: unknown = await this.getUserInfoById(payload, this.user.token)
+  //
+  //     let assignedTo =
+  //       payload.assigneeType === AssigneeType.company
+  //         ? (clientInfo as CompanyResponse).name
+  //         : `${(clientInfo as InternalUsers)?.givenName} ${(clientInfo as InternalUsers)?.familyName}`
+  //
+  //     await this.db.log.create({
+  //       data: {
+  //         taskId: this.taskId,
+  //         workspaceId: this.user.workspaceId,
+  //         logType: LogType.ACTIVITY,
+  //         activityLog: {
+  //           create: {
+  //             taskId: this.taskId,
+  //             workspaceId: this.user.workspaceId,
+  //             activityType: ActivityType.ASSIGN_TASK,
+  //             details: {
+  //               initiator: `${userInfo?.givenName || ''} ${userInfo?.familyName || ''}`.trim(),
+  //               initiatorId: z.string().parse(this.user.internalUserId),
+  //               assignedTo: assignedTo,
+  //               assignedToId: payload.assigneeId,
+  //               type: ActivityType.ASSIGN_TASK,
+  //             },
+  //           },
+  //         },
+  //       },
+  //     })
+  //   }
+  // }
+  //
+  // async createWorkflowStateLog(payload: UpdateTaskRequest, prevTaskPayload: Task | null) {
+  //   if (payload.workflowStateId && prevTaskPayload?.workflowStateId) {
+  //     const userInfo = await this.getUserInfo(this.user.token)
+  //
+  //     const workflowStateService = new WorkflowStatesService(this.user)
+  //     const prevWorkflowState = await workflowStateService.getOneWorkflowState(prevTaskPayload.workflowStateId)
+  //     const currentWorkflowState = await workflowStateService.getOneWorkflowState(payload.workflowStateId)
+  //
+  //     await this.db.log.create({
+  //       data: {
+  //         taskId: this.taskId,
+  //         workspaceId: this.user.workspaceId,
+  //         logType: LogType.ACTIVITY,
+  //         activityLog: {
+  //           create: {
+  //             taskId: this.taskId,
+  //             workspaceId: this.user.workspaceId,
+  //             activityType: ActivityType.WORKFLOWSTATE_UPDATE,
+  //             details: {
+  //               initiator: `${userInfo?.givenName || ''} ${userInfo?.familyName || ''}`.trim(),
+  //               initiatorId: z.string().parse(this.user.internalUserId),
+  //               prevWorkflowState,
+  //               currentWorkflowState,
+  //               type: ActivityType.WORKFLOWSTATE_UPDATE,
+  //             },
+  //           },
+  //         },
+  //       },
+  //     })
+  //   }
+  // }
+  //
+  // async initiateLogging(payload: UpdateTaskRequest, prevTask: Task) {
+  //   if (payload.assigneeId !== prevTask.assigneeId) {
+  //     await this.createAssignLog(payload)
+  //   }
+  //
+  //   if (payload.workflowStateId !== prevTask.workflowStateId) {
+  //     await this.createWorkflowStateLog(payload, prevTask)
+  //   }
+  // }
+  //
+  // async getUserInfo(token: string) {
+  //   const copilotUtils = new CopilotAPI(token)
+  //   try {
+  //     const userInfo = await copilotUtils.me()
+  //     return userInfo
+  //   } catch (e: unknown) {
+  //     console.error('Something went wrong!')
+  //   }
+  // }
+  //
+  // async getUserInfoById(payload: UpdateTaskRequest, token: string) {
+  //   const copilotUtils = new CopilotAPI(token)
+  //   const id = payload.assigneeId as string
+  //   try {
+  //     if (payload.assigneeType === AssigneeType.internalUser) {
+  //       const userInfo = await copilotUtils.getInternalUser(id)
+  //       return userInfo as InternalUsers
+  //     }
+  //     if (payload.assigneeType === AssigneeType.company) {
+  //       const userInfo = await copilotUtils.getCompany(id)
+  //       return userInfo as CompanyResponse
+  //     }
+  //     if (payload.assigneeType === AssigneeType.client) {
+  //       const userInfo = await copilotUtils.getClient(id)
+  //       return userInfo as ClientResponse
+  //     }
+  //   } catch (e: unknown) {
+  //     console.error('Something went wrong!')
+  //   }
+  // }
+  //
+  // async getActivityLogs() {
+  //   const activityLogs = await this.db.activityLog.findMany({
+  //     where: {
+  //       workspaceId: this.user.workspaceId,
+  //       taskId: this.taskId,
+  //     },
+  //   })
+  //   return z.array(ActivityLogResponseSchema).parse(activityLogs)
+  // }
+  //
+  // async getActivityWithComment() {
+  //   const policyGate = new PoliciesService(this.user)
+  //   policyGate.authorize(UserAction.Read, Resource.Comment)
+  //
+  //   const { workspaceId } = this.user
+  //   const { taskId } = this
+  //
+  //   const logs = await this.db.log.findMany({
+  //     where: {
+  //       workspaceId,
+  //       OR: [{ activityLog: { taskId } }, { comment: { taskId, parentId: null } }],
+  //     },
+  //     include: {
+  //       activityLog: true,
+  //       comment: {
+  //         include: {
+  //           attachments: true,
+  //           children: {
+  //             where: { deletedAt: null },
+  //             include: { attachments: true },
+  //           },
+  //         },
+  //       },
+  //     },
+  //     orderBy: { createdAt: 'asc' },
+  //   })
+  //
+  //   return logs
+  // }
 }

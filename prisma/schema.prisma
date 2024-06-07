@@ -22,6 +22,12 @@ enum AssigneeType {
   company
 }
 
+enum ActivityType {
+  TASK_CREATED
+  TASK_ASSIGNED
+  WORKFLOW_STATE_UPDATED
+}
+
 model WorkflowState {
   id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   workspaceId String    @db.VarChar(32)
@@ -111,18 +117,19 @@ model Attachment {
 }
 
 model ActivityLog {
-  id           String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  createdAt    DateTime     @default(now())
-  taskId       String       @db.Uuid
-  task         Task         @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  workspaceId  String       @db.VarChar(32)
-  activityType ActivityType
-  details      Json         @db.JsonB
-  userId       String       @db.Uuid
-  updatedAt    DateTime     @updatedAt
-  deletedAt    DateTime?
+  id          String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  taskId      String       @db.Uuid
+  task        Task         @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  workspaceId String       @db.VarChar(32)
+  type        ActivityType
+  details     Json         @db.JsonB
+  userId      String       @db.Uuid
+  createdAt   DateTime     @default(now()) @db.Timestamptz()
+  updatedAt   DateTime     @updatedAt @ignore @db.Timestamptz()
 
   @@index([createdAt])
+  @@index([taskId], name: "IX_ActivityLogs_taskId")
+  @@index([userId], name: "IX_ActivityLogs_userId")
   @@map("ActivityLogs")
 }
 
@@ -138,20 +145,9 @@ model Comment {
   task        Task         @relation(fields: [taskId], references: [id], onDelete: Cascade)
   workspaceId String       @db.VarChar(32)
   attachments Attachment[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  deletedAt   DateTime?
+  createdAt   DateTime     @default(now()) @db.Timestamptz()
+  updatedAt   DateTime     @updatedAt @db.Timestamptz()
+  deletedAt   DateTime?    @db.Timestamptz()
 
   @@map("Comments")
-}
-
-enum ActivityType {
-  CREATE_TASK
-  ASSIGN_TASK
-  WORKFLOWSTATE_UPDATE
-}
-
-enum LogType {
-  COMMENT
-  ACTIVITY
 }

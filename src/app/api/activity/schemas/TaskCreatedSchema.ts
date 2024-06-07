@@ -4,11 +4,9 @@ import { AssigneeType } from '@prisma/client'
 export const TaskCreatedSchema = z.object({
   id: z.string(),
   workspaceId: z.string(),
-  assigneeId: z.string().uuid(),
-  assigneeType: z.nativeEnum(AssigneeType),
+  assigneeId: z.string().uuid().nullable(),
+  assigneeType: z.nativeEnum(AssigneeType).nullable(),
   title: z.string(),
   body: z.string(),
-  dueDate: z.string().datetime(),
-  createdAt: z.string().datetime(),
-  completedAt: z.string().datetime(),
+  dueDate: z.string().datetime().nullish(),
 })

@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { UpdateTaskRequestSchema } from '@/types/dto/tasks.dto'
 import { UserRole } from '@/app/api/core/types/user'
-import { ActivityType, LogType } from '@prisma/client'
+import { ActivityType } from '@prisma/client'
 import { WorkflowStateResponseSchema } from '@/types/dto/workflowStates.dto'
 import { CommentResponseSchema } from '@/types/dto/comment.dto'
 
@@ -20,13 +20,13 @@ export const CreateActivitySchema = z.object({
 })
 
 export const Activity_CreateTaskSchema = z.object({
-  type: z.literal(ActivityType.CREATE_TASK),
+  type: z.literal(ActivityType.TASK_CREATED),
   initiator: z.string(),
   initiatorId: z.string().uuid(),
 })
 
 export const Activity_WorkflowState_UpdateSchema = z.object({
-  type: z.literal(ActivityType.WORKFLOWSTATE_UPDATE),
+  type: z.literal(ActivityType.WORKFLOWSTATE_UPDATED),
   initiator: z.string(),
   initiatorId: z.string().uuid(),
   prevWorkflowState: WorkflowStateResponseSchema,
@@ -34,7 +34,7 @@ export const Activity_WorkflowState_UpdateSchema = z.object({
 })
 
 export const Activity_AssignTaskSchema = z.object({
-  type: z.literal(ActivityType.ASSIGN_TASK),
+  type: z.literal(ActivityType.TASK_ASSIGNED),
   initiator: z.string(),
   initiatorId: z.string().uuid(),
   assignedTo: z.string(),
@@ -54,7 +54,6 @@ export const ActivityLogResponseSchema = z.object({
 
 export const LogResponseSchema = z.object({
   id: z.string().uuid(),
-  logType: z.nativeEnum(LogType),
   taskId: z.string().uuid(),
   workspaceId: z.string(),
   activityLog: ActivityLogResponseSchema.nullable(),

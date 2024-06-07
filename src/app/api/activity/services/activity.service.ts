@@ -3,6 +3,7 @@ import User from '@api/core/models/User.model'
 import { z } from 'zod'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { SchemaByActivityType } from '@api/activity/const'
+import { ActivityType as ActivityTypeEnum } from '@prisma/client'
 
 export class ActivityLogger extends BaseService {
   public taskId: string
@@ -21,9 +22,9 @@ export class ActivityLogger extends BaseService {
     }
   }
 
-  async log<ActivityType extends keyof typeof SchemaByActivityType = keyof typeof SchemaByActivityType>(
-    activityType: ActivityType,
-    payload: NonNullable<z.input<(typeof SchemaByActivityType)[ActivityType]>>,
+  async log<T extends keyof typeof SchemaByActivityType = keyof typeof SchemaByActivityType>(
+    activityType: T,
+    payload: NonNullable<z.input<(typeof SchemaByActivityType)[T]>>,
   ) {
     const userInfo = await this.getUserInfo(this.user.token)
 
@@ -31,7 +32,7 @@ export class ActivityLogger extends BaseService {
       data: {
         taskId: this.taskId,
         workspaceId: this.user.workspaceId,
-        activityType: activityType,
+        type: activityType,
         userId: z.string().parse(userInfo?.id),
         details: payload,
       },
