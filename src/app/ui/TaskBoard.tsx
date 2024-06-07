@@ -129,9 +129,11 @@ export const TaskBoard = ({
         >
           <NewTaskForm
             handleCreate={() => {
-              store.dispatch(setShowModal())
-              store.dispatch(clearCreateTaskFields())
-              handleCreate({ title, body: description, workflowStateId, assigneeType, assigneeId })
+              if (title) {
+                store.dispatch(setShowModal())
+                store.dispatch(clearCreateTaskFields())
+                handleCreate({ title, body: description, workflowStateId, assigneeType, assigneeId })
+              }
             }}
           />
         </Modal>
