@@ -1,10 +1,12 @@
 import { CreateComment, UpdateComment } from '@/types/dto/comment.dto'
-import { BaseService } from '../core/services/base.service'
-import { PoliciesService } from '../core/services/policies.service'
-import { UserAction } from '../core/types/user'
-import { Resource } from '../core/types/api'
+import { BaseService } from '@api/core/services/base.service'
+import { PoliciesService } from '@api/core/services/policies.service'
+import { UserAction } from '@api/core/types/user'
+import { Resource } from '@api/core/types/api'
 import { CopilotAPI } from '@/utils/CopilotAPI'
-import { LogType } from '@prisma/client'
+import { ActivityLogger } from '@api/activity-logs/services/activity-logger.service'
+import { ActivityType } from '@prisma/client'
+import { CommentAddedSchema } from '@api/activity-logs/schemas/CommentAddedSchema'
 
 export class CommentService extends BaseService {
   async create(data: CreateComment) {
@@ -14,22 +16,29 @@ export class CommentService extends BaseService {
     const copilotUtils = new CopilotAPI(this.user.token)
     const userInfo = await copilotUtils.me()
 
-    const comment = await this.db.log.create({
+    if (!userInfo) {
+      throw new Error(`User not found for token ${this.user.token}`)
+    }
+
+    const comment = await this.db.comment.create({
       data: {
+        content: data.content,
         taskId: data.taskId,
+        parentId: data.parentId,
         workspaceId: this.user.workspaceId,
-        logType: LogType.COMMENT,
-        comment: {
-          create: {
-            ...data,
-            taskId: data.taskId,
-            workspaceId: this.user.workspaceId,
-            initiator: userInfo?.givenName + ' ' + userInfo?.familyName,
-            initiatorId: this.user.internalUserId as string,
-          },
-        },
+        initiatorId: userInfo.id,
       },
     })
+
+    const activityLogger = new ActivityLogger({ taskId: data.taskId, user: this.user })
+    await activityLogger.log(
+      ActivityType.COMMENT_ADDED,
+      CommentAddedSchema.parse({
+        id: comment.id,
+        content: comment.content,
+        initiatorId: userInfo.id,
+      }),
+    )
 
     return comment
   }
@@ -38,20 +47,18 @@ export class CommentService extends BaseService {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Delete, Resource.Comment)
 
-    return await this.db.log.delete({ where: { id } })
+    return this.db.comment.delete({ where: { id } })
   }
 
   async update(id: string, data: UpdateComment) {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Update, Resource.Comment)
 
-    const updatedComment = await this.db.comment.update({
+    return this.db.comment.update({
       where: { id },
       data: {
         ...data,
       },
     })
-
-    return updatedComment
   }
 }

@@ -1,6 +1,5 @@
 import { z } from 'zod'
 import { AttachmentResponseSchema } from './attachments.dto'
-import { LogType } from '@prisma/client'
 
 export const CreateCommentSchema = z.object({
   content: z.string(),

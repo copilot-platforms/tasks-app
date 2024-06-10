@@ -2,7 +2,7 @@ import { BaseService } from '@api/core/services/base.service'
 import User from '@api/core/models/User.model'
 import { z } from 'zod'
 import { CopilotAPI } from '@/utils/CopilotAPI'
-import { SchemaByActivityType } from '@api/activity/const'
+import { SchemaByActivityType } from '@api/activity-logs/const'
 
 export class ActivityLogger extends BaseService {
   public taskId: string

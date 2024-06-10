@@ -26,6 +26,7 @@ enum ActivityType {
   TASK_CREATED
   TASK_ASSIGNED
   WORKFLOW_STATE_UPDATED
+  COMMENT_ADDED
 }
 
 model WorkflowState {
@@ -136,7 +137,6 @@ model ActivityLog {
 model Comment {
   id          String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   content     String
-  initiator   String
   initiatorId String       @db.Uuid
   parentId    String?      @db.Uuid
   parent      Comment?     @relation("ChildComments", fields: [parentId], references: [id], onDelete: Cascade)
