@@ -13,7 +13,7 @@ export const CommentInput = () => {
     <Stack direction="row" columnGap={3} alignItems="flex-start">
       <Avatar alt="user" src={''} sx={{ width: '25px', height: '25px' }} />
       <CommentCardContainer>
-        <TapWriteCommentInput content={''} getContent={(content) => setDetail(content)} />
+        <TapWriteCommentInput content={''} getContent={(content) => setDetail(content)} placeholder="Leave a comment..." />
         <InputAdornment
           position="end"
           sx={{
@@ -23,13 +23,7 @@ export const CommentInput = () => {
             paddingBottom: '10px',
           }}
         >
-          <Stack direction="row" columnGap={6}>
-            <input id="fileInput" type="file" style={{ display: 'none' }} onChange={() => {}} />
-            <label htmlFor="fileInput">
-              <AttachmentIcon />
-            </label>
-            <PrimaryBtn buttonText="Comment" handleClick={() => {}} />
-          </Stack>
+          <PrimaryBtn buttonText="Comment" handleClick={() => {}} />
         </InputAdornment>
       </CommentCardContainer>
     </Stack>
