@@ -52,6 +52,8 @@ export const ActivityLogResponseSchema = z.object({
   ]),
 })
 
+export type ActivityLogResponse = z.infer<typeof ActivityLogResponseSchema>
+
 export const LogResponseSchema = z.object({
   id: z.string().uuid(),
   taskId: z.string().uuid(),
