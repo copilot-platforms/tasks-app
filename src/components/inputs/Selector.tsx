@@ -85,14 +85,6 @@ export default function Selector({
           zIndex: '9999',
         }}
         placement="bottom-start"
-        modifiers={[
-          {
-            name: 'offset',
-            options: {
-              offset: [0, 4],
-            },
-          },
-        ]}
       >
         <StyledAutocomplete
           id="status-box"
