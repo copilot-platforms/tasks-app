@@ -178,7 +178,6 @@ export class TasksService extends BaseService {
         await activityLogger.log(
           ActivityType.WORKFLOW_STATE_UPDATED,
           WorkflowStateUpdatedSchema.parse({
-            id: z.string(),
             oldWorkflowState: {
               id: prevWorkflowState.id,
               type: prevWorkflowState.type,
