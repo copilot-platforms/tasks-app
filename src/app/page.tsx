@@ -126,8 +126,7 @@ export default async function Main({ searchParams }: { searchParams: { token: st
             }}
             getSignedUrlUpload={async (fileName: string) => {
               'use server'
-              const data = await getSignedUrlUpload(token, fileName)
-              return data
+              return await getSignedUrlUpload(token, fileName)
             }}
             handleCreateMultipleAttachments={async (attachments: CreateAttachmentRequest[]) => {
               'use server'

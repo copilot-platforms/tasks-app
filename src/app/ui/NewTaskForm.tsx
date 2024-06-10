@@ -239,7 +239,7 @@ const NewTaskFormInputs = () => {
       <Stack direction="row" columnGap={2} m="16px 0px">
         {attachments?.map((el, key) => {
           return (
-            <Box key={key}>
+            <Box key={el.filePath}>
               <AttachmentCard
                 file={el}
                 deleteAttachment={async (event: React.MouseEvent<HTMLDivElement>) => {
