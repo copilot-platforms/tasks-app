@@ -1,10 +1,8 @@
 import { BaseService } from '@api/core/services/base.service'
 import User from '@api/core/models/User.model'
 import { z } from 'zod'
-import { ActivityType } from '@prisma/client'
+import { ActivityType, Comment } from '@prisma/client'
 import { DBActivityLogArraySchema, DBActivityLogDetails, SchemaByActivityType } from '@api/activity-logs/const'
-import { CommentAddedTransformer } from '@api/activity-logs/transformers/comment-added.transformer'
-import { CommentAddedSchema } from '@api/activity-logs/schemas/CommentAddedSchema'
 
 export class ActivityLogService extends BaseService {
   constructor(user: User) {
@@ -32,17 +30,28 @@ export class ActivityLogService extends BaseService {
 
     // @todo fetch all users - internal as well as client and pass them to each transformer for name, profile picture etc.
 
-    // @todo fetch all the comments BASED on the and pass them to the comment transformer to get the content of the latest comment
     const commentIds = parsedActivityLogs
       .filter((activityLog) => activityLog.type === ActivityType.COMMENT_ADDED)
       .map((activityLog) => activityLog.details.id)
-    // Now fetch all the comments based on the commentIds
+      .filter((commentId: unknown): commentId is string => commentId !== null)
+
+    // @todo move the db call to comment service
+    const comments = await this.db.comment.findMany({
+      where: {
+        id: {
+          in: commentIds,
+        },
+      },
+    })
 
     return parsedActivityLogs.map((activityLog) => {
       return {
         ...activityLog,
-        details: this.formatActivityLogDetails(activityLog.type, activityLog.details),
+        details: this.formatActivityLogDetails(activityLog.type, activityLog.details, comments),
         createdAt: activityLog.createdAt.toISOString(),
+        initiator: {
+          // @todo filter users based on the userId from the activity log and return id, name and profile picture
+        },
       }
     })
   }
@@ -50,10 +59,18 @@ export class ActivityLogService extends BaseService {
   formatActivityLogDetails<ActivityLog extends keyof typeof SchemaByActivityType>(
     activityType: ActivityLog,
     payload: DBActivityLogDetails,
+    comments: Comment[],
   ) {
     switch (activityType) {
       case ActivityType.COMMENT_ADDED:
-        return new CommentAddedTransformer().transform(CommentAddedSchema.parse(payload))
+        const comment = comments.find((comment) => comment.id === payload.id)
+        if (!comment) {
+          throw new Error(`Error while finding comment with id ${payload.id}`)
+        }
+        return {
+          ...payload,
+          content: comment.content,
+        }
       default:
         return payload
     }
