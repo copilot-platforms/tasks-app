@@ -2,7 +2,6 @@ import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { TaskEditor } from '@/app/detail/ui/TaskEditor'
 import { Box, Stack, Typography } from '@mui/material'
 import { Sidebar } from '@/app/detail/ui/Sidebar'
-import { activities, taskDetail } from '@/utils/mockData'
 import { IAssignee, UserType } from '@/types/interfaces'
 import { apiUrl } from '@/config'
 import { TaskResponse } from '@/types/dto/tasks.dto'
@@ -79,7 +78,7 @@ export default async function TaskDetailPage({
   const assignee = addTypeToAssignee(await getAssigneeList(token))
   const attachments = await getAttachments(token, task_id)
   const activities = await getActivities(token, task_id)
-
+  console.log(activities)
   return (
     <ClientSideStateUpdate assignee={assignee}>
       <Stack direction="row">
@@ -147,7 +146,7 @@ export default async function TaskDetailPage({
                       }}
                       key={item.id}
                     >
-                      {item.activityType ? <ActivityLog log={item} /> : <Comments comment={item} />}
+                      {item.activityType == 'COMMENT_ADDED' ? <Comments comment={item} /> : <ActivityLog log={item} />}
                     </Box>
                   )
                 })}
