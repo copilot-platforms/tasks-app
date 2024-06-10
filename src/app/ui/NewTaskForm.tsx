@@ -157,7 +157,11 @@ export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
               }}
               startIcon={
                 <AvatarWithInitials
-                  altName={assigneeValue?.familyName || assigneeValue?.givenName}
+                  altName={
+                    assigneeValue?.familyName || assigneeValue?.givenName == 'No assignee'
+                      ? ''
+                      : assigneeValue?.familyName || assigneeValue?.givenName
+                  }
                   alt="user"
                   src={assigneeValue?.iconImageUrl || assigneeValue?.avatarImageUrl}
                   sx={{ width: '20px', height: '20px' }}

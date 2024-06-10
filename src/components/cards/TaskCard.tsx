@@ -25,7 +25,7 @@ export const TaskCard = ({ task }: { task: TaskResponse }) => {
         <Stack direction="row" alignItems="center" columnGap={1}>
           <AvatarWithInitials
             alt="user"
-            altName={currentAssignee?.givenName}
+            altName={currentAssignee?.givenName == 'No assignee' ? '' : currentAssignee?.givenName}
             src={currentAssignee?.iconImageUrl || currentAssignee?.avatarImageUrl}
             sx={{ width: '20px', height: '20px' }}
             variant={currentAssignee?.type === 'companies' ? 'rounded' : 'circular'}
