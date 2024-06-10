@@ -37,6 +37,7 @@ export class CommentService extends BaseService {
         id: comment.id,
         content: comment.content,
         initiatorId: userInfo.id,
+        parentId: comment.parentId,
       }),
     )
 
