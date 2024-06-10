@@ -3,7 +3,7 @@ import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
 import { StyledAutocomplete } from '@/components/inputs/Autocomplete'
 import { statusIcons } from '@/utils/iconMatcher'
 import { useFocusableInput } from '@/hooks/useFocusableInput'
-import { HTMLAttributes, ReactNode, useState } from 'react'
+import { HTMLAttributes, ReactNode, useEffect, useState } from 'react'
 import { StyledTextField } from './TextField'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { IAssigneeCombined, IExtraOption, ITemplate, TruncateMaxNumber } from '@/types/interfaces'
@@ -70,6 +70,20 @@ export default function Selector({
       return ''
     }
   }
+
+  useEffect(() => {
+    function closePopper(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        setAnchorEl(null)
+      }
+    }
+
+    window.addEventListener('keydown', closePopper)
+
+    return () => {
+      window.removeEventListener('keydown', closePopper)
+    }
+  }, [])
 
   return (
     <Stack direction="column">
