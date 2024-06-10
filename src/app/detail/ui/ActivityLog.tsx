@@ -3,6 +3,7 @@ import { Avatar, Box, Stack } from '@mui/material'
 import { BoldTypography, StyledTypography, VerticalLine } from '@/app/detail/ui/styledComponent'
 import { getTimeDifference } from '@/utils/getTimeDifference'
 import { mockActivitiesInterface } from '@/utils/mockData'
+import AvatarWithInitials from '@/components/Avatar/AvatarWithInitials'
 
 interface Prop {
   log: mockActivitiesInterface
@@ -36,7 +37,12 @@ export const ActivityLog = ({ log }: Prop) => {
   return (
     <Stack direction="row" columnGap={4} position="relative">
       <VerticalLine />
-      <Avatar alt="user" src={log?.iconImageUrl || log?.avatarImageUrl} sx={{ width: '25px', height: '25px' }} />
+      <AvatarWithInitials
+        alt="user"
+        src={log?.iconImageUrl || log?.avatarImageUrl}
+        altName={log.details.initiator}
+        sx={{ width: '25px', height: '25px' }}
+      />
       <Stack direction="row" columnGap={1}>
         <BoldTypography>{log.details.initiator}</BoldTypography>
         {activityDescription[log.activityType](...logEntities)}

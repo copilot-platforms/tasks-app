@@ -17,6 +17,7 @@ import { ListBtn } from '@/components/buttons/ListBtn'
 import { MenuBox } from '@/components/inputs/MenuBox'
 import { useSelector } from 'react-redux'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
+import AvatarWithInitials from '@/components/Avatar/AvatarWithInitials'
 
 const CustomDivider = styled(Box)(({ theme }) => ({
   height: '1px',
@@ -69,8 +70,9 @@ export const CommentCard = ({ comment }: { comment: any }) => {
             <Stack direction="column" rowGap={3} key={item.id}>
               <CustomDivider />
               <Stack direction="row" columnGap={2} alignItems={'center'}>
-                <Avatar
+                <AvatarWithInitials
                   alt="user"
+                  altName={comment.details.initiator}
                   src={comment?.iconImageUrl || comment?.avatarImageUrl}
                   sx={{ width: '20px', height: '20px' }}
                 />

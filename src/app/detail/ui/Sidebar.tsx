@@ -19,6 +19,7 @@ import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 import { ToggleButtonContainer } from './ToggleButtonContainer'
 import { NoAssignee, NoAssigneeExtraOptions } from '@/utils/noAssignee'
 import ExtraOptionRendererAssignee from '@/components/inputs/ExtraOptionRendererAssignee'
+import AvatarWithInitials from '@/components/Avatar/AvatarWithInitials'
 
 const StyledText = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[500],
@@ -119,7 +120,8 @@ export const Sidebar = ({
               updateAssignee(assigneeType, assignee?.id)
             }}
             startIcon={
-              <Avatar
+              <AvatarWithInitials
+                altName={assigneeValue?.familyName || assigneeValue?.givenName}
                 alt="user"
                 src={assigneeValue?.iconImageUrl || assigneeValue?.avatarImageUrl}
                 sx={{ width: '20px', height: '20px' }}

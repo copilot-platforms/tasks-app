@@ -8,6 +8,7 @@ import { StyledTextField } from './TextField'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { IAssigneeCombined, IExtraOption, ITemplate, TruncateMaxNumber } from '@/types/interfaces'
 import { truncateText } from '@/utils/truncateText'
+import AvatarWithInitials from '@/components/Avatar/AvatarWithInitials'
 
 export enum SelectorType {
   ASSIGNEE_SELECTOR = 'assigneeSelector',
@@ -214,7 +215,8 @@ const AssigneeSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTM
       }}
     >
       <Stack direction="row" alignItems="center" columnGap={3}>
-        <Avatar
+        <AvatarWithInitials
+          altName={(option as IAssigneeCombined)?.givenName || (option as IAssigneeCombined)?.familyName}
           alt="user"
           src={(option as IAssigneeCombined).avatarImageUrl || (option as IAssigneeCombined).iconImageUrl}
           sx={{ width: '20px', height: '20px' }}

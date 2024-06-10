@@ -16,6 +16,11 @@ export const BoldTypography = styled(Typography)(({ theme }) => ({
   fontSize: theme.typography.md.fontSize,
 }))
 
+export const AvatarTypography = styled(Typography)(({ theme }) => ({
+  color: theme.color.base.white,
+  fontSize: theme.typography.bodyMd.fontSize,
+}))
+
 export const StyledKeyboardIcon = styled(KeyboardArrowRight)(({ theme }) => ({
   color: theme.color.gray[500],
 }))

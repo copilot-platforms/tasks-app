@@ -21,6 +21,7 @@ import { useRouter } from 'next/navigation'
 import { selectCreateTemplate } from '@/redux/features/templateSlice'
 import { NoAssignee, NoAssigneeExtraOptions } from '@/utils/noAssignee'
 import ExtraOptionRendererAssignee from '@/components/inputs/ExtraOptionRendererAssignee'
+import AvatarWithInitials from '@/components/Avatar/AvatarWithInitials'
 
 export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
   const { workflowStates, assignee, token, filterOptions } = useSelector(selectTaskBoard)
@@ -155,11 +156,12 @@ export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
                 store.dispatch(setCreateTaskFields({ targetField: 'assigneeId', value: newValue?.id }))
               }}
               startIcon={
-                <Avatar
+                <AvatarWithInitials
+                  altName={assigneeValue?.familyName || assigneeValue?.givenName}
                   alt="user"
                   src={assigneeValue?.iconImageUrl || assigneeValue?.avatarImageUrl}
                   sx={{ width: '20px', height: '20px' }}
-                  variant={assigneeValue?.type === 'companies' ? 'square' : 'circular'}
+                  variant={assigneeValue?.type === 'companies' ? 'rounded' : 'circular'}
                 />
               }
               options={assignee}
