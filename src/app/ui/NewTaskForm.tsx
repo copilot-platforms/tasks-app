@@ -63,10 +63,6 @@ export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
                 getSelectedValue={(_newValue) => {
                   const newValue = _newValue as ITemplate
                   updateTemplateValue(newValue)
-                  const selectedAssignee = assignee.find((el) => el.id === newValue.assigneeId)
-                  const selectedWorkflowState = workflowStates.find((el) => el.id === newValue.workflowStateId)
-                  updateAssigneeValue(selectedAssignee)
-                  updateStatusValue(selectedWorkflowState)
                   store.dispatch(setCreateTaskFields({ targetField: 'title', value: newValue.title }))
                   store.dispatch(setCreateTaskFields({ targetField: 'description', value: newValue.body }))
                   updateStatusValue(todoWorkflowState)
@@ -163,6 +159,7 @@ export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
                   alt="user"
                   src={assigneeValue?.iconImageUrl || assigneeValue?.avatarImageUrl}
                   sx={{ width: '20px', height: '20px' }}
+                  variant={assigneeValue?.type === 'companies' ? 'square' : 'circular'}
                 />
               }
               options={assignee}

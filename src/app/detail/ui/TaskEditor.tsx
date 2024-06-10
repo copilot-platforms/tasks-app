@@ -10,18 +10,13 @@ import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
 import store from '@/redux/store'
-import { Tapwrite, TiptapEditorUtils } from 'tapwrite'
 import { upload } from '@vercel/blob/client'
-import {
-  AttachmentResponseSchema,
-  CreateAttachmentRequest,
-  CreateAttachmentRequestSchema,
-} from '@/types/dto/attachments.dto'
+import { AttachmentResponseSchema, CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { AttachmentInput } from '@/components/inputs/AttachmentInput'
 import { SupabaseActions } from '@/utils/SupabaseActions'
-import { CreateTaskRequestSchema } from '@/types/dto/tasks.dto'
 import { generateRandomString } from '@/utils/generateRandomString'
 import { ISignedUrlUpload, UserType } from '@/types/interfaces'
+import { TapWriteTaskEditor } from '@/app/detail/ui/styledComponent'
 
 interface Prop {
   title: string
@@ -94,11 +89,11 @@ export const TaskEditor = ({
         />
       </Stack>
       <Box
-        sx={{
-          minHeight: '30vh',
+        onBlur={() => {
+          updateTaskDetail(updateTitle, updateDetail)
         }}
       >
-        <Tapwrite
+        <TapWriteTaskEditor
           uploadFn={async (file, tiptapEditorUtils) => {
             const newBlob = await upload(file.name, file, {
               access: 'public',
