@@ -48,7 +48,6 @@ export default async function ClientPage({ searchParams }: { searchParams: { tok
     await getAllTasks(token),
     addTypeToAssignee(await getAssigneeList(token)),
   ])
-
   return (
     <>
       <ClientSideStateUpdate workflowStates={workflowStates} tasks={tasks} token={token} assignee={assignee}>
