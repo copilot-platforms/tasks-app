@@ -10,7 +10,7 @@ import httpStatus from 'http-status'
 export class PoliciesService extends BaseService {
   private defaultPolicies: Record<UserRole.Client, Record<Resource, UserAction[]>> = {
     [UserRole.Client]: {
-      [Resource.Tasks]: [UserAction.Read],
+      [Resource.Tasks]: [UserAction.Read, UserAction.Update],
       [Resource.TaskTemplates]: [],
       [Resource.WorkflowState]: [UserAction.Read],
       [Resource.ViewSetting]: [],
