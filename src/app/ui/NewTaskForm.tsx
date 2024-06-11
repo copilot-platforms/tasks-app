@@ -32,7 +32,10 @@ export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
     type: SelectorType.STATUS_SELECTOR,
   })
   const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
-    item: assignee.find((item) => item.id == filterOptions[FilterOptions.ASSIGNEE]) ?? NoAssignee,
+    item:
+      assignee.find(
+        (item) => item.id == filterOptions[FilterOptions.ASSIGNEE] || item.id == filterOptions[FilterOptions.TYPE],
+      ) ?? NoAssignee,
     type: SelectorType.ASSIGNEE_SELECTOR,
   })
   const { renderingItem: _templateValue, updateRenderingItem: updateTemplateValue } = useHandleSelectorComponent({
@@ -48,7 +51,6 @@ export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
 
   const todoWorkflowState = workflowStates.find((el) => el.key === 'todo') || workflowStates[0]
 
-  const { assigneeId, workflowStateId } = useSelector(selectCreateTask)
   return (
     <NewTaskContainer>
       <Stack

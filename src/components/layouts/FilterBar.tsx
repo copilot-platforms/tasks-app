@@ -41,6 +41,8 @@ export const FilterBar = ({ updateViewModeSetting }: { updateViewModeSetting: (m
       onClick: async (index: number) => {
         handleFilterOptionsChange(FilterOptions.TYPE, IUTokenSchema.parse(tokenPayload)?.internalUserId)
         setActiveButtonIndex(index)
+        handleFilterOptionsChange(FilterOptions.ASSIGNEE, '')
+        updateAssigneeValue(null)
       },
       id: 'MyTasks',
     },
@@ -69,7 +71,9 @@ export const FilterBar = ({ updateViewModeSetting }: { updateViewModeSetting: (m
       id: 'AllTasks',
     },
   ]
+
   const assigneeValue = _assigneeValue as IAssigneeCombined
+
   return (
     <Box>
       <Box
@@ -97,7 +101,7 @@ export const FilterBar = ({ updateViewModeSetting }: { updateViewModeSetting: (m
                     getSelectedValue={(_newValue) => {
                       const newValue = _newValue as IAssigneeCombined
                       updateAssigneeValue(newValue)
-                      handleFilterOptionsChange(FilterOptions.ASSIGNEE, newValue.id as string)
+                      handleFilterOptionsChange(FilterOptions.ASSIGNEE, newValue?.id as string)
                     }}
                     startIcon={<FilterByAsigneeIcon />}
                     options={assignee}
