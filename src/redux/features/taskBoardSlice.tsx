@@ -12,6 +12,7 @@ interface IInitialState {
   view: View
   filteredTasks: TaskResponse[]
   filterOptions: IFilterOptions
+  filteredAssigneeList: IAssigneeCombined[]
 }
 
 const initialState: IInitialState = {
@@ -26,6 +27,7 @@ const initialState: IInitialState = {
     [FilterOptions.KEYWORD]: '',
     [FilterOptions.TYPE]: '',
   },
+  filteredAssigneeList: [],
 }
 
 const taskBoardSlice = createSlice({
@@ -55,6 +57,7 @@ const taskBoardSlice = createSlice({
     },
     setAssigneeList: (state, action: { payload: IAssigneeCombined[] }) => {
       state.assignee = action.payload
+      state.filteredAssigneeList = action.payload
     },
     setViewSettings: (state, action: { payload: View }) => {
       state.view = action.payload
@@ -63,6 +66,18 @@ const taskBoardSlice = createSlice({
       state.filterOptions = {
         ...state.filterOptions,
         [action.payload.optionType]: action.payload.newValue,
+      }
+    },
+    setFilteredAssgineeList: (state, action: { payload: { filteredType: string } }) => {
+      const filteredType = action.payload.filteredType
+      if (filteredType == 'internalUsers') {
+        state.filteredAssigneeList = state.assignee.filter((el) => el.type == 'internalUsers')
+      }
+      if (filteredType == 'clients') {
+        state.filteredAssigneeList = state.assignee.filter((el) => el.type == 'clients' || el.type == 'companies')
+      }
+      if (filteredType == 'none') {
+        state.filteredAssigneeList = state.assignee
       }
     },
   },
@@ -79,6 +94,7 @@ export const {
   setFilteredTasks,
   setViewSettings,
   setFilterOptions,
+  setFilteredAssgineeList,
 } = taskBoardSlice.actions
 
 export default taskBoardSlice.reducer
