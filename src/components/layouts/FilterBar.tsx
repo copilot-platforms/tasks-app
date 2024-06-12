@@ -80,6 +80,7 @@ export const FilterBar = ({ updateViewModeSetting }: { updateViewModeSetting: (m
         store.dispatch(setFilteredAssgineeList({ filteredType: 'none' }))
         handleFilterOptionsChange(FilterOptions.ASSIGNEE, '')
         updateAssigneeValue(null)
+        setNoAssigneeOptionFlag(true)
       },
       id: 'AllTasks',
     },
