@@ -167,6 +167,7 @@ export class TasksService extends BaseService {
           TaskAssignedSchema.parse({
             oldAssigneeId: prevTask.assigneeId,
             newAssigneeId: updatedTask.assigneeId,
+            assigneeType: updatedTask.assigneeType,
           }),
         )
       }
