@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 import { Box, Modal, Stack } from '@mui/material'
 import { TaskCard } from '@/components/cards/TaskCard'
 import { TaskColumn } from '@/components/cards/TaskColumn'
