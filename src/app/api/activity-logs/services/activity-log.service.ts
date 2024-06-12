@@ -34,7 +34,7 @@ export class ActivityLogService extends BaseService {
 
     const copilotService = new CopilotAPI(this.user.token)
 
-    const promises_getInternalUser = parsedActivityLogs.map(async (activityLog) => {
+    const promises_getCopilotUsers = parsedActivityLogs.map(async (activityLog) => {
       if (activityLog.userRole === AssigneeType.internalUser) {
         return copilotService.getInternalUser(activityLog.userId)
       }
@@ -43,7 +43,7 @@ export class ActivityLogService extends BaseService {
       }
     })
 
-    const copilotUsers = (await Promise.all(promises_getInternalUser)).filter(
+    const copilotUsers = (await Promise.all(promises_getCopilotUsers)).filter(
       (user): user is NonNullable<typeof user> => user !== undefined,
     )
 
@@ -54,6 +54,7 @@ export class ActivityLogService extends BaseService {
 
     const commentService = new CommentService(this.user)
     const comments = await commentService.getCommentsByIds(commentIds)
+    const allReplies = await commentService.getReplies(commentIds)
 
     return await Promise.all(
       parsedActivityLogs.map(async (activityLog) => {
@@ -64,6 +65,7 @@ export class ActivityLogService extends BaseService {
             activityLog.userRole,
             activityLog.details,
             comments,
+            allReplies,
           ),
           createdAt: activityLog.createdAt.toISOString(),
           initiator: {
@@ -79,6 +81,7 @@ export class ActivityLogService extends BaseService {
     userRole: AssigneeType,
     payload: DBActivityLogDetails,
     comments: Comment[],
+    allReplies: Comment[],
   ) {
     const copilotService = new CopilotAPI(this.user.token)
     switch (activityType) {
@@ -88,10 +91,9 @@ export class ActivityLogService extends BaseService {
           throw new Error(`Error while finding comment with id ${payload.id}`)
         }
 
-        const commentService = new CommentService(this.user)
-        let replies = await commentService.getReplies(comment.id)
+        let replies = allReplies.filter((reply) => reply.parentId === comment.id)
 
-        const promises_getInternalUser = replies.map(async (comment) => {
+        const promises_getCopilotUsers = replies.map(async (comment) => {
           if (userRole === AssigneeType.internalUser) {
             return copilotService.getInternalUser(comment.initiatorId)
           }
@@ -100,7 +102,7 @@ export class ActivityLogService extends BaseService {
           }
         })
 
-        const copilotUsers = (await Promise.all(promises_getInternalUser)).filter(
+        const copilotUsers = (await Promise.all(promises_getCopilotUsers)).filter(
           (user): user is NonNullable<typeof user> => user !== undefined,
         )
 
