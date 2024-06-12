@@ -77,8 +77,8 @@ export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
                 getSelectedValue={(_newValue) => {
                   const newValue = _newValue as ITemplate
                   updateTemplateValue(newValue)
-                  store.dispatch(setCreateTaskFields({ targetField: 'title', value: newValue.title }))
-                  store.dispatch(setCreateTaskFields({ targetField: 'description', value: newValue.body }))
+                  store.dispatch(setCreateTaskFields({ targetField: 'title', value: newValue?.title }))
+                  store.dispatch(setCreateTaskFields({ targetField: 'description', value: newValue?.body }))
                   updateStatusValue(todoWorkflowState)
                 }}
                 startIcon={<TemplateIconSm />}
@@ -95,6 +95,7 @@ export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
                 extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
                   return (
                     <Stack
+                      key={'Manage templates'}
                       direction="row"
                       pl="20px"
                       py="6px"
