@@ -38,7 +38,9 @@ class UsersService extends BaseService {
       throw new APIError(httpStatus.UNAUTHORIZED, 'You are not authorized to perform this action')
     }
     const clients = await this.copilot.getClients()
-    const filteredClients = user.companyId ? clients.data?.filter((el) => el.companyId == user.companyId) : this.user
+    const filteredClients = user.companyId
+      ? clients.data?.filter((el) => el.companyId == user.companyId)
+      : clients.data?.filter((el) => el.id == user.clientId)
     return { clients: filteredClients }
   }
 }
