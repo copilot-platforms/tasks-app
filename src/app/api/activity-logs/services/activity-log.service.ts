@@ -89,7 +89,7 @@ export class ActivityLogService extends BaseService {
         }
 
         const commentService = new CommentService(this.user)
-        let children = await commentService.getChildrenCommentByCommentId(comment.id)
+        let children = await commentService.getReplies(comment.id)
 
         const promises_getInternalUser = children.map(async (comment) => {
           if (userRole === AssigneeType.internalUser) {

@@ -73,7 +73,7 @@ export class CommentService extends BaseService {
     })
   }
 
-  async getChildrenCommentByCommentId(commentId: string) {
+  async getReplies(commentId: string) {
     return await this.db.comment.findMany({
       where: {
         parentId: commentId,
