@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 import { Box, Modal, Stack } from '@mui/material'
 import { TaskCard } from '@/components/cards/TaskCard'
 import { TaskColumn } from '@/components/cards/TaskColumn'
@@ -12,7 +12,7 @@ import { clearCreateTaskFields, selectCreateTask, setShowModal } from '@/redux/f
 import store from '@/redux/store'
 import { useRouter } from 'next/navigation'
 import { selectTaskBoard, updateWorkflowStateIdByTaskId } from '@/redux/features/taskBoardSlice'
-import { CreateTaskRequest, TaskResponse, UpdateTaskRequest } from '@/types/dto/tasks.dto'
+import { CreateTaskRequest, CreateTaskRequestSchema, TaskResponse, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { ListViewTaskCard } from '@/components/cards/ListViewTaskCard'
 import { TaskRow } from '@/components/cards/TaskRow'
 import { View } from '@/types/interfaces'
@@ -129,9 +129,13 @@ export const TaskBoard = ({
         >
           <NewTaskForm
             handleCreate={() => {
-              store.dispatch(setShowModal())
-              store.dispatch(clearCreateTaskFields())
-              handleCreate({ title, body: description, workflowStateId, assigneeType, assigneeId })
+              if (title) {
+                store.dispatch(setShowModal())
+                store.dispatch(clearCreateTaskFields())
+                handleCreate(
+                  CreateTaskRequestSchema.parse({ title, body: description, workflowStateId, assigneeType, assigneeId }),
+                )
+              }
             }}
           />
         </Modal>
