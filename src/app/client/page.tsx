@@ -27,17 +27,15 @@ async function getAllTasks(token: string): Promise<TaskResponse[]> {
   })
 
   const data = await res.json()
-
   return data.tasks
 }
 
 async function getAssigneeList(token: string): Promise<IAssignee> {
-  const res = await fetch(`${apiUrl}/api/users?token=${token}`, {
+  const res = await fetch(`${apiUrl}/api/users/client?token=${token}`, {
     next: { tags: ['getAssigneeList'], revalidate: 0 },
   })
-
   const data = await res.json()
-  return data.users
+  return data.clients
 }
 
 export default async function ClientPage({ searchParams }: { searchParams: { token: string } }) {
