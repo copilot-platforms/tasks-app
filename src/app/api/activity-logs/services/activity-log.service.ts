@@ -89,9 +89,9 @@ export class ActivityLogService extends BaseService {
         }
 
         const commentService = new CommentService(this.user)
-        let children = await commentService.getReplies(comment.id)
+        let replies = await commentService.getReplies(comment.id)
 
-        const promises_getInternalUser = children.map(async (comment) => {
+        const promises_getInternalUser = replies.map(async (comment) => {
           if (userRole === AssigneeType.internalUser) {
             return copilotService.getInternalUser(comment.initiatorId)
           }
@@ -104,7 +104,7 @@ export class ActivityLogService extends BaseService {
           (user): user is NonNullable<typeof user> => user !== undefined,
         )
 
-        children = children.map((comment) => ({
+        replies = replies.map((comment) => ({
           ...comment,
           initiator: copilotUsers.find((iu) => iu.id === comment.initiatorId) || null,
         }))
@@ -112,7 +112,7 @@ export class ActivityLogService extends BaseService {
         return {
           ...payload,
           content: comment.content,
-          children,
+          replies,
         }
 
       case ActivityType.TASK_ASSIGNED:
