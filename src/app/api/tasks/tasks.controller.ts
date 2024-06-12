@@ -48,3 +48,11 @@ export const deleteTask = async (req: NextRequest, { params: { id } }: IdParams)
   await tasksService.deleteOneTask(id)
   return new NextResponse(null, { status: httpStatus.NO_CONTENT })
 }
+
+export const completeTask = async (req: NextRequest, { params: { id } }: IdParams) => {
+  const user = await authenticate(req)
+
+  const tasksService = new TasksService(user)
+  const completedTask = await tasksService.completeTask(id)
+  return NextResponse.json({ completedTask })
+}
