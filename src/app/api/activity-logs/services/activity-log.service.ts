@@ -6,6 +6,7 @@ import { DBActivityLogArraySchema, DBActivityLogDetails, SchemaByActivityType } 
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { InternalUsers } from '@/types/common'
 import { CommentService } from '../../comment/comment.service'
+import { UserRole } from '../../core/types/user'
 
 export class ActivityLogService extends BaseService {
   constructor(user: User) {
@@ -34,10 +35,17 @@ export class ActivityLogService extends BaseService {
     const copilotService = new CopilotAPI(this.user.token)
 
     const promises_getInternalUser = parsedActivityLogs.map(async (activityLog) => {
-      return copilotService.getInternalUser(activityLog.userId)
+      if (activityLog.userRole === AssigneeType.internalUser) {
+        return copilotService.getInternalUser(activityLog.userId)
+      }
+      if (activityLog.userRole === AssigneeType.client) {
+        return copilotService.getClient(activityLog.userId)
+      }
     })
 
-    const internalUsers = await Promise.all(promises_getInternalUser)
+    const copilotUsers = (await Promise.all(promises_getInternalUser)).filter(
+      (user): user is NonNullable<typeof user> => user !== undefined,
+    )
 
     const commentIds = parsedActivityLogs
       .filter((activityLog) => activityLog.type === ActivityType.COMMENT_ADDED)
@@ -51,10 +59,15 @@ export class ActivityLogService extends BaseService {
       parsedActivityLogs.map(async (activityLog) => {
         return {
           ...activityLog,
-          details: await this.formatActivityLogDetails(activityLog.type, activityLog.details, comments),
+          details: await this.formatActivityLogDetails(
+            activityLog.type,
+            activityLog.userRole,
+            activityLog.details,
+            comments,
+          ),
           createdAt: activityLog.createdAt.toISOString(),
           initiator: {
-            ...internalUsers.find((iu) => iu.id === activityLog.userId),
+            ...copilotUsers.find((iu) => iu.id === activityLog.userId),
           },
         }
       }),
@@ -63,6 +76,7 @@ export class ActivityLogService extends BaseService {
 
   async formatActivityLogDetails<ActivityLog extends keyof typeof SchemaByActivityType>(
     activityType: ActivityLog,
+    userRole: AssigneeType,
     payload: DBActivityLogDetails,
     comments: Comment[],
   ) {
@@ -78,14 +92,21 @@ export class ActivityLogService extends BaseService {
         let children = await commentService.getChildrenCommentByCommentId(comment.id)
 
         const promises_getInternalUser = children.map(async (comment) => {
-          return copilotService.getInternalUser(comment.initiatorId)
+          if (userRole === AssigneeType.internalUser) {
+            return copilotService.getInternalUser(comment.initiatorId)
+          }
+          if (userRole === AssigneeType.client) {
+            return copilotService.getClient(comment.initiatorId)
+          }
         })
 
-        const internalUsers = await Promise.all(promises_getInternalUser)
+        const copilotUsers = (await Promise.all(promises_getInternalUser)).filter(
+          (user): user is NonNullable<typeof user> => user !== undefined,
+        )
 
         children = children.map((comment) => ({
           ...comment,
-          initiator: internalUsers.find((iu) => iu.id === comment.initiatorId),
+          initiator: copilotUsers.find((iu) => iu.id === comment.initiatorId) || null,
         }))
 
         return {

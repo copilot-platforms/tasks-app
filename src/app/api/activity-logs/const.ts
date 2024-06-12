@@ -1,4 +1,4 @@
-import { ActivityType } from '@prisma/client'
+import { ActivityType, AssigneeType } from '@prisma/client'
 import { TaskCreatedSchema } from '@api/activity-logs/schemas/TaskCreatedSchema'
 import { TaskAssignedSchema } from '@api/activity-logs/schemas/TaskAssignedSchema'
 import { WorkflowStateUpdatedSchema } from '@api/activity-logs/schemas/WorkflowStateUpdatedSchema'
@@ -20,6 +20,7 @@ export const DBActivityLogSchema = z.object({
   details: DBActivityLogDetailsSchema,
   taskId: z.string().uuid(),
   userId: z.string().uuid(),
+  userRole: z.nativeEnum(AssigneeType),
   workspaceId: z.string(),
   createdAt: z.date(),
 })

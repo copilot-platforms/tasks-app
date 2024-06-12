@@ -125,6 +125,7 @@ model ActivityLog {
   type        ActivityType
   details     Json         @db.JsonB
   userId      String       @db.Uuid
+  userRole    AssigneeType
   createdAt   DateTime     @default(now()) @db.Timestamptz()
   updatedAt   DateTime     @updatedAt @ignore @db.Timestamptz()
 

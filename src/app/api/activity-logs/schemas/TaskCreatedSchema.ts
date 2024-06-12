@@ -7,6 +7,6 @@ export const TaskCreatedSchema = z.object({
   assigneeId: z.string().uuid().nullable(),
   assigneeType: z.nativeEnum(AssigneeType).nullable(),
   title: z.string(),
-  body: z.string(),
+  body: z.string().nullable(),
   dueDate: z.string().datetime().nullish(),
 })
