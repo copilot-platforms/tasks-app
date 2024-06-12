@@ -12,7 +12,7 @@ import { clearCreateTaskFields, selectCreateTask, setShowModal } from '@/redux/f
 import store from '@/redux/store'
 import { useRouter } from 'next/navigation'
 import { selectTaskBoard, updateWorkflowStateIdByTaskId } from '@/redux/features/taskBoardSlice'
-import { CreateTaskRequest, TaskResponse, UpdateTaskRequest } from '@/types/dto/tasks.dto'
+import { CreateTaskRequest, CreateTaskRequestSchema, TaskResponse, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { ListViewTaskCard } from '@/components/cards/ListViewTaskCard'
 import { TaskRow } from '@/components/cards/TaskRow'
 import { View } from '@/types/interfaces'
@@ -132,7 +132,9 @@ export const TaskBoard = ({
               if (title) {
                 store.dispatch(setShowModal())
                 store.dispatch(clearCreateTaskFields())
-                handleCreate({ title, body: description, workflowStateId, assigneeType, assigneeId })
+                handleCreate(
+                  CreateTaskRequestSchema.parse({ title, body: description, workflowStateId, assigneeType, assigneeId }),
+                )
               }
             }}
           />
