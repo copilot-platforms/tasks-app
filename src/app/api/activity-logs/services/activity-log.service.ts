@@ -34,8 +34,10 @@ export class ActivityLogService extends BaseService {
 
     const copilotService = new CopilotAPI(this.user.token)
 
-    const internalUsers = await copilotService.getInternalUsers()
-    const clientUsers = await copilotService.getClients()
+    const [internalUsers, clientUsers] = await Promise.all([
+      await copilotService.getInternalUsers(),
+      await copilotService.getClients(),
+    ])
 
     const copilotUsers = parsedActivityLogs
       .map((activityLog) => {
@@ -94,8 +96,10 @@ export class ActivityLogService extends BaseService {
 
         let replies = allReplies.filter((reply) => reply.parentId === comment.id)
 
-        const internalUsers = await copilotService.getInternalUsers()
-        const clientUsers = await copilotService.getClients()
+        const [internalUsers, clientUsers] = await Promise.all([
+          await copilotService.getInternalUsers(),
+          await copilotService.getClients(),
+        ])
 
         const copilotUsers = replies
           .map((reply) => {
