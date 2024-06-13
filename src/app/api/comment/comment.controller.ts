@@ -24,7 +24,7 @@ export const deleteComment = async (req: NextRequest, { params: { id } }: IdPara
 
   await commentService.delete(id)
 
-  return NextResponse.json({ message: 'Comment deleted!' }, { status: httpStatus.NO_CONTENT })
+  return new Response(null, { status: httpStatus.NO_CONTENT })
 }
 
 export const updateComment = async (req: NextRequest, { params: { id } }: IdParams) => {
