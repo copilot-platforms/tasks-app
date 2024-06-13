@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { ActivityType, AssigneeType } from '@prisma/client'
 import { DBActivityLogDetailsSchema } from '@api/activity-logs/const'
-import { ClientResponseSchema, InternalUsersResponseSchema, InternalUsersSchema } from '@/types/common'
+import { ClientResponseSchema, InternalUsersSchema } from '@/types/common'
 
 export const LogResponseSchema = z.object({
   id: z.string().uuid(),

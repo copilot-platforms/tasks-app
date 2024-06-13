@@ -24,7 +24,9 @@ export const deleteComment = async (req: NextRequest, { params: { id } }: IdPara
 
   await commentService.delete(id)
 
-  return NextResponse.json({ message: 'Comment deleted!' }, { status: httpStatus.NO_CONTENT })
+  //Can't use status code 204 in NextResponse as of now - https://github.com/vercel/next.js/discussions/51475
+  //Using Response is also not allowed since withErrorHandler wrapper uses NextResponse.
+  return NextResponse.json({ message: 'Comment deleted!' })
 }
 
 export const updateComment = async (req: NextRequest, { params: { id } }: IdParams) => {
