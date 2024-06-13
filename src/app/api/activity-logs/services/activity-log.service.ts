@@ -34,18 +34,19 @@ export class ActivityLogService extends BaseService {
 
     const copilotService = new CopilotAPI(this.user.token)
 
-    const promises_getCopilotUsers = parsedActivityLogs.map(async (activityLog) => {
-      if (activityLog.userRole === AssigneeType.internalUser) {
-        return copilotService.getInternalUser(activityLog.userId)
-      }
-      if (activityLog.userRole === AssigneeType.client) {
-        return copilotService.getClient(activityLog.userId)
-      }
-    })
+    const internalUsers = await copilotService.getInternalUsers()
+    const clientUsers = await copilotService.getClients()
 
-    const copilotUsers = (await Promise.all(promises_getCopilotUsers)).filter(
-      (user): user is NonNullable<typeof user> => user !== undefined,
-    )
+    const copilotUsers = parsedActivityLogs
+      .map((activityLog) => {
+        if (activityLog.userRole === AssigneeType.internalUser) {
+          return internalUsers.data.find((iu) => iu.id === activityLog.userId)
+        }
+        if (activityLog.userRole === AssigneeType.client) {
+          return clientUsers.data?.find((client) => client.id === activityLog.userId)
+        }
+      })
+      .filter((user): user is NonNullable<typeof user> => user !== undefined)
 
     const commentIds = parsedActivityLogs
       .filter((activityLog) => activityLog.type === ActivityType.COMMENT_ADDED)
@@ -93,18 +94,19 @@ export class ActivityLogService extends BaseService {
 
         let replies = allReplies.filter((reply) => reply.parentId === comment.id)
 
-        const promises_getCopilotUsers = replies.map(async (comment) => {
-          if (userRole === AssigneeType.internalUser) {
-            return copilotService.getInternalUser(comment.initiatorId)
-          }
-          if (userRole === AssigneeType.client) {
-            return copilotService.getClient(comment.initiatorId)
-          }
-        })
+        const internalUsers = await copilotService.getInternalUsers()
+        const clientUsers = await copilotService.getClients()
 
-        const copilotUsers = (await Promise.all(promises_getCopilotUsers)).filter(
-          (user): user is NonNullable<typeof user> => user !== undefined,
-        )
+        const copilotUsers = replies
+          .map((reply) => {
+            if (userRole === AssigneeType.internalUser) {
+              return internalUsers.data.find((iu) => iu.id === reply.initiatorId)
+            }
+            if (userRole === AssigneeType.client) {
+              return clientUsers.data?.find((client) => client.id === reply.initiatorId)
+            }
+          })
+          .filter((user): user is NonNullable<typeof user> => user !== undefined)
 
         replies = replies.map((comment) => ({
           ...comment,
