@@ -5,6 +5,8 @@ import { ActivityType, AssigneeType, Comment } from '@prisma/client'
 import { DBActivityLogArraySchema, DBActivityLogDetails, SchemaByActivityType } from '@api/activity-logs/const'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { CommentService } from '@api/comment/comment.service'
+import { ClientsResponse, CompaniesResponse, InternalUsersResponse } from '@/types/common'
+import { LogResponseSchemaArrayType } from '../schemas/LogResponseSchema'
 
 export class ActivityLogService extends BaseService {
   constructor(user: User) {
@@ -32,7 +34,11 @@ export class ActivityLogService extends BaseService {
 
     const copilotService = new CopilotAPI(this.user.token)
 
-    const [internalUsers, clientUsers] = await Promise.all([copilotService.getInternalUsers(), copilotService.getClients()])
+    const [internalUsers, clientUsers, companies] = await Promise.all([
+      copilotService.getInternalUsers(),
+      copilotService.getClients(),
+      copilotService.getCompanies(),
+    ])
 
     const copilotUsers = parsedActivityLogs
       .map((activityLog) => {
@@ -54,16 +60,19 @@ export class ActivityLogService extends BaseService {
     const comments = await commentService.getCommentsByIds(commentIds)
     const allReplies = await commentService.getReplies(commentIds)
 
-    return await Promise.all(
-      parsedActivityLogs.map(async (activityLog) => {
+    return LogResponseSchemaArrayType.parse(
+      parsedActivityLogs.map((activityLog) => {
         return {
           ...activityLog,
-          details: await this.formatActivityLogDetails(
+          details: this.formatActivityLogDetails(
             activityLog.type,
             activityLog.userRole,
             activityLog.details,
             comments,
             allReplies,
+            internalUsers,
+            clientUsers,
+            companies,
           ),
           createdAt: activityLog.createdAt.toISOString(),
           initiator: {
@@ -74,19 +83,16 @@ export class ActivityLogService extends BaseService {
     )
   }
 
-  async formatActivityLogDetails<ActivityLog extends keyof typeof SchemaByActivityType>(
+  formatActivityLogDetails<ActivityLog extends keyof typeof SchemaByActivityType>(
     activityType: ActivityLog,
     userRole: AssigneeType,
     payload: DBActivityLogDetails,
     comments: Comment[],
     allReplies: Comment[],
+    internalUsers: InternalUsersResponse,
+    clientUsers: ClientsResponse,
+    companies: CompaniesResponse,
   ) {
-    const copilotService = new CopilotAPI(this.user.token)
-    const [internalUsers, clientUsers, companies] = await Promise.all([
-      copilotService.getInternalUsers(),
-      copilotService.getClients(),
-      copilotService.getCompanies(),
-    ])
     switch (activityType) {
       case ActivityType.COMMENT_ADDED:
         const comment = comments.find((comment) => comment.id === payload.id)
