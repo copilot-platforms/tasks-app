@@ -4,9 +4,7 @@ import { z } from 'zod'
 import { ActivityType, AssigneeType, Comment } from '@prisma/client'
 import { DBActivityLogArraySchema, DBActivityLogDetails, SchemaByActivityType } from '@api/activity-logs/const'
 import { CopilotAPI } from '@/utils/CopilotAPI'
-import { InternalUsers } from '@/types/common'
-import { CommentService } from '../../comment/comment.service'
-import { UserRole } from '../../core/types/user'
+import { CommentService } from '@api/comment/comment.service'
 
 export class ActivityLogService extends BaseService {
   constructor(user: User) {

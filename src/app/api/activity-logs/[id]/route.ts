@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import authenticate from '../../core/utils/authenticate'
-import { ActivityLogService } from '../services/activity-log.service'
-import { IdParams } from '../../core/types/api'
+import authenticate from '@api/core/utils/authenticate'
+import { ActivityLogService } from '@api/activity-logs/services/activity-log.service'
+import { IdParams } from '@api/core/types/api'
 
 export const GET = async (req: NextRequest, { params: { id } }: IdParams) => {
   const user = await authenticate(req)
