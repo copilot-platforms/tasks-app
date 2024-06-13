@@ -197,6 +197,7 @@ export class TasksService extends BaseService {
         )
       }
     }
+
     // If task goes from unassigned to assigned, or assigneeId does not match
     if (prevTask?.assigneeId != updatedTask.assigneeId && updatedTask.assigneeId) {
       this.createTaskNotification(updatedTask, NotificationTaskActions.Assigned)
