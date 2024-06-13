@@ -2,7 +2,7 @@ import { CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { BaseService } from '@api/core/services/base.service'
 import { Resource } from '@api/core/types/api'
 import { PoliciesService } from '@api/core/services/policies.service'
-import { AssigneeType, StateType, Task } from '@prisma/client'
+import { ActivityType, StateType, AssigneeType, Task } from '@prisma/client'
 import { UserAction, UserRole } from '@api/core/types/user'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { NotificationTaskActions } from '@api/core/types/tasks'
@@ -14,6 +14,11 @@ import {
 } from '@api/tasks/tasks.helpers'
 import APIError from '@api/core/exceptions/api'
 import httpStatus from 'http-status'
+import { ActivityLogger } from '@api/activity-logs/services/activity-logger.service'
+import { TaskCreatedSchema } from '@api/activity-logs/schemas/TaskCreatedSchema'
+import { TaskAssignedSchema } from '@api/activity-logs/schemas/TaskAssignedSchema'
+import { WorkflowStateUpdatedSchema } from '@api/activity-logs/schemas/WorkflowStateUpdatedSchema'
+import { z } from 'zod'
 
 type FilterByAssigneeId = {
   assigneeId: string
@@ -87,6 +92,23 @@ export class TasksService extends BaseService {
       include: { workflowState: true },
     })
 
+    if (newTask) {
+      // @todo move this logic to any pub/sub service like event bus
+      const activityLogger = new ActivityLogger({ taskId: newTask.id, user: this.user })
+      await activityLogger.log(
+        ActivityType.TASK_CREATED,
+        TaskCreatedSchema.parse({
+          id: newTask.id,
+          workspaceId: newTask.workspaceId,
+          assigneeId: newTask.assigneeId,
+          assigneeType: newTask.assigneeType,
+          title: newTask.title,
+          body: newTask.body,
+          dueData: newTask.dueDate,
+        }),
+      )
+    }
+
     // If new task is assigned to someone (IU / Client), send proper notification + email to them
     if (newTask.assigneeId) {
       this.createTaskNotification(newTask, NotificationTaskActions.Assigned)
@@ -135,6 +157,47 @@ export class TasksService extends BaseService {
       },
       include: { workflowState: true },
     })
+
+    if (updatedTask) {
+      const activityLogger = new ActivityLogger({ taskId: updatedTask.id, user: this.user })
+
+      if (updatedTask.assigneeId !== prevTask.assigneeId) {
+        await activityLogger.log(
+          ActivityType.TASK_ASSIGNED,
+          TaskAssignedSchema.parse({
+            oldAssigneeId: prevTask.assigneeId,
+            newAssigneeId: updatedTask.assigneeId,
+            assigneeType: updatedTask.assigneeType,
+          }),
+        )
+      }
+
+      if (updatedTask.workflowStateId !== prevTask?.workflowStateId) {
+        const prevWorkflowState = prevTask.workflowState
+        const currentWorkflowState = updatedTask.workflowState
+
+        await activityLogger.log(
+          ActivityType.WORKFLOW_STATE_UPDATED,
+          WorkflowStateUpdatedSchema.parse({
+            oldWorkflowState: {
+              id: prevWorkflowState.id,
+              type: prevWorkflowState.type,
+              name: prevWorkflowState.name,
+              key: prevWorkflowState.key,
+              color: prevWorkflowState.color,
+            },
+            newWorkflowState: {
+              id: currentWorkflowState.id,
+              type: currentWorkflowState.type,
+              name: currentWorkflowState.name,
+              key: currentWorkflowState.key,
+              color: currentWorkflowState.color,
+            },
+          }),
+        )
+      }
+    }
+
     // If task goes from unassigned to assigned, or assigneeId does not match
     if (prevTask?.assigneeId != updatedTask.assigneeId && updatedTask.assigneeId) {
       this.createTaskNotification(updatedTask, NotificationTaskActions.Assigned)
