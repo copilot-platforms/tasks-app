@@ -10,7 +10,15 @@ import { StyledBox, StyledKeyboardIcon, StyledTypography } from '@/app/detail/ui
 import Link from 'next/link'
 import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
-import { deleteAttachment, deleteTask, postAttachment, updateAssignee, updateTaskDetail } from './actions'
+import {
+  deleteAttachment,
+  deleteComment,
+  deleteTask,
+  postAttachment,
+  postComment,
+  updateAssignee,
+  updateTaskDetail,
+} from '@/app/detail/[task_id]/[user_type]/actions'
 import { updateTask, updateWorkflowStateIdOfTask } from '@/app/actions'
 import { MenuBoxContainer } from '@/app/detail/ui/MenuBoxContainer'
 import { ToggleButtonContainer } from '@/app/detail/ui/ToggleButtonContainer'
@@ -20,6 +28,7 @@ import { ActivityLog } from '@/app/detail/ui/ActivityLog'
 import { Comments } from '@/app/detail/ui/Comments'
 import { CommentInput } from '@/components/inputs/CommentInput'
 import { LogResponse } from '@/app/api/activity-logs/schemas/LogResponseSchema'
+import { CreateComment } from '@/types/dto/comment.dto'
 
 export const revalidate = 0
 
@@ -138,7 +147,7 @@ export default async function TaskDetailPage({
             <Stack direction="column" alignItems="left" p="10px 5px" rowGap={5}>
               <Typography variant="xl">Activity</Typography>
               <Stack direction="column" alignItems="left" p="10px 5px" rowGap={4}>
-                {activities?.map((item: any, index: number) => {
+                {activities?.map((item: LogResponse, index: number) => {
                   return (
                     <Box
                       sx={{
@@ -147,12 +156,33 @@ export default async function TaskDetailPage({
                       }}
                       key={item.id}
                     >
-                      {item.activityType == 'COMMENT_ADDED' ? <Comments comment={item} /> : <ActivityLog log={item} />}
+                      {item.type == 'COMMENT_ADDED' ? (
+                        <Comments
+                          comment={item}
+                          createComment={async (postCommentPayload: CreateComment) => {
+                            'use server'
+                            await postComment(token, postCommentPayload)
+                          }}
+                          deleteComment={async (id: string) => {
+                            'use server'
+                            await deleteComment(token, id)
+                          }}
+                          task_id={task_id}
+                        />
+                      ) : (
+                        <ActivityLog log={item} />
+                      )}
                     </Box>
                   )
                 })}
 
-                <CommentInput />
+                <CommentInput
+                  createComment={async (postCommentPayload: CreateComment) => {
+                    'use server'
+                    await postComment(token, postCommentPayload)
+                  }}
+                  task_id={task_id}
+                />
               </Stack>
             </Stack>
           </AppMargin>

@@ -51,7 +51,6 @@ export const ActivityLog = ({ log }: Prop) => {
       </>
     ),
   }
-
   return (
     <Stack direction="row" columnGap={4} position="relative">
       <VerticalLine />
