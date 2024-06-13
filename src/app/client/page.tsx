@@ -9,7 +9,7 @@ import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { IAssignee, IAssigneeCombined } from '@/types/interfaces'
 import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
 import { ClientTaskBoard } from './ui/ClientTaskBoard'
-import { updateTask } from '../actions'
+import { completeTask } from '@/app/client/actions'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -27,17 +27,15 @@ async function getAllTasks(token: string): Promise<TaskResponse[]> {
   })
 
   const data = await res.json()
-
   return data.tasks
 }
 
 async function getAssigneeList(token: string): Promise<IAssignee> {
-  const res = await fetch(`${apiUrl}/api/users?token=${token}`, {
+  const res = await fetch(`${apiUrl}/api/users/client?token=${token}`, {
     next: { tags: ['getAssigneeList'], revalidate: 0 },
   })
-
   const data = await res.json()
-  return data.users
+  return data.clients
 }
 
 export default async function ClientPage({ searchParams }: { searchParams: { token: string } }) {
@@ -48,15 +46,14 @@ export default async function ClientPage({ searchParams }: { searchParams: { tok
     await getAllTasks(token),
     addTypeToAssignee(await getAssigneeList(token)),
   ])
-
   return (
     <>
       <ClientSideStateUpdate workflowStates={workflowStates} tasks={tasks} token={token} assignee={assignee}>
         <Header showCreateTaskButton={false} />
         <ClientTaskBoard
-          updateTask={async (taskId, payload) => {
+          completeTask={async (taskId) => {
             'use server'
-            updateTask({ token, taskId, payload })
+            completeTask({ token, taskId })
           }}
         />
       </ClientSideStateUpdate>

@@ -33,6 +33,7 @@ export class ActivityLogger extends BaseService {
         workspaceId: this.user.workspaceId,
         type: activityType,
         userId: z.string().parse(userInfo?.id),
+        userRole: this.user.role,
         details: payload,
       },
     })

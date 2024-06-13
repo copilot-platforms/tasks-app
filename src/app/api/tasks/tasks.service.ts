@@ -2,8 +2,8 @@ import { CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { BaseService } from '@api/core/services/base.service'
 import { Resource } from '@api/core/types/api'
 import { PoliciesService } from '@api/core/services/policies.service'
-import { ActivityType, AssigneeType, Task } from '@prisma/client'
-import { UserAction } from '@api/core/types/user'
+import { ActivityType, StateType, AssigneeType, Task } from '@prisma/client'
+import { UserAction, UserRole } from '@api/core/types/user'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { NotificationTaskActions } from '@api/core/types/tasks'
 import {
@@ -167,6 +167,7 @@ export class TasksService extends BaseService {
           TaskAssignedSchema.parse({
             oldAssigneeId: prevTask.assigneeId,
             newAssigneeId: updatedTask.assigneeId,
+            assigneeType: updatedTask.assigneeType,
           }),
         )
       }
@@ -242,5 +243,40 @@ export class TasksService extends BaseService {
     } catch (e: unknown) {
       console.error('TasksService.createTaskNotification : Failed to send task notification\n', e)
     }
+  }
+
+  async completeTask(id: string) {
+    //Apply custom authorization here. Policy service is not used because this api is for client's Mark done function only. Only clients can use this.
+    if (this.user.role !== UserRole.Client) {
+      throw new APIError(httpStatus.UNAUTHORIZED, 'You are not authorized to perform this action')
+    }
+
+    // Query previous task
+    const filters = this.buildReadFilters(id)
+    const prevTask = await this.db.task.findFirst({
+      ...filters,
+      include: { workflowState: true },
+    })
+    if (!prevTask) throw new APIError(httpStatus.NOT_FOUND, 'The requested task was not found')
+
+    //get Completed workflowState data
+    const completedWorkFlowState = await this.db.workflowState.findFirst({
+      where: {
+        type: StateType.completed,
+      },
+    })
+    const data = {
+      workflowStateId: completedWorkFlowState?.id,
+    }
+    // Get the updated task
+    const updatedTask = await this.db.task.update({
+      where: { id },
+      data: {
+        ...data,
+        ...(await getTaskTimestamps('update', this.user, data, prevTask)),
+      },
+    })
+    this.createTaskNotification(updatedTask, NotificationTaskActions.Completed)
+    return updatedTask
   }
 }

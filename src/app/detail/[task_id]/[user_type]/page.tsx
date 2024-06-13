@@ -105,6 +105,7 @@ export default async function TaskDetailPage({
               <TaskEditor
                 attachment={attachments}
                 title={task?.title || ''}
+                workflowState={task?.workflowState}
                 task_id={task_id}
                 detail={task?.body || ''}
                 isEditable={params.user_type === UserType.INTERNAL_USER}
