@@ -3,7 +3,7 @@ import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
 import { StyledAutocomplete } from '@/components/inputs/Autocomplete'
 import { statusIcons } from '@/utils/iconMatcher'
 import { useFocusableInput } from '@/hooks/useFocusableInput'
-import { HTMLAttributes, ReactNode, useState } from 'react'
+import { HTMLAttributes, ReactNode, useEffect, useState } from 'react'
 import { StyledTextField } from './TextField'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { IAssigneeCombined, IExtraOption, ITemplate, TruncateMaxNumber } from '@/types/interfaces'
@@ -67,10 +67,29 @@ export default function Selector({
 
     if (selectorType === SelectorType.STATUS_SELECTOR) {
       return (option as WorkflowStateResponse).name as string
+    }
+    if (selectorType === SelectorType.TEMPLATE_SELECTOR) {
+      return (option as ITemplate).templateName as string
     } else {
       return ''
     }
   }
+
+  useEffect(() => {
+    function closePopper(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        setAnchorEl(null)
+      }
+    }
+
+    window.addEventListener('keydown', closePopper)
+
+    return () => {
+      window.removeEventListener('keydown', closePopper)
+    }
+  }, [])
+
+  console.log(value)
 
   return (
     <Stack direction="column">
@@ -86,17 +105,9 @@ export default function Selector({
           zIndex: '9999',
         }}
         placement="bottom-start"
-        modifiers={[
-          {
-            name: 'offset',
-            options: {
-              offset: [0, 4],
-            },
-          },
-        ]}
       >
         <StyledAutocomplete
-          id="status-box"
+          id={selectorType}
           onBlur={() => {
             setAnchorEl(null)
           }}
@@ -154,6 +165,7 @@ export default function Selector({
 const TemplateSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTMLLIElement>; option: unknown }) => {
   return (
     <Box
+      key={(option as ITemplate).id}
       component="li"
       {...props}
       sx={{

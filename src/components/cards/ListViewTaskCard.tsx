@@ -66,6 +66,7 @@ export const ListViewTaskCard = ({
             </Box>
             <Box minWidth="fit-content">
               <Selector
+                placeholder="Change assignee"
                 getSelectedValue={(_newValue) => {
                   const newValue = _newValue as IAssigneeCombined
                   updateAssigneeValue(newValue)

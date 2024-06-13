@@ -10,7 +10,7 @@ import store from '@/redux/store'
 import { statusIcons } from '@/utils/iconMatcher'
 import { Close } from '@mui/icons-material'
 import { Avatar, Box, Stack, Typography, styled } from '@mui/material'
-import { ReactNode } from 'react'
+import { ReactNode, useEffect } from 'react'
 import { FilterOptions, IAssigneeCombined, ITemplate } from '@/types/interfaces'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { useSelector } from 'react-redux'
@@ -49,6 +49,20 @@ export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
 
   const todoWorkflowState = workflowStates.find((el) => el.key === 'todo') || workflowStates[0]
 
+  useEffect(() => {
+    function handleCloseModal(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        store.dispatch(setShowModal())
+      }
+    }
+
+    document.addEventListener('keydown', handleCloseModal)
+
+    return () => {
+      document.removeEventListener('keydown', handleCloseModal)
+    }
+  }, [])
+
   const { assigneeId, workflowStateId } = useSelector(selectCreateTask)
   return (
     <NewTaskContainer>
@@ -64,8 +78,8 @@ export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
                 getSelectedValue={(_newValue) => {
                   const newValue = _newValue as ITemplate
                   updateTemplateValue(newValue)
-                  store.dispatch(setCreateTaskFields({ targetField: 'title', value: newValue.title }))
-                  store.dispatch(setCreateTaskFields({ targetField: 'description', value: newValue.body }))
+                  store.dispatch(setCreateTaskFields({ targetField: 'title', value: newValue?.title }))
+                  store.dispatch(setCreateTaskFields({ targetField: 'description', value: newValue?.body }))
                   updateStatusValue(todoWorkflowState)
                 }}
                 startIcon={<TemplateIconSm />}
@@ -82,6 +96,7 @@ export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
                 extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
                   return (
                     <Stack
+                      key={'Manage templates'}
                       direction="row"
                       pl="20px"
                       py="6px"
@@ -144,6 +159,7 @@ export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
           />
           <Stack alignSelf="flex-start">
             <Selector
+              placeholder="Change assignee"
               getSelectedValue={(_newValue) => {
                 const newValue = _newValue as IAssigneeCombined
                 updateAssigneeValue(newValue)
