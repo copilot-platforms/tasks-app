@@ -32,10 +32,7 @@ export class ActivityLogService extends BaseService {
 
     const copilotService = new CopilotAPI(this.user.token)
 
-    const [internalUsers, clientUsers] = await Promise.all([
-      await copilotService.getInternalUsers(),
-      await copilotService.getClients(),
-    ])
+    const [internalUsers, clientUsers] = await Promise.all([copilotService.getInternalUsers(), copilotService.getClients()])
 
     const copilotUsers = parsedActivityLogs
       .map((activityLog) => {
@@ -85,6 +82,11 @@ export class ActivityLogService extends BaseService {
     allReplies: Comment[],
   ) {
     const copilotService = new CopilotAPI(this.user.token)
+    const [internalUsers, clientUsers, companies] = await Promise.all([
+      copilotService.getInternalUsers(),
+      copilotService.getClients(),
+      copilotService.getCompanies(),
+    ])
     switch (activityType) {
       case ActivityType.COMMENT_ADDED:
         const comment = comments.find((comment) => comment.id === payload.id)
@@ -93,11 +95,6 @@ export class ActivityLogService extends BaseService {
         }
 
         let replies = allReplies.filter((reply) => reply.parentId === comment.id)
-
-        const [internalUsers, clientUsers] = await Promise.all([
-          await copilotService.getInternalUsers(),
-          await copilotService.getClients(),
-        ])
 
         const copilotUsers = replies
           .map((reply) => {
@@ -123,14 +120,14 @@ export class ActivityLogService extends BaseService {
 
       case ActivityType.TASK_ASSIGNED:
         const newAssigneeId = payload.newAssigneeId as string
-        const newAssigneeDetails = await (async () => {
+        const newAssigneeDetails = (() => {
           switch (payload.assigneeType) {
             case AssigneeType.internalUser:
-              return await copilotService.getInternalUser(newAssigneeId)
+              return internalUsers.data.find((iu) => iu.id === newAssigneeId)
             case AssigneeType.client:
-              return await copilotService.getClient(newAssigneeId)
+              return clientUsers.data?.find((client) => client.id === newAssigneeId)
             case AssigneeType.company:
-              return await copilotService.getCompany(newAssigneeId)
+              return companies.data?.find((company) => company.id === newAssigneeId)
             default:
               return null
           }
