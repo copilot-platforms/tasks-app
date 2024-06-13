@@ -10,7 +10,14 @@ import Selector, { SelectorType } from '@/components/inputs/Selector'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { useSelector } from 'react-redux'
-import { FilterOptions, FilterOptionsKeywords, IAssigneeCombined, IFilterOptions, View } from '@/types/interfaces'
+import {
+  FilterByOptions,
+  FilterOptions,
+  FilterOptionsKeywords,
+  IAssigneeCombined,
+  IFilterOptions,
+  View,
+} from '@/types/interfaces'
 import { FilterByAsigneeIcon } from '@/icons'
 import { ViewModeSelector } from '../inputs/ViewModeSelector'
 import { FilterByAssigneeBtn } from '../buttons/FilterByAssigneeBtn'
@@ -43,7 +50,7 @@ export const FilterBar = ({ updateViewModeSetting }: { updateViewModeSetting: (m
         handleFilterOptionsChange(FilterOptions.TYPE, IUTokenSchema.parse(tokenPayload)?.internalUserId)
         setActiveButtonIndex(index)
         handleFilterOptionsChange(FilterOptions.ASSIGNEE, '')
-        store.dispatch(setFilteredAssgineeList({ filteredType: 'none' }))
+        store.dispatch(setFilteredAssgineeList({ filteredType: FilterByOptions.NOFILTER }))
         updateAssigneeValue(null)
       },
       id: 'MyTasks',
@@ -53,7 +60,7 @@ export const FilterBar = ({ updateViewModeSetting }: { updateViewModeSetting: (m
       onClick: (index: number) => {
         handleFilterOptionsChange(FilterOptions.TYPE, FilterOptionsKeywords.TEAM)
         setActiveButtonIndex(index)
-        store.dispatch(setFilteredAssgineeList({ filteredType: 'internalUsers' }))
+        store.dispatch(setFilteredAssgineeList({ filteredType: FilterByOptions.IUS }))
         handleFilterOptionsChange(FilterOptions.ASSIGNEE, '')
         updateAssigneeValue(null)
         setNoAssigneeOptionFlag(false)
@@ -65,7 +72,7 @@ export const FilterBar = ({ updateViewModeSetting }: { updateViewModeSetting: (m
       onClick: (index: number) => {
         handleFilterOptionsChange(FilterOptions.TYPE, FilterOptionsKeywords.CLIENTS)
         setActiveButtonIndex(index)
-        store.dispatch(setFilteredAssgineeList({ filteredType: 'clients' }))
+        store.dispatch(setFilteredAssgineeList({ filteredType: FilterByOptions.CLIENT }))
         handleFilterOptionsChange(FilterOptions.ASSIGNEE, '')
         updateAssigneeValue(null)
         setNoAssigneeOptionFlag(false)
@@ -77,7 +84,7 @@ export const FilterBar = ({ updateViewModeSetting }: { updateViewModeSetting: (m
       onClick: (index: number) => {
         handleFilterOptionsChange(FilterOptions.TYPE, '')
         setActiveButtonIndex(index)
-        store.dispatch(setFilteredAssgineeList({ filteredType: 'none' }))
+        store.dispatch(setFilteredAssgineeList({ filteredType: FilterByOptions.NOFILTER }))
         handleFilterOptionsChange(FilterOptions.ASSIGNEE, '')
         updateAssigneeValue(null)
         setNoAssigneeOptionFlag(true)

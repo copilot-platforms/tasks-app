@@ -2,7 +2,7 @@ import { createSlice } from '@reduxjs/toolkit'
 import { RootState } from '../store'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { TaskResponse } from '@/types/dto/tasks.dto'
-import { AssigneeType, FilterOptions, IAssigneeCombined, IFilterOptions, View } from '@/types/interfaces'
+import { AssigneeType, FilterByOptions, FilterOptions, IAssigneeCombined, IFilterOptions, View } from '@/types/interfaces'
 
 interface IInitialState {
   workflowStates: WorkflowStateResponse[]
@@ -68,15 +68,17 @@ const taskBoardSlice = createSlice({
         [action.payload.optionType]: action.payload.newValue,
       }
     },
-    setFilteredAssgineeList: (state, action: { payload: { filteredType: string } }) => {
+    setFilteredAssgineeList: (state, action: { payload: { filteredType: FilterByOptions } }) => {
       const filteredType = action.payload.filteredType
       if (filteredType == 'internalUsers') {
-        state.filteredAssigneeList = state.assignee.filter((el) => el.type == 'internalUsers')
+        state.filteredAssigneeList = state.assignee.filter((el) => el.type == FilterByOptions.IUS)
       }
       if (filteredType == 'clients') {
-        state.filteredAssigneeList = state.assignee.filter((el) => el.type == 'clients' || el.type == 'companies')
+        state.filteredAssigneeList = state.assignee.filter(
+          (el) => el.type == FilterByOptions.CLIENT || el.type == FilterByOptions.COMPANY,
+        )
       }
-      if (filteredType == 'none') {
+      if (filteredType == FilterByOptions.NOFILTER) {
         state.filteredAssigneeList = state.assignee
       }
     },
