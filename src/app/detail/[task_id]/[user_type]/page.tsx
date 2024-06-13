@@ -16,10 +16,10 @@ import { MenuBoxContainer } from '@/app/detail/ui/MenuBoxContainer'
 import { ToggleButtonContainer } from '@/app/detail/ui/ToggleButtonContainer'
 import { ToggleController } from '@/app/detail/ui/ToggleController'
 import { AttachmentResponseSchema } from '@/types/dto/attachments.dto'
-import { ActivityLogResponse } from '@/types/dto/activity.dto'
 import { ActivityLog } from '@/app/detail/ui/ActivityLog'
 import { Comments } from '@/app/detail/ui/Comments'
 import { CommentInput } from '@/components/inputs/CommentInput'
+import { LogResponse } from '@/app/api/activity-logs/schemas/LogResponseSchema'
 
 export const revalidate = 0
 
@@ -58,7 +58,7 @@ async function getSignedUrlUpload(token: string, fileName: string) {
   return data.signedUrl
 }
 
-async function getActivities(token: string, taskId: string): Promise<ActivityLogResponse[]> {
+async function getActivities(token: string, taskId: string): Promise<LogResponse[]> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}/activity-logs/?token=${token}`)
   const data = await res.json()
   return data.data
@@ -78,7 +78,7 @@ export default async function TaskDetailPage({
   const assignee = addTypeToAssignee(await getAssigneeList(token))
   const attachments = await getAttachments(token, task_id)
   const activities = await getActivities(token, task_id)
-  console.log(activities)
+
   return (
     <ClientSideStateUpdate assignee={assignee}>
       <Stack direction="row">
@@ -138,7 +138,7 @@ export default async function TaskDetailPage({
             <Stack direction="column" alignItems="left" p="10px 5px" rowGap={5}>
               <Typography variant="xl">Activity</Typography>
               <Stack direction="column" alignItems="left" p="10px 5px" rowGap={4}>
-                {activities.map((item: any, index: number) => {
+                {activities?.map((item: any, index: number) => {
                   return (
                     <Box
                       sx={{

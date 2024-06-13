@@ -1,15 +1,12 @@
 import { Avatar, Box, Stack } from '@mui/material'
 import { BoldTypography, StyledTypography, VerticalLine } from '@/app/detail/ui/styledComponent'
 import { getTimeDifference } from '@/utils/getTimeDifference'
-import { mockActivitiesInterface } from '@/utils/mockData'
-import {
-  ActivityLogResponse,
-  Activity_AssignTaskSchema,
-  Activity_WorkflowState_UpdateSchema,
-} from '@/types/dto/activity.dto'
+import { LogResponse } from '@/app/api/activity-logs/schemas/LogResponseSchema'
+import { TaskAssignedResponse, TaskAssignedResponseSchema } from '@/app/api/activity-logs/schemas/TaskAssignedSchema'
+import { WorkflowStateUpdatedSchema } from '@/app/api/activity-logs/schemas/WorkflowStateUpdatedSchema'
 
 interface Prop {
-  log: ActivityLogResponse
+  log: LogResponse
 }
 
 enum LogType {
@@ -18,15 +15,23 @@ enum LogType {
   WORKFLOW_STATE_UPDATED = 'WORKFLOW_STATE_UPDATED',
 }
 
+const getAssignedToName = (details: TaskAssignedResponse) => {
+  if (details.newAssigneeDetails.givenName || details.newAssigneeDetails.familyName) {
+    return `${details.newAssigneeDetails.givenName} ${details.newAssigneeDetails.familyName}`
+  } else {
+    return `${details.newAssigneeDetails.name}`
+  }
+}
+
 export const ActivityLog = ({ log }: Prop) => {
   const logEntities =
     log.type == LogType.WORKFLOW_STATE_UPDATED
       ? [
-          Activity_WorkflowState_UpdateSchema.parse(log.details)?.prevWorkflowState?.type,
-          Activity_WorkflowState_UpdateSchema.parse(log.details)?.currentWorkflowState?.type,
+          WorkflowStateUpdatedSchema.parse(log.details)?.oldWorkflowState?.name,
+          WorkflowStateUpdatedSchema.parse(log.details)?.newWorkflowState?.name,
         ]
       : log.type == LogType.TASK_ASSIGNED
-        ? [Activity_AssignTaskSchema.parse(log.details)?.assignedTo]
+        ? [getAssignedToName(TaskAssignedResponseSchema.parse(log.details))]
         : []
 
   const activityDescription: { [key in LogType]: (...args: string[]) => React.ReactNode } = {
@@ -45,15 +50,16 @@ export const ActivityLog = ({ log }: Prop) => {
         <BoldTypography>{to}.</BoldTypography>
       </>
     ),
-    // [ActivityType.COMMENT_ADDED]: () => <> </>,
   }
 
   return (
     <Stack direction="row" columnGap={4} position="relative">
       <VerticalLine />
-      <Avatar alt="user" src={log.details.initiator} sx={{ width: '25px', height: '25px' }} />
+      <Avatar alt="user" src={''} sx={{ width: '25px', height: '25px' }} />
       <Stack direction="row" columnGap={1}>
-        <BoldTypography>{log.details.initiator}</BoldTypography>
+        <BoldTypography>
+          {log.initiator.givenName} {log.initiator.familyName}
+        </BoldTypography>
         {activityDescription[log.type as LogType](...logEntities)}
       </Stack>
       <StyledTypography> {getTimeDifference(log.createdAt)}</StyledTypography>

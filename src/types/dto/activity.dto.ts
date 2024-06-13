@@ -44,7 +44,7 @@ export const Activity_AssignTaskSchema = z.object({
 export const ActivityLogResponseSchema = z.object({
   id: z.string().uuid(),
   createdAt: z.date().default(() => new Date()),
-  activityType: z.nativeEnum(ActivityType).nullable(),
+  activityType: z.nativeEnum(ActivityType),
   details: z.discriminatedUnion('type', [
     Activity_CreateTaskSchema,
     Activity_WorkflowState_UpdateSchema,

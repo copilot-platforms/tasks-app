@@ -1,6 +1,6 @@
 import React from 'react'
 
-export const getTimeDifference = (createdAt: Date): string => {
+export const getTimeDifference = (createdAt: string): string => {
   const now = new Date()
   const diffInSeconds = Math.floor((now.getTime() - new Date(createdAt).getTime()) / 1000)
 

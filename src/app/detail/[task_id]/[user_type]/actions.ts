@@ -12,6 +12,7 @@ export const updateTaskDetail = async (token: string, task_id: string, title: st
     }),
   })
   revalidateTag('getAllTasks')
+  revalidateTag('getActivities')
 }
 
 export const updateAssignee = async (
@@ -29,6 +30,7 @@ export const updateAssignee = async (
   })
   revalidateTag('getOneTask')
   revalidateTag('getAllTasks')
+  revalidateTag('getActivities')
 }
 
 export const deleteTask = async (token: string, task_id: string) => {
