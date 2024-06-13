@@ -1,3 +1,7 @@
+import { z } from 'zod'
+import { UserSchema } from './common'
+import { UpdateTaskRequestSchema } from './dto/tasks.dto'
+
 export enum TargetMethod {
   EDIT = 'edit',
   POST = 'post',
@@ -133,3 +137,8 @@ export interface IExtraOption {
   value?: string
   extraOptionFlag: true
 }
+
+export const DataSchema = z.object({
+  user: UserSchema,
+  task: UpdateTaskRequestSchema,
+})

@@ -25,7 +25,7 @@ export class SupabaseActions extends SupabaseService {
     }
   }
 
-  async uploadAttachment(file: File, task_id: string, signedUrl: ISignedUrlUpload) {
+  async uploadAttachment(file: File, id: string, signedUrl: ISignedUrlUpload) {
     let filePayload
     const { data, error } = await this.supabase.storage
       .from(supabaseBucket)
@@ -38,7 +38,7 @@ export class SupabaseActions extends SupabaseService {
         fileSize: file.size,
         fileName: file.name,
         fileType: file.type,
-        taskId: task_id,
+        id,
         filePath: data.path,
       }
     }

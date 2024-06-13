@@ -22,6 +22,13 @@ enum AssigneeType {
   company
 }
 
+enum ActivityType {
+  TASK_CREATED
+  TASK_ASSIGNED
+  WORKFLOW_STATE_UPDATED
+  COMMENT_ADDED
+}
+
 model WorkflowState {
   id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   workspaceId String    @db.VarChar(32)
@@ -48,6 +55,8 @@ model Task {
   workflowState   WorkflowState @relation(fields: [workflowStateId], references: [id], onDelete: Cascade)
   workflowStateId String        @db.Uuid
   attachments     Attachment[]
+  activityLog     ActivityLog[]
+  comments        Comment[]
 
   assignedAt  DateTime?
   completedAt DateTime?
@@ -90,8 +99,10 @@ model ViewSetting {
 
 model Attachment {
   id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  task        Task      @relation(fields: [taskId], references: [id])
-  taskId      String    @db.Uuid
+  task        Task?     @relation(fields: [taskId], references: [id])
+  taskId      String?   @db.Uuid
+  comment     Comment?  @relation(fields: [commentId], references: [id])
+  commentId   String?   @db.Uuid
   workspaceId String    @db.VarChar(32)
   filePath    String
   fileSize    Int
@@ -104,4 +115,40 @@ model Attachment {
   @@unique([filePath], name: "UQ_Attachments_filePath")
   @@index([filePath], name: "IX_Attachments_filePath")
   @@map("Attachments")
+}
+
+model ActivityLog {
+  id          String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  taskId      String       @db.Uuid
+  task        Task         @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  workspaceId String       @db.VarChar(32)
+  type        ActivityType
+  details     Json         @db.JsonB
+  userId      String       @db.Uuid
+  userRole    AssigneeType
+  createdAt   DateTime     @default(now()) @db.Timestamptz()
+  updatedAt   DateTime     @updatedAt @ignore @db.Timestamptz()
+
+  @@index([createdAt])
+  @@index([taskId], name: "IX_ActivityLogs_taskId")
+  @@index([userId], name: "IX_ActivityLogs_userId")
+  @@map("ActivityLogs")
+}
+
+model Comment {
+  id          String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  content     String
+  initiatorId String       @db.Uuid
+  parentId    String?      @db.Uuid
+  parent      Comment?     @relation("ChildComments", fields: [parentId], references: [id], onDelete: Cascade)
+  children    Comment[]    @relation("ChildComments")
+  taskId      String       @db.Uuid
+  task        Task         @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  workspaceId String       @db.VarChar(32)
+  attachments Attachment[]
+  createdAt   DateTime     @default(now()) @db.Timestamptz()
+  updatedAt   DateTime     @updatedAt @db.Timestamptz()
+  deletedAt   DateTime?    @db.Timestamptz()
+
+  @@map("Comments")
 }
