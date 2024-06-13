@@ -12,7 +12,7 @@ import { statusIcons } from '@/utils/iconMatcher'
 import { Close } from '@mui/icons-material'
 import { Avatar, Box, Modal, Stack, Typography, styled } from '@mui/material'
 import { ReactNode } from 'react'
-import { IAssigneeCombined } from '@/types/interfaces'
+import { IAssigneeCombined, TargetMethod } from '@/types/interfaces'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { useSelector } from 'react-redux'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
@@ -27,13 +27,13 @@ import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 
 export const TemplateForm = ({ handleCreate }: { handleCreate: () => void }) => {
   const { workflowStates, assignee } = useSelector(selectTaskBoard)
-  const { showTemplateModal } = useSelector(selectCreateTemplate)
-
+  const { showTemplateModal, targetMethod } = useSelector(selectCreateTemplate)
   return (
     <Modal
       open={showTemplateModal}
       onClose={() => {
         store.dispatch(setShowTemplateModal({}))
+        store.dispatch(clearTemplateFields())
       }}
       aria-labelledby="create-task-modal"
       aria-describedby="add-new-task"
@@ -48,7 +48,11 @@ export const TemplateForm = ({ handleCreate }: { handleCreate: () => void }) => 
             padding: '16px 28px',
           }}
         >
-          <Typography variant="md">Create Template</Typography>
+          {targetMethod === TargetMethod.POST ? (
+            <Typography variant="md">Create Template</Typography>
+          ) : (
+            <Typography variant="md">Edit Template</Typography>
+          )}
           <Close
             sx={{ color: (theme) => theme.color.gray[500], cursor: 'pointer' }}
             onClick={() => {
@@ -61,7 +65,7 @@ export const TemplateForm = ({ handleCreate }: { handleCreate: () => void }) => 
         <AppMargin size={SizeofAppMargin.MEDIUM} py="16px">
           <NewTaskFormInputs />
         </AppMargin>
-        <NewTaskFooter handleCreate={handleCreate} />
+        <NewTaskFooter handleCreate={handleCreate} targetMethod={targetMethod} />
       </NewTaskContainer>
     </Modal>
   )
@@ -105,7 +109,7 @@ const NewTaskFormInputs = () => {
   )
 }
 
-const NewTaskFooter = ({ handleCreate }: { handleCreate: () => void }) => {
+const NewTaskFooter = ({ handleCreate, targetMethod }: { handleCreate: () => void; targetMethod: TargetMethod }) => {
   return (
     <Box sx={{ borderTop: (theme) => `1px solid ${theme.color.borders.border2}` }}>
       <AppMargin size={SizeofAppMargin.MEDIUM} py="21px">
@@ -125,7 +129,7 @@ const NewTaskFooter = ({ handleCreate }: { handleCreate: () => void }) => {
                 </Typography>
               }
             />
-            <PrimaryBtn handleClick={handleCreate} buttonText="Create" />
+            <PrimaryBtn handleClick={handleCreate} buttonText={targetMethod === TargetMethod.POST ? 'Create' : 'Edit'} />
           </Stack>
         </Stack>
       </AppMargin>

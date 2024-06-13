@@ -1,6 +1,7 @@
 'use client'
 
 import { ListBtn } from '@/components/buttons/ListBtn'
+import { MoreBtn } from '@/components/buttons/MoreBtn'
 import { MenuBox } from '@/components/inputs/MenuBox'
 import { TrashIcon } from '@/icons'
 import { setShowConfirmDeleteModal } from '@/redux/features/taskDetailsSlice'

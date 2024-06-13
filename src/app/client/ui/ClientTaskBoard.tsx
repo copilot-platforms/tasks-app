@@ -8,9 +8,9 @@ import { TaskResponse, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { Box } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import { StateType } from '@prisma/client'
 
-export const ClientTaskBoard = ({ updateTask }: { updateTask: (taskId: string, payload: UpdateTaskRequest) => void }) => {
+export const ClientTaskBoard = ({ completeTask }: { completeTask: (taskId: string) => void }) => {
   const { workflowStates, tasks, filteredTasks, token } = useSelector(selectTaskBoard)
 
   const router = useRouter()
@@ -30,7 +30,6 @@ export const ClientTaskBoard = ({ updateTask }: { updateTask: (taskId: string, p
   }
 
   const completedTypeWorkflowState = workflowStates.find((el) => el.type === 'completed')
-
   return workflowStates.map((list) => {
     return (
       <TaskRow
@@ -45,6 +44,7 @@ export const ClientTaskBoard = ({ updateTask }: { updateTask: (taskId: string, p
               <ClientTaskCard
                 task={task}
                 key={task.id}
+                markdoneFlag={list.type == StateType.completed}
                 handleMarkDone={() => {
                   if (completedTypeWorkflowState?.id) {
                     store.dispatch(
@@ -53,9 +53,7 @@ export const ClientTaskBoard = ({ updateTask }: { updateTask: (taskId: string, p
                         targetWorkflowStateId: completedTypeWorkflowState?.id,
                       }),
                     )
-                    updateTask(task.id, {
-                      workflowStateId: completedTypeWorkflowState?.id,
-                    })
+                    completeTask(task.id)
                   }
                 }}
                 handleRouteChange={() => router.push(`/detail/${task.id}/cu?token=${token}`)}

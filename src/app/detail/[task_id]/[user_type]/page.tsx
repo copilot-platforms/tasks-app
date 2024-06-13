@@ -2,7 +2,7 @@ import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { TaskEditor } from '@/app/detail/ui/TaskEditor'
 import { Box, Stack, Typography } from '@mui/material'
 import { Sidebar } from '@/app/detail/ui/Sidebar'
-import { taskDetail } from '@/utils/mockData'
+import { activities, taskDetail } from '@/utils/mockData'
 import { IAssignee, UserType } from '@/types/interfaces'
 import { apiUrl } from '@/config'
 import { TaskResponse } from '@/types/dto/tasks.dto'
@@ -17,6 +17,9 @@ import { MenuBoxContainer } from '@/app/detail/ui/MenuBoxContainer'
 import { ToggleButtonContainer } from '@/app/detail/ui/ToggleButtonContainer'
 import { ToggleController } from '@/app/detail/ui/ToggleController'
 import { AttachmentResponseSchema } from '@/types/dto/attachments.dto'
+import { ActivityLog } from '@/app/detail/ui/ActivityLog'
+import { Comments } from '@/app/detail/ui/Comments'
+import { CommentInput } from '@/components/inputs/CommentInput'
 
 export const revalidate = 0
 
@@ -89,36 +92,61 @@ export default async function TaskDetailPage({
               </Stack>
             </AppMargin>
           </StyledBox>
-          <AppMargin size={SizeofAppMargin.LARGE} py="30px">
-            <TaskEditor
-              attachment={attachments}
-              title={task?.title || ''}
-              task_id={task_id}
-              detail={task?.body || ''}
-              isEditable={params.user_type === UserType.INTERNAL_USER}
-              updateTaskDetail={async (title, detail) => {
-                'use server'
-                await updateTaskDetail(token, task_id, title, detail)
-              }}
-              deleteTask={async () => {
-                'use server'
-                await deleteTask(token, task_id)
-              }}
-              postAttachment={async (postAttachmentPayload) => {
-                'use server'
-                await postAttachment(token, postAttachmentPayload)
-              }}
-              deleteAttachment={async (id: string) => {
-                'use server'
-                await deleteAttachment(token, id)
-              }}
-              getSignedUrlUpload={async (fileName: string) => {
-                'use server'
-                const data = await getSignedUrlUpload(token, fileName)
-                return data
-              }}
-              userType={params.user_type}
-            />
+          <StyledBox>
+            <AppMargin size={SizeofAppMargin.LARGE} py="30px">
+              <TaskEditor
+                attachment={attachments}
+                title={task?.title || ''}
+                workflowState={task?.workflowState}
+                task_id={task_id}
+                detail={task?.body || ''}
+                isEditable={params.user_type === UserType.INTERNAL_USER}
+                updateTaskDetail={async (title, detail) => {
+                  'use server'
+                  await updateTaskDetail(token, task_id, title, detail)
+                }}
+                deleteTask={async () => {
+                  'use server'
+                  await deleteTask(token, task_id)
+                }}
+                postAttachment={async (postAttachmentPayload) => {
+                  'use server'
+                  await postAttachment(token, postAttachmentPayload)
+                }}
+                deleteAttachment={async (id: string) => {
+                  'use server'
+                  await deleteAttachment(token, id)
+                }}
+                getSignedUrlUpload={async (fileName: string) => {
+                  'use server'
+                  const data = await getSignedUrlUpload(token, fileName)
+                  return data
+                }}
+                userType={params.user_type}
+              />
+            </AppMargin>
+          </StyledBox>
+          <AppMargin size={SizeofAppMargin.LARGE} py="18.5px">
+            <Stack direction="column" alignItems="left" p="10px 5px" rowGap={5}>
+              <Typography variant="xl">Activity</Typography>
+              <Stack direction="column" alignItems="left" p="10px 5px" rowGap={4}>
+                {activities.map((item: any, index: number) => {
+                  return (
+                    <Box
+                      sx={{
+                        height: 'auto',
+                        display: 'block',
+                      }}
+                      key={item.id}
+                    >
+                      {item.activityType ? <ActivityLog log={item} /> : <Comments comment={item} />}
+                    </Box>
+                  )
+                })}
+
+                <CommentInput />
+              </Stack>
+            </Stack>
           </AppMargin>
         </ToggleController>
         <Box>

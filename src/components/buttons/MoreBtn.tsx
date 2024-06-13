@@ -3,21 +3,28 @@
 import { MoreHoriz } from '@mui/icons-material'
 import { Stack } from '@mui/material'
 
-export const MoreBtn = ({ handleClick }: { handleClick: (e: React.MouseEvent<HTMLElement>) => void }) => {
+export const MoreBtn = ({
+  handleClick,
+  isSecondary,
+}: {
+  handleClick: (e: React.MouseEvent<HTMLElement>) => void
+  isSecondary: Boolean
+}) => {
   return (
     <Stack
       direction="column"
       justifyContent="center"
       alignItems="center"
-      width="28px"
-      height="28px"
+      width="25px"
+      height="25px"
       sx={(theme) => ({
         padding: 0,
-        borderRadius: 1,
         ':hover': {
-          background: theme.color.gray[100],
+          background: isSecondary ? theme.color.gray[200] : theme.color.gray[100],
           border: `1px solid ${theme.color.borders.border3}`,
           cursor: 'pointer',
+          borderRadius: isSecondary ? '5px' : 1,
+          padding: isSecondary ? '5px' : null,
         },
       })}
       onClick={handleClick}

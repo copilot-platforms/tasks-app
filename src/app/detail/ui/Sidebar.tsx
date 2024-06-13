@@ -112,6 +112,7 @@ export const Sidebar = ({
         <Stack direction="row" m="16px 0px" alignItems="center" justifyContent="space-between">
           <StyledText variant="md">Assignee</StyledText>
           <Selector
+            placeholder="Change assignee"
             getSelectedValue={(newValue) => {
               const assignee = newValue as IAssigneeCombined
               updateAssigneeValue(assignee)
@@ -123,6 +124,7 @@ export const Sidebar = ({
                 alt="user"
                 src={assigneeValue?.iconImageUrl || assigneeValue?.avatarImageUrl}
                 sx={{ width: '20px', height: '20px' }}
+                variant={assigneeValue?.type === 'companies' ? 'rounded' : 'circular'}
               />
             }
             options={assignee}
