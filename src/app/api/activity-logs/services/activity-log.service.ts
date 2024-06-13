@@ -4,9 +4,7 @@ import { z } from 'zod'
 import { ActivityType, AssigneeType, Comment } from '@prisma/client'
 import { DBActivityLogArraySchema, DBActivityLogDetails, SchemaByActivityType } from '@api/activity-logs/const'
 import { CopilotAPI } from '@/utils/CopilotAPI'
-import { InternalUsers } from '@/types/common'
-import { CommentService } from '../../comment/comment.service'
-import { UserRole } from '../../core/types/user'
+import { CommentService } from '@api/comment/comment.service'
 
 export class ActivityLogService extends BaseService {
   constructor(user: User) {
@@ -34,18 +32,18 @@ export class ActivityLogService extends BaseService {
 
     const copilotService = new CopilotAPI(this.user.token)
 
-    const promises_getCopilotUsers = parsedActivityLogs.map(async (activityLog) => {
-      if (activityLog.userRole === AssigneeType.internalUser) {
-        return copilotService.getInternalUser(activityLog.userId)
-      }
-      if (activityLog.userRole === AssigneeType.client) {
-        return copilotService.getClient(activityLog.userId)
-      }
-    })
+    const [internalUsers, clientUsers] = await Promise.all([copilotService.getInternalUsers(), copilotService.getClients()])
 
-    const copilotUsers = (await Promise.all(promises_getCopilotUsers)).filter(
-      (user): user is NonNullable<typeof user> => user !== undefined,
-    )
+    const copilotUsers = parsedActivityLogs
+      .map((activityLog) => {
+        if (activityLog.userRole === AssigneeType.internalUser) {
+          return internalUsers.data.find((iu) => iu.id === activityLog.userId)
+        }
+        if (activityLog.userRole === AssigneeType.client) {
+          return clientUsers.data?.find((client) => client.id === activityLog.userId)
+        }
+      })
+      .filter((user): user is NonNullable<typeof user> => user !== undefined)
 
     const commentIds = parsedActivityLogs
       .filter((activityLog) => activityLog.type === ActivityType.COMMENT_ADDED)
@@ -84,6 +82,11 @@ export class ActivityLogService extends BaseService {
     allReplies: Comment[],
   ) {
     const copilotService = new CopilotAPI(this.user.token)
+    const [internalUsers, clientUsers, companies] = await Promise.all([
+      copilotService.getInternalUsers(),
+      copilotService.getClients(),
+      copilotService.getCompanies(),
+    ])
     switch (activityType) {
       case ActivityType.COMMENT_ADDED:
         const comment = comments.find((comment) => comment.id === payload.id)
@@ -93,18 +96,16 @@ export class ActivityLogService extends BaseService {
 
         let replies = allReplies.filter((reply) => reply.parentId === comment.id)
 
-        const promises_getCopilotUsers = replies.map(async (comment) => {
-          if (userRole === AssigneeType.internalUser) {
-            return copilotService.getInternalUser(comment.initiatorId)
-          }
-          if (userRole === AssigneeType.client) {
-            return copilotService.getClient(comment.initiatorId)
-          }
-        })
-
-        const copilotUsers = (await Promise.all(promises_getCopilotUsers)).filter(
-          (user): user is NonNullable<typeof user> => user !== undefined,
-        )
+        const copilotUsers = replies
+          .map((reply) => {
+            if (userRole === AssigneeType.internalUser) {
+              return internalUsers.data.find((iu) => iu.id === reply.initiatorId)
+            }
+            if (userRole === AssigneeType.client) {
+              return clientUsers.data?.find((client) => client.id === reply.initiatorId)
+            }
+          })
+          .filter((user): user is NonNullable<typeof user> => user !== undefined)
 
         replies = replies.map((comment) => ({
           ...comment,
@@ -119,14 +120,14 @@ export class ActivityLogService extends BaseService {
 
       case ActivityType.TASK_ASSIGNED:
         const newAssigneeId = payload.newAssigneeId as string
-        const newAssigneeDetails = await (async () => {
+        const newAssigneeDetails = (() => {
           switch (payload.assigneeType) {
             case AssigneeType.internalUser:
-              return await copilotService.getInternalUser(newAssigneeId)
+              return internalUsers.data.find((iu) => iu.id === newAssigneeId)
             case AssigneeType.client:
-              return await copilotService.getClient(newAssigneeId)
+              return clientUsers.data?.find((client) => client.id === newAssigneeId)
             case AssigneeType.company:
-              return await copilotService.getCompany(newAssigneeId)
+              return companies.data?.find((company) => company.id === newAssigneeId)
             default:
               return null
           }
