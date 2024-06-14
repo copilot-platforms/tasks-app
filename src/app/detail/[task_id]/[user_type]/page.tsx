@@ -91,11 +91,13 @@ export default async function TaskDetailPage({
   const { token } = searchParams
   const { task_id } = params
 
-  const task = await getOneTask(token, task_id)
-  const assignee = addTypeToAssignee(await getAssigneeList(token))
-  const attachments = await getAttachments(token, task_id)
-  const activities = await getActivities(token, task_id)
-  const tokenPayload = await getTokenPayload(token)
+  const [task, assignee, attachments, activities, tokenPayload] = await Promise.all([
+    getOneTask(token, task_id),
+    addTypeToAssignee(await getAssigneeList(token)),
+    getAttachments(token, task_id),
+    getActivities(token, task_id),
+    getTokenPayload(token),
+  ])
 
   return (
     <ClientSideStateUpdate assignee={assignee} tokenPayload={tokenPayload}>
