@@ -2,23 +2,17 @@ import { CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { BaseService } from '@api/core/services/base.service'
 import { Resource } from '@api/core/types/api'
 import { PoliciesService } from '@api/core/services/policies.service'
-import { ActivityType, StateType, AssigneeType, Task } from '@prisma/client'
+import { ActivityType, StateType, AssigneeType } from '@prisma/client'
 import { UserAction, UserRole } from '@api/core/types/user'
-import { CopilotAPI } from '@/utils/CopilotAPI'
 import { NotificationTaskActions } from '@api/core/types/tasks'
-import {
-  getEmailDetails,
-  getInProductNotificationDetails,
-  getNotificationParties,
-  getTaskTimestamps,
-} from '@api/tasks/tasks.helpers'
+import { getTaskTimestamps } from '@api/tasks/tasks.helpers'
 import APIError from '@api/core/exceptions/api'
 import httpStatus from 'http-status'
 import { ActivityLogger } from '@api/activity-logs/services/activity-logger.service'
 import { TaskCreatedSchema } from '@api/activity-logs/schemas/TaskCreatedSchema'
 import { TaskAssignedSchema } from '@api/activity-logs/schemas/TaskAssignedSchema'
 import { WorkflowStateUpdatedSchema } from '@api/activity-logs/schemas/WorkflowStateUpdatedSchema'
-import { z } from 'zod'
+import { NotificationService } from '../notification/notification.service'
 
 type FilterByAssigneeId = {
   assigneeId: string
@@ -111,7 +105,8 @@ export class TasksService extends BaseService {
 
     // If new task is assigned to someone (IU / Client), send proper notification + email to them
     if (newTask.assigneeId) {
-      this.createTaskNotification(newTask, NotificationTaskActions.Assigned)
+      const notificationService = new NotificationService(this.user)
+      await notificationService.create(NotificationTaskActions.Assigned, newTask)
     }
 
     return newTask
@@ -200,7 +195,8 @@ export class TasksService extends BaseService {
 
     // If task goes from unassigned to assigned, or assigneeId does not match
     if (prevTask?.assigneeId != updatedTask.assigneeId && updatedTask.assigneeId) {
-      this.createTaskNotification(updatedTask, NotificationTaskActions.Assigned)
+      const notificationService = new NotificationService(this.user)
+      await notificationService.create(NotificationTaskActions.Assigned, updatedTask)
     }
     // If task was previous in another state, and is moved to a 'completed' type WorkflowState
     if (
@@ -208,7 +204,8 @@ export class TasksService extends BaseService {
       updatedTask?.workflowState?.type === 'completed' &&
       updatedTask.assigneeId
     ) {
-      this.createTaskNotification(updatedTask, NotificationTaskActions.Completed)
+      const notificationService = new NotificationService(this.user)
+      await notificationService.create(NotificationTaskActions.Completed, updatedTask)
     }
 
     return updatedTask
@@ -219,31 +216,6 @@ export class TasksService extends BaseService {
     policyGate.authorize(UserAction.Delete, Resource.Tasks)
 
     return await this.db.task.delete({ where: { id } })
-  }
-
-  /**
-   * Send a new task assigned / completed notification to concerned parties
-   * Sends an in-product notification + email
-   * @param task Task concerning this action
-   * @param action The action which triggered this notification
-   */
-  private async createTaskNotification(task: Task, action: NotificationTaskActions) {
-    // Use another try catch block here so that it doesn't get caught by the global `withErrorHandler` - this way
-    // the request succeeds even if notification for some reason fails.
-    try {
-      const copilotClient = new CopilotAPI(this.user.token)
-      const { senderId, recipientId, actionUser } = await getNotificationParties(copilotClient, task, action)
-      await copilotClient.createNotification({
-        senderId,
-        recipientId,
-        deliveryTargets: {
-          inProduct: getInProductNotificationDetails(actionUser)[action],
-          email: getEmailDetails(actionUser)[action],
-        },
-      })
-    } catch (e: unknown) {
-      console.error('TasksService.createTaskNotification : Failed to send task notification\n', e)
-    }
   }
 
   async completeTask(id: string) {
@@ -277,7 +249,8 @@ export class TasksService extends BaseService {
         ...(await getTaskTimestamps('update', this.user, data, prevTask)),
       },
     })
-    this.createTaskNotification(updatedTask, NotificationTaskActions.Completed)
+    const notificationService = new NotificationService(this.user)
+    await notificationService.create(NotificationTaskActions.Completed, updatedTask)
     return updatedTask
   }
 }
