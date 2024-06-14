@@ -85,7 +85,7 @@ export const CommentCard = ({
                         setShowConfirmDeleteModal(true)
                       }}
                       icon={<TrashIcon />}
-                      contentColor="#CC0000"
+                      contentColor={(theme) => theme.color.error}
                     />
                   }
                   isSecondary
