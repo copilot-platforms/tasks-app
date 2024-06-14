@@ -3,7 +3,7 @@ import { ClientResponseSchema, InternalUsersSchema } from '@/types/common'
 
 export const CommentAddedSchema = z.object({
   id: z.string().uuid(),
-  content: z.string(),
+  content: z.string().min(1),
   initiatorId: z.string().uuid(),
   parentId: z.string().uuid().nullable(),
 })
@@ -17,7 +17,7 @@ export const commentAddedResponseSchema = z.object({
   replies: z.array(
     z.object({
       id: z.string().uuid(),
-      content: z.string(),
+      content: z.string().min(1),
       taskId: z.string().uuid(),
       parentId: z.string().uuid(),
       initiatorId: z.string().uuid(),

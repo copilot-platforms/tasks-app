@@ -118,7 +118,7 @@ export const CommentCard = ({
             <CustomDivider />
             <Stack direction="row" columnGap={1} alignItems="flex-start">
               <Avatar alt="user" src={''} sx={{ width: '20px', height: '20px', marginTop: '5px' }} />
-              <TapWriteReplyInput content={''} getContent={(content) => setDetail(content)} placeholder="Leave a reply..." />
+              <TapWriteReplyInput content={''} getContent={setDetail} placeholder="Leave a reply..." />
               <InputAdornment
                 position="end"
                 sx={{

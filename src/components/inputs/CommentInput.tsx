@@ -27,11 +27,7 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
     <Stack direction="row" columnGap={3} alignItems="flex-start">
       <Avatar alt="user" src={''} sx={{ width: '25px', height: '25px' }} />
       <CommentCardContainer>
-        <TapWriteCommentInput
-          content={detail}
-          getContent={(content) => setDetail(content)}
-          placeholder="Leave a comment..."
-        />
+        <TapWriteCommentInput content={detail} getContent={setDetail} placeholder="Leave a comment..." />
         <InputAdornment
           position="end"
           sx={{
