@@ -29,6 +29,8 @@ import { Comments } from '@/app/detail/ui/Comments'
 import { CommentInput } from '@/components/inputs/CommentInput'
 import { LogResponse } from '@/app/api/activity-logs/schemas/LogResponseSchema'
 import { CreateComment } from '@/types/dto/comment.dto'
+import { CopilotAPI } from '@/utils/CopilotAPI'
+import { Token, TokenSchema } from '@/types/common'
 
 export const revalidate = 0
 
@@ -73,6 +75,12 @@ async function getActivities(token: string, taskId: string): Promise<LogResponse
   return data.data
 }
 
+async function getTokenPayload(token: string): Promise<Token> {
+  const copilotClient = new CopilotAPI(token)
+  const payload = TokenSchema.parse(await copilotClient.getTokenPayload())
+  return payload
+}
+
 export default async function TaskDetailPage({
   params,
   searchParams,
@@ -87,9 +95,10 @@ export default async function TaskDetailPage({
   const assignee = addTypeToAssignee(await getAssigneeList(token))
   const attachments = await getAttachments(token, task_id)
   const activities = await getActivities(token, task_id)
+  const tokenPayload = await getTokenPayload(token)
 
   return (
-    <ClientSideStateUpdate assignee={assignee}>
+    <ClientSideStateUpdate assignee={assignee} tokenPayload={tokenPayload}>
       <Stack direction="row">
         <ToggleController>
           <StyledBox>
