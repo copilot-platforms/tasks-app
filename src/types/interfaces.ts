@@ -52,6 +52,13 @@ export enum FilterOptions {
   TYPE = 'type',
 }
 
+export enum FilterByOptions {
+  CLIENT = 'clients',
+  COMPANY = 'companies',
+  IUS = 'internalUsers',
+  NOFILTER = 'none',
+}
+
 export enum FilterOptionsKeywords {
   CLIENTS = 'clients_companies',
   TEAM = 'ius',
