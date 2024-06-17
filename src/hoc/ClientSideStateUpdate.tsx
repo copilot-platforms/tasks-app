@@ -7,6 +7,7 @@ import { setTemplates } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
 import { Token } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
+import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { IAssigneeCombined, ITemplate, View } from '@/types/interfaces'
 import { ViewMode } from '@prisma/client'
@@ -31,7 +32,7 @@ export const ClientSideStateUpdate = ({
   workflowStates?: WorkflowStateResponse[]
   tasks?: TaskResponse[]
   assignee?: IAssigneeCombined[]
-  viewSettings?: View
+  viewSettings?: CreateViewSettingsDTO
   token?: string
   tokenPayload?: Token
   templates?: ITemplate[]
