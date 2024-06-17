@@ -46,6 +46,7 @@ model WorkflowState {
 
 model Task {
   id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  label           String        @unique
   workspaceId     String        @db.VarChar(32)
   assigneeId      String?       @db.Uuid
   assigneeType    AssigneeType?
@@ -151,4 +152,15 @@ model Comment {
   deletedAt   DateTime?    @db.Timestamptz()
 
   @@map("Comments")
+}
+
+model LabelMapping {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  label          String    @unique
+  labelledEntity String
+  createdAt      DateTime  @default(now()) @db.Timestamptz()
+  updatedAt      DateTime  @updatedAt @db.Timestamptz()
+  deletedAt      DateTime? @db.Timestamptz()
+
+  @@map("LabelMappings")
 }

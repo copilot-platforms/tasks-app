@@ -13,6 +13,8 @@ import { TaskCreatedSchema } from '@api/activity-logs/schemas/TaskCreatedSchema'
 import { TaskAssignedSchema } from '@api/activity-logs/schemas/TaskAssignedSchema'
 import { WorkflowStateUpdatedSchema } from '@api/activity-logs/schemas/WorkflowStateUpdatedSchema'
 import { NotificationService } from '../notification/notification.service'
+import { LabelMapping } from '../label-mapping/label-mapping.service'
+import { z } from 'zod'
 
 type FilterByAssigneeId = {
   assigneeId: string
@@ -75,12 +77,17 @@ export class TasksService extends BaseService {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Create, Resource.Tasks)
 
+    //generate the label
+    const labelMappingService = new LabelMapping(this.user)
+    const label = z.string().parse(await labelMappingService.getLabel(data.assigneeId, data.assigneeType))
+
     // Create a new task associated with current workspaceId. Also inject current request user as the creator.
     const newTask = await this.db.task.create({
       data: {
         ...data,
         workspaceId: this.user.workspaceId,
         createdById: this.user.internalUserId as string,
+        label,
         ...(await getTaskTimestamps('create', this.user, data)),
       },
       include: { workflowState: true },
@@ -143,11 +150,18 @@ export class TasksService extends BaseService {
     })
     if (!prevTask) throw new APIError(httpStatus.NOT_FOUND, 'The requested task was not found')
 
+    let label: string = prevTask.label
+    //generate new label if prevTask has no assignee but now assigned to someone
+    if (!prevTask.assigneeId && data.assigneeId) {
+      const labelMappingService = new LabelMapping(this.user)
+      label = z.string().parse(await labelMappingService.getLabel(data.assigneeId, data.assigneeType))
+    }
     // Get the updated task
     const updatedTask = await this.db.task.update({
       where: { id },
       data: {
         ...data,
+        label,
         ...(await getTaskTimestamps('update', this.user, data, prevTask)),
       },
       include: { workflowState: true },
