@@ -34,7 +34,7 @@ export const FilterBar = ({
 }: {
   updateViewModeSetting: (payload: CreateViewSettingsDTO) => void
 }) => {
-  const { view, filteredAssigneeList, assignee, filterOptions } = useSelector(selectTaskBoard)
+  const { view, filteredAssigneeList, filterOptions } = useSelector(selectTaskBoard)
   const handleFilterOptionsChange = async (optionType: FilterOptions, newValue: string | null) => {
     store.dispatch(setFilterOptions({ optionType, newValue }))
     const updatedFilterOptions = store.getState().taskBoard.filterOptions
@@ -68,7 +68,6 @@ export const FilterBar = ({
       name: 'My tasks',
       onClick: () => {
         handleFilterOptionsChange(FilterOptions.TYPE, IUTokenSchema.parse(tokenPayload)?.internalUserId)
-        store.dispatch(setFilteredAssgineeList({ filteredType: FilterByOptions.NOFILTER }))
         updateAssigneeValue(null)
         filterOptions.assignee !== '' && handleFilterOptionsChange(FilterOptions.ASSIGNEE, '')
       },
@@ -78,7 +77,6 @@ export const FilterBar = ({
       name: "My team's tasks",
       onClick: () => {
         handleFilterOptionsChange(FilterOptions.TYPE, FilterOptionsKeywords.TEAM)
-        store.dispatch(setFilteredAssgineeList({ filteredType: FilterByOptions.IUS }))
         updateAssigneeValue(null)
         setNoAssigneeOptionFlag(false)
         filterOptions.assignee !== '' && handleFilterOptionsChange(FilterOptions.ASSIGNEE, '')
@@ -89,7 +87,6 @@ export const FilterBar = ({
       name: 'Client tasks',
       onClick: () => {
         handleFilterOptionsChange(FilterOptions.TYPE, FilterOptionsKeywords.CLIENTS)
-        store.dispatch(setFilteredAssgineeList({ filteredType: FilterByOptions.CLIENT }))
         updateAssigneeValue(null)
         setNoAssigneeOptionFlag(false)
         filterOptions.assignee !== '' && handleFilterOptionsChange(FilterOptions.ASSIGNEE, '')
@@ -100,7 +97,6 @@ export const FilterBar = ({
       name: 'All tasks',
       onClick: () => {
         handleFilterOptionsChange(FilterOptions.TYPE, '')
-        store.dispatch(setFilteredAssgineeList({ filteredType: FilterByOptions.NOFILTER }))
         updateAssigneeValue(null)
         setNoAssigneeOptionFlag(true)
         filterOptions.assignee !== '' && handleFilterOptionsChange(FilterOptions.ASSIGNEE, '')

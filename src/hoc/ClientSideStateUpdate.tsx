@@ -1,7 +1,7 @@
 'use client'
 
 import { setTokenPayload } from '@/redux/features/authDetailsSlice'
-import { setAssigneeList, setViewSettings } from '@/redux/features/taskBoardSlice'
+import { setAssigneeList, setFilteredAssgineeList, setViewSettings } from '@/redux/features/taskBoardSlice'
 import { setTasks, setToken, setWorkflowStates } from '@/redux/features/taskBoardSlice'
 import { setTemplates } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
@@ -9,7 +9,7 @@ import { Token } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { IAssigneeCombined, ITemplate, View } from '@/types/interfaces'
+import { FilterByOptions, FilterOptionsKeywords, IAssigneeCombined, ITemplate, View } from '@/types/interfaces'
 import { ViewMode } from '@prisma/client'
 import { ReactNode, useEffect } from 'react'
 
@@ -56,6 +56,13 @@ export const ClientSideStateUpdate = ({
 
     if (viewSettings) {
       store.dispatch(setViewSettings(viewSettings))
+      viewSettings.filterOptions.type == FilterOptionsKeywords.CLIENTS
+        ? store.dispatch(setFilteredAssgineeList({ filteredType: FilterByOptions.CLIENT }))
+        : viewSettings.filterOptions.type == FilterOptionsKeywords.TEAM
+          ? store.dispatch(setFilteredAssgineeList({ filteredType: FilterByOptions.IUS }))
+          : viewSettings.filterOptions.type == ''
+            ? store.dispatch(setFilteredAssgineeList({ filteredType: FilterByOptions.NOFILTER }))
+            : store.dispatch(setFilteredAssgineeList({ filteredType: FilterByOptions.NOFILTER }))
     }
     if (tokenPayload) {
       store.dispatch(setTokenPayload(tokenPayload))
