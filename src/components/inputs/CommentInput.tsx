@@ -27,6 +27,7 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
     }
     if (detail) {
       createComment(commentPaylod)
+      setDetail('')
     }
   }
   return (
