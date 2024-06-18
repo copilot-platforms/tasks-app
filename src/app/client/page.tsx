@@ -14,6 +14,7 @@ import { completeTask } from '@/app/client/actions'
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
     next: { tags: ['getAllWorkflowStates'] },
+    cache: 'no-store',
   })
 
   const data = await res.json()
@@ -24,6 +25,7 @@ async function getAllWorkflowStates(token: string): Promise<WorkflowStateRespons
 async function getAllTasks(token: string): Promise<TaskResponse[]> {
   const res = await fetch(`${apiUrl}/api/tasks?token=${token}`, {
     next: { tags: ['getAllTasks'] },
+    cache: 'no-store',
   })
 
   const data = await res.json()
@@ -33,6 +35,7 @@ async function getAllTasks(token: string): Promise<TaskResponse[]> {
 async function getAssigneeList(token: string): Promise<IAssignee> {
   const res = await fetch(`${apiUrl}/api/users/client?token=${token}`, {
     next: { tags: ['getAssigneeList'], revalidate: 0 },
+    cache: 'no-store',
   })
   const data = await res.json()
   return data.clients

@@ -1,4 +1,5 @@
 export const dynamic = 'force-dynamic'
+export const fetchCache = 'force-no-store'
 export const dynamicParams = true
 
 import { DndWrapper } from '@/hoc/DndWrapper'
@@ -20,6 +21,7 @@ import { CopilotAPI } from '@/utils/CopilotAPI'
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
     next: { tags: ['getAllWorkflowStates'] },
+    cache: 'no-store',
   })
 
   const data = await res.json()
@@ -30,6 +32,7 @@ async function getAllWorkflowStates(token: string): Promise<WorkflowStateRespons
 async function getAllTasks(token: string): Promise<TaskResponse[]> {
   const res = await fetch(`${apiUrl}/api/tasks?token=${token}`, {
     next: { tags: ['getAllTasks'] },
+    cache: 'no-store',
   })
 
   const data = await res.json()
@@ -46,6 +49,7 @@ async function getTokenPayload(token: string): Promise<Token> {
 async function getAssigneeList(token: string): Promise<IAssignee> {
   const res = await fetch(`${apiUrl}/api/users?token=${token}`, {
     next: { tags: ['getAssigneeList'], revalidate: 0 },
+    cache: 'no-store',
   })
 
   const data = await res.json()
@@ -56,6 +60,7 @@ async function getAssigneeList(token: string): Promise<IAssignee> {
 async function getViewSettings(token: string): Promise<View> {
   const res = await fetch(`${apiUrl}/api/view-settings?token=${token}`, {
     next: { tags: ['getViewSettings'], revalidate: 0 },
+    cache: 'no-store',
   })
 
   const data = await res.json()
@@ -63,7 +68,9 @@ async function getViewSettings(token: string): Promise<View> {
 }
 
 async function getAllTemplates(token: string): Promise<ITemplate[]> {
-  const res = await fetch(`${apiUrl}/api/tasks/templates?token=${token}`)
+  const res = await fetch(`${apiUrl}/api/tasks/templates?token=${token}`, {
+    cache: 'no-store',
+  })
 
   const templates = await res.json()
 

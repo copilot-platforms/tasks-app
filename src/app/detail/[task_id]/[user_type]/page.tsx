@@ -26,6 +26,7 @@ export const revalidate = 0
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
     next: { tags: ['getOneTask'], revalidate: 0 },
+    cache: 'no-store',
   })
 
   const data = await res.json()
@@ -36,6 +37,7 @@ async function getOneTask(token: string, taskId: string): Promise<TaskResponse> 
 async function getAssigneeList(token: string): Promise<IAssignee> {
   const res = await fetch(`${apiUrl}/api/users?token=${token}`, {
     next: { tags: ['getAssigneeList'], revalidate: 0 },
+    cache: 'no-store',
   })
 
   const data = await res.json()
@@ -46,6 +48,7 @@ async function getAssigneeList(token: string): Promise<IAssignee> {
 async function getAttachments(token: string, taskId: string): Promise<AttachmentResponseSchema[]> {
   const res = await fetch(`${apiUrl}/api/attachments/?taskId=${taskId}&token=${token}`, {
     next: { tags: ['getAttachments'], revalidate: 0 },
+    cache: 'no-store',
   })
   const data = await res.json()
 
