@@ -48,7 +48,7 @@ async function getTokenPayload(token: string): Promise<Token> {
 
 async function getAssigneeList(token: string): Promise<IAssignee> {
   const res = await fetch(`${apiUrl}/api/users?token=${token}`, {
-    next: { tags: ['getAssigneeList'], revalidate: 0 },
+    next: { tags: ['getAssigneeList'] },
     cache: 'no-store',
   })
 
