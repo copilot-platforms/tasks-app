@@ -98,9 +98,13 @@ export default async function TaskDetailPage({
     getActivities(token, task_id),
     getTokenPayload(token),
   ])
+  const AssigneeSuggestions = assignee.map((item) => ({
+    id: item.id,
+    label: item?.name ?? `${item.givenName} ${item.familyName}`,
+  }))
 
   return (
-    <ClientSideStateUpdate assignee={assignee} tokenPayload={tokenPayload}>
+    <ClientSideStateUpdate assignee={assignee} tokenPayload={tokenPayload} assigneeSuggestions={AssigneeSuggestions}>
       <Stack direction="row">
         <ToggleController>
           <StyledBox>
