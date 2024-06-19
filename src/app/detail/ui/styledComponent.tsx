@@ -16,6 +16,12 @@ export const BoldTypography = styled(Typography)(({ theme }) => ({
   fontSize: theme.typography.md.fontSize,
 }))
 
+export const TypographyContainer = styled(Stack)(({ theme }) => ({
+  display: 'flex',
+  flexWrap: 'wrap',
+  alignItems: 'center',
+}))
+
 export const StyledKeyboardIcon = styled(KeyboardArrowRight)(({ theme }) => ({
   color: theme.color.gray[500],
 }))
