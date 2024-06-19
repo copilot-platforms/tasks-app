@@ -48,14 +48,14 @@ export class CommentService extends BaseService {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Delete, Resource.Comment)
 
-    return this.db.comment.delete({ where: { id } })
+    return await this.db.comment.delete({ where: { id } })
   }
 
   async update(id: string, data: UpdateComment) {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Update, Resource.Comment)
 
-    return this.db.comment.update({
+    return await this.db.comment.update({
       where: { id },
       data: {
         ...data,
@@ -78,6 +78,7 @@ export class CommentService extends BaseService {
       where: {
         parentId: { in: commentIds },
       },
+      orderBy: { createdAt: 'asc' },
     })
   }
 }
