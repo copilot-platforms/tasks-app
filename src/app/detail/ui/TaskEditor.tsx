@@ -10,22 +10,19 @@ import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
 import store from '@/redux/store'
-import { Tapwrite, TiptapEditorUtils } from 'tapwrite'
 import { upload } from '@vercel/blob/client'
-import {
-  AttachmentResponseSchema,
-  CreateAttachmentRequest,
-  CreateAttachmentRequestSchema,
-} from '@/types/dto/attachments.dto'
+import { AttachmentResponseSchema, CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { AttachmentInput } from '@/components/inputs/AttachmentInput'
 import { SupabaseActions } from '@/utils/SupabaseActions'
-import { CreateTaskRequestSchema } from '@/types/dto/tasks.dto'
 import { generateRandomString } from '@/utils/generateRandomString'
 import { ISignedUrlUpload, UserType } from '@/types/interfaces'
+import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
+import { TapWriteTaskEditor } from '@/app/detail/ui/styledComponent'
 
 interface Prop {
   title: string
   detail: string
+  workflowState: WorkflowStateResponse
   task_id: string
   attachment: AttachmentResponseSchema[]
   isEditable: boolean
@@ -40,6 +37,7 @@ interface Prop {
 export const TaskEditor = ({
   title,
   detail,
+  workflowState,
   task_id,
   attachment,
   isEditable,
@@ -63,14 +61,14 @@ export const TaskEditor = ({
       const signedUrl: ISignedUrlUpload = await getSignedUrlUpload(generateRandomString(file.name))
       const filePayload = await supabaseActions.uploadAttachment(file, signedUrl, task_id)
       if (filePayload) {
-        postAttachment(filePayload)
+        postAttachment({ ...filePayload, taskId: filePayload.id })
       }
     }
   }
   return (
     <>
       <Stack direction="row" alignItems="center" columnGap={2}>
-        <Box pt="5px">{statusIcons['unstarted']}</Box>
+        <Box pt="5px">{statusIcons[workflowState.type]}</Box>
         <StyledTextField
           type="text"
           multiline
@@ -98,7 +96,7 @@ export const TaskEditor = ({
           updateTaskDetail(updateTitle, updateDetail)
         }}
       >
-        <Tapwrite
+        <TapWriteTaskEditor
           uploadFn={async (file, tiptapEditorUtils) => {
             const newBlob = await upload(file.name, file, {
               access: 'public',

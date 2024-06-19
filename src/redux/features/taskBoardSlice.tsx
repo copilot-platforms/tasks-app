@@ -2,7 +2,7 @@ import { createSlice } from '@reduxjs/toolkit'
 import { RootState } from '../store'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { TaskResponse } from '@/types/dto/tasks.dto'
-import { AssigneeType, FilterOptions, IAssigneeCombined, IFilterOptions, View } from '@/types/interfaces'
+import { AssigneeType, FilterByOptions, FilterOptions, IAssigneeCombined, IFilterOptions, View } from '@/types/interfaces'
 
 interface IInitialState {
   workflowStates: WorkflowStateResponse[]
@@ -12,6 +12,7 @@ interface IInitialState {
   view: View
   filteredTasks: TaskResponse[]
   filterOptions: IFilterOptions
+  filteredAssigneeList: IAssigneeCombined[]
 }
 
 const initialState: IInitialState = {
@@ -26,6 +27,7 @@ const initialState: IInitialState = {
     [FilterOptions.KEYWORD]: '',
     [FilterOptions.TYPE]: '',
   },
+  filteredAssigneeList: [],
 }
 
 const taskBoardSlice = createSlice({
@@ -55,6 +57,7 @@ const taskBoardSlice = createSlice({
     },
     setAssigneeList: (state, action: { payload: IAssigneeCombined[] }) => {
       state.assignee = action.payload
+      state.filteredAssigneeList = action.payload
     },
     setViewSettings: (state, action: { payload: View }) => {
       state.view = action.payload
@@ -63,6 +66,20 @@ const taskBoardSlice = createSlice({
       state.filterOptions = {
         ...state.filterOptions,
         [action.payload.optionType]: action.payload.newValue,
+      }
+    },
+    setFilteredAssgineeList: (state, action: { payload: { filteredType: FilterByOptions } }) => {
+      const filteredType = action.payload.filteredType
+      if (filteredType == 'internalUsers') {
+        state.filteredAssigneeList = state.assignee.filter((el) => el.type == FilterByOptions.IUS)
+      }
+      if (filteredType == 'clients') {
+        state.filteredAssigneeList = state.assignee.filter(
+          (el) => el.type == FilterByOptions.CLIENT || el.type == FilterByOptions.COMPANY,
+        )
+      }
+      if (filteredType == FilterByOptions.NOFILTER) {
+        state.filteredAssigneeList = state.assignee
       }
     },
   },
@@ -79,6 +96,7 @@ export const {
   setFilteredTasks,
   setViewSettings,
   setFilterOptions,
+  setFilteredAssgineeList,
 } = taskBoardSlice.actions
 
 export default taskBoardSlice.reducer

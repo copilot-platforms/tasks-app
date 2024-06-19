@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 import { Box, Modal, Stack } from '@mui/material'
 import { TaskCard } from '@/components/cards/TaskCard'
 import { TaskColumn } from '@/components/cards/TaskColumn'
@@ -12,7 +12,7 @@ import { clearCreateTaskFields, selectCreateTask, setShowModal } from '@/redux/f
 import store from '@/redux/store'
 import { useRouter } from 'next/navigation'
 import { selectTaskBoard, updateWorkflowStateIdByTaskId } from '@/redux/features/taskBoardSlice'
-import { CreateTaskRequest, TaskResponse, UpdateTaskRequest } from '@/types/dto/tasks.dto'
+import { CreateTaskRequest, CreateTaskRequestSchema, TaskResponse, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { ListViewTaskCard } from '@/components/cards/ListViewTaskCard'
 import { TaskRow } from '@/components/cards/TaskRow'
 import { ISignedUrlUpload, View } from '@/types/interfaces'
@@ -136,16 +136,26 @@ export const TaskBoard = ({
         >
           <NewTaskForm
             handleCreate={async () => {
-              store.dispatch(setShowModal())
-              const createdTask = await handleCreate({ title, body: description, workflowStateId, assigneeType, assigneeId })
-              const toUploadAttachments: CreateAttachmentRequest[] = attachments.map((el) => {
-                return {
-                  ...el,
-                  taskId: createdTask.id,
-                }
-              })
-              store.dispatch(clearCreateTaskFields())
-              await handleCreateMultipleAttachments(toUploadAttachments)
+              if (title) {
+                store.dispatch(setShowModal())
+                const createdTask = await handleCreate(
+                  CreateTaskRequestSchema.parse({
+                    title,
+                    body: description,
+                    workflowStateId,
+                    assigneeType,
+                    assigneeId,
+                  }),
+                )
+                const toUploadAttachments: CreateAttachmentRequest[] = attachments.map((el) => {
+                  return {
+                    ...el,
+                    taskId: createdTask.id,
+                  }
+                })
+                store.dispatch(clearCreateTaskFields())
+                await handleCreateMultipleAttachments(toUploadAttachments)
+              }
             }}
             getSignedUrlUpload={getSignedUrlUpload}
           />

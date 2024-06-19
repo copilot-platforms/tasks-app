@@ -21,7 +21,6 @@ export const ClientTaskCard = ({
   markdoneFlag: boolean
 }) => {
   const { assignee } = useSelector(selectTaskBoard)
-
   const currentAssignee = assignee.find((el) => el.id === task.assigneeId)
   return (
     <Box
@@ -42,7 +41,7 @@ export const ClientTaskCard = ({
               <Typography variant="bodySm">Apr 05, 2024</Typography>
             </Box>
 
-            <Stack direction="row" alignItems="center" minWidth="90px">
+            <Stack direction="row" alignItems="center" minWidth="90px" columnGap={2}>
               <Avatar
                 src={currentAssignee?.iconImageUrl || currentAssignee?.avatarImageUrl}
                 sx={{ width: '20px', height: '20px' }}
