@@ -21,6 +21,8 @@ import { useRouter } from 'next/navigation'
 import { selectCreateTemplate } from '@/redux/features/templateSlice'
 import { NoAssignee, NoAssigneeExtraOptions } from '@/utils/noAssignee'
 import ExtraOptionRendererAssignee from '@/components/inputs/ExtraOptionRendererAssignee'
+import { StyledContainer, TapWriteTaskEditor } from '../detail/ui/styledComponent'
+import { upload } from '@vercel/blob/client'
 
 export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
   const { workflowStates, assignee, token, filterOptions } = useSelector(selectTaskBoard)
@@ -215,7 +217,6 @@ export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
 
 const NewTaskFormInputs = () => {
   const { title, description } = useSelector(selectCreateTask)
-
   return (
     <>
       <Stack direction="column" rowGap={1}>
@@ -229,14 +230,17 @@ const NewTaskFormInputs = () => {
       </Stack>
       <Stack direction="column" rowGap={1} m="16px 0px">
         <Typography variant="md">Description</Typography>
-        <StyledTextField
-          type="text"
-          placeholder="Add description..."
-          multiline
-          rows={6}
-          inputProps={{ style: { resize: 'vertical' } }}
-          value={description}
-          onChange={(e) => store.dispatch(setCreateTaskFields({ targetField: 'description', value: e.target.value }))}
+        <TapWriteTaskEditor
+          uploadFn={async (file, tiptapEditorUtils) => {
+            const newBlob = await upload(file.name, file, {
+              access: 'public',
+              handleUploadUrl: '/api/upload',
+            })
+            tiptapEditorUtils.setImage(newBlob.url as string)
+          }}
+          content={description}
+          getContent={(content) => store.dispatch(setCreateTaskFields({ targetField: 'description', value: content }))}
+          isTextInput
         />
       </Stack>
     </>

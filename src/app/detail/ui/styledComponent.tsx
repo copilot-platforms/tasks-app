@@ -3,7 +3,7 @@
 import { MenuBox } from '@/components/inputs/MenuBox'
 import { EmojiIcon, ReplyIcon } from '@/icons'
 import { KeyboardArrowRight } from '@mui/icons-material'
-import { Box, Stack, Typography, styled } from '@mui/material'
+import { Box, Container, Stack, Typography, styled } from '@mui/material'
 import { Tapwrite } from 'tapwrite'
 
 export const StyledTypography = styled(Typography)(({ theme }) => ({
@@ -81,4 +81,27 @@ export const TapWriteComment = styled(Tapwrite)(({ theme }) => ({
 
 export const TapWriteTaskEditor = styled(Tapwrite)(({ theme }) => ({
   minHeight: '30vh',
+  fontSize: '20px',
 }))
+
+export const TapWriteTaskEditor1 = styled(Tapwrite)(({ theme }) => ({
+  minHeight: '20vh',
+  borderColor: theme.color.borders.border,
+  border: `1px solid ${theme.color.base.black}`,
+}))
+
+export const StyledContainer = styled('div')<{ padding?: string; borderColor?: string; borderLess?: boolean }>(
+  ({ padding, borderColor, borderLess, theme }) => ({
+    display: 'flex',
+    flexDirection: 'column',
+
+    padding: padding ? padding : '3px 8px 3px 0px',
+    borderColor: borderColor ? borderColor : theme.color.borders.border,
+    border: borderLess ? 'none' : `1px solid ${theme.color.borders.border}`,
+    '&:focus': {
+      borderColor: borderColor ? borderColor : theme.color.base.black,
+    },
+
+    backgroundColor: '#fff',
+  }),
+)

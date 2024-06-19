@@ -1692,7 +1692,7 @@
   resolved "https://registry.npmjs.org/@pkgjs/parseargs/-/parseargs-0.11.0.tgz"
   integrity sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==
 
-"@popperjs/core@^2.11.8":
+"@popperjs/core@^2.11.8", "@popperjs/core@^2.9.0":
   version "2.11.8"
   resolved "https://registry.npmjs.org/@popperjs/core/-/core-2.11.8.tgz"
   integrity sha512-P1st0aksCrn9sGZhp8GMYwBnQsbvAWsZAX44oXNNvLHGqAOcoVxmjZiohstwQ7SqKnbR47akdNi+uleWD8+g6A==
@@ -6146,10 +6146,12 @@ tapable@^2.2.0:
   resolved "https://registry.npmjs.org/tapable/-/tapable-2.2.1.tgz"
   integrity sha512-GNzQvQTOIP6RyTfE2Qxb8ZVlNmw0n88vp1szwWRimP02mnTsx3Wtn5qRdqY9w2XduFNUgvOwhNnQsjwCp+kqaQ==
 
-tapwrite@^1.0.16:
-  version "1.0.16"
-  resolved "https://registry.yarnpkg.com/tapwrite/-/tapwrite-1.0.16.tgz#fd64a02a6350838f92f663d1a2623d3409215b89"
-  integrity sha512-13iDvOS4p7dcJEIOFwRVIEzbK57IPMBoKxT2VDKs9cJx+l+vnf8NNIdKRAyaEF7LMfcFb6sMfev+AwHHPc2NSQ==
+tapwrite@^1.0.29:
+  version "1.0.29"
+  resolved "https://registry.yarnpkg.com/tapwrite/-/tapwrite-1.0.29.tgz#3131418fcf8b6d0714b96b24f327ce71f01c343f"
+  integrity sha512-dk/tq7v2EmXXJ4to0KJnPY1Xd6B0hs1eDrg7E8LkqgLB4GB033keKOegdicmY0CetiWEVMM/J27MRl3rGzEeNA==
+  dependencies:
+    tippy.js "^6.3.7"
 
 test-exclude@^6.0.0:
   version "6.0.0"
@@ -6178,6 +6180,13 @@ thenify-all@^1.0.0:
   integrity sha512-RVZSIV5IG10Hk3enotrhvz0T9em6cyHBLkH/YAZuKqd8hRkKhSfCGIcP2KUY0EPxndzANBmNllzWPwak+bheSw==
   dependencies:
     any-promise "^1.0.0"
+
+tippy.js@^6.3.7:
+  version "6.3.7"
+  resolved "https://registry.yarnpkg.com/tippy.js/-/tippy.js-6.3.7.tgz#8ccfb651d642010ed9a32ff29b0e9e19c5b8c61c"
+  integrity sha512-E1d3oP2emgJ9dRQZdf3Kkn0qJgI6ZLpyS5z6ZkY1DF3kaQaBsGZsndEpHwx+eC+tYM41HaSNvNtLx8tU57FzTQ==
+  dependencies:
+    "@popperjs/core" "^2.9.0"
 
 tmpl@1.0.5:
   version "1.0.5"
