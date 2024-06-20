@@ -4,13 +4,20 @@ import { Avatar, Box, IconButton, Stack, Typography } from '@mui/material'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { useState } from 'react'
 import store from '@/redux/store'
-import { setFilterOptions, setViewSettings } from '@/redux/features/taskBoardSlice'
+import { setFilterOptions, setFilteredAssgineeList, setViewSettings } from '@/redux/features/taskBoardSlice'
 import SearchBar from '@/components/searchBar'
 import Selector, { SelectorType } from '@/components/inputs/Selector'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { useSelector } from 'react-redux'
-import { FilterOptions, FilterOptionsKeywords, IAssigneeCombined, IFilterOptions, View } from '@/types/interfaces'
+import {
+  FilterByOptions,
+  FilterOptions,
+  FilterOptionsKeywords,
+  IAssigneeCombined,
+  IFilterOptions,
+  View,
+} from '@/types/interfaces'
 import { FilterByAsigneeIcon } from '@/icons'
 import { ViewModeSelector } from '../inputs/ViewModeSelector'
 import { FilterByAssigneeBtn } from '../buttons/FilterByAssigneeBtn'
@@ -22,11 +29,12 @@ import { NoAssigneeExtraOptions } from '@/utils/noAssignee'
 import ExtraOptionRendererAssignee from '@/components/inputs/ExtraOptionRendererAssignee'
 
 export const FilterBar = ({ updateViewModeSetting }: { updateViewModeSetting: (mode: View) => void }) => {
-  const { view, assignee, filterOptions } = useSelector(selectTaskBoard)
+  const { view, filteredAssigneeList, assignee, filterOptions } = useSelector(selectTaskBoard)
   const handleFilterOptionsChange = (optionType: FilterOptions, newValue: string | null) => {
     store.dispatch(setFilterOptions({ optionType, newValue }))
   }
   const [activeButtonIndex, setActiveButtonIndex] = useState<number>(3)
+  const [noAssigneOptionFlag, setNoAssigneeOptionFlag] = useState<boolean>(true)
   const { tokenPayload } = useSelector(selectAuthDetails)
 
   const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
@@ -41,6 +49,9 @@ export const FilterBar = ({ updateViewModeSetting }: { updateViewModeSetting: (m
       onClick: async (index: number) => {
         handleFilterOptionsChange(FilterOptions.TYPE, IUTokenSchema.parse(tokenPayload)?.internalUserId)
         setActiveButtonIndex(index)
+        handleFilterOptionsChange(FilterOptions.ASSIGNEE, '')
+        store.dispatch(setFilteredAssgineeList({ filteredType: FilterByOptions.NOFILTER }))
+        updateAssigneeValue(null)
       },
       id: 'MyTasks',
     },
@@ -49,6 +60,10 @@ export const FilterBar = ({ updateViewModeSetting }: { updateViewModeSetting: (m
       onClick: (index: number) => {
         handleFilterOptionsChange(FilterOptions.TYPE, FilterOptionsKeywords.TEAM)
         setActiveButtonIndex(index)
+        store.dispatch(setFilteredAssgineeList({ filteredType: FilterByOptions.IUS }))
+        handleFilterOptionsChange(FilterOptions.ASSIGNEE, '')
+        updateAssigneeValue(null)
+        setNoAssigneeOptionFlag(false)
       },
       id: 'TeamTasks',
     },
@@ -57,6 +72,10 @@ export const FilterBar = ({ updateViewModeSetting }: { updateViewModeSetting: (m
       onClick: (index: number) => {
         handleFilterOptionsChange(FilterOptions.TYPE, FilterOptionsKeywords.CLIENTS)
         setActiveButtonIndex(index)
+        store.dispatch(setFilteredAssgineeList({ filteredType: FilterByOptions.CLIENT }))
+        handleFilterOptionsChange(FilterOptions.ASSIGNEE, '')
+        updateAssigneeValue(null)
+        setNoAssigneeOptionFlag(false)
       },
       id: 'ClientTasks',
     },
@@ -65,11 +84,17 @@ export const FilterBar = ({ updateViewModeSetting }: { updateViewModeSetting: (m
       onClick: (index: number) => {
         handleFilterOptionsChange(FilterOptions.TYPE, '')
         setActiveButtonIndex(index)
+        store.dispatch(setFilteredAssgineeList({ filteredType: FilterByOptions.NOFILTER }))
+        handleFilterOptionsChange(FilterOptions.ASSIGNEE, '')
+        updateAssigneeValue(null)
+        setNoAssigneeOptionFlag(true)
       },
       id: 'AllTasks',
     },
   ]
+
   const assigneeValue = _assigneeValue as IAssigneeCombined
+
   return (
     <Box>
       <Box
@@ -97,24 +122,26 @@ export const FilterBar = ({ updateViewModeSetting }: { updateViewModeSetting: (m
                     getSelectedValue={(_newValue) => {
                       const newValue = _newValue as IAssigneeCombined
                       updateAssigneeValue(newValue)
-                      handleFilterOptionsChange(FilterOptions.ASSIGNEE, newValue.id as string)
+                      handleFilterOptionsChange(FilterOptions.ASSIGNEE, newValue?.id as string)
                     }}
                     startIcon={<FilterByAsigneeIcon />}
-                    options={assignee}
+                    options={filteredAssigneeList}
                     placeholder="Assignee"
                     value={assigneeValue}
                     selectorType={SelectorType.ASSIGNEE_SELECTOR}
                     extraOption={NoAssigneeExtraOptions}
                     extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
                       return (
-                        <ExtraOptionRendererAssignee
-                          props={props}
-                          onClick={(e) => {
-                            updateAssigneeValue({ id: '', name: 'No assignee' })
-                            setAnchorEl(anchorEl ? null : e.currentTarget)
-                            handleFilterOptionsChange(FilterOptions.ASSIGNEE, 'none')
-                          }}
-                        />
+                        noAssigneOptionFlag && (
+                          <ExtraOptionRendererAssignee
+                            props={props}
+                            onClick={(e) => {
+                              updateAssigneeValue({ id: '', name: 'No assignee' })
+                              setAnchorEl(anchorEl ? null : e.currentTarget)
+                              handleFilterOptionsChange(FilterOptions.ASSIGNEE, 'none')
+                            }}
+                          />
+                        )
                       )
                     }}
                     buttonContent={
@@ -168,7 +195,7 @@ export const FilterBar = ({ updateViewModeSetting }: { updateViewModeSetting: (m
               handleFilterOptionsChange(FilterOptions.ASSIGNEE, newValue.id as string)
             }}
             startIcon={<FilterByAsigneeIcon />}
-            options={assignee}
+            options={filteredAssigneeList}
             placeholder="Assignee"
             value={assigneeValue}
             selectorType={SelectorType.ASSIGNEE_SELECTOR}
