@@ -58,7 +58,10 @@ export const CommentCard = ({
       parentId: commentAddedResponseSchema.parse(comment.details).id,
       mentions: getMentionsList(detail),
     }
-    createComment(replyPayload)
+    if (detail) {
+      createComment(replyPayload)
+      setDetail('')
+    }
   }
 
   return (
@@ -124,7 +127,7 @@ export const CommentCard = ({
             <Stack direction="row" columnGap={1} alignItems="flex-start">
               <Avatar alt="user" src={''} sx={{ width: '20px', height: '20px', marginTop: '5px' }} />
               <TapWriteReplyInput
-                content={''}
+                content={detail}
                 getContent={setDetail}
                 placeholder="Leave a reply..."
                 suggestions={assigneeSuggestions}
