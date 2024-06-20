@@ -6146,10 +6146,10 @@ tapable@^2.2.0:
   resolved "https://registry.npmjs.org/tapable/-/tapable-2.2.1.tgz"
   integrity sha512-GNzQvQTOIP6RyTfE2Qxb8ZVlNmw0n88vp1szwWRimP02mnTsx3Wtn5qRdqY9w2XduFNUgvOwhNnQsjwCp+kqaQ==
 
-tapwrite@^1.0.16:
-  version "1.0.16"
-  resolved "https://registry.yarnpkg.com/tapwrite/-/tapwrite-1.0.16.tgz#fd64a02a6350838f92f663d1a2623d3409215b89"
-  integrity sha512-13iDvOS4p7dcJEIOFwRVIEzbK57IPMBoKxT2VDKs9cJx+l+vnf8NNIdKRAyaEF7LMfcFb6sMfev+AwHHPc2NSQ==
+tapwrite@^1.0.17:
+  version "1.0.17"
+  resolved "https://registry.yarnpkg.com/tapwrite/-/tapwrite-1.0.17.tgz#f040e3d4a28d094d79575c8cae88b18ef47cfbf0"
+  integrity sha512-+utGYkutTM8WNgON014d8UwE/9Q399E6uMaGY76xeZuq2vuVur9RnxD+Dup4aA7UoIHWCAHvMfSesFPcjsZoeQ==
 
 test-exclude@^6.0.0:
   version "6.0.0"

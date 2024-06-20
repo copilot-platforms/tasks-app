@@ -76,6 +76,7 @@ export const theme = createTheme({
       bgCard: '#DFE1E4',
       bgCallout: '#F8F9FB',
     },
+    error: '#CC0000',
   },
   typography: {
     fontFamily: inter.style.fontFamily,
