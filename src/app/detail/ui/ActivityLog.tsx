@@ -4,15 +4,10 @@ import { getTimeDifference } from '@/utils/getTimeDifference'
 import { LogResponse } from '@/app/api/activity-logs/schemas/LogResponseSchema'
 import { TaskAssignedResponse, TaskAssignedResponseSchema } from '@/app/api/activity-logs/schemas/TaskAssignedSchema'
 import { WorkflowStateUpdatedSchema } from '@/app/api/activity-logs/schemas/WorkflowStateUpdatedSchema'
+import { ActivityType } from '@prisma/client'
 
 interface Prop {
   log: LogResponse
-}
-
-enum LogType {
-  TASK_CREATED = 'TASK_CREATED',
-  TASK_ASSIGNED = 'TASK_ASSIGNED',
-  WORKFLOW_STATE_UPDATED = 'WORKFLOW_STATE_UPDATED',
 }
 
 const getAssignedToName = (details: TaskAssignedResponse) => {
@@ -25,24 +20,24 @@ const getAssignedToName = (details: TaskAssignedResponse) => {
 
 export const ActivityLog = ({ log }: Prop) => {
   const logEntities =
-    log.type == LogType.WORKFLOW_STATE_UPDATED
+    log.type == ActivityType.WORKFLOW_STATE_UPDATED
       ? [
           WorkflowStateUpdatedSchema.parse(log.details)?.oldWorkflowState?.name,
           WorkflowStateUpdatedSchema.parse(log.details)?.newWorkflowState?.name,
         ]
-      : log.type == LogType.TASK_ASSIGNED
+      : log.type == ActivityType.TASK_ASSIGNED
         ? [getAssignedToName(TaskAssignedResponseSchema.parse(log.details))]
         : []
 
-  const activityDescription: { [key in LogType]: (...args: string[]) => React.ReactNode } = {
-    [LogType.TASK_CREATED]: () => <StyledTypography> created task. </StyledTypography>,
-    [LogType.TASK_ASSIGNED]: (to: string) => (
+  const activityDescription: { [key in ActivityType]: (...args: string[]) => React.ReactNode } = {
+    [ActivityType.TASK_CREATED]: () => <StyledTypography> created task. </StyledTypography>,
+    [ActivityType.TASK_ASSIGNED]: (to: string) => (
       <>
         <StyledTypography> assigned task to </StyledTypography>
         <BoldTypography>{to}.</BoldTypography>
       </>
     ),
-    [LogType.WORKFLOW_STATE_UPDATED]: (from: string, to: string) => (
+    [ActivityType.WORKFLOW_STATE_UPDATED]: (from: string, to: string) => (
       <>
         <StyledTypography> changed status from </StyledTypography>
         <BoldTypography>{from}</BoldTypography>
@@ -50,6 +45,7 @@ export const ActivityLog = ({ log }: Prop) => {
         <BoldTypography>{to}.</BoldTypography>
       </>
     ),
+    [ActivityType.COMMENT_ADDED]: () => null,
   }
 
   return (
@@ -60,7 +56,7 @@ export const ActivityLog = ({ log }: Prop) => {
         <BoldTypography>
           {log.initiator.givenName} {log.initiator.familyName}
         </BoldTypography>
-        {activityDescription[log.type as LogType](...logEntities)}
+        {activityDescription[log.type as ActivityType](...logEntities)}
       </Stack>
       <StyledTypography> {getTimeDifference(log.createdAt)}</StyledTypography>
     </Stack>

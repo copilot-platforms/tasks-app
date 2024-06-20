@@ -20,6 +20,7 @@ import { ActivityLog } from '@/app/detail/ui/ActivityLog'
 import { Comments } from '@/app/detail/ui/Comments'
 import { CommentInput } from '@/components/inputs/CommentInput'
 import { LogResponse } from '@/app/api/activity-logs/schemas/LogResponseSchema'
+import { ActivityType } from '@prisma/client'
 
 export const revalidate = 0
 
@@ -147,7 +148,11 @@ export default async function TaskDetailPage({
                       }}
                       key={item.id}
                     >
-                      {item.activityType == 'COMMENT_ADDED' ? <Comments comment={item} /> : <ActivityLog log={item} />}
+                      {item.activityType == ActivityType.COMMENT_ADDED ? (
+                        <Comments comment={item} />
+                      ) : (
+                        <ActivityLog log={item} />
+                      )}
                     </Box>
                   )
                 })}
