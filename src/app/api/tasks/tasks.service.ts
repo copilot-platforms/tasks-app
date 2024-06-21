@@ -152,18 +152,18 @@ export class TasksService extends BaseService {
     })
     if (!prevTask) throw new APIError(httpStatus.NOT_FOUND, 'The requested task was not found')
 
-    // let label: string = prevTask.label
-    // //generate new label if prevTask has no assignee but now assigned to someone
-    // if (!prevTask.assigneeId && data.assigneeId) {
-    //   const labelMappingService = new LabelMapping(this.user)
-    //   label = z.string().parse(await labelMappingService.getLabel(data.assigneeId, data.assigneeType))
-    // }
+    let label: string = prevTask.label
+    //generate new label if prevTask has no assignee but now assigned to someone
+    if (!prevTask.assigneeId && data.assigneeId) {
+      const labelMappingService = new LabelMapping(this.user)
+      label = z.string().parse(await labelMappingService.getLabel(data.assigneeId, data.assigneeType))
+    }
     // Get the updated task
     const updatedTask = await this.db.task.update({
       where: { id },
       data: {
         ...data,
-        label: generateRandomString('hi'),
+        label,
         ...(await getTaskTimestamps('update', this.user, data, prevTask)),
       },
       include: { workflowState: true },
