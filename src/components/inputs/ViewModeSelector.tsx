@@ -1,10 +1,10 @@
 import { BoardViewIcon, ListViewIcon } from '@/icons'
-import { View } from '@/types/interfaces'
 import { Stack, styled } from '@mui/material'
+import { ViewMode } from '@prisma/client'
 
 interface Prop {
-  handleModeChange: (mode: View) => void
-  selectedMode: View
+  handleModeChange: (mode: ViewMode) => void
+  selectedMode: ViewMode
 }
 
 export const ViewModeSelector = ({ handleModeChange, selectedMode }: Prop) => {
@@ -23,9 +23,9 @@ export const ViewModeSelector = ({ handleModeChange, selectedMode }: Prop) => {
         justifyContent="center"
         alignItems="center"
         sx={{
-          backgroundColor: selectedMode === View.LIST_VIEW ? '#E8EBF1' : '',
+          backgroundColor: selectedMode === ViewMode.list ? '#E8EBF1' : '',
         }}
-        onClick={() => handleModeChange(View.LIST_VIEW)}
+        onClick={() => handleModeChange(ViewMode.list)}
       >
         <ListViewIcon />
       </IconContainer>
@@ -34,9 +34,9 @@ export const ViewModeSelector = ({ handleModeChange, selectedMode }: Prop) => {
         justifyContent="center"
         alignItems="center"
         sx={{
-          backgroundColor: selectedMode === View.BOARD_VIEW ? '#E8EBF1' : '',
+          backgroundColor: selectedMode === ViewMode.board ? '#E8EBF1' : '',
         }}
-        onClick={() => handleModeChange(View.BOARD_VIEW)}
+        onClick={() => handleModeChange(ViewMode.board)}
       >
         <BoardViewIcon />
       </IconContainer>
