@@ -1,5 +1,8 @@
+'use server'
+
 import { apiUrl } from '@/config'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
+import { CreateComment } from '@/types/dto/comment.dto'
 import { revalidateTag } from 'next/cache'
 import { redirect } from 'next/navigation'
 
@@ -12,6 +15,7 @@ export const updateTaskDetail = async (token: string, task_id: string, title: st
     }),
   })
   revalidateTag('getAllTasks')
+  revalidateTag('getActivities')
 }
 
 export const updateAssignee = async (
@@ -29,6 +33,7 @@ export const updateAssignee = async (
   })
   revalidateTag('getOneTask')
   revalidateTag('getAllTasks')
+  revalidateTag('getActivities')
 }
 
 export const deleteTask = async (token: string, task_id: string) => {
@@ -52,4 +57,19 @@ export const deleteAttachment = async (token: string, id: string) => {
     method: 'DELETE',
   })
   revalidateTag('getAttachments')
+}
+
+export const postComment = async (token: string, payload: CreateComment) => {
+  await fetch(`${apiUrl}/api/comment?token=${token}`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+  revalidateTag('getActivities')
+}
+
+export const deleteComment = async (token: string, id: string) => {
+  await fetch(`${apiUrl}/api/comment/${id}?token=${token}`, {
+    method: 'DELETE',
+  })
+  revalidateTag('getActivities')
 }

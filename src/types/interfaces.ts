@@ -17,12 +17,6 @@ export enum View {
   BOARD_VIEW = 'board',
 }
 
-export enum ActivityType {
-  CREATE_TASK = 'CREATE_TASK',
-  ASSIGN_TASK = 'ASSIGN_TASK',
-  WORKFLOWSTATE_UPDATE = 'WORKFLOWSTATE_UPDATE',
-}
-
 export enum FileTypes {
   PNG = 'image/png',
   PDF = 'application/pdf',
@@ -118,6 +112,11 @@ export interface IAssigneeCombined {
   name?: string
   iconImageUrl?: string
   fallbackColor?: string
+}
+
+export interface IAssigneeSuggestions {
+  id: string
+  label: string
 }
 
 export interface ITemplate {

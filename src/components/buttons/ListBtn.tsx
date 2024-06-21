@@ -1,6 +1,6 @@
 'use client'
 
-import { Box, Stack, Typography } from '@mui/material'
+import { Box, Stack, Theme, Typography } from '@mui/material'
 import { ReactNode } from 'react'
 
 export const ListBtn = ({
@@ -12,7 +12,7 @@ export const ListBtn = ({
   content: string
   handleClick: () => void
   icon: ReactNode
-  contentColor: string
+  contentColor: string | ((theme: Theme) => string)
 }) => {
   return (
     <Box

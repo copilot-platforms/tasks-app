@@ -3,7 +3,7 @@
 import { MenuBox } from '@/components/inputs/MenuBox'
 import { EmojiIcon, ReplyIcon } from '@/icons'
 import { KeyboardArrowRight } from '@mui/icons-material'
-import { Box, Stack, Typography, styled } from '@mui/material'
+import { Box, Container, Stack, Typography, styled } from '@mui/material'
 import { Tapwrite } from 'tapwrite'
 
 export const StyledTypography = styled(Typography)(({ theme }) => ({
@@ -14,6 +14,12 @@ export const StyledTypography = styled(Typography)(({ theme }) => ({
 export const BoldTypography = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[700],
   fontSize: theme.typography.md.fontSize,
+}))
+
+export const TypographyContainer = styled(Stack)(({ theme }) => ({
+  display: 'flex',
+  flexWrap: 'wrap',
+  alignItems: 'center',
 }))
 
 export const StyledKeyboardIcon = styled(KeyboardArrowRight)(({ theme }) => ({
@@ -81,4 +87,11 @@ export const TapWriteComment = styled(Tapwrite)(({ theme }) => ({
 
 export const TapWriteTaskEditor = styled(Tapwrite)(({ theme }) => ({
   minHeight: '30vh',
+  fontSize: '20px',
+}))
+
+export const TapWriteTaskEditor1 = styled(Tapwrite)(({ theme }) => ({
+  minHeight: '20vh',
+  borderColor: theme.color.borders.border,
+  border: `1px solid ${theme.color.base.black}`,
 }))

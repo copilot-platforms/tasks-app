@@ -121,6 +121,7 @@ export const InternalUsersSchema = z.object({
   givenName: z.string(),
   familyName: z.string(),
   email: z.string().email(),
+  avatarImageUrl: z.string().optional(),
 })
 export type InternalUsers = z.infer<typeof InternalUsersSchema>
 

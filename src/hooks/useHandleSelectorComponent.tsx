@@ -32,6 +32,7 @@ export const useHandleSelectorComponent = ({ item, type }: { item: unknown; type
         }),
       )
     }
+    setRenderingItem(item)
   }, [type, item])
 
   return {

@@ -10,6 +10,7 @@ import { AttachmentsService } from '@api/attachments/attachments.service'
 import httpStatus from 'http-status'
 import { IdParams } from '@api/core/types/api'
 import APIError from '../core/exceptions/api'
+import { unstable_noStore as noStore } from 'next/cache'
 
 export const createAttachment = async (req: NextRequest) => {
   const user = await authenticate(req)
@@ -19,7 +20,16 @@ export const createAttachment = async (req: NextRequest) => {
   return NextResponse.json({ newAttachment }, { status: httpStatus.CREATED })
 }
 
+export const createMultipleAttachments = async (req: NextRequest) => {
+  const user = await authenticate(req)
+  const body = await req.json()
+  const attachmentsService = new AttachmentsService(user)
+  const newAttachments = await attachmentsService.createMultipleAttachments(body)
+  return NextResponse.json({ newAttachments }, { status: httpStatus.CREATED })
+}
+
 export const getAttachments = async (req: NextRequest) => {
+  noStore()
   const taskId = req.nextUrl.searchParams.get('taskId')
   if (!taskId) {
     throw new APIError(httpStatus.BAD_REQUEST, 'taskId is required')

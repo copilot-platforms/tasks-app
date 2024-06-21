@@ -1,8 +1,9 @@
+export const fetchCache = 'force-no-store'
+
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { TaskEditor } from '@/app/detail/ui/TaskEditor'
 import { Box, Stack, Typography } from '@mui/material'
 import { Sidebar } from '@/app/detail/ui/Sidebar'
-import { activities, taskDetail } from '@/utils/mockData'
 import { IAssignee, UserType } from '@/types/interfaces'
 import { apiUrl } from '@/config'
 import { TaskResponse } from '@/types/dto/tasks.dto'
@@ -11,7 +12,15 @@ import { StyledBox, StyledKeyboardIcon, StyledTypography } from '@/app/detail/ui
 import Link from 'next/link'
 import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
-import { deleteAttachment, deleteTask, postAttachment, updateAssignee, updateTaskDetail } from './actions'
+import {
+  deleteAttachment,
+  deleteComment,
+  deleteTask,
+  postAttachment,
+  postComment,
+  updateAssignee,
+  updateTaskDetail,
+} from '@/app/detail/[task_id]/[user_type]/actions'
 import { updateTask, updateWorkflowStateIdOfTask } from '@/app/actions'
 import { MenuBoxContainer } from '@/app/detail/ui/MenuBoxContainer'
 import { ToggleButtonContainer } from '@/app/detail/ui/ToggleButtonContainer'
@@ -20,12 +29,15 @@ import { AttachmentResponseSchema } from '@/types/dto/attachments.dto'
 import { ActivityLog } from '@/app/detail/ui/ActivityLog'
 import { Comments } from '@/app/detail/ui/Comments'
 import { CommentInput } from '@/components/inputs/CommentInput'
-
-export const revalidate = 0
+import { LogResponse } from '@/app/api/activity-logs/schemas/LogResponseSchema'
+import { ActivityType } from '@prisma/client'
+import { CreateComment } from '@/types/dto/comment.dto'
+import { CopilotAPI } from '@/utils/CopilotAPI'
+import { Token, TokenSchema } from '@/types/common'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
-    next: { tags: ['getOneTask'], revalidate: 0 },
+    next: { tags: ['getOneTask'] },
   })
 
   const data = await res.json()
@@ -35,7 +47,7 @@ async function getOneTask(token: string, taskId: string): Promise<TaskResponse> 
 
 async function getAssigneeList(token: string): Promise<IAssignee> {
   const res = await fetch(`${apiUrl}/api/users?token=${token}`, {
-    next: { tags: ['getAssigneeList'], revalidate: 0 },
+    next: { tags: ['getAssigneeList'] },
   })
 
   const data = await res.json()
@@ -45,7 +57,7 @@ async function getAssigneeList(token: string): Promise<IAssignee> {
 
 async function getAttachments(token: string, taskId: string): Promise<AttachmentResponseSchema[]> {
   const res = await fetch(`${apiUrl}/api/attachments/?taskId=${taskId}&token=${token}`, {
-    next: { tags: ['getAttachments'], revalidate: 0 },
+    next: { tags: ['getAttachments'] },
   })
   const data = await res.json()
 
@@ -58,6 +70,12 @@ async function getSignedUrlUpload(token: string, fileName: string) {
   return data.signedUrl
 }
 
+async function getActivities(token: string, taskId: string): Promise<LogResponse[]> {
+  const res = await fetch(`${apiUrl}/api/tasks/${taskId}/activity-logs/?token=${token}`)
+  const data = await res.json()
+  return data.data
+}
+
 export default async function TaskDetailPage({
   params,
   searchParams,
@@ -67,12 +85,26 @@ export default async function TaskDetailPage({
 }) {
   const { token } = searchParams
   const { task_id } = params
+  const copilotClient = new CopilotAPI(token)
 
-  const task = await getOneTask(token, task_id)
-  const assignee = addTypeToAssignee(await getAssigneeList(token))
-  const attachments = await getAttachments(token, task_id)
+  const [task, assignee, attachments, activities, tokenPayload] = await Promise.all([
+    getOneTask(token, task_id),
+    addTypeToAssignee(await getAssigneeList(token)),
+    getAttachments(token, task_id),
+    getActivities(token, task_id),
+    copilotClient.getTokenPayload(),
+  ])
+  const AssigneeSuggestions = assignee.map((item) => ({
+    id: item.id,
+    label: item?.name ?? `${item.givenName} ${item.familyName}`,
+  }))
+
+  if (!tokenPayload) {
+    throw new Error('Token cannot be found')
+  }
+
   return (
-    <ClientSideStateUpdate assignee={assignee}>
+    <ClientSideStateUpdate assignee={assignee} tokenPayload={tokenPayload} assigneeSuggestions={AssigneeSuggestions}>
       <Stack direction="row">
         <ToggleController>
           <StyledBox>
@@ -83,7 +115,7 @@ export default async function TaskDetailPage({
                     <SecondaryBtn buttonContent={<StyledTypography variant="sm">Tasks</StyledTypography>} enableBackground />
                   </Link>
                   <StyledKeyboardIcon />
-                  <Typography variant="sm">{params.task_id.toLocaleUpperCase()}</Typography>
+                  <Typography variant="sm">{task.label}</Typography>
                 </Stack>
                 <Stack direction="row" alignItems="center" columnGap="8px">
                   {params.user_type === UserType.INTERNAL_USER && <MenuBoxContainer />}
@@ -130,7 +162,7 @@ export default async function TaskDetailPage({
             <Stack direction="column" alignItems="left" p="10px 5px" rowGap={5}>
               <Typography variant="xl">Activity</Typography>
               <Stack direction="column" alignItems="left" p="10px 5px" rowGap={4}>
-                {activities.map((item: any, index: number) => {
+                {activities?.map((item: LogResponse, index: number) => {
                   return (
                     <Box
                       sx={{
@@ -139,12 +171,33 @@ export default async function TaskDetailPage({
                       }}
                       key={item.id}
                     >
-                      {item.activityType ? <ActivityLog log={item} /> : <Comments comment={item} />}
+                      {item.type == ActivityType.COMMENT_ADDED ? (
+                        <Comments
+                          comment={item}
+                          createComment={async (postCommentPayload: CreateComment) => {
+                            'use server'
+                            await postComment(token, postCommentPayload)
+                          }}
+                          deleteComment={async (id: string) => {
+                            'use server'
+                            await deleteComment(token, id)
+                          }}
+                          task_id={task_id}
+                        />
+                      ) : (
+                        <ActivityLog log={item} />
+                      )}
                     </Box>
                   )
                 })}
 
-                <CommentInput />
+                <CommentInput
+                  createComment={async (postCommentPayload: CreateComment) => {
+                    'use server'
+                    await postComment(token, postCommentPayload)
+                  }}
+                  task_id={task_id}
+                />
               </Stack>
             </Stack>
           </AppMargin>

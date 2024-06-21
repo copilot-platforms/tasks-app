@@ -46,6 +46,7 @@ model WorkflowState {
 
 model Task {
   id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  label           String        @unique
   workspaceId     String        @db.VarChar(32)
   assigneeId      String?       @db.Uuid
   assigneeType    AssigneeType?
@@ -91,6 +92,7 @@ model ViewSetting {
   viewMode    ViewMode  @default(board)
   workspaceId String    @db.VarChar(32)
   deletedAt   DateTime?
+  filterOptions Json     @db.JsonB
 
   @@unique([userId, workspaceId], name: "UQ_ViewSettings_userId_workspaceId")
   @@index([userId, workspaceId], name: "IX_ViewSettings_userId_workspaceId")
@@ -151,4 +153,15 @@ model Comment {
   deletedAt   DateTime?    @db.Timestamptz()
 
   @@map("Comments")
+}
+
+model Label {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  label          String    @unique
+  labelledEntity String
+  createdAt      DateTime  @default(now()) @db.Timestamptz()
+  updatedAt      DateTime  @updatedAt @db.Timestamptz()
+  deletedAt      DateTime? @db.Timestamptz()
+
+  @@map("Labels")
 }
