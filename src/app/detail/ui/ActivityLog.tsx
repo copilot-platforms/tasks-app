@@ -50,7 +50,7 @@ export const ActivityLog = ({ log }: Prop) => {
   return (
     <Stack direction="row" columnGap={4} position="relative">
       <VerticalLine />
-      <Avatar alt="user" src={''} sx={{ width: '25px', height: '25px' }} />
+      <Avatar alt="user" src={log?.initiator?.avatarImageUrl || ''} sx={{ width: '25px', height: '25px' }} />
       <Stack direction="row" columnGap={1}>
         <BoldTypography>
           {log.initiator.givenName} {log.initiator.familyName}
