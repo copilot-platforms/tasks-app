@@ -9,7 +9,7 @@ export class LabelMapping extends BaseService {
    * This method returns the computed label
    * @param assigneeId
    * @param assigneeType
-   * @returns string
+   * @returns string | null
    */
   async getLabel(assigneeId: string | null | undefined, assigneeType: string | null | undefined) {
     if (!assigneeId) {
