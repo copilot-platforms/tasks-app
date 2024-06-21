@@ -1,10 +1,10 @@
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { BaseService } from '@api/core/services/base.service'
 import { AssigneeType, Task } from '@prisma/client'
-import { NotificationTaskActions } from '../core/types/tasks'
+import { NotificationTaskActions } from '@api/core/types/tasks'
 import { z } from 'zod'
 import { CompanyResponse, CopilotUser, MeResponse } from '@/types/common'
-import { getEmailDetails, getInProductNotificationDetails } from './notification.helpers'
+import { getEmailDetails, getInProductNotificationDetails } from '@api/notification/notification.helpers'
 
 export class NotificationService extends BaseService {
   async create(action: NotificationTaskActions, task: Task) {
@@ -32,8 +32,11 @@ export class NotificationService extends BaseService {
     try {
       const copilotUtils = new CopilotAPI(this.user.token)
       const userInfo = await copilotUtils.me()
-      const senderId = z.string().parse(userInfo?.id)
-      const actionUserName = `${userInfo?.givenName} ${userInfo?.familyName}`
+      if (!userInfo) {
+        throw new Error(`User not found for token ${this.user.token}`)
+      }
+      const senderId = z.string().parse(userInfo.id)
+      const actionUserName = `${userInfo.givenName} ${userInfo.familyName}`
 
       const promises = recipientIds.map((recipientId) => {
         const notificationDetails = {
@@ -55,7 +58,9 @@ export class NotificationService extends BaseService {
   }
 
   /**
-   * Get the concerned sender and receiver for a notification based on the action that triggered it
+   * Get the concerned sender and receiver for a notification based on the action that triggered it. There are various actions
+   * defined by NotificationTaskActions. This method returns the senderId, receiverId, and actionUser (user that is creating the notification action)
+   * based on the NotificationTaskActions.
    */
   private async getNotificationParties(copilot: CopilotAPI, task: Task, action: NotificationTaskActions) {
     let senderId: string

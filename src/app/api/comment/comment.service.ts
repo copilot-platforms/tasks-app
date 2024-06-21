@@ -5,10 +5,10 @@ import { UserAction } from '@api/core/types/user'
 import { Resource } from '@api/core/types/api'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { ActivityLogger } from '@api/activity-logs/services/activity-logger.service'
-import { ActivityType, Task } from '@prisma/client'
+import { ActivityType } from '@prisma/client'
 import { CommentAddedSchema } from '@api/activity-logs/schemas/CommentAddedSchema'
-import { NotificationService } from '../notification/notification.service'
-import { NotificationTaskActions } from '../core/types/tasks'
+import { NotificationService } from '@api/notification/notification.service'
+import { NotificationTaskActions } from '@api/core/types/tasks'
 
 export class CommentService extends BaseService {
   async create(data: CreateComment) {
@@ -49,14 +49,17 @@ export class CommentService extends BaseService {
           id: data.taskId,
         },
       })
-      if (task) {
-        const notificationService = new NotificationService(this.user)
-        if (task?.assigneeId) {
-          await notificationService.create(NotificationTaskActions.Commented, task)
-        }
-        if (data.mentions) {
-          await notificationService.createBulkNotification(NotificationTaskActions.Mentioned, task, data.mentions)
-        }
+
+      if (!task) {
+        throw new Error(`Notification not created because task not found with id: ${data.taskId}`)
+      }
+
+      const notificationService = new NotificationService(this.user)
+      if (task.assigneeId) {
+        await notificationService.create(NotificationTaskActions.Commented, task)
+      }
+      if (data.mentions) {
+        await notificationService.createBulkNotification(NotificationTaskActions.Mentioned, task, data.mentions)
       }
     }
 

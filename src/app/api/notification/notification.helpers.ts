@@ -1,10 +1,16 @@
-import { NotificationTaskActions } from '../core/types/tasks'
+import { NotificationTaskActions } from '@api/core/types/tasks'
 
 /**
  * Helper function that sets the in-product notification title and body for a given notification trigger
- * @param actionUser The user's name that triggered this action.
+ * @param {string} actionUser - The user's name that triggered this action.
+ * @param {string} [taskName] - The optional task name for which the mention is triggered.
+ * @returns {Object} An object with notification actions as keys and their corresponding title and body as values.
+ * @returns {Object.<NotificationTaskActions, {title: string, body: string}>} - The notification details.
  */
-export const getInProductNotificationDetails = (actionUser: string, taskName?: string) => {
+export const getInProductNotificationDetails = (
+  actionUser: string,
+  taskName?: string,
+): { [key in NotificationTaskActions]: { title: string; body: string } } => {
   return {
     [NotificationTaskActions.Assigned]: {
       title: 'Task was assigned to you',
@@ -26,11 +32,16 @@ export const getInProductNotificationDetails = (actionUser: string, taskName?: s
 }
 
 /**
- * Helper function that sets the notification email details for a given notification trigger
- * @param actionUser The user's name that triggered this action.
- * TODO: Right now its the same as in-product details, change this after finalizing email details
+ * Helper function that sets the notification email details for a given notification trigger.
+ * @param {string} actionUser - The user's name that triggered this action.
+ * @param {string} [taskName] - The optional task name for which the mention is triggered.
+ * @returns {object} - The email notification details.
+ * @todo Right now its the same as in-product details, change this after finalizing email details.
  */
-export const getEmailDetails = (actionUser: string, taskName?: string) => {
+export const getEmailDetails = (
+  actionUser: string,
+  taskName?: string,
+): { [key in NotificationTaskActions]: { title: string; subject: string; header: string; body: string } } => {
   return {
     [NotificationTaskActions.Assigned]: {
       title: 'Task was assigned to you',

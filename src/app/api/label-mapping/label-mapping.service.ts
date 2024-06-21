@@ -1,5 +1,5 @@
 import { AssigneeType } from '@prisma/client'
-import { BaseService } from '../core/services/base.service'
+import { BaseService } from '@api/core/services/base.service'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { z } from 'zod'
 import { LabelMapping as PrismaLabelMapping } from '@prisma/client'

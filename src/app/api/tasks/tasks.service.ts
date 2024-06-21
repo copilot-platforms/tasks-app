@@ -12,11 +12,9 @@ import { ActivityLogger } from '@api/activity-logs/services/activity-logger.serv
 import { TaskCreatedSchema } from '@api/activity-logs/schemas/TaskCreatedSchema'
 import { TaskAssignedSchema } from '@api/activity-logs/schemas/TaskAssignedSchema'
 import { WorkflowStateUpdatedSchema } from '@api/activity-logs/schemas/WorkflowStateUpdatedSchema'
-import { NotificationService } from '../notification/notification.service'
-import { LabelMapping } from '../label-mapping/label-mapping.service'
+import { NotificationService } from '@api/notification/notification.service'
+import { LabelMapping } from '@api/label-mapping/label-mapping.service'
 import { z } from 'zod'
-import { generateRandomString } from '@/utils/generateRandomString'
-import { generatePrime, randomUUID } from 'crypto'
 
 type FilterByAssigneeId = {
   assigneeId: string
