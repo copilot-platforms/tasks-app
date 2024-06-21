@@ -5,13 +5,19 @@ import Selector from '@/components/inputs/Selector'
 import { StyledTextField } from '@/components/inputs/TextField'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { ArrowLinkIcon, AttachmentIcon, TemplateIcon, TemplateIconSm } from '@/icons'
-import { clearCreateTaskFields, selectCreateTask, setCreateTaskFields, setShowModal } from '@/redux/features/createTaskSlice'
+import {
+  clearCreateTaskFields,
+  removeOneAttachment,
+  selectCreateTask,
+  setCreateTaskFields,
+  setShowModal,
+} from '@/redux/features/createTaskSlice'
 import store from '@/redux/store'
 import { statusIcons } from '@/utils/iconMatcher'
 import { Close } from '@mui/icons-material'
 import { Avatar, Box, Stack, Typography, styled } from '@mui/material'
-import { ReactNode, useEffect } from 'react'
-import { FilterOptions, IAssigneeCombined, ITemplate } from '@/types/interfaces'
+import React, { ReactNode, useEffect } from 'react'
+import { FilterOptions, IAssigneeCombined, ISignedUrlUpload, ITemplate } from '@/types/interfaces'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { useSelector } from 'react-redux'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
@@ -21,10 +27,22 @@ import { useRouter } from 'next/navigation'
 import { selectCreateTemplate } from '@/redux/features/templateSlice'
 import { NoAssignee, NoAssigneeExtraOptions } from '@/utils/noAssignee'
 import ExtraOptionRendererAssignee from '@/components/inputs/ExtraOptionRendererAssignee'
+import { AttachmentInput } from '@/components/inputs/AttachmentInput'
+import { SupabaseActions } from '@/utils/SupabaseActions'
+import { generateRandomString } from '@/utils/generateRandomString'
+import { AttachmentCard } from '@/components/cards/AttachmentCard'
+import { bulkRemoveAttachments } from '@/utils/bulkRemoveAttachments'
 
-export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
+const supabaseActions = new SupabaseActions()
+
+export const NewTaskForm = ({
+  handleCreate,
+  getSignedUrlUpload,
+}: {
+  handleCreate: () => void
+  getSignedUrlUpload: (fileName: string) => Promise<ISignedUrlUpload>
+}) => {
   const { workflowStates, assignee, token, filterOptions } = useSelector(selectTaskBoard)
-
   const { templates } = useSelector(selectCreateTemplate)
 
   const { renderingItem: _statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
@@ -208,13 +226,13 @@ export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {
           </Stack>
         </Stack>
       </AppMargin>
-      <NewTaskFooter handleCreate={handleCreate} />
+      <NewTaskFooter handleCreate={handleCreate} getSignedUrlUpload={getSignedUrlUpload} />
     </NewTaskContainer>
   )
 }
 
 const NewTaskFormInputs = () => {
-  const { title, description } = useSelector(selectCreateTask)
+  const { title, description, attachments } = useSelector(selectCreateTask)
 
   return (
     <>
@@ -239,23 +257,59 @@ const NewTaskFormInputs = () => {
           onChange={(e) => store.dispatch(setCreateTaskFields({ targetField: 'description', value: e.target.value }))}
         />
       </Stack>
+      <Stack direction="row" columnGap={2} m="16px 0px">
+        {attachments?.map((el, key) => {
+          return (
+            <Box key={el.filePath}>
+              <AttachmentCard
+                file={el}
+                deleteAttachment={async (event: React.MouseEvent<HTMLDivElement>) => {
+                  event.stopPropagation()
+                  const { data } = await supabaseActions.removeAttachment(el.filePath)
+                  store.dispatch(removeOneAttachment({ attachment: el }))
+                }}
+              />
+            </Box>
+          )
+        })}
+      </Stack>
     </>
   )
 }
 
-const NewTaskFooter = ({ handleCreate }: { handleCreate: () => void }) => {
+const NewTaskFooter = ({
+  handleCreate,
+  getSignedUrlUpload,
+}: {
+  handleCreate: () => void
+  getSignedUrlUpload: (fileName: string) => Promise<ISignedUrlUpload>
+}) => {
+  const { attachments } = useSelector(selectCreateTask)
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    event.preventDefault()
+    const files = event.target.files
+    if (files && files.length > 0) {
+      const file = files[0]
+      const signedUrl: ISignedUrlUpload = await getSignedUrlUpload(generateRandomString(file.name))
+      const filePayload = await supabaseActions.uploadAttachment(file, signedUrl, '')
+      if (filePayload) {
+        store.dispatch(setCreateTaskFields({ targetField: 'attachments', value: [...attachments, filePayload] }))
+      }
+    }
+  }
   return (
     <Box sx={{ borderTop: (theme) => `1px solid ${theme.color.borders.border2}` }}>
       <AppMargin size={SizeofAppMargin.MEDIUM} py="21px">
         <Stack direction="row" justifyContent="space-between" alignItems="center">
           <Box>
-            <AttachmentIcon />
+            <AttachmentInput handleFileSelect={handleFileSelect} />
           </Box>
           <Stack direction="row" columnGap={4}>
             <SecondaryBtn
-              handleClick={() => {
+              handleClick={async () => {
                 store.dispatch(setShowModal())
                 store.dispatch(clearCreateTaskFields())
+                await bulkRemoveAttachments(attachments)
               }}
               buttonContent={
                 <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[700] }}>

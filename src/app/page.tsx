@@ -11,11 +11,18 @@ import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { IAssignee, ITemplate, View } from '@/types/interfaces'
 import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
-import { handleCreate, updateTask, updateViewModeSettings } from './actions'
+import {
+  createMultipleAttachments,
+  getSignedUrlUpload,
+  handleCreate,
+  updateTask,
+  updateViewModeSettings,
+} from '@/app/actions'
 import { FilterBar } from '@/components/layouts/FilterBar'
 import ClientError from '@/components/clientError'
 import { Token, TokenSchema } from '@/types/common'
 import { CopilotAPI } from '@/utils/CopilotAPI'
+import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
@@ -111,11 +118,20 @@ export default async function Main({ searchParams }: { searchParams: { token: st
           <TaskBoard
             handleCreate={async (createTaskPayload) => {
               'use server'
-              await handleCreate(token, createTaskPayload)
+              const response = await handleCreate(token, createTaskPayload)
+              return response
             }}
             updateTask={async (taskId, payload) => {
               'use server'
               await updateTask({ token, taskId, payload })
+            }}
+            getSignedUrlUpload={async (fileName: string) => {
+              'use server'
+              return await getSignedUrlUpload(token, fileName)
+            }}
+            handleCreateMultipleAttachments={async (attachments: CreateAttachmentRequest[]) => {
+              'use server'
+              await createMultipleAttachments(token, attachments)
             }}
           />
         </DndWrapper>

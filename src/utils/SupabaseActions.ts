@@ -2,9 +2,7 @@ import APIError from '@/app/api/core/exceptions/api'
 import { SupabaseService } from '@/app/api/core/services/supabase.service'
 import { supabaseBucket } from '@/config'
 import httpStatus from 'http-status'
-import { Url } from 'next/dist/shared/lib/router/router'
-import React from 'react'
-import { generateRandomString } from '@/utils/generateRandomString'
+
 import { ISignedUrlUpload } from '@/types/interfaces'
 
 export class SupabaseActions extends SupabaseService {
@@ -25,7 +23,7 @@ export class SupabaseActions extends SupabaseService {
     }
   }
 
-  async uploadAttachment(file: File, id: string, signedUrl: ISignedUrlUpload) {
+  async uploadAttachment(file: File, signedUrl: ISignedUrlUpload, task_id?: string) {
     let filePayload
     const { data, error } = await this.supabase.storage
       .from(supabaseBucket)
@@ -38,14 +36,14 @@ export class SupabaseActions extends SupabaseService {
         fileSize: file.size,
         fileName: file.name,
         fileType: file.type,
-        id,
+        taskId: task_id ?? '',
         filePath: data.path,
       }
     }
     return filePayload
   }
 
-  async removeAttachment(id: string, filePath: string) {
+  async removeAttachment(filePath: string) {
     const { data, error } = await this.supabase.storage.from(supabaseBucket).remove([filePath])
     if (error) {
       throw new APIError(httpStatus.BAD_REQUEST, error.message)
