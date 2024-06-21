@@ -9,7 +9,7 @@ interface AvatarWithInitialsProps extends AvatarProps {
 const AvatarWithInitials: React.FC<AvatarWithInitialsProps> = ({ src, altName, ...props }) => {
   return (
     <Avatar src={src} alt={altName} {...props}>
-      {<AvatarTypography> {altName ? altName : 'user'} </AvatarTypography>}
+      {altName && <AvatarTypography> {altName[0]} </AvatarTypography>}
     </Avatar>
   )
 }
