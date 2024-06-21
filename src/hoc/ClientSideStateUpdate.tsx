@@ -42,7 +42,7 @@ export const ClientSideStateUpdate = ({
   assignee?: IAssigneeCombined[]
   viewSettings?: CreateViewSettingsDTO
   token?: string
-  tokenPayload?: Token
+  tokenPayload?: Token | null
   templates?: ITemplate[]
   assigneeSuggestions?: IAssigneeSuggestions[]
 }) => {

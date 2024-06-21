@@ -76,12 +76,6 @@ async function getActivities(token: string, taskId: string): Promise<LogResponse
   return data.data
 }
 
-async function getTokenPayload(token: string): Promise<Token> {
-  const copilotClient = new CopilotAPI(token)
-  const payload = TokenSchema.parse(await copilotClient.getTokenPayload())
-  return payload
-}
-
 export default async function TaskDetailPage({
   params,
   searchParams,
@@ -91,18 +85,23 @@ export default async function TaskDetailPage({
 }) {
   const { token } = searchParams
   const { task_id } = params
+  const copilotClient = new CopilotAPI(token)
 
   const [task, assignee, attachments, activities, tokenPayload] = await Promise.all([
     getOneTask(token, task_id),
     addTypeToAssignee(await getAssigneeList(token)),
     getAttachments(token, task_id),
     getActivities(token, task_id),
-    getTokenPayload(token),
+    copilotClient.getTokenPayload(),
   ])
   const AssigneeSuggestions = assignee.map((item) => ({
     id: item.id,
     label: item?.name ?? `${item.givenName} ${item.familyName}`,
   }))
+
+  if (!tokenPayload) {
+    throw new Error('Token cannot be found')
+  }
 
   return (
     <ClientSideStateUpdate assignee={assignee} tokenPayload={tokenPayload} assigneeSuggestions={AssigneeSuggestions}>
