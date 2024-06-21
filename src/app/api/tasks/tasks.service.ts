@@ -148,6 +148,12 @@ export class TasksService extends BaseService {
     })
     if (!prevTask) throw new APIError(httpStatus.NOT_FOUND, 'The requested task was not found')
 
+    // If client user is doing reassignment, verify that update is being done for a valid user within the company
+    const copilot = new CopilotAPI(this.user.token)
+    if (this.user.clientId && prevTask.assigneeId !== data.assigneeId) {
+      await this.verifyReassignmentWithinCompany(copilot, prevTask, data)
+    }
+
     // Get the updated task
     const updatedTask = await this.db.task.update({
       where: { id },
@@ -279,5 +285,47 @@ export class TasksService extends BaseService {
     })
     this.createTaskNotification(updatedTask, NotificationTaskActions.Completed)
     return updatedTask
+  }
+
+  /**
+   * Method to verify that task reassignment has been done within a company
+   * @param copilot Injected CopilotAPI instance
+   * @param prevTask Previous task fetched from the database
+   * @param newTask New task update data
+   * @returns Boolean value of whether or not this reassignment is valid
+   */
+  async verifyReassignmentWithinCompany(copilot: CopilotAPI, prevTask: Task, newTask: UpdateTaskRequest): Promise<void> {
+    // Get new assignee's company id
+    let newCompanyId = ''
+    let isReassignmentValid = false
+    if (newTask.assigneeType === 'internalUser') {
+      throw new APIError(httpStatus.BAD_REQUEST, 'Client users are not authorized to assign task to IU')
+    } else if (!newTask.assigneeType && !newTask.assigneeId) {
+      throw new APIError(httpStatus.BAD_REQUEST, 'Client users are not authorized to unassign tasks')
+    } else if (newTask.assigneeType === 'client') {
+      const client = await copilot.getClient(z.string().parse(newTask.assigneeId))
+      newCompanyId = client.companyId
+    } else if (newTask.assigneeId === 'company') {
+      newCompanyId = z.string().parse(newTask.assigneeId)
+    }
+
+    // If previous assignee was a client and new assignee is also a client, match prev client and new client's company ID
+    // If previous assignee was a client and new assignee is a company, match prev client's company ID and new company ID
+    if (prevTask.assigneeType === 'client') {
+      const client = await copilot.getClient(z.string().parse(prevTask.assigneeId))
+      isReassignmentValid = client.companyId === newCompanyId
+    } else if (prevTask.assigneeType === 'company') {
+      isReassignmentValid = prevTask.assigneeId === newCompanyId
+    } else if (prevTask.assigneeType === 'internalUser') {
+      throw new APIError(
+        httpStatus.BAD_REQUEST,
+        'Client user is not authorized to reassign task belonging to an Internal User',
+      )
+    } else {
+      throw new APIError(httpStatus.BAD_REQUEST, 'Client user is not authorized to reassign an unassigned task')
+    }
+
+    if (!isReassignmentValid)
+      throw new APIError(httpStatus.BAD_REQUEST, 'Client user is not authorized to reassign to new assignee')
   }
 }
