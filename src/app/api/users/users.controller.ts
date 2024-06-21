@@ -15,6 +15,6 @@ export const getClients = async (req: NextRequest) => {
   const user = await authenticate(req)
 
   const usersService = new UsersService(user)
-  const clients = await usersService.getClient()
+  const clients = await usersService.getClientsForCompany()
   return NextResponse.json({ clients })
 }
