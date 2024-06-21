@@ -2,7 +2,7 @@ import { AssigneeType } from '@prisma/client'
 import { BaseService } from '@api/core/services/base.service'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { z } from 'zod'
-import { LabelMapping as PrismaLabelMapping } from '@prisma/client'
+import { Label as PrismaLabelMapping } from '@prisma/client'
 
 export class LabelMappingService extends BaseService {
   /**
@@ -13,7 +13,7 @@ export class LabelMappingService extends BaseService {
    */
   async getLabel(assigneeId: string | null | undefined, assigneeType: string | null | undefined) {
     if (!assigneeId) {
-      const existingLabel = await this.db.labelMapping.findFirst({
+      const existingLabel = await this.db.label.findFirst({
         where: {
           labelledEntity: 'Unassigned',
         },
@@ -64,7 +64,7 @@ export class LabelMappingService extends BaseService {
     const baseLabel = labelledEntity?.substring(0, 3).toUpperCase()
 
     //find the latest updated LabelMapping for the given labelledEntity
-    const existingLabelWithCurrentLabelEntity = await this.db.labelMapping.findFirst({
+    const existingLabelWithCurrentLabelEntity = await this.db.label.findFirst({
       where: {
         labelledEntity,
       },
@@ -74,7 +74,7 @@ export class LabelMappingService extends BaseService {
     })
 
     //find all the LabelMapping that starts with the baseLabel substring
-    const existingLabelWithSameBaseLabel = await this.db.labelMapping.findMany({
+    const existingLabelWithSameBaseLabel = await this.db.label.findMany({
       where: {
         label: {
           startsWith: baseLabel,
