@@ -36,6 +36,25 @@ export class AttachmentsService extends BaseService {
     return newAttachment
   }
 
+  async createMultipleAttachments(data: CreateAttachmentRequest[]) {
+    const policyGate = new PoliciesService(this.user)
+    policyGate.authorize(UserAction.Create, Resource.Attachments)
+    const userId = z.string().parse(this.user.internalUserId)
+    const newAttachments = await this.db.$transaction(async (prisma) => {
+      const createPromises = data.map((attachmentData) =>
+        prisma.attachment.create({
+          data: {
+            ...attachmentData,
+            createdById: userId,
+            workspaceId: this.user.workspaceId,
+          },
+        }),
+      )
+      return await Promise.all(createPromises)
+    })
+    return newAttachments
+  }
+
   async deleteAttachment(id: string) {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Delete, Resource.Attachments)

@@ -45,7 +45,7 @@ export const FilterByAssigneeBtn = ({
             onClick={(e) => {
               e.stopPropagation()
               updateAssigneeValue(null)
-              handleClick(FilterOptions.ASSIGNEE, null)
+              handleClick(FilterOptions.ASSIGNEE, '')
             }}
           >
             <CrossIcon />

@@ -20,8 +20,7 @@ export const createTask = async (req: NextRequest) => {
   const data = CreateTaskRequestSchema.parse(await req.json())
   const tasksService = new TasksService(user)
   const newTask = await tasksService.createTask(data)
-
-  return NextResponse.json({ newTask }, { status: httpStatus.CREATED })
+  return NextResponse.json(newTask, { status: httpStatus.CREATED })
 }
 
 export const getTask = async (req: NextRequest, { params: { id } }: IdParams) => {

@@ -59,9 +59,9 @@ export const TaskEditor = ({
       const file = files[0]
       const supabaseActions = new SupabaseActions()
       const signedUrl: ISignedUrlUpload = await getSignedUrlUpload(generateRandomString(file.name))
-      const filePayload = await supabaseActions.uploadAttachment(file, task_id, signedUrl)
+      const filePayload = await supabaseActions.uploadAttachment(file, signedUrl, task_id)
       if (filePayload) {
-        postAttachment({ ...filePayload, taskId: filePayload.id })
+        postAttachment({ ...filePayload, taskId: filePayload.taskId })
       }
     }
   }
@@ -113,7 +113,17 @@ export const TaskEditor = ({
         {attachment?.map((el, key) => {
           return (
             <Box key={key}>
-              <AttachmentCard file={el} deleteAttachment={deleteAttachment} />
+              <AttachmentCard
+                file={el}
+                deleteAttachment={async (event: any) => {
+                  event.stopPropagation()
+                  const supabaseActions = new SupabaseActions()
+                  const { data } = await supabaseActions.removeAttachment(el.filePath)
+                  if (data && el.id) {
+                    deleteAttachment(el.id)
+                  }
+                }}
+              />
             </Box>
           )
         })}
