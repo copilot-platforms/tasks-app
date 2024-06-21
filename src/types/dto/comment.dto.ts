@@ -12,6 +12,7 @@ export type CreateComment = z.infer<typeof CreateCommentSchema>
 
 export const UpdateCommentSchema = z.object({
   content: z.string(),
+  mentions: z.string().array().optional(),
 })
 
 export type UpdateComment = z.infer<typeof UpdateCommentSchema>

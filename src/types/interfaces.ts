@@ -114,6 +114,11 @@ export interface IAssigneeCombined {
   fallbackColor?: string
 }
 
+export interface IAssigneeSuggestions {
+  id: string
+  label: string
+}
+
 export interface ITemplate {
   id: string
   workspaceId: string
