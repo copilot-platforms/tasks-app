@@ -21,7 +21,7 @@ import { useRouter } from 'next/navigation'
 import { selectCreateTemplate } from '@/redux/features/templateSlice'
 import { NoAssignee, NoAssigneeExtraOptions } from '@/utils/noAssignee'
 import ExtraOptionRendererAssignee from '@/components/inputs/ExtraOptionRendererAssignee'
-import { StyledContainer, TapWriteTaskEditor } from '../detail/ui/styledComponent'
+import { TapWriteTaskEditor } from '@/app/detail/ui/styledComponent'
 import { upload } from '@vercel/blob/client'
 
 export const NewTaskForm = ({ handleCreate }: { handleCreate: () => void }) => {

@@ -1,6 +1,6 @@
 import { apiUrl } from '@/config'
 import { CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
-import { View } from '@/types/interfaces'
+import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { revalidateTag } from 'next/cache'
 
 export const handleCreate = async (token: string, payload: CreateTaskRequest) => {
@@ -48,12 +48,10 @@ export const updateTask = async ({
   revalidateTag('getAllTasks')
 }
 
-export const updateViewModeSettings = async (token: string, mode: View) => {
+export const updateViewModeSettings = async (token: string, payload: CreateViewSettingsDTO) => {
   await fetch(`${apiUrl}/api/view-settings?token=${token}`, {
     method: 'PATCH',
-    body: JSON.stringify({
-      viewMode: mode,
-    }),
+    body: JSON.stringify(payload),
   })
   revalidateTag('getViewSettings')
   revalidateTag('getAllTasks')

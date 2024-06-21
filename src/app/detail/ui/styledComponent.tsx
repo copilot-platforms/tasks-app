@@ -89,19 +89,3 @@ export const TapWriteTaskEditor1 = styled(Tapwrite)(({ theme }) => ({
   borderColor: theme.color.borders.border,
   border: `1px solid ${theme.color.base.black}`,
 }))
-
-export const StyledContainer = styled('div')<{ padding?: string; borderColor?: string; borderLess?: boolean }>(
-  ({ padding, borderColor, borderLess, theme }) => ({
-    display: 'flex',
-    flexDirection: 'column',
-
-    padding: padding ? padding : '3px 8px 3px 0px',
-    borderColor: borderColor ? borderColor : theme.color.borders.border,
-    border: borderLess ? 'none' : `1px solid ${theme.color.borders.border}`,
-    '&:focus': {
-      borderColor: borderColor ? borderColor : theme.color.base.black,
-    },
-
-    backgroundColor: '#fff',
-  }),
-)
