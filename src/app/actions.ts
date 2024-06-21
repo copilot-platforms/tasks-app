@@ -1,14 +1,17 @@
 import { apiUrl } from '@/config'
-import { CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
+import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
+import { CreateTaskRequest, UpdateTaskRequest, TaskResponse } from '@/types/dto/tasks.dto'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
+import { View } from '@/types/interfaces'
 import { revalidateTag } from 'next/cache'
 
-export const handleCreate = async (token: string, payload: CreateTaskRequest) => {
-  fetch(`${apiUrl}/api/tasks?token=${token}`, {
+export const handleCreate = async (token: string, payload: CreateTaskRequest): Promise<TaskResponse> => {
+  const response = await fetch(`${apiUrl}/api/tasks?token=${token}`, {
     method: 'POST',
     body: JSON.stringify(payload),
   })
   revalidateTag('getAllTasks')
+  return await response.json()
 }
 
 /**
@@ -56,4 +59,18 @@ export const updateViewModeSettings = async (token: string, payload: CreateViewS
   revalidateTag('getViewSettings')
   revalidateTag('getAllTasks')
   revalidateTag('getAllWorkflowStates')
+}
+
+export const getSignedUrlUpload = async (token: string, fileName: string) => {
+  const res = await fetch(`${apiUrl}/api/attachments/upload?token=${token}&fileName=${fileName}`)
+  const data = await res.json()
+  return data.signedUrl
+}
+
+export const createMultipleAttachments = async (token: string, attachments: CreateAttachmentRequest[]) => {
+  await fetch(`${apiUrl}/api/attachments/bulk?token=${token}`, {
+    method: 'POST',
+    body: JSON.stringify(attachments),
+  })
+  revalidateTag('getAllTasks')
 }

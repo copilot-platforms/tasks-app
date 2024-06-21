@@ -28,6 +28,7 @@ import { ActivityLog } from '@/app/detail/ui/ActivityLog'
 import { Comments } from '@/app/detail/ui/Comments'
 import { CommentInput } from '@/components/inputs/CommentInput'
 import { LogResponse } from '@/app/api/activity-logs/schemas/LogResponseSchema'
+import { ActivityType } from '@prisma/client'
 import { CreateComment } from '@/types/dto/comment.dto'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { Token, TokenSchema } from '@/types/common'
@@ -167,7 +168,7 @@ export default async function TaskDetailPage({
                       }}
                       key={item.id}
                     >
-                      {item.type == 'COMMENT_ADDED' ? (
+                      {item.type == ActivityType.COMMENT_ADDED ? (
                         <Comments
                           comment={item}
                           createComment={async (postCommentPayload: CreateComment) => {

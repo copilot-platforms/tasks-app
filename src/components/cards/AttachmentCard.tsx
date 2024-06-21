@@ -1,26 +1,23 @@
 import { CancelFilledIcon } from '@/icons'
-import { AttachmentResponseSchema } from '@/types/dto/attachments.dto'
+import {
+  AttachmentResponseSchema,
+  CreateAttachmentRequest,
+  CreateAttachmentRequestSchema,
+} from '@/types/dto/attachments.dto'
 import { TruncateMaxNumber } from '@/types/interfaces'
 import { SupabaseActions } from '@/utils/SupabaseActions'
 import { attachmentIcons } from '@/utils/iconMatcher'
 import { truncateText } from '@/utils/truncateText'
-import { Box, Hidden, Stack, Tooltip, Typography } from '@mui/material'
+import { Box, Stack, Typography } from '@mui/material'
 
 interface Prop {
-  file: AttachmentResponseSchema
-  deleteAttachment: (id: string) => void
+  file: AttachmentResponseSchema | CreateAttachmentRequest
+  deleteAttachment: (event: React.MouseEvent<HTMLDivElement>) => void
 }
 
 export const AttachmentCard = ({ file, deleteAttachment }: Prop) => {
-  const { id, fileName, filePath, fileType, fileSize } = file
+  const { fileName, filePath, fileType, fileSize } = CreateAttachmentRequestSchema.parse(file)
   const supabaseActions = new SupabaseActions()
-  const handleDelete = async (event: any) => {
-    event.stopPropagation()
-    const { data } = await supabaseActions.removeAttachment(id, filePath)
-    if (data) {
-      deleteAttachment(id)
-    }
-  }
   return (
     <div
       onClick={() => {
@@ -64,7 +61,9 @@ export const AttachmentCard = ({ file, deleteAttachment }: Prop) => {
             top: 4,
           }}
           className="cancelIcon"
-          onClick={handleDelete}
+          onClick={(e) => {
+            deleteAttachment(e)
+          }}
         >
           <CancelFilledIcon />
         </Box>
