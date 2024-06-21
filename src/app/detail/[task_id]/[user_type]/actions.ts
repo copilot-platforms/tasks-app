@@ -1,3 +1,5 @@
+'use server'
+
 import { apiUrl } from '@/config'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { revalidateTag } from 'next/cache'

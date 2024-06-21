@@ -16,29 +16,26 @@ import { CreateTaskRequest, CreateTaskRequestSchema, TaskResponse, UpdateTaskReq
 import { ListViewTaskCard } from '@/components/cards/ListViewTaskCard'
 import { TaskRow } from '@/components/cards/TaskRow'
 import { View } from '@/types/interfaces'
+import { handleCreate, updateTask } from '../actions'
+import { z } from 'zod'
 
-export const TaskBoard = ({
-  handleCreate,
-  updateTask,
-}: {
-  handleCreate: (createTaskPayload: CreateTaskRequest) => void
-  updateTask: (taskId: string, payload: UpdateTaskRequest) => void
-}) => {
+export const TaskBoard = ({}: {}) => {
   const { showModal } = useSelector(selectCreateTask)
   const { workflowStates, tasks, token, filteredTasks, view, filterOptions } = useSelector(selectTaskBoard)
   const { title, description, workflowStateId, assigneeId, assigneeType } = useSelector(selectCreateTask)
 
   const router = useRouter()
 
-  const onDropItem = useCallback(
-    (payload: { taskId: string; targetWorkflowStateId: string }) => {
-      store.dispatch(
-        updateWorkflowStateIdByTaskId({ taskId: payload.taskId, targetWorkflowStateId: payload.targetWorkflowStateId }),
-      )
-      updateTask(payload.taskId, { workflowStateId: payload.targetWorkflowStateId })
-    },
-    [updateTask],
-  )
+  const onDropItem = useCallback((payload: { taskId: string; targetWorkflowStateId: string }) => {
+    store.dispatch(
+      updateWorkflowStateIdByTaskId({ taskId: payload.taskId, targetWorkflowStateId: payload.targetWorkflowStateId }),
+    )
+    updateTask({
+      token: z.string().parse(token),
+      taskId: payload.taskId,
+      payload: { workflowStateId: payload.targetWorkflowStateId },
+    })
+  }, [])
 
   /**
    * This function is responsible for returning the tasks that matches the workflowStateId of the workflowState
@@ -104,7 +101,7 @@ export const TaskBoard = ({
                             task={task}
                             key={task.id}
                             updateTask={({ payload }) => {
-                              updateTask(task.id, payload)
+                              updateTask({ token: z.string().parse(token), taskId: task.id, payload })
                             }}
                             handleClick={() => router.push(`/detail/${task.id}/iu?token=${token}`)}
                           />
@@ -128,11 +125,12 @@ export const TaskBoard = ({
           aria-describedby="add-new-task"
         >
           <NewTaskForm
-            handleCreate={() => {
+            handleCreate={async () => {
               if (title) {
                 store.dispatch(setShowModal())
                 store.dispatch(clearCreateTaskFields())
-                handleCreate(
+                await handleCreate(
+                  token as string,
                   CreateTaskRequestSchema.parse({ title, body: description, workflowStateId, assigneeType, assigneeId }),
                 )
               }

@@ -15,6 +15,8 @@ import { WorkflowStateUpdatedSchema } from '@api/activity-logs/schemas/WorkflowS
 import { NotificationService } from '../notification/notification.service'
 import { LabelMapping } from '../label-mapping/label-mapping.service'
 import { z } from 'zod'
+import { generateRandomString } from '@/utils/generateRandomString'
+import { generatePrime, randomUUID } from 'crypto'
 
 type FilterByAssigneeId = {
   assigneeId: string
@@ -87,7 +89,7 @@ export class TasksService extends BaseService {
         ...data,
         workspaceId: this.user.workspaceId,
         createdById: this.user.internalUserId as string,
-        label,
+        label: label,
         ...(await getTaskTimestamps('create', this.user, data)),
       },
       include: { workflowState: true },
@@ -150,18 +152,18 @@ export class TasksService extends BaseService {
     })
     if (!prevTask) throw new APIError(httpStatus.NOT_FOUND, 'The requested task was not found')
 
-    let label: string = prevTask.label
-    //generate new label if prevTask has no assignee but now assigned to someone
-    if (!prevTask.assigneeId && data.assigneeId) {
-      const labelMappingService = new LabelMapping(this.user)
-      label = z.string().parse(await labelMappingService.getLabel(data.assigneeId, data.assigneeType))
-    }
+    // let label: string = prevTask.label
+    // //generate new label if prevTask has no assignee but now assigned to someone
+    // if (!prevTask.assigneeId && data.assigneeId) {
+    //   const labelMappingService = new LabelMapping(this.user)
+    //   label = z.string().parse(await labelMappingService.getLabel(data.assigneeId, data.assigneeType))
+    // }
     // Get the updated task
     const updatedTask = await this.db.task.update({
       where: { id },
       data: {
         ...data,
-        label,
+        label: generateRandomString('hi'),
         ...(await getTaskTimestamps('update', this.user, data, prevTask)),
       },
       include: { workflowState: true },

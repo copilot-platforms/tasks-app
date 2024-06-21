@@ -11,7 +11,7 @@ import { ManageTemplateHeader } from './ui/Header'
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
     next: { tags: ['getAllWorkflowStates'] },
-    cache: 'no-store',
+    // cache: 'no-store',
   })
 
   const data = await res.json()
@@ -22,7 +22,7 @@ async function getAllWorkflowStates(token: string): Promise<WorkflowStateRespons
 async function getAssigneeList(token: string): Promise<IAssignee> {
   const res = await fetch(`${apiUrl}/api/users?token=${token}`, {
     next: { tags: ['getAssigneeList'] },
-    cache: 'no-store',
+    // cache: 'no-store',
   })
 
   const data = await res.json()
@@ -33,7 +33,7 @@ async function getAssigneeList(token: string): Promise<IAssignee> {
 async function getAllTemplates(token: string): Promise<ITemplate[]> {
   const res = await fetch(`${apiUrl}/api/tasks/templates?token=${token}`, {
     next: { tags: ['getAllTemplates'], revalidate: 0 },
-    cache: 'no-store',
+    // cache: 'no-store',
   })
 
   const templates = await res.json()

@@ -1,3 +1,4 @@
+'use server'
 import { apiUrl } from '@/config'
 import { revalidateTag } from 'next/cache'
 
@@ -6,5 +7,5 @@ export const completeTask = async ({ token, taskId }: { token: string; taskId: s
     method: 'PATCH',
   })
   revalidateTag('getOneTask')
-  revalidateTag('getAllTasks')
+  revalidateTag('getAllTasks-client')
 }

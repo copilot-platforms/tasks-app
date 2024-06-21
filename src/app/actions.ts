@@ -1,14 +1,15 @@
+'use server'
 import { apiUrl } from '@/config'
 import { CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { View } from '@/types/interfaces'
 import { revalidateTag } from 'next/cache'
 
 export const handleCreate = async (token: string, payload: CreateTaskRequest) => {
-  fetch(`${apiUrl}/api/tasks?token=${token}`, {
+  await fetch(`${apiUrl}/api/tasks?token=${token}`, {
     method: 'POST',
     body: JSON.stringify(payload),
   })
-  revalidateTag('getAllTasks')
+  revalidateTag('getTasks')
 }
 
 /**

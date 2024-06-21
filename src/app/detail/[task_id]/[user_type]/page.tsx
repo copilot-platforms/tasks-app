@@ -1,3 +1,5 @@
+// export const dynamic = 'force-dynamic'
+
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { TaskEditor } from '@/app/detail/ui/TaskEditor'
 import { Box, Stack, Typography } from '@mui/material'
@@ -21,12 +23,10 @@ import { ActivityLog } from '@/app/detail/ui/ActivityLog'
 import { Comments } from '@/app/detail/ui/Comments'
 import { CommentInput } from '@/components/inputs/CommentInput'
 
-export const revalidate = 0
-
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
     next: { tags: ['getOneTask'], revalidate: 0 },
-    cache: 'no-store',
+    // cache: 'no-store',
   })
 
   const data = await res.json()
@@ -37,7 +37,7 @@ async function getOneTask(token: string, taskId: string): Promise<TaskResponse> 
 async function getAssigneeList(token: string): Promise<IAssignee> {
   const res = await fetch(`${apiUrl}/api/users?token=${token}`, {
     next: { tags: ['getAssigneeList'], revalidate: 0 },
-    cache: 'no-store',
+    // cache: 'no-store',
   })
 
   const data = await res.json()
@@ -48,7 +48,7 @@ async function getAssigneeList(token: string): Promise<IAssignee> {
 async function getAttachments(token: string, taskId: string): Promise<AttachmentResponseSchema[]> {
   const res = await fetch(`${apiUrl}/api/attachments/?taskId=${taskId}&token=${token}`, {
     next: { tags: ['getAttachments'], revalidate: 0 },
-    cache: 'no-store',
+    // cache: 'no-store',
   })
   const data = await res.json()
 
@@ -86,7 +86,7 @@ export default async function TaskDetailPage({
                     <SecondaryBtn buttonContent={<StyledTypography variant="sm">Tasks</StyledTypography>} enableBackground />
                   </Link>
                   <StyledKeyboardIcon />
-                  <Typography variant="sm">{params.task_id.toLocaleUpperCase()}</Typography>
+                  <Typography variant="sm">{task.label}</Typography>
                 </Stack>
                 <Stack direction="row" alignItems="center" columnGap="8px">
                   {params.user_type === UserType.INTERNAL_USER && <MenuBoxContainer />}
