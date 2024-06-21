@@ -1,5 +1,5 @@
 import { Avatar, Box, Stack } from '@mui/material'
-import { BoldTypography, StyledTypography, VerticalLine } from '@/app/detail/ui/styledComponent'
+import { BoldTypography, StyledTypography, TypographyContainer, VerticalLine } from '@/app/detail/ui/styledComponent'
 import { getTimeDifference } from '@/utils/getTimeDifference'
 import AvatarWithInitials from '@/components/Avatar/AvatarWithInitials'
 import { LogResponse } from '@/app/api/activity-logs/schemas/LogResponseSchema'
@@ -57,13 +57,13 @@ export const ActivityLog = ({ log }: Prop) => {
         altName={log?.initiator?.givenName}
         sx={{ width: '25px', height: '25px' }}
       />
-      <Stack direction="row" columnGap={1}>
+      <TypographyContainer direction="row" columnGap={1}>
         <BoldTypography>
           {log.initiator.givenName} {log.initiator.familyName}
         </BoldTypography>
         {activityDescription[log.type as ActivityType](...logEntities)}
-      </Stack>
-      <StyledTypography> {getTimeDifference(log.createdAt)}</StyledTypography>
+        <StyledTypography> {getTimeDifference(log.createdAt)}</StyledTypography>
+      </TypographyContainer>
     </Stack>
   )
 }

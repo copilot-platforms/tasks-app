@@ -67,7 +67,7 @@ export const Sidebar = ({
     <Box
       sx={{
         borderLeft: (theme) => `1px solid ${theme.color.borders.border2}`,
-        height: '91vh',
+        height: '100%',
         display: showSidebar ? 'block' : 'none',
         width: matches && showSidebar ? '100vw' : '25vw',
       }}

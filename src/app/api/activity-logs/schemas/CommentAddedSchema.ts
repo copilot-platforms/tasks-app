@@ -11,7 +11,7 @@ export type CommendAddedDetails = z.infer<typeof CommentAddedSchema>
 
 export const commentAddedResponseSchema = z.object({
   id: z.string().uuid(),
-  content: z.string(),
+  content: z.string().min(1),
   initiatorId: z.string().uuid(),
   parentId: z.string().uuid().nullable(),
   replies: z.array(

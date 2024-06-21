@@ -3,14 +3,21 @@
 import { setTokenPayload } from '@/redux/features/authDetailsSlice'
 import { setAssigneeList, setFilteredAssgineeList, setViewSettings } from '@/redux/features/taskBoardSlice'
 import { setTasks, setToken, setWorkflowStates } from '@/redux/features/taskBoardSlice'
+import { setAssigneeSuggestion } from '@/redux/features/taskDetailsSlice'
 import { setTemplates } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
 import { Token } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { FilterByOptions, FilterOptionsKeywords, IAssigneeCombined, ITemplate, View } from '@/types/interfaces'
-import { ViewMode } from '@prisma/client'
+import {
+  FilterByOptions,
+  FilterOptionsKeywords,
+  IAssigneeSuggestions,
+  IAssigneeCombined,
+  ITemplate,
+  View,
+} from '@/types/interfaces'
 import { ReactNode, useEffect } from 'react'
 
 /**
@@ -27,6 +34,7 @@ export const ClientSideStateUpdate = ({
   viewSettings,
   tokenPayload,
   templates,
+  assigneeSuggestions,
 }: {
   children: ReactNode
   workflowStates?: WorkflowStateResponse[]
@@ -34,8 +42,9 @@ export const ClientSideStateUpdate = ({
   assignee?: IAssigneeCombined[]
   viewSettings?: CreateViewSettingsDTO
   token?: string
-  tokenPayload?: Token
+  tokenPayload?: Token | null
   templates?: ITemplate[]
+  assigneeSuggestions?: IAssigneeSuggestions[]
 }) => {
   useEffect(() => {
     if (workflowStates) {
@@ -71,7 +80,11 @@ export const ClientSideStateUpdate = ({
     if (templates) {
       store.dispatch(setTemplates(templates))
     }
-  }, [workflowStates, tasks, token, assignee, viewSettings, tokenPayload, templates])
+
+    if (assigneeSuggestions) {
+      store.dispatch(setAssigneeSuggestion(assigneeSuggestions))
+    }
+  }, [workflowStates, tasks, token, assignee, viewSettings, tokenPayload, templates, assigneeSuggestions])
 
   return children
 }

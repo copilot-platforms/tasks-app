@@ -22,6 +22,8 @@ import { LogResponse } from '@/app/api/activity-logs/schemas/LogResponseSchema'
 import { commentAddedResponseSchema } from '@/app/api/activity-logs/schemas/CommentAddedSchema'
 import { CreateComment } from '@/types/dto/comment.dto'
 import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
+import { getMentionsList } from '@/utils/getMentionList'
+import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 
 const CustomDivider = styled(Box)(({ theme }) => ({
   height: '1px',
@@ -48,13 +50,19 @@ export const CommentCard = ({
   const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState(false)
   const { tokenPayload } = useSelector(selectAuthDetails)
   const canEdit = tokenPayload?.internalUserId == comment.initiator.id
+  const { assigneeSuggestions } = useSelector(selectTaskDetails)
+
   const handleReplySubmission = () => {
     const replyPayload: CreateComment = {
       content: detail,
       taskId: task_id,
       parentId: commentAddedResponseSchema.parse(comment.details).id,
+      mentions: getMentionsList(detail),
     }
-    createComment(replyPayload)
+    if (detail) {
+      createComment(replyPayload)
+      setDetail('')
+    }
   }
 
   return (
@@ -125,7 +133,12 @@ export const CommentCard = ({
             <CustomDivider />
             <Stack direction="row" columnGap={1} alignItems="flex-start">
               <Avatar alt="user" src={''} sx={{ width: '20px', height: '20px', marginTop: '5px' }} />
-              <TapWriteReplyInput content={''} getContent={setDetail} placeholder="Leave a reply..." />
+              <TapWriteReplyInput
+                content={detail}
+                getContent={setDetail}
+                placeholder="Leave a reply..."
+                suggestions={assigneeSuggestions}
+              />
               <InputAdornment
                 position="end"
                 sx={{
