@@ -20,6 +20,7 @@ import { ToggleButtonContainer } from './ToggleButtonContainer'
 import { NoAssignee, NoAssigneeExtraOptions } from '@/utils/noAssignee'
 import ExtraOptionRendererAssignee from '@/components/inputs/ExtraOptionRendererAssignee'
 import AvatarWithInitials from '@/components/Avatar/AvatarWithInitials'
+import { getNameForAvatar } from '@/utils/getNameForAvatar'
 
 const StyledText = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[500],
@@ -122,11 +123,7 @@ export const Sidebar = ({
             }}
             startIcon={
               <AvatarWithInitials
-                altName={
-                  assigneeValue?.familyName || assigneeValue?.givenName == 'No assignee'
-                    ? ''
-                    : assigneeValue?.familyName || assigneeValue?.givenName
-                }
+                altName={getNameForAvatar(assigneeValue)}
                 alt="user"
                 src={assigneeValue?.iconImageUrl || assigneeValue?.avatarImageUrl}
                 sx={{ width: '20px', height: '20px' }}

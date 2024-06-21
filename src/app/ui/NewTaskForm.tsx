@@ -33,6 +33,7 @@ import { SupabaseActions } from '@/utils/SupabaseActions'
 import { generateRandomString } from '@/utils/generateRandomString'
 import { AttachmentCard } from '@/components/cards/AttachmentCard'
 import { bulkRemoveAttachments } from '@/utils/bulkRemoveAttachments'
+import { getNameForAvatar } from '@/utils/getNameForAvatar'
 
 const supabaseActions = new SupabaseActions()
 
@@ -195,11 +196,7 @@ export const NewTaskForm = ({
               }}
               startIcon={
                 <AvatarWithInitials
-                  altName={
-                    assigneeValue?.familyName || assigneeValue?.givenName == 'No assignee'
-                      ? ''
-                      : assigneeValue?.familyName || assigneeValue?.givenName
-                  }
+                  altName={getNameForAvatar(assigneeValue)}
                   alt="user"
                   src={assigneeValue?.iconImageUrl || assigneeValue?.avatarImageUrl}
                   sx={{ width: '20px', height: '20px' }}
