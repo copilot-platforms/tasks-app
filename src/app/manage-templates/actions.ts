@@ -1,3 +1,4 @@
+'use server'
 import { apiUrl } from '@/config'
 import { CreateTemplateRequest } from '@/types/dto/templates.dto'
 import { revalidateTag } from 'next/cache'

@@ -30,7 +30,7 @@ export const TaskCard = ({ task }: { task: TaskResponse }) => {
           />
           <Typography variant="sm">{currentAssignee?.givenName || currentAssignee?.name}</Typography>
         </Stack>
-        <Typography variant="bodyXs">WEB-01</Typography>
+        <Typography variant="bodyXs">{task.label}</Typography>
       </Stack>
       <Typography variant="sm">{task.title}</Typography>
     </TaskCardContainer>

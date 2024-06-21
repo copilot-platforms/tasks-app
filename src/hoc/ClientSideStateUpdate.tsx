@@ -65,7 +65,7 @@ export const ClientSideStateUpdate = ({
 
     if (viewSettings) {
       store.dispatch(setViewSettings(viewSettings))
-      viewSettings.filterOptions.type == FilterOptionsKeywords.CLIENTS
+      viewSettings.filterOptions?.type == FilterOptionsKeywords.CLIENTS
         ? store.dispatch(setFilteredAssgineeList({ filteredType: FilterByOptions.CLIENT }))
         : viewSettings.filterOptions.type == FilterOptionsKeywords.TEAM
           ? store.dispatch(setFilteredAssgineeList({ filteredType: FilterByOptions.IUS }))
