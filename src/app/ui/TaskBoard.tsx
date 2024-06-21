@@ -18,6 +18,7 @@ import { TaskRow } from '@/components/cards/TaskRow'
 import { ISignedUrlUpload, View } from '@/types/interfaces'
 import { bulkRemoveAttachments } from '@/utils/bulkRemoveAttachments'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
+import { advancedFeatureFlag } from '@/config'
 
 export const TaskBoard = ({
   handleCreate,
@@ -77,13 +78,18 @@ export const TaskBoard = ({
       >
         {workflowStates.map((list, index) => {
           if (view === View.BOARD_VIEW) {
+            console.log(advancedFeatureFlag)
             return (
               <DragDropHandler key={list.id} accept={'taskCard'} index={index} id={list.id} onDropItem={onDropItem}>
                 <TaskColumn key={list.id} columnName={list.name} taskCount={taskCountForWorkflowStateId(list.id)}>
                   {filterTaskWithWorkflowStateId(list.id).map((task, index) => {
                     return (
                       <DragDropHandler key={task.id} accept={'taskCard'} index={index} id={task.id || ''}>
-                        <Box onClick={() => router.push(`/detail/${task.id}/iu?token=${token}`)} key={task.id} m="6px 0px">
+                        <Box
+                          onClick={() => advancedFeatureFlag && router.push(`/detail/${task.id}/iu?token=${token}`)}
+                          key={task.id}
+                          m="6px 0px"
+                        >
                           <TaskCard task={task} key={task.id} />
                         </Box>
                       </DragDropHandler>
