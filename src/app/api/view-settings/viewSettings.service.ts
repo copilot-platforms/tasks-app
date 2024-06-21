@@ -1,4 +1,5 @@
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
+import { FilterOptions } from '@/types/interfaces'
 import { BaseService } from '@api/core/services/base.service'
 import { PoliciesService } from '@api/core/services/policies.service'
 import { Resource } from '@api/core/types/api'
@@ -28,7 +29,6 @@ export class ViewSettingsService extends BaseService {
   async createOrUpdateViewSettings(data: CreateViewSettingsDTO) {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Create, Resource.ViewSetting)
-
     const newViewSettingData = {
       ...data,
       userId: this.user.internalUserId as string,
@@ -55,6 +55,11 @@ export class ViewSettingsService extends BaseService {
         userId: this.user.internalUserId as string,
         workspaceId: this.user.workspaceId,
         viewMode: this.DEFAULT_VIEW_MODE,
+        filterOptions: {
+          [FilterOptions.ASSIGNEE]: '',
+          [FilterOptions.KEYWORD]: '',
+          [FilterOptions.TYPE]: '',
+        },
       },
     })
   }

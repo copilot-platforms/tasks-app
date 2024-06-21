@@ -89,8 +89,6 @@ export default function Selector({
     }
   }, [])
 
-  console.log(value)
-
   return (
     <Stack direction="column">
       <Box onClick={handleClick} aria-describedby={id}>

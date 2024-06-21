@@ -1,4 +1,4 @@
-import { ActivityType } from '@/types/interfaces'
+import { ActivityType } from '@prisma/client'
 import { string } from 'zod'
 
 export const taskDetail = {

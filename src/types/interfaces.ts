@@ -1,3 +1,7 @@
+import { z } from 'zod'
+import { UserSchema } from './common'
+import { UpdateTaskRequestSchema } from './dto/tasks.dto'
+
 export enum TargetMethod {
   EDIT = 'edit',
   POST = 'post',
@@ -11,12 +15,6 @@ export enum UserType {
 export enum View {
   LIST_VIEW = 'list',
   BOARD_VIEW = 'board',
-}
-
-export enum ActivityType {
-  CREATE_TASK = 'CREATE_TASK',
-  ASSIGN_TASK = 'ASSIGN_TASK',
-  WORKFLOWSTATE_UPDATE = 'WORKFLOWSTATE_UPDATE',
 }
 
 export enum FileTypes {
@@ -46,6 +44,13 @@ export enum FilterOptions {
   ASSIGNEE = 'assignee',
   KEYWORD = 'keyword',
   TYPE = 'type',
+}
+
+export enum FilterByOptions {
+  CLIENT = 'clients',
+  COMPANY = 'companies',
+  IUS = 'internalUsers',
+  NOFILTER = 'none',
 }
 
 export enum FilterOptionsKeywords {
@@ -133,3 +138,8 @@ export interface IExtraOption {
   value?: string
   extraOptionFlag: true
 }
+
+export const DataSchema = z.object({
+  user: UserSchema,
+  task: UpdateTaskRequestSchema,
+})
