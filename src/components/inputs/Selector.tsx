@@ -6,7 +6,7 @@ import { useFocusableInput } from '@/hooks/useFocusableInput'
 import { HTMLAttributes, ReactNode, useEffect, useState } from 'react'
 import { StyledTextField } from './TextField'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { IAssigneeCombined, IExtraOption, ITemplate, TruncateMaxNumber } from '@/types/interfaces'
+import { IAssigneeCombined, IExtraOption, ITemplate, TruncateMaxNumber, UserType, UserTypesName } from '@/types/interfaces'
 import { truncateText } from '@/utils/truncateText'
 
 export enum SelectorType {
@@ -120,7 +120,7 @@ export default function Selector({
           }}
           getOptionLabel={(option: unknown) => detectSelectorType(option)}
           groupBy={(option: unknown) =>
-            selectorType === SelectorType.ASSIGNEE_SELECTOR ? (option as IAssigneeCombined).type : ''
+            selectorType === SelectorType.ASSIGNEE_SELECTOR ? UserTypesName[(option as IAssigneeCombined).type] : ''
           }
           inputValue={inputStatusValue}
           onInputChange={(_, newInputValue) => {
