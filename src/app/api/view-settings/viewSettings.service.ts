@@ -1,4 +1,5 @@
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
+import { FilterOptions } from '@/types/interfaces'
 import { BaseService } from '@api/core/services/base.service'
 import { PoliciesService } from '@api/core/services/policies.service'
 import { Resource } from '@api/core/types/api'
@@ -54,7 +55,11 @@ export class ViewSettingsService extends BaseService {
         userId: this.user.internalUserId as string,
         workspaceId: this.user.workspaceId,
         viewMode: this.DEFAULT_VIEW_MODE,
-        filterOptions: {},
+        filterOptions: {
+          [FilterOptions.ASSIGNEE]: '',
+          [FilterOptions.KEYWORD]: '',
+          [FilterOptions.TYPE]: '',
+        },
       },
     })
   }
