@@ -4,7 +4,7 @@ import { CopilotAPI } from '@/utils/CopilotAPI'
 import { z } from 'zod'
 import { LabelMapping as PrismaLabelMapping } from '@prisma/client'
 
-export class LabelMapping extends BaseService {
+export class LabelMappingService extends BaseService {
   /**
    * This method returns the computed label
    * @param assigneeId
@@ -135,9 +135,10 @@ export class LabelMapping extends BaseService {
   private getNextLabelCount(label: string) {
     let str = label.split('-')[1]
 
-    let num = parseInt(str, 10)
+    // let num = parseInt(str, 10)
 
-    num += 1
+    // num += 1
+    const num = +str + 1
 
     let incrementedStr = num.toString().padStart(str.length, '0')
 
@@ -151,14 +152,11 @@ export class LabelMapping extends BaseService {
    */
   private extractLabelSuffixNumber(label: string) {
     const match = label.match(/[A-Z]+(\d+)-\d+/)
-    if (match) {
-      return match[1]
-    }
-    return null
+    return match?.[1] ?? null
   }
 
   private async insertLabelMapping(label: string, labelledEntity: string) {
-    await this.db.labelMapping.create({
+    await this.db.label.create({
       data: {
         label,
         labelledEntity,

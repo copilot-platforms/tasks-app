@@ -9,6 +9,8 @@ import { ActivityType } from '@prisma/client'
 import { CommentAddedSchema } from '@api/activity-logs/schemas/CommentAddedSchema'
 import { NotificationService } from '@api/notification/notification.service'
 import { NotificationTaskActions } from '@api/core/types/tasks'
+import APIError from '@api/core/exceptions/api'
+import httpStatus from 'http-status'
 
 export class CommentService extends BaseService {
   async create(data: CreateComment) {
@@ -19,7 +21,7 @@ export class CommentService extends BaseService {
     const userInfo = await copilotUtils.me()
 
     if (!userInfo) {
-      throw new Error(`User not found for token ${this.user.token}`)
+      throw new APIError(httpStatus.NOT_FOUND, `User not found for token ${this.user.token}`)
     }
 
     const comment = await this.db.comment.create({
@@ -51,7 +53,7 @@ export class CommentService extends BaseService {
       })
 
       if (!task) {
-        throw new Error(`Notification not created because task not found with id: ${data.taskId}`)
+        throw new APIError(httpStatus.NOT_FOUND, `Notification not created because task not found with id: ${data.taskId}`)
       }
 
       const notificationService = new NotificationService(this.user)

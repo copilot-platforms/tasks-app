@@ -154,7 +154,7 @@ model Comment {
   @@map("Comments")
 }
 
-model LabelMapping {
+model Label {
   id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   label          String    @unique
   labelledEntity String
@@ -162,5 +162,5 @@ model LabelMapping {
   updatedAt      DateTime  @updatedAt @db.Timestamptz()
   deletedAt      DateTime? @db.Timestamptz()
 
-  @@map("LabelMappings")
+  @@map("Labels")
 }

@@ -5,6 +5,8 @@ import { NotificationTaskActions } from '@api/core/types/tasks'
 import { z } from 'zod'
 import { CompanyResponse, CopilotUser, MeResponse } from '@/types/common'
 import { getEmailDetails, getInProductNotificationDetails } from '@api/notification/notification.helpers'
+import APIError from '@api/core/exceptions/api'
+import httpStatus from 'http-status'
 
 export class NotificationService extends BaseService {
   async create(action: NotificationTaskActions, task: Task) {
@@ -33,7 +35,7 @@ export class NotificationService extends BaseService {
       const copilotUtils = new CopilotAPI(this.user.token)
       const userInfo = await copilotUtils.me()
       if (!userInfo) {
-        throw new Error(`User not found for token ${this.user.token}`)
+        throw new APIError(httpStatus.NOT_FOUND, `User not found for token ${this.user.token}`)
       }
       const senderId = z.string().parse(userInfo.id)
       const actionUserName = `${userInfo.givenName} ${userInfo.familyName}`
@@ -76,7 +78,7 @@ export class NotificationService extends BaseService {
         case AssigneeType.company:
           return copilot.getCompany(recipientId)
         default:
-          throw new Error(`Unknown assignee type: ${task.assigneeType}`)
+          throw new APIError(httpStatus.NOT_FOUND, `Unknown assignee type: ${task.assigneeType}`)
       }
     }
 

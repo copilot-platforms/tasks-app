@@ -13,7 +13,7 @@ import { TaskCreatedSchema } from '@api/activity-logs/schemas/TaskCreatedSchema'
 import { TaskAssignedSchema } from '@api/activity-logs/schemas/TaskAssignedSchema'
 import { WorkflowStateUpdatedSchema } from '@api/activity-logs/schemas/WorkflowStateUpdatedSchema'
 import { NotificationService } from '@api/notification/notification.service'
-import { LabelMapping } from '@api/label-mapping/label-mapping.service'
+import { LabelMappingService } from '@api/label-mapping/label-mapping.service'
 import { z } from 'zod'
 
 type FilterByAssigneeId = {
@@ -78,7 +78,7 @@ export class TasksService extends BaseService {
     policyGate.authorize(UserAction.Create, Resource.Tasks)
 
     //generate the label
-    const labelMappingService = new LabelMapping(this.user)
+    const labelMappingService = new LabelMappingService(this.user)
     const label = z.string().parse(await labelMappingService.getLabel(data.assigneeId, data.assigneeType))
 
     // Create a new task associated with current workspaceId. Also inject current request user as the creator.
@@ -153,7 +153,7 @@ export class TasksService extends BaseService {
     let label: string = prevTask.label
     //generate new label if prevTask has no assignee but now assigned to someone
     if (!prevTask.assigneeId && data.assigneeId) {
-      const labelMappingService = new LabelMapping(this.user)
+      const labelMappingService = new LabelMappingService(this.user)
       label = z.string().parse(await labelMappingService.getLabel(data.assigneeId, data.assigneeType))
     }
     // Get the updated task
