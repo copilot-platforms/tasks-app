@@ -9,15 +9,16 @@ import { PrimaryBtn } from '../buttons/PrimaryBtn'
 interface Prop {
   handleCancel: () => void
   handleDelete: () => void
+  body?: 'task' | 'comment'
 }
 
-export const ConfirmDeleteUI = ({ handleCancel, handleDelete }: Prop) => {
+export const ConfirmDeleteUI = ({ handleCancel, handleDelete, body = 'task' }: Prop) => {
   return (
     <UIContainer>
       <StyledBox>
         <AppMargin size={SizeofAppMargin.MEDIUM} py="20px">
           <Stack direction="column" rowGap={4}>
-            <Typography variant="2xl">Are you sure you want to delete this task?</Typography>
+            <Typography variant="2xl">Are you sure you want to delete this {body}?</Typography>
             <Typography variant="lg" sx={{ color: (theme) => theme.color.gray[500] }}>
               This action can&apos;t be undone.
             </Typography>

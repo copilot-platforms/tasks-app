@@ -10,11 +10,13 @@ import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { IAssignee, ITemplate, View } from '@/types/interfaces'
 import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
-import { updateViewModeSettings } from './actions'
 import { FilterBar } from '@/components/layouts/FilterBar'
 import ClientError from '@/components/clientError'
 import { Token, TokenSchema } from '@/types/common'
 import { CopilotAPI } from '@/utils/CopilotAPI'
+import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
+import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
+import { createMultipleAttachments, getSignedUrlUpload, updateViewModeSettings } from '@/app/actions'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -52,13 +54,13 @@ async function getAssigneeList(token: string): Promise<IAssignee> {
   return data.users
 }
 
-async function getViewSettings(token: string): Promise<View> {
+async function getViewSettings(token: string): Promise<CreateViewSettingsDTO> {
   const res = await fetch(`${apiUrl}/api/view-settings?token=${token}`, {
     next: { tags: ['getViewSettings'] },
   })
-
   const data = await res.json()
-  return data.viewMode
+
+  return data
 }
 
 async function getAllTemplates(token: string): Promise<ITemplate[]> {
@@ -94,19 +96,28 @@ export default async function Main({ searchParams }: { searchParams: { token: st
         tasks={tasks}
         token={token}
         assignee={assignee}
-        viewSettings={viewSettings || View.BOARD_VIEW}
+        viewSettings={viewSettings}
         tokenPayload={tokenPayload}
         templates={templates}
       >
         <DndWrapper>
           <Header showCreateTaskButton={true} />
           <FilterBar
-            updateViewModeSetting={async (mode) => {
+            updateViewModeSetting={async (payload: CreateViewSettingsDTO) => {
               'use server'
-              await updateViewModeSettings(token, mode)
+              await updateViewModeSettings(token, payload)
             }}
           />
-          <TaskBoard />
+          <TaskBoard
+            getSignedUrlUpload={async (fileName: string) => {
+              'use server'
+              return await getSignedUrlUpload(token, fileName)
+            }}
+            handleCreateMultipleAttachments={async (attachments: CreateAttachmentRequest[]) => {
+              'use server'
+              await createMultipleAttachments(token, attachments)
+            }}
+          />
         </DndWrapper>
       </ClientSideStateUpdate>
     </>

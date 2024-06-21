@@ -20,6 +20,14 @@ export const createAttachment = async (req: NextRequest) => {
   return NextResponse.json({ newAttachment }, { status: httpStatus.CREATED })
 }
 
+export const createMultipleAttachments = async (req: NextRequest) => {
+  const user = await authenticate(req)
+  const body = await req.json()
+  const attachmentsService = new AttachmentsService(user)
+  const newAttachments = await attachmentsService.createMultipleAttachments(body)
+  return NextResponse.json({ newAttachments }, { status: httpStatus.CREATED })
+}
+
 export const getAttachments = async (req: NextRequest) => {
   noStore()
   const taskId = req.nextUrl.searchParams.get('taskId')

@@ -17,12 +17,6 @@ export enum View {
   BOARD_VIEW = 'board',
 }
 
-export enum ActivityType {
-  CREATE_TASK = 'CREATE_TASK',
-  ASSIGN_TASK = 'ASSIGN_TASK',
-  WORKFLOWSTATE_UPDATE = 'WORKFLOWSTATE_UPDATE',
-}
-
 export enum FileTypes {
   PNG = 'image/png',
   PDF = 'application/pdf',
@@ -50,6 +44,13 @@ export enum FilterOptions {
   ASSIGNEE = 'assignee',
   KEYWORD = 'keyword',
   TYPE = 'type',
+}
+
+export enum FilterByOptions {
+  CLIENT = 'clients',
+  COMPANY = 'companies',
+  IUS = 'internalUsers',
+  NOFILTER = 'none',
 }
 
 export enum FilterOptionsKeywords {

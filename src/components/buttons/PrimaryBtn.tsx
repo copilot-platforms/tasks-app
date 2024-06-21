@@ -7,16 +7,19 @@ export const PrimaryBtn = ({
   buttonText,
   handleClick,
   buttonBackground,
+  disabled,
 }: {
   startIcon?: ReactNode
   buttonText: string
   handleClick: () => void
   buttonBackground?: string
+  disabled?: boolean
 }) => {
   return (
     <Button
       variant="contained"
       startIcon={startIcon ? <Add /> : null}
+      disabled={disabled}
       sx={(theme) => ({
         textTransform: 'none',
         bgcolor: buttonBackground || theme.color.gray[600],

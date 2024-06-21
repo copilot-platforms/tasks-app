@@ -1,30 +1,43 @@
-import { ActivityType } from '@/types/interfaces'
 import { Avatar, Box, Stack } from '@mui/material'
 import { BoldTypography, StyledTypography, VerticalLine } from '@/app/detail/ui/styledComponent'
 import { getTimeDifference } from '@/utils/getTimeDifference'
-import { mockActivitiesInterface } from '@/utils/mockData'
+import { LogResponse } from '@/app/api/activity-logs/schemas/LogResponseSchema'
+import { TaskAssignedResponse, TaskAssignedResponseSchema } from '@/app/api/activity-logs/schemas/TaskAssignedSchema'
+import { WorkflowStateUpdatedSchema } from '@/app/api/activity-logs/schemas/WorkflowStateUpdatedSchema'
+import { ActivityType } from '@prisma/client'
 
 interface Prop {
-  log: mockActivitiesInterface
+  log: LogResponse
+}
+
+const getAssignedToName = (details: TaskAssignedResponse) => {
+  if (details.newAssigneeDetails.givenName || details.newAssigneeDetails.familyName) {
+    return `${details.newAssigneeDetails.givenName} ${details.newAssigneeDetails.familyName}`
+  } else {
+    return `${details.newAssigneeDetails.name}`
+  }
 }
 
 export const ActivityLog = ({ log }: Prop) => {
   const logEntities =
-    log.activityType == ActivityType.WORKFLOWSTATE_UPDATE
-      ? [log.details?.prevWorkflowState?.type, log.details?.currentWorkflowState?.type]
-      : log.activityType == ActivityType.ASSIGN_TASK
-        ? [log.details?.assignedTo]
+    log.type == ActivityType.WORKFLOW_STATE_UPDATED
+      ? [
+          WorkflowStateUpdatedSchema.parse(log.details)?.oldWorkflowState?.name,
+          WorkflowStateUpdatedSchema.parse(log.details)?.newWorkflowState?.name,
+        ]
+      : log.type == ActivityType.TASK_ASSIGNED
+        ? [getAssignedToName(TaskAssignedResponseSchema.parse(log.details))]
         : []
 
   const activityDescription: { [key in ActivityType]: (...args: string[]) => React.ReactNode } = {
-    [ActivityType.CREATE_TASK]: () => <StyledTypography> created task. </StyledTypography>,
-    [ActivityType.ASSIGN_TASK]: (to: string) => (
+    [ActivityType.TASK_CREATED]: () => <StyledTypography> created task. </StyledTypography>,
+    [ActivityType.TASK_ASSIGNED]: (to: string) => (
       <>
         <StyledTypography> assigned task to </StyledTypography>
         <BoldTypography>{to}.</BoldTypography>
       </>
     ),
-    [ActivityType.WORKFLOWSTATE_UPDATE]: (from: string, to: string) => (
+    [ActivityType.WORKFLOW_STATE_UPDATED]: (from: string, to: string) => (
       <>
         <StyledTypography> changed status from </StyledTypography>
         <BoldTypography>{from}</BoldTypography>
@@ -32,14 +45,17 @@ export const ActivityLog = ({ log }: Prop) => {
         <BoldTypography>{to}.</BoldTypography>
       </>
     ),
+    [ActivityType.COMMENT_ADDED]: () => null,
   }
   return (
     <Stack direction="row" columnGap={4} position="relative">
       <VerticalLine />
-      <Avatar alt="user" src={log?.iconImageUrl || log?.avatarImageUrl} sx={{ width: '25px', height: '25px' }} />
+      <Avatar alt="user" src={log?.initiator?.avatarImageUrl || ''} sx={{ width: '25px', height: '25px' }} />
       <Stack direction="row" columnGap={1}>
-        <BoldTypography>{log.details.initiator}</BoldTypography>
-        {activityDescription[log.activityType](...logEntities)}
+        <BoldTypography>
+          {log.initiator.givenName} {log.initiator.familyName}
+        </BoldTypography>
+        {activityDescription[log.type as ActivityType](...logEntities)}
       </Stack>
       <StyledTypography> {getTimeDifference(log.createdAt)}</StyledTypography>
     </Stack>
