@@ -143,3 +143,10 @@ export const DataSchema = z.object({
   user: UserSchema,
   task: UpdateTaskRequestSchema,
 })
+
+export const UserTypesName = {
+  ius: 'Internal users',
+  internalUsers: 'Internal users',
+  clients: 'Clients',
+  companies: 'Companies',
+}
