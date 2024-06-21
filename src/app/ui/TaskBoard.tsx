@@ -78,7 +78,6 @@ export const TaskBoard = ({
       >
         {workflowStates.map((list, index) => {
           if (view === View.BOARD_VIEW) {
-            console.log(advancedFeatureFlag)
             return (
               <DragDropHandler key={list.id} accept={'taskCard'} index={index} id={list.id} onDropItem={onDropItem}>
                 <TaskColumn key={list.id} columnName={list.name} taskCount={taskCountForWorkflowStateId(list.id)}>
