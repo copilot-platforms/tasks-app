@@ -1,5 +1,4 @@
-export const dynamic = 'force-dynamic'
-export const dynamicParams = true
+export const fetchCache = 'force-no-store'
 
 import { Header } from '@/components/layouts/Header'
 import { apiUrl } from '@/config'
@@ -23,7 +22,7 @@ async function getAllWorkflowStates(token: string): Promise<WorkflowStateRespons
 
 async function getAllTasks(token: string): Promise<TaskResponse[]> {
   const res = await fetch(`${apiUrl}/api/tasks?token=${token}`, {
-    next: { tags: ['getAllTasks'] },
+    next: { tags: ['getAllTasks-client'] },
   })
 
   const data = await res.json()
@@ -32,7 +31,7 @@ async function getAllTasks(token: string): Promise<TaskResponse[]> {
 
 async function getAssigneeList(token: string): Promise<IAssignee> {
   const res = await fetch(`${apiUrl}/api/users/client?token=${token}`, {
-    next: { tags: ['getAssigneeList'], revalidate: 0 },
+    next: { tags: ['getAssigneeList'] },
   })
   const data = await res.json()
   return data.clients

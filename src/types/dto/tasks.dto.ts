@@ -42,6 +42,7 @@ export type UpdateTaskRequest = z.infer<typeof UpdateTaskRequestSchema>
 
 export const TaskResponseSchema = z.object({
   id: z.string(),
+  label: z.string(),
   workspaceId: z.string(),
   assigneeId: z.string().optional(),
   assigneeType: AssigneeTypeSchema,
