@@ -47,7 +47,6 @@ export const ActivityLog = ({ log }: Prop) => {
     ),
     [ActivityType.COMMENT_ADDED]: () => null,
   }
-
   return (
     <Stack direction="row" columnGap={4} position="relative">
       <VerticalLine />

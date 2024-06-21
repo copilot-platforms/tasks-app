@@ -3,13 +3,15 @@ import { RootState } from '../store'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { AssigneeType, FilterByOptions, FilterOptions, IAssigneeCombined, IFilterOptions, View } from '@/types/interfaces'
+import { ViewMode } from '@prisma/client'
+import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 
 interface IInitialState {
   workflowStates: WorkflowStateResponse[]
   assignee: IAssigneeCombined[]
   tasks: TaskResponse[]
   token: string | undefined
-  view: View
+  view: ViewMode
   filteredTasks: TaskResponse[]
   filterOptions: IFilterOptions
   filteredAssigneeList: IAssigneeCombined[]
@@ -20,7 +22,7 @@ const initialState: IInitialState = {
   tasks: [],
   token: undefined,
   assignee: [],
-  view: View.BOARD_VIEW,
+  view: ViewMode.board,
   filteredTasks: [],
   filterOptions: {
     [FilterOptions.ASSIGNEE]: '',
@@ -59,8 +61,9 @@ const taskBoardSlice = createSlice({
       state.assignee = action.payload
       state.filteredAssigneeList = action.payload
     },
-    setViewSettings: (state, action: { payload: View }) => {
-      state.view = action.payload
+    setViewSettings: (state, action: { payload: CreateViewSettingsDTO }) => {
+      state.view = action.payload.viewMode
+      state.filterOptions = action.payload.filterOptions
     },
     setFilterOptions: (state, action: { payload: { optionType: FilterOptions; newValue: string | null } }) => {
       state.filterOptions = {

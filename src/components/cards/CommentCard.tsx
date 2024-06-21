@@ -9,7 +9,7 @@ import {
   TapWriteReplyInput,
 } from '@/app/detail/ui/styledComponent'
 import { getTimeDifference } from '@/utils/getTimeDifference'
-import { Avatar, Box, InputAdornment, Stack, styled } from '@mui/material'
+import { Avatar, Box, InputAdornment, Modal, Stack, styled } from '@mui/material'
 import { TrashIcon } from '@/icons'
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 import { useState } from 'react'
@@ -17,6 +17,10 @@ import { ListBtn } from '@/components/buttons/ListBtn'
 import { MenuBox } from '@/components/inputs/MenuBox'
 import { useSelector } from 'react-redux'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
+import { LogResponse } from '@/app/api/activity-logs/schemas/LogResponseSchema'
+import { commentAddedResponseSchema } from '@/app/api/activity-logs/schemas/CommentAddedSchema'
+import { CreateComment } from '@/types/dto/comment.dto'
+import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
 
 const CustomDivider = styled(Box)(({ theme }) => ({
   height: '1px',
@@ -26,18 +30,40 @@ const CustomDivider = styled(Box)(({ theme }) => ({
   marginRight: '-10px',
 }))
 
-export const CommentCard = ({ comment }: { comment: any }) => {
+export const CommentCard = ({
+  comment,
+  createComment,
+  deleteComment,
+  task_id,
+}: {
+  comment: LogResponse
+  createComment: (postCommentPayload: CreateComment) => void
+  deleteComment: (id: string) => void
+  task_id: string
+}) => {
   const [showReply, setShowReply] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
   const [detail, setDetail] = useState('')
+  const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState(false)
   const { tokenPayload } = useSelector(selectAuthDetails)
-  const canEdit = tokenPayload?.internalUserId == comment.details.initiatorId
+  const canEdit = tokenPayload?.internalUserId == comment.initiator.id
+  const handleReplySubmission = () => {
+    const replyPayload: CreateComment = {
+      content: detail,
+      taskId: task_id,
+      parentId: commentAddedResponseSchema.parse(comment.details).id,
+    }
+    createComment(replyPayload)
+  }
+
   return (
     <CommentCardContainer onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
       <Stack direction="column" rowGap={3}>
         <Stack direction="row" justifyContent={'space-between'} alignItems="center">
           <Stack direction="row" columnGap={3}>
-            <BoldTypography>{comment.details.initiator}</BoldTypography>
+            <BoldTypography>
+              {comment.initiator.givenName} {comment.initiator.familyName}
+            </BoldTypography>
             <StyledTypography> {getTimeDifference(comment.createdAt)}</StyledTypography>
           </Stack>
 
@@ -53,7 +79,14 @@ export const CommentCard = ({ comment }: { comment: any }) => {
               {canEdit && (
                 <MenuBox
                   menuContent={
-                    <ListBtn content="Delete" handleClick={() => {}} icon={<TrashIcon />} contentColor="#CC0000" />
+                    <ListBtn
+                      content="Delete"
+                      handleClick={() => {
+                        setShowConfirmDeleteModal(true)
+                      }}
+                      icon={<TrashIcon />}
+                      contentColor={(theme) => theme.color.error}
+                    />
                   }
                   isSecondary
                 />
@@ -62,19 +95,17 @@ export const CommentCard = ({ comment }: { comment: any }) => {
           )}
         </Stack>
 
-        <TapWriteComment content={comment.content} getContent={() => {}} readonly />
+        <TapWriteComment content={comment.details.content as string} getContent={() => {}} readonly />
 
-        {comment.children?.map((item: any) => {
+        {commentAddedResponseSchema.parse(comment.details)?.replies?.map((item: any) => {
           return (
             <Stack direction="column" rowGap={3} key={item.id}>
               <CustomDivider />
               <Stack direction="row" columnGap={2} alignItems={'center'}>
-                <Avatar
-                  alt="user"
-                  src={comment?.iconImageUrl || comment?.avatarImageUrl}
-                  sx={{ width: '20px', height: '20px' }}
-                />
-                <BoldTypography>{item.details?.initiator}</BoldTypography>
+                <Avatar alt="user" src={''} sx={{ width: '20px', height: '20px' }} />
+                <BoldTypography>
+                  {item.initiator?.givenName} {item.initiator?.familyName}
+                </BoldTypography>
                 <StyledTypography> {getTimeDifference(item.createdAt)}</StyledTypography>
               </Stack>
               <TapWriteComment content={item.content} getContent={() => {}} readonly />
@@ -82,12 +113,12 @@ export const CommentCard = ({ comment }: { comment: any }) => {
           )
         })}
 
-        {comment.children.length > 0 || showReply ? (
+        {commentAddedResponseSchema.parse(comment.details).replies?.length > 0 || showReply ? (
           <>
             <CustomDivider />
             <Stack direction="row" columnGap={1} alignItems="flex-start">
               <Avatar alt="user" src={''} sx={{ width: '20px', height: '20px', marginTop: '5px' }} />
-              <TapWriteReplyInput content={''} getContent={(content) => setDetail(content)} placeholder="Leave a reply..." />
+              <TapWriteReplyInput content={''} getContent={setDetail} placeholder="Leave a reply..." />
               <InputAdornment
                 position="end"
                 sx={{
@@ -97,12 +128,27 @@ export const CommentCard = ({ comment }: { comment: any }) => {
                   paddingBottom: '10px',
                 }}
               >
-                <PrimaryBtn buttonText="Reply" handleClick={() => {}} />
+                <PrimaryBtn buttonText="Reply" handleClick={handleReplySubmission} />
               </InputAdornment>
             </Stack>
           </>
         ) : null}
       </Stack>
+      <Modal
+        open={showConfirmDeleteModal}
+        onClose={() => setShowConfirmDeleteModal(false)}
+        aria-labelledby="delete-task-modal"
+        aria-describedby="delete-task"
+      >
+        <ConfirmDeleteUI
+          handleCancel={() => setShowConfirmDeleteModal(false)}
+          handleDelete={() => {
+            deleteComment(commentAddedResponseSchema.parse(comment.details).id)
+            setShowConfirmDeleteModal(false)
+          }}
+          body="comment"
+        />
+      </Modal>
     </CommentCardContainer>
   )
 }

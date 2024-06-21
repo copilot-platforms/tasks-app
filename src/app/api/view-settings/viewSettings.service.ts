@@ -28,7 +28,6 @@ export class ViewSettingsService extends BaseService {
   async createOrUpdateViewSettings(data: CreateViewSettingsDTO) {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Create, Resource.ViewSetting)
-
     const newViewSettingData = {
       ...data,
       userId: this.user.internalUserId as string,
@@ -55,6 +54,7 @@ export class ViewSettingsService extends BaseService {
         userId: this.user.internalUserId as string,
         workspaceId: this.user.workspaceId,
         viewMode: this.DEFAULT_VIEW_MODE,
+        filterOptions: {},
       },
     })
   }
