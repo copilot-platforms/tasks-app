@@ -5,6 +5,7 @@ export const CreateCommentSchema = z.object({
   content: z.string(),
   parentId: z.string().uuid().optional(),
   taskId: z.string().uuid(),
+  mentions: z.array(z.string().uuid()).optional(),
 })
 
 export type CreateComment = z.infer<typeof CreateCommentSchema>
