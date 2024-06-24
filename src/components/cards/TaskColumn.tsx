@@ -29,7 +29,9 @@ export const TaskColumn = ({ children, columnName, taskCount }: Prop) => {
       <TaskColumnHeader>
         <Stack direction="row" alignItems="center" columnGap={2}>
           <Typography variant="md">{columnName}</Typography>
-          <Typography variant="sm">{taskCount}</Typography>
+          <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[400], fontSize: '12px' }}>
+            {taskCount}
+          </Typography>
         </Stack>
       </TaskColumnHeader>
       {children}
