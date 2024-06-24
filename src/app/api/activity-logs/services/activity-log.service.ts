@@ -7,6 +7,8 @@ import { CopilotAPI } from '@/utils/CopilotAPI'
 import { CommentService } from '@api/comment/comment.service'
 import { ClientsResponse, CompaniesResponse, InternalUsersResponse } from '@/types/common'
 import { LogResponseSchemaArrayType } from '../schemas/LogResponseSchema'
+import APIError from '@api/core/exceptions/api'
+import httpStatus from 'http-status'
 
 export class ActivityLogService extends BaseService {
   constructor(user: User) {
@@ -97,7 +99,7 @@ export class ActivityLogService extends BaseService {
       case ActivityType.COMMENT_ADDED:
         const comment = comments.find((comment) => comment.id === payload.id)
         if (!comment) {
-          throw new Error(`Error while finding comment with id ${payload.id}`)
+          throw new APIError(httpStatus.NOT_FOUND, `Error while finding comment with id ${payload.id}`)
         }
 
         let replies = allReplies.filter((reply) => reply.parentId === comment.id)

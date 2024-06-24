@@ -1,3 +1,5 @@
+export const fetchCache = 'force-no-store'
+
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { TemplateBoard } from './ui/TemplateBoard'
 import { apiUrl } from '@/config'
@@ -30,7 +32,7 @@ async function getAssigneeList(token: string): Promise<IAssignee> {
 
 async function getAllTemplates(token: string): Promise<ITemplate[]> {
   const res = await fetch(`${apiUrl}/api/tasks/templates?token=${token}`, {
-    next: { tags: ['getAllTemplates'], revalidate: 0 },
+    next: { tags: ['getAllTemplates'] },
   })
 
   const templates = await res.json()

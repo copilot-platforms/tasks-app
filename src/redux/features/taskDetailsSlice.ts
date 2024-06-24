@@ -1,14 +1,17 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { RootState } from '../store'
+import { IAssigneeSuggestions } from '@/types/interfaces'
 
 interface IInitialState {
   showConfirmDeleteModal: boolean
   showSidebar: boolean
+  assigneeSuggestions: IAssigneeSuggestions[]
 }
 
 const initialState: IInitialState = {
   showConfirmDeleteModal: false,
   showSidebar: false,
+  assigneeSuggestions: [],
 }
 
 const taskDetailsSlice = createSlice({
@@ -21,11 +24,14 @@ const taskDetailsSlice = createSlice({
     setShowSidebar: (state, action: { payload: boolean }) => {
       state.showSidebar = action.payload
     },
+    setAssigneeSuggestion: (state, action: { payload: IAssigneeSuggestions[] }) => {
+      state.assigneeSuggestions = action.payload
+    },
   },
 })
 
 export const selectTaskDetails = (state: RootState) => state.taskDetail
 
-export const { setShowConfirmDeleteModal, setShowSidebar } = taskDetailsSlice.actions
+export const { setShowConfirmDeleteModal, setShowSidebar, setAssigneeSuggestion } = taskDetailsSlice.actions
 
 export default taskDetailsSlice.reducer
