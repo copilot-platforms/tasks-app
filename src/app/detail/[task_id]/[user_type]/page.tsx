@@ -115,7 +115,7 @@ export default async function TaskDetailPage({
                     <SecondaryBtn buttonContent={<StyledTypography variant="sm">Tasks</StyledTypography>} enableBackground />
                   </Link>
                   <StyledKeyboardIcon />
-                  <Typography variant="sm">{task.label}</Typography>
+                  <Typography variant="sm">{task?.label}</Typography>
                 </Stack>
                 <Stack direction="row" alignItems="center" columnGap="8px">
                   {params.user_type === UserType.INTERNAL_USER && <MenuBoxContainer />}

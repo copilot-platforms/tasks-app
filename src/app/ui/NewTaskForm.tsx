@@ -198,7 +198,7 @@ export const NewTaskForm = ({
                 <Avatar
                   alt="user"
                   src={assigneeValue?.iconImageUrl || assigneeValue?.avatarImageUrl}
-                  sx={{ width: '20px', height: '20px' }}
+                  sx={{ width: '18px', height: '18px' }}
                   variant={assigneeValue?.type === 'companies' ? 'square' : 'circular'}
                 />
               }

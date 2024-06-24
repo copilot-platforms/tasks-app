@@ -110,17 +110,13 @@ export const FilterBar = ({
     <Box>
       <Box
         sx={{
-          border: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
+          border: { xs: 'none', sm: (theme) => `1px solid ${theme.color.borders.borderDisabled}` },
         }}
       >
         <AppMargin size={SizeofAppMargin.LARGE} py="14px">
           <Stack direction="row" alignItems="center" justifyContent="space-between">
             <Stack direction="row" columnGap={3}>
-              <Box
-                sx={{
-                  display: { xs: 'none', sm: 'block' },
-                }}
-              >
+              <Box>
                 <FilterButtonGroup filterButtons={filterButtons} activeButtonIndex={ButtonIndex} />
               </Box>
               {filterOptions[FilterOptions.TYPE] !== tokenPayload?.internalUserId && (
@@ -198,7 +194,12 @@ export const FilterBar = ({
         </AppMargin>
       </Box>
       <AppMargin size={SizeofAppMargin.LARGE}>
-        <Stack direction="row" justifyContent="space-between" sx={{ display: { xs: 'flex', sm: 'none' } }}>
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+          sx={{ display: { xs: 'flex', sm: 'none' }, mb: { xs: '12px', md: '0px' } }}
+        >
           <Selector
             getSelectedValue={(_newValue) => {
               const newValue = _newValue as IAssigneeCombined
