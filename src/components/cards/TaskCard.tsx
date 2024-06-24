@@ -28,9 +28,19 @@ export const TaskCard = ({ task }: { task: TaskResponse }) => {
             sx={{ width: '20px', height: '20px' }}
             variant={currentAssignee?.type === 'companies' ? 'rounded' : 'circular'}
           />
-          <Typography variant="sm">{currentAssignee?.givenName || currentAssignee?.name}</Typography>
+          <Typography
+            variant="bodySm"
+            sx={{ fontWeight: (theme) => theme.typography.lg.fontWeight, color: (theme) => theme.color.gray[500] }}
+          >
+            {currentAssignee?.givenName || currentAssignee?.name}
+          </Typography>
         </Stack>
-        <Typography variant="bodyXs">WEB-01</Typography>
+        <Typography
+          variant="bodyXs"
+          sx={{ fontWeight: (theme) => theme.typography.bodyXs, color: (theme) => theme.color.gray[500] }}
+        >
+          WEB-01
+        </Typography>
       </Stack>
       <Typography variant="sm">{task.title}</Typography>
     </TaskCardContainer>
