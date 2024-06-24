@@ -3,6 +3,7 @@ export const apiUrl = `${process.env.VERCEL_ENV === 'development' ? 'http://' : 
 export const SentryConfig = {
   DSN: process.env.NEXT_PUBLIC_SENTRY_DSN || '',
 }
+export const advancedFeatureFlag = !!+(process.env.NEXT_PUBLIC_ADVANCED_FEATURES_FLAG || 0)
 
 export const supabaseProjectUrl = process.env.NEXT_PUBLIC_SUPABASE_PROJECT_URL || ''
 export const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
