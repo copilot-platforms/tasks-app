@@ -41,7 +41,7 @@ export const ListViewTaskCard = ({
         },
       }}
     >
-      <AppMargin size={SizeofAppMargin.LARGE} py="6px">
+      <Box sx={{ paddingTop: '2px', paddingBottom: '2px' }}>
         <Stack direction="row" columnGap={8} alignItems="center" justifyContent="space-between">
           <Stack
             sx={{ width: '100%', cursor: 'pointer' }}
@@ -50,8 +50,10 @@ export const ListViewTaskCard = ({
             columnGap={4}
             onClick={handleClick}
           >
-            <Typography variant="bodyXs">WEB-01</Typography>
-            <Typography variant="bodySm">{task?.title}</Typography>
+            <Typography variant="bodySm" sx={{ color: (theme) => theme.color.gray[500] }}>
+              WEB-01
+            </Typography>
+            <Typography variant="sm">{task?.title}</Typography>
           </Stack>
           <Stack
             direction="row"
@@ -143,7 +145,7 @@ export const ListViewTaskCard = ({
             </Box>
           </Stack>
         </Stack>
-      </AppMargin>
+      </Box>
     </Box>
   )
 }

@@ -117,7 +117,7 @@ export const TaskBoard = ({
                             updateTask={({ payload }) => {
                               updateTask(task.id, payload)
                             }}
-                            handleClick={() => router.push(`/detail/${task.id}/iu?token=${token}`)}
+                            handleClick={() => advancedFeatureFlag && router.push(`/detail/${task.id}/iu?token=${token}`)}
                           />
                         </Box>
                       </DragDropHandler>
