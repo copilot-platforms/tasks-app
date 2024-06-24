@@ -11,6 +11,7 @@ import Selector from '@/components/inputs/Selector'
 import { IAssigneeCombined } from '@/types/interfaces'
 import { NoAssignee, NoAssigneeExtraOptions } from '@/utils/noAssignee'
 import ExtraOptionRendererAssignee from '@/components/inputs/ExtraOptionRendererAssignee'
+import { DueDateLayout } from '@/components/utils/DueDateLayout'
 
 export const ListViewTaskCard = ({
   task,
@@ -57,13 +58,29 @@ export const ListViewTaskCard = ({
             alignItems="center"
             columnGap="20px"
             sx={{
-              minWidth: { xs: 'none', sm: '200px' },
+              minWidth: {
+                xs: 'none',
+                sm: '200px',
+              },
             }}
           >
-            <Box minWidth="fit-content" sx={{ display: { xs: 'none', sm: 'block' } }}>
-              <Typography variant="bodySm">Apr 05, 2024</Typography>
+            <Box
+              sx={{
+                display: {
+                  xs: 'none',
+                  sm: 'flex',
+                },
+                minWidth: 'fit-content',
+                width: '100px',
+                flexDirection: 'row',
+                alignItems: 'flex-end',
+                justifyContent: 'right',
+              }}
+            >
+              {task.dueDate && <DueDateLayout date={task.dueDate} />}
             </Box>
-            <Box minWidth="fit-content">
+
+            <Box minWidth="fit-content" sx={{ minWidth: 'fit-content', width: '200px' }}>
               <Selector
                 placeholder="Change assignee"
                 getSelectedValue={(_newValue) => {
