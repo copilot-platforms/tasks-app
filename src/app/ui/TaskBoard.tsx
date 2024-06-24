@@ -20,6 +20,7 @@ import { handleCreate, updateTask } from '../actions'
 import { z } from 'zod'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { bulkRemoveAttachments } from '@/utils/bulkRemoveAttachments'
+import { advancedFeatureFlag } from '@/config'
 
 export const TaskBoard = ({
   getSignedUrlUpload,
@@ -82,7 +83,11 @@ export const TaskBoard = ({
                   {filterTaskWithWorkflowStateId(list.id).map((task, index) => {
                     return (
                       <DragDropHandler key={task.id} accept={'taskCard'} index={index} id={task.id || ''}>
-                        <Box onClick={() => router.push(`/detail/${task.id}/iu?token=${token}`)} key={task.id} m="6px 0px">
+                        <Box
+                          onClick={() => advancedFeatureFlag && router.push(`/detail/${task.id}/iu?token=${token}`)}
+                          key={task.id}
+                          m="6px 0px"
+                        >
                           <TaskCard task={task} key={task.id} />
                         </Box>
                       </DragDropHandler>
