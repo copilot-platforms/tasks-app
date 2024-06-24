@@ -10,6 +10,7 @@ import { AttachmentsService } from '@api/attachments/attachments.service'
 import httpStatus from 'http-status'
 import { IdParams } from '@api/core/types/api'
 import APIError from '../core/exceptions/api'
+import { unstable_noStore as noStore } from 'next/cache'
 
 export const createAttachment = async (req: NextRequest) => {
   const user = await authenticate(req)
@@ -28,6 +29,7 @@ export const createMultipleAttachments = async (req: NextRequest) => {
 }
 
 export const getAttachments = async (req: NextRequest) => {
+  noStore()
   const taskId = req.nextUrl.searchParams.get('taskId')
   if (!taskId) {
     throw new APIError(httpStatus.BAD_REQUEST, 'taskId is required')

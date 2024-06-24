@@ -39,7 +39,7 @@ export const TaskCard = ({ task }: { task: TaskResponse }) => {
           variant="bodyXs"
           sx={{ fontWeight: (theme) => theme.typography.bodyXs, color: (theme) => theme.color.gray[500] }}
         >
-          WEB-01
+          {task.label}
         </Typography>
       </Stack>
       <Typography variant="sm">{task.title}</Typography>

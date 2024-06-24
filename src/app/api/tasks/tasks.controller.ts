@@ -4,8 +4,10 @@ import { CreateTaskRequestSchema, UpdateTaskRequestSchema } from '@/types/dto/ta
 import { IdParams } from '@api/core/types/api'
 import httpStatus from 'http-status'
 import authenticate from '@api/core/utils/authenticate'
+import { unstable_noStore as noStore } from 'next/cache'
 
 export const getTasks = async (req: NextRequest) => {
+  noStore()
   const user = await authenticate(req)
 
   const tasksService = new TasksService(user)

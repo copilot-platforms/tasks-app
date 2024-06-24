@@ -1,5 +1,4 @@
-export const dynamic = 'force-dynamic'
-export const dynamicParams = true
+export const fetchCache = 'force-no-store'
 
 import { DndWrapper } from '@/hoc/DndWrapper'
 import { TaskBoard } from './ui/TaskBoard'
@@ -11,19 +10,13 @@ import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { IAssignee, ITemplate, View } from '@/types/interfaces'
 import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
-import {
-  createMultipleAttachments,
-  getSignedUrlUpload,
-  handleCreate,
-  updateTask,
-  updateViewModeSettings,
-} from '@/app/actions'
 import { FilterBar } from '@/components/layouts/FilterBar'
 import ClientError from '@/components/clientError'
 import { Token, TokenSchema } from '@/types/common'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
+import { createMultipleAttachments, getSignedUrlUpload, updateViewModeSettings } from '@/app/actions'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -37,7 +30,7 @@ async function getAllWorkflowStates(token: string): Promise<WorkflowStateRespons
 
 async function getAllTasks(token: string): Promise<TaskResponse[]> {
   const res = await fetch(`${apiUrl}/api/tasks?token=${token}`, {
-    next: { tags: ['getAllTasks'] },
+    next: { tags: ['getTasks'] },
   })
 
   const data = await res.json()
@@ -53,7 +46,7 @@ async function getTokenPayload(token: string): Promise<Token> {
 
 async function getAssigneeList(token: string): Promise<IAssignee> {
   const res = await fetch(`${apiUrl}/api/users?token=${token}`, {
-    next: { tags: ['getAssigneeList'], revalidate: 0 },
+    next: { tags: ['getAssigneeList'] },
   })
 
   const data = await res.json()
@@ -63,7 +56,7 @@ async function getAssigneeList(token: string): Promise<IAssignee> {
 
 async function getViewSettings(token: string): Promise<CreateViewSettingsDTO> {
   const res = await fetch(`${apiUrl}/api/view-settings?token=${token}`, {
-    next: { tags: ['getViewSettings'], revalidate: 0 },
+    next: { tags: ['getViewSettings'] },
   })
   const data = await res.json()
 
@@ -71,7 +64,7 @@ async function getViewSettings(token: string): Promise<CreateViewSettingsDTO> {
 }
 
 async function getAllTemplates(token: string): Promise<ITemplate[]> {
-  const res = await fetch(`${apiUrl}/api/tasks/templates?token=${token}`)
+  const res = await fetch(`${apiUrl}/api/tasks/templates?token=${token}`, {})
 
   const templates = await res.json()
 
@@ -116,15 +109,6 @@ export default async function Main({ searchParams }: { searchParams: { token: st
             }}
           />
           <TaskBoard
-            handleCreate={async (createTaskPayload) => {
-              'use server'
-              const response = await handleCreate(token, createTaskPayload)
-              return response
-            }}
-            updateTask={async (taskId, payload) => {
-              'use server'
-              await updateTask({ token, taskId, payload })
-            }}
             getSignedUrlUpload={async (fileName: string) => {
               'use server'
               return await getSignedUrlUpload(token, fileName)
