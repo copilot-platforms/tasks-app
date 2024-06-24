@@ -1,4 +1,4 @@
-import { Avatar, Box, Popper, Stack, Typography } from '@mui/material'
+import { Avatar, Box, Button, Popper, Stack, Typography } from '@mui/material'
 import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
 import { StyledAutocomplete } from '@/components/inputs/Autocomplete'
 import { statusIcons } from '@/utils/iconMatcher'
@@ -30,6 +30,7 @@ interface Prop {
     anchorEl: null | HTMLElement,
     props?: HTMLAttributes<HTMLLIElement>,
   ) => ReactNode
+  disableOutline?: boolean
 }
 
 export default function Selector({
@@ -43,6 +44,7 @@ export default function Selector({
   placeholder = 'Change status...',
   extraOption,
   extraOptionRenderer,
+  disableOutline,
 }: Prop) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
@@ -91,7 +93,33 @@ export default function Selector({
   return (
     <Stack direction="column">
       <Box onClick={handleClick} aria-describedby={id}>
-        <SecondaryBtn startIcon={startIcon} buttonContent={buttonContent} />
+        {disableOutline ? (
+          <Stack
+            direction="row"
+            alignItems="center"
+            columnGap="4px"
+            sx={{
+              width: '100px',
+              justifyContent: { xs: 'end', sm: 'auto' },
+              cursor: 'pointer',
+            }}
+          >
+            <Box>{startIcon}</Box>
+            <Typography
+              variant="bodySm"
+              sx={{
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                display: { xs: 'none', sm: 'block' },
+              }}
+            >
+              {buttonContent}
+            </Typography>
+          </Stack>
+        ) : (
+          <SelectorButton startIcon={startIcon} buttonContent={buttonContent} outlined={disableOutline} />
+        )}
       </Box>
       <Popper
         id={id}
@@ -239,5 +267,42 @@ const AssigneeSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTM
         </Typography>
       </Stack>
     </Box>
+  )
+}
+
+const SelectorButton = ({
+  buttonContent,
+  startIcon,
+  handleClick,
+  enableBackground,
+  outlined,
+}: {
+  startIcon?: ReactNode
+  buttonContent: ReactNode
+  handleClick?: () => void
+  enableBackground?: boolean
+  outlined?: boolean
+}) => {
+  return (
+    <Button
+      variant="outlined"
+      startIcon={startIcon ? startIcon : null}
+      sx={(theme) => ({
+        textTransform: 'none',
+        border: enableBackground || outlined ? 'none' : `1px solid ${theme.color.borders.border}`,
+        bgcolor: enableBackground ? theme.color.gray[150] : '',
+        '&:hover': {
+          border: enableBackground || outlined ? 'none' : `1px solid ${theme.color.borders.border}`,
+          bgcolor: theme.color.gray[150],
+        },
+        '.MuiTouchRipple-child': {
+          bgcolor: theme.color.borders.border,
+        },
+        padding: { xs: '1px 9px', md: '4px 16px' },
+      })}
+      onClick={handleClick}
+    >
+      {buttonContent}
+    </Button>
   )
 }

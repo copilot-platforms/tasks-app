@@ -45,12 +45,14 @@ export const ListViewTaskCard = ({
           <Stack
             sx={{ width: '100%', cursor: 'pointer' }}
             direction="row"
-            alignItems="center"
+            alignItems="flex-end"
             columnGap={4}
             onClick={handleClick}
           >
-            <Typography variant="bodyXs">WEB-01</Typography>
-            <Typography variant="bodySm">{task?.title}</Typography>
+            <Typography variant="sm" fontWeight={400} sx={{ color: (theme) => theme.color.gray[500] }}>
+              {task.label}
+            </Typography>
+            <Typography variant="sm">{task?.title}</Typography>
           </Stack>
           <Stack
             direction="row"
@@ -63,9 +65,10 @@ export const ListViewTaskCard = ({
             <Box minWidth="fit-content" sx={{ display: { xs: 'none', sm: 'block' } }}>
               <Typography variant="bodySm">Apr 05, 2024</Typography>
             </Box>
-            <Box minWidth="fit-content">
+            <Box>
               <Selector
                 placeholder="Change assignee"
+                disableOutline
                 getSelectedValue={(_newValue) => {
                   const newValue = _newValue as IAssigneeCombined
                   updateAssigneeValue(newValue)
@@ -119,7 +122,8 @@ export const ListViewTaskCard = ({
                 }}
                 buttonContent={
                   <Typography variant="bodySm" lineHeight="16px" sx={{ color: (theme) => theme.color.gray[600] }}>
-                    {assigneeValue?.name || assigneeValue?.givenName}
+                    {(assigneeValue as IAssigneeCombined)?.name ||
+                      `${(assigneeValue as IAssigneeCombined)?.givenName ?? ''} ${(assigneeValue as IAssigneeCombined)?.familyName ?? ''}`.trim()}
                   </Typography>
                 }
               />
