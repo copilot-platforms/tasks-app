@@ -8,11 +8,13 @@ const TaskColumnHeader = styled(Stack)({
   flexDirection: 'row',
   justifyContent: 'space-between',
   alignItems: 'center',
+  paddingBottom: '8px',
 })
 
 const TaskColumnContainer = styled(Stack)({
   width: '275px',
   height: '100vh',
+  gap: '2px',
 })
 
 interface Prop {

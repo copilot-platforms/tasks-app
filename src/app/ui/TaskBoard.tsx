@@ -74,6 +74,8 @@ export const TaskBoard = ({
         sx={{
           overflowX: 'auto',
           flexDirection: view === View.BOARD_VIEW ? 'row' : 'column',
+          rowGap: '16px',
+          columnGap: '24px',
         }}
       >
         {workflowStates.map((list, index) => {
