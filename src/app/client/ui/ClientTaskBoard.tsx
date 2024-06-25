@@ -10,6 +10,7 @@ import { useSelector } from 'react-redux'
 import { useRouter } from 'next/navigation'
 import { StateType } from '@prisma/client'
 import { advancedFeatureFlag } from '@/config'
+import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 
 export const ClientTaskBoard = ({ completeTask }: { completeTask: (taskId: string) => void }) => {
   const { workflowStates, tasks, filteredTasks, token } = useSelector(selectTaskBoard)

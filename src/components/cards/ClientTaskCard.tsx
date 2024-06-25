@@ -2,12 +2,14 @@
 
 import { Avatar, Box, Stack, Typography } from '@mui/material'
 import { SecondaryBtn } from '../buttons/SecondaryBtn'
-import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { useSelector } from 'react-redux'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
-import { Tapwrite } from 'tapwrite'
-import { Task } from '@mui/icons-material'
+import { DueDateLayout } from '@/components/utils/DueDateLayout'
+import { extractHtml } from '@/utils/extractHtml'
+import { truncateText } from '@/utils/truncateText'
+import { TruncateMaxNumber } from '@/types/interfaces'
+import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 
 export const ClientTaskCard = ({
   task,
@@ -30,40 +32,54 @@ export const ClientTaskCard = ({
         },
       }}
     >
-      <AppMargin size={SizeofAppMargin.LARGE} py="6px">
+      <AppMargin size={SizeofAppMargin.LARGE} py="2px">
         <Stack direction="row" columnGap={8} alignItems="center" justifyContent="space-between">
           <Stack sx={{ width: '100%', cursor: 'pointer' }} direction="column" onClick={() => handleRouteChange()}>
             <Typography variant="sm">{task?.title}</Typography>
-            <Tapwrite content={task?.body || ''} getContent={() => {}} readonly />
+            <Box
+              sx={{
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
+              <Typography variant="bodySm">
+                {truncateText(extractHtml(task.body ?? ''), TruncateMaxNumber.CLIENT_TASK_DESCRIPTION)}
+              </Typography>
+            </Box>
           </Stack>
           <Stack direction="row" alignItems="center" minWidth="fit-content" columnGap="20px">
             <Box minWidth="fit-content">
-              <Typography variant="bodySm">Apr 05, 2024</Typography>
-            </Box>
-
-            <Stack direction="row" alignItems="center" minWidth="90px" columnGap={2}>
-              <Avatar
-                src={currentAssignee?.iconImageUrl || currentAssignee?.avatarImageUrl}
-                sx={{ width: '20px', height: '20px' }}
-                variant={currentAssignee?.type === 'companies' ? 'rounded' : 'circular'}
-              />
-
-              <Typography variant="bodySm" lineHeight="16px" sx={{ color: (theme) => theme.color.gray[600] }}>
-                {currentAssignee ? currentAssignee?.givenName || currentAssignee?.name : 'No assignee'}
-              </Typography>
-            </Stack>
-            <Box minWidth="fit-content" ml="12px">
-              {!markdoneFlag && (
-                <SecondaryBtn
-                  handleClick={() => handleMarkDone()}
-                  buttonContent={
-                    <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[700] }}>
-                      Mark done
-                    </Typography>
-                  }
-                />
+              {task.dueDate && (
+                <Typography variant="bodySm">
+                  <DueDateLayout date={task.dueDate} />
+                </Typography>
               )}
             </Box>
+            <Stack direction="row" alignItems="flex-start" minWidth="250px" columnGap={2}>
+              <Stack direction="row" alignItems="flex-start" minWidth="90px" columnGap={2}>
+                <Avatar
+                  src={currentAssignee?.iconImageUrl ?? currentAssignee?.avatarImageUrl}
+                  sx={{ width: '20px', height: '20px' }}
+                  variant={currentAssignee?.type === 'companies' ? 'rounded' : 'circular'}
+                />
+
+                <Typography variant="bodySm" lineHeight="16px" sx={{ color: (theme) => theme.color.gray[600] }}>
+                  {currentAssignee ? currentAssignee?.givenName || currentAssignee?.name : 'No assignee'}
+                </Typography>
+              </Stack>
+              <Box minWidth="fit-content" ml="12px">
+                {!markdoneFlag && (
+                  <SecondaryBtn
+                    handleClick={() => handleMarkDone()}
+                    buttonContent={
+                      <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[700] }}>
+                        Mark done
+                      </Typography>
+                    }
+                  />
+                )}
+              </Box>
+            </Stack>
           </Stack>
         </Stack>
       </AppMargin>
