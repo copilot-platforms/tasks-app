@@ -20,7 +20,7 @@ export const TaskRow = ({ children, columnName, taskCount, showConfigurableIcons
           background: (theme) => theme.color.gray[100],
         }}
       >
-        <Box sx={{ paddingTop: '2px', paddingBottom: '2px' }}>
+        <AppMargin size={SizeofAppMargin.LARGE} py="6px">
           <Stack direction="row" justifyContent="space-between" alignItems="center">
             <Stack direction="row" columnGap={2}>
               <Typography variant="md">{columnName}</Typography>
@@ -55,7 +55,7 @@ export const TaskRow = ({ children, columnName, taskCount, showConfigurableIcons
               </Stack>
             )}
           </Stack>
-        </Box>
+        </AppMargin>
       </Box>
       {children}
     </Box>

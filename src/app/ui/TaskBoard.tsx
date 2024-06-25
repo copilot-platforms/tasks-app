@@ -120,16 +120,14 @@ export const TaskBoard = ({
                 {filterTaskWithWorkflowStateId(list.id).map((task, index) => {
                   return (
                     <DragDropHandler key={task.id} accept={'taskCard'} index={index} id={task.id || ''}>
-                      <Box key={task.id} m="6px 0px">
-                        <ListViewTaskCard
-                          task={task}
-                          key={task.id}
-                          updateTask={({ payload }) => {
-                            updateTask({ token: z.string().parse(token), taskId: task.id, payload })
-                          }}
-                          handleClick={() => advancedFeatureFlag && router.push(`/detail/${task.id}/iu?token=${token}`)}
-                        />
-                      </Box>
+                      <ListViewTaskCard
+                        task={task}
+                        key={task.id}
+                        updateTask={({ payload }) => {
+                          updateTask({ token: z.string().parse(token), taskId: task.id, payload })
+                        }}
+                        handleClick={() => advancedFeatureFlag && router.push(`/detail/${task.id}/iu?token=${token}`)}
+                      />
                     </DragDropHandler>
                   )
                 })}
