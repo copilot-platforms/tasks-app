@@ -1,6 +1,7 @@
 import { Stack, Typography } from '@mui/material'
 import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
 import { ReactNode } from 'react'
+import { TertiaryBtn } from '../buttons/TertiaryBtn'
 
 export type FilterButtons = {
   name: string
@@ -20,15 +21,15 @@ const FilterButtonGroup = ({
       sx={(theme) => ({
         border: `1px solid ${theme.color.borders.border}`,
         borderRadius: 1,
-        columnGap: { xs: '3px', sm: '12px' },
+        columnGap: { xs: '0px', sm: '12px' },
         alignItems: 'center',
-        padding: '6px',
+        padding: { xs: '2px', md: '6px' },
       })}
       direction={'row'}
     >
       {filterButtons.map((item, index) => {
         return (
-          <SecondaryBtn
+          <TertiaryBtn
             key={item.id}
             buttonContent={
               <Typography

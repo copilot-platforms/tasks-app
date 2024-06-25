@@ -168,7 +168,7 @@ export const theme = createTheme({
     },
     bodySm: {
       fontFamily: inter.style.fontFamily,
-      fontSize: '12px',
+      fontSize: '13px',
       fontStyle: 'normal',
       fontWeight: 400,
       lineHeight: '20px',
