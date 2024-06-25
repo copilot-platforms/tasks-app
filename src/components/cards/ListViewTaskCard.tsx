@@ -11,6 +11,7 @@ import Selector from '@/components/inputs/Selector'
 import { IAssigneeCombined } from '@/types/interfaces'
 import { NoAssignee, NoAssigneeExtraOptions } from '@/utils/noAssignee'
 import ExtraOptionRendererAssignee from '@/components/inputs/ExtraOptionRendererAssignee'
+import { DueDateLayout } from '@/components/utils/DueDateLayout'
 
 export const ListViewTaskCard = ({
   task,
@@ -40,7 +41,7 @@ export const ListViewTaskCard = ({
         },
       }}
     >
-      <AppMargin size={SizeofAppMargin.LARGE} py="6px">
+      <Box sx={{ paddingTop: '2px', paddingBottom: '2px' }}>
         <Stack direction="row" columnGap={8} alignItems="center" justifyContent="space-between">
           <Stack
             sx={{ width: '100%', cursor: 'pointer' }}
@@ -59,11 +60,26 @@ export const ListViewTaskCard = ({
             alignItems="center"
             columnGap="20px"
             sx={{
-              minWidth: { xs: 'none', sm: '200px' },
+              minWidth: {
+                xs: 'none',
+                sm: '200px',
+              },
             }}
           >
-            <Box minWidth="fit-content" sx={{ display: { xs: 'none', sm: 'block' } }}>
-              <Typography variant="bodySm">Apr 05, 2024</Typography>
+            <Box
+              sx={{
+                display: {
+                  xs: 'none',
+                  sm: 'flex',
+                },
+                minWidth: 'fit-content',
+                width: '100px',
+                flexDirection: 'row',
+                alignItems: 'flex-end',
+                justifyContent: 'right',
+              }}
+            >
+              {task.dueDate && <DueDateLayout date={task.dueDate} />}
             </Box>
             <Box>
               <Selector
@@ -130,7 +146,7 @@ export const ListViewTaskCard = ({
             </Box>
           </Stack>
         </Stack>
-      </AppMargin>
+      </Box>
     </Box>
   )
 }

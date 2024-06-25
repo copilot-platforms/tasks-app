@@ -19,8 +19,8 @@ import { ISignedUrlUpload, View } from '@/types/interfaces'
 import { handleCreate, updateTask } from '../actions'
 import { z } from 'zod'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
-import { advancedFeatureFlag } from '@/config'
 import { bulkRemoveAttachments } from '@/utils/bulkRemoveAttachments'
+import { advancedFeatureFlag } from '@/config'
 
 export const TaskBoard = ({
   getSignedUrlUpload,
