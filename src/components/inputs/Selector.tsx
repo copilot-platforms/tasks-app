@@ -98,9 +98,10 @@ export default function Selector({
             direction="row"
             alignItems="center"
             columnGap="4px"
+            justifyContent="flex-start"
             sx={{
               width: '100px',
-              justifyContent: { xs: 'end', sm: 'auto' },
+              justifyContent: { xs: 'end', sm: 'flex-start' },
               cursor: 'pointer',
             }}
           >
