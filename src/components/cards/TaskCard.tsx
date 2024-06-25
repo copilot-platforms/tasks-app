@@ -6,6 +6,7 @@ import { IAssigneeCombined } from '@/types/interfaces'
 import { NoAssignee } from '@/utils/noAssignee'
 import { Avatar, Stack, Typography, styled } from '@mui/material'
 import { useSelector } from 'react-redux'
+import { DueDateLayout } from '@/components/utils/DueDateLayout'
 
 const TaskCardContainer = styled(Stack)(({ theme }) => ({
   border: `1px solid ${theme.color.borders.border}`,
@@ -21,7 +22,7 @@ export const TaskCard = ({ task }: { task: TaskResponse }) => {
   const currentAssignee: unknown = assignee.find((el) => el.id === task.assigneeId) ?? NoAssignee
 
   return (
-    <TaskCardContainer>
+    <TaskCardContainer rowGap={1}>
       <Stack direction="row" justifyContent="space-between">
         <Stack direction="row" alignItems="center" columnGap={1}>
           <Avatar
@@ -44,6 +45,7 @@ export const TaskCard = ({ task }: { task: TaskResponse }) => {
         </Typography>
       </Stack>
       <Typography variant="sm">{task.title}</Typography>
+      {task.dueDate && <DueDateLayout date={task.dueDate} />}
     </TaskCardContainer>
   )
 }
