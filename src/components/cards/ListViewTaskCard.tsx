@@ -12,6 +12,8 @@ import { IAssigneeCombined } from '@/types/interfaces'
 import { NoAssignee, NoAssigneeExtraOptions } from '@/utils/noAssignee'
 import ExtraOptionRendererAssignee from '@/components/inputs/ExtraOptionRendererAssignee'
 
+import { getAssigneeName } from '@/utils/getAssigneeName'
+
 export const ListViewTaskCard = ({
   task,
   updateTask,
@@ -88,10 +90,10 @@ export const ListViewTaskCard = ({
                 }}
                 startIcon={
                   <Avatar
-                    alt="user"
-                    src={assigneeValue?.iconImageUrl || assigneeValue?.avatarImageUrl}
+                    alt={getAssigneeName(assigneeValue)}
+                    src={assigneeValue?.iconImageUrl || assigneeValue?.avatarImageUrl || 'user'}
                     sx={{ width: '20px', height: '20px' }}
-                    variant={currentAssignee?.type === 'companies' ? 'rounded' : 'circular'}
+                    variant={assigneeValue?.type === 'companies' ? 'rounded' : 'circular'}
                   />
                 }
                 options={assignee}
