@@ -73,6 +73,8 @@ export const TaskBoard = ({
         sx={{
           overflowX: 'auto',
           flexDirection: view === View.BOARD_VIEW ? 'row' : 'column',
+          rowGap: '16px',
+          columnGap: '24px',
         }}
       >
         {workflowStates.map((list, index) => {
@@ -116,7 +118,7 @@ export const TaskBoard = ({
                             updateTask={({ payload }) => {
                               updateTask({ token: z.string().parse(token), taskId: task.id, payload })
                             }}
-                            handleClick={() => router.push(`/detail/${task.id}/iu?token=${token}`)}
+                            handleClick={() => advancedFeatureFlag && router.push(`/detail/${task.id}/iu?token=${token}`)}
                           />
                         </Box>
                       </DragDropHandler>

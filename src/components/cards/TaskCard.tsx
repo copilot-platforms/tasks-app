@@ -5,6 +5,7 @@ import { TaskResponse } from '@/types/dto/tasks.dto'
 import { NoAssignee } from '@/utils/noAssignee'
 import { Avatar, Stack, Typography, styled } from '@mui/material'
 import { useSelector } from 'react-redux'
+import { DueDateLayout } from '@/components/utils/DueDateLayout'
 
 const TaskCardContainer = styled(Stack)(({ theme }) => ({
   border: `1px solid ${theme.color.borders.border}`,
@@ -17,9 +18,8 @@ export const TaskCard = ({ task }: { task: TaskResponse }) => {
   const { assignee } = useSelector(selectTaskBoard)
 
   const currentAssignee = assignee.find((el) => el.id === task.assigneeId) ?? NoAssignee
-
   return (
-    <TaskCardContainer>
+    <TaskCardContainer rowGap={1}>
       <Stack direction="row" justifyContent="space-between">
         <Stack direction="row" alignItems="center" columnGap={1}>
           <Avatar
@@ -28,11 +28,22 @@ export const TaskCard = ({ task }: { task: TaskResponse }) => {
             sx={{ width: '20px', height: '20px' }}
             variant={currentAssignee?.type === 'companies' ? 'rounded' : 'circular'}
           />
-          <Typography variant="sm">{currentAssignee?.givenName || currentAssignee?.name}</Typography>
+          <Typography
+            variant="bodySm"
+            sx={{ fontWeight: (theme) => theme.typography.lg.fontWeight, color: (theme) => theme.color.gray[500] }}
+          >
+            {currentAssignee?.givenName || currentAssignee?.name}
+          </Typography>
         </Stack>
-        <Typography variant="bodyXs">{task.label}</Typography>
+        <Typography
+          variant="bodyXs"
+          sx={{ fontWeight: (theme) => theme.typography.bodyXs, color: (theme) => theme.color.gray[500] }}
+        >
+          {task.label}
+        </Typography>
       </Stack>
       <Typography variant="sm">{task.title}</Typography>
+      {task.dueDate && <DueDateLayout date={task.dueDate} />}
     </TaskCardContainer>
   )
 }

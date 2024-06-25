@@ -11,6 +11,7 @@ import Selector from '@/components/inputs/Selector'
 import { IAssigneeCombined } from '@/types/interfaces'
 import { NoAssignee, NoAssigneeExtraOptions } from '@/utils/noAssignee'
 import ExtraOptionRendererAssignee from '@/components/inputs/ExtraOptionRendererAssignee'
+import { DueDateLayout } from '@/components/utils/DueDateLayout'
 
 export const ListViewTaskCard = ({
   task,
@@ -40,7 +41,7 @@ export const ListViewTaskCard = ({
         },
       }}
     >
-      <AppMargin size={SizeofAppMargin.LARGE} py="6px">
+      <Box sx={{ paddingTop: '2px', paddingBottom: '2px' }}>
         <Stack direction="row" columnGap={8} alignItems="center" justifyContent="space-between">
           <Stack
             sx={{ width: '100%', cursor: 'pointer' }}
@@ -49,21 +50,39 @@ export const ListViewTaskCard = ({
             columnGap={4}
             onClick={handleClick}
           >
-            <Typography variant="bodyXs">WEB-01</Typography>
-            <Typography variant="bodySm">{task?.title}</Typography>
+            <Typography variant="bodySm" sx={{ color: (theme) => theme.color.gray[500] }}>
+              WEB-01
+            </Typography>
+            <Typography variant="sm">{task?.title}</Typography>
           </Stack>
           <Stack
             direction="row"
             alignItems="center"
             columnGap="20px"
             sx={{
-              minWidth: { xs: 'none', sm: '200px' },
+              minWidth: {
+                xs: 'none',
+                sm: '200px',
+              },
             }}
           >
-            <Box minWidth="fit-content" sx={{ display: { xs: 'none', sm: 'block' } }}>
-              <Typography variant="bodySm">Apr 05, 2024</Typography>
+            <Box
+              sx={{
+                display: {
+                  xs: 'none',
+                  sm: 'flex',
+                },
+                minWidth: 'fit-content',
+                width: '100px',
+                flexDirection: 'row',
+                alignItems: 'flex-end',
+                justifyContent: 'right',
+              }}
+            >
+              {task.dueDate && <DueDateLayout date={task.dueDate} />}
             </Box>
-            <Box minWidth="fit-content">
+
+            <Box minWidth="fit-content" sx={{ minWidth: 'fit-content', width: '200px' }}>
               <Selector
                 placeholder="Change assignee"
                 getSelectedValue={(_newValue) => {
@@ -126,7 +145,7 @@ export const ListViewTaskCard = ({
             </Box>
           </Stack>
         </Stack>
-      </AppMargin>
+      </Box>
     </Box>
   )
 }
