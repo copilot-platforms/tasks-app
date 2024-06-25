@@ -17,14 +17,14 @@ export const TaskCard = ({ task }: { task: TaskResponse }) => {
   const { assignee } = useSelector(selectTaskBoard)
 
   const currentAssignee = assignee.find((el) => el.id === task.assigneeId) ?? NoAssignee
-
+  console.log(currentAssignee)
   return (
     <TaskCardContainer>
       <Stack direction="row" justifyContent="space-between">
         <Stack direction="row" alignItems="center" columnGap={1}>
           <Avatar
             alt={currentAssignee?.givenName == 'No assignee' ? '' : currentAssignee?.givenName}
-            src={(currentAssignee?.iconImageUrl || currentAssignee?.avatarImageUrl) ?? 'user'}
+            src={currentAssignee?.iconImageUrl || currentAssignee?.avatarImageUrl || 'user'}
             sx={{ width: '20px', height: '20px' }}
             variant={currentAssignee?.type === 'companies' ? 'rounded' : 'circular'}
           />

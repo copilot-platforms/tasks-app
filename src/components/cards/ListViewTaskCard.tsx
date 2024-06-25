@@ -90,8 +90,8 @@ export const ListViewTaskCard = ({
                 }}
                 startIcon={
                   <Avatar
-                    alt={getAssigneeName(assigneeValue) ?? 'user'}
-                    src={(assigneeValue?.iconImageUrl || assigneeValue?.avatarImageUrl) ?? 'user'}
+                    alt={getAssigneeName(assigneeValue)}
+                    src={assigneeValue?.iconImageUrl || assigneeValue?.avatarImageUrl || 'user'}
                     sx={{ width: '20px', height: '20px' }}
                     variant={assigneeValue?.type === 'companies' ? 'rounded' : 'circular'}
                   />

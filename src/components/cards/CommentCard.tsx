@@ -112,8 +112,8 @@ export const CommentCard = ({
               <CustomDivider />
               <Stack direction="row" columnGap={2} alignItems={'center'}>
                 <Avatar
-                  alt={comment?.initiator?.givenName ?? 'user'}
-                  src={comment?.initiator?.avatarImageUrl ?? 'user'}
+                  alt={comment?.initiator?.givenName}
+                  src={comment?.initiator?.avatarImageUrl || 'user'}
                   sx={{ width: '20px', height: '20px' }}
                 />
                 <BoldTypography>

@@ -226,8 +226,8 @@ const AssigneeSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTM
     >
       <Stack direction="row" alignItems="center" columnGap={3}>
         <Avatar
-          alt={(assignee?.givenName || assignee?.familyName) ?? 'user'}
-          src={(assignee.avatarImageUrl || assignee.iconImageUrl) ?? 'user'}
+          alt={assignee?.givenName || assignee?.familyName}
+          src={assignee.avatarImageUrl || assignee.iconImageUrl || 'user'}
           sx={{ width: '20px', height: '20px' }}
           variant={(option as IAssigneeCombined).type === 'companies' ? 'rounded' : 'circular'}
         />
