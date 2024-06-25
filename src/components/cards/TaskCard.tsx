@@ -13,7 +13,9 @@ const TaskCardContainer = styled(Stack)(({ theme }) => ({
   borderRadius: theme.spacing(theme.shape.radius100),
   background: theme.color.base.white,
   padding: '12px',
-  cursor: 'pointer',
+  ':hover': {
+    background: theme.color.gray[150],
+  },
 }))
 
 export const TaskCard = ({ task }: { task: TaskResponse }) => {
