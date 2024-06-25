@@ -1,4 +1,4 @@
-import { Box } from '@mui/material'
+import { Box, SxProps } from '@mui/material'
 import { ReactNode } from 'react'
 
 export enum SizeofAppMargin {
@@ -7,16 +7,26 @@ export enum SizeofAppMargin {
   SMALL = 'small',
 }
 
-export const AppMargin = ({ children, size, py }: { children: ReactNode; size: SizeofAppMargin; py?: string }) => {
+export const AppMargin = ({
+  children,
+  size,
+  py,
+  sx,
+}: {
+  children: ReactNode
+  size: SizeofAppMargin
+  py?: string
+  sx?: SxProps
+}) => {
   if (size === SizeofAppMargin.LARGE) {
-    return <Box sx={{ padding: { xs: py ? py : '20px', sm: `${py ? py : '0px'} 36px` } }}>{children}</Box>
+    return <Box sx={{ ...sx, padding: { xs: `${py ? py : '0px'} 20px`, sm: `${py ? py : '0px'} 36px` } }}>{children}</Box>
   }
 
   if (size === SizeofAppMargin.MEDIUM) {
-    return <Box sx={{ padding: { xs: py ? py : '20px', sm: `${py ? py : '0px'} 28px` } }}>{children}</Box>
+    return <Box sx={{ ...sx, padding: { xs: `${py ? py : '0px'} 20px`, sm: `${py ? py : '0px'} 28px` } }}>{children}</Box>
   }
 
   if (size === SizeofAppMargin.SMALL) {
-    return <Box sx={{ padding: { xs: py ? py : '20px', sm: `${py ? py : '0px'} 25px` } }}>{children}</Box>
+    return <Box sx={{ ...sx, padding: { xs: `${py ? py : '0px'} 20px`, sm: `${py ? py : '0px'} 25px` } }}>{children}</Box>
   }
 }
