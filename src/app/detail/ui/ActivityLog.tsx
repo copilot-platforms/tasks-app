@@ -1,7 +1,6 @@
 import { Avatar, Box, Stack } from '@mui/material'
 import { BoldTypography, StyledTypography, TypographyContainer, VerticalLine } from '@/app/detail/ui/styledComponent'
 import { getTimeDifference } from '@/utils/getTimeDifference'
-import AvatarWithInitials from '@/components/Avatar/AvatarWithInitials'
 import { LogResponse } from '@/app/api/activity-logs/schemas/LogResponseSchema'
 import { TaskAssignedResponse, TaskAssignedResponseSchema } from '@/app/api/activity-logs/schemas/TaskAssignedSchema'
 import { WorkflowStateUpdatedSchema } from '@/app/api/activity-logs/schemas/WorkflowStateUpdatedSchema'
@@ -51,10 +50,9 @@ export const ActivityLog = ({ log }: Prop) => {
   return (
     <Stack direction="row" columnGap={4} position="relative">
       <VerticalLine />
-      <AvatarWithInitials
-        alt="user"
-        src={log?.initiator?.avatarImageUrl || ''}
-        altName={log?.initiator?.givenName}
+      <Avatar
+        src={log?.initiator?.avatarImageUrl ?? 'user'}
+        alt={log?.initiator?.givenName ?? 'user'}
         sx={{ width: '25px', height: '25px' }}
       />
       <TypographyContainer direction="row" columnGap={1}>

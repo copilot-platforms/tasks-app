@@ -27,7 +27,6 @@ import { useRouter } from 'next/navigation'
 import { selectCreateTemplate } from '@/redux/features/templateSlice'
 import { NoAssignee, NoAssigneeExtraOptions } from '@/utils/noAssignee'
 import ExtraOptionRendererAssignee from '@/components/inputs/ExtraOptionRendererAssignee'
-import AvatarWithInitials from '@/components/Avatar/AvatarWithInitials'
 import { TapWriteTaskEditor } from '@/app/detail/ui/styledComponent'
 import { upload } from '@vercel/blob/client'
 import { AttachmentInput } from '@/components/inputs/AttachmentInput'
@@ -35,7 +34,7 @@ import { SupabaseActions } from '@/utils/SupabaseActions'
 import { generateRandomString } from '@/utils/generateRandomString'
 import { AttachmentCard } from '@/components/cards/AttachmentCard'
 import { bulkRemoveAttachments } from '@/utils/bulkRemoveAttachments'
-import { getNameForAvatar } from '@/utils/getNameForAvatar'
+import { getAssigneeName } from '@/utils/getAssigneeName'
 
 const supabaseActions = new SupabaseActions()
 
@@ -197,10 +196,9 @@ export const NewTaskForm = ({
                 store.dispatch(setCreateTaskFields({ targetField: 'assigneeId', value: newValue?.id }))
               }}
               startIcon={
-                <AvatarWithInitials
-                  altName={getNameForAvatar(assigneeValue)}
-                  alt="user"
-                  src={assigneeValue?.iconImageUrl || assigneeValue?.avatarImageUrl}
+                <Avatar
+                  alt={getAssigneeName(assigneeValue) ?? 'user'}
+                  src={(assigneeValue?.iconImageUrl || assigneeValue?.avatarImageUrl) ?? 'user'}
                   sx={{ width: '20px', height: '20px' }}
                   variant={assigneeValue?.type === 'companies' ? 'rounded' : 'circular'}
                 />

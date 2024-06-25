@@ -17,7 +17,7 @@ import { ListBtn } from '@/components/buttons/ListBtn'
 import { MenuBox } from '@/components/inputs/MenuBox'
 import { useSelector } from 'react-redux'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
-import AvatarWithInitials from '@/components/Avatar/AvatarWithInitials'
+
 import { LogResponse } from '@/app/api/activity-logs/schemas/LogResponseSchema'
 import { commentAddedResponseSchema } from '@/app/api/activity-logs/schemas/CommentAddedSchema'
 import { CreateComment } from '@/types/dto/comment.dto'
@@ -111,10 +111,9 @@ export const CommentCard = ({
             <Stack direction="column" rowGap={3} key={item.id}>
               <CustomDivider />
               <Stack direction="row" columnGap={2} alignItems={'center'}>
-                <AvatarWithInitials
-                  alt="user"
-                  altName={comment?.initiator?.givenName}
-                  src={comment?.initiator?.avatarImageUrl || ''}
+                <Avatar
+                  alt={comment?.initiator?.givenName ?? 'user'}
+                  src={comment?.initiator?.avatarImageUrl ?? 'user'}
                   sx={{ width: '20px', height: '20px' }}
                 />
                 <BoldTypography>

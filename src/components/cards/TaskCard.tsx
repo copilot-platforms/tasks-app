@@ -5,7 +5,6 @@ import { TaskResponse } from '@/types/dto/tasks.dto'
 import { NoAssignee } from '@/utils/noAssignee'
 import { Avatar, Stack, Typography, styled } from '@mui/material'
 import { useSelector } from 'react-redux'
-import AvatarWithInitials from '@/components/Avatar/AvatarWithInitials'
 
 const TaskCardContainer = styled(Stack)(({ theme }) => ({
   border: `1px solid ${theme.color.borders.border}`,
@@ -23,10 +22,9 @@ export const TaskCard = ({ task }: { task: TaskResponse }) => {
     <TaskCardContainer>
       <Stack direction="row" justifyContent="space-between">
         <Stack direction="row" alignItems="center" columnGap={1}>
-          <AvatarWithInitials
-            alt="user"
-            altName={currentAssignee?.givenName == 'No assignee' ? '' : currentAssignee?.givenName}
-            src={currentAssignee?.iconImageUrl || currentAssignee?.avatarImageUrl}
+          <Avatar
+            alt={currentAssignee?.givenName == 'No assignee' ? '' : currentAssignee?.givenName}
+            src={(currentAssignee?.iconImageUrl || currentAssignee?.avatarImageUrl) ?? 'user'}
             sx={{ width: '20px', height: '20px' }}
             variant={currentAssignee?.type === 'companies' ? 'rounded' : 'circular'}
           />

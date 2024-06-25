@@ -8,7 +8,6 @@ import { useSelector } from 'react-redux'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { Tapwrite } from 'tapwrite'
 import { Task } from '@mui/icons-material'
-import AvatarWithInitials from '../Avatar/AvatarWithInitials'
 
 export const ClientTaskCard = ({
   task,
@@ -43,10 +42,10 @@ export const ClientTaskCard = ({
             </Box>
 
             <Stack direction="row" alignItems="center" minWidth="90px" columnGap={2}>
-              <AvatarWithInitials
-                src={currentAssignee?.iconImageUrl || currentAssignee?.avatarImageUrl}
+              <Avatar
+                src={(currentAssignee?.iconImageUrl || currentAssignee?.avatarImageUrl) ?? 'user'}
                 sx={{ width: '20px', height: '20px' }}
-                altName={currentAssignee?.givenName || currentAssignee?.familyName}
+                alt={(currentAssignee?.givenName || currentAssignee?.familyName) ?? 'user'}
                 variant={currentAssignee?.type === 'companies' ? 'rounded' : 'circular'}
               />
 
