@@ -17,6 +17,7 @@ import { ListBtn } from '@/components/buttons/ListBtn'
 import { MenuBox } from '@/components/inputs/MenuBox'
 import { useSelector } from 'react-redux'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
+
 import { LogResponse } from '@/app/api/activity-logs/schemas/LogResponseSchema'
 import { commentAddedResponseSchema } from '@/app/api/activity-logs/schemas/CommentAddedSchema'
 import { CreateComment } from '@/types/dto/comment.dto'
@@ -110,8 +111,13 @@ export const CommentCard = ({
             <Stack direction="column" rowGap={3} key={item.id}>
               <CustomDivider />
               <Stack direction="row" columnGap={2} alignItems={'center'}>
-                <Avatar alt="user" src={''} sx={{ width: '20px', height: '20px' }} />
+                <Avatar
+                  alt={comment?.initiator?.givenName}
+                  src={comment?.initiator?.avatarImageUrl || 'user'}
+                  sx={{ width: '20px', height: '20px' }}
+                />
                 <BoldTypography>
+                  {' '}
                   {item.initiator?.givenName} {item.initiator?.familyName}
                 </BoldTypography>
                 <StyledTypography> {getTimeDifference(item.createdAt)}</StyledTypography>
