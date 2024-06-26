@@ -17,7 +17,6 @@ export const DndWrapper = ({ children }: { children: ReactNode }) => {
     scrollAngleRanges: [
       { start: 0, end: 60 },
       { start: 120, end: 180 },
-      { start: 240, end: 300 },
     ],
   }
 
@@ -25,6 +24,7 @@ export const DndWrapper = ({ children }: { children: ReactNode }) => {
     scrollAngleRanges: [
       { start: 30, end: 150 },
       { start: 210, end: 330 },
+      { start: 240, end: 300 },
     ],
   }
 
@@ -33,8 +33,6 @@ export const DndWrapper = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     setBackendOptions(view === View.BOARD_VIEW ? boardViewModeOptions : listViewModeOptions)
   }, [view])
-
-  if (!view) return null
 
   return (
     <DndProvider backend={matches ? TouchBackend : HTML5Backend} options={backendOptions}>
