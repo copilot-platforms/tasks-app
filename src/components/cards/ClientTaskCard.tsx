@@ -24,6 +24,7 @@ export const ClientTaskCard = ({
 }) => {
   const { assignee } = useSelector(selectTaskBoard)
   const currentAssignee = assignee.find((el) => el.id === task.assigneeId)
+
   return (
     <Box
       sx={{
@@ -33,7 +34,7 @@ export const ClientTaskCard = ({
       }}
     >
       <AppMargin size={SizeofAppMargin.LARGE} py="2px">
-        <Stack direction="row" columnGap={8} alignItems="center" justifyContent="space-between">
+        <Stack direction={{ xs: 'column', sm: 'row' }} rowGap={2} alignItems="center" justifyContent="space-between">
           <Stack sx={{ width: '100%', cursor: 'pointer' }} direction="column" onClick={() => handleRouteChange()}>
             <Typography variant="sm">{task?.title}</Typography>
             <Box
@@ -47,23 +48,23 @@ export const ClientTaskCard = ({
               </Typography>
             </Box>
           </Stack>
-          <Stack direction="row" alignItems="center" minWidth="fit-content" columnGap="20px">
-            <Box minWidth="fit-content">
+          <Stack direction="row" alignItems="flex-start" minWidth="fit-content" columnGap={4} justifyContent="space-between">
+            <Box minWidth={{ xs: '80px' }}>
               {task.dueDate && (
                 <Typography variant="bodySm">
                   <DueDateLayout date={task.dueDate} />
                 </Typography>
               )}
             </Box>
-            <Stack direction="row" alignItems="flex-start" minWidth="250px" columnGap={2}>
-              <Stack direction="row" alignItems="flex-start" minWidth="90px" columnGap={2}>
+            <Stack direction="row" alignItems="flex-start" minWidth={{ xs: '200px', sm: '250px' }} columnGap={2} ml="12px">
+              <Stack direction="row" alignItems="flex-start" minWidth="90px" columnGap={2} sx={{ padding: '2px' }}>
                 <Avatar
                   src={currentAssignee?.iconImageUrl ?? currentAssignee?.avatarImageUrl}
                   sx={{ width: '20px', height: '20px' }}
                   variant={currentAssignee?.type === 'companies' ? 'rounded' : 'circular'}
                 />
 
-                <Typography variant="bodySm" lineHeight="16px" sx={{ color: (theme) => theme.color.gray[600] }}>
+                <Typography variant="bodySm" sx={{ color: (theme) => theme.color.gray[600] }}>
                   {currentAssignee ? currentAssignee?.givenName || currentAssignee?.name : 'No assignee'}
                 </Typography>
               </Stack>
