@@ -8,7 +8,7 @@ import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { DueDateLayout } from '@/components/utils/DueDateLayout'
 import { extractHtml } from '@/utils/extractHtml'
 import { truncateText } from '@/utils/truncateText'
-import { TruncateMaxNumber } from '@/types/interfaces'
+import { IAssigneeCombined, TruncateMaxNumber } from '@/types/interfaces'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 
 export const ClientTaskCard = ({
@@ -78,8 +78,21 @@ export const ClientTaskCard = ({
                   variant={currentAssignee?.type === 'companies' ? 'rounded' : 'circular'}
                 />
 
-                <Typography variant="bodySm" sx={{ color: (theme) => theme.color.gray[600] }}>
-                  {currentAssignee ? currentAssignee?.givenName || currentAssignee?.name : 'No assignee'}
+                <Typography
+                  variant="bodySm"
+                  sx={{
+                    color: (theme) => theme.color.gray[600],
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                  }}
+                >
+                  {truncateText(
+                    (currentAssignee as IAssigneeCombined)?.name ||
+                      `${(currentAssignee as IAssigneeCombined)?.givenName ?? ''} ${(currentAssignee as IAssigneeCombined)?.familyName ?? ''}`.trim() ||
+                      'No Assignee',
+                    TruncateMaxNumber.SELECTOR,
+                  )}
                 </Typography>
               </Stack>
             </Stack>
