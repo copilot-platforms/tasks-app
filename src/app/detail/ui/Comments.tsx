@@ -1,4 +1,4 @@
-import { Avatar, Box, Stack } from '@mui/material'
+import { Avatar, Stack } from '@mui/material'
 import { VerticalLine } from './styledComponent'
 import { CommentCard } from '@/components/cards/CommentCard'
 import { CreateComment } from '@/types/dto/comment.dto'
@@ -15,7 +15,11 @@ export const Comments = ({ comment, createComment, deleteComment, task_id }: Pro
   return (
     <Stack direction="row" columnGap={2} position="relative">
       <VerticalLine />
-      <Avatar alt="user" src={''} sx={{ width: '25px', height: '25px', marginTop: '5px' }} />
+      <Avatar
+        alt={comment?.initiator?.givenName}
+        src={comment?.initiator?.avatarImageUrl || 'user'}
+        sx={{ width: '25px', height: '25px', marginTop: '5px' }}
+      />
       <CommentCard comment={comment} createComment={createComment} deleteComment={deleteComment} task_id={task_id} />
     </Stack>
   )

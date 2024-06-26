@@ -35,6 +35,7 @@ import { generateRandomString } from '@/utils/generateRandomString'
 import { AttachmentCard } from '@/components/cards/AttachmentCard'
 import { bulkRemoveAttachments } from '@/utils/bulkRemoveAttachments'
 import { advancedFeatureFlag } from '@/config'
+import { getAssigneeName } from '@/utils/getAssigneeName'
 
 const supabaseActions = new SupabaseActions()
 
@@ -199,10 +200,10 @@ export const NewTaskForm = ({
               }}
               startIcon={
                 <Avatar
-                  alt="user"
-                  src={assigneeValue?.iconImageUrl || assigneeValue?.avatarImageUrl}
+                  alt={getAssigneeName(assigneeValue)}
+                  src={assigneeValue?.iconImageUrl || assigneeValue?.avatarImageUrl || 'user'}
                   sx={{ width: '20px', height: '20px' }}
-                  variant={assigneeValue?.type === 'companies' ? 'square' : 'circular'}
+                  variant={assigneeValue?.type === 'companies' ? 'rounded' : 'circular'}
                 />
               }
               options={assignee}

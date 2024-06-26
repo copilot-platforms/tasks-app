@@ -19,6 +19,7 @@ import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 import { ToggleButtonContainer } from './ToggleButtonContainer'
 import { NoAssignee, NoAssigneeExtraOptions } from '@/utils/noAssignee'
 import ExtraOptionRendererAssignee from '@/components/inputs/ExtraOptionRendererAssignee'
+import { getAssigneeName } from '@/utils/getAssigneeName'
 
 const StyledText = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[500],
@@ -121,8 +122,8 @@ export const Sidebar = ({
             }}
             startIcon={
               <Avatar
-                alt="user"
-                src={assigneeValue?.iconImageUrl || assigneeValue?.avatarImageUrl}
+                alt={getAssigneeName(assigneeValue)}
+                src={assigneeValue?.iconImageUrl || assigneeValue?.avatarImageUrl || 'user'}
                 sx={{ width: '20px', height: '20px' }}
                 variant={assigneeValue?.type === 'companies' ? 'rounded' : 'circular'}
               />

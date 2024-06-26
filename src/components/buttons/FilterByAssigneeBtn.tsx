@@ -26,8 +26,11 @@ export const FilterByAssigneeBtn = ({
       {assigneeValue?.name || assigneeValue?.givenName ? (
         <Stack direction="row" alignItems="center" columnGap={1}>
           <Avatar
-            alt="user"
-            src={(assigneeValue as IAssigneeCombined).avatarImageUrl || (assigneeValue as IAssigneeCombined).iconImageUrl}
+            alt={assigneeValue?.givenName == 'No assignee' ? '' : assigneeValue?.givenName}
+            src={
+              ((assigneeValue as IAssigneeCombined).avatarImageUrl || (assigneeValue as IAssigneeCombined).iconImageUrl) ??
+              'user'
+            }
             sx={{ width: '20px', height: '20px' }}
             variant={assigneeValue?.type === 'companies' ? 'rounded' : 'circular'}
           />
