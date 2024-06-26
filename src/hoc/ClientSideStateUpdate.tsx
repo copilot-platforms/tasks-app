@@ -67,9 +67,9 @@ export const ClientSideStateUpdate = ({
       store.dispatch(setViewSettings(viewSettings))
       viewSettings.filterOptions?.type == FilterOptionsKeywords.CLIENTS
         ? store.dispatch(setFilteredAssgineeList({ filteredType: FilterByOptions.CLIENT }))
-        : viewSettings.filterOptions.type == FilterOptionsKeywords.TEAM
+        : viewSettings.filterOptions?.type == FilterOptionsKeywords.TEAM
           ? store.dispatch(setFilteredAssgineeList({ filteredType: FilterByOptions.IUS }))
-          : viewSettings.filterOptions.type == ''
+          : viewSettings.filterOptions?.type == ''
             ? store.dispatch(setFilteredAssgineeList({ filteredType: FilterByOptions.NOFILTER }))
             : store.dispatch(setFilteredAssgineeList({ filteredType: FilterByOptions.NOFILTER }))
     }

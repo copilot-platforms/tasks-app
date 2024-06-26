@@ -36,6 +36,7 @@ export const ListViewTaskCard = ({
   return (
     <Box
       sx={{
+        userSelect: 'none',
         ':hover': {
           bgcolor: (theme) => theme.color.gray[100],
         },
