@@ -34,7 +34,7 @@ export const ClientTaskCard = ({
       }}
     >
       <AppMargin size={SizeofAppMargin.LARGE} py="2px">
-        <Stack direction={{ xs: 'column', sm: 'row' }} rowGap={2} alignItems="center" justifyContent="space-between">
+        <Stack direction={{ xs: 'column', sm: 'row' }} rowGap={2} alignItems="flex-start" justifyContent="space-between">
           <Stack sx={{ width: '100%', cursor: 'pointer' }} direction="column" onClick={() => handleRouteChange()}>
             <Typography variant="sm">{task?.title}</Typography>
             <Box
@@ -49,15 +49,29 @@ export const ClientTaskCard = ({
             </Box>
           </Stack>
           <Stack direction="row" alignItems="flex-start" minWidth="fit-content" columnGap={4} justifyContent="space-between">
-            <Box minWidth={{ xs: '80px' }}>
-              {task.dueDate && (
-                <Typography variant="bodySm">
-                  <DueDateLayout date={task.dueDate} />
-                </Typography>
-              )}
-            </Box>
-            <Stack direction="row" alignItems="flex-start" minWidth={{ xs: '200px', sm: '250px' }} columnGap={2} ml="12px">
-              <Stack direction="row" alignItems="flex-start" minWidth="90px" columnGap={2} sx={{ padding: '2px' }}>
+            <Stack
+              direction="row"
+              alignItems="flex-end"
+              minWidth="200px"
+              columnGap={{ xs: 1, sm: 3 }}
+              sx={{ padding: '2px' }}
+            >
+              <Box
+                minWidth={{ xs: '90px' }}
+                sx={{
+                  flexDirection: 'row',
+                  alignItems: { sm: 'flex-end' },
+                  justifyContent: { sm: 'right' },
+                  display: 'flex',
+                }}
+              >
+                {task.dueDate && (
+                  <Typography variant="bodySm">
+                    <DueDateLayout date={task.dueDate} />
+                  </Typography>
+                )}
+              </Box>
+              <Stack direction="row" alignItems="flex-start" columnGap={1} sx={{ padding: '2px' }}>
                 <Avatar
                   src={currentAssignee?.iconImageUrl ?? currentAssignee?.avatarImageUrl}
                   sx={{ width: '20px', height: '20px' }}
@@ -68,6 +82,9 @@ export const ClientTaskCard = ({
                   {currentAssignee ? currentAssignee?.givenName || currentAssignee?.name : 'No assignee'}
                 </Typography>
               </Stack>
+            </Stack>
+
+            <Stack direction="row" alignItems="flex-start" minWidth={'120px'} columnGap={2} ml="12px">
               <Box minWidth="fit-content" ml="12px">
                 {!markdoneFlag && (
                   <SecondaryBtn
