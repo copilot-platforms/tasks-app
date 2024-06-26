@@ -21,25 +21,23 @@ const TaskCardContainer = styled(Stack)(({ theme }) => ({
 export const TaskCard = ({ task }: { task: TaskResponse }) => {
   const { assignee } = useSelector(selectTaskBoard)
 
-  const currentAssignee: unknown = assignee.find((el) => el.id === task.assigneeId) ?? NoAssignee
+  const currentAssignee = assignee.find((el) => el.id === task.assigneeId) ?? NoAssignee
 
   return (
     <TaskCardContainer rowGap={1}>
       <Stack direction="row" justifyContent="space-between">
         <Stack direction="row" alignItems="center" columnGap={1}>
           <Avatar
-            alt="user"
-            src={
-              (currentAssignee as IAssigneeCombined)?.iconImageUrl || (currentAssignee as IAssigneeCombined)?.avatarImageUrl
-            }
+            alt={currentAssignee?.givenName == 'No assignee' ? '' : currentAssignee?.givenName}
+            src={currentAssignee?.iconImageUrl || currentAssignee?.avatarImageUrl || 'user'}
             sx={{ width: '20px', height: '20px' }}
             variant={(currentAssignee as IAssigneeCombined)?.type === 'companies' ? 'rounded' : 'circular'}
           />
           <Typography variant="sm" fontSize="12px" sx={{ color: (theme) => theme.color.gray[500] }}>
             {(currentAssignee as IAssigneeCombined).name === 'No assignee'
               ? 'No assignee'
-              : `${(currentAssignee as IAssigneeCombined)?.givenName} ${(currentAssignee as IAssigneeCombined)?.familyName}` ||
-                (currentAssignee as IAssigneeCombined)?.name}
+              : (currentAssignee as IAssigneeCombined)?.name ||
+                `${(currentAssignee as IAssigneeCombined)?.givenName ?? ''} ${(currentAssignee as IAssigneeCombined)?.familyName ?? ''}`.trim()}
           </Typography>
         </Stack>
         <Typography variant="bodyXs" fontWeight={400} sx={{ color: (theme) => theme.color.gray[500] }}>

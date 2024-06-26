@@ -238,6 +238,7 @@ const StatusSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTMLL
   )
 }
 const AssigneeSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTMLLIElement>; option: unknown }) => {
+  const assignee = option as IAssigneeCombined
   return (
     <Box
       component="li"
@@ -256,8 +257,8 @@ const AssigneeSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTM
     >
       <Stack direction="row" alignItems="center" columnGap={3}>
         <Avatar
-          alt="user"
-          src={(option as IAssigneeCombined).avatarImageUrl || (option as IAssigneeCombined).iconImageUrl}
+          alt={assignee?.givenName || assignee?.familyName}
+          src={assignee.avatarImageUrl || assignee.iconImageUrl || 'user'}
           sx={{ width: '20px', height: '20px' }}
           variant={(option as IAssigneeCombined).type === 'companies' ? 'rounded' : 'circular'}
         />
