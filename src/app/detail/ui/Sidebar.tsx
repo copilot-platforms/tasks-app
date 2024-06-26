@@ -19,6 +19,8 @@ import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 import { ToggleButtonContainer } from './ToggleButtonContainer'
 import { NoAssignee, NoAssigneeExtraOptions } from '@/utils/noAssignee'
 import ExtraOptionRendererAssignee from '@/components/inputs/ExtraOptionRendererAssignee'
+import { getAssigneeName } from '@/utils/getAssigneeName'
+import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
 
 const StyledText = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[500],
@@ -92,20 +94,13 @@ export const Sidebar = ({
           }}
         >
           <StyledText variant="md">Status</StyledText>
-          <Selector
-            getSelectedValue={(newValue) => {
-              updateStatusValue(newValue)
-              updateWorkflowState(newValue as WorkflowStateResponse)
-            }}
-            startIcon={statusIcons[statusValue?.type]}
-            options={workflowStates}
+          <WorkflowStateSelector
+            option={workflowStates}
             value={statusValue}
-            selectorType={SelectorType.STATUS_SELECTOR}
-            buttonContent={
-              <Typography variant="bodySm" lineHeight="16px" sx={{ color: (theme) => theme.color.gray[600] }}>
-                {statusValue?.name as ReactNode}
-              </Typography>
-            }
+            getValue={(value) => {
+              updateStatusValue(value)
+              updateWorkflowState(value)
+            }}
             disabled={disabled}
           />
         </Stack>
@@ -121,8 +116,8 @@ export const Sidebar = ({
             }}
             startIcon={
               <Avatar
-                alt="user"
-                src={assigneeValue?.iconImageUrl || assigneeValue?.avatarImageUrl}
+                alt={getAssigneeName(assigneeValue)}
+                src={assigneeValue?.iconImageUrl || assigneeValue?.avatarImageUrl || 'user'}
                 sx={{ width: '20px', height: '20px' }}
                 variant={assigneeValue?.type === 'companies' ? 'rounded' : 'circular'}
               />

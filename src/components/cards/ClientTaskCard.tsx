@@ -58,7 +58,8 @@ export const ClientTaskCard = ({
             <Stack direction="row" alignItems="flex-start" minWidth="250px" columnGap={2}>
               <Stack direction="row" alignItems="flex-start" minWidth="90px" columnGap={2}>
                 <Avatar
-                  src={currentAssignee?.iconImageUrl ?? currentAssignee?.avatarImageUrl}
+                  src={currentAssignee?.iconImageUrl || currentAssignee?.avatarImageUrl || 'user'}
+                  alt={currentAssignee?.givenName || currentAssignee?.familyName || currentAssignee?.name}
                   sx={{ width: '20px', height: '20px' }}
                   variant={currentAssignee?.type === 'companies' ? 'rounded' : 'circular'}
                 />

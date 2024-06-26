@@ -143,6 +143,7 @@ export interface IExtraOption {
   name: string
   value?: string
   extraOptionFlag: true
+  avatarImageUrl?: string
 }
 
 export const DataSchema = z.object({
