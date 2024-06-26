@@ -36,8 +36,8 @@ export const TaskCard = ({ task }: { task: TaskResponse }) => {
           <Typography variant="sm" fontSize="12px" sx={{ color: (theme) => theme.color.gray[500] }}>
             {(currentAssignee as IAssigneeCombined).name === 'No assignee'
               ? 'No assignee'
-              : `${(currentAssignee as IAssigneeCombined)?.givenName} ${(currentAssignee as IAssigneeCombined)?.familyName}` ||
-                (currentAssignee as IAssigneeCombined)?.name}
+              : (currentAssignee as IAssigneeCombined)?.name ||
+                `${(currentAssignee as IAssigneeCombined)?.givenName ?? ''} ${(currentAssignee as IAssigneeCombined)?.familyName ?? ''}`.trim()}
           </Typography>
         </Stack>
         <Typography variant="bodyXs" fontWeight={400} sx={{ color: (theme) => theme.color.gray[500] }}>
