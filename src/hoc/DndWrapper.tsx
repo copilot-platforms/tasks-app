@@ -34,6 +34,8 @@ export const DndWrapper = ({ children }: { children: ReactNode }) => {
     setBackendOptions(view === View.BOARD_VIEW ? boardViewModeOptions : listViewModeOptions)
   }, [view])
 
+  if (!view) return null
+
   return (
     <DndProvider backend={matches ? TouchBackend : HTML5Backend} options={backendOptions}>
       {children}
