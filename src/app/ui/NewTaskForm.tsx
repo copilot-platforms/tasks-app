@@ -36,6 +36,7 @@ import { AttachmentCard } from '@/components/cards/AttachmentCard'
 import { bulkRemoveAttachments } from '@/utils/bulkRemoveAttachments'
 import { advancedFeatureFlag } from '@/config'
 import { getAssigneeName } from '@/utils/getAssigneeName'
+import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
 
 const supabaseActions = new SupabaseActions()
 
@@ -167,22 +168,13 @@ export const NewTaskForm = ({
         <NewTaskFormInputs />
 
         <Stack direction="row" columnGap={3} position="relative">
-          <Selector
-            getSelectedValue={(newValue) => {
-              updateStatusValue(newValue)
-              store.dispatch(
-                setCreateTaskFields({ targetField: 'workflowStateId', value: (newValue as WorkflowStateResponse)?.id }),
-              )
-            }}
-            startIcon={statusIcons[statusValue?.type]}
-            options={workflowStates}
+          <WorkflowStateSelector
+            option={workflowStates}
             value={statusValue}
-            selectorType={SelectorType.STATUS_SELECTOR}
-            buttonContent={
-              <Typography variant="bodySm" lineHeight="16px" sx={{ color: (theme) => theme.color.gray[600] }}>
-                {statusValue?.name as ReactNode}
-              </Typography>
-            }
+            getValue={(value) => {
+              updateStatusValue(value)
+              store.dispatch(setCreateTaskFields({ targetField: 'workflowStateId', value: value.id }))
+            }}
           />
           <Stack alignSelf="flex-start">
             <Selector
