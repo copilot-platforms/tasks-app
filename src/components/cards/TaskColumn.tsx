@@ -14,7 +14,6 @@ const TaskColumnHeader = styled(Stack)({
 const TaskColumnContainer = styled(Stack)({
   width: '275px',
   height: '100vh',
-  gap: '2px',
 })
 
 interface Prop {
