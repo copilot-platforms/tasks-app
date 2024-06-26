@@ -6,7 +6,9 @@ import { useFocusableInput } from '@/hooks/useFocusableInput'
 import { HTMLAttributes, ReactNode, useEffect, useState } from 'react'
 import { StyledTextField } from './TextField'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { IAssigneeCombined, IExtraOption, ITemplate, TruncateMaxNumber, UserType, UserTypesName } from '@/types/interfaces'
+import { IAssigneeCombined, IExtraOption, ITemplate, UserType, UserTypesName } from '@/types/interfaces'
+import { TruncateMaxNumber } from '@/types/constants'
+
 import { truncateText } from '@/utils/truncateText'
 
 export enum SelectorType {

@@ -8,7 +8,9 @@ import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { DueDateLayout } from '@/components/utils/DueDateLayout'
 import { extractHtml } from '@/utils/extractHtml'
 import { truncateText } from '@/utils/truncateText'
-import { IAssigneeCombined, TruncateMaxNumber } from '@/types/interfaces'
+import { IAssigneeCombined } from '@/types/interfaces'
+import { TruncateMaxNumber } from '@/types/constants'
+
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 
 export const ClientTaskCard = ({

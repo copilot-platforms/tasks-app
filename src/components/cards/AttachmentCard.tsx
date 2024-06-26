@@ -4,7 +4,7 @@ import {
   CreateAttachmentRequest,
   CreateAttachmentRequestSchema,
 } from '@/types/dto/attachments.dto'
-import { TruncateMaxNumber } from '@/types/interfaces'
+import { TruncateMaxNumber } from '@/types/constants'
 import { SupabaseActions } from '@/utils/SupabaseActions'
 import { attachmentIcons } from '@/utils/iconMatcher'
 import { truncateText } from '@/utils/truncateText'
