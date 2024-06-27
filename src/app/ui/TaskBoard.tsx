@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect } from 'react'
+import { useCallback } from 'react'
 import { Box, Modal, Stack } from '@mui/material'
 import { TaskCard } from '@/components/cards/TaskCard'
 import { TaskColumn } from '@/components/cards/TaskColumn'
@@ -12,7 +12,7 @@ import { clearCreateTaskFields, selectCreateTask, setShowModal } from '@/redux/f
 import store from '@/redux/store'
 import { useRouter } from 'next/navigation'
 import { selectTaskBoard, updateWorkflowStateIdByTaskId } from '@/redux/features/taskBoardSlice'
-import { CreateTaskRequest, CreateTaskRequestSchema, TaskResponse, UpdateTaskRequest } from '@/types/dto/tasks.dto'
+import { CreateTaskRequestSchema, TaskResponse } from '@/types/dto/tasks.dto'
 import { ListViewTaskCard } from '@/components/cards/ListViewTaskCard'
 import { TaskRow } from '@/components/cards/TaskRow'
 import { ISignedUrlUpload, View } from '@/types/interfaces'
@@ -35,16 +35,19 @@ export const TaskBoard = ({
 
   const router = useRouter()
 
-  const onDropItem = useCallback((payload: { taskId: string; targetWorkflowStateId: string }) => {
-    store.dispatch(
-      updateWorkflowStateIdByTaskId({ taskId: payload.taskId, targetWorkflowStateId: payload.targetWorkflowStateId }),
-    )
-    updateTask({
-      token: z.string().parse(token),
-      taskId: payload.taskId,
-      payload: { workflowStateId: payload.targetWorkflowStateId },
-    })
-  }, [])
+  const onDropItem = useCallback(
+    (payload: { taskId: string; targetWorkflowStateId: string }) => {
+      store.dispatch(
+        updateWorkflowStateIdByTaskId({ taskId: payload.taskId, targetWorkflowStateId: payload.targetWorkflowStateId }),
+      )
+      updateTask({
+        token: z.string().parse(token),
+        taskId: payload.taskId,
+        payload: { workflowStateId: payload.targetWorkflowStateId },
+      })
+    },
+    [token],
+  )
 
   /**
    * This function is responsible for returning the tasks that matches the workflowStateId of the workflowState
@@ -83,7 +86,7 @@ export const TaskBoard = ({
                   <Box mt="6px">
                     {filterTaskWithWorkflowStateId(list.id).map((task, index) => {
                       return (
-                        <DragDropHandler key={task.id} accept={'taskCard'} index={index} id={task.id || ''}>
+                        <DragDropHandler key={task.id} accept={'taskCard'} index={index} id={task.id || ''} draggable>
                           <Box
                             onClick={() => advancedFeatureFlag && router.push(`/detail/${task.id}/iu?token=${token}`)}
                             key={task.id}
@@ -119,7 +122,7 @@ export const TaskBoard = ({
               >
                 {filterTaskWithWorkflowStateId(list.id).map((task, index) => {
                   return (
-                    <DragDropHandler key={task.id} accept={'taskCard'} index={index} id={task.id || ''}>
+                    <DragDropHandler key={task.id} accept={'taskCard'} index={index} id={task.id || ''} draggable>
                       <ListViewTaskCard
                         task={task}
                         key={task.id}
