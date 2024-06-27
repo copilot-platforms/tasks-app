@@ -17,7 +17,7 @@ import { statusIcons } from '@/utils/iconMatcher'
 import { Close } from '@mui/icons-material'
 import { Avatar, Box, Stack, Typography, styled } from '@mui/material'
 import React, { ReactNode, useEffect } from 'react'
-import { FilterOptions, IAssigneeCombined, ISignedUrlUpload, ITemplate } from '@/types/interfaces'
+import { FilterOptions, IAssigneeCombined, ISignedUrlUpload, ITemplate, TruncateMaxNumber } from '@/types/interfaces'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { useSelector } from 'react-redux'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
@@ -37,6 +37,7 @@ import { bulkRemoveAttachments } from '@/utils/bulkRemoveAttachments'
 import { advancedFeatureFlag } from '@/config'
 import { getAssigneeName } from '@/utils/getAssigneeName'
 import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
+import { truncateText } from '@/utils/truncateText'
 
 const supabaseActions = new SupabaseActions()
 
@@ -89,7 +90,6 @@ export const NewTaskForm = ({
     }
   }, [])
 
-  const { assigneeId, workflowStateId } = useSelector(selectCreateTask)
   return (
     <NewTaskContainer>
       <Stack
@@ -217,7 +217,11 @@ export const NewTaskForm = ({
               selectorType={SelectorType.ASSIGNEE_SELECTOR}
               buttonContent={
                 <Typography variant="bodySm" lineHeight="16px" sx={{ color: (theme) => theme.color.gray[600] }}>
-                  {assigneeValue?.name || assigneeValue?.givenName}
+                  {truncateText(
+                    (assigneeValue as IAssigneeCombined)?.name ||
+                      `${(assigneeValue as IAssigneeCombined)?.givenName ?? ''} ${(assigneeValue as IAssigneeCombined)?.familyName ?? ''}`.trim(),
+                    TruncateMaxNumber.SELECTOR,
+                  )}
                 </Typography>
               }
             />

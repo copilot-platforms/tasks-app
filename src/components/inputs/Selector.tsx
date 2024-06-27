@@ -1,5 +1,4 @@
 import { Avatar, Box, Button, Popper, Stack, Typography } from '@mui/material'
-import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
 import { StyledAutocomplete } from '@/components/inputs/Autocomplete'
 import { statusIcons } from '@/utils/iconMatcher'
 import { useFocusableInput } from '@/hooks/useFocusableInput'
@@ -63,7 +62,11 @@ export default function Selector({
 
   function detectSelectorType(option: unknown) {
     if (selectorType === SelectorType.ASSIGNEE_SELECTOR) {
-      return ((option as IAssigneeCombined).name as string) || ((option as IAssigneeCombined).givenName as string)
+      return truncateText(
+        (option as IAssigneeCombined)?.name ||
+          `${(option as IAssigneeCombined)?.givenName ?? ''} ${(option as IAssigneeCombined)?.familyName ?? ''}`.trim(),
+        TruncateMaxNumber.SELECTOR,
+      )
     }
 
     if (selectorType === SelectorType.STATUS_SELECTOR) {
@@ -142,8 +145,8 @@ export default function Selector({
           options={extraOption ? [extraOption, ...options] : options}
           value={value}
           onChange={(_, newValue: unknown) => {
-            getSelectedValue(newValue)
             if (newValue) {
+              getSelectedValue(newValue)
               setAnchorEl(null)
             }
           }}
@@ -263,7 +266,7 @@ const AssigneeSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTM
         <Typography variant="sm" fontWeight={400}>
           {truncateText(
             (option as IAssigneeCombined)?.name ||
-              `${(option as IAssigneeCombined)?.givenName ?? ''}  ${(option as IAssigneeCombined)?.familyName ?? ''}`.trim(),
+              `${(option as IAssigneeCombined)?.givenName ?? ''} ${(option as IAssigneeCombined)?.familyName ?? ''}`.trim(),
             TruncateMaxNumber.SELECTOR,
           )}
         </Typography>
