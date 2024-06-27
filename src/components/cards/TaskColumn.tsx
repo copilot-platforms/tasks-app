@@ -8,6 +8,7 @@ const TaskColumnHeader = styled(Stack)({
   flexDirection: 'row',
   justifyContent: 'space-between',
   alignItems: 'center',
+  paddingBottom: '8px',
 })
 
 const TaskColumnContainer = styled(Stack)({
@@ -27,7 +28,9 @@ export const TaskColumn = ({ children, columnName, taskCount }: Prop) => {
       <TaskColumnHeader>
         <Stack direction="row" alignItems="center" columnGap={2}>
           <Typography variant="md">{columnName}</Typography>
-          <Typography variant="sm">{taskCount}</Typography>
+          <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[400], fontSize: '12px' }}>
+            {taskCount}
+          </Typography>
         </Stack>
       </TaskColumnHeader>
       {children}

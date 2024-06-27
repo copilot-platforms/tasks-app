@@ -4,7 +4,7 @@ import { SelectorType } from '@/components/inputs/Selector'
 import Selector from '@/components/inputs/Selector'
 import { StyledTextField } from '@/components/inputs/TextField'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
-import { ArrowLinkIcon, AttachmentIcon, TemplateIcon, TemplateIconSm } from '@/icons'
+import { ArrowLinkIcon, TemplateIconSm } from '@/icons'
 import {
   clearCreateTaskFields,
   removeOneAttachment,
@@ -13,10 +13,9 @@ import {
   setShowModal,
 } from '@/redux/features/createTaskSlice'
 import store from '@/redux/store'
-import { statusIcons } from '@/utils/iconMatcher'
 import { Close } from '@mui/icons-material'
 import { Avatar, Box, Stack, Typography, styled } from '@mui/material'
-import React, { ReactNode, useEffect } from 'react'
+import { useEffect } from 'react'
 import { FilterOptions, IAssigneeCombined, ISignedUrlUpload, ITemplate } from '@/types/interfaces'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { useSelector } from 'react-redux'
@@ -34,7 +33,11 @@ import { SupabaseActions } from '@/utils/SupabaseActions'
 import { generateRandomString } from '@/utils/generateRandomString'
 import { AttachmentCard } from '@/components/cards/AttachmentCard'
 import { bulkRemoveAttachments } from '@/utils/bulkRemoveAttachments'
+import { advancedFeatureFlag } from '@/config'
 import { getAssigneeName } from '@/utils/getAssigneeName'
+import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
+import { truncateText } from '@/utils/truncateText'
+import { TruncateMaxNumber } from '@/types/constants'
 
 const supabaseActions = new SupabaseActions()
 
@@ -87,7 +90,6 @@ export const NewTaskForm = ({
     }
   }, [])
 
-  const { assigneeId, workflowStateId } = useSelector(selectCreateTask)
   return (
     <NewTaskContainer>
       <Stack
@@ -98,56 +100,58 @@ export const NewTaskForm = ({
         <AppMargin size={SizeofAppMargin.MEDIUM} py="12px">
           <Stack direction="row" alignItems="center" justifyContent="space-between">
             <Box>
-              <Selector
-                getSelectedValue={(_newValue) => {
-                  const newValue = _newValue as ITemplate
-                  updateTemplateValue(newValue)
-                  store.dispatch(setCreateTaskFields({ targetField: 'title', value: newValue?.title }))
-                  store.dispatch(setCreateTaskFields({ targetField: 'description', value: newValue?.body }))
-                  updateStatusValue(todoWorkflowState)
-                }}
-                startIcon={<TemplateIconSm />}
-                options={templates}
-                placeholder="Apply template..."
-                value={templateValue}
-                selectorType={SelectorType.TEMPLATE_SELECTOR}
-                extraOption={{
-                  id: '',
-                  name: 'Manage templates',
-                  value: '',
-                  extraOptionFlag: true,
-                }}
-                extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
-                  return (
-                    <Stack
-                      key={'Manage templates'}
-                      direction="row"
-                      pl="20px"
-                      py="6px"
-                      justifyContent="space-between"
-                      sx={{
-                        borderBottom: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
-                        cursor: 'pointer',
-                      }}
-                      onClick={() => {
-                        setAnchorEl(null)
-                        store.dispatch(setShowModal())
-                        router.push(`/manage-templates?token=${token}`)
-                      }}
-                    >
-                      <Typography variant="sm">Manage templates</Typography>
-                      <Box>
-                        <ArrowLinkIcon />
-                      </Box>
-                    </Stack>
-                  )
-                }}
-                buttonContent={
-                  <Typography variant="bodySm" sx={{ color: (theme) => theme.color.gray[600] }}>
-                    {templateValue ? templateValue.templateName : 'Select template'}
-                  </Typography>
-                }
-              />
+              {advancedFeatureFlag && (
+                <Selector
+                  getSelectedValue={(_newValue) => {
+                    const newValue = _newValue as ITemplate
+                    updateTemplateValue(newValue)
+                    store.dispatch(setCreateTaskFields({ targetField: 'title', value: newValue?.title }))
+                    store.dispatch(setCreateTaskFields({ targetField: 'description', value: newValue?.body }))
+                    updateStatusValue(todoWorkflowState)
+                  }}
+                  startIcon={<TemplateIconSm />}
+                  options={templates}
+                  placeholder="Apply template..."
+                  value={templateValue}
+                  selectorType={SelectorType.TEMPLATE_SELECTOR}
+                  extraOption={{
+                    id: '',
+                    name: 'Manage templates',
+                    value: '',
+                    extraOptionFlag: true,
+                  }}
+                  extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
+                    return (
+                      <Stack
+                        key={'Manage templates'}
+                        direction="row"
+                        pl="20px"
+                        py="6px"
+                        justifyContent="space-between"
+                        sx={{
+                          borderBottom: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
+                          cursor: 'pointer',
+                        }}
+                        onClick={() => {
+                          setAnchorEl(null)
+                          store.dispatch(setShowModal())
+                          router.push(`/manage-templates?token=${token}`)
+                        }}
+                      >
+                        <Typography variant="sm">Manage templates</Typography>
+                        <Box>
+                          <ArrowLinkIcon />
+                        </Box>
+                      </Stack>
+                    )
+                  }}
+                  buttonContent={
+                    <Typography variant="bodySm" sx={{ color: (theme) => theme.color.gray[600] }}>
+                      {templateValue ? templateValue.templateName : 'Select template'}
+                    </Typography>
+                  }
+                />
+              )}
             </Box>
             <Close
               sx={{ color: (theme) => theme.color.gray[500], cursor: 'pointer' }}
@@ -164,22 +168,13 @@ export const NewTaskForm = ({
         <NewTaskFormInputs />
 
         <Stack direction="row" columnGap={3} position="relative">
-          <Selector
-            getSelectedValue={(newValue) => {
-              updateStatusValue(newValue)
-              store.dispatch(
-                setCreateTaskFields({ targetField: 'workflowStateId', value: (newValue as WorkflowStateResponse)?.id }),
-              )
-            }}
-            startIcon={statusIcons[statusValue?.type]}
-            options={workflowStates}
+          <WorkflowStateSelector
+            option={workflowStates}
             value={statusValue}
-            selectorType={SelectorType.STATUS_SELECTOR}
-            buttonContent={
-              <Typography variant="bodySm" lineHeight="16px" sx={{ color: (theme) => theme.color.gray[600] }}>
-                {statusValue?.name as ReactNode}
-              </Typography>
-            }
+            getValue={(value) => {
+              updateStatusValue(value)
+              store.dispatch(setCreateTaskFields({ targetField: 'workflowStateId', value: value.id }))
+            }}
           />
           <Stack alignSelf="flex-start">
             <Selector
@@ -222,7 +217,11 @@ export const NewTaskForm = ({
               selectorType={SelectorType.ASSIGNEE_SELECTOR}
               buttonContent={
                 <Typography variant="bodySm" lineHeight="16px" sx={{ color: (theme) => theme.color.gray[600] }}>
-                  {assigneeValue?.name || assigneeValue?.givenName}
+                  {truncateText(
+                    (assigneeValue as IAssigneeCombined)?.name ||
+                      `${(assigneeValue as IAssigneeCombined)?.givenName ?? ''} ${(assigneeValue as IAssigneeCombined)?.familyName ?? ''}`.trim(),
+                    TruncateMaxNumber.SELECTOR,
+                  )}
                 </Typography>
               }
             />
@@ -307,9 +306,7 @@ const NewTaskFooter = ({
     <Box sx={{ borderTop: (theme) => `1px solid ${theme.color.borders.border2}` }}>
       <AppMargin size={SizeofAppMargin.MEDIUM} py="21px">
         <Stack direction="row" justifyContent="space-between" alignItems="center">
-          <Box>
-            <AttachmentInput handleFileSelect={handleFileSelect} />
-          </Box>
+          <Box>{advancedFeatureFlag && <AttachmentInput handleFileSelect={handleFileSelect} />}</Box>
           <Stack direction="row" columnGap={4}>
             <SecondaryBtn
               handleClick={async () => {

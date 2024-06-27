@@ -1,12 +1,13 @@
-import { Avatar, Box, Popper, Stack, Typography } from '@mui/material'
-import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
+import { Avatar, Box, Button, Popper, Stack, Typography } from '@mui/material'
 import { StyledAutocomplete } from '@/components/inputs/Autocomplete'
 import { statusIcons } from '@/utils/iconMatcher'
 import { useFocusableInput } from '@/hooks/useFocusableInput'
 import { HTMLAttributes, ReactNode, useEffect, useState } from 'react'
 import { StyledTextField } from './TextField'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { IAssigneeCombined, IExtraOption, ITemplate, TruncateMaxNumber } from '@/types/interfaces'
+import { IAssigneeCombined, IExtraOption, ITemplate, UserType, UserTypesName } from '@/types/interfaces'
+import { TruncateMaxNumber } from '@/types/constants'
+
 import { truncateText } from '@/utils/truncateText'
 
 export enum SelectorType {
@@ -30,6 +31,7 @@ interface Prop {
     anchorEl: null | HTMLElement,
     props?: HTMLAttributes<HTMLLIElement>,
   ) => ReactNode
+  disableOutline?: boolean
 }
 
 export default function Selector({
@@ -43,6 +45,7 @@ export default function Selector({
   placeholder = 'Change status...',
   extraOption,
   extraOptionRenderer,
+  disableOutline,
 }: Prop) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
@@ -61,7 +64,11 @@ export default function Selector({
 
   function detectSelectorType(option: unknown) {
     if (selectorType === SelectorType.ASSIGNEE_SELECTOR) {
-      return ((option as IAssigneeCombined).name as string) || ((option as IAssigneeCombined).givenName as string)
+      return truncateText(
+        (option as IAssigneeCombined)?.name ||
+          `${(option as IAssigneeCombined)?.givenName ?? ''} ${(option as IAssigneeCombined)?.familyName ?? ''}`.trim(),
+        TruncateMaxNumber.SELECTOR,
+      )
     }
 
     if (selectorType === SelectorType.STATUS_SELECTOR) {
@@ -91,7 +98,34 @@ export default function Selector({
   return (
     <Stack direction="column">
       <Box onClick={handleClick} aria-describedby={id}>
-        <SecondaryBtn startIcon={startIcon} buttonContent={buttonContent} />
+        {disableOutline ? (
+          <Stack
+            direction="row"
+            alignItems="center"
+            columnGap="4px"
+            justifyContent="flex-start"
+            sx={{
+              width: '100px',
+              justifyContent: { xs: 'end', sm: 'flex-start' },
+              cursor: 'pointer',
+            }}
+          >
+            <Box>{startIcon}</Box>
+            <Typography
+              variant="bodySm"
+              sx={{
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                display: { xs: 'none', sm: 'block' },
+              }}
+            >
+              {buttonContent}
+            </Typography>
+          </Stack>
+        ) : (
+          <SelectorButton startIcon={startIcon} buttonContent={buttonContent} outlined={disableOutline} />
+        )}
       </Box>
       <Popper
         id={id}
@@ -113,14 +147,14 @@ export default function Selector({
           options={extraOption ? [extraOption, ...options] : options}
           value={value}
           onChange={(_, newValue: unknown) => {
-            getSelectedValue(newValue)
             if (newValue) {
+              getSelectedValue(newValue)
               setAnchorEl(null)
             }
           }}
           getOptionLabel={(option: unknown) => detectSelectorType(option)}
           groupBy={(option: unknown) =>
-            selectorType === SelectorType.ASSIGNEE_SELECTOR ? (option as IAssigneeCombined).type : ''
+            selectorType === SelectorType.ASSIGNEE_SELECTOR ? UserTypesName[(option as IAssigneeCombined).type] : ''
           }
           inputValue={inputStatusValue}
           onInputChange={(_, newInputValue) => {
@@ -234,11 +268,48 @@ const AssigneeSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTM
         <Typography variant="sm" fontWeight={400}>
           {truncateText(
             (option as IAssigneeCombined)?.name ||
-              `${(option as IAssigneeCombined)?.givenName ?? ''}  ${(option as IAssigneeCombined)?.familyName ?? ''}`.trim(),
+              `${(option as IAssigneeCombined)?.givenName ?? ''} ${(option as IAssigneeCombined)?.familyName ?? ''}`.trim(),
             TruncateMaxNumber.SELECTOR,
           )}
         </Typography>
       </Stack>
     </Box>
+  )
+}
+
+const SelectorButton = ({
+  buttonContent,
+  startIcon,
+  handleClick,
+  enableBackground,
+  outlined,
+}: {
+  startIcon?: ReactNode
+  buttonContent: ReactNode
+  handleClick?: () => void
+  enableBackground?: boolean
+  outlined?: boolean
+}) => {
+  return (
+    <Button
+      variant="outlined"
+      startIcon={startIcon ? startIcon : null}
+      sx={(theme) => ({
+        textTransform: 'none',
+        border: enableBackground || outlined ? 'none' : `1px solid ${theme.color.borders.border}`,
+        bgcolor: enableBackground ? theme.color.gray[150] : '',
+        '&:hover': {
+          border: enableBackground || outlined ? 'none' : `1px solid ${theme.color.borders.border}`,
+          bgcolor: theme.color.gray[150],
+        },
+        '.MuiTouchRipple-child': {
+          bgcolor: theme.color.borders.border,
+        },
+        padding: { xs: '1px 9px', md: '4px 16px' },
+      })}
+      onClick={handleClick}
+    >
+      {buttonContent}
+    </Button>
   )
 }

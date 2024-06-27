@@ -3,7 +3,7 @@
 import { Button } from '@mui/material'
 import { ReactNode } from 'react'
 
-export const SecondaryBtn = ({
+export const TertiaryBtn = ({
   startIcon,
   buttonContent,
   handleClick,
@@ -31,7 +31,7 @@ export const SecondaryBtn = ({
         '.MuiTouchRipple-child': {
           bgcolor: theme.color.borders.border,
         },
-        padding: { xs: '1px 9px', md: '4px 16px' },
+        padding: { xs: '4px 9px', md: '4px 16px' },
       })}
       onClick={handleClick}
     >

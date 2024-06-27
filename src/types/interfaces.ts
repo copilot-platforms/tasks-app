@@ -35,11 +35,6 @@ export enum FileTypes {
   MPEG = 'audio/mpeg',
 }
 
-export enum TruncateMaxNumber {
-  ATTACHMENT = 15,
-  SELECTOR = 16,
-}
-
 export enum FilterOptions {
   ASSIGNEE = 'assignee',
   KEYWORD = 'keyword',
@@ -149,3 +144,10 @@ export const DataSchema = z.object({
   user: UserSchema,
   task: UpdateTaskRequestSchema,
 })
+
+export const UserTypesName = {
+  ius: 'Internal users',
+  internalUsers: 'Internal users',
+  clients: 'Clients',
+  companies: 'Companies',
+}

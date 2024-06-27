@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect } from 'react'
+import { useCallback } from 'react'
 import { Box, Modal, Stack } from '@mui/material'
 import { TaskCard } from '@/components/cards/TaskCard'
 import { TaskColumn } from '@/components/cards/TaskColumn'
@@ -12,14 +12,15 @@ import { clearCreateTaskFields, selectCreateTask, setShowModal } from '@/redux/f
 import store from '@/redux/store'
 import { useRouter } from 'next/navigation'
 import { selectTaskBoard, updateWorkflowStateIdByTaskId } from '@/redux/features/taskBoardSlice'
-import { CreateTaskRequest, CreateTaskRequestSchema, TaskResponse, UpdateTaskRequest } from '@/types/dto/tasks.dto'
+import { CreateTaskRequestSchema, TaskResponse } from '@/types/dto/tasks.dto'
 import { ListViewTaskCard } from '@/components/cards/ListViewTaskCard'
 import { TaskRow } from '@/components/cards/TaskRow'
 import { ISignedUrlUpload, View } from '@/types/interfaces'
-import { handleCreate, updateTask } from '../actions'
+import { handleCreate, updateTask } from '@/app/actions'
 import { z } from 'zod'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { bulkRemoveAttachments } from '@/utils/bulkRemoveAttachments'
+import { advancedFeatureFlag } from '@/config'
 
 export const TaskBoard = ({
   getSignedUrlUpload,
@@ -34,16 +35,18 @@ export const TaskBoard = ({
 
   const router = useRouter()
 
-  const onDropItem = useCallback((payload: { taskId: string; targetWorkflowStateId: string }) => {
-    store.dispatch(
-      updateWorkflowStateIdByTaskId({ taskId: payload.taskId, targetWorkflowStateId: payload.targetWorkflowStateId }),
-    )
-    updateTask({
-      token: z.string().parse(token),
-      taskId: payload.taskId,
-      payload: { workflowStateId: payload.targetWorkflowStateId },
-    })
-  }, [])
+  const onDropItem = useCallback(
+    (payload: { taskId: string; targetWorkflowStateId: string }) => {
+      const { taskId, targetWorkflowStateId } = payload
+      store.dispatch(updateWorkflowStateIdByTaskId({ taskId, targetWorkflowStateId }))
+      updateTask({
+        token: z.string().parse(token),
+        taskId,
+        payload: { workflowStateId: targetWorkflowStateId },
+      })
+    },
+    [token],
+  )
 
   /**
    * This function is responsible for returning the tasks that matches the workflowStateId of the workflowState
@@ -66,96 +69,108 @@ export const TaskBoard = ({
   }
 
   return (
-    <AppMargin size={SizeofAppMargin.LARGE} py="18.5px">
-      <Stack
-        columnGap={2}
-        sx={{
-          overflowX: 'auto',
-          flexDirection: view === View.BOARD_VIEW ? 'row' : 'column',
-        }}
-      >
-        {workflowStates.map((list, index) => {
-          if (view === View.BOARD_VIEW) {
-            return (
+    <>
+      {view === View.BOARD_VIEW && (
+        <AppMargin size={SizeofAppMargin.LARGE} py="20px">
+          <Stack
+            columnGap={6}
+            sx={{
+              overflowX: 'auto',
+              flexDirection: 'row',
+            }}
+          >
+            {workflowStates.map((list, index) => (
               <DragDropHandler key={list.id} accept={'taskCard'} index={index} id={list.id} onDropItem={onDropItem}>
                 <TaskColumn key={list.id} columnName={list.name} taskCount={taskCountForWorkflowStateId(list.id)}>
-                  {filterTaskWithWorkflowStateId(list.id).map((task, index) => {
-                    return (
-                      <DragDropHandler key={task.id} accept={'taskCard'} index={index} id={task.id || ''}>
-                        <Box onClick={() => router.push(`/detail/${task.id}/iu?token=${token}`)} key={task.id} m="6px 0px">
-                          <TaskCard task={task} key={task.id} />
-                        </Box>
-                      </DragDropHandler>
-                    )
-                  })}
+                  <Box mt="6px">
+                    {filterTaskWithWorkflowStateId(list.id).map((task, index) => {
+                      return (
+                        <DragDropHandler key={task.id} accept={'taskCard'} index={index} id={task.id || ''} draggable>
+                          <Box
+                            onClick={() => advancedFeatureFlag && router.push(`/detail/${task.id}/iu?token=${token}`)}
+                            key={task.id}
+                            m="6px 0px"
+                          >
+                            <TaskCard task={task} key={task.id} />
+                          </Box>
+                        </DragDropHandler>
+                      )
+                    })}
+                  </Box>
                 </TaskColumn>
               </DragDropHandler>
-            )
-          }
-          if (view === View.LIST_VIEW) {
-            return (
-              <DragDropHandler key={list.id} accept={'taskCard'} index={index} id={list.id} onDropItem={onDropItem}>
-                <TaskRow
-                  key={list.id}
-                  columnName={list.name}
-                  taskCount={taskCountForWorkflowStateId(list.id)}
-                  showConfigurableIcons={false}
-                >
-                  {filterTaskWithWorkflowStateId(list.id).map((task, index) => {
-                    return (
-                      <DragDropHandler key={task.id} accept={'taskCard'} index={index} id={task.id || ''}>
-                        <Box key={task.id} m="6px 0px">
-                          <ListViewTaskCard
-                            task={task}
-                            key={task.id}
-                            updateTask={({ payload }) => {
-                              updateTask({ token: z.string().parse(token), taskId: task.id, payload })
-                            }}
-                            handleClick={() => router.push(`/detail/${task.id}/iu?token=${token}`)}
-                          />
-                        </Box>
-                      </DragDropHandler>
-                    )
-                  })}
-                </TaskRow>
-              </DragDropHandler>
-            )
-          }
-        })}
+            ))}
+          </Stack>
+        </AppMargin>
+      )}
 
-        <Modal
-          open={showModal}
-          onClose={async () => {
-            store.dispatch(setShowModal())
-            store.dispatch(clearCreateTaskFields())
-            await bulkRemoveAttachments(attachments)
+      {view === View.LIST_VIEW && (
+        <Stack
+          sx={{
+            overflowX: 'auto',
+            flexDirection: 'column',
           }}
-          aria-labelledby="create-task-modal"
-          aria-describedby="add-new-task"
         >
-          <NewTaskForm
-            handleCreate={async () => {
-              if (title) {
-                store.dispatch(setShowModal())
-                store.dispatch(clearCreateTaskFields())
-                const createdTask = await handleCreate(
-                  token as string,
-                  CreateTaskRequestSchema.parse({ title, body: description, workflowStateId, assigneeType, assigneeId }),
-                )
-                const toUploadAttachments: CreateAttachmentRequest[] = attachments.map((el) => {
-                  return {
-                    ...el,
-                    taskId: createdTask.id,
-                  }
-                })
-                store.dispatch(clearCreateTaskFields())
-                await handleCreateMultipleAttachments(toUploadAttachments)
-              }
-            }}
-            getSignedUrlUpload={getSignedUrlUpload}
-          />
-        </Modal>
-      </Stack>
-    </AppMargin>
+          {workflowStates.map((list, index) => (
+            <DragDropHandler key={list.id} accept={'taskCard'} index={index} id={list.id} onDropItem={onDropItem}>
+              <TaskRow
+                key={list.id}
+                columnName={list.name}
+                taskCount={taskCountForWorkflowStateId(list.id)}
+                showConfigurableIcons={false}
+              >
+                {filterTaskWithWorkflowStateId(list.id).map((task, index) => {
+                  return (
+                    <DragDropHandler key={task.id} accept={'taskCard'} index={index} id={task.id || ''} draggable>
+                      <ListViewTaskCard
+                        task={task}
+                        key={task.id}
+                        updateTask={({ payload }) => {
+                          updateTask({ token: z.string().parse(token), taskId: task.id, payload })
+                        }}
+                        handleClick={() => advancedFeatureFlag && router.push(`/detail/${task.id}/iu?token=${token}`)}
+                      />
+                    </DragDropHandler>
+                  )
+                })}
+              </TaskRow>
+            </DragDropHandler>
+          ))}
+        </Stack>
+      )}
+
+      <Modal
+        open={showModal}
+        onClose={async () => {
+          store.dispatch(setShowModal())
+          store.dispatch(clearCreateTaskFields())
+          await bulkRemoveAttachments(attachments)
+        }}
+        aria-labelledby="create-task-modal"
+        aria-describedby="add-new-task"
+      >
+        <NewTaskForm
+          handleCreate={async () => {
+            if (title) {
+              store.dispatch(setShowModal())
+              store.dispatch(clearCreateTaskFields())
+              const createdTask = await handleCreate(
+                token as string,
+                CreateTaskRequestSchema.parse({ title, body: description, workflowStateId, assigneeType, assigneeId }),
+              )
+              const toUploadAttachments: CreateAttachmentRequest[] = attachments.map((el) => {
+                return {
+                  ...el,
+                  taskId: createdTask.id,
+                }
+              })
+              store.dispatch(clearCreateTaskFields())
+              await handleCreateMultipleAttachments(toUploadAttachments)
+            }
+          }}
+          getSignedUrlUpload={getSignedUrlUpload}
+        />
+      </Modal>
+    </>
   )
 }
