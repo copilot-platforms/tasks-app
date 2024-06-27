@@ -43,6 +43,7 @@ export const ClientTaskCard = ({
               sx={{
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
+                maxWidth: '64em',
               }}
             >
               <Typography variant="bodySm">
