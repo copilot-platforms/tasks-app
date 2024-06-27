@@ -30,19 +30,17 @@ export const TaskBoard = ({
   handleCreateMultipleAttachments: (attachments: CreateAttachmentRequest[]) => Promise<void>
 }) => {
   const { showModal } = useSelector(selectCreateTask)
-  const { workflowStates, tasks, filteredTasks, view, filterOptions } = useSelector(selectTaskBoard)
+  const { workflowStates, tasks, token, filteredTasks, view, filterOptions } = useSelector(selectTaskBoard)
   const { title, description, workflowStateId, assigneeId, assigneeType, attachments } = useSelector(selectCreateTask)
 
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const token = z.string().parse(searchParams.get('token'))
 
   const onDropItem = useCallback(
     (payload: { taskId: string; targetWorkflowStateId: string }) => {
       const { taskId, targetWorkflowStateId } = payload
       store.dispatch(updateWorkflowStateIdByTaskId({ taskId, targetWorkflowStateId }))
       updateTask({
-        token,
+        token: z.string().parse(token),
         taskId,
         payload: { workflowStateId: targetWorkflowStateId },
       })
