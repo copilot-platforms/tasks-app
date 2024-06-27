@@ -24,7 +24,7 @@
     "lint-staged": "npx lint-staged",
     "postinstall": "prisma generate",
     "test": "jest",
-    "seed:task": "npx ts-node ./src/seeder/task-seeder.ts"
+    "seed:task": "npx ts-node -P tsconfig.seeder.json ./src/seeder/task-seeder.ts"
   },
   "dependencies": {
     "@emotion/react": "^11.11.3",

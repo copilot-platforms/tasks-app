@@ -1,6 +1,7 @@
 import { CreateTaskRequest } from './../types/dto/tasks.dto'
-import { faker } from '@faker-js/faker'
-import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
+import * as faker from '@faker-js/faker'
+
+import { WorkflowStateResponse } from './../types/dto/workflowStates.dto'
 
 const apiUrl = 'http://localhost:3000'
 
@@ -27,10 +28,9 @@ async function createTask(payload: CreateTaskRequest) {
     console.log('Error:', e)
   }
 }
-
 async function seedTasks(count: number, workflowStateId: string) {
   for (let i = 0; i < count; i++) {
-    const title = faker.lorem.sentence()
+    const title = faker.fakerEN.lorem.sentence()
     console.log(`Seeding ${i + 1} of ${count} for state ID ${workflowStateId}`)
     await createTask({ title, workflowStateId: workflowStateId })
   }
