@@ -73,7 +73,7 @@ export const TaskBoard = ({
       {view === View.BOARD_VIEW && (
         <AppMargin size={SizeofAppMargin.LARGE} py="20px">
           <Stack
-            columnGap={2}
+            columnGap={6}
             sx={{
               overflowX: 'auto',
               flexDirection: 'row',
