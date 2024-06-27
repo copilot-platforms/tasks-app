@@ -4,7 +4,7 @@ import { SelectorType } from '@/components/inputs/Selector'
 import Selector from '@/components/inputs/Selector'
 import { StyledTextField } from '@/components/inputs/TextField'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
-import { ArrowLinkIcon, AttachmentIcon, TemplateIcon, TemplateIconSm } from '@/icons'
+import { ArrowLinkIcon, TemplateIconSm } from '@/icons'
 import {
   clearCreateTaskFields,
   removeOneAttachment,
@@ -13,11 +13,10 @@ import {
   setShowModal,
 } from '@/redux/features/createTaskSlice'
 import store from '@/redux/store'
-import { statusIcons } from '@/utils/iconMatcher'
 import { Close } from '@mui/icons-material'
 import { Avatar, Box, Stack, Typography, styled } from '@mui/material'
-import React, { ReactNode, useEffect } from 'react'
-import { FilterOptions, IAssigneeCombined, ISignedUrlUpload, ITemplate, TruncateMaxNumber } from '@/types/interfaces'
+import { useEffect } from 'react'
+import { FilterOptions, IAssigneeCombined, ISignedUrlUpload, ITemplate } from '@/types/interfaces'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { useSelector } from 'react-redux'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
@@ -38,6 +37,7 @@ import { advancedFeatureFlag } from '@/config'
 import { getAssigneeName } from '@/utils/getAssigneeName'
 import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
 import { truncateText } from '@/utils/truncateText'
+import { TruncateMaxNumber } from '@/types/constants'
 
 const supabaseActions = new SupabaseActions()
 
