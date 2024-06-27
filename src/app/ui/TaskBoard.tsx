@@ -10,7 +10,7 @@ import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { useSelector } from 'react-redux'
 import { clearCreateTaskFields, selectCreateTask, setShowModal } from '@/redux/features/createTaskSlice'
 import store from '@/redux/store'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { selectTaskBoard, updateWorkflowStateIdByTaskId } from '@/redux/features/taskBoardSlice'
 import { CreateTaskRequest, CreateTaskRequestSchema, TaskResponse, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { ListViewTaskCard } from '@/components/cards/ListViewTaskCard'
@@ -30,10 +30,12 @@ export const TaskBoard = ({
   handleCreateMultipleAttachments: (attachments: CreateAttachmentRequest[]) => Promise<void>
 }) => {
   const { showModal } = useSelector(selectCreateTask)
-  const { workflowStates, tasks, token, filteredTasks, view, filterOptions } = useSelector(selectTaskBoard)
+  const { workflowStates, tasks, filteredTasks, view, filterOptions } = useSelector(selectTaskBoard)
   const { title, description, workflowStateId, assigneeId, assigneeType, attachments } = useSelector(selectCreateTask)
 
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const token = searchParams.get('token')
 
   const onDropItem = useCallback((payload: { taskId: string; targetWorkflowStateId: string }) => {
     store.dispatch(
