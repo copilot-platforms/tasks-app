@@ -85,7 +85,7 @@ export const TaskBoard = ({
                   <Box mt="6px">
                     {filterTaskWithWorkflowStateId(list.id).map((task, index) => {
                       return (
-                        <DragDropHandler key={task.id} accept={'taskCard'} index={index} id={task.id || ''}>
+                        <DragDropHandler key={task.id} accept={'taskCard'} index={index} id={task.id || ''} draggable>
                           <Box
                             onClick={() => advancedFeatureFlag && router.push(`/detail/${task.id}/iu?token=${token}`)}
                             key={task.id}
@@ -121,7 +121,7 @@ export const TaskBoard = ({
               >
                 {filterTaskWithWorkflowStateId(list.id).map((task, index) => {
                   return (
-                    <DragDropHandler key={task.id} accept={'taskCard'} index={index} id={task.id || ''}>
+                    <DragDropHandler key={task.id} accept={'taskCard'} index={index} id={task.id || ''} draggable>
                       <ListViewTaskCard
                         task={task}
                         key={task.id}

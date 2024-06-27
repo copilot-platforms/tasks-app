@@ -1,11 +1,7 @@
-import { ReactNode } from 'react'
-import { useRef } from 'react'
-import { useDrag, useDrop, DropTargetMonitor } from 'react-dnd'
+'use client'
 
-interface IItem {
-  id: number
-  index: number
-}
+import { ReactNode, useRef } from 'react'
+import { useDrag, useDrop, DropTargetMonitor } from 'react-dnd'
 
 interface Prop {
   children: ReactNode
@@ -14,9 +10,10 @@ interface Prop {
   id: string
   moveCard?: (dragIndex: number, hoverIndex: number, sourceId: number, targetId: number) => void
   onDropItem?: (payload: { taskId: string; targetWorkflowStateId: string }) => void
+  draggable?: boolean // Add this prop
 }
 
-export const DragDropHandler = ({ children, accept, index, id, moveCard, onDropItem }: Prop) => {
+export const DragDropHandler = ({ children, accept, index, id, moveCard, onDropItem, draggable = false }: Prop) => {
   const ref = useRef<HTMLDivElement | null>(null)
 
   const [, drop] = useDrop({
@@ -26,7 +23,6 @@ export const DragDropHandler = ({ children, accept, index, id, moveCard, onDropI
         handlerId: monitor.getHandlerId(),
       }
     },
-
     drop: (item: unknown, monitor) => {
       if (onDropItem) {
         onDropItem({
@@ -48,7 +44,12 @@ export const DragDropHandler = ({ children, accept, index, id, moveCard, onDropI
   })
 
   const opacity = isDragging ? 0.5 : 1
-  drag(drop(ref))
+
+  if (draggable) {
+    drag(drop(ref))
+  } else {
+    drop(ref)
+  }
 
   return (
     <div ref={ref} style={{ opacity }}>

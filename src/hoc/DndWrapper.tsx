@@ -1,21 +1,24 @@
 'use client'
 
-import { useMediaQuery } from '@mui/material'
-import { ReactNode } from 'react'
+import React, { ReactNode, useEffect, useState } from 'react'
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import { TouchBackend } from 'react-dnd-touch-backend'
+import { useMediaQuery } from '@mui/material'
 
 export const DndWrapper = ({ children }: { children: ReactNode }) => {
-  const matches = useMediaQuery('(max-width:600px)')
+  const [screenType, setScreenType] = useState<'mobile' | 'nonMobile' | undefined>(undefined)
 
-  const options = {
-    scrollAngleRanges: [{ start: 300 }, { end: 60 }, { start: 120, end: 240 }],
-  }
+  const isMobileScreen = useMediaQuery('(max-width:600px)')
+  useEffect(() => {
+    if (isMobileScreen) {
+      setScreenType('mobile')
+    } else {
+      setScreenType('nonMobile')
+    }
+  }, [isMobileScreen])
 
-  return (
-    <DndProvider backend={matches ? TouchBackend : HTML5Backend} options={options}>
-      {children}
-    </DndProvider>
-  )
+  if (!screenType) return null
+
+  return <DndProvider backend={screenType === 'mobile' ? TouchBackend : HTML5Backend}>{children}</DndProvider>
 }
