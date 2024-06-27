@@ -16,7 +16,7 @@ import { CreateTaskRequestSchema, TaskResponse } from '@/types/dto/tasks.dto'
 import { ListViewTaskCard } from '@/components/cards/ListViewTaskCard'
 import { TaskRow } from '@/components/cards/TaskRow'
 import { ISignedUrlUpload, View } from '@/types/interfaces'
-import { handleCreate, updateTask } from '../actions'
+import { handleCreate, updateTask } from '@/app/actions'
 import { z } from 'zod'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { bulkRemoveAttachments } from '@/utils/bulkRemoveAttachments'
@@ -37,13 +37,12 @@ export const TaskBoard = ({
 
   const onDropItem = useCallback(
     (payload: { taskId: string; targetWorkflowStateId: string }) => {
-      store.dispatch(
-        updateWorkflowStateIdByTaskId({ taskId: payload.taskId, targetWorkflowStateId: payload.targetWorkflowStateId }),
-      )
+      const { taskId, targetWorkflowStateId } = payload
+      store.dispatch(updateWorkflowStateIdByTaskId({ taskId, targetWorkflowStateId }))
       updateTask({
         token: z.string().parse(token),
-        taskId: payload.taskId,
-        payload: { workflowStateId: payload.targetWorkflowStateId },
+        taskId,
+        payload: { workflowStateId: targetWorkflowStateId },
       })
     },
     [token],
