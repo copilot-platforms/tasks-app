@@ -120,7 +120,7 @@ export const ClientTaskCard = ({
           </Stack>
         </Box>
       </AppMargin>
-      <Divider sx={{ bgcolor: (theme) => theme.color.gray[150], borderBottomWidth: '1px' }} />
+      <Divider sx={{ borderColor: (theme) => theme.color.gray[150], borderBottomWidth: '1px' }} />
     </Box>
   )
 }
