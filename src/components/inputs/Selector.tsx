@@ -32,6 +32,7 @@ interface Prop {
     props?: HTMLAttributes<HTMLLIElement>,
   ) => ReactNode
   disableOutline?: boolean
+  buttonWidth?: string
 }
 
 export default function Selector({
@@ -46,6 +47,7 @@ export default function Selector({
   extraOption,
   extraOptionRenderer,
   disableOutline,
+  buttonWidth,
 }: Prop) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
@@ -105,7 +107,7 @@ export default function Selector({
             columnGap="4px"
             justifyContent="flex-start"
             sx={{
-              width: '100px',
+              width: buttonWidth ?? '100px',
               justifyContent: { xs: 'end', sm: 'flex-start' },
               cursor: 'pointer',
             }}

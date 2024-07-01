@@ -260,6 +260,7 @@ const NewTaskFormInputs = () => {
           content={description}
           getContent={(content) => store.dispatch(setCreateTaskFields({ targetField: 'description', value: content }))}
           isTextInput
+          editorClass=""
         />
       </Stack>
       <Stack direction="row" columnGap={2} m="16px 0px">
