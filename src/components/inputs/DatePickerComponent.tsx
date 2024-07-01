@@ -3,7 +3,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import dayjs, { Dayjs } from 'dayjs'
-import { CalenderIcon } from '@/icons'
+import { CalenderIcon, CalenderIcon2 } from '@/icons'
 import { IsoDate } from '@/types/dto/tasks.dto'
 import { Box, Popper, Stack, Typography } from '@mui/material'
 
@@ -39,9 +39,11 @@ export const DatePickerComponent = ({ getDate, dateValue }: Prop) => {
         sx={{ cursor: 'pointer' }}
       >
         <Box>
-          <CalenderIcon />
+          <CalenderIcon2 />
         </Box>
-        <Typography variant="bodyMd">{formatDate(value)}</Typography>
+        <Typography variant="bodyMd" mt="2px">
+          {value ? formatDate(value) : 'Due date'}
+        </Typography>
       </Stack>
       <Popper
         id={id}

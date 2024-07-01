@@ -35,6 +35,7 @@ export const ListBtn = ({
           },
         }}
         p="9px 12px"
+        alignItems="center"
       >
         <Box>{icon}</Box>
         <Typography variant="bodySm" color={contentColor}>

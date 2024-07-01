@@ -6,7 +6,7 @@ import { AttachmentIcon } from '@/icons'
 import { selectTaskDetails, setShowConfirmDeleteModal } from '@/redux/features/taskDetailsSlice'
 import { statusIcons } from '@/utils/iconMatcher'
 import { Box, IconButton, Modal, Stack } from '@mui/material'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
 import store from '@/redux/store'
@@ -66,10 +66,11 @@ export const TaskEditor = ({
       }
     }
   }
+
   return (
     <>
       <Stack direction="row" alignItems="center" columnGap={2}>
-        <Box pt="5px">{statusIcons[workflowState.type]}</Box>
+        <Box>{statusIcons[workflowState.type]}</Box>
         <StyledTextField
           type="text"
           multiline
@@ -96,6 +97,7 @@ export const TaskEditor = ({
         onBlur={() => {
           updateTaskDetail(updateTitle, updateDetail)
         }}
+        mt="12px"
       >
         <TapWriteTaskEditor
           uploadFn={async (file, tiptapEditorUtils) => {
@@ -108,6 +110,7 @@ export const TaskEditor = ({
           content={detail}
           getContent={(content) => setUpdateDetail(content)}
           readonly={userType === UserType.CLIENT_USER}
+          editorClass="tapwrite-details-page"
         />
       </Box>
       {advancedFeatureFlag && (
