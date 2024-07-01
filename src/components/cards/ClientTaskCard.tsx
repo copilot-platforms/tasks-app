@@ -44,7 +44,7 @@ export const ClientTaskCard = ({
                 sx={{
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
-                  maxWidth: '64em',
+                  maxWidth: '70em',
                 }}
               >
                 <Typography variant="bodySm">
@@ -75,7 +75,7 @@ export const ClientTaskCard = ({
                     </Typography>
                   )}
                 </Box>
-                <Stack direction="row" alignItems="flex-start" columnGap={1} sx={{ padding: '2px' }}>
+                <Stack direction="row" alignItems="flex-start" columnGap={1} sx={{ padding: '2px', maxWidth: '200px' }}>
                   <Avatar
                     src={currentAssignee?.iconImageUrl || currentAssignee?.avatarImageUrl || 'user'}
                     alt={currentAssignee?.givenName || currentAssignee?.familyName || currentAssignee?.name}
@@ -92,12 +92,9 @@ export const ClientTaskCard = ({
                       overflow: 'hidden',
                     }}
                   >
-                    {truncateText(
-                      (currentAssignee as IAssigneeCombined)?.name ||
-                        `${(currentAssignee as IAssigneeCombined)?.givenName ?? ''} ${(currentAssignee as IAssigneeCombined)?.familyName ?? ''}`.trim() ||
-                        'No Assignee',
-                      TruncateMaxNumber.SELECTOR,
-                    )}
+                    {(currentAssignee as IAssigneeCombined)?.name ||
+                      `${(currentAssignee as IAssigneeCombined)?.givenName ?? ''} ${(currentAssignee as IAssigneeCombined)?.familyName ?? ''}`.trim() ||
+                      'No Assignee'}
                   </Typography>
                 </Stack>
               </Stack>

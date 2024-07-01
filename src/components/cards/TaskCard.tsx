@@ -7,8 +7,6 @@ import { NoAssignee } from '@/utils/noAssignee'
 import { Avatar, Stack, Typography, styled } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { DueDateLayout } from '@/components/utils/DueDateLayout'
-import { truncateText } from '@/utils/truncateText'
-import { TruncateMaxNumber } from '@/types/constants'
 
 const TaskCardContainer = styled(Stack)(({ theme }) => ({
   border: `1px solid ${theme.color.borders.border}`,
@@ -36,14 +34,21 @@ export const TaskCard = ({ task }: { task: TaskResponse }) => {
             sx={{ width: '20px', height: '20px' }}
             variant={(currentAssignee as IAssigneeCombined)?.type === 'companies' ? 'rounded' : 'circular'}
           />
-          <Typography variant="sm" fontSize="12px" sx={{ color: (theme) => theme.color.gray[500] }}>
+          <Typography
+            variant="sm"
+            fontSize="12px"
+            sx={{
+              color: (theme) => theme.color.gray[500],
+              width: '146px',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
             {(currentAssignee as IAssigneeCombined).name === 'No assignee'
               ? 'No assignee'
-              : truncateText(
-                  (currentAssignee as IAssigneeCombined)?.name ||
-                    `${(currentAssignee as IAssigneeCombined)?.givenName ?? ''} ${(currentAssignee as IAssigneeCombined)?.familyName ?? ''}`.trim(),
-                  TruncateMaxNumber.TASK_CARD_NAME,
-                )}
+              : (currentAssignee as IAssigneeCombined)?.name ||
+                `${(currentAssignee as IAssigneeCombined)?.givenName ?? ''} ${(currentAssignee as IAssigneeCombined)?.familyName ?? ''}`.trim()}
           </Typography>
         </Stack>
         <Typography variant="bodyXs" fontWeight={400} sx={{ color: (theme) => theme.color.gray[500] }}>
