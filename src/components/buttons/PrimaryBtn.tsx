@@ -25,8 +25,11 @@ export const PrimaryBtn = ({
         bgcolor: buttonBackground || theme.color.gray[600],
         '&:hover': { backgroundColor: buttonBackground || theme.color.gray[600] },
         borderRadius: '4px',
+        cursor: 'default',
       })}
       onClick={() => handleClick()}
+      disableRipple
+      disableTouchRipple
     >
       <Typography variant="sm">{buttonText}</Typography>
     </Button>

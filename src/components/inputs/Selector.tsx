@@ -107,7 +107,7 @@ export default function Selector({
             sx={{
               width: '150px',
               justifyContent: { xs: 'end', sm: 'flex-start' },
-              cursor: 'pointer',
+              cursor: 'default',
             }}
           >
             <Box>{startIcon}</Box>
@@ -300,14 +300,16 @@ const SelectorButton = ({
         bgcolor: enableBackground ? theme.color.gray[150] : '',
         '&:hover': {
           border: enableBackground || outlined ? 'none' : `1px solid ${theme.color.borders.border}`,
-          bgcolor: theme.color.gray[150],
         },
         '.MuiTouchRipple-child': {
           bgcolor: theme.color.borders.border,
         },
+        cursor: 'default',
         padding: { xs: '1px 9px', md: '4px 16px' },
       })}
       onClick={handleClick}
+      disableRipple
+      disableTouchRipple
     >
       {buttonContent}
     </Button>
