@@ -158,19 +158,20 @@ export default function Selector({
           }
           renderGroup={(params) => {
             const hasNoAssignee =
-              Array.isArray(params?.children) && params?.children?.some((child) => child.props.props.key === 'No assignee')
-            return !hasNoAssignee ? (
-              <Box key={params.key} component="li">
-                <Stack direction="row" alignItems="center" columnGap={2}>
-                  <Typography variant={'sm'} sx={{ color: (theme) => theme.color.gray[500], marginLeft: '10px' }} p={1}>
-                    {params.group}
-                  </Typography>
-                </Stack>
-                {params.children}
-              </Box>
-            ) : (
-              <> {params.children}</>
-            )
+              Array.isArray(params?.children) &&
+              params?.children?.some((child) => child?.props?.props?.key === 'No assignee')
+            return !hasNoAssignee
+              ? params.children && (
+                  <Box key={params.key} component="li">
+                    <Stack direction="row" alignItems="center" columnGap={2}>
+                      <Typography variant={'sm'} sx={{ color: (theme) => theme.color.gray[500], marginLeft: '10px' }} p={1}>
+                        {params.group}
+                      </Typography>
+                    </Stack>
+                    {params.children}
+                  </Box>
+                )
+              : params.children && <Box key={params.key}> {params.children}</Box>
           }}
           inputValue={inputStatusValue}
           onInputChange={(_, newInputValue) => {
