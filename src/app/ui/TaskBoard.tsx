@@ -67,7 +67,6 @@ export const TaskBoard = ({
     }
     return filteredTaskCount.toString() + '/' + taskCount.toString()
   }
-
   return (
     <>
       {view === View.BOARD_VIEW && (
@@ -113,27 +112,29 @@ export const TaskBoard = ({
         >
           {workflowStates.map((list, index) => (
             <DragDropHandler key={list.id} accept={'taskCard'} index={index} id={list.id} onDropItem={onDropItem}>
-              <TaskRow
-                key={list.id}
-                columnName={list.name}
-                taskCount={taskCountForWorkflowStateId(list.id)}
-                showConfigurableIcons={false}
-              >
-                {filterTaskWithWorkflowStateId(list.id).map((task, index) => {
-                  return (
-                    <DragDropHandler key={task.id} accept={'taskCard'} index={index} id={task.id || ''} draggable>
-                      <ListViewTaskCard
-                        task={task}
-                        key={task.id}
-                        updateTask={({ payload }) => {
-                          updateTask({ token: z.string().parse(token), taskId: task.id, payload })
-                        }}
-                        handleClick={() => advancedFeatureFlag && router.push(`/detail/${task.id}/iu?token=${token}`)}
-                      />
-                    </DragDropHandler>
-                  )
-                })}
-              </TaskRow>
+              {filterTaskWithWorkflowStateId(list.id).length > 0 && (
+                <TaskRow
+                  key={list.id}
+                  columnName={list.name}
+                  taskCount={taskCountForWorkflowStateId(list.id)}
+                  showConfigurableIcons={false}
+                >
+                  {filterTaskWithWorkflowStateId(list.id).map((task, index) => {
+                    return (
+                      <DragDropHandler key={task.id} accept={'taskCard'} index={index} id={task.id || ''} draggable>
+                        <ListViewTaskCard
+                          task={task}
+                          key={task.id}
+                          updateTask={({ payload }) => {
+                            updateTask({ token: z.string().parse(token), taskId: task.id, payload })
+                          }}
+                          handleClick={() => advancedFeatureFlag && router.push(`/detail/${task.id}/iu?token=${token}`)}
+                        />
+                      </DragDropHandler>
+                    )
+                  })}
+                </TaskRow>
+              )}
             </DragDropHandler>
           ))}
         </Stack>
