@@ -39,6 +39,7 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
           getContent={setDetail}
           placeholder="Leave a comment..."
           suggestions={assigneeSuggestions}
+          editorClass=""
         />
         <InputAdornment
           position="end"
