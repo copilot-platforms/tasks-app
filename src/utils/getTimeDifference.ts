@@ -1,3 +1,6 @@
-import { formatDistance } from 'date-fns'
+import dayjs from 'dayjs'
+import relativeTime from 'dayjs/plugin/relativeTime'
 
-export const getTimeDifference = (createdAt: string): string => formatDistance(createdAt, new Date())
+dayjs.extend(relativeTime)
+
+export const getTimeDifference = (createdAt: string): string => dayjs().to(dayjs(createdAt))
