@@ -97,7 +97,7 @@ export const TaskEditor = ({
         onBlur={() => {
           updateTaskDetail(updateTitle, updateDetail)
         }}
-        mt="31px"
+        mt="12px"
       >
         <TapWriteTaskEditor
           uploadFn={async (file, tiptapEditorUtils) => {
