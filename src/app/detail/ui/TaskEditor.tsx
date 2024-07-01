@@ -18,6 +18,7 @@ import { generateRandomString } from '@/utils/generateRandomString'
 import { ISignedUrlUpload, UserType } from '@/types/interfaces'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { TapWriteTaskEditor } from '@/app/detail/ui/styledComponent'
+import { advancedFeatureFlag } from '@/config'
 
 interface Prop {
   title: string
@@ -109,29 +110,33 @@ export const TaskEditor = ({
           readonly={userType === UserType.CLIENT_USER}
         />
       </Box>
-      <Stack direction="row" columnGap={3} rowGap={3} mt={3} flexWrap={'wrap'}>
-        {attachment?.map((el, key) => {
-          return (
-            <Box key={key}>
-              <AttachmentCard
-                file={el}
-                deleteAttachment={async (event: any) => {
-                  event.stopPropagation()
-                  const supabaseActions = new SupabaseActions()
-                  const { data } = await supabaseActions.removeAttachment(el.filePath)
-                  if (data && el.id) {
-                    deleteAttachment(el.id)
-                  }
-                }}
-              />
-            </Box>
-          )
-        })}
-      </Stack>
+      {advancedFeatureFlag && (
+        <>
+          <Stack direction="row" columnGap={3} rowGap={3} mt={3} flexWrap={'wrap'}>
+            {attachment?.map((el, key) => {
+              return (
+                <Box key={key}>
+                  <AttachmentCard
+                    file={el}
+                    deleteAttachment={async (event: any) => {
+                      event.stopPropagation()
+                      const supabaseActions = new SupabaseActions()
+                      const { data } = await supabaseActions.removeAttachment(el.filePath)
+                      if (data && el.id) {
+                        deleteAttachment(el.id)
+                      }
+                    }}
+                  />
+                </Box>
+              )
+            })}
+          </Stack>
 
-      <Stack direction="row" mt={3} justifyContent="flex-end">
-        <AttachmentInput handleFileSelect={handleFileSelect} />
-      </Stack>
+          <Stack direction="row" mt={3} justifyContent="flex-end">
+            <AttachmentInput handleFileSelect={handleFileSelect} />
+          </Stack>
+        </>
+      )}
 
       <Modal
         open={showConfirmDeleteModal}
