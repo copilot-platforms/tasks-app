@@ -34,7 +34,17 @@ export const TaskCard = ({ task }: { task: TaskResponse }) => {
             sx={{ width: '20px', height: '20px' }}
             variant={(currentAssignee as IAssigneeCombined)?.type === 'companies' ? 'rounded' : 'circular'}
           />
-          <Typography variant="sm" fontSize="12px" sx={{ color: (theme) => theme.color.gray[500] }}>
+          <Typography
+            variant="sm"
+            fontSize="12px"
+            sx={{
+              color: (theme) => theme.color.gray[500],
+              width: '146px',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
             {(currentAssignee as IAssigneeCombined).name === 'No assignee'
               ? 'No assignee'
               : (currentAssignee as IAssigneeCombined)?.name ||
