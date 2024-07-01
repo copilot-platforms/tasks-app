@@ -1,21 +1,28 @@
 import { Typography } from '@mui/material'
-import { format, parseISO, isToday, isTomorrow } from 'date-fns'
+import dayjs from 'dayjs'
+import isToday from 'dayjs/plugin/isToday'
+import isTomorrow from 'dayjs/plugin/isTomorrow'
+
+dayjs.extend(isToday)
+dayjs.extend(isTomorrow)
 
 interface DueDateLayoutProp {
   date: string | Date
 }
 
 export const DueDateLayout = ({ date }: DueDateLayoutProp) => {
-  const now = new Date()
+  const now = dayjs()
   let formattedDueDate
   let isPast: boolean
-  if (isToday(date)) {
+  const parsedDate = dayjs(date)
+
+  if (parsedDate.isToday()) {
     formattedDueDate = `Today`
-  } else if (isTomorrow(date)) {
+  } else if (parsedDate.isTomorrow()) {
     formattedDueDate = `Tomorrow`
   } else {
-    isPast = now > new Date(date)
-    formattedDueDate = format(date, 'dd, MMM, yyyy')
+    isPast = now.isAfter(parsedDate)
+    formattedDueDate = parsedDate.format('MMMM D, YYYY')
   }
 
   return (
