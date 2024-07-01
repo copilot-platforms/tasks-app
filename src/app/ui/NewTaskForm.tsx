@@ -4,7 +4,7 @@ import { SelectorType } from '@/components/inputs/Selector'
 import Selector from '@/components/inputs/Selector'
 import { StyledTextField } from '@/components/inputs/TextField'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
-import { ArrowLinkIcon, TemplateIconSm } from '@/icons'
+import { ArrowLinkIcon, CloseIcon, TemplateIconSm } from '@/icons'
 import {
   clearCreateTaskFields,
   removeOneAttachment,
@@ -153,8 +153,8 @@ export const NewTaskForm = ({
                 />
               )}
             </Box>
-            <Close
-              sx={{ color: (theme) => theme.color.gray[500], cursor: 'pointer' }}
+            <CloseIcon
+              style={{ cursor: 'pointer' }}
               onClick={() => {
                 store.dispatch(setShowModal())
                 store.dispatch(clearCreateTaskFields())
@@ -168,14 +168,16 @@ export const NewTaskForm = ({
         <NewTaskFormInputs />
 
         <Stack direction="row" columnGap={3} position="relative">
-          <WorkflowStateSelector
-            option={workflowStates}
-            value={statusValue}
-            getValue={(value) => {
-              updateStatusValue(value)
-              store.dispatch(setCreateTaskFields({ targetField: 'workflowStateId', value: value.id }))
-            }}
-          />
+          <Box sx={{ padding: 0.3 }}>
+            <WorkflowStateSelector
+              option={workflowStates}
+              value={statusValue}
+              getValue={(value) => {
+                updateStatusValue(value)
+                store.dispatch(setCreateTaskFields({ targetField: 'workflowStateId', value: value.id }))
+              }}
+            />
+          </Box>
           <Stack alignSelf="flex-start">
             <Selector
               placeholder="Change assignee"
@@ -243,6 +245,7 @@ const NewTaskFormInputs = () => {
         <StyledTextField
           type="text"
           padding="8px 0px"
+          autoFocus={true}
           value={title}
           onChange={(e) => store.dispatch(setCreateTaskFields({ targetField: 'title', value: e.target.value }))}
         />
@@ -260,6 +263,7 @@ const NewTaskFormInputs = () => {
           content={description}
           getContent={(content) => store.dispatch(setCreateTaskFields({ targetField: 'description', value: content }))}
           isTextInput
+          placeholder="Add description..."
         />
       </Stack>
       <Stack direction="row" columnGap={2} m="16px 0px">

@@ -29,6 +29,11 @@ const SearchBar = ({ value, getSearchKeyword }: ISearchBar) => {
             <SearchIcon />
           </InputAdornment>
         ),
+        inputProps: {
+          style: {
+            marginBottom: '2px',
+          },
+        },
       }}
       autoComplete="off"
       onBlur={() => setFocused(false)}
@@ -43,7 +48,7 @@ export default SearchBar
 const StyledTextInput = styled(StyledTextField, {
   shouldForwardProp: (prop) => prop !== 'focused',
 })<{ focused: boolean }>(({ focused }) => ({
-  width: focused ? '220px' : '100px',
+  width: focused ? '220px' : '90px',
   transition: 'width 0.5s',
   '& .MuiOutlinedInput-input': {
     cursor: 'pointer',

@@ -32,8 +32,11 @@ export const SecondaryBtn = ({
           bgcolor: theme.color.borders.border,
         },
         padding: { xs: '1px 9px', md: '4px 16px' },
+        cursor: 'default',
       })}
       onClick={handleClick}
+      disableRipple
+      disableTouchRipple
     >
       {buttonContent}
     </Button>

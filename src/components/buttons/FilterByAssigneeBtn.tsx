@@ -50,6 +50,9 @@ export const FilterByAssigneeBtn = ({
               updateAssigneeValue(null)
               handleClick(FilterOptions.ASSIGNEE, '')
             }}
+            sx={{ cursor: 'default' }}
+            disableRipple
+            disableTouchRipple
           >
             <CrossIcon />
           </IconButton>

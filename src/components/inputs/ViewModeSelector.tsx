@@ -16,7 +16,7 @@ export const ViewModeSelector = ({ handleModeChange, selectedMode }: Prop) => {
         border: (theme) => `1px solid ${theme.color.borders.border2}`,
         borderRadius: '4px',
         padding: '3px',
-        cursor: 'pointer',
+        cursor: 'default',
       }}
     >
       <IconContainer

@@ -91,12 +91,6 @@ export const TapWriteComment = styled(Tapwrite)(({ theme }) => ({
 }))
 
 export const TapWriteTaskEditor = styled(Tapwrite)(({ theme }) => ({
-  minHeight: '30vh',
+  minHeight: '10vh',
   fontSize: '20px',
-}))
-
-export const TapWriteTaskEditor1 = styled(Tapwrite)(({ theme }) => ({
-  minHeight: '20vh',
-  borderColor: theme.color.borders.border,
-  border: `1px solid ${theme.color.base.black}`,
 }))

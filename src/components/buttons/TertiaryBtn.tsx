@@ -32,8 +32,11 @@ export const TertiaryBtn = ({
           bgcolor: theme.color.borders.border,
         },
         padding: { xs: '4px 9px', md: '4px 16px' },
+        cursor: 'default',
       })}
       onClick={handleClick}
+      disableRipple
+      disableTouchRipple
     >
       {buttonContent}
     </Button>
