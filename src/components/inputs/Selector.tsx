@@ -156,6 +156,22 @@ export default function Selector({
           groupBy={(option: unknown) =>
             selectorType === SelectorType.ASSIGNEE_SELECTOR ? UserTypesName[(option as IAssigneeCombined).type] : ''
           }
+          renderGroup={(params) => {
+            const hasNoAssignee =
+              Array.isArray(params?.children) && params?.children?.some((child) => child.props.props.key === 'No assignee')
+            return !hasNoAssignee ? (
+              <Box key={params.key} component="li">
+                <Stack direction="row" alignItems="center" columnGap={2}>
+                  <Typography variant={'sm'} sx={{ color: (theme) => theme.color.gray[500], marginLeft: '10px' }} p={1}>
+                    {params.group}
+                  </Typography>
+                </Stack>
+                {params.children}
+              </Box>
+            ) : (
+              <> {params.children}</>
+            )
+          }}
           inputValue={inputStatusValue}
           onInputChange={(_, newInputValue) => {
             setInputStatusValue(newInputValue)
@@ -265,7 +281,7 @@ const AssigneeSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTM
           sx={{ width: '20px', height: '20px' }}
           variant={(option as IAssigneeCombined).type === 'companies' ? 'rounded' : 'circular'}
         />
-        <Typography variant="sm" fontWeight={400}>
+        <Typography variant="bodySm">
           {truncateText(
             (option as IAssigneeCombined)?.name ||
               `${(option as IAssigneeCombined)?.givenName ?? ''} ${(option as IAssigneeCombined)?.familyName ?? ''}`.trim(),
