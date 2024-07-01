@@ -33,6 +33,7 @@ export const StyledKeyboardIcon = styled(KeyboardArrowRight)(({ theme }) => ({
 
 export const StyledBox = styled(Box)(({ theme }) => ({
   borderBottom: `1px solid ${theme.color.borders.borderDisabled}`,
+  width: '100%',
 }))
 
 export const VerticalLine = styled('div')(({ theme }) => ({
@@ -91,8 +92,8 @@ export const TapWriteComment = styled(Tapwrite)(({ theme }) => ({
 }))
 
 export const TapWriteTaskEditor = styled(Tapwrite)(({ theme }) => ({
-  minHeight: '30vh',
   fontSize: '20px',
+  minHeight: '30vh',
 }))
 
 export const TapWriteTaskEditor1 = styled(Tapwrite)(({ theme }) => ({

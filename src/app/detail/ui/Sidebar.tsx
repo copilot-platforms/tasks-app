@@ -67,33 +67,28 @@ export const Sidebar = ({
     <Box
       sx={{
         borderLeft: (theme) => `1px solid ${theme.color.borders.border2}`,
-        height: '100%',
+        height: '100vh',
         display: showSidebar ? 'block' : 'none',
         width: matches && showSidebar ? '100vw' : '25vw',
       }}
     >
-      <Stack direction="row" justifyContent="space-between" alignItems="center" p="19px 25px">
-        <StyledBox>
+      <Stack direction="row" justifyContent="space-between" alignItems="center">
+        <StyledBox p="19.5px 20px" display="flex" justifyContent="space-between" alignItems="center">
           <Typography variant="sm">Properties</Typography>
+          <Box
+            sx={{
+              display: matches ? 'block' : 'none',
+            }}
+          >
+            <ToggleButtonContainer />
+          </Box>
         </StyledBox>
-        <Box
-          sx={{
-            display: matches ? 'block' : 'none',
-          }}
-        >
-          <ToggleButtonContainer />
-        </Box>
       </Stack>
       <AppMargin size={SizeofAppMargin.SMALL}>
-        <Stack
-          direction="row"
-          alignItems="center"
-          m="16px 0px"
-          sx={{
-            justifyContent: 'space-between',
-          }}
-        >
-          <StyledText variant="md">Status</StyledText>
+        <Stack direction="row" alignItems="center" m="20px 0px" columnGap="10px">
+          <StyledText variant="md" width="80px">
+            Status
+          </StyledText>
           <WorkflowStateSelector
             option={workflowStates}
             value={statusValue}
@@ -102,11 +97,15 @@ export const Sidebar = ({
               updateWorkflowState(value)
             }}
             disabled={disabled}
+            disableOutline
           />
         </Stack>
-        <Stack direction="row" m="16px 0px" alignItems="center" justifyContent="space-between">
-          <StyledText variant="md">Assignee</StyledText>
+        <Stack direction="row" m="20px 0px" alignItems="center" columnGap="10px">
+          <StyledText variant="md" width="80px">
+            Assignee
+          </StyledText>
           <Selector
+            buttonWidth="100%"
             placeholder="Change assignee"
             getSelectedValue={(newValue) => {
               const assignee = newValue as IAssigneeCombined
@@ -140,14 +139,18 @@ export const Sidebar = ({
             }}
             buttonContent={
               <Typography variant="bodySm" lineHeight="16px" sx={{ color: (theme) => theme.color.gray[600] }}>
-                {assigneeValue?.name || assigneeValue?.givenName}
+                {(assigneeValue as IAssigneeCombined)?.name ||
+                  `${(assigneeValue as IAssigneeCombined)?.givenName ?? ''} ${(assigneeValue as IAssigneeCombined)?.familyName ?? ''}`.trim()}
               </Typography>
             }
             disabled={disabled}
+            disableOutline
           />
         </Stack>
-        <Stack direction="row" m="16px 0px" alignItems="center" justifyContent="space-between">
-          <StyledText variant="md">Due Date</StyledText>
+        <Stack direction="row" m="20px 0px" alignItems="center" columnGap="10px">
+          <StyledText variant="md" width="80px">
+            Due Date
+          </StyledText>
           <Box>
             <DatePickerComponent
               getDate={(date) => {
