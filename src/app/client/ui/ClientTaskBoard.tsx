@@ -9,8 +9,6 @@ import { Box } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { useRouter } from 'next/navigation'
 import { StateType } from '@prisma/client'
-import { advancedFeatureFlag } from '@/config'
-import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 
 export const ClientTaskBoard = ({ completeTask }: { completeTask: (taskId: string) => void }) => {
   const { workflowStates, tasks, filteredTasks, token } = useSelector(selectTaskBoard)
@@ -58,7 +56,7 @@ export const ClientTaskBoard = ({ completeTask }: { completeTask: (taskId: strin
                     completeTask(task.id)
                   }
                 }}
-                handleRouteChange={() => advancedFeatureFlag && router.push(`/detail/${task.id}/cu?token=${token}`)}
+                handleRouteChange={() => router.push(`/detail/${task.id}/cu?token=${token}`)}
               />
             </Box>
           )
