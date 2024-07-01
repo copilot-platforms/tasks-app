@@ -105,7 +105,7 @@ export default function Selector({
             columnGap="4px"
             justifyContent="flex-start"
             sx={{
-              width: '100px',
+              width: '150px',
               justifyContent: { xs: 'end', sm: 'flex-start' },
               cursor: 'pointer',
             }}

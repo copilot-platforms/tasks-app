@@ -66,7 +66,8 @@ export const ListViewTaskCard = ({
               sx={{
                 minWidth: {
                   xs: 'none',
-                  sm: '200px',
+                  sm: '300px',
+                  md: '350px',
                 },
               }}
             >
@@ -77,7 +78,7 @@ export const ListViewTaskCard = ({
                     sm: 'flex',
                   },
                   minWidth: 'fit-content',
-                  width: '100px',
+                  width: '200px',
                   flexDirection: 'row',
                   alignItems: 'flex-end',
                   justifyContent: 'right',
@@ -85,10 +86,16 @@ export const ListViewTaskCard = ({
               >
                 {task.dueDate && <DueDateLayout date={task.dueDate} />}
               </Box>
-              <Box>
+              <Box
+                sx={{
+                  minWidth: 'fit-content',
+                  width: '100px',
+                }}
+              >
                 <Selector
                   placeholder="Change assignee"
                   disableOutline
+                  disabled
                   getSelectedValue={(_newValue) => {
                     const newValue = _newValue as IAssigneeCombined
                     updateAssigneeValue(newValue)
