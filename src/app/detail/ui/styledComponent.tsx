@@ -1,9 +1,9 @@
 'use client'
 
-import { MenuBox } from '@/components/inputs/MenuBox'
 import { EmojiIcon, ReplyIcon } from '@/icons'
 import { KeyboardArrowRight } from '@mui/icons-material'
-import { Box, Container, Stack, Typography, styled } from '@mui/material'
+import { Box, Stack, Typography, styled } from '@mui/material'
+import Link from 'next/link'
 import { Tapwrite } from 'tapwrite'
 
 export const StyledTypography = styled(Typography)(({ theme }) => ({
@@ -111,3 +111,8 @@ export const TapWriteTaskEditor1 = styled(Tapwrite)(({ theme }) => ({
   borderColor: theme.color.borders.border,
   border: `1px solid ${theme.color.base.black}`,
 }))
+
+export const StyledUninvasiveLink = styled(Link)({
+  color: 'inherit',
+  textDecoration: 'inherit',
+})
