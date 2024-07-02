@@ -7,6 +7,7 @@ import { NoAssignee } from '@/utils/noAssignee'
 import { Avatar, Stack, Typography, styled } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { DueDateLayout } from '@/components/utils/DueDateLayout'
+import { CopilotAvatar } from '../atoms/CopilotAvatar'
 
 const TaskCardContainer = styled(Stack)(({ theme }) => ({
   border: `1px solid ${theme.color.borders.border}`,
@@ -28,12 +29,7 @@ export const TaskCard = ({ task }: { task: TaskResponse }) => {
     <TaskCardContainer rowGap={1}>
       <Stack direction="row" justifyContent="space-between">
         <Stack direction="row" alignItems="center" columnGap={1}>
-          <Avatar
-            alt={currentAssignee?.givenName == 'No assignee' ? '' : currentAssignee?.givenName}
-            src={currentAssignee?.iconImageUrl || currentAssignee?.avatarImageUrl || 'user'}
-            sx={{ width: '20px', height: '20px' }}
-            variant={(currentAssignee as IAssigneeCombined)?.type === 'companies' ? 'rounded' : 'circular'}
-          />
+          <CopilotAvatar currentAssignee={currentAssignee as IAssigneeCombined} />
           <Typography variant="sm" fontSize="12px" sx={{ color: (theme) => theme.color.gray[500] }}>
             {(currentAssignee as IAssigneeCombined).name === 'No assignee'
               ? 'No assignee'
