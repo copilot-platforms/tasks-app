@@ -107,6 +107,7 @@ export const TaskEditor = ({
           content={detail}
           getContent={(content) => setUpdateDetail(content)}
           readonly={userType === UserType.CLIENT_USER}
+          editorClass=""
         />
       </Box>
       <Stack direction="row" columnGap={3} rowGap={3} mt={3} flexWrap={'wrap'}>

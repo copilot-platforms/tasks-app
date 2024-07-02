@@ -91,6 +91,11 @@ export const TapWriteComment = styled(Tapwrite)(({ theme }) => ({
 }))
 
 export const TapWriteTaskEditor = styled(Tapwrite)(({ theme }) => ({
+  minHeight: '30vh',
+  fontSize: '20px',
+}))
+
+export const TapWriteTaskDescription = styled(Tapwrite)(({ theme }) => ({
   minHeight: '10vh',
   fontSize: '20px',
 }))
