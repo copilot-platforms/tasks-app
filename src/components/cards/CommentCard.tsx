@@ -104,7 +104,7 @@ export const CommentCard = ({
           )}
         </Stack>
 
-        <TapWriteComment content={comment.details.content as string} getContent={() => {}} readonly />
+        <TapWriteComment content={comment.details.content as string} getContent={() => {}} readonly editorClass="" />
 
         {commentAddedResponseSchema.parse(comment.details)?.replies?.map((item: any) => {
           return (
@@ -122,7 +122,7 @@ export const CommentCard = ({
                 </BoldTypography>
                 <StyledTypography> {getTimeDifference(item.createdAt)}</StyledTypography>
               </Stack>
-              <TapWriteComment content={item.content} getContent={() => {}} readonly />
+              <TapWriteComment content={item.content} getContent={() => {}} readonly editorClass="" />
             </Stack>
           )
         })}
@@ -137,6 +137,7 @@ export const CommentCard = ({
                 getContent={setDetail}
                 placeholder="Leave a reply..."
                 suggestions={assigneeSuggestions}
+                editorClass=""
               />
               <InputAdornment
                 position="end"
