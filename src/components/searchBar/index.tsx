@@ -23,7 +23,7 @@ const SearchBar = ({ value, getSearchKeyword }: ISearchBar) => {
           <InputAdornment
             position="start"
             sx={{
-              cursor: 'pointer',
+              cursor: 'default',
             }}
           >
             <SearchIcon />

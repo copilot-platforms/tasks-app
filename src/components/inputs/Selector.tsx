@@ -32,6 +32,7 @@ interface Prop {
     props?: HTMLAttributes<HTMLLIElement>,
   ) => ReactNode
   disableOutline?: boolean
+  padding?: string
 }
 
 export default function Selector({
@@ -46,6 +47,7 @@ export default function Selector({
   extraOption,
   extraOptionRenderer,
   disableOutline,
+  padding,
 }: Prop) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
@@ -124,7 +126,7 @@ export default function Selector({
             </Typography>
           </Stack>
         ) : (
-          <SelectorButton startIcon={startIcon} buttonContent={buttonContent} outlined={disableOutline} />
+          <SelectorButton startIcon={startIcon} buttonContent={buttonContent} outlined={disableOutline} padding={padding} />
         )}
       </Box>
       <Popper
@@ -283,12 +285,14 @@ const SelectorButton = ({
   handleClick,
   enableBackground,
   outlined,
+  padding,
 }: {
   startIcon?: ReactNode
   buttonContent: ReactNode
   handleClick?: () => void
   enableBackground?: boolean
   outlined?: boolean
+  padding?: string
 }) => {
   return (
     <Button
@@ -305,7 +309,7 @@ const SelectorButton = ({
           bgcolor: theme.color.borders.border,
         },
         cursor: 'default',
-        padding: { xs: '1px 9px', md: '4px 16px' },
+        padding: padding ? padding : { xs: '1px 9px', md: '4px 16px' },
       })}
       onClick={handleClick}
       disableRipple
