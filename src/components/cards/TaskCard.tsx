@@ -17,6 +17,7 @@ const TaskCardContainer = styled(Stack)(({ theme }) => ({
   ':hover': {
     background: theme.color.gray[150],
   },
+  cursor: 'pointer',
 }))
 
 export const TaskCard = ({ task }: { task: TaskResponse }) => {
