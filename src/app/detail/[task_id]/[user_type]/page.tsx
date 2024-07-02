@@ -34,6 +34,7 @@ import { ActivityType } from '@prisma/client'
 import { CreateComment } from '@/types/dto/comment.dto'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { Token, TokenSchema } from '@/types/common'
+import EscapeHandler from '@/utils/escapeHandler'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
@@ -105,6 +106,7 @@ export default async function TaskDetailPage({
 
   return (
     <ClientSideStateUpdate assignee={assignee} tokenPayload={tokenPayload} assigneeSuggestions={AssigneeSuggestions}>
+      <EscapeHandler />
       <Stack direction="row">
         <ToggleController>
           <StyledBox>
