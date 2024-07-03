@@ -38,9 +38,13 @@ export const WorkflowStateSelector = ({
               columnGap="4px"
               justifyContent="flex-start"
               sx={{
-                width: '100px',
+                padding: '4px 8px',
                 justifyContent: { xs: 'end', sm: 'flex-start' },
                 cursor: 'pointer',
+                borderRadius: '4px',
+                ':hover': {
+                  backgroundColor: (theme) => theme.color.gray[100],
+                },
               }}
             >
               <Box>{statusIcons[value?.type]}</Box>

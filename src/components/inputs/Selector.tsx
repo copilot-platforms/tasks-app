@@ -110,6 +110,11 @@ export default function Selector({
               width: buttonWidth ?? '100px',
               justifyContent: { xs: 'end', sm: 'flex-start' },
               cursor: 'pointer',
+              borderRadius: '4px',
+              padding: '4px 8px',
+              ':hover': {
+                backgroundColor: (theme) => theme.color.gray[100],
+              },
             }}
           >
             <Box>{startIcon}</Box>
