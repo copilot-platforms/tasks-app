@@ -30,7 +30,17 @@ export const TaskCard = ({ task }: { task: TaskResponse }) => {
       <Stack direction="row" justifyContent="space-between">
         <Stack direction="row" alignItems="center" columnGap={1}>
           <CopilotAvatar currentAssignee={currentAssignee as IAssigneeCombined} />
-          <Typography variant="sm" fontSize="12px" sx={{ color: (theme) => theme.color.gray[500] }}>
+          <Typography
+            variant="sm"
+            fontSize="12px"
+            sx={{
+              color: (theme) => theme.color.gray[500],
+              width: '146px',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
             {(currentAssignee as IAssigneeCombined).name === 'No assignee'
               ? 'No assignee'
               : (currentAssignee as IAssigneeCombined)?.name ||
