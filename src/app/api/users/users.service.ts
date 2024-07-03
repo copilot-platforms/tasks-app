@@ -37,11 +37,12 @@ class UsersService extends BaseService {
     if (user.role !== UserRole.Client) {
       throw new APIError(httpStatus.UNAUTHORIZED, 'You are not authorized to perform this action')
     }
-    const clients = await this.copilot.getClients()
-    const filteredClients = user.companyId
-      ? clients.data?.filter((el) => el.companyId == user.companyId)
-      : clients.data?.filter((el) => el.id == user.clientId)
-    return { clients: filteredClients }
+    const [clients, companies] = await Promise.all([this.copilot.getClients(), this.copilot.getCompanies()])
+
+    // Filter out companies where isPlaceholder is true if companies.data is not null
+    const filteredCompanies = companies.data ? companies.data.filter((company) => !company.isPlaceholder) : []
+
+    return { clients: clients.data, companies: filteredCompanies }
   }
 }
 

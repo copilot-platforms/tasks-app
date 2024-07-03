@@ -33,6 +33,7 @@ interface Prop {
   ) => ReactNode
   disableOutline?: boolean
   buttonWidth?: string
+  responsiveNoHide?: boolean
 }
 
 export default function Selector({
@@ -48,6 +49,7 @@ export default function Selector({
   extraOptionRenderer,
   disableOutline,
   buttonWidth,
+  responsiveNoHide,
 }: Prop) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
@@ -110,6 +112,11 @@ export default function Selector({
               width: buttonWidth ?? '100px',
               justifyContent: { xs: 'end', sm: 'flex-start' },
               cursor: disabled ? 'auto' : 'pointer',
+              borderRadius: '4px',
+              padding: '4px 8px',
+              ':hover': {
+                backgroundColor: (theme) => theme.color.gray[100],
+              },
             }}
           >
             <Box>{startIcon}</Box>
@@ -119,7 +126,8 @@ export default function Selector({
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
-                display: { xs: 'none', sm: 'block' },
+                maxWidth: '120px',
+                display: { xs: responsiveNoHide ? 'block' : 'none', sm: 'block' },
               }}
             >
               {buttonContent}
