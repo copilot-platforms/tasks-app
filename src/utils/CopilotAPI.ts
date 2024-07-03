@@ -26,6 +26,7 @@ import {
   InternalUsersResponseSchema,
   InternalUsers,
   InternalUsersSchema,
+  CopilotListArgs,
 } from '@/types/common'
 import { copilotAPIKey as apiKey } from '@/config'
 
@@ -78,8 +79,8 @@ export class CopilotAPI {
     return ClientResponseSchema.parse(await this.copilot.retrieveClient({ id }))
   }
 
-  async getClients() {
-    return ClientsResponseSchema.parse(await this.copilot.listClients({}))
+  async getClients(args: CopilotListArgs = {}) {
+    return ClientsResponseSchema.parse(await this.copilot.listClients(args))
   }
 
   async updateClient(id: string, requestBody: ClientRequest): Promise<ClientResponse> {
@@ -91,16 +92,16 @@ export class CopilotAPI {
     return CompanyResponseSchema.parse(await this.copilot.retrieveCompany({ id }))
   }
 
-  async getCompanies(): Promise<CompaniesResponse> {
-    return CompaniesResponseSchema.parse(await this.copilot.listCompanies({}))
+  async getCompanies(args: CopilotListArgs = {}): Promise<CompaniesResponse> {
+    return CompaniesResponseSchema.parse(await this.copilot.listCompanies(args))
   }
 
   async getCustomFields(): Promise<CustomFieldResponse> {
     return CustomFieldResponseSchema.parse(await this.copilot.listCustomFields())
   }
 
-  async getInternalUsers(): Promise<InternalUsersResponse> {
-    return InternalUsersResponseSchema.parse(await this.copilot.listInternalUsers({}))
+  async getInternalUsers(args: CopilotListArgs = {}): Promise<InternalUsersResponse> {
+    return InternalUsersResponseSchema.parse(await this.copilot.listInternalUsers(args))
   }
 
   async getInternalUser(id: string): Promise<InternalUsers> {
