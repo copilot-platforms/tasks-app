@@ -10,9 +10,10 @@ import { Box, Popper, Stack, Typography } from '@mui/material'
 interface Prop {
   getDate: (value: string) => void
   dateValue?: IsoDate
+  disabled?: boolean
 }
 
-export const DatePickerComponent = ({ getDate, dateValue }: Prop) => {
+export const DatePickerComponent = ({ getDate, dateValue, disabled }: Prop) => {
   const [value, setValue] = React.useState<Dayjs | null>(dateValue ? dayjs(dateValue) : null)
 
   const formatDate = (date: Dayjs | null) => {
@@ -22,7 +23,9 @@ export const DatePickerComponent = ({ getDate, dateValue }: Prop) => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(anchorEl ? null : event.currentTarget)
+    if (!disabled) {
+      setAnchorEl(anchorEl ? null : event.currentTarget)
+    }
   }
 
   const open = Boolean(anchorEl)

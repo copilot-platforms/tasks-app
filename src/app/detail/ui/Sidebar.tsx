@@ -160,6 +160,7 @@ export const Sidebar = ({
                 })
               }}
               dateValue={dueDate ? isoToReadableDate(dueDate) : undefined}
+              disabled={disabled}
             />
           </Box>
         </Stack>
