@@ -26,7 +26,7 @@ export const PrimaryBtn = ({
         boxShadow: 'none',
         '&:hover': { backgroundColor: buttonBackground || theme.color.gray[600], boxShadow: 'none' },
         borderRadius: '4px',
-        cursor: 'default',
+        cursor: 'pointer',
       })}
       onClick={() => handleClick()}
       disableRipple
