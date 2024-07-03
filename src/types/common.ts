@@ -1,6 +1,11 @@
 import { UserRole } from '@/app/api/core/types/user'
 import { z } from 'zod'
 
+export type CopilotListArgs = {
+  limit?: number
+  nextToken?: string
+}
+
 export const TokenSchema = z.object({
   clientId: z.string().optional(),
   companyId: z.string().optional(),
