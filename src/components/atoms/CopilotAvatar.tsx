@@ -7,7 +7,6 @@ interface CopilotAvatarProps {
 }
 
 export const CopilotAvatar = ({ currentAssignee }: CopilotAvatarProps) => {
-  console.log(currentAssignee)
   const avatarSx: SxProps = {
     width: '20px',
     height: '20px',
