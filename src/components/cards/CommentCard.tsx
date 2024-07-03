@@ -1,13 +1,6 @@
 'use client'
 
-import {
-  BoldTypography,
-  CommentCardContainer,
-  StyledReplyIcon,
-  StyledTypography,
-  TapWriteComment,
-  TapWriteReplyInput,
-} from '@/app/detail/ui/styledComponent'
+import { BoldTypography, CommentCardContainer, StyledReplyIcon, StyledTypography } from '@/app/detail/ui/styledComponent'
 import { getTimeDifference } from '@/utils/getTimeDifference'
 import { Avatar, Box, InputAdornment, Modal, Stack, styled } from '@mui/material'
 import { TrashIcon } from '@/icons'
@@ -24,6 +17,8 @@ import { CreateComment } from '@/types/dto/comment.dto'
 import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
 import { getMentionsList } from '@/utils/getMentionList'
 import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
+import { Tapwrite } from 'tapwrite'
+import '@/app/tapwrite.css'
 
 const CustomDivider = styled(Box)(({ theme }) => ({
   height: '1px',
@@ -104,7 +99,12 @@ export const CommentCard = ({
           )}
         </Stack>
 
-        <TapWriteComment content={comment.details.content as string} getContent={() => {}} readonly editorClass="" />
+        <Tapwrite
+          content={comment.details.content as string}
+          getContent={() => {}}
+          readonly
+          editorClass="tapwrite-comment"
+        />
 
         {commentAddedResponseSchema.parse(comment.details)?.replies?.map((item: any) => {
           return (
@@ -122,7 +122,7 @@ export const CommentCard = ({
                 </BoldTypography>
                 <StyledTypography> {getTimeDifference(item.createdAt)}</StyledTypography>
               </Stack>
-              <TapWriteComment content={item.content} getContent={() => {}} readonly editorClass="" />
+              <Tapwrite content={item.content} getContent={() => {}} readonly editorClass="tapwrite-comment" />
             </Stack>
           )
         })}
@@ -132,12 +132,12 @@ export const CommentCard = ({
             <CustomDivider />
             <Stack direction="row" columnGap={1} alignItems="flex-start">
               <Avatar alt="user" src={''} sx={{ width: '20px', height: '20px', marginTop: '5px' }} />
-              <TapWriteReplyInput
+              <Tapwrite
                 content={detail}
                 getContent={setDetail}
                 placeholder="Leave a reply..."
                 suggestions={assigneeSuggestions}
-                editorClass=""
+                editorClass="tapwrite-reply-input"
               />
               <InputAdornment
                 position="end"

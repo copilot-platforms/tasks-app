@@ -4,7 +4,6 @@ import { MenuBox } from '@/components/inputs/MenuBox'
 import { EmojiIcon, ReplyIcon } from '@/icons'
 import { KeyboardArrowRight } from '@mui/icons-material'
 import { Box, Container, Stack, Typography, styled } from '@mui/material'
-import { Tapwrite } from 'tapwrite'
 
 export const StyledTypography = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[500],
