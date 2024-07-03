@@ -42,7 +42,7 @@ export const WorkflowStateSelector = ({
               sx={{
                 padding: '4px 8px',
                 justifyContent: { xs: 'end', sm: 'flex-start' },
-                cursor: 'pointer',
+                cursor: disabled ? 'auto' : 'pointer',
                 borderRadius: '4px',
                 ':hover': {
                   backgroundColor: (theme) => theme.color.gray[100],
