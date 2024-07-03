@@ -3,10 +3,11 @@ import { IAssigneeCombined } from '@/types/interfaces'
 import { Avatar, SxProps } from '@mui/material'
 
 interface CopilotAvatarProps {
-  currentAssignee: IAssigneeCombined
+  currentAssignee?: IAssigneeCombined
+  alt?: string
 }
 
-export const CopilotAvatar = ({ currentAssignee }: CopilotAvatarProps) => {
+export const CopilotAvatar = ({ currentAssignee, alt }: CopilotAvatarProps) => {
   const avatarSx: SxProps = {
     width: '20px',
     height: '20px',
@@ -16,17 +17,17 @@ export const CopilotAvatar = ({ currentAssignee }: CopilotAvatarProps) => {
       objectFit: 'cover',
     },
   }
-  const avatarVariant: 'circular' | 'rounded' | 'square' = currentAssignee.type === 'companies' ? 'rounded' : 'circular'
+  const avatarVariant: 'circular' | 'rounded' | 'square' = currentAssignee?.type === 'companies' ? 'rounded' : 'circular'
 
-  if (currentAssignee.givenName === 'No assignee') {
+  if (currentAssignee?.givenName === 'No assignee') {
     return <Avatar alt="" src="user" sx={avatarSx} variant="circular" />
   }
 
-  if (currentAssignee.iconImageUrl || currentAssignee.avatarImageUrl) {
+  if (currentAssignee?.iconImageUrl || currentAssignee?.avatarImageUrl) {
     return (
       <Avatar
-        alt={currentAssignee.givenName}
-        src={currentAssignee.iconImageUrl || currentAssignee.avatarImageUrl}
+        alt={alt || currentAssignee?.givenName}
+        src={currentAssignee?.iconImageUrl || currentAssignee?.avatarImageUrl}
         sx={avatarSx}
         variant={avatarVariant}
       />
@@ -35,10 +36,10 @@ export const CopilotAvatar = ({ currentAssignee }: CopilotAvatarProps) => {
 
   return (
     <Avatar
-      alt={currentAssignee?.givenName}
+      alt={alt || currentAssignee?.givenName}
       sx={{
         ...avatarSx,
-        bgcolor: currentAssignee.fallbackColor || copilotTheme.colors.green,
+        bgcolor: currentAssignee?.fallbackColor || copilotTheme.colors.green,
         fontSize: '13px',
       }}
       variant={avatarVariant}

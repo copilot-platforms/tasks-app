@@ -1,6 +1,6 @@
 'use client'
 
-import { Avatar, Box, Stack, Typography } from '@mui/material'
+import { Box, Stack, Typography } from '@mui/material'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { TaskResponse, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { useSelector } from 'react-redux'
@@ -12,7 +12,7 @@ import { IAssigneeCombined } from '@/types/interfaces'
 import { NoAssignee, NoAssigneeExtraOptions } from '@/utils/noAssignee'
 import ExtraOptionRendererAssignee from '@/components/inputs/ExtraOptionRendererAssignee'
 import { DueDateLayout } from '@/components/utils/DueDateLayout'
-
+import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { getAssigneeName } from '@/utils/getAssigneeName'
 
 export const ListViewTaskCard = ({
@@ -110,11 +110,9 @@ export const ListViewTaskCard = ({
                     }
                   }}
                   startIcon={
-                    <Avatar
+                    <CopilotAvatar
+                      currentAssignee={currentAssignee as IAssigneeCombined}
                       alt={getAssigneeName(assigneeValue)}
-                      src={assigneeValue?.iconImageUrl || assigneeValue?.avatarImageUrl || 'user'}
-                      sx={{ width: '20px', height: '20px' }}
-                      variant={currentAssignee?.type === 'companies' ? 'rounded' : 'circular'}
                     />
                   }
                   options={assignee}

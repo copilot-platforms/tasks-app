@@ -1,17 +1,17 @@
 'use client'
 
-import { Avatar, Box, Stack, Typography } from '@mui/material'
-import { SecondaryBtn } from '../buttons/SecondaryBtn'
-import { TaskResponse } from '@/types/dto/tasks.dto'
 import { useSelector } from 'react-redux'
+import { Box, Stack, Typography } from '@mui/material'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
-import { DueDateLayout } from '@/components/utils/DueDateLayout'
+import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { extractHtml } from '@/utils/extractHtml'
 import { truncateText } from '@/utils/truncateText'
-import { IAssigneeCombined } from '@/types/interfaces'
 import { TruncateMaxNumber } from '@/types/constants'
-
-import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
+import { TaskResponse } from '@/types/dto/tasks.dto'
+import { IAssigneeCombined } from '@/types/interfaces'
+import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
+import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
+import { DueDateLayout } from '@/components/utils/DueDateLayout'
 
 export const ClientTaskCard = ({
   task,
@@ -74,14 +74,8 @@ export const ClientTaskCard = ({
                   </Typography>
                 )}
               </Box>
-              <Stack direction="row" alignItems="flex-start" columnGap={1} sx={{ padding: '2px' }}>
-                <Avatar
-                  src={currentAssignee?.iconImageUrl || currentAssignee?.avatarImageUrl || 'user'}
-                  alt={currentAssignee?.givenName || currentAssignee?.familyName || currentAssignee?.name}
-                  sx={{ width: '20px', height: '20px' }}
-                  variant={currentAssignee?.type === 'companies' ? 'rounded' : 'circular'}
-                />
-
+              <Stack direction="row" alignItems="flex-start" columnGap={1} sx={{ padding: '2px', minWidth: '108px' }}>
+                <CopilotAvatar currentAssignee={currentAssignee as IAssigneeCombined} />
                 <Typography
                   variant="bodySm"
                   sx={{

@@ -44,14 +44,16 @@ class UsersService extends BaseService {
   async getClient() {
     const user = this.user
     //Apply custom authorization here. Policy service is not used because this api is for client's task-assignee match function to get clients from same organizations only. Only clients can use this.
-    if (user.role !== UserRole.Client) {
+    if (user.role !== UserRole.Client || !user.companyId) {
       throw new APIError(httpStatus.UNAUTHORIZED, 'You are not authorized to perform this action')
     }
+    const company = await this.copilot.getCompany(user.companyId)
     const clients = await this.copilot.getClients()
     const filteredClients = user.companyId
       ? clients.data?.filter((el) => el.companyId == user.companyId)
       : clients.data?.filter((el) => el.id == user.clientId)
-    return { clients: filteredClients }
+    const clientsWithCompanyInfo = filteredClients?.map((client) => ({ ...client, fallbackColor: company.fallbackColor }))
+    return { clients: clientsWithCompanyInfo }
   }
 }
 
