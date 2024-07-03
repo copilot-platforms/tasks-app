@@ -28,7 +28,7 @@ export const SecondaryBtn = ({
           border: enableBackground || outlined ? 'none' : `1px solid ${theme.color.borders.border}`,
         },
         padding: { xs: '1px 9px', md: '4px 16px' },
-        cursor: 'default',
+        cursor: 'pointer',
       })}
       onClick={handleClick}
       disableRipple

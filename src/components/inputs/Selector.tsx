@@ -109,7 +109,7 @@ export default function Selector({
             sx={{
               width: buttonWidth ?? '100px',
               justifyContent: { xs: 'end', sm: 'flex-start' },
-              cursor: 'default',
+              cursor: 'pointer',
             }}
           >
             <Box>{startIcon}</Box>
@@ -305,7 +305,7 @@ const SelectorButton = ({
           border: enableBackground || outlined ? 'none' : `1px solid ${theme.color.borders.border}`,
         },
 
-        cursor: 'default',
+        cursor: 'pointer',
         padding: { xs: '1px 9px', md: '4px 16px' },
       })}
       onClick={handleClick}

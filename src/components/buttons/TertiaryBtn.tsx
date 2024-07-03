@@ -29,7 +29,7 @@ export const TertiaryBtn = ({
         },
 
         padding: { xs: '4px 9px', md: '4px 16px' },
-        cursor: 'default',
+        cursor: 'pointer',
       })}
       onClick={handleClick}
       disableRipple

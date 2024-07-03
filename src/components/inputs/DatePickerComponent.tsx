@@ -38,7 +38,7 @@ export const DatePickerComponent = ({ getDate, dateValue, isButton = false }: Pr
         columnGap="7px"
         onClick={handleClick}
         aria-describedby={id}
-        sx={{ cursor: 'default' }}
+        sx={{ cursor: 'pointer' }}
       >
         {isButton ? (
           <SecondaryBtn
