@@ -10,7 +10,6 @@ import { CreateComment } from '@/types/dto/comment.dto'
 import { useSelector } from 'react-redux'
 import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 import { getMentionsList } from '@/utils/getMentionList'
-import '@/app/tapwrite.css'
 
 interface Prop {
   createComment: (postCommentPayload: CreateComment) => void

@@ -18,7 +18,6 @@ import { generateRandomString } from '@/utils/generateRandomString'
 import { ISignedUrlUpload, UserType } from '@/types/interfaces'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { Tapwrite } from 'tapwrite'
-import '@/app/tapwrite.css'
 
 interface Prop {
   title: string

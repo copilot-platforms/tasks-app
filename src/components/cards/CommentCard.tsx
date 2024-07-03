@@ -18,7 +18,6 @@ import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
 import { getMentionsList } from '@/utils/getMentionList'
 import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 import { Tapwrite } from 'tapwrite'
-import '@/app/tapwrite.css'
 
 const CustomDivider = styled(Box)(({ theme }) => ({
   height: '1px',

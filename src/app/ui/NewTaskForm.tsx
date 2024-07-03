@@ -39,7 +39,6 @@ import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowStat
 import { truncateText } from '@/utils/truncateText'
 import { TruncateMaxNumber } from '@/types/constants'
 import { Tapwrite } from 'tapwrite'
-import '@/app/tapwrite.css'
 import { DatePickerComponent } from '@/components/inputs/DatePickerComponent'
 
 const supabaseActions = new SupabaseActions()
