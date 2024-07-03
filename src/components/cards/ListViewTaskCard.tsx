@@ -84,10 +84,17 @@ export const ListViewTaskCard = ({
                 >
                   {task.dueDate && <DueDateLayout date={task.dueDate} />}
                 </Box>
-                <Box>
+                <Box
+                  sx={{
+                    minWidth: 'fit-content',
+                    width: '100px',
+                  }}
+                >
                   <Selector
                     placeholder="Change assignee"
                     disableOutline
+                    disabled
+                    buttonWidth="160px"
                     getSelectedValue={(_newValue) => {
                       const newValue = _newValue as IAssigneeCombined
                       updateAssigneeValue(newValue)
@@ -140,7 +147,13 @@ export const ListViewTaskCard = ({
                       )
                     }}
                     buttonContent={
-                      <Typography variant="bodySm" lineHeight="16px" sx={{ color: (theme) => theme.color.gray[600] }}>
+                      <Typography
+                        variant="bodySm"
+                        lineHeight="16px"
+                        sx={{
+                          color: (theme) => theme.color.gray[600],
+                        }}
+                      >
                         {(assigneeValue as IAssigneeCombined)?.name ||
                           `${(assigneeValue as IAssigneeCombined)?.givenName ?? ''} ${(assigneeValue as IAssigneeCombined)?.familyName ?? ''}`.trim()}
                       </Typography>
