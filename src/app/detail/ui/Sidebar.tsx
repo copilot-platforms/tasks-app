@@ -98,6 +98,7 @@ export const Sidebar = ({
             }}
             disabled={disabled}
             disableOutline
+            responsiveNoHide
           />
         </Stack>
         <Stack direction="row" m="20px 0px" alignItems="center" columnGap="10px">
@@ -145,6 +146,7 @@ export const Sidebar = ({
             }
             disabled={disabled}
             disableOutline
+            responsiveNoHide
           />
         </Stack>
         <Stack direction="row" m="20px 0px" alignItems="center" columnGap="10px">
@@ -160,6 +162,7 @@ export const Sidebar = ({
                 })
               }}
               dateValue={dueDate ? isoToReadableDate(dueDate) : undefined}
+              disabled={disabled}
             />
           </Box>
         </Stack>

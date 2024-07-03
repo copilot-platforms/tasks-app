@@ -1,9 +1,10 @@
 'use client'
 
-import { MenuBox } from '@/components/inputs/MenuBox'
 import { EmojiIcon, ReplyIcon } from '@/icons'
 import { KeyboardArrowRight } from '@mui/icons-material'
-import { Box, Container, Stack, Typography, styled } from '@mui/material'
+import { Box, Stack, Typography, styled } from '@mui/material'
+import Link from 'next/link'
+import { Tapwrite } from 'tapwrite'
 
 export const StyledTypography = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[500],
@@ -87,3 +88,8 @@ export const CommentCardContainer = styled(Stack)(({ theme }) => ({
   width: '100%',
   backgroundColor: `${theme.color.gray[100]}`,
 }))
+
+export const StyledUninvasiveLink = styled(Link)({
+  color: 'inherit',
+  textDecoration: 'inherit',
+})
