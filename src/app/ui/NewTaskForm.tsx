@@ -26,7 +26,6 @@ import { useRouter } from 'next/navigation'
 import { selectCreateTemplate } from '@/redux/features/templateSlice'
 import { NoAssignee, NoAssigneeExtraOptions } from '@/utils/noAssignee'
 import ExtraOptionRendererAssignee from '@/components/inputs/ExtraOptionRendererAssignee'
-
 import { upload } from '@vercel/blob/client'
 import { AttachmentInput } from '@/components/inputs/AttachmentInput'
 import { SupabaseActions } from '@/utils/SupabaseActions'

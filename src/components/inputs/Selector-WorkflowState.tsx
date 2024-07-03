@@ -9,11 +9,13 @@ export const WorkflowStateSelector = ({
   option,
   disabled,
   getValue,
+  disableOutline,
 }: {
   value: WorkflowStateResponse
   option: WorkflowStateResponse[]
   disabled?: boolean
   getValue: (value: WorkflowStateResponse) => void
+  disableOutline?: boolean
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const open = Boolean(anchorEl)
@@ -29,14 +31,41 @@ export const WorkflowStateSelector = ({
     <ClickAwayListener onClickAway={() => setAnchorEl(null)}>
       <Box>
         <Box onClick={handleClick} aria-describedby={id}>
-          <SecondaryBtn
-            startIcon={statusIcons[value?.type]}
-            buttonContent={
-              <Typography variant="bodySm" lineHeight="20px" sx={{ color: (theme) => theme.color.gray[600] }}>
+          {disableOutline ? (
+            <Stack
+              direction="row"
+              alignItems="center"
+              columnGap="4px"
+              justifyContent="flex-start"
+              sx={{
+                width: '100px',
+                justifyContent: { xs: 'end', sm: 'flex-start' },
+                cursor: 'pointer',
+              }}
+            >
+              <Box>{statusIcons[value?.type]}</Box>
+              <Typography
+                variant="bodySm"
+                sx={{
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  display: { xs: 'none', sm: 'block' },
+                }}
+              >
                 {value?.name as ReactNode}
               </Typography>
-            }
-          />
+            </Stack>
+          ) : (
+            <SecondaryBtn
+              startIcon={statusIcons[value?.type]}
+              buttonContent={
+                <Typography variant="bodySm" lineHeight="16px" sx={{ color: (theme) => theme.color.gray[600] }}>
+                  {value?.name as ReactNode}
+                </Typography>
+              }
+            />
+          )}
         </Box>
         <Popper
           id={id}
@@ -44,7 +73,7 @@ export const WorkflowStateSelector = ({
           anchorEl={anchorEl}
           sx={{
             width: 'fit-content',
-            zIndex: '9999',
+            zIndex: '99999999',
           }}
           placement="bottom-start"
         >

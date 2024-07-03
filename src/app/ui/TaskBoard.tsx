@@ -20,7 +20,6 @@ import { handleCreate, updateTask } from '@/app/actions'
 import { z } from 'zod'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { bulkRemoveAttachments } from '@/utils/bulkRemoveAttachments'
-import { advancedFeatureFlag } from '@/config'
 
 export const TaskBoard = ({
   getSignedUrlUpload,
@@ -125,7 +124,7 @@ export const TaskBoard = ({
                         updateTask={({ payload }) => {
                           updateTask({ token: z.string().parse(token), taskId: task.id, payload })
                         }}
-                        handleClick={() => advancedFeatureFlag && router.push(`/detail/${task.id}/iu?token=${token}`)}
+                        handleClick={() => router.push(`/detail/${task.id}/iu?token=${token}`)}
                       />
                     </DragDropHandler>
                   )
