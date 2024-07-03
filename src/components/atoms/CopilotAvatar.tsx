@@ -5,12 +5,14 @@ import { Avatar, SxProps } from '@mui/material'
 interface CopilotAvatarProps {
   currentAssignee?: IAssigneeCombined
   alt?: string
+  width?: string
+  height?: string
 }
 
-export const CopilotAvatar = ({ currentAssignee, alt }: CopilotAvatarProps) => {
+export const CopilotAvatar = ({ currentAssignee, alt, width = '20px', height = '20px' }: CopilotAvatarProps) => {
   const avatarSx: SxProps = {
-    width: '20px',
-    height: '20px',
+    width,
+    height,
     alignItems: 'center',
     justifyContent: 'center',
     '.MuiAvatar-img': {
