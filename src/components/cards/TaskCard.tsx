@@ -7,7 +7,7 @@ import { NoAssignee } from '@/utils/noAssignee'
 import { Avatar, Stack, Typography, styled } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { DueDateLayout } from '@/components/utils/DueDateLayout'
-import { CopilotAvatar } from '../atoms/CopilotAvatar'
+import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { UrlObject } from 'url'
 import { StyledUninvasiveLink } from '@/app/detail/ui/styledComponent'
 
@@ -38,7 +38,6 @@ export const TaskCard = ({ task, href }: TaskCardProps) => {
         <Stack direction="row" justifyContent="space-between">
           <Stack direction="row" alignItems="center" columnGap={1}>
             <CopilotAvatar currentAssignee={currentAssignee as IAssigneeCombined} />
-
             <Typography
               variant="sm"
               fontSize="12px"
