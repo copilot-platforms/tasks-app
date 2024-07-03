@@ -90,6 +90,7 @@ export const ClientTaskCard = ({
                       textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap',
                       overflow: 'hidden',
+                      maxWidth: { xs: '60px', sm: '120px' },
                     }}
                   >
                     {(currentAssignee as IAssigneeCombined)?.name ||
