@@ -10,12 +10,14 @@ export const WorkflowStateSelector = ({
   disabled,
   getValue,
   disableOutline,
+  responsiveNoHide,
 }: {
   value: WorkflowStateResponse
   option: WorkflowStateResponse[]
   disabled?: boolean
   getValue: (value: WorkflowStateResponse) => void
   disableOutline?: boolean
+  responsiveNoHide?: boolean
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const open = Boolean(anchorEl)
@@ -54,7 +56,7 @@ export const WorkflowStateSelector = ({
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
-                  display: { xs: 'none', sm: 'block' },
+                  display: { xs: responsiveNoHide ? 'block' : 'none', sm: 'block' },
                 }}
               >
                 {value?.name as ReactNode}
