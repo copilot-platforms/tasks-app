@@ -26,13 +26,10 @@ export const TertiaryBtn = ({
         bgcolor: enableBackground ? theme.color.gray[150] : '',
         '&:hover': {
           border: enableBackground || outlined ? 'none' : `1px solid ${theme.color.borders.border}`,
-          bgcolor: theme.color.gray[150],
         },
-        '.MuiTouchRipple-child': {
-          bgcolor: theme.color.borders.border,
-        },
+
         padding: { xs: '4px 9px', md: '4px 16px' },
-        cursor: 'default',
+        cursor: 'pointer',
       })}
       onClick={handleClick}
       disableRipple

@@ -4,13 +4,11 @@ import { ClientTaskCard } from '@/components/cards/ClientTaskCard'
 import { TaskRow } from '@/components/cards/TaskRow'
 import { selectTaskBoard, updateWorkflowStateIdByTaskId } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
-import { TaskResponse, UpdateTaskRequest } from '@/types/dto/tasks.dto'
+import { TaskResponse } from '@/types/dto/tasks.dto'
 import { Box } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { useRouter } from 'next/navigation'
 import { StateType } from '@prisma/client'
-import { advancedFeatureFlag } from '@/config'
-import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 
 export const ClientTaskBoard = ({ completeTask }: { completeTask: (taskId: string) => void }) => {
   const { workflowStates, tasks, filteredTasks, token } = useSelector(selectTaskBoard)
@@ -45,6 +43,7 @@ export const ClientTaskBoard = ({ completeTask }: { completeTask: (taskId: strin
             <Box key={task.id} m="6px 0px">
               <ClientTaskCard
                 task={task}
+                href={{ pathname: `/detail/${task.id}/cu`, query: { token } }}
                 key={task.id}
                 markdoneFlag={list.type == StateType.completed}
                 handleMarkDone={() => {
@@ -58,7 +57,6 @@ export const ClientTaskBoard = ({ completeTask }: { completeTask: (taskId: strin
                     completeTask(task.id)
                   }
                 }}
-                handleRouteChange={() => advancedFeatureFlag && router.push(`/detail/${task.id}/cu?token=${token}`)}
               />
             </Box>
           )

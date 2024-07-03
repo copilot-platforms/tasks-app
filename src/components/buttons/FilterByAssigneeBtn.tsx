@@ -38,7 +38,7 @@ export const FilterByAssigneeBtn = ({
               updateAssigneeValue(null)
               handleClick(FilterOptions.ASSIGNEE, '')
             }}
-            sx={{ cursor: 'default' }}
+            sx={{ cursor: 'pointer' }}
             disableRipple
             disableTouchRipple
           >

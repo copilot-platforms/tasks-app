@@ -26,7 +26,6 @@ import { useRouter } from 'next/navigation'
 import { selectCreateTemplate } from '@/redux/features/templateSlice'
 import { NoAssignee, NoAssigneeExtraOptions } from '@/utils/noAssignee'
 import ExtraOptionRendererAssignee from '@/components/inputs/ExtraOptionRendererAssignee'
-import { TapWriteTaskDescription } from '@/app/detail/ui/styledComponent'
 import { upload } from '@vercel/blob/client'
 import { AttachmentInput } from '@/components/inputs/AttachmentInput'
 import { SupabaseActions } from '@/utils/SupabaseActions'
@@ -38,6 +37,8 @@ import { getAssigneeName } from '@/utils/getAssigneeName'
 import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
 import { truncateText } from '@/utils/truncateText'
 import { TruncateMaxNumber } from '@/types/constants'
+import { Tapwrite } from 'tapwrite'
+import { DatePickerComponent } from '@/components/inputs/DatePickerComponent'
 
 const supabaseActions = new SupabaseActions()
 
@@ -168,7 +169,7 @@ export const NewTaskForm = ({
         <NewTaskFormInputs />
 
         <Stack direction="row" columnGap={3} position="relative">
-          <Box sx={{ padding: 0.3 }}>
+          <Box sx={{ padding: 0.1 }}>
             <WorkflowStateSelector
               option={workflowStates}
               value={statusValue}
@@ -218,7 +219,7 @@ export const NewTaskForm = ({
               }}
               selectorType={SelectorType.ASSIGNEE_SELECTOR}
               buttonContent={
-                <Typography variant="bodySm" lineHeight="16px" sx={{ color: (theme) => theme.color.gray[600] }}>
+                <Typography variant="bodySm" lineHeight="20px" sx={{ color: (theme) => theme.color.gray[600] }}>
                   {truncateText(
                     (assigneeValue as IAssigneeCombined)?.name ||
                       `${(assigneeValue as IAssigneeCombined)?.givenName ?? ''} ${(assigneeValue as IAssigneeCombined)?.familyName ?? ''}`.trim(),
@@ -228,6 +229,12 @@ export const NewTaskForm = ({
               }
             />
           </Stack>
+          <Box sx={{ padding: 0.2 }}>
+            <DatePickerComponent
+              getDate={(value) => store.dispatch(setCreateTaskFields({ targetField: 'dueDate', value: value }))}
+              isButton={true}
+            />
+          </Box>
         </Stack>
       </AppMargin>
       <NewTaskFooter handleCreate={handleCreate} getSignedUrlUpload={getSignedUrlUpload} />
@@ -252,7 +259,7 @@ const NewTaskFormInputs = () => {
       </Stack>
       <Stack direction="column" rowGap={1} m="16px 0px">
         <Typography variant="md">Description</Typography>
-        <TapWriteTaskDescription
+        <Tapwrite
           uploadFn={async (file, tiptapEditorUtils) => {
             const newBlob = await upload(file.name, file, {
               access: 'public',
@@ -262,9 +269,8 @@ const NewTaskFormInputs = () => {
           }}
           content={description}
           getContent={(content) => store.dispatch(setCreateTaskFields({ targetField: 'description', value: content }))}
-          isTextInput
           placeholder="Add description..."
-          editorClass=""
+          editorClass="tapwrite-task-description"
         />
       </Stack>
       <Stack direction="row" columnGap={2} m="16px 0px">

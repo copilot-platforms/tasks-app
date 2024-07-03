@@ -33,6 +33,8 @@ interface Prop {
   ) => ReactNode
   disableOutline?: boolean
   padding?: string
+  buttonWidth?: string
+  responsiveNoHide?: boolean
 }
 
 export default function Selector({
@@ -48,6 +50,8 @@ export default function Selector({
   extraOptionRenderer,
   disableOutline,
   padding,
+  buttonWidth,
+  responsiveNoHide,
 }: Prop) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
@@ -107,9 +111,14 @@ export default function Selector({
             columnGap="4px"
             justifyContent="flex-start"
             sx={{
-              width: '150px',
+              width: buttonWidth ?? '100px',
               justifyContent: { xs: 'end', sm: 'flex-start' },
-              cursor: 'default',
+              cursor: disabled ? 'auto' : 'pointer',
+              borderRadius: '4px',
+              padding: '4px 8px',
+              ':hover': {
+                backgroundColor: (theme) => theme.color.gray[100],
+              },
             }}
           >
             <Box>{startIcon}</Box>
@@ -119,14 +128,21 @@ export default function Selector({
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
-                display: { xs: 'none', sm: 'block' },
+                maxWidth: '120px',
+                display: { xs: responsiveNoHide ? 'block' : 'none', sm: 'block' },
               }}
             >
               {buttonContent}
             </Typography>
           </Stack>
         ) : (
-          <SelectorButton startIcon={startIcon} buttonContent={buttonContent} outlined={disableOutline} padding={padding} />
+          <SelectorButton
+            startIcon={startIcon}
+            buttonContent={buttonContent}
+            outlined={disableOutline}
+            disabled={disabled}
+            padding={padding}
+          />
         )}
       </Box>
       <Popper
@@ -243,6 +259,7 @@ const StatusSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTMLL
   )
 }
 const AssigneeSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTMLLIElement>; option: unknown }) => {
+  console.log
   const assignee = option as IAssigneeCombined
   return (
     <Box
@@ -286,6 +303,7 @@ const SelectorButton = ({
   enableBackground,
   outlined,
   padding,
+  disabled,
 }: {
   startIcon?: ReactNode
   buttonContent: ReactNode
@@ -293,6 +311,7 @@ const SelectorButton = ({
   enableBackground?: boolean
   outlined?: boolean
   padding?: string
+  disabled?: boolean
 }) => {
   return (
     <Button
@@ -308,8 +327,8 @@ const SelectorButton = ({
         '.MuiTouchRipple-child': {
           bgcolor: theme.color.borders.border,
         },
-        cursor: 'default',
         padding: padding ? padding : { xs: '1px 9px', md: '4px 16px' },
+        cursor: disabled ? 'auto' : 'pointer',
       })}
       onClick={handleClick}
       disableRipple

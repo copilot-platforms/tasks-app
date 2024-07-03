@@ -6,7 +6,6 @@ import { unstable_noStore as noStore } from 'next/cache'
 export const getUsers = async (req: NextRequest) => {
   noStore()
   const user = await authenticate(req)
-
   const usersService = new UsersService(user)
   const users = await usersService.getGroupedUsers()
 
