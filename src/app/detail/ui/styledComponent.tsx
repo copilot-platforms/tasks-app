@@ -77,25 +77,3 @@ export const CommentCardContainer = styled(Stack)(({ theme }) => ({
   width: '100%',
   backgroundColor: `${theme.color.gray[100]}`,
 }))
-
-export const TapWriteCommentInput = styled(Tapwrite)(({ theme }) => ({
-  minHeight: '10vh',
-}))
-
-export const TapWriteReplyInput = styled(Tapwrite)(({ theme }) => ({
-  minHeight: '6vh',
-}))
-
-export const TapWriteComment = styled(Tapwrite)(({ theme }) => ({
-  minHeight: '2vh',
-}))
-
-export const TapWriteTaskEditor = styled(Tapwrite)(({ theme }) => ({
-  minHeight: '30vh',
-  fontSize: '20px',
-}))
-
-export const TapWriteTaskDescription = styled(Tapwrite)(({ theme }) => ({
-  minHeight: '10vh',
-  fontSize: '20px',
-}))

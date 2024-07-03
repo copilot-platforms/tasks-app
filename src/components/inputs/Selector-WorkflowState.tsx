@@ -32,7 +32,7 @@ export const WorkflowStateSelector = ({
           <SecondaryBtn
             startIcon={statusIcons[value?.type]}
             buttonContent={
-              <Typography variant="bodySm" lineHeight="16px" sx={{ color: (theme) => theme.color.gray[600] }}>
+              <Typography variant="bodySm" lineHeight="20px" sx={{ color: (theme) => theme.color.gray[600] }}>
                 {value?.name as ReactNode}
               </Typography>
             }

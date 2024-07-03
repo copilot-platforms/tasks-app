@@ -6,13 +6,15 @@ import dayjs, { Dayjs } from 'dayjs'
 import { CalenderIcon } from '@/icons'
 import { IsoDate } from '@/types/dto/tasks.dto'
 import { Box, Popper, Stack, Typography } from '@mui/material'
+import { SecondaryBtn } from '../buttons/SecondaryBtn'
 
 interface Prop {
   getDate: (value: string) => void
   dateValue?: IsoDate
+  isButton?: boolean
 }
 
-export const DatePickerComponent = ({ getDate, dateValue }: Prop) => {
+export const DatePickerComponent = ({ getDate, dateValue, isButton = false }: Prop) => {
   const [value, setValue] = React.useState<Dayjs | null>(dateValue ? dayjs(dateValue) : null)
 
   const formatDate = (date: Dayjs | null) => {
@@ -38,10 +40,23 @@ export const DatePickerComponent = ({ getDate, dateValue }: Prop) => {
         aria-describedby={id}
         sx={{ cursor: 'pointer' }}
       >
-        <Box>
-          <CalenderIcon />
-        </Box>
-        <Typography variant="bodyMd">{formatDate(value)}</Typography>
+        {isButton ? (
+          <SecondaryBtn
+            startIcon={<CalenderIcon />}
+            buttonContent={
+              <Typography variant="bodySm" lineHeight="20px" sx={{ color: (theme) => theme.color.gray[600] }}>
+                {value ? formatDate(value) : 'Due Date'}
+              </Typography>
+            }
+          />
+        ) : (
+          <>
+            <Box>
+              <CalenderIcon />
+            </Box>
+            <Typography variant="bodyMd">{formatDate(value)}</Typography>
+          </>
+        )}
       </Stack>
       <Popper
         id={id}

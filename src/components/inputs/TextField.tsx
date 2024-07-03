@@ -35,5 +35,6 @@ export const StyledTextField = styled(TextField, {
       opacity: 1,
       fontSize: '13px',
     },
+    fontSize: '14px',
   },
 }))
