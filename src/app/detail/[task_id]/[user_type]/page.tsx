@@ -49,7 +49,17 @@ async function getOneTask(token: string, taskId: string): Promise<TaskResponse> 
   return data.task
 }
 
-async function getAssigneeList(token: string): Promise<IAssignee> {
+async function getAssigneeList(token: string, userType: UserType): Promise<IAssignee> {
+  if (userType === UserType.CLIENT_USER) {
+    const res = await fetch(`${apiUrl}/api/users/client?token=${token}`, {
+      next: { tags: ['getAssigneeList'] },
+    })
+
+    const data = await res.json()
+
+    return data.clients
+  }
+
   const res = await fetch(`${apiUrl}/api/users?token=${token}`, {
     next: { tags: ['getAssigneeList'] },
   })
@@ -93,7 +103,7 @@ export default async function TaskDetailPage({
 
   const [task, assignee, attachments, activities, tokenPayload] = await Promise.all([
     getOneTask(token, task_id),
-    addTypeToAssignee(await getAssigneeList(token)),
+    addTypeToAssignee(await getAssigneeList(token, params.user_type)),
     getAttachments(token, task_id),
     getActivities(token, task_id),
     copilotClient.getTokenPayload(),

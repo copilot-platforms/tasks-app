@@ -14,7 +14,7 @@ export class PoliciesService extends BaseService {
       [Resource.TaskTemplates]: [],
       [Resource.WorkflowState]: [UserAction.Read],
       [Resource.ViewSetting]: [],
-      [Resource.Users]: [UserAction.Read],
+      [Resource.Users]: [],
       [Resource.Attachments]: [UserAction.Read],
       [Resource.Comment]: [UserAction.Read],
     },
