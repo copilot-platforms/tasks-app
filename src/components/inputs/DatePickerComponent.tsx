@@ -44,7 +44,7 @@ export const DatePickerComponent = ({ getDate, dateValue, disabled, isButton = f
         aria-describedby={id}
         sx={{
           cursor: disabled ? 'auto' : 'pointer',
-          padding: '4px 8px',
+          padding: isButton ? '0px' : '4px 8px',
           borderRadius: '4px',
           ':hover': {
             backgroundColor: (theme) => theme.color.gray[100],
