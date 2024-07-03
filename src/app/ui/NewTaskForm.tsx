@@ -4,7 +4,7 @@ import { SelectorType } from '@/components/inputs/Selector'
 import Selector from '@/components/inputs/Selector'
 import { StyledTextField } from '@/components/inputs/TextField'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
-import { ArrowLinkIcon, TemplateIconSm } from '@/icons'
+import { ArrowLinkIcon, CloseIcon, TemplateIconSm } from '@/icons'
 import {
   clearCreateTaskFields,
   removeOneAttachment,
@@ -38,6 +38,7 @@ import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowStat
 import { truncateText } from '@/utils/truncateText'
 import { TruncateMaxNumber } from '@/types/constants'
 import { Tapwrite } from 'tapwrite'
+import { DatePickerComponent } from '@/components/inputs/DatePickerComponent'
 
 const supabaseActions = new SupabaseActions()
 
@@ -153,8 +154,8 @@ export const NewTaskForm = ({
                 />
               )}
             </Box>
-            <Close
-              sx={{ color: (theme) => theme.color.gray[500], cursor: 'pointer' }}
+            <CloseIcon
+              style={{ cursor: 'pointer' }}
               onClick={() => {
                 store.dispatch(setShowModal())
                 store.dispatch(clearCreateTaskFields())
@@ -168,14 +169,16 @@ export const NewTaskForm = ({
         <NewTaskFormInputs />
 
         <Stack direction="row" columnGap={3} position="relative">
-          <WorkflowStateSelector
-            option={workflowStates}
-            value={statusValue}
-            getValue={(value) => {
-              updateStatusValue(value)
-              store.dispatch(setCreateTaskFields({ targetField: 'workflowStateId', value: value.id }))
-            }}
-          />
+          <Box sx={{ padding: 0.1 }}>
+            <WorkflowStateSelector
+              option={workflowStates}
+              value={statusValue}
+              getValue={(value) => {
+                updateStatusValue(value)
+                store.dispatch(setCreateTaskFields({ targetField: 'workflowStateId', value: value.id }))
+              }}
+            />
+          </Box>
           <Stack alignSelf="flex-start">
             <Selector
               placeholder="Change assignee"
@@ -216,7 +219,7 @@ export const NewTaskForm = ({
               }}
               selectorType={SelectorType.ASSIGNEE_SELECTOR}
               buttonContent={
-                <Typography variant="bodySm" lineHeight="16px" sx={{ color: (theme) => theme.color.gray[600] }}>
+                <Typography variant="bodySm" lineHeight="20px" sx={{ color: (theme) => theme.color.gray[600] }}>
                   {truncateText(
                     (assigneeValue as IAssigneeCombined)?.name ||
                       `${(assigneeValue as IAssigneeCombined)?.givenName ?? ''} ${(assigneeValue as IAssigneeCombined)?.familyName ?? ''}`.trim(),
@@ -226,6 +229,12 @@ export const NewTaskForm = ({
               }
             />
           </Stack>
+          <Box sx={{ padding: 0.2 }}>
+            <DatePickerComponent
+              getDate={(value) => store.dispatch(setCreateTaskFields({ targetField: 'dueDate', value: value }))}
+              isButton={true}
+            />
+          </Box>
         </Stack>
       </AppMargin>
       <NewTaskFooter handleCreate={handleCreate} getSignedUrlUpload={getSignedUrlUpload} />
@@ -243,6 +252,7 @@ const NewTaskFormInputs = () => {
         <StyledTextField
           type="text"
           padding="8px 0px"
+          autoFocus={true}
           value={title}
           onChange={(e) => store.dispatch(setCreateTaskFields({ targetField: 'title', value: e.target.value }))}
         />
@@ -259,8 +269,8 @@ const NewTaskFormInputs = () => {
           }}
           content={description}
           getContent={(content) => store.dispatch(setCreateTaskFields({ targetField: 'description', value: content }))}
-          isTextInput
-          editorClass=""
+          placeholder="Add description..."
+          editorClass="tapwrite-task-description"
         />
       </Stack>
       <Stack direction="row" columnGap={2} m="16px 0px">

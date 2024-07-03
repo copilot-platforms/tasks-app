@@ -32,6 +32,7 @@ interface Prop {
     props?: HTMLAttributes<HTMLLIElement>,
   ) => ReactNode
   disableOutline?: boolean
+  padding?: string
   buttonWidth?: string
   responsiveNoHide?: boolean
 }
@@ -48,6 +49,7 @@ export default function Selector({
   extraOption,
   extraOptionRenderer,
   disableOutline,
+  padding,
   buttonWidth,
   responsiveNoHide,
 }: Prop) {
@@ -139,6 +141,7 @@ export default function Selector({
             buttonContent={buttonContent}
             outlined={disableOutline}
             disabled={disabled}
+            padding={padding}
           />
         )}
       </Box>
@@ -256,6 +259,7 @@ const StatusSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTMLL
   )
 }
 const AssigneeSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTMLLIElement>; option: unknown }) => {
+  console.log
   const assignee = option as IAssigneeCombined
   return (
     <Box
@@ -298,6 +302,7 @@ const SelectorButton = ({
   handleClick,
   enableBackground,
   outlined,
+  padding,
   disabled,
 }: {
   startIcon?: ReactNode
@@ -305,6 +310,7 @@ const SelectorButton = ({
   handleClick?: () => void
   enableBackground?: boolean
   outlined?: boolean
+  padding?: string
   disabled?: boolean
 }) => {
   return (
@@ -317,15 +323,16 @@ const SelectorButton = ({
         bgcolor: enableBackground ? theme.color.gray[150] : '',
         '&:hover': {
           border: enableBackground || outlined ? 'none' : `1px solid ${theme.color.borders.border}`,
-          bgcolor: theme.color.gray[150],
         },
         '.MuiTouchRipple-child': {
           bgcolor: theme.color.borders.border,
         },
-        padding: { xs: '1px 9px', md: '4px 16px' },
+        padding: padding ? padding : { xs: '1px 9px', md: '4px 16px' },
         cursor: disabled ? 'auto' : 'pointer',
       })}
       onClick={handleClick}
+      disableRipple
+      disableTouchRipple
     >
       {buttonContent}
     </Button>

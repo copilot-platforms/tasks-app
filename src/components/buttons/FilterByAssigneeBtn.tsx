@@ -14,13 +14,7 @@ export const FilterByAssigneeBtn = ({
 }) => {
   return (
     <Stack direction="row" alignItems="center" columnGap={1}>
-      <Typography
-        variant="bodySm"
-        lineHeight="32px"
-        fontWeight={500}
-        fontSize="12px"
-        sx={{ color: (theme) => theme.color.gray[600] }}
-      >
+      <Typography variant="sm" lineHeight="30px" sx={{ color: (theme) => theme.color.gray[600] }}>
         Filter by
       </Typography>
       {assigneeValue?.name || assigneeValue?.givenName ? (
@@ -34,13 +28,7 @@ export const FilterByAssigneeBtn = ({
             sx={{ width: '20px', height: '20px' }}
             variant={assigneeValue?.type === 'companies' ? 'rounded' : 'circular'}
           />
-          <Typography
-            variant="bodySm"
-            lineHeight="32px"
-            fontWeight={500}
-            fontSize="12px"
-            sx={{ color: (theme) => theme.color.gray[600] }}
-          >
+          <Typography variant="sm" lineHeight="30px" sx={{ color: (theme) => theme.color.gray[600] }}>
             {assigneeValue?.name || assigneeValue?.givenName}
           </Typography>
           <IconButton
@@ -50,18 +38,15 @@ export const FilterByAssigneeBtn = ({
               updateAssigneeValue(null)
               handleClick(FilterOptions.ASSIGNEE, '')
             }}
+            sx={{ cursor: 'pointer' }}
+            disableRipple
+            disableTouchRipple
           >
             <CrossIcon />
           </IconButton>
         </Stack>
       ) : (
-        <Typography
-          variant="bodySm"
-          lineHeight="32px"
-          fontWeight={500}
-          fontSize="12px"
-          sx={{ color: (theme) => theme.color.gray[600] }}
-        >
+        <Typography variant="sm" lineHeight="30px" sx={{ color: (theme) => theme.color.gray[600] }}>
           assignee
         </Typography>
       )}
