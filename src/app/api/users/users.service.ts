@@ -6,6 +6,7 @@ import { Resource } from '@api/core/types/api'
 import { UserAction, UserRole } from '@api/core/types/user'
 import APIError from '@api/core/exceptions/api'
 import httpStatus from 'http-status'
+import { CopilotListArgs } from '@/types/common'
 
 class UsersService extends BaseService {
   private copilot: CopilotAPI
@@ -19,16 +20,25 @@ class UsersService extends BaseService {
     const user = this.user
     new PoliciesService(user).authorize(UserAction.Read, Resource.Users)
 
+    const listArgs: CopilotListArgs = {
+      // We want the complete list of users / companies for now
+      limit: 10000,
+    }
+
     const [ius, clients, companies] = await Promise.all([
-      this.copilot.getInternalUsers(),
-      this.copilot.getClients(),
-      this.copilot.getCompanies(),
+      this.copilot.getInternalUsers(listArgs),
+      this.copilot.getClients(listArgs),
+      this.copilot.getCompanies(listArgs),
     ])
 
     // Filter out companies where isPlaceholder is true if companies.data is not null
     const filteredCompanies = companies.data ? companies.data.filter((company) => !company.isPlaceholder) : []
+    const clientsWithCompanyData = clients.data?.map((client) => {
+      const companyForClient = filteredCompanies.find((company) => company.id === client.companyId)
+      return { ...client, fallbackColor: companyForClient?.fallbackColor }
+    })
 
-    return { internalUsers: ius.data, clients: clients.data, companies: filteredCompanies }
+    return { internalUsers: ius.data, clients: clientsWithCompanyData, companies: filteredCompanies }
   }
 
   async getClient() {
