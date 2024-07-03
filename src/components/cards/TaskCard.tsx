@@ -19,6 +19,7 @@ const TaskCardContainer = styled(Stack)(({ theme }) => ({
   ':hover': {
     background: theme.color.gray[150],
   },
+  cursor: 'pointer',
 }))
 
 interface TaskCardProps {
