@@ -2,8 +2,7 @@
 
 import { Avatar, Box, InputAdornment, Stack } from '@mui/material'
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
-import { AttachmentIcon } from '@/icons'
-import { Tapwrite } from 'tapwrite'
+
 import { useState } from 'react'
 import { CommentCardContainer, TapWriteCommentInput } from '@/app/detail/ui/styledComponent'
 import { CreateComment } from '@/types/dto/comment.dto'
@@ -39,6 +38,7 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
           getContent={setDetail}
           placeholder="Leave a comment..."
           suggestions={assigneeSuggestions}
+          editorClass=""
         />
         <InputAdornment
           position="end"
