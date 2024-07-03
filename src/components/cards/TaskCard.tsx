@@ -33,7 +33,7 @@ export const TaskCard = ({ task, href }: TaskCardProps) => {
 
   return (
     <StyledUninvasiveLink href={href} prefetch={true}>
-      <TaskCardContainer rowGap={1} className="task-board-card">
+      <TaskCardContainer rowGap={1}>
         <Stack direction="row" justifyContent="space-between">
           <Stack direction="row" alignItems="center" columnGap={1}>
             <Avatar
@@ -42,7 +42,17 @@ export const TaskCard = ({ task, href }: TaskCardProps) => {
               sx={{ width: '20px', height: '20px' }}
               variant={(currentAssignee as IAssigneeCombined)?.type === 'companies' ? 'rounded' : 'circular'}
             />
-            <Typography variant="sm" fontSize="12px" sx={{ color: (theme) => theme.color.gray[500] }}>
+            <Typography
+              variant="sm"
+              fontSize="12px"
+              sx={{
+                color: (theme) => theme.color.gray[500],
+                width: '146px',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
               {(currentAssignee as IAssigneeCombined).name === 'No assignee'
                 ? 'No assignee'
                 : (currentAssignee as IAssigneeCombined)?.name ||

@@ -17,8 +17,8 @@ import { SupabaseActions } from '@/utils/SupabaseActions'
 import { generateRandomString } from '@/utils/generateRandomString'
 import { ISignedUrlUpload, UserType } from '@/types/interfaces'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { TapWriteTaskEditor } from '@/app/detail/ui/styledComponent'
 import { advancedFeatureFlag } from '@/config'
+import { Tapwrite } from 'tapwrite'
 
 interface Prop {
   title: string
@@ -99,7 +99,7 @@ export const TaskEditor = ({
         }}
         mt="12px"
       >
-        <TapWriteTaskEditor
+        <Tapwrite
           uploadFn={async (file, tiptapEditorUtils) => {
             const newBlob = await upload(file.name, file, {
               access: 'public',
