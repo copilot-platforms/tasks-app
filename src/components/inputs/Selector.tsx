@@ -32,6 +32,7 @@ interface Prop {
     props?: HTMLAttributes<HTMLLIElement>,
   ) => ReactNode
   disableOutline?: boolean
+  padding?: string
   buttonWidth?: string
   responsiveNoHide?: boolean
 }
@@ -48,6 +49,7 @@ export default function Selector({
   extraOption,
   extraOptionRenderer,
   disableOutline,
+  padding,
   buttonWidth,
   responsiveNoHide,
 }: Prop) {
@@ -139,6 +141,7 @@ export default function Selector({
             buttonContent={buttonContent}
             outlined={disableOutline}
             disabled={disabled}
+            padding={padding}
           />
         )}
       </Box>
@@ -299,6 +302,7 @@ const SelectorButton = ({
   handleClick,
   enableBackground,
   outlined,
+  padding,
   disabled,
 }: {
   startIcon?: ReactNode
@@ -306,6 +310,7 @@ const SelectorButton = ({
   handleClick?: () => void
   enableBackground?: boolean
   outlined?: boolean
+  padding?: string
   disabled?: boolean
 }) => {
   return (
@@ -319,7 +324,10 @@ const SelectorButton = ({
         '&:hover': {
           border: enableBackground || outlined ? 'none' : `1px solid ${theme.color.borders.border}`,
         },
-        padding: { xs: '1px 9px', md: '4px 16px' },
+        '.MuiTouchRipple-child': {
+          bgcolor: theme.color.borders.border,
+        },
+        padding: padding ? padding : { xs: '1px 9px', md: '4px 16px' },
         cursor: disabled ? 'auto' : 'pointer',
       })}
       onClick={handleClick}

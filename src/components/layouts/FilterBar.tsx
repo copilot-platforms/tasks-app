@@ -114,8 +114,8 @@ export const FilterBar = ({
         }}
       >
         <AppMargin size={SizeofAppMargin.LARGE} py="14px">
-          <Stack direction="row" alignItems="center" justifyContent="space-between">
-            <Stack direction="row" columnGap={3}>
+          <Stack direction="row" alignItems="center" justifyContent={'space-between'}>
+            <Stack direction="row" columnGap={3} alignItems={'center'}>
               <Box>
                 <FilterButtonGroup filterButtons={filterButtons} activeButtonIndex={ButtonIndex} />
               </Box>
@@ -158,6 +158,7 @@ export const FilterBar = ({
                         handleClick={handleFilterOptionsChange}
                       />
                     }
+                    padding="0px 9px"
                   />
                 </Box>
               )}

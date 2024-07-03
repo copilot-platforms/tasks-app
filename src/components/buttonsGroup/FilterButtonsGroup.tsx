@@ -21,9 +21,9 @@ const FilterButtonGroup = ({
       sx={(theme) => ({
         border: `1px solid ${theme.color.borders.border}`,
         borderRadius: 1,
-        columnGap: { xs: '0px', sm: '12px' },
+        columnGap: { xs: '0px', sm: '6px' },
         alignItems: 'center',
-        padding: { xs: '2px', md: '6px' },
+        padding: '2px 4px',
       })}
       direction={'row'}
     >
