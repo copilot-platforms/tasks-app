@@ -36,13 +36,20 @@ export const DatePickerComponent = ({ getDate, dateValue }: Prop) => {
         columnGap="7px"
         onClick={handleClick}
         aria-describedby={id}
-        sx={{ cursor: 'pointer' }}
+        sx={{
+          cursor: 'pointer',
+          padding: '4px 8px',
+          borderRadius: '4px',
+          ':hover': {
+            backgroundColor: (theme) => theme.color.gray[100],
+          },
+        }}
       >
         <Box>
           <CalenderIcon2 />
         </Box>
         <Typography variant="bodyMd" mt="2px">
-          {value ? formatDate(value) : 'Due date'}
+          {value ? formatDate(value) : 'Empty'}
         </Typography>
       </Stack>
       <Popper
