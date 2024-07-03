@@ -62,7 +62,7 @@ export const DatePickerComponent = ({ getDate, dateValue, isButton = false }: Pr
         id={id}
         open={open}
         anchorEl={anchorEl}
-        placement="bottom-end"
+        placement="bottom-start"
         modifiers={[
           {
             name: 'offset',

@@ -241,6 +241,7 @@ const StatusSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTMLL
   )
 }
 const AssigneeSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTMLLIElement>; option: unknown }) => {
+  console.log
   const assignee = option as IAssigneeCombined
   return (
     <Box
@@ -301,9 +302,7 @@ const SelectorButton = ({
         '&:hover': {
           border: enableBackground || outlined ? 'none' : `1px solid ${theme.color.borders.border}`,
         },
-        '.MuiTouchRipple-child': {
-          bgcolor: theme.color.borders.border,
-        },
+
         cursor: 'default',
         padding: { xs: '1px 9px', md: '4px 16px' },
       })}

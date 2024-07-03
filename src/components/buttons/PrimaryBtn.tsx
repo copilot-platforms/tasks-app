@@ -23,7 +23,8 @@ export const PrimaryBtn = ({
       sx={(theme) => ({
         textTransform: 'none',
         bgcolor: buttonBackground || theme.color.gray[600],
-        '&:hover': { backgroundColor: buttonBackground || theme.color.gray[600] },
+        boxShadow: 'none',
+        '&:hover': { backgroundColor: buttonBackground || theme.color.gray[600], boxShadow: 'none' },
         borderRadius: '4px',
         cursor: 'default',
       })}
