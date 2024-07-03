@@ -109,7 +109,7 @@ export default function Selector({
             sx={{
               width: buttonWidth ?? '100px',
               justifyContent: { xs: 'end', sm: 'flex-start' },
-              cursor: 'pointer',
+              cursor: disabled ? 'auto' : 'pointer',
             }}
           >
             <Box>{startIcon}</Box>
@@ -126,7 +126,12 @@ export default function Selector({
             </Typography>
           </Stack>
         ) : (
-          <SelectorButton startIcon={startIcon} buttonContent={buttonContent} outlined={disableOutline} />
+          <SelectorButton
+            startIcon={startIcon}
+            buttonContent={buttonContent}
+            outlined={disableOutline}
+            disabled={disabled}
+          />
         )}
       </Box>
       <Popper
@@ -285,12 +290,14 @@ const SelectorButton = ({
   handleClick,
   enableBackground,
   outlined,
+  disabled,
 }: {
   startIcon?: ReactNode
   buttonContent: ReactNode
   handleClick?: () => void
   enableBackground?: boolean
   outlined?: boolean
+  disabled?: boolean
 }) => {
   return (
     <Button
@@ -308,6 +315,7 @@ const SelectorButton = ({
           bgcolor: theme.color.borders.border,
         },
         padding: { xs: '1px 9px', md: '4px 16px' },
+        cursor: disabled ? 'auto' : 'pointer',
       })}
       onClick={handleClick}
     >

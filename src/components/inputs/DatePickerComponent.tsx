@@ -39,7 +39,7 @@ export const DatePickerComponent = ({ getDate, dateValue, disabled }: Prop) => {
         columnGap="7px"
         onClick={handleClick}
         aria-describedby={id}
-        sx={{ cursor: 'pointer' }}
+        sx={{ cursor: disabled ? 'auto' : 'pointer' }}
       >
         <Box>
           <CalenderIcon2 />
