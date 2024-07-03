@@ -26,7 +26,6 @@ import { useRouter } from 'next/navigation'
 import { selectCreateTemplate } from '@/redux/features/templateSlice'
 import { NoAssignee, NoAssigneeExtraOptions } from '@/utils/noAssignee'
 import ExtraOptionRendererAssignee from '@/components/inputs/ExtraOptionRendererAssignee'
-import { TapWriteTaskEditor } from '@/app/detail/ui/styledComponent'
 import { upload } from '@vercel/blob/client'
 import { AttachmentInput } from '@/components/inputs/AttachmentInput'
 import { SupabaseActions } from '@/utils/SupabaseActions'
@@ -38,6 +37,7 @@ import { getAssigneeName } from '@/utils/getAssigneeName'
 import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
 import { truncateText } from '@/utils/truncateText'
 import { TruncateMaxNumber } from '@/types/constants'
+import { Tapwrite } from 'tapwrite'
 
 const supabaseActions = new SupabaseActions()
 
@@ -249,7 +249,7 @@ const NewTaskFormInputs = () => {
       </Stack>
       <Stack direction="column" rowGap={1} m="16px 0px">
         <Typography variant="md">Description</Typography>
-        <TapWriteTaskEditor
+        <Tapwrite
           uploadFn={async (file, tiptapEditorUtils) => {
             const newBlob = await upload(file.name, file, {
               access: 'public',
