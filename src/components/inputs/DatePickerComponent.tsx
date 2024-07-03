@@ -6,13 +6,17 @@ import dayjs, { Dayjs } from 'dayjs'
 import { CalenderIcon, CalenderIcon2 } from '@/icons'
 import { IsoDate } from '@/types/dto/tasks.dto'
 import { Box, Popper, Stack, Typography } from '@mui/material'
+import { SecondaryBtn } from '../buttons/SecondaryBtn'
 
 interface Prop {
   getDate: (value: string) => void
   dateValue?: IsoDate
+  isButton?: boolean
+
+  disabled?: boolean
 }
 
-export const DatePickerComponent = ({ getDate, dateValue }: Prop) => {
+export const DatePickerComponent = ({ getDate, dateValue, disabled, isButton = false }: Prop) => {
   const [value, setValue] = React.useState<Dayjs | null>(dateValue ? dayjs(dateValue) : null)
 
   const formatDate = (date: Dayjs | null) => {
@@ -22,7 +26,9 @@ export const DatePickerComponent = ({ getDate, dateValue }: Prop) => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(anchorEl ? null : event.currentTarget)
+    if (!disabled) {
+      setAnchorEl(anchorEl ? null : event.currentTarget)
+    }
   }
 
   const open = Boolean(anchorEl)
@@ -36,20 +42,38 @@ export const DatePickerComponent = ({ getDate, dateValue }: Prop) => {
         columnGap="7px"
         onClick={handleClick}
         aria-describedby={id}
-        sx={{ cursor: 'pointer' }}
+        sx={{
+          cursor: disabled ? 'auto' : 'pointer',
+          padding: '4px 8px',
+          borderRadius: '4px',
+          ':hover': {
+            backgroundColor: (theme) => theme.color.gray[100],
+          },
+        }}
       >
-        <Box>
-          <CalenderIcon2 />
-        </Box>
-        <Typography variant="bodyMd" mt="2px">
-          {value ? formatDate(value) : 'Due date'}
-        </Typography>
+        {isButton ? (
+          <SecondaryBtn
+            startIcon={<CalenderIcon2 />}
+            buttonContent={
+              <Typography variant="bodySm" lineHeight="20px" sx={{ color: (theme) => theme.color.gray[600] }}>
+                {value ? formatDate(value) : 'Due Date'}
+              </Typography>
+            }
+          />
+        ) : (
+          <>
+            <Box>
+              <CalenderIcon2 />
+            </Box>
+            <Typography variant="bodyMd">{formatDate(value)}</Typography>
+          </>
+        )}
       </Stack>
       <Popper
         id={id}
         open={open}
         anchorEl={anchorEl}
-        placement="bottom-end"
+        placement="bottom-start"
         modifiers={[
           {
             name: 'offset',

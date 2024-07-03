@@ -33,6 +33,7 @@ interface Prop {
   ) => ReactNode
   disableOutline?: boolean
   buttonWidth?: string
+  responsiveNoHide?: boolean
 }
 
 export default function Selector({
@@ -48,6 +49,7 @@ export default function Selector({
   extraOptionRenderer,
   disableOutline,
   buttonWidth,
+  responsiveNoHide,
 }: Prop) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
@@ -109,7 +111,12 @@ export default function Selector({
             sx={{
               width: buttonWidth ?? '100px',
               justifyContent: { xs: 'end', sm: 'flex-start' },
-              cursor: 'pointer',
+              cursor: disabled ? 'auto' : 'pointer',
+              borderRadius: '4px',
+              padding: '4px 8px',
+              ':hover': {
+                backgroundColor: (theme) => theme.color.gray[100],
+              },
             }}
           >
             <Box>{startIcon}</Box>
@@ -119,14 +126,20 @@ export default function Selector({
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
-                display: { xs: 'none', sm: 'block' },
+                maxWidth: '120px',
+                display: { xs: responsiveNoHide ? 'block' : 'none', sm: 'block' },
               }}
             >
               {buttonContent}
             </Typography>
           </Stack>
         ) : (
-          <SelectorButton startIcon={startIcon} buttonContent={buttonContent} outlined={disableOutline} />
+          <SelectorButton
+            startIcon={startIcon}
+            buttonContent={buttonContent}
+            outlined={disableOutline}
+            disabled={disabled}
+          />
         )}
       </Box>
       <Popper
@@ -243,6 +256,7 @@ const StatusSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTMLL
   )
 }
 const AssigneeSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTMLLIElement>; option: unknown }) => {
+  console.log
   const assignee = option as IAssigneeCombined
   return (
     <Box
@@ -285,12 +299,14 @@ const SelectorButton = ({
   handleClick,
   enableBackground,
   outlined,
+  disabled,
 }: {
   startIcon?: ReactNode
   buttonContent: ReactNode
   handleClick?: () => void
   enableBackground?: boolean
   outlined?: boolean
+  disabled?: boolean
 }) => {
   return (
     <Button
@@ -302,14 +318,13 @@ const SelectorButton = ({
         bgcolor: enableBackground ? theme.color.gray[150] : '',
         '&:hover': {
           border: enableBackground || outlined ? 'none' : `1px solid ${theme.color.borders.border}`,
-          bgcolor: theme.color.gray[150],
-        },
-        '.MuiTouchRipple-child': {
-          bgcolor: theme.color.borders.border,
         },
         padding: { xs: '1px 9px', md: '4px 16px' },
+        cursor: disabled ? 'auto' : 'pointer',
       })}
       onClick={handleClick}
+      disableRipple
+      disableTouchRipple
     >
       {buttonContent}
     </Button>

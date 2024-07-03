@@ -10,12 +10,14 @@ export const WorkflowStateSelector = ({
   disabled,
   getValue,
   disableOutline,
+  responsiveNoHide,
 }: {
   value: WorkflowStateResponse
   option: WorkflowStateResponse[]
   disabled?: boolean
   getValue: (value: WorkflowStateResponse) => void
   disableOutline?: boolean
+  responsiveNoHide?: boolean
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const open = Boolean(anchorEl)
@@ -38,9 +40,13 @@ export const WorkflowStateSelector = ({
               columnGap="4px"
               justifyContent="flex-start"
               sx={{
-                width: '100px',
+                padding: '4px 8px',
                 justifyContent: { xs: 'end', sm: 'flex-start' },
-                cursor: 'pointer',
+                cursor: disabled ? 'auto' : 'pointer',
+                borderRadius: '4px',
+                ':hover': {
+                  backgroundColor: (theme) => theme.color.gray[100],
+                },
               }}
             >
               <Box>{statusIcons[value?.type]}</Box>
@@ -50,7 +56,7 @@ export const WorkflowStateSelector = ({
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
-                  display: { xs: 'none', sm: 'block' },
+                  display: { xs: responsiveNoHide ? 'block' : 'none', sm: 'block' },
                 }}
               >
                 {value?.name as ReactNode}

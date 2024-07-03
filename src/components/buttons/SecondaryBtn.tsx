@@ -12,7 +12,7 @@ export const SecondaryBtn = ({
 }: {
   startIcon?: ReactNode
   buttonContent: ReactNode
-  handleClick?: () => void
+  handleClick?: (() => void) | ((e: React.MouseEvent) => void)
   enableBackground?: boolean
   outlined?: boolean
 }) => {
@@ -26,14 +26,13 @@ export const SecondaryBtn = ({
         bgcolor: enableBackground ? theme.color.gray[150] : '',
         '&:hover': {
           border: enableBackground || outlined ? 'none' : `1px solid ${theme.color.borders.border}`,
-          bgcolor: theme.color.gray[150],
-        },
-        '.MuiTouchRipple-child': {
-          bgcolor: theme.color.borders.border,
         },
         padding: { xs: '1px 9px', md: '4px 16px' },
+        cursor: 'pointer',
       })}
       onClick={handleClick}
+      disableRipple
+      disableTouchRipple
     >
       {buttonContent}
     </Button>

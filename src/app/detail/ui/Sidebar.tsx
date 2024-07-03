@@ -73,7 +73,7 @@ export const Sidebar = ({
       }}
     >
       <Stack direction="row" justifyContent="space-between" alignItems="center">
-        <StyledBox p="19.5px 20px" display="flex" justifyContent="space-between" alignItems="center">
+        <StyledBox p="20px 20px" display="flex" justifyContent="space-between" alignItems="center">
           <Typography variant="sm">Properties</Typography>
           <Box
             sx={{
@@ -98,6 +98,7 @@ export const Sidebar = ({
             }}
             disabled={disabled}
             disableOutline
+            responsiveNoHide
           />
         </Stack>
         <Stack direction="row" m="20px 0px" alignItems="center" columnGap="10px">
@@ -145,6 +146,7 @@ export const Sidebar = ({
             }
             disabled={disabled}
             disableOutline
+            responsiveNoHide
           />
         </Stack>
         <Stack direction="row" m="20px 0px" alignItems="center" columnGap="10px">
@@ -160,6 +162,7 @@ export const Sidebar = ({
                 })
               }}
               dateValue={dueDate ? isoToReadableDate(dueDate) : undefined}
+              disabled={disabled}
             />
           </Box>
         </Stack>

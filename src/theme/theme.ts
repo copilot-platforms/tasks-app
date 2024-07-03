@@ -140,7 +140,7 @@ export const theme = createTheme({
     },
     sm: {
       fontFamily: inter.style.fontFamily,
-      fontSize: '13px',
+      fontSize: '12px',
       fontStyle: 'normal',
       fontWeight: 500,
       lineHeight: '20px',
