@@ -10,7 +10,6 @@ import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { useSelector } from 'react-redux'
 import { clearCreateTaskFields, selectCreateTask, setShowModal } from '@/redux/features/createTaskSlice'
 import store from '@/redux/store'
-import { useRouter } from 'next/navigation'
 import { selectTaskBoard, updateWorkflowStateIdByTaskId } from '@/redux/features/taskBoardSlice'
 import { CreateTaskRequestSchema, TaskResponse } from '@/types/dto/tasks.dto'
 import { ListViewTaskCard } from '@/components/cards/ListViewTaskCard'
@@ -31,8 +30,6 @@ export const TaskBoard = ({
   const { showModal } = useSelector(selectCreateTask)
   const { workflowStates, tasks, token, filteredTasks, view, filterOptions } = useSelector(selectTaskBoard)
   const { title, description, workflowStateId, assigneeId, assigneeType, attachments } = useSelector(selectCreateTask)
-
-  const router = useRouter()
 
   const onDropItem = useCallback(
     (payload: { taskId: string; targetWorkflowStateId: string }) => {
@@ -85,8 +82,12 @@ export const TaskBoard = ({
                     {filterTaskWithWorkflowStateId(list.id).map((task, index) => {
                       return (
                         <DragDropHandler key={task.id} accept={'taskCard'} index={index} id={task.id || ''} draggable>
-                          <Box onClick={() => router.push(`/detail/${task.id}/iu?token=${token}`)} key={task.id} m="6px 0px">
-                            <TaskCard task={task} key={task.id} />
+                          <Box key={task.id} m="6px 0px">
+                            <TaskCard
+                              task={task}
+                              key={task.id}
+                              href={{ pathname: `/detail/${task.id}/iu`, query: { token } }}
+                            />
                           </Box>
                         </DragDropHandler>
                       )
@@ -118,12 +119,12 @@ export const TaskBoard = ({
                   return (
                     <DragDropHandler key={task.id} accept={'taskCard'} index={index} id={task.id || ''} draggable>
                       <ListViewTaskCard
-                        task={task}
                         key={task.id}
+                        task={task}
+                        href={{ pathname: `/detail/${task.id}/iu`, query: { token } }}
                         updateTask={({ payload }) => {
                           updateTask({ token: z.string().parse(token), taskId: task.id, payload })
                         }}
-                        handleClick={() => router.push(`/detail/${task.id}/iu?token=${token}`)}
                       />
                     </DragDropHandler>
                   )
