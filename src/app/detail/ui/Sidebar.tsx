@@ -1,12 +1,10 @@
 'use client'
 
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
-import { Avatar, Box, Stack, Typography, styled, useMediaQuery } from '@mui/material'
+import { Box, Stack, Typography, styled, useMediaQuery } from '@mui/material'
 import Selector, { SelectorType } from '@/components/inputs/Selector'
 import { IAssigneeCombined } from '@/types/interfaces'
-import { statusIcons } from '@/utils/iconMatcher'
 import { DatePickerComponent } from '@/components/inputs/DatePickerComponent'
-import { ReactNode } from 'react'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { useSelector } from 'react-redux'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
@@ -19,8 +17,8 @@ import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 import { ToggleButtonContainer } from './ToggleButtonContainer'
 import { NoAssignee, NoAssigneeExtraOptions } from '@/utils/noAssignee'
 import ExtraOptionRendererAssignee from '@/components/inputs/ExtraOptionRendererAssignee'
-import { getAssigneeName } from '@/utils/getAssigneeName'
 import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
+import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 
 const StyledText = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[500],
@@ -114,14 +112,7 @@ export const Sidebar = ({
               const assigneeType = getAssigneeTypeCorrected(assignee)
               updateAssignee(assigneeType, assignee?.id)
             }}
-            startIcon={
-              <Avatar
-                alt={getAssigneeName(assigneeValue)}
-                src={assigneeValue?.iconImageUrl || assigneeValue?.avatarImageUrl || 'user'}
-                sx={{ width: '20px', height: '20px' }}
-                variant={assigneeValue?.type === 'companies' ? 'rounded' : 'circular'}
-              />
-            }
+            startIcon={<CopilotAvatar currentAssignee={assigneeValue} />}
             options={assignee}
             value={assigneeValue}
             selectorType={SelectorType.ASSIGNEE_SELECTOR}

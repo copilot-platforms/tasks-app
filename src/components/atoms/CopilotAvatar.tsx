@@ -1,3 +1,4 @@
+import { NoAssigneeAvatar } from '@/icons'
 import { copilotTheme } from '@/theme/copilot'
 import { IAssigneeCombined } from '@/types/interfaces'
 import { Avatar, SxProps } from '@mui/material'
@@ -21,8 +22,8 @@ export const CopilotAvatar = ({ currentAssignee, alt, width = '20px', height = '
   }
   const avatarVariant: 'circular' | 'rounded' | 'square' = currentAssignee?.type === 'companies' ? 'rounded' : 'circular'
 
-  if (currentAssignee?.givenName === 'No assignee') {
-    return <Avatar alt="" src="user" sx={avatarSx} variant="circular" />
+  if (!currentAssignee || currentAssignee?.givenName === 'No assignee') {
+    return <NoAssigneeAvatar />
   }
 
   if (currentAssignee?.iconImageUrl || currentAssignee?.avatarImageUrl) {

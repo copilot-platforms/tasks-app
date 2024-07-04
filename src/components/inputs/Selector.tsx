@@ -9,6 +9,7 @@ import { IAssigneeCombined, IExtraOption, ITemplate, UserType, UserTypesName } f
 import { TruncateMaxNumber } from '@/types/constants'
 
 import { truncateText } from '@/utils/truncateText'
+import { CopilotAvatar } from '../atoms/CopilotAvatar'
 
 export enum SelectorType {
   ASSIGNEE_SELECTOR = 'assigneeSelector',
@@ -259,7 +260,6 @@ const StatusSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTMLL
   )
 }
 const AssigneeSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTMLLIElement>; option: unknown }) => {
-  console.log
   const assignee = option as IAssigneeCombined
   return (
     <Box
@@ -278,12 +278,7 @@ const AssigneeSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTM
       }}
     >
       <Stack direction="row" alignItems="center" columnGap={3}>
-        <Avatar
-          alt={assignee?.givenName || assignee?.familyName}
-          src={assignee.avatarImageUrl || assignee.iconImageUrl || 'user'}
-          sx={{ width: '20px', height: '20px' }}
-          variant={(option as IAssigneeCombined).type === 'companies' ? 'rounded' : 'circular'}
-        />
+        <CopilotAvatar currentAssignee={assignee} />
         <Typography variant="sm" fontWeight={400}>
           {truncateText(
             (option as IAssigneeCombined)?.name ||
