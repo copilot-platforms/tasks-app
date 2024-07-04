@@ -34,9 +34,17 @@ export const FilterBar = ({
 }: {
   updateViewModeSetting: (payload: CreateViewSettingsDTO) => void
 }) => {
-  const { view, filteredAssigneeList, filterOptions } = useSelector(selectTaskBoard)
+  const { view, filteredAssigneeList, filterOptions, assignee } = useSelector(selectTaskBoard)
+  const [filteredAssignee, setFilteredAssignee] = useState(filteredAssigneeList)
   const handleFilterOptionsChange = async (optionType: FilterOptions, newValue: string | null) => {
     store.dispatch(setFilterOptions({ optionType, newValue }))
+    newValue == FilterOptionsKeywords.CLIENTS
+      ? setFilteredAssignee(assignee.filter((el) => el.type == FilterByOptions.CLIENT || el.type == FilterByOptions.COMPANY))
+      : newValue == FilterOptionsKeywords.TEAM
+        ? setFilteredAssignee(assignee.filter((el) => el.type == FilterByOptions.IUS))
+        : newValue == ''
+          ? setFilteredAssignee(assignee)
+          : setFilteredAssignee(assignee) //FilteredAssignee is also updated in the component's state and used in Selector's autocomplete to mitigate the time taken to update the store and fetch values to the Selector's autocomplete.
     const updatedFilterOptions = store.getState().taskBoard.filterOptions
     updateViewModeSetting({
       viewMode: view,
@@ -59,7 +67,10 @@ export const FilterBar = ({
   const [noAssigneOptionFlag, setNoAssigneeOptionFlag] = useState<boolean>(true)
   const { tokenPayload } = useSelector(selectAuthDetails)
   const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
-    item: filteredAssigneeList.find((item) => item.id == filterOptions.assignee),
+    item:
+      filterOptions.assignee == 'No assignee'
+        ? NoAssigneeExtraOptions
+        : filteredAssigneeList.find((item) => item.id == filterOptions.assignee),
     type: SelectorType.ASSIGNEE_SELECTOR,
   })
   useFilter(filterOptions)
@@ -132,7 +143,7 @@ export const FilterBar = ({
                       handleFilterOptionsChange(FilterOptions.ASSIGNEE, newValue?.id as string)
                     }}
                     startIcon={<FilterByAsigneeIcon />}
-                    options={filteredAssigneeList}
+                    options={filteredAssignee}
                     placeholder="Assignee"
                     value={assigneeValue}
                     selectorType={SelectorType.ASSIGNEE_SELECTOR}
@@ -145,7 +156,7 @@ export const FilterBar = ({
                             onClick={(e) => {
                               updateAssigneeValue({ id: '', name: 'No assignee' })
                               setAnchorEl(anchorEl ? null : e.currentTarget)
-                              handleFilterOptionsChange(FilterOptions.ASSIGNEE, 'none')
+                              handleFilterOptionsChange(FilterOptions.ASSIGNEE, 'No assignee')
                             }}
                           />
                         )
