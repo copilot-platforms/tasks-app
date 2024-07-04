@@ -231,7 +231,7 @@ export const FilterBar = ({
                   onClick={(e) => {
                     updateAssigneeValue({ id: '', name: 'No assignee' })
                     setAnchorEl(anchorEl ? null : e.currentTarget)
-                    handleFilterOptionsChange(FilterOptions.ASSIGNEE, 'none')
+                    handleFilterOptionsChange(FilterOptions.ASSIGNEE, 'No assignee')
                   }}
                 />
               )
