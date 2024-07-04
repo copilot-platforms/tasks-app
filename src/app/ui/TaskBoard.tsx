@@ -64,7 +64,6 @@ export const TaskBoard = ({
     }
     return filteredTaskCount.toString() + '/' + taskCount.toString()
   }
-
   return (
     <>
       {view === View.BOARD_VIEW && (
@@ -115,6 +114,7 @@ export const TaskBoard = ({
                 columnName={list.name}
                 taskCount={taskCountForWorkflowStateId(list.id)}
                 showConfigurableIcons={false}
+                display={!!filterTaskWithWorkflowStateId(list.id).length}
               >
                 {filterTaskWithWorkflowStateId(list.id).map((task, index) => {
                   return (
