@@ -55,7 +55,7 @@ export const DatePickerComponent = ({ getDate, dateValue, disabled, isButton = f
             startIcon={<CalenderIcon2 />}
             buttonContent={
               <Typography variant="bodySm" lineHeight="20px" sx={{ color: (theme) => theme.color.gray[600] }}>
-                {value ? formatDate(value) : 'Empty'}
+                {value ? formatDate(value) : 'Due date'}
               </Typography>
             }
           />
