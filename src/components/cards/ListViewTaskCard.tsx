@@ -52,34 +52,26 @@ export const ListViewTaskCard = ({
           <Box sx={{ paddingTop: '2px', paddingBottom: '2px' }}>
             <Stack direction="row" columnGap={8} alignItems="center" justifyContent="space-between">
               <Stack sx={{ width: '100%', cursor: 'pointer' }} direction="row" alignItems="flex-end" columnGap={4}>
-                <Typography variant="sm" fontWeight={400} sx={{ color: (theme) => theme.color.gray[500] }}>
+                <Typography
+                  variant="sm"
+                  fontWeight={400}
+                  sx={{ color: (theme) => theme.color.gray[500], flexGrow: 0, width: '70px' }}
+                >
                   {task.label}
                 </Typography>
-                <Typography variant="sm">{task?.title}</Typography>
+                <Typography variant="sm" sx={{ width: { xs: '100px', sm: '200px', md: 'auto' } }}>
+                  {task?.title}
+                </Typography>
               </Stack>
-              <Stack
-                direction="row"
-                alignItems="center"
-                columnGap="20px"
-                sx={{
-                  minWidth: {
-                    xs: 'none',
-                    sm: '300px',
-                    md: '350px',
-                  },
-                }}
-              >
+              <Stack direction="row" alignItems="center" justifyContent={'space-between'} columnGap={1}>
                 <Box
                   sx={{
-                    display: {
-                      xs: 'none',
-                      sm: 'flex',
-                    },
+                    display: 'flex',
                     minWidth: 'fit-content',
-                    width: '200px',
+                    width: { md: '200px', sm: '100px', xs: '100px' },
                     flexDirection: 'row',
                     alignItems: 'flex-end',
-                    justifyContent: 'right',
+                    justifyContent: 'flex-end',
                   }}
                 >
                   {task.dueDate && <DueDateLayout date={task.dueDate} />}
@@ -87,7 +79,6 @@ export const ListViewTaskCard = ({
                 <Box
                   sx={{
                     minWidth: 'fit-content',
-                    width: '100px',
                   }}
                 >
                   <Selector

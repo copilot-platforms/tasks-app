@@ -113,7 +113,7 @@ export default function Selector({
             justifyContent="flex-start"
             sx={{
               width: buttonWidth ?? '100px',
-              justifyContent: { xs: 'end', sm: 'flex-start' },
+              justifyContent: { xs: 'flex-start', sm: 'flex-start' },
               cursor: disabled ? 'auto' : 'pointer',
               borderRadius: '4px',
               padding: '4px 8px',
