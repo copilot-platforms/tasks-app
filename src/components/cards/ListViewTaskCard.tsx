@@ -50,25 +50,30 @@ export const ListViewTaskCard = ({
       >
         <AppMargin size={SizeofAppMargin.LARGE} py="12px">
           <Box sx={{ paddingTop: '2px', paddingBottom: '2px' }}>
-            <Stack direction="row" columnGap={8} alignItems="center" justifyContent="space-between">
-              <Stack sx={{ width: '100%', cursor: 'pointer' }} direction="row" alignItems="flex-end" columnGap={4}>
+            <Stack direction="row" columnGap={'20px'} alignItems="center" justifyContent="space-between">
+              <Stack sx={{ cursor: 'pointer' }} direction="row" alignItems="center" columnGap={'16px'}>
                 <Typography
                   variant="sm"
                   fontWeight={400}
-                  sx={{ color: (theme) => theme.color.gray[500], flexGrow: 0, width: '70px' }}
+                  sx={{
+                    color: (theme) => theme.color.gray[500],
+                    flexGrow: 0,
+                    minWidth: '80px',
+                    lineHeight: '21px',
+                  }}
                 >
                   {task.label}
                 </Typography>
-                <Typography variant="sm" sx={{ width: { xs: '100px', sm: '200px', md: 'auto' } }}>
+                <Typography variant="sm" sx={{ minWidth: '135px', lineHeight: '21px' }}>
                   {task?.title}
                 </Typography>
               </Stack>
-              <Stack direction="row" alignItems="center" justifyContent={'space-between'} columnGap={1}>
+              <Stack direction="row" alignItems="center" justifyContent={'space-between'} columnGap={2}>
                 <Box
                   sx={{
                     display: 'flex',
-                    minWidth: 'fit-content',
-                    width: { md: '200px', sm: '100px', xs: '100px' },
+                    minWidth: '85px',
+                    gap: '33px',
                     flexDirection: 'row',
                     alignItems: 'flex-end',
                     justifyContent: 'flex-end',
@@ -76,11 +81,7 @@ export const ListViewTaskCard = ({
                 >
                   {task.dueDate && <DueDateLayout date={task.dueDate} />}
                 </Box>
-                <Box
-                  sx={{
-                    minWidth: 'fit-content',
-                  }}
-                >
+                <Box>
                   <Selector
                     placeholder="Change assignee"
                     disableOutline
@@ -138,7 +139,7 @@ export const ListViewTaskCard = ({
                     buttonContent={
                       <Typography
                         variant="bodySm"
-                        lineHeight="16px"
+                        lineHeight="20px"
                         sx={{
                           color: (theme) => theme.color.gray[600],
                         }}
