@@ -21,25 +21,13 @@ export const Header = ({ showCreateTaskButton }: { showCreateTaskButton: boolean
           <Typography variant="lg">Tasks</Typography>
           {showCreateTaskButton && (
             <>
-              <Box
-                sx={{
-                  display: { xs: 'none', sm: 'block' },
-                }}
-              >
+              <Box>
                 <PrimaryBtn
                   startIcon={<AddIcon />}
                   buttonText="New Task"
                   handleClick={() => {
                     store.dispatch(setShowModal())
                   }}
-                />
-              </Box>
-              <Box sx={{ display: { xs: 'block', sm: 'none' } }}>
-                <IconBtn
-                  handleClick={() => {
-                    store.dispatch(setShowModal())
-                  }}
-                  icon={<AddIcon sx={{ color: '#fff' }} />}
                 />
               </Box>
             </>

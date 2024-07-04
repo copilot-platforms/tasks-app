@@ -32,6 +32,7 @@ const SearchBar = ({ value, getSearchKeyword }: ISearchBar) => {
         inputProps: {
           style: {
             marginBottom: '2px',
+            padding: '5px 0px',
           },
         },
       }}
