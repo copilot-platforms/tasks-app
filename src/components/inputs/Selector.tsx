@@ -9,6 +9,7 @@ import { IAssigneeCombined, IExtraOption, ITemplate, UserType, UserTypesName } f
 import { TruncateMaxNumber } from '@/types/constants'
 
 import { truncateText } from '@/utils/truncateText'
+import { CopilotAvatar } from '../atoms/CopilotAvatar'
 
 export enum SelectorType {
   ASSIGNEE_SELECTOR = 'assigneeSelector',
@@ -32,6 +33,9 @@ interface Prop {
     props?: HTMLAttributes<HTMLLIElement>,
   ) => ReactNode
   disableOutline?: boolean
+  padding?: string
+  buttonWidth?: string
+  responsiveNoHide?: boolean
 }
 
 export default function Selector({
@@ -46,6 +50,9 @@ export default function Selector({
   extraOption,
   extraOptionRenderer,
   disableOutline,
+  padding,
+  buttonWidth,
+  responsiveNoHide,
 }: Prop) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
@@ -105,9 +112,14 @@ export default function Selector({
             columnGap="4px"
             justifyContent="flex-start"
             sx={{
-              width: '100px',
+              width: buttonWidth ?? '100px',
               justifyContent: { xs: 'end', sm: 'flex-start' },
-              cursor: 'pointer',
+              cursor: disabled ? 'auto' : 'pointer',
+              borderRadius: '4px',
+              padding: '4px 8px',
+              ':hover': {
+                backgroundColor: (theme) => theme.color.gray[100],
+              },
             }}
           >
             <Box>{startIcon}</Box>
@@ -117,14 +129,21 @@ export default function Selector({
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
-                display: { xs: 'none', sm: 'block' },
+                maxWidth: '120px',
+                display: { xs: responsiveNoHide ? 'block' : 'none', sm: 'block' },
               }}
             >
               {buttonContent}
             </Typography>
           </Stack>
         ) : (
-          <SelectorButton startIcon={startIcon} buttonContent={buttonContent} outlined={disableOutline} />
+          <SelectorButton
+            startIcon={startIcon}
+            buttonContent={buttonContent}
+            outlined={disableOutline}
+            disabled={disabled}
+            padding={padding}
+          />
         )}
       </Box>
       <Popper
@@ -278,12 +297,7 @@ const AssigneeSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTM
       }}
     >
       <Stack direction="row" alignItems="center" columnGap={3}>
-        <Avatar
-          alt={assignee?.givenName || assignee?.familyName}
-          src={assignee.avatarImageUrl || assignee.iconImageUrl || 'user'}
-          sx={{ width: '20px', height: '20px' }}
-          variant={(option as IAssigneeCombined).type === 'companies' ? 'rounded' : 'circular'}
-        />
+        <CopilotAvatar currentAssignee={assignee} />
         <Typography variant="bodySm">
           {truncateText(
             (option as IAssigneeCombined)?.name ||
@@ -302,12 +316,16 @@ const SelectorButton = ({
   handleClick,
   enableBackground,
   outlined,
+  padding,
+  disabled,
 }: {
   startIcon?: ReactNode
   buttonContent: ReactNode
   handleClick?: () => void
   enableBackground?: boolean
   outlined?: boolean
+  padding?: string
+  disabled?: boolean
 }) => {
   return (
     <Button
@@ -319,14 +337,16 @@ const SelectorButton = ({
         bgcolor: enableBackground ? theme.color.gray[150] : '',
         '&:hover': {
           border: enableBackground || outlined ? 'none' : `1px solid ${theme.color.borders.border}`,
-          bgcolor: theme.color.gray[150],
         },
         '.MuiTouchRipple-child': {
           bgcolor: theme.color.borders.border,
         },
-        padding: { xs: '1px 9px', md: '4px 16px' },
+        padding: padding ? padding : { xs: '1px 9px', md: '4px 16px' },
+        cursor: disabled ? 'auto' : 'pointer',
       })}
       onClick={handleClick}
+      disableRipple
+      disableTouchRipple
     >
       {buttonContent}
     </Button>

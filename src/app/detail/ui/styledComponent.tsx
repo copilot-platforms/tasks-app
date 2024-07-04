@@ -1,9 +1,9 @@
 'use client'
 
-import { MenuBox } from '@/components/inputs/MenuBox'
 import { EmojiIcon, ReplyIcon } from '@/icons'
 import { KeyboardArrowRight } from '@mui/icons-material'
-import { Box, Container, Stack, Typography, styled } from '@mui/material'
+import { Box, Stack, Typography, styled } from '@mui/material'
+import Link from 'next/link'
 import { Tapwrite } from 'tapwrite'
 
 export const StyledTypography = styled(Typography)(({ theme }) => ({
@@ -33,6 +33,17 @@ export const StyledKeyboardIcon = styled(KeyboardArrowRight)(({ theme }) => ({
 
 export const StyledBox = styled(Box)(({ theme }) => ({
   borderBottom: `1px solid ${theme.color.borders.borderDisabled}`,
+  width: '100%',
+}))
+export const StyledTiptapDescriptionWrapper = styled(Box)(({ theme }) => ({
+  borderBottom: `1px solid ${theme.color.borders.borderDisabled}`,
+  width: '100%',
+  '.tiptap *': {
+    color: theme.color.gray[500],
+  },
+  '.tiptap p': {
+    fontSize: '16px',
+  },
 }))
 
 export const VerticalLine = styled('div')(({ theme }) => ({
@@ -78,25 +89,7 @@ export const CommentCardContainer = styled(Stack)(({ theme }) => ({
   backgroundColor: `${theme.color.gray[100]}`,
 }))
 
-export const TapWriteCommentInput = styled(Tapwrite)(({ theme }) => ({
-  minHeight: '10vh',
-}))
-
-export const TapWriteReplyInput = styled(Tapwrite)(({ theme }) => ({
-  minHeight: '6vh',
-}))
-
-export const TapWriteComment = styled(Tapwrite)(({ theme }) => ({
-  minHeight: '2vh',
-}))
-
-export const TapWriteTaskEditor = styled(Tapwrite)(({ theme }) => ({
-  minHeight: '30vh',
-  fontSize: '20px',
-}))
-
-export const TapWriteTaskEditor1 = styled(Tapwrite)(({ theme }) => ({
-  minHeight: '20vh',
-  borderColor: theme.color.borders.border,
-  border: `1px solid ${theme.color.base.black}`,
-}))
+export const StyledUninvasiveLink = styled(Link)({
+  color: 'inherit',
+  textDecoration: 'inherit',
+})

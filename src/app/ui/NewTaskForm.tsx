@@ -4,7 +4,7 @@ import { SelectorType } from '@/components/inputs/Selector'
 import Selector from '@/components/inputs/Selector'
 import { StyledTextField } from '@/components/inputs/TextField'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
-import { ArrowLinkIcon, TemplateIconSm } from '@/icons'
+import { ArrowLinkIcon, CloseIcon, TemplateIconSm } from '@/icons'
 import {
   clearCreateTaskFields,
   removeOneAttachment,
@@ -13,8 +13,7 @@ import {
   setShowModal,
 } from '@/redux/features/createTaskSlice'
 import store from '@/redux/store'
-import { Close } from '@mui/icons-material'
-import { Avatar, Box, Stack, Typography, styled } from '@mui/material'
+import { Box, Stack, Typography, styled } from '@mui/material'
 import { useEffect } from 'react'
 import { FilterOptions, IAssigneeCombined, ISignedUrlUpload, ITemplate } from '@/types/interfaces'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
@@ -26,7 +25,6 @@ import { useRouter } from 'next/navigation'
 import { selectCreateTemplate } from '@/redux/features/templateSlice'
 import { NoAssignee, NoAssigneeExtraOptions } from '@/utils/noAssignee'
 import ExtraOptionRendererAssignee from '@/components/inputs/ExtraOptionRendererAssignee'
-import { TapWriteTaskEditor } from '@/app/detail/ui/styledComponent'
 import { upload } from '@vercel/blob/client'
 import { AttachmentInput } from '@/components/inputs/AttachmentInput'
 import { SupabaseActions } from '@/utils/SupabaseActions'
@@ -34,10 +32,12 @@ import { generateRandomString } from '@/utils/generateRandomString'
 import { AttachmentCard } from '@/components/cards/AttachmentCard'
 import { bulkRemoveAttachments } from '@/utils/bulkRemoveAttachments'
 import { advancedFeatureFlag } from '@/config'
-import { getAssigneeName } from '@/utils/getAssigneeName'
 import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
 import { truncateText } from '@/utils/truncateText'
 import { TruncateMaxNumber } from '@/types/constants'
+import { Tapwrite } from 'tapwrite'
+import { DatePickerComponent } from '@/components/inputs/DatePickerComponent'
+import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 
 const supabaseActions = new SupabaseActions()
 
@@ -153,8 +153,8 @@ export const NewTaskForm = ({
                 />
               )}
             </Box>
-            <Close
-              sx={{ color: (theme) => theme.color.gray[500], cursor: 'pointer' }}
+            <CloseIcon
+              style={{ cursor: 'pointer' }}
               onClick={() => {
                 store.dispatch(setShowModal())
                 store.dispatch(clearCreateTaskFields())
@@ -168,14 +168,16 @@ export const NewTaskForm = ({
         <NewTaskFormInputs />
 
         <Stack direction="row" columnGap={3} position="relative">
-          <WorkflowStateSelector
-            option={workflowStates}
-            value={statusValue}
-            getValue={(value) => {
-              updateStatusValue(value)
-              store.dispatch(setCreateTaskFields({ targetField: 'workflowStateId', value: value.id }))
-            }}
-          />
+          <Box sx={{ padding: 0.1 }}>
+            <WorkflowStateSelector
+              option={workflowStates}
+              value={statusValue}
+              getValue={(value) => {
+                updateStatusValue(value)
+                store.dispatch(setCreateTaskFields({ targetField: 'workflowStateId', value: value.id }))
+              }}
+            />
+          </Box>
           <Stack alignSelf="flex-start">
             <Selector
               placeholder="Change assignee"
@@ -190,14 +192,7 @@ export const NewTaskForm = ({
                 )
                 store.dispatch(setCreateTaskFields({ targetField: 'assigneeId', value: newValue?.id }))
               }}
-              startIcon={
-                <Avatar
-                  alt={getAssigneeName(assigneeValue)}
-                  src={assigneeValue?.iconImageUrl || assigneeValue?.avatarImageUrl || 'user'}
-                  sx={{ width: '20px', height: '20px' }}
-                  variant={assigneeValue?.type === 'companies' ? 'rounded' : 'circular'}
-                />
-              }
+              startIcon={<CopilotAvatar currentAssignee={assigneeValue} />}
               options={assignee}
               value={assigneeValue}
               extraOption={NoAssigneeExtraOptions}
@@ -216,7 +211,7 @@ export const NewTaskForm = ({
               }}
               selectorType={SelectorType.ASSIGNEE_SELECTOR}
               buttonContent={
-                <Typography variant="bodySm" lineHeight="16px" sx={{ color: (theme) => theme.color.gray[600] }}>
+                <Typography variant="bodySm" lineHeight="20px" sx={{ color: (theme) => theme.color.gray[600] }}>
                   {truncateText(
                     (assigneeValue as IAssigneeCombined)?.name ||
                       `${(assigneeValue as IAssigneeCombined)?.givenName ?? ''} ${(assigneeValue as IAssigneeCombined)?.familyName ?? ''}`.trim(),
@@ -226,6 +221,12 @@ export const NewTaskForm = ({
               }
             />
           </Stack>
+          <Box sx={{ padding: 0.1 }}>
+            <DatePickerComponent
+              getDate={(value) => store.dispatch(setCreateTaskFields({ targetField: 'dueDate', value: value }))}
+              isButton={true}
+            />
+          </Box>
         </Stack>
       </AppMargin>
       <NewTaskFooter handleCreate={handleCreate} getSignedUrlUpload={getSignedUrlUpload} />
@@ -243,13 +244,14 @@ const NewTaskFormInputs = () => {
         <StyledTextField
           type="text"
           padding="8px 0px"
+          autoFocus={true}
           value={title}
           onChange={(e) => store.dispatch(setCreateTaskFields({ targetField: 'title', value: e.target.value }))}
         />
       </Stack>
       <Stack direction="column" rowGap={1} m="16px 0px">
         <Typography variant="md">Description</Typography>
-        <TapWriteTaskEditor
+        <Tapwrite
           uploadFn={async (file, tiptapEditorUtils) => {
             const newBlob = await upload(file.name, file, {
               access: 'public',
@@ -259,8 +261,8 @@ const NewTaskFormInputs = () => {
           }}
           content={description}
           getContent={(content) => store.dispatch(setCreateTaskFields({ targetField: 'description', value: content }))}
-          isTextInput
-          editorClass=""
+          placeholder="Add description..."
+          editorClass="tapwrite-task-description"
         />
       </Stack>
       <Stack direction="row" columnGap={2} m="16px 0px">

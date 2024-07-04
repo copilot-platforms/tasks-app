@@ -4,11 +4,12 @@ import { Avatar, Box, InputAdornment, Stack } from '@mui/material'
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 
 import { useState } from 'react'
-import { CommentCardContainer, TapWriteCommentInput } from '@/app/detail/ui/styledComponent'
+import { CommentCardContainer } from '@/app/detail/ui/styledComponent'
 import { CreateComment } from '@/types/dto/comment.dto'
 import { useSelector } from 'react-redux'
 import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 import { getMentionsList } from '@/utils/getMentionList'
+import { Tapwrite } from 'tapwrite'
 
 interface Prop {
   createComment: (postCommentPayload: CreateComment) => void
@@ -33,12 +34,12 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
     <Stack direction="row" columnGap={3} alignItems="flex-start">
       <Avatar alt="user" src={''} sx={{ width: '25px', height: '25px' }} />
       <CommentCardContainer>
-        <TapWriteCommentInput
+        <Tapwrite
           content={detail}
           getContent={setDetail}
           placeholder="Leave a comment..."
           suggestions={assigneeSuggestions}
-          editorClass=""
+          editorClass="tapwrite-comment-input"
         />
         <InputAdornment
           position="end"

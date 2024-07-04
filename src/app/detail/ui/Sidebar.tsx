@@ -1,12 +1,10 @@
 'use client'
 
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
-import { Avatar, Box, Stack, Typography, styled, useMediaQuery } from '@mui/material'
+import { Box, Stack, Typography, styled, useMediaQuery } from '@mui/material'
 import Selector, { SelectorType } from '@/components/inputs/Selector'
 import { IAssigneeCombined } from '@/types/interfaces'
-import { statusIcons } from '@/utils/iconMatcher'
 import { DatePickerComponent } from '@/components/inputs/DatePickerComponent'
-import { ReactNode } from 'react'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { useSelector } from 'react-redux'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
@@ -19,8 +17,8 @@ import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 import { ToggleButtonContainer } from './ToggleButtonContainer'
 import { NoAssignee, NoAssigneeExtraOptions } from '@/utils/noAssignee'
 import ExtraOptionRendererAssignee from '@/components/inputs/ExtraOptionRendererAssignee'
-import { getAssigneeName } from '@/utils/getAssigneeName'
 import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
+import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 
 const StyledText = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[500],
@@ -67,33 +65,28 @@ export const Sidebar = ({
     <Box
       sx={{
         borderLeft: (theme) => `1px solid ${theme.color.borders.border2}`,
-        height: '100%',
+        height: '100vh',
         display: showSidebar ? 'block' : 'none',
         width: matches && showSidebar ? '100vw' : '25vw',
       }}
     >
-      <Stack direction="row" justifyContent="space-between" alignItems="center" p="19px 25px">
-        <StyledBox>
+      <Stack direction="row" justifyContent="space-between" alignItems="center">
+        <StyledBox p="20px 20px" display="flex" justifyContent="space-between" alignItems="center">
           <Typography variant="sm">Properties</Typography>
+          <Box
+            sx={{
+              display: matches ? 'block' : 'none',
+            }}
+          >
+            <ToggleButtonContainer />
+          </Box>
         </StyledBox>
-        <Box
-          sx={{
-            display: matches ? 'block' : 'none',
-          }}
-        >
-          <ToggleButtonContainer />
-        </Box>
       </Stack>
       <AppMargin size={SizeofAppMargin.SMALL}>
-        <Stack
-          direction="row"
-          alignItems="center"
-          m="16px 0px"
-          sx={{
-            justifyContent: 'space-between',
-          }}
-        >
-          <StyledText variant="md">Status</StyledText>
+        <Stack direction="row" alignItems="center" m="20px 0px" columnGap="10px">
+          <StyledText variant="md" width="80px">
+            Status
+          </StyledText>
           <WorkflowStateSelector
             option={workflowStates}
             value={statusValue}
@@ -102,11 +95,16 @@ export const Sidebar = ({
               updateWorkflowState(value)
             }}
             disabled={disabled}
+            disableOutline
+            responsiveNoHide
           />
         </Stack>
-        <Stack direction="row" m="16px 0px" alignItems="center" justifyContent="space-between">
-          <StyledText variant="md">Assignee</StyledText>
+        <Stack direction="row" m="20px 0px" alignItems="center" columnGap="10px">
+          <StyledText variant="md" width="80px">
+            Assignee
+          </StyledText>
           <Selector
+            buttonWidth="100%"
             placeholder="Change assignee"
             getSelectedValue={(newValue) => {
               const assignee = newValue as IAssigneeCombined
@@ -114,14 +112,7 @@ export const Sidebar = ({
               const assigneeType = getAssigneeTypeCorrected(assignee)
               updateAssignee(assigneeType, assignee?.id)
             }}
-            startIcon={
-              <Avatar
-                alt={getAssigneeName(assigneeValue)}
-                src={assigneeValue?.iconImageUrl || assigneeValue?.avatarImageUrl || 'user'}
-                sx={{ width: '20px', height: '20px' }}
-                variant={assigneeValue?.type === 'companies' ? 'rounded' : 'circular'}
-              />
-            }
+            startIcon={<CopilotAvatar currentAssignee={assigneeValue} />}
             options={assignee}
             value={assigneeValue}
             selectorType={SelectorType.ASSIGNEE_SELECTOR}
@@ -140,14 +131,19 @@ export const Sidebar = ({
             }}
             buttonContent={
               <Typography variant="bodySm" lineHeight="16px" sx={{ color: (theme) => theme.color.gray[600] }}>
-                {assigneeValue?.name || assigneeValue?.givenName}
+                {(assigneeValue as IAssigneeCombined)?.name ||
+                  `${(assigneeValue as IAssigneeCombined)?.givenName ?? ''} ${(assigneeValue as IAssigneeCombined)?.familyName ?? ''}`.trim()}
               </Typography>
             }
             disabled={disabled}
+            disableOutline
+            responsiveNoHide
           />
         </Stack>
-        <Stack direction="row" m="16px 0px" alignItems="center" justifyContent="space-between">
-          <StyledText variant="md">Due Date</StyledText>
+        <Stack direction="row" m="20px 0px" alignItems="center" columnGap="10px">
+          <StyledText variant="md" width="80px">
+            Due Date
+          </StyledText>
           <Box>
             <DatePickerComponent
               getDate={(date) => {
@@ -157,6 +153,7 @@ export const Sidebar = ({
                 })
               }}
               dateValue={dueDate ? isoToReadableDate(dueDate) : undefined}
+              disabled={disabled}
             />
           </Box>
         </Stack>

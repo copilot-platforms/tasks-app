@@ -5,10 +5,15 @@ import { TaskEditor } from '@/app/detail/ui/TaskEditor'
 import { Box, Stack, Typography } from '@mui/material'
 import { Sidebar } from '@/app/detail/ui/Sidebar'
 import { IAssignee, UserType } from '@/types/interfaces'
-import { apiUrl } from '@/config'
+import { advancedFeatureFlag, apiUrl } from '@/config'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
-import { StyledBox, StyledKeyboardIcon, StyledTypography } from '@/app/detail/ui/styledComponent'
+import {
+  StyledBox,
+  StyledKeyboardIcon,
+  StyledTiptapDescriptionWrapper,
+  StyledTypography,
+} from '@/app/detail/ui/styledComponent'
 import Link from 'next/link'
 import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
@@ -34,6 +39,7 @@ import { ActivityType } from '@prisma/client'
 import { CreateComment } from '@/types/dto/comment.dto'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { Token, TokenSchema } from '@/types/common'
+import EscapeHandler from '@/utils/escapeHandler'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
@@ -45,7 +51,17 @@ async function getOneTask(token: string, taskId: string): Promise<TaskResponse> 
   return data.task
 }
 
-async function getAssigneeList(token: string): Promise<IAssignee> {
+async function getAssigneeList(token: string, userType: UserType): Promise<IAssignee> {
+  if (userType === UserType.CLIENT_USER) {
+    const res = await fetch(`${apiUrl}/api/users/client?token=${token}`, {
+      next: { tags: ['getAssigneeList'] },
+    })
+
+    const data = await res.json()
+
+    return data.clients
+  }
+
   const res = await fetch(`${apiUrl}/api/users?token=${token}`, {
     next: { tags: ['getAssigneeList'] },
   })
@@ -89,7 +105,7 @@ export default async function TaskDetailPage({
 
   const [task, assignee, attachments, activities, tokenPayload] = await Promise.all([
     getOneTask(token, task_id),
-    addTypeToAssignee(await getAssigneeList(token)),
+    addTypeToAssignee(await getAssigneeList(token, params.user_type)),
     getAttachments(token, task_id),
     getActivities(token, task_id),
     copilotClient.getTokenPayload(),
@@ -105,6 +121,7 @@ export default async function TaskDetailPage({
 
   return (
     <ClientSideStateUpdate assignee={assignee} tokenPayload={tokenPayload} assigneeSuggestions={AssigneeSuggestions}>
+      <EscapeHandler />
       <Stack direction="row">
         <ToggleController>
           <StyledBox>
@@ -124,7 +141,7 @@ export default async function TaskDetailPage({
               </Stack>
             </AppMargin>
           </StyledBox>
-          <StyledBox>
+          <StyledTiptapDescriptionWrapper>
             <AppMargin size={SizeofAppMargin.LARGE} py="30px">
               <TaskEditor
                 attachment={attachments}
@@ -157,50 +174,52 @@ export default async function TaskDetailPage({
                 userType={params.user_type}
               />
             </AppMargin>
-          </StyledBox>
-          <AppMargin size={SizeofAppMargin.LARGE} py="18.5px">
-            <Stack direction="column" alignItems="left" p="10px 5px" rowGap={5}>
-              <Typography variant="xl">Activity</Typography>
-              <Stack direction="column" alignItems="left" p="10px 5px" rowGap={4}>
-                {activities?.map((item: LogResponse, index: number) => {
-                  return (
-                    <Box
-                      sx={{
-                        height: 'auto',
-                        display: 'block',
-                      }}
-                      key={item.id}
-                    >
-                      {item.type == ActivityType.COMMENT_ADDED ? (
-                        <Comments
-                          comment={item}
-                          createComment={async (postCommentPayload: CreateComment) => {
-                            'use server'
-                            await postComment(token, postCommentPayload)
-                          }}
-                          deleteComment={async (id: string) => {
-                            'use server'
-                            await deleteComment(token, id)
-                          }}
-                          task_id={task_id}
-                        />
-                      ) : (
-                        <ActivityLog log={item} />
-                      )}
-                    </Box>
-                  )
-                })}
+          </StyledTiptapDescriptionWrapper>
+          {advancedFeatureFlag && (
+            <AppMargin size={SizeofAppMargin.LARGE} py="18.5px">
+              <Stack direction="column" alignItems="left" p="10px 5px" rowGap={5}>
+                <Typography variant="xl">Activity</Typography>
+                <Stack direction="column" alignItems="left" p="10px 5px" rowGap={4}>
+                  {activities?.map((item: LogResponse, index: number) => {
+                    return (
+                      <Box
+                        sx={{
+                          height: 'auto',
+                          display: 'block',
+                        }}
+                        key={item.id}
+                      >
+                        {item.type == ActivityType.COMMENT_ADDED ? (
+                          <Comments
+                            comment={item}
+                            createComment={async (postCommentPayload: CreateComment) => {
+                              'use server'
+                              await postComment(token, postCommentPayload)
+                            }}
+                            deleteComment={async (id: string) => {
+                              'use server'
+                              await deleteComment(token, id)
+                            }}
+                            task_id={task_id}
+                          />
+                        ) : (
+                          <ActivityLog log={item} />
+                        )}
+                      </Box>
+                    )
+                  })}
 
-                <CommentInput
-                  createComment={async (postCommentPayload: CreateComment) => {
-                    'use server'
-                    await postComment(token, postCommentPayload)
-                  }}
-                  task_id={task_id}
-                />
+                  <CommentInput
+                    createComment={async (postCommentPayload: CreateComment) => {
+                      'use server'
+                      await postComment(token, postCommentPayload)
+                    }}
+                    task_id={task_id}
+                  />
+                </Stack>
               </Stack>
-            </Stack>
-          </AppMargin>
+            </AppMargin>
+          )}
         </ToggleController>
         <Box>
           <Sidebar

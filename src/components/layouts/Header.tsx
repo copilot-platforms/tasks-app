@@ -2,11 +2,12 @@
 
 import { Box, Stack, Typography } from '@mui/material'
 import { PrimaryBtn } from '../buttons/PrimaryBtn'
-import { Add } from '@mui/icons-material'
+
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import store from '@/redux/store'
 import { setShowModal } from '@/redux/features/createTaskSlice'
 import { IconBtn } from '../buttons/IconBtn'
+import { AddIcon } from '@/icons'
 
 export const Header = ({ showCreateTaskButton }: { showCreateTaskButton: boolean }) => {
   return (
@@ -26,7 +27,7 @@ export const Header = ({ showCreateTaskButton }: { showCreateTaskButton: boolean
                 }}
               >
                 <PrimaryBtn
-                  startIcon={<Add />}
+                  startIcon={<AddIcon />}
                   buttonText="New Task"
                   handleClick={() => {
                     store.dispatch(setShowModal())
@@ -38,7 +39,7 @@ export const Header = ({ showCreateTaskButton }: { showCreateTaskButton: boolean
                   handleClick={() => {
                     store.dispatch(setShowModal())
                   }}
-                  icon={<Add sx={{ color: '#fff' }} />}
+                  icon={<AddIcon sx={{ color: '#fff' }} />}
                 />
               </Box>
             </>
