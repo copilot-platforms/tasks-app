@@ -12,7 +12,6 @@ interface Prop {
   getDate: (value: string) => void
   dateValue?: IsoDate
   isButton?: boolean
-
   disabled?: boolean
 }
 
@@ -56,7 +55,7 @@ export const DatePickerComponent = ({ getDate, dateValue, disabled, isButton = f
             startIcon={<CalenderIcon2 />}
             buttonContent={
               <Typography variant="bodySm" lineHeight="20px" sx={{ color: (theme) => theme.color.gray[600] }}>
-                {value ? formatDate(value) : 'Due Date'}
+                {value ? formatDate(value) : 'Empty'}
               </Typography>
             }
           />
@@ -65,7 +64,9 @@ export const DatePickerComponent = ({ getDate, dateValue, disabled, isButton = f
             <Box>
               <CalenderIcon2 />
             </Box>
-            <Typography variant="bodyMd">{formatDate(value)}</Typography>
+            <Typography variant="bodyMd" mt="2px">
+              {value ? formatDate(value) : 'Empty'}
+            </Typography>
           </>
         )}
       </Stack>
@@ -84,6 +85,7 @@ export const DatePickerComponent = ({ getDate, dateValue, disabled, isButton = f
         ]}
       >
         <DatePicker
+          disablePast
           value={value}
           open={open}
           onClose={() => setAnchorEl(null)}

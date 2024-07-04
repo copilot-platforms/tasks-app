@@ -2,28 +2,21 @@
 
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
-import { SelectorType } from '@/components/inputs/Selector'
-import Selector from '@/components/inputs/Selector'
 import { StyledTextField } from '@/components/inputs/TextField'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { AttachmentIcon } from '@/icons'
 import store from '@/redux/store'
-import { statusIcons } from '@/utils/iconMatcher'
 import { Close } from '@mui/icons-material'
-import { Avatar, Box, Modal, Stack, Typography, styled } from '@mui/material'
-import { ReactNode } from 'react'
-import { IAssigneeCombined, TargetMethod } from '@/types/interfaces'
-import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
+import { Box, Modal, Stack, Typography, styled } from '@mui/material'
+import { TargetMethod } from '@/types/interfaces'
 import { useSelector } from 'react-redux'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
-import { WorkflowStateResponse, WorkflowStateResponseSchema } from '@/types/dto/workflowStates.dto'
 import {
   clearTemplateFields,
   selectCreateTemplate,
   setCreateTemplateFields,
   setShowTemplateModal,
 } from '@/redux/features/templateSlice'
-import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 
 export const TemplateForm = ({ handleCreate }: { handleCreate: () => void }) => {
   const { workflowStates, assignee } = useSelector(selectTaskBoard)

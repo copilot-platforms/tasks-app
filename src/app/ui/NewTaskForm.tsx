@@ -13,8 +13,7 @@ import {
   setShowModal,
 } from '@/redux/features/createTaskSlice'
 import store from '@/redux/store'
-import { Close } from '@mui/icons-material'
-import { Avatar, Box, Stack, Typography, styled } from '@mui/material'
+import { Box, Stack, Typography, styled } from '@mui/material'
 import { useEffect } from 'react'
 import { FilterOptions, IAssigneeCombined, ISignedUrlUpload, ITemplate } from '@/types/interfaces'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
@@ -33,12 +32,12 @@ import { generateRandomString } from '@/utils/generateRandomString'
 import { AttachmentCard } from '@/components/cards/AttachmentCard'
 import { bulkRemoveAttachments } from '@/utils/bulkRemoveAttachments'
 import { advancedFeatureFlag } from '@/config'
-import { getAssigneeName } from '@/utils/getAssigneeName'
 import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
 import { truncateText } from '@/utils/truncateText'
 import { TruncateMaxNumber } from '@/types/constants'
 import { Tapwrite } from 'tapwrite'
 import { DatePickerComponent } from '@/components/inputs/DatePickerComponent'
+import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 
 const supabaseActions = new SupabaseActions()
 
@@ -193,14 +192,7 @@ export const NewTaskForm = ({
                 )
                 store.dispatch(setCreateTaskFields({ targetField: 'assigneeId', value: newValue?.id }))
               }}
-              startIcon={
-                <Avatar
-                  alt={getAssigneeName(assigneeValue)}
-                  src={assigneeValue?.iconImageUrl || assigneeValue?.avatarImageUrl || 'user'}
-                  sx={{ width: '20px', height: '20px' }}
-                  variant={assigneeValue?.type === 'companies' ? 'rounded' : 'circular'}
-                />
-              }
+              startIcon={<CopilotAvatar currentAssignee={assigneeValue} />}
               options={assignee}
               value={assigneeValue}
               extraOption={NoAssigneeExtraOptions}

@@ -1,5 +1,6 @@
 import { Avatar, Box, Stack, Typography } from '@mui/material'
 import React, { HTMLAttributes, MouseEvent } from 'react'
+import { CopilotAvatar } from '../atoms/CopilotAvatar'
 
 interface ExtraOptionRendererAssigneeProps {
   props?: HTMLAttributes<HTMLElement>
@@ -22,7 +23,7 @@ const ExtraOptionRendererAssignee: React.FC<ExtraOptionRendererAssigneeProps> = 
       onClick={onClick}
     >
       <Stack direction="row" alignItems="center" columnGap={3}>
-        <Avatar alt="user" sx={{ width: '20px', height: '20px' }} />
+        <CopilotAvatar />
         <Typography variant="sm" fontWeight={400}>
           No assignee
         </Typography>

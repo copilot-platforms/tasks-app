@@ -21,7 +21,7 @@ export const CopilotAvatar = ({ currentAssignee, alt, width = '20px', height = '
   }
   const avatarVariant: 'circular' | 'rounded' | 'square' = currentAssignee?.type === 'companies' ? 'rounded' : 'circular'
 
-  if (currentAssignee?.givenName === 'No assignee') {
+  if (!currentAssignee || currentAssignee?.givenName === 'No assignee') {
     return <Avatar alt="" src="user" sx={avatarSx} variant="circular" />
   }
 

@@ -70,7 +70,7 @@ export const TaskEditor = ({
   return (
     <>
       <Stack direction="row" alignItems="center" columnGap={2}>
-        <Box>{statusIcons[workflowState.type]}</Box>
+        <Box mb="1px">{statusIcons[workflowState.type]}</Box>
         <StyledTextField
           type="text"
           multiline
