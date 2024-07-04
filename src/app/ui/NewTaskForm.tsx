@@ -13,7 +13,8 @@ import {
   setShowModal,
 } from '@/redux/features/createTaskSlice'
 import store from '@/redux/store'
-import { Box, Stack, Typography, styled } from '@mui/material'
+import { Close } from '@mui/icons-material'
+import { Avatar, Box, Stack, Typography, styled } from '@mui/material'
 import { useEffect } from 'react'
 import { FilterOptions, IAssigneeCombined, ISignedUrlUpload, ITemplate } from '@/types/interfaces'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
@@ -32,12 +33,12 @@ import { generateRandomString } from '@/utils/generateRandomString'
 import { AttachmentCard } from '@/components/cards/AttachmentCard'
 import { bulkRemoveAttachments } from '@/utils/bulkRemoveAttachments'
 import { advancedFeatureFlag } from '@/config'
+import { getAssigneeName } from '@/utils/getAssigneeName'
 import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
 import { truncateText } from '@/utils/truncateText'
 import { TruncateMaxNumber } from '@/types/constants'
 import { Tapwrite } from 'tapwrite'
 import { DatePickerComponent } from '@/components/inputs/DatePickerComponent'
-import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 
 const supabaseActions = new SupabaseActions()
 
@@ -192,7 +193,14 @@ export const NewTaskForm = ({
                 )
                 store.dispatch(setCreateTaskFields({ targetField: 'assigneeId', value: newValue?.id }))
               }}
-              startIcon={<CopilotAvatar currentAssignee={assigneeValue} />}
+              startIcon={
+                <Avatar
+                  alt={getAssigneeName(assigneeValue)}
+                  src={assigneeValue?.iconImageUrl || assigneeValue?.avatarImageUrl || 'user'}
+                  sx={{ width: '20px', height: '20px' }}
+                  variant={assigneeValue?.type === 'companies' ? 'rounded' : 'circular'}
+                />
+              }
               options={assignee}
               value={assigneeValue}
               extraOption={NoAssigneeExtraOptions}
@@ -341,6 +349,6 @@ const NewTaskContainer = styled(Box)(({ theme }) => ({
   boxShadow: '0px 16px 70px 0px rgba(0, 0, 0, 0.5)',
   border: `1px solid ${theme.color.borders.border2}`,
   borderRadius: '4px',
-  width: '80%',
+  width: '95%',
   maxWidth: '650px',
 }))
