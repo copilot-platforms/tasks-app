@@ -7,6 +7,7 @@ import './globals.css'
 import ThemeRegistry from './ThemeRegistry'
 import { ProviderWrapper } from '@/redux/ProviderWrapper'
 import './tapwrite.css'
+import { InterrupCmdK } from '@/hoc/Interrupt_CmdK'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -19,9 +20,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className={inter.className}>
-        <ProviderWrapper>
-          <ThemeRegistry options={{ key: 'mui' }}>{children}</ThemeRegistry>
-        </ProviderWrapper>
+        <InterrupCmdK>
+          <ProviderWrapper>
+            <ThemeRegistry options={{ key: 'mui' }}>{children}</ThemeRegistry>
+          </ProviderWrapper>
+        </InterrupCmdK>
       </body>
     </html>
   )
