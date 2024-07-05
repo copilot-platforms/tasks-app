@@ -96,7 +96,7 @@ export class CopilotAPI {
     return CompaniesResponseSchema.parse(await this.copilot.listCompanies(args))
   }
 
-  async getCompanyClients(companyId: string) {
+  async getCompanyClients(companyId: string): Promise<ClientResponse[]> {
     return (await this.getClients({ limit: 10000, companyId })).data || []
   }
 
