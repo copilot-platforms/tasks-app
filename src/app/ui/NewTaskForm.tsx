@@ -219,22 +219,38 @@ export const NewTaskForm = ({
               }}
               selectorType={SelectorType.ASSIGNEE_SELECTOR}
               buttonContent={
-                <Typography variant="bodySm" lineHeight="20px" sx={{ color: (theme) => theme.color.gray[600] }}>
-                  {truncateText(
-                    (assigneeValue as IAssigneeCombined)?.name ||
-                      `${(assigneeValue as IAssigneeCombined)?.givenName ?? ''} ${(assigneeValue as IAssigneeCombined)?.familyName ?? ''}`.trim(),
-                    TruncateMaxNumber.SELECTOR,
-                  )}
+                <Typography
+                  variant="bodySm"
+                  lineHeight="20px"
+                  sx={{
+                    color: (theme) => theme.color.gray[600],
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    maxWidth: { xs: '102px', sm: '100px' },
+                  }}
+                >
+                  {(assigneeValue as IAssigneeCombined)?.name ||
+                    `${(assigneeValue as IAssigneeCombined)?.givenName ?? ''} ${(assigneeValue as IAssigneeCombined)?.familyName ?? ''}`.trim()}
                 </Typography>
               }
             />
           </Stack>
-          <Box sx={{ padding: 0.1 }}>
-            <DatePickerComponent
-              getDate={(value) => store.dispatch(setCreateTaskFields({ targetField: 'dueDate', value: value }))}
-              isButton={true}
-            />
-          </Box>
+          <Stack alignSelf="flex-start" sx={{ padding: { xs: '2px', sm: '0px' } }}>
+            <Box
+              sx={{
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                maxWidth: { xs: '102px', sm: 'none' },
+              }}
+            >
+              <DatePickerComponent
+                getDate={(value) => store.dispatch(setCreateTaskFields({ targetField: 'dueDate', value: value }))}
+                isButton={true}
+              />
+            </Box>
+          </Stack>
         </Stack>
       </AppMargin>
       <NewTaskFooter handleCreate={handleCreate} getSignedUrlUpload={getSignedUrlUpload} />
