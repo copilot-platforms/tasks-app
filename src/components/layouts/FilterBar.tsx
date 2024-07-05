@@ -114,15 +114,15 @@ export const FilterBar = ({
         }}
       >
         <AppMargin size={SizeofAppMargin.LARGE} py="14px">
-          <Stack direction={'row'} justifyContent={'space-between'}>
-            <Stack direction={'row'} columnGap={3}>
+          <Stack direction={{ sm: 'column', md: 'row' }} justifyContent={'space-between'}>
+            <Stack direction={{ sm: 'column', md: 'row' }} columnGap={3}>
               <Box>
                 <FilterButtonGroup filterButtons={filterButtons} activeButtonIndex={ButtonIndex} />
               </Box>
               {filterOptions[FilterOptions.TYPE] !== tokenPayload?.internalUserId && (
                 <Box
                   sx={{
-                    display: { xs: 'none', sm: 'block' },
+                    display: { xs: 'none', sm: 'none', md: 'block' },
                   }}
                 >
                   <Selector
@@ -166,7 +166,7 @@ export const FilterBar = ({
             <Stack direction="row" alignItems="center" columnGap={3}>
               <Box
                 sx={{
-                  display: { xs: 'none', md: 'block' },
+                  display: { xs: 'none', sm: 'none', md: 'block' },
                 }}
               >
                 <SearchBar
@@ -179,7 +179,7 @@ export const FilterBar = ({
 
               <Box
                 sx={{
-                  display: { xs: 'none', sm: 'block' },
+                  display: { xs: 'none', sm: 'none', md: 'block' },
                 }}
               >
                 <ViewModeSelector
@@ -199,7 +199,7 @@ export const FilterBar = ({
           direction="row"
           justifyContent="space-between"
           alignItems="center"
-          sx={{ display: { xs: 'flex', sm: 'none' }, mb: { xs: '12px', md: '0px' } }}
+          sx={{ display: { sm: 'flex', md: 'none' }, mb: { xs: '12px', md: '0px' } }}
         >
           <Selector
             getSelectedValue={(_newValue) => {

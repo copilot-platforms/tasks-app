@@ -23,6 +23,7 @@ const FilterButtonGroup = ({
         borderRadius: 1,
         columnGap: { xs: '0px', sm: '6px' },
         padding: { xs: '2px 0px', md: '2px 4px' },
+        justifyContent: 'space-between',
       })}
       direction={'row'}
     >
