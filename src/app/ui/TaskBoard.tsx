@@ -64,7 +64,6 @@ export const TaskBoard = ({
     }
     return filteredTaskCount.toString() + '/' + taskCount.toString()
   }
-
   return (
     <>
       {view === View.BOARD_VIEW && (
