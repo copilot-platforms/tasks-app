@@ -1,5 +1,5 @@
-import { InputAdornment, styled } from '@mui/material'
-import { useState } from 'react'
+import { InputAdornment, SxProps, Theme, styled } from '@mui/material'
+import { useRef, useState } from 'react'
 import { StyledTextField } from '@/components/inputs/TextField'
 import { SearchIcon } from '@/icons'
 
@@ -11,12 +11,29 @@ interface ISearchBar {
 const SearchBar = ({ value, getSearchKeyword }: ISearchBar) => {
   const [focused, setFocused] = useState(false)
 
+  const inputRef = useRef<HTMLInputElement | null>(null)
+
+  const handleIconClick = () => {
+    setFocused(true)
+    if (inputRef.current) {
+      inputRef.current.focus()
+    }
+  }
+
   return (
-    <StyledTextInput
+    <StyledTextField
+      inputRef={inputRef}
       value={value}
       focused={focused}
       variant="outlined"
       placeholder={focused ? 'Search...' : 'Search'}
+      sx={{
+        width: { md: focused ? '220px' : '90px', sd: focused ? '90px' : '30px', xs: focused ? '100px' : '30px' },
+        transition: 'width 0.5s',
+        '& .MuiOutlinedInput-input': {
+          cursor: 'pointer',
+        },
+      }}
       size="small"
       InputProps={{
         startAdornment: (
@@ -26,7 +43,7 @@ const SearchBar = ({ value, getSearchKeyword }: ISearchBar) => {
               cursor: 'default',
             }}
           >
-            <SearchIcon />
+            <SearchIcon onClick={handleIconClick} />
           </InputAdornment>
         ),
         inputProps: {
@@ -45,13 +62,3 @@ const SearchBar = ({ value, getSearchKeyword }: ISearchBar) => {
 }
 
 export default SearchBar
-
-const StyledTextInput = styled(StyledTextField, {
-  shouldForwardProp: (prop) => prop !== 'focused',
-})<{ focused: boolean }>(({ focused }) => ({
-  width: focused ? '220px' : '90px',
-  transition: 'width 0.5s',
-  '& .MuiOutlinedInput-input': {
-    cursor: 'pointer',
-  },
-}))

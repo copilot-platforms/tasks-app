@@ -114,15 +114,15 @@ export const FilterBar = ({
         }}
       >
         <AppMargin size={SizeofAppMargin.LARGE} py="14px">
-          <Stack direction={{ sm: 'column', md: 'row' }} justifyContent={'space-between'}>
-            <Stack direction={{ sm: 'column', md: 'row' }} columnGap={3}>
+          <Stack direction={'row'} justifyContent={'space-between'}>
+            <Stack direction={'row'} columnGap={3}>
               <Box>
                 <FilterButtonGroup filterButtons={filterButtons} activeButtonIndex={ButtonIndex} />
               </Box>
               {filterOptions[FilterOptions.TYPE] !== tokenPayload?.internalUserId && (
                 <Box
                   sx={{
-                    display: { xs: 'none', sm: 'none', md: 'block' },
+                    display: { xs: 'none', sm: 'none', sd: 'block' },
                   }}
                 >
                   <Selector
@@ -166,7 +166,7 @@ export const FilterBar = ({
             <Stack direction="row" alignItems="center" columnGap={3}>
               <Box
                 sx={{
-                  display: { xs: 'none', sm: 'none', md: 'block' },
+                  display: { xs: 'none', sd: 'block' },
                 }}
               >
                 <SearchBar
@@ -179,7 +179,7 @@ export const FilterBar = ({
 
               <Box
                 sx={{
-                  display: { xs: 'none', sm: 'none', md: 'block' },
+                  display: { xs: 'none', sm: 'none', sd: 'block' },
                 }}
               >
                 <ViewModeSelector
@@ -199,7 +199,7 @@ export const FilterBar = ({
           direction="row"
           justifyContent="space-between"
           alignItems="center"
-          sx={{ display: { sm: 'flex', md: 'none' }, mb: { xs: '12px', md: '0px' } }}
+          sx={{ display: { sm: 'flex', sd: 'none' }, mb: { xs: '12px', md: '0px' } }}
         >
           <Selector
             getSelectedValue={(_newValue) => {
@@ -233,14 +233,28 @@ export const FilterBar = ({
               />
             }
           />
+          <Stack direction={'row'} columnGap={2}>
+            <Box
+              sx={{
+                display: { xs: 'block', sd: 'none', md: 'none' },
+              }}
+            >
+              <SearchBar
+                value={filterOptions.keyword}
+                getSearchKeyword={(keyword) => {
+                  handleFilterOptionsChange(FilterOptions.KEYWORD, keyword)
+                }}
+              />
+            </Box>
 
-          <ViewModeSelector
-            selectedMode={view}
-            handleModeChange={(mode) => {
-              store.dispatch(setViewSettings({ viewMode: mode, filterOptions: filterOptions }))
-              updateViewModeSetting({ viewMode: mode, filterOptions: filterOptions })
-            }}
-          />
+            <ViewModeSelector
+              selectedMode={view}
+              handleModeChange={(mode) => {
+                store.dispatch(setViewSettings({ viewMode: mode, filterOptions: filterOptions }))
+                updateViewModeSetting({ viewMode: mode, filterOptions: filterOptions })
+              }}
+            />
+          </Stack>
         </Stack>
       </AppMargin>
     </Box>
