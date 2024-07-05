@@ -52,10 +52,10 @@ export const DatePickerComponent = ({ getDate, dateValue, disabled, isButton = f
       >
         {isButton ? (
           <SecondaryBtn
-            startIcon={<CalenderIcon2 />}
+            startIcon={isButton ? <CalenderIcon /> : <CalenderIcon2 />}
             buttonContent={
               <Typography variant="bodySm" lineHeight="20px" sx={{ color: (theme) => theme.color.gray[600] }}>
-                {value ? formatDate(value) : 'Due date'}
+                {value ? formatDate(value) : 'Due Date'}
               </Typography>
             }
           />

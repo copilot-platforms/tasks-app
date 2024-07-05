@@ -4,7 +4,7 @@ import { SelectorType } from '@/components/inputs/Selector'
 import Selector from '@/components/inputs/Selector'
 import { StyledTextField } from '@/components/inputs/TextField'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
-import { ArrowLinkIcon, CloseIcon, TemplateIconSm } from '@/icons'
+import { ArrowLinkIcon, AssigneePlaceholder, CloseIcon, TemplateIconSm } from '@/icons'
 import {
   clearCreateTaskFields,
   removeOneAttachment,
@@ -59,7 +59,7 @@ export const NewTaskForm = ({
     item:
       assignee.find(
         (item) => item.id == filterOptions[FilterOptions.ASSIGNEE] || item.id == filterOptions[FilterOptions.TYPE],
-      ) ?? NoAssignee,
+      ) ?? null,
     type: SelectorType.ASSIGNEE_SELECTOR,
   })
   const { renderingItem: _templateValue, updateRenderingItem: updateTemplateValue } = useHandleSelectorComponent({
@@ -192,7 +192,7 @@ export const NewTaskForm = ({
                 )
                 store.dispatch(setCreateTaskFields({ targetField: 'assigneeId', value: newValue?.id }))
               }}
-              startIcon={<CopilotAvatar currentAssignee={assigneeValue} />}
+              startIcon={assigneeValue ? <CopilotAvatar currentAssignee={assigneeValue} /> : <AssigneePlaceholder />}
               options={assignee}
               value={assigneeValue}
               extraOption={NoAssigneeExtraOptions}
@@ -211,12 +211,20 @@ export const NewTaskForm = ({
               }}
               selectorType={SelectorType.ASSIGNEE_SELECTOR}
               buttonContent={
-                <Typography variant="bodySm" lineHeight="20px" sx={{ color: (theme) => theme.color.gray[600] }}>
-                  {truncateText(
-                    (assigneeValue as IAssigneeCombined)?.name ||
-                      `${(assigneeValue as IAssigneeCombined)?.givenName ?? ''} ${(assigneeValue as IAssigneeCombined)?.familyName ?? ''}`.trim(),
-                    TruncateMaxNumber.SELECTOR,
-                  )}
+                <Typography
+                  variant="bodySm"
+                  lineHeight="20px"
+                  sx={{
+                    color: (theme) => theme.color.gray[600],
+                  }}
+                >
+                  {assigneeValue
+                    ? truncateText(
+                        (assigneeValue as IAssigneeCombined)?.name ||
+                          `${(assigneeValue as IAssigneeCombined)?.givenName ?? ''} ${(assigneeValue as IAssigneeCombined)?.familyName ?? ''}`.trim(),
+                        TruncateMaxNumber.SELECTOR,
+                      )
+                    : 'Assignee'}
                 </Typography>
               }
             />
