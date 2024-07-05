@@ -64,7 +64,7 @@ export const ListViewTaskCard = ({
                 >
                   {task.label}
                 </Typography>
-                <Typography variant="sm" sx={{ minWidth: '135px', lineHeight: '21px' }}>
+                <Typography variant="sm" sx={{ lineHeight: '21px' }}>
                   {task?.title}
                 </Typography>
               </Stack>
@@ -72,7 +72,7 @@ export const ListViewTaskCard = ({
                 <Box
                   sx={{
                     display: 'flex',
-                    minWidth: '85px',
+                    minWidth: '80px',
                     gap: '33px',
                     flexDirection: 'row',
                     alignItems: 'flex-end',
@@ -81,7 +81,7 @@ export const ListViewTaskCard = ({
                 >
                   {task.dueDate && <DueDateLayout date={task.dueDate} />}
                 </Box>
-                <Box>
+                <Box sx={{ maxWidth: { xs: '20px', sm: '130px' } }}>
                   <Selector
                     placeholder="Change assignee"
                     disableOutline
