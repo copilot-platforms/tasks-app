@@ -101,7 +101,6 @@ export default function Selector({
       window.removeEventListener('keydown', closePopper)
     }
   }, [])
-
   return (
     <Stack direction="column">
       <Box onClick={handleClick} aria-describedby={id}>
@@ -112,7 +111,7 @@ export default function Selector({
             columnGap="4px"
             justifyContent="flex-start"
             sx={{
-              width: buttonWidth ?? '100px',
+              width: { sm: responsiveNoHide ? buttonWidth ?? '100px' : '20px', md: buttonWidth ?? '100px' },
               justifyContent: { xs: 'flex-start', sm: 'flex-start' },
               cursor: disabled ? 'auto' : 'pointer',
               borderRadius: '4px',

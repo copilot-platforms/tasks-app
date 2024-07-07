@@ -81,7 +81,7 @@ export const ListViewTaskCard = ({
                 >
                   {task.dueDate && <DueDateLayout date={task.dueDate} />}
                 </Box>
-                <Box sx={{ maxWidth: { xs: '20px', sm: '130px' } }}>
+                <Box sx={{}}>
                   <Selector
                     placeholder="Change assignee"
                     disableOutline
