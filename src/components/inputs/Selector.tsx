@@ -343,6 +343,11 @@ const SelectorButton = ({
         },
         padding: padding ? padding : { xs: '1px 9px', md: '4px 16px' },
         cursor: disabled ? 'auto' : 'pointer',
+        '& .MuiButton-startIcon': {
+          '& .MuiAvatar-root': {
+            fontSize: '13px',
+          },
+        },
       })}
       onClick={handleClick}
       disableRipple

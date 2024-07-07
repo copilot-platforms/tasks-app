@@ -192,7 +192,13 @@ export const NewTaskForm = ({
                 )
                 store.dispatch(setCreateTaskFields({ targetField: 'assigneeId', value: newValue?.id }))
               }}
-              startIcon={assigneeValue ? <CopilotAvatar currentAssignee={assigneeValue} /> : <AssigneePlaceholder />}
+              startIcon={
+                assigneeValue ? (
+                  <CopilotAvatar currentAssignee={assigneeValue} width="12px" height="12px" isSmall={true} />
+                ) : (
+                  <AssigneePlaceholder />
+                )
+              }
               options={assignee}
               value={assigneeValue}
               extraOption={NoAssigneeExtraOptions}
@@ -216,14 +222,15 @@ export const NewTaskForm = ({
                   lineHeight="20px"
                   sx={{
                     color: (theme) => theme.color.gray[600],
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    maxWidth: { xs: '60px', sm: '100px' },
                   }}
                 >
                   {assigneeValue
-                    ? truncateText(
-                        (assigneeValue as IAssigneeCombined)?.name ||
-                          `${(assigneeValue as IAssigneeCombined)?.givenName ?? ''} ${(assigneeValue as IAssigneeCombined)?.familyName ?? ''}`.trim(),
-                        TruncateMaxNumber.SELECTOR,
-                      )
+                    ? (assigneeValue as IAssigneeCombined)?.name ||
+                      `${(assigneeValue as IAssigneeCombined)?.givenName ?? ''} ${(assigneeValue as IAssigneeCombined)?.familyName ?? ''}`.trim()
                     : 'Assignee'}
                 </Typography>
               }
