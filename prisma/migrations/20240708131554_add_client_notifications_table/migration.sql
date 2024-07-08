@@ -14,13 +14,13 @@ CREATE TABLE "ClientNotifications" (
 CREATE INDEX "IX_ClientNotifications_notificationId" ON "ClientNotifications"("notificationId");
 
 -- CreateIndex
-CREATE INDEX "IX_ClientNotifications_clientId_taskId" ON "ClientNotifications"("clientId", "taskId");
+CREATE INDEX "IX_ClientNotifications_clientId_taskId_deletedAt" ON "ClientNotifications"("clientId", "taskId", "deletedAt");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "ClientNotifications_notificationId_key" ON "ClientNotifications"("notificationId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "ClientNotifications_clientId_taskId_key" ON "ClientNotifications"("clientId", "taskId");
+CREATE UNIQUE INDEX "ClientNotifications_clientId_taskId_deletedAt_key" ON "ClientNotifications"("clientId", "taskId", "deletedAt");
 
 -- AddForeignKey
 ALTER TABLE "ClientNotifications" ADD CONSTRAINT "ClientNotifications_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "Tasks"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

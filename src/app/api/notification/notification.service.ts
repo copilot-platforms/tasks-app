@@ -91,6 +91,7 @@ export class NotificationService extends BaseService {
       if (!relatedNotification)
         throw new APIError(httpStatus.INTERNAL_SERVER_ERROR, `Failed to delete client notification for task id ${task.id}`)
 
+      console.log('notif', relatedNotification.notificationId)
       await copilot.markNotificationAsRead(relatedNotification.notificationId)
       await this.db.clientNotification.delete({ where: { id: relatedNotification?.id } })
     } catch (e: unknown) {

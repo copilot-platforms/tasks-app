@@ -115,9 +115,9 @@ model ClientNotification {
   deletedAt      DateTime?
 
   @@unique([notificationId], name: "UQ_ClientNotifications_notificationId")
-  @@unique([clientId, taskId], name: "UQ_ClientNotifications_clientId_taskId")
+  @@unique([clientId, taskId, deletedAt], name: "UQ_ClientNotifications_clientId_taskId_deletedAt")
   @@index([notificationId], name: "IX_ClientNotifications_notificationId")
-  @@index([clientId, taskId], name: "IX_ClientNotifications_clientId_taskId")
+  @@index([clientId, taskId, deletedAt], name: "IX_ClientNotifications_clientId_taskId_deletedAt")
   @@map("ClientNotifications")
 }
 

@@ -216,19 +216,23 @@ export class TasksService extends BaseService {
       }
     }
 
+    const notificationService = new NotificationService(this.user)
+    // If task is reassigned from a client, mark prev client notification as read
+    if (prevTask?.assigneeId != updatedTask.assigneeId && prevTask.assigneeType === AssigneeType.client) {
+      console.log('prev', prevTask)
+      console.log('updated', updatedTask)
+      await notificationService.markClientNotificationAsRead(prevTask)
+    }
+
     // If task goes from unassigned to assigned, or assigneeId does not match
     if (prevTask?.assigneeId != updatedTask.assigneeId && updatedTask.assigneeId) {
-      const notificationService = new NotificationService(this.user)
       const notification = await notificationService.create(NotificationTaskActions.Assigned, updatedTask)
       // If task has been reassigned to a client and it is not in a completed state yet,
       // add it to the ClientNotifications table as well
       if (!notification) {
         console.error('Failed to trigger notification for task', prevTask)
       }
-      // If old changed assignee was a client too, mark his task notification as read
-      if (prevTask.assigneeType === AssigneeType.client) {
-        await notificationService.markClientNotificationAsRead(prevTask)
-      }
+
       // Add ClientNotification to new client
       if (
         updatedTask.assigneeType === AssigneeType.client &&
