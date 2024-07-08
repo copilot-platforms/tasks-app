@@ -32,7 +32,7 @@ export const CopilotAvatar = ({
   }
   const avatarVariant: 'circular' | 'rounded' | 'square' = currentAssignee?.type === 'companies' ? 'rounded' : 'circular'
 
-  if (!currentAssignee || currentAssignee?.name || currentAssignee?.givenName === 'No assignee') {
+  if (!currentAssignee || (currentAssignee?.name || currentAssignee?.givenName) === 'No assignee') {
     return isSmall ? <NoAssigneeAvatarSmall /> : <NoAssigneeAvatar />
   }
   if (currentAssignee?.iconImageUrl || currentAssignee?.avatarImageUrl) {

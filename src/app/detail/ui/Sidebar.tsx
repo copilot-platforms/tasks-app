@@ -113,7 +113,7 @@ export const Sidebar = ({
               updateAssignee(assigneeType, assignee?.id)
             }}
             startIcon={
-              (assigneeValue as IAssigneeCombined)?.name ? (
+              (assigneeValue as IAssigneeCombined)?.name == 'No assignee' ? (
                 <AssigneePlaceholder />
               ) : (
                 <CopilotAvatar currentAssignee={assigneeValue} height="16px" width="16px" fontSize="11px" />
