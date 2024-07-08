@@ -84,7 +84,7 @@ export const Sidebar = ({
       </Stack>
       <AppMargin size={SizeofAppMargin.SMALL}>
         <Stack direction="row" alignItems="center" m="20px 0px" columnGap="10px">
-          <StyledText variant="md" width="80px">
+          <StyledText variant="md" minWidth="80px">
             Status
           </StyledText>
           <WorkflowStateSelector
@@ -100,7 +100,7 @@ export const Sidebar = ({
           />
         </Stack>
         <Stack direction="row" m="20px 0px" alignItems="center" columnGap="10px">
-          <StyledText variant="md" width="80px">
+          <StyledText variant="md" minWidth="80px">
             Assignee
           </StyledText>
           <Selector
@@ -141,7 +141,7 @@ export const Sidebar = ({
           />
         </Stack>
         <Stack direction="row" m="20px 0px" alignItems="center" columnGap="10px">
-          <StyledText variant="md" width="80px">
+          <StyledText variant="md" minWidth="80px">
             Due Date
           </StyledText>
           <Box>
