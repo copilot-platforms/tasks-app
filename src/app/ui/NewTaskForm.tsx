@@ -219,12 +219,12 @@ export const NewTaskForm = ({
               buttonContent={
                 <Typography
                   variant="bodySm"
-                  lineHeight="20px"
                   sx={{
                     color: (theme) => theme.color.gray[600],
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
+                    fontSize: '12px',
                     maxWidth: { xs: '60px', sm: '100px' },
                   }}
                 >
