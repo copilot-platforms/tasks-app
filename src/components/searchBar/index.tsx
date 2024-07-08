@@ -47,11 +47,6 @@ const SearchBar = ({ value, getSearchKeyword }: ISearchBar) => {
             <SearchIcon onClick={handleIconClick} />
           </InputAdornment>
         ),
-        inputProps: {
-          style: {
-            marginBottom: '2px',
-          },
-        },
       }}
       autoComplete="off"
       onBlur={() => setFocused(false)}

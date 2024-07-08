@@ -322,8 +322,9 @@ const SelectorButton = ({
         '.MuiTouchRipple-child': {
           bgcolor: theme.color.borders.border,
         },
-        padding: padding ? padding : { xs: '1px 9px', md: '4px 16px' },
+        padding: padding ? padding : { xs: '2px 9px', md: '4px 16px' },
         cursor: disabled ? 'auto' : 'pointer',
+        height: '32px',
       })}
       onClick={handleClick}
       disableRipple

@@ -34,9 +34,9 @@ export const StyledTextField = styled(TextField, {
     input: {
       '&::placeholder': {
         opacity: 1,
-        fontSize: '13px',
+        fontSize: '12px',
       },
-      fontSize: '14px',
+      fontSize: '12px',
     },
   }),
 )
