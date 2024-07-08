@@ -2,7 +2,7 @@ import { Avatar, Box, Button, Popper, Stack, Typography } from '@mui/material'
 import { StyledAutocomplete } from '@/components/inputs/Autocomplete'
 import { statusIcons } from '@/utils/iconMatcher'
 import { useFocusableInput } from '@/hooks/useFocusableInput'
-import { HTMLAttributes, ReactNode, useEffect, useState } from 'react'
+import { HTMLAttributes, ReactNode, useCallback, useEffect, useState } from 'react'
 import { StyledTextField } from './TextField'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { IAssigneeCombined, IExtraOption, ITemplate, UserType, UserTypesName } from '@/types/interfaces'
@@ -102,6 +102,15 @@ export default function Selector({
     }
   }, [])
 
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLDivElement>) => {
+      if (event.key === 'Escape') {
+        setAnchorEl(null)
+      }
+    },
+    [setAnchorEl],
+  )
+
   return (
     <Stack direction="column">
       <Box onClick={handleClick} aria-describedby={id}>
@@ -162,6 +171,7 @@ export default function Selector({
             setAnchorEl(null)
           }}
           openOnFocus
+          onKeyDown={handleKeyDown}
           autoHighlight
           options={extraOption ? [extraOption, ...options] : options}
           value={value}
