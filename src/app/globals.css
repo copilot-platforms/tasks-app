@@ -7,3 +7,16 @@
 .tapwrite-details-page {
   min-height: 75vh;
 }
+
+
+::-webkit-scrollbar {
+    width: 15px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #C9CBCD;
+  background-clip: content-box;
+  border: 5px solid transparent;
+  border-radius: 8px;
+}
+
