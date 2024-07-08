@@ -15,6 +15,7 @@ import { WorkflowStateUpdatedSchema } from '@api/activity-logs/schemas/WorkflowS
 import { NotificationService } from '@api/notification/notification.service'
 import { LabelMappingService } from '@api/label-mapping/label-mapping.service'
 import { z } from 'zod'
+import { NotificationCreatedResponseSchema } from '@/types/common'
 
 type FilterByAssigneeId = {
   assigneeId: string
@@ -113,7 +114,15 @@ export class TasksService extends BaseService {
     // If new task is assigned to someone (IU / Client), send proper notification + email to them
     if (newTask.assigneeId) {
       const notificationService = new NotificationService(this.user)
-      await notificationService.create(NotificationTaskActions.Assigned, newTask)
+      const notification = await notificationService.create(NotificationTaskActions.Assigned, newTask)
+      // Create a new entry in ClientNotifications table so we can mark as read on
+      // behalf of client later
+      if (!notification) {
+        console.error('Notification failed to trigger for task:', newTask)
+      }
+      if (newTask.assigneeType === AssigneeType.client) {
+        await notificationService.addToClientNotifications(newTask, NotificationCreatedResponseSchema.parse(notification))
+      }
     }
 
     return newTask
@@ -210,7 +219,21 @@ export class TasksService extends BaseService {
     // If task goes from unassigned to assigned, or assigneeId does not match
     if (prevTask?.assigneeId != updatedTask.assigneeId && updatedTask.assigneeId) {
       const notificationService = new NotificationService(this.user)
-      await notificationService.create(NotificationTaskActions.Assigned, updatedTask)
+      const notification = await notificationService.create(NotificationTaskActions.Assigned, updatedTask)
+      // If task has been reassigned to a client and it is not in a completed state yet,
+      // add it to the ClientNotifications table as well
+      if (!notification) {
+        console.error('Failed to trigger notification for task', prevTask)
+      }
+      if (
+        updatedTask.assigneeType === AssigneeType.client &&
+        updatedTask.workflowState.type !== NotificationTaskActions.Completed
+      ) {
+        await notificationService.addToClientNotifications(
+          updatedTask,
+          NotificationCreatedResponseSchema.parse(notification),
+        )
+      }
     }
     // If task was previous in another state, and is moved to a 'completed' type WorkflowState
     if (
@@ -228,6 +251,13 @@ export class TasksService extends BaseService {
   async deleteOneTask(id: string) {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Delete, Resource.Tasks)
+
+    // Try to delete existing client notification related to this task if exists
+    const task = await this.db.task.findFirst({ where: { id } })
+    if (task?.assigneeType === AssigneeType.client) {
+      const notificationsService = new NotificationService(this.user)
+      await notificationsService.markClientNotificationAsRead(task)
+    }
 
     return await this.db.task.delete({ where: { id } })
   }
@@ -265,6 +295,7 @@ export class TasksService extends BaseService {
     })
     const notificationService = new NotificationService(this.user)
     await notificationService.create(NotificationTaskActions.Completed, updatedTask)
+    await notificationService.markClientNotificationAsRead(updatedTask)
     return updatedTask
   }
 }
