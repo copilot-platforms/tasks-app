@@ -17,7 +17,7 @@ export const getInProductNotificationDetails = (
       body: `A new task was assigned to you by ${actionUser}. To see details about the task, navigate to the Tasks App below.`,
     },
     [NotificationTaskActions.AssignedToCompany]: {
-      title: 'Task was assigned to you your company',
+      title: 'Task was assigned to your company',
       body: `A new task was assigned to your company by ${actionUser}. To see details about the task, navigate to the Tasks App below.`,
     },
     [NotificationTaskActions.Completed]: {
