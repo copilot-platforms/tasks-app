@@ -2,7 +2,7 @@ import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { SecondaryBtn } from '../buttons/SecondaryBtn'
 import { statusIcons } from '@/utils/iconMatcher'
 import { Box, ClickAwayListener, Popper, Stack, Typography } from '@mui/material'
-import { ReactNode, useCallback, useEffect, useState } from 'react'
+import { ReactNode, useState } from 'react'
 
 export const WorkflowStateSelector = ({
   value,
@@ -29,15 +29,12 @@ export const WorkflowStateSelector = ({
     }
   }
 
-  const handleKeyDown = useCallback(
-    (event: React.KeyboardEvent<HTMLDivElement>) => {
-      event.stopPropagation()
-      if (event.key === 'Escape') {
-        setAnchorEl(null)
-      }
-    },
-    [setAnchorEl],
-  )
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    event.stopPropagation()
+    if (event.key === 'Escape') {
+      setAnchorEl(null)
+    }
+  }
 
   return (
     <ClickAwayListener

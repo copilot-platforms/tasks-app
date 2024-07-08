@@ -1,5 +1,5 @@
 import { InputAdornment, styled } from '@mui/material'
-import { useCallback, useRef, useState } from 'react'
+import { useState } from 'react'
 import { StyledTextField } from '@/components/inputs/TextField'
 import { SearchIcon } from '@/icons'
 
@@ -11,13 +11,13 @@ interface ISearchBar {
 const SearchBar = ({ value, getSearchKeyword }: ISearchBar) => {
   const [focused, setFocused] = useState<boolean>(false)
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Escape') {
       const inputElement = e.target as HTMLInputElement
       inputElement.blur()
       setFocused(false)
     }
-  }, [])
+  }
 
   return (
     <StyledTextInput
