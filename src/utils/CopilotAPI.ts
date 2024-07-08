@@ -81,7 +81,7 @@ export class CopilotAPI {
     return ClientResponseSchema.parse(await this.copilot.retrieveClient({ id }))
   }
 
-  async getClients(args: CopilotListArgs = {}) {
+  async getClients(args: CopilotListArgs & { companyId?: string } = {}) {
     return ClientsResponseSchema.parse(await this.copilot.listClients(args))
   }
 
@@ -96,6 +96,10 @@ export class CopilotAPI {
 
   async getCompanies(args: CopilotListArgs = {}): Promise<CompaniesResponse> {
     return CompaniesResponseSchema.parse(await this.copilot.listCompanies(args))
+  }
+
+  async getCompanyClients(companyId: string): Promise<ClientResponse[]> {
+    return (await this.getClients({ limit: 10000, companyId })).data || []
   }
 
   async getCustomFields(): Promise<CustomFieldResponse> {

@@ -16,6 +16,7 @@ import { NotificationService } from '@api/notification/notification.service'
 import { LabelMappingService } from '@api/label-mapping/label-mapping.service'
 import { z } from 'zod'
 import { NotificationCreatedResponseSchema } from '@/types/common'
+import { CopilotAPI } from '@/utils/CopilotAPI'
 
 type FilterByAssigneeId = {
   assigneeId: string
@@ -112,16 +113,27 @@ export class TasksService extends BaseService {
     }
 
     // If new task is assigned to someone (IU / Client), send proper notification + email to them
-    if (newTask.assigneeId) {
+    // But if the task was assigned to the same user that created the task, skip notifications entirely
+    if (newTask.assigneeId && newTask.assigneeId !== newTask.createdById) {
       const notificationService = new NotificationService(this.user)
-      const notification = await notificationService.create(NotificationTaskActions.Assigned, newTask)
-      // Create a new entry in ClientNotifications table so we can mark as read on
-      // behalf of client later
-      if (!notification) {
-        console.error('Notification failed to trigger for task:', newTask)
-      }
-      if (newTask.assigneeType === AssigneeType.client) {
-        await notificationService.addToClientNotifications(newTask, NotificationCreatedResponseSchema.parse(notification))
+      if (newTask.assigneeType === AssigneeType.company) {
+        const copilot = new CopilotAPI(this.user.token)
+        const { recipientIds } = await notificationService.getNotificationParties(
+          copilot,
+          newTask,
+          NotificationTaskActions.AssignedToCompany,
+        )
+        await notificationService.createBulkNotification(NotificationTaskActions.AssignedToCompany, newTask, recipientIds)
+      } else {
+        const notification = await notificationService.create(NotificationTaskActions.Assigned, newTask)
+        // Create a new entry in ClientNotifications table so we can mark as read on
+        // behalf of client later
+        if (!notification) {
+          console.error('Notification failed to trigger for task:', newTask)
+        }
+        if (newTask.assigneeType === AssigneeType.client) {
+          await notificationService.addToClientNotifications(newTask, NotificationCreatedResponseSchema.parse(notification))
+        }
       }
     }
 
