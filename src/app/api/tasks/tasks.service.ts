@@ -225,6 +225,11 @@ export class TasksService extends BaseService {
       if (!notification) {
         console.error('Failed to trigger notification for task', prevTask)
       }
+      // If old changed assignee was a client too, mark his task notification as read
+      if (prevTask.assigneeType === AssigneeType.client) {
+        await notificationService.markClientNotificationAsRead(prevTask)
+      }
+      // Add ClientNotification to new client
       if (
         updatedTask.assigneeType === AssigneeType.client &&
         updatedTask.workflowState.type !== NotificationTaskActions.Completed
@@ -235,7 +240,7 @@ export class TasksService extends BaseService {
         )
       }
     }
-    // If task was previous in another state, and is moved to a 'completed' type WorkflowState
+    // If task was previous in another state, and is moved to a 'completed' type WorkflowState by IU
     if (
       prevTask?.workflowState?.type !== 'completed' &&
       updatedTask?.workflowState?.type === 'completed' &&
@@ -243,6 +248,13 @@ export class TasksService extends BaseService {
     ) {
       const notificationService = new NotificationService(this.user)
       await notificationService.create(NotificationTaskActions.Completed, updatedTask)
+      if (updatedTask.assigneeType === AssigneeType.client) {
+        try {
+          await notificationService.markClientNotificationAsRead(updatedTask)
+        } catch (e: unknown) {
+          console.error(`Failed to find ClientNotification for task ${updatedTask.id}`, e)
+        }
+      }
     }
 
     return updatedTask
