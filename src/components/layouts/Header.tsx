@@ -7,7 +7,7 @@ import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import store from '@/redux/store'
 import { setShowModal } from '@/redux/features/createTaskSlice'
 import { IconBtn } from '../buttons/IconBtn'
-import { AddIcon } from '@/icons'
+import { AddIcon, AddLargeIcon } from '@/icons'
 
 export const Header = ({ showCreateTaskButton }: { showCreateTaskButton: boolean }) => {
   return (
@@ -39,7 +39,8 @@ export const Header = ({ showCreateTaskButton }: { showCreateTaskButton: boolean
                   handleClick={() => {
                     store.dispatch(setShowModal())
                   }}
-                  icon={<AddIcon sx={{ color: '#fff' }} />}
+                  padding="8px"
+                  icon={<AddLargeIcon />}
                 />
               </Box>
             </>

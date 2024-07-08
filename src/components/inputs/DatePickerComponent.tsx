@@ -54,7 +54,17 @@ export const DatePickerComponent = ({ getDate, dateValue, disabled, isButton = f
           <SecondaryBtn
             startIcon={isButton ? <CalenderIcon /> : <CalenderIcon2 />}
             buttonContent={
-              <Typography variant="bodySm" sx={{ color: (theme) => theme.color.gray[600], fontSize: '12px' }}>
+              <Typography
+                variant="bodySm"
+                sx={{
+                  color: (theme) => theme.color.gray[600],
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  fontSize: '12px',
+                  overflow: 'hidden',
+                  maxWidth: { xs: '100px', sm: 'none' },
+                }}
+              >
                 {value ? formatDate(value) : 'Due Date'}
               </Typography>
             }
