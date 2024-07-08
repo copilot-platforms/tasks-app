@@ -118,14 +118,14 @@ export const FilterBar = ({
 
   const assigneeValue = _assigneeValue as IAssigneeCombined
   return (
-    <Box>
-      <Box
-        sx={{
-          border: { xs: 'none', sm: (theme) => `1px solid ${theme.color.borders.borderDisabled}` },
-        }}
-      >
-        <AppMargin size={SizeofAppMargin.LARGE} py="14px">
-          <Stack direction={'row'} justifyContent={'space-between'}>
+    <Box
+      sx={{
+        borderBottom: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
+      }}
+    >
+      <Box>
+        <AppMargin size={SizeofAppMargin.LARGE} py="12px">
+          <Stack direction={'row'} justifyContent={'space-between'} sx={{ maxHeight: '32px' }}>
             <Stack direction={'row'} columnGap={3}>
               <Box>
                 <FilterButtonGroup filterButtons={filterButtons} activeButtonIndex={ButtonIndex} />
@@ -169,7 +169,7 @@ export const FilterBar = ({
                         handleClick={handleFilterOptionsChange}
                       />
                     }
-                    padding="0px 9px"
+                    padding="2px 10px"
                   />
                 </Box>
               )}

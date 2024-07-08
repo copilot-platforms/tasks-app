@@ -27,6 +27,7 @@ const SearchBar = ({ value, getSearchKeyword }: ISearchBar) => {
       focused={focused}
       variant="outlined"
       placeholder={focused ? 'Search...' : 'Search'}
+      basePadding="4px 8px"
       sx={{
         width: { md: focused ? '220px' : '90px', sd: focused ? '90px' : '30px', xs: focused ? '100px' : '30px' },
         transition: 'width 0.5s',
@@ -46,12 +47,6 @@ const SearchBar = ({ value, getSearchKeyword }: ISearchBar) => {
             <SearchIcon onClick={handleIconClick} />
           </InputAdornment>
         ),
-        inputProps: {
-          style: {
-            marginBottom: '2px',
-            padding: '5px 0px',
-          },
-        },
       }}
       autoComplete="off"
       onBlur={() => setFocused(false)}
