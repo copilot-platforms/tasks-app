@@ -109,11 +109,11 @@ export const FilterBar = ({
   return (
     <Box
       sx={{
-        border: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
+        borderBottom: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
       }}
     >
       <Box>
-        <AppMargin size={SizeofAppMargin.LARGE} py="14px">
+        <AppMargin size={SizeofAppMargin.LARGE} py="12px">
           <Stack direction={'row'} justifyContent={'space-between'} sx={{ maxHeight: '32px' }}>
             <Stack direction={'row'} columnGap={3}>
               <Box>
