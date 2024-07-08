@@ -18,6 +18,10 @@ import {
   TxtIcon,
   GifIcon,
   Mp3Icon,
+  TodoIconSmall,
+  InprogressIconSmall,
+  DoneIconSmall,
+  InreviewIconSmall,
 } from '@/icons'
 import { WorkflowState } from '@/types/dto/workflowStates.dto'
 import { ReactNode } from 'react'
@@ -28,6 +32,14 @@ export const statusIcons: { [key in WorkflowState]: ReactNode } = {
   started: <InprogressIcon />,
   completed: <DoneIcon />,
   cancelled: <InreviewIcon />,
+}
+
+export const statusIconsSmall: { [key in WorkflowState]: ReactNode } = {
+  backlog: <TodoIconSmall />,
+  unstarted: <TodoIconSmall />,
+  started: <InprogressIconSmall />,
+  completed: <DoneIconSmall />,
+  cancelled: <InreviewIconSmall />,
 }
 
 export const attachmentIcons: { [key: string]: ReactNode } = {

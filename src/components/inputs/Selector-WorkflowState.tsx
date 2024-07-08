@@ -1,6 +1,6 @@
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { SecondaryBtn } from '../buttons/SecondaryBtn'
-import { statusIcons } from '@/utils/iconMatcher'
+import { statusIcons, statusIconsSmall } from '@/utils/iconMatcher'
 import { Box, ClickAwayListener, Popper, Stack, Typography } from '@mui/material'
 import { ReactNode, useEffect, useState } from 'react'
 
@@ -64,9 +64,9 @@ export const WorkflowStateSelector = ({
             </Stack>
           ) : (
             <SecondaryBtn
-              startIcon={statusIcons[value?.type]}
+              startIcon={statusIconsSmall[value?.type]}
               buttonContent={
-                <Typography variant="bodySm" lineHeight="16px" sx={{ color: (theme) => theme.color.gray[600] }}>
+                <Typography variant="bodySm" sx={{ color: (theme) => theme.color.gray[600], fontSize: '12px' }}>
                   {value?.name as ReactNode}
                 </Typography>
               }
