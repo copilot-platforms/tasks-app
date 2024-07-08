@@ -109,7 +109,7 @@ export default function Selector({
           <Stack
             direction="row"
             alignItems="center"
-            columnGap="4px"
+            columnGap="7px"
             justifyContent="flex-start"
             sx={{
               width: buttonWidth ?? '100px',

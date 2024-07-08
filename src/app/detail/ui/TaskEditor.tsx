@@ -69,30 +69,32 @@ export const TaskEditor = ({
 
   return (
     <>
-      <Stack direction="row" alignItems="center" columnGap={2}>
-        <Box mb="1px">{statusIcons[workflowState.type]}</Box>
-        <StyledTextField
-          type="text"
-          multiline
-          borderLess
-          sx={{
-            width: '100%',
-            '& .MuiInputBase-input': {
-              fontSize: '20px',
-              lineHeight: '28px',
-              color: (theme) => theme.color.gray[600],
-              fontWeight: 500,
-            },
-          }}
-          value={updateTitle}
-          onChange={(e) => setUpdateTitle(e.target.value)}
-          InputProps={{ readOnly: !isEditable }}
-          disabled={!isEditable}
-          onBlur={() => {
-            updateTaskDetail(updateTitle, updateDetail)
-          }}
-        />
-      </Stack>
+      <StyledTextField
+        type="text"
+        multiline
+        borderLess
+        sx={{
+          width: '100%',
+          '& .MuiInputBase-input': {
+            fontSize: '20px',
+            lineHeight: '28px',
+            color: (theme) => theme.color.gray[600],
+            fontWeight: 500,
+          },
+          '& .MuiInputBase-root': {
+            padding: '0px 0px',
+          },
+        }}
+        value={updateTitle}
+        onChange={(e) => setUpdateTitle(e.target.value)}
+        InputProps={{ readOnly: !isEditable }}
+        disabled={!isEditable}
+        padding="0px"
+        onBlur={() => {
+          updateTaskDetail(updateTitle, updateDetail)
+        }}
+      />
+
       <Box
         onBlur={() => {
           updateTaskDetail(updateTitle, updateDetail)

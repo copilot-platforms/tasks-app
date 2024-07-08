@@ -1,6 +1,6 @@
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { SecondaryBtn } from '../buttons/SecondaryBtn'
-import { statusIcons, statusIconsSmall } from '@/utils/iconMatcher'
+import { statusIcons, statusIconsMedium, statusIconsSmall } from '@/utils/iconMatcher'
 import { Box, ClickAwayListener, Popper, Stack, Typography } from '@mui/material'
 import { ReactNode, useEffect, useState } from 'react'
 
@@ -37,7 +37,7 @@ export const WorkflowStateSelector = ({
             <Stack
               direction="row"
               alignItems="center"
-              columnGap="4px"
+              columnGap="7px"
               justifyContent="flex-start"
               sx={{
                 padding: '4px 8px',
@@ -51,12 +51,13 @@ export const WorkflowStateSelector = ({
             >
               <Box>{statusIcons[value?.type]}</Box>
               <Typography
-                variant="bodySm"
+                variant="md"
                 sx={{
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
                   display: { xs: responsiveNoHide ? 'block' : 'none', sm: 'block' },
+                  lineHeight: '22px',
                 }}
               >
                 {value?.name as ReactNode}
@@ -109,7 +110,7 @@ export const WorkflowStateSelector = ({
                     setAnchorEl(null)
                   }}
                 >
-                  <Box>{statusIcons[el?.type]}</Box>
+                  <Box>{statusIconsMedium[el?.type]}</Box>
                   <Typography variant="bodySm" fontWeight={400}>
                     {el.name}
                   </Typography>

@@ -18,13 +18,14 @@ export const CopilotAvatar = ({
   width = '20px',
   height = '20px',
   isSmall = false,
+  fontSize = '13px',
 }: CopilotAvatarProps) => {
   const avatarSx: SxProps = {
     width,
     height,
     alignItems: 'center',
     justifyContent: 'center',
-    fontSize: '13px',
+    fontSize,
     '.MuiAvatar-img': {
       objectFit: 'cover',
     },
