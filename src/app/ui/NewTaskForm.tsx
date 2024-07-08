@@ -168,7 +168,7 @@ export const NewTaskForm = ({
       <AppMargin size={SizeofAppMargin.MEDIUM} py="16px">
         <NewTaskFormInputs />
 
-        <Stack direction="row" columnGap={3} position="relative">
+        <Stack direction="row" columnGap={3} position="relative" sx={{ flexWrap: 'wrap' }}>
           <Box sx={{ padding: 0.1 }}>
             <WorkflowStateSelector
               option={workflowStates}
@@ -243,6 +243,7 @@ export const NewTaskForm = ({
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 maxWidth: { xs: '102px', sm: 'none' },
+                display: '',
               }}
             >
               <DatePickerComponent
