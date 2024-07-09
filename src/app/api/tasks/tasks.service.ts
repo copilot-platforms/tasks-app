@@ -15,6 +15,7 @@ import { WorkflowStateUpdatedSchema } from '@api/activity-logs/schemas/WorkflowS
 import { NotificationService } from '@api/notification/notification.service'
 import { LabelMappingService } from '@api/label-mapping/label-mapping.service'
 import { z } from 'zod'
+import { CopilotAPI } from '@/utils/CopilotAPI'
 
 type FilterByAssigneeId = {
   assigneeId: string
@@ -111,9 +112,20 @@ export class TasksService extends BaseService {
     }
 
     // If new task is assigned to someone (IU / Client), send proper notification + email to them
-    if (newTask.assigneeId) {
+    // But if the task was assigned to the same user that created the task, skip notifications entirely
+    if (newTask.assigneeId && newTask.assigneeId !== newTask.createdById) {
       const notificationService = new NotificationService(this.user)
-      await notificationService.create(NotificationTaskActions.Assigned, newTask)
+      if (newTask.assigneeType === AssigneeType.company) {
+        const copilot = new CopilotAPI(this.user.token)
+        const { recipientIds } = await notificationService.getNotificationParties(
+          copilot,
+          newTask,
+          NotificationTaskActions.AssignedToCompany,
+        )
+        await notificationService.createBulkNotification(NotificationTaskActions.AssignedToCompany, newTask, recipientIds)
+      } else {
+        await notificationService.create(NotificationTaskActions.Assigned, newTask)
+      }
     }
 
     return newTask
