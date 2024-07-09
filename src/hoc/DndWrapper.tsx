@@ -20,5 +20,14 @@ export const DndWrapper = ({ children }: { children: ReactNode }) => {
 
   if (!screenType) return null
 
-  return <DndProvider backend={screenType === 'mobile' ? TouchBackend : HTML5Backend}>{children}</DndProvider>
+  return (
+    <DndProvider
+      backend={screenType === 'mobile' ? TouchBackend : HTML5Backend}
+      options={{
+        delayTouchStart: 100,
+      }}
+    >
+      {children}
+    </DndProvider>
+  )
 }

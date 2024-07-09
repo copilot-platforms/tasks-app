@@ -3,7 +3,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import dayjs, { Dayjs } from 'dayjs'
-import { CalenderIcon, CalenderIcon2 } from '@/icons'
+import { CalenderIcon, CalenderIcon2, CalenderIconSmall } from '@/icons'
 import { IsoDate } from '@/types/dto/tasks.dto'
 import { Box, Popper, Stack, Typography } from '@mui/material'
 import { SecondaryBtn } from '../buttons/SecondaryBtn'
@@ -52,7 +52,7 @@ export const DatePickerComponent = ({ getDate, dateValue, disabled, isButton = f
       >
         {isButton ? (
           <SecondaryBtn
-            startIcon={isButton ? <CalenderIcon /> : <CalenderIcon2 />}
+            startIcon={<CalenderIconSmall />}
             buttonContent={
               <Typography
                 variant="bodySm"
@@ -72,10 +72,10 @@ export const DatePickerComponent = ({ getDate, dateValue, disabled, isButton = f
         ) : (
           <>
             <Box>
-              <CalenderIcon2 />
+              <CalenderIcon />
             </Box>
-            <Typography variant="bodyMd" mt="2px">
-              {value ? formatDate(value) : 'Empty'}
+            <Typography variant="md" mt="2px" lineHeight={'22px'}>
+              {value ? formatDate(value) : 'No due date'}
             </Typography>
           </>
         )}

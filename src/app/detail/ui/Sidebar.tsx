@@ -19,6 +19,7 @@ import { NoAssignee, NoAssigneeExtraOptions } from '@/utils/noAssignee'
 import ExtraOptionRendererAssignee from '@/components/inputs/ExtraOptionRendererAssignee'
 import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
+import { AssigneePlaceholder } from '@/icons'
 
 const StyledText = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[500],
@@ -60,7 +61,6 @@ export const Sidebar = ({
   const assigneeValue = _assigneeValue as IAssigneeCombined //typecasting
 
   const matches = useMediaQuery('(max-width:600px)')
-
   return (
     <Box
       sx={{
@@ -112,7 +112,13 @@ export const Sidebar = ({
               const assigneeType = getAssigneeTypeCorrected(assignee)
               updateAssignee(assigneeType, assignee?.id)
             }}
-            startIcon={<CopilotAvatar currentAssignee={assigneeValue} />}
+            startIcon={
+              (assigneeValue as IAssigneeCombined)?.name == 'No assignee' ? (
+                <AssigneePlaceholder />
+              ) : (
+                <CopilotAvatar currentAssignee={assigneeValue} height="16px" width="16px" fontSize="11px" />
+              )
+            }
             options={assignee}
             value={assigneeValue}
             selectorType={SelectorType.ASSIGNEE_SELECTOR}
@@ -130,9 +136,11 @@ export const Sidebar = ({
               )
             }}
             buttonContent={
-              <Typography variant="bodySm" lineHeight="16px" sx={{ color: (theme) => theme.color.gray[600] }}>
-                {(assigneeValue as IAssigneeCombined)?.name ||
-                  `${(assigneeValue as IAssigneeCombined)?.givenName ?? ''} ${(assigneeValue as IAssigneeCombined)?.familyName ?? ''}`.trim()}
+              <Typography variant="md" lineHeight="22px" sx={{ color: (theme) => theme.color.gray[600] }}>
+                {(assigneeValue as IAssigneeCombined)?.name == 'No assignee'
+                  ? 'Unassigned'
+                  : (assigneeValue as IAssigneeCombined)?.name ||
+                    `${(assigneeValue as IAssigneeCombined)?.givenName ?? ''} ${(assigneeValue as IAssigneeCombined)?.familyName ?? ''}`.trim()}
               </Typography>
             }
             disabled={disabled}

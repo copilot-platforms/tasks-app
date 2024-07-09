@@ -4,7 +4,7 @@ import { SelectorType } from '@/components/inputs/Selector'
 import Selector from '@/components/inputs/Selector'
 import { StyledTextField } from '@/components/inputs/TextField'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
-import { ArrowLinkIcon, AssigneePlaceholder, CloseIcon, TemplateIconSm } from '@/icons'
+import { ArrowLinkIcon, AssigneePlaceholderSmall, CloseIcon, TemplateIconSm } from '@/icons'
 import {
   clearCreateTaskFields,
   removeOneAttachment,
@@ -198,7 +198,7 @@ export const NewTaskForm = ({
                 assigneeValue ? (
                   <CopilotAvatar currentAssignee={assigneeValue} width="12px" height="12px" isSmall={true} />
                 ) : (
-                  <AssigneePlaceholder />
+                  <AssigneePlaceholderSmall />
                 )
               }
               options={assignee}
