@@ -152,7 +152,7 @@ export const Sidebar = ({
           <StyledText variant="md" minWidth="80px">
             Due Date
           </StyledText>
-          <Box>
+          <Box sx={{ minWidth: '200px' }}>
             <DatePickerComponent
               getDate={(date) => {
                 const isoDate = formatDate(date)
