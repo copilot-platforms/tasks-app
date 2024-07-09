@@ -90,6 +90,7 @@ export const WorkflowStateSelector = ({
               boxShadow: '0px 6px 20px 0px rgba(0, 0, 0, 0.12)',
               background: (theme) => theme.color.base.white,
             }}
+            rowGap={'2px'}
           >
             {option.map((el, key) => {
               return (
@@ -98,7 +99,7 @@ export const WorkflowStateSelector = ({
                   key={key}
                   columnGap="12px"
                   sx={{
-                    padding: '6px 12px',
+                    padding: '4px 8px',
                     width: '180px',
                     ':hover': {
                       cursor: 'pointer',
@@ -110,8 +111,8 @@ export const WorkflowStateSelector = ({
                     setAnchorEl(null)
                   }}
                 >
-                  <Box>{statusIconsMedium[el?.type]}</Box>
-                  <Typography variant="bodySm" fontWeight={400}>
+                  <Box padding={'4px 0px'}>{statusIconsMedium[el?.type]}</Box>
+                  <Typography variant="bodySm" fontWeight={400} lineHeight={'21px'}>
                     {el.name}
                   </Typography>
                 </Stack>
