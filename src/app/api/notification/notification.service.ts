@@ -101,6 +101,19 @@ export class NotificationService extends BaseService {
     }
   }
 
+  async markAsReadForAllRecipients(task: Task) {
+    const copilot = new CopilotAPI(this.user.token)
+    const { recipientIds } = await this.getNotificationParties(copilot, task, NotificationTaskActions.AssignedToCompany)
+    const markAsReadPromises = recipientIds.map((recipientId) =>
+      this.markClientNotificationAsRead({
+        ...task,
+        assigneeId: recipientId,
+        assigneeType: AssigneeType.client,
+      }),
+    )
+    await Promise.all(markAsReadPromises)
+  }
+
   /**
    * Get the concerned sender and receiver for a notification based on the action that triggered it. There are various actions
    * defined by NotificationTaskActions. This method returns the senderId, receiverId, and actionUser (user that is creating the notification action)
@@ -115,11 +128,11 @@ export class NotificationService extends BaseService {
     const getAssignedTo = async (): Promise<CopilotUser | CompanyResponse> => {
       switch (task.assigneeType) {
         case AssigneeType.internalUser:
-          return copilot.getInternalUser(senderId)
+          return await copilot.getInternalUser(senderId)
         case AssigneeType.client:
-          return copilot.getClient(recipientId)
+          return await copilot.getClient(z.string().parse(task.assigneeId))
         case AssigneeType.company:
-          return copilot.getCompany(recipientId)
+          return await copilot.getCompany(z.string().parse(task.assigneeId))
         default:
           throw new APIError(httpStatus.NOT_FOUND, `Unknown assignee type: ${task.assigneeType}`)
       }

@@ -154,7 +154,6 @@ export class TasksService extends BaseService {
       label = z.string().parse(await labelMappingService.getLabel(data.assigneeId, data.assigneeType))
     }
     // Get the updated task
-    const { workflowState, ...prevTaskClone } = prevTask
     const updatedTask = await this.db.task.update({
       where: { id },
       data: {
@@ -258,7 +257,11 @@ export class TasksService extends BaseService {
     })
     const notificationService = new NotificationService(this.user)
     await notificationService.create(NotificationTaskActions.Completed, updatedTask)
-    await notificationService.markClientNotificationAsRead(updatedTask)
+    if (updatedTask.assigneeType === AssigneeType.company) {
+      await notificationService.markAsReadForAllRecipients(updatedTask)
+    } else {
+      await notificationService.markClientNotificationAsRead(updatedTask)
+    }
     return updatedTask
   }
 
@@ -335,45 +338,13 @@ export class TasksService extends BaseService {
       }
       // If task is reassigned from a company, fetch all company members and mark all of those notifications read
       if (prevTask.assigneeType === AssigneeType.company) {
-        const copilot = new CopilotAPI(this.user.token)
-        const { recipientIds } = await notificationService.getNotificationParties(
-          copilot,
-          prevTask,
-          NotificationTaskActions.AssignedToCompany,
-        )
-
-        const markAsReadPromises = recipientIds.map((recipientId) =>
-          notificationService.markClientNotificationAsRead({
-            ...prevTask,
-            assigneeId: recipientId,
-            assigneeType: AssigneeType.client,
-          }),
-        )
-        await Promise.all(markAsReadPromises)
+        await notificationService.markAsReadForAllRecipients(prevTask)
       }
 
       // Handle new assignee notification creation
       // If task goes from unassigned to assigned, or from one assignee to another
       if (updatedTask.assigneeId) {
         await this.sendTaskCreateNotifications(updatedTask)
-        //! This might come in handy later, don't delete
-        // const notification = await notificationService.create(NotificationTaskActions.Assigned, updatedTask)
-        // // If task has been reassigned to a client and it is not in a completed state yet,
-        // // add it to the ClientNotifications table as well
-        // if (!notification) {
-        //   console.error('Failed to trigger notification for task', prevTask)
-        // }
-
-        // // Add ClientNotification to new client
-        // if (
-        //   updatedTask.assigneeType === AssigneeType.client &&
-        //   updatedTask.workflowState.type !== NotificationTaskActions.Completed
-        // ) {
-        //   await notificationService.addToClientNotifications(
-        //     updatedTask,
-        //     NotificationCreatedResponseSchema.parse(notification),
-        //   )
-        // }
       }
     }
 
@@ -384,19 +355,16 @@ export class TasksService extends BaseService {
       updatedTask?.workflowState?.type === 'completed' &&
       updatedTask.assigneeId
     ) {
-      await this.sendCompletedNotification(updatedTask)
-    }
-  }
-
-  async sendCompletedNotification(task: Task) {
-    const notificationService = new NotificationService(this.user)
-    await notificationService.create(NotificationTaskActions.Completed, task)
-    if (task.assigneeType === AssigneeType.client) {
-      try {
-        await notificationService.markClientNotificationAsRead(task)
-      } catch (e: unknown) {
-        console.error(`Failed to find ClientNotification for task ${task.id}`, e)
+      const notificationService = new NotificationService(this.user)
+      await notificationService.create(NotificationTaskActions.Completed, updatedTask)
+      if (updatedTask.assigneeType === AssigneeType.client) {
+        try {
+          await notificationService.markClientNotificationAsRead(updatedTask)
+        } catch (e: unknown) {
+          console.error(`Failed to find ClientNotification for task ${updatedTask.id}`, e)
+        }
       }
     }
+    await notificationService.markAsReadForAllRecipients(updatedTask)
   }
 }
