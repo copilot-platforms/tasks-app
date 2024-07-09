@@ -4,7 +4,7 @@ import { SelectorType } from '@/components/inputs/Selector'
 import Selector from '@/components/inputs/Selector'
 import { StyledTextField } from '@/components/inputs/TextField'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
-import { ArrowLinkIcon, CloseIcon, TemplateIconSm } from '@/icons'
+import { ArrowLinkIcon, AssigneePlaceholderSmall, CloseIcon, TemplateIconSm } from '@/icons'
 import {
   clearCreateTaskFields,
   removeOneAttachment,
@@ -39,6 +39,7 @@ import { truncateText } from '@/utils/truncateText'
 import { TruncateMaxNumber } from '@/types/constants'
 import { Tapwrite } from 'tapwrite'
 import { DatePickerComponent } from '@/components/inputs/DatePickerComponent'
+import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 
 const supabaseActions = new SupabaseActions()
 
@@ -60,7 +61,7 @@ export const NewTaskForm = ({
     item:
       assignee.find(
         (item) => item.id == filterOptions[FilterOptions.ASSIGNEE] || item.id == filterOptions[FilterOptions.TYPE],
-      ) ?? NoAssignee,
+      ) ?? null,
     type: SelectorType.ASSIGNEE_SELECTOR,
   })
   const { renderingItem: _templateValue, updateRenderingItem: updateTemplateValue } = useHandleSelectorComponent({
@@ -194,12 +195,11 @@ export const NewTaskForm = ({
                 store.dispatch(setCreateTaskFields({ targetField: 'assigneeId', value: newValue?.id }))
               }}
               startIcon={
-                <Avatar
-                  alt={getAssigneeName(assigneeValue)}
-                  src={assigneeValue?.iconImageUrl || assigneeValue?.avatarImageUrl || 'user'}
-                  sx={{ width: '20px', height: '20px' }}
-                  variant={assigneeValue?.type === 'companies' ? 'rounded' : 'circular'}
-                />
+                assigneeValue ? (
+                  <CopilotAvatar currentAssignee={assigneeValue} width="12px" height="12px" isSmall={true} />
+                ) : (
+                  <AssigneePlaceholderSmall />
+                )
               }
               options={assignee}
               value={assigneeValue}
@@ -221,17 +221,19 @@ export const NewTaskForm = ({
               buttonContent={
                 <Typography
                   variant="bodySm"
-                  lineHeight="20px"
                   sx={{
                     color: (theme) => theme.color.gray[600],
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
-                    maxWidth: { xs: '102px', sm: '100px' },
+                    fontSize: '12px',
+                    maxWidth: { xs: '60px', sm: '100px' },
                   }}
                 >
-                  {(assigneeValue as IAssigneeCombined)?.name ||
-                    `${(assigneeValue as IAssigneeCombined)?.givenName ?? ''} ${(assigneeValue as IAssigneeCombined)?.familyName ?? ''}`.trim()}
+                  {assigneeValue
+                    ? (assigneeValue as IAssigneeCombined)?.name ||
+                      `${(assigneeValue as IAssigneeCombined)?.givenName ?? ''} ${(assigneeValue as IAssigneeCombined)?.familyName ?? ''}`.trim()
+                    : 'Assignee'}
                 </Typography>
               }
             />
