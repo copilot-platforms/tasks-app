@@ -1,3 +1,5 @@
+'use client'
+
 import { CSSProperties, ReactNode } from 'react'
 import Scrollbars from 'react-custom-scrollbars'
 
