@@ -1,7 +1,6 @@
 'use client'
 
-import { IconButton, Stack, Typography, styled } from '@mui/material'
-import { MoreHoriz, Add } from '@mui/icons-material'
+import { Stack, Typography, styled } from '@mui/material'
 import { ReactNode } from 'react'
 
 const TaskColumnHeader = styled(Stack)({
@@ -12,8 +11,10 @@ const TaskColumnHeader = styled(Stack)({
 })
 
 const TaskColumnContainer = styled(Stack)({
-  width: '275px',
-  height: '100vh',
+  width: '292px',
+  margin: '0 auto',
+  height: 'calc(100vh - 206px)',
+  marginTop: '6px',
 })
 
 interface Prop {
@@ -24,7 +25,7 @@ interface Prop {
 
 export const TaskColumn = ({ children, columnName, taskCount }: Prop) => {
   return (
-    <TaskColumnContainer>
+    <>
       <TaskColumnHeader>
         <Stack direction="row" alignItems="center" columnGap={2}>
           <Typography variant="md">{columnName}</Typography>
@@ -33,7 +34,7 @@ export const TaskColumn = ({ children, columnName, taskCount }: Prop) => {
           </Typography>
         </Stack>
       </TaskColumnHeader>
-      {children}
-    </TaskColumnContainer>
+      <TaskColumnContainer>{children}</TaskColumnContainer>
+    </>
   )
 }

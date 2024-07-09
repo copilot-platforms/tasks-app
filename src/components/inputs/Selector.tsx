@@ -102,6 +102,12 @@ export default function Selector({
     }
   }, [])
 
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === 'Escape') {
+      setAnchorEl(null)
+    }
+  }
+
   return (
     <Stack direction="column">
       <Box onClick={handleClick} aria-describedby={id}>
@@ -109,11 +115,11 @@ export default function Selector({
           <Stack
             direction="row"
             alignItems="center"
-            columnGap="4px"
+            columnGap="7px"
             justifyContent="flex-start"
             sx={{
-              width: buttonWidth ?? '100px',
-              justifyContent: { xs: 'end', sm: 'flex-start' },
+              width: { sm: responsiveNoHide ? buttonWidth ?? '100px' : '20px', md: buttonWidth ?? '100px' },
+              justifyContent: { xs: 'flex-start', sm: 'flex-start' },
               cursor: disabled ? 'auto' : 'pointer',
               borderRadius: '4px',
               padding: '4px 8px',
@@ -162,6 +168,7 @@ export default function Selector({
             setAnchorEl(null)
           }}
           openOnFocus
+          onKeyDown={handleKeyDown}
           autoHighlight
           options={extraOption ? [extraOption, ...options] : options}
           value={value}
@@ -341,8 +348,14 @@ const SelectorButton = ({
         '.MuiTouchRipple-child': {
           bgcolor: theme.color.borders.border,
         },
-        padding: padding ? padding : { xs: '1px 9px', md: '4px 16px' },
+        padding: padding ? padding : { xs: '2px 9px', md: '4px 16px' },
         cursor: disabled ? 'auto' : 'pointer',
+        '& .MuiButton-startIcon': {
+          '& .MuiAvatar-root': {
+            fontSize: '13px',
+          },
+        },
+        height: '32px',
       })}
       onClick={handleClick}
       disableRipple
