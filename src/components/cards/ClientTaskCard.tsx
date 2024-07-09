@@ -113,7 +113,7 @@ export const ClientTaskCard = ({
                 </Typography>
               </Stack>
             </Stack>
-            <Box>
+            <Box sx={{ minWidth: '80px' }}>
               {!markdoneFlag && (
                 <SecondaryBtn
                   handleClick={handleMarkAsDoneClick}
