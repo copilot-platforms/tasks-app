@@ -11,7 +11,7 @@ import { TaskResponse } from '@/types/dto/tasks.dto'
 import { IAssigneeCombined } from '@/types/interfaces'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
-import { DueDateLayout } from '@/components/utils/DueDateLayout'
+import { DueDateLayout } from '@/components/layouts/DueDateLayout'
 import { StyledUninvasiveLink } from '@/app/detail/ui/styledComponent'
 import { UrlObject } from 'url'
 

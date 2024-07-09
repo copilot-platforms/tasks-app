@@ -10,10 +10,11 @@ interface Prop {
   columnName: string
   taskCount: string
   showConfigurableIcons: boolean
+  display?: boolean
 }
 
-export const TaskRow = ({ children, columnName, taskCount, showConfigurableIcons }: Prop) => {
-  return (
+export const TaskRow = ({ children, columnName, taskCount, showConfigurableIcons, display = true }: Prop) => {
+  return display ? (
     <Box>
       <Box
         sx={{
@@ -59,5 +60,5 @@ export const TaskRow = ({ children, columnName, taskCount, showConfigurableIcons
       </Box>
       {children}
     </Box>
-  )
+  ) : null
 }

@@ -15,7 +15,7 @@ const FilterFunctions = {
 function filterByAssignee(filteredTasks: TaskResponse[], filterValue: string | null) {
   const assigneeId = filterValue
   filteredTasks =
-    assigneeId === 'none'
+    assigneeId === 'No assignee'
       ? filteredTasks.filter((task) => !task.assigneeId)
       : filteredTasks.filter((task) => task.assigneeId == assigneeId)
   return filteredTasks as TaskResponse[]

@@ -9,6 +9,7 @@ export const theme = createTheme({
     values: {
       xs: 0,
       sm: 600,
+      sd: 735,
       md: 960,
       lg: 1280,
     },

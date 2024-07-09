@@ -34,9 +34,17 @@ export const FilterBar = ({
 }: {
   updateViewModeSetting: (payload: CreateViewSettingsDTO) => void
 }) => {
-  const { view, filteredAssigneeList, filterOptions } = useSelector(selectTaskBoard)
+  const { view, filteredAssigneeList, filterOptions, assignee } = useSelector(selectTaskBoard)
+  const [filteredAssignee, setFilteredAssignee] = useState(filteredAssigneeList)
   const handleFilterOptionsChange = async (optionType: FilterOptions, newValue: string | null) => {
     store.dispatch(setFilterOptions({ optionType, newValue }))
+    newValue == FilterOptionsKeywords.CLIENTS
+      ? setFilteredAssignee(assignee.filter((el) => el.type == FilterByOptions.CLIENT || el.type == FilterByOptions.COMPANY))
+      : newValue == FilterOptionsKeywords.TEAM
+        ? setFilteredAssignee(assignee.filter((el) => el.type == FilterByOptions.IUS))
+        : newValue == ''
+          ? setFilteredAssignee(assignee)
+          : setFilteredAssignee(assignee) //FilteredAssignee is also updated in the component's state and used in Selector's autocomplete to mitigate the time taken to update the store and fetch values to the Selector's autocomplete.
     const updatedFilterOptions = store.getState().taskBoard.filterOptions
     updateViewModeSetting({
       viewMode: view,
@@ -59,7 +67,10 @@ export const FilterBar = ({
   const [noAssigneOptionFlag, setNoAssigneeOptionFlag] = useState<boolean>(true)
   const { tokenPayload } = useSelector(selectAuthDetails)
   const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
-    item: filteredAssigneeList.find((item) => item.id == filterOptions.assignee),
+    item:
+      filterOptions.assignee == 'No assignee'
+        ? NoAssigneeExtraOptions
+        : filteredAssigneeList.find((item) => item.id == filterOptions.assignee),
     type: SelectorType.ASSIGNEE_SELECTOR,
   })
   useFilter(filterOptions)
@@ -107,22 +118,22 @@ export const FilterBar = ({
 
   const assigneeValue = _assigneeValue as IAssigneeCombined
   return (
-    <Box>
-      <Box
-        sx={{
-          border: { xs: 'none', sm: (theme) => `1px solid ${theme.color.borders.borderDisabled}` },
-        }}
-      >
-        <AppMargin size={SizeofAppMargin.LARGE} py="14px">
-          <Stack direction="row" alignItems="center" justifyContent={'space-between'}>
-            <Stack direction="row" columnGap={3} alignItems={'center'}>
+    <Box
+      sx={{
+        borderBottom: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
+      }}
+    >
+      <Box>
+        <AppMargin size={SizeofAppMargin.LARGE} py="12px">
+          <Stack direction={'row'} justifyContent={'space-between'} sx={{ maxHeight: '32px' }}>
+            <Stack direction={'row'} columnGap={3}>
               <Box>
                 <FilterButtonGroup filterButtons={filterButtons} activeButtonIndex={ButtonIndex} />
               </Box>
               {filterOptions[FilterOptions.TYPE] !== tokenPayload?.internalUserId && (
                 <Box
                   sx={{
-                    display: { xs: 'none', sm: 'block' },
+                    display: { xs: 'none', sm: 'none', sd: 'block' },
                   }}
                 >
                   <Selector
@@ -132,7 +143,7 @@ export const FilterBar = ({
                       handleFilterOptionsChange(FilterOptions.ASSIGNEE, newValue?.id as string)
                     }}
                     startIcon={<FilterByAsigneeIcon />}
-                    options={filteredAssigneeList}
+                    options={filteredAssignee}
                     placeholder="Assignee"
                     value={assigneeValue}
                     selectorType={SelectorType.ASSIGNEE_SELECTOR}
@@ -145,7 +156,7 @@ export const FilterBar = ({
                             onClick={(e) => {
                               updateAssigneeValue({ id: '', name: 'No assignee' })
                               setAnchorEl(anchorEl ? null : e.currentTarget)
-                              handleFilterOptionsChange(FilterOptions.ASSIGNEE, 'none')
+                              handleFilterOptionsChange(FilterOptions.ASSIGNEE, 'No assignee')
                             }}
                           />
                         )
@@ -158,7 +169,7 @@ export const FilterBar = ({
                         handleClick={handleFilterOptionsChange}
                       />
                     }
-                    padding="0px 9px"
+                    padding="2px 10px"
                   />
                 </Box>
               )}
@@ -166,7 +177,7 @@ export const FilterBar = ({
             <Stack direction="row" alignItems="center" columnGap={3}>
               <Box
                 sx={{
-                  display: { xs: 'none', sm: 'block' },
+                  display: { xs: 'none', sd: 'block' },
                 }}
               >
                 <SearchBar
@@ -179,7 +190,7 @@ export const FilterBar = ({
 
               <Box
                 sx={{
-                  display: { xs: 'none', sm: 'block' },
+                  display: { xs: 'none', sm: 'none', sd: 'block' },
                 }}
               >
                 <ViewModeSelector
@@ -199,7 +210,7 @@ export const FilterBar = ({
           direction="row"
           justifyContent="space-between"
           alignItems="center"
-          sx={{ display: { xs: 'flex', sm: 'none' }, mb: { xs: '12px', md: '0px' } }}
+          sx={{ display: { sm: 'flex', sd: 'none' }, mb: { xs: '12px', md: '0px' } }}
         >
           <Selector
             getSelectedValue={(_newValue) => {
@@ -220,7 +231,7 @@ export const FilterBar = ({
                   onClick={(e) => {
                     updateAssigneeValue({ id: '', name: 'No assignee' })
                     setAnchorEl(anchorEl ? null : e.currentTarget)
-                    handleFilterOptionsChange(FilterOptions.ASSIGNEE, 'none')
+                    handleFilterOptionsChange(FilterOptions.ASSIGNEE, 'No assignee')
                   }}
                 />
               )
@@ -233,14 +244,28 @@ export const FilterBar = ({
               />
             }
           />
+          <Stack direction={'row'} columnGap={2}>
+            <Box
+              sx={{
+                display: { xs: 'block', sd: 'none', md: 'none' },
+              }}
+            >
+              <SearchBar
+                value={filterOptions.keyword}
+                getSearchKeyword={(keyword) => {
+                  handleFilterOptionsChange(FilterOptions.KEYWORD, keyword)
+                }}
+              />
+            </Box>
 
-          <ViewModeSelector
-            selectedMode={view}
-            handleModeChange={(mode) => {
-              store.dispatch(setViewSettings({ viewMode: mode, filterOptions: filterOptions }))
-              updateViewModeSetting({ viewMode: mode, filterOptions: filterOptions })
-            }}
-          />
+            <ViewModeSelector
+              selectedMode={view}
+              handleModeChange={(mode) => {
+                store.dispatch(setViewSettings({ viewMode: mode, filterOptions: filterOptions }))
+                updateViewModeSetting({ viewMode: mode, filterOptions: filterOptions })
+              }}
+            />
+          </Stack>
         </Stack>
       </AppMargin>
     </Box>
