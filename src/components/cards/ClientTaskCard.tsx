@@ -55,7 +55,9 @@ export const ClientTaskCard = ({
           }}
         >
           <Stack sx={{ cursor: 'default' }} direction="column">
-            <Typography variant="sm">{task?.title}</Typography>
+            <Typography variant="sm" sx={{ fontSize: '13px' }}>
+              {task?.title}
+            </Typography>
             <Box
               sx={{
                 overflow: 'hidden',
