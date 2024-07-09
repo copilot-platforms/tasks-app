@@ -102,6 +102,12 @@ export default function Selector({
     }
   }, [])
 
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === 'Escape') {
+      setAnchorEl(null)
+    }
+  }
+
   return (
     <Stack direction="column">
       <Box onClick={handleClick} aria-describedby={id}>
@@ -162,6 +168,7 @@ export default function Selector({
             setAnchorEl(null)
           }}
           openOnFocus
+          onKeyDown={handleKeyDown}
           autoHighlight
           options={extraOption ? [extraOption, ...options] : options}
           value={value}
