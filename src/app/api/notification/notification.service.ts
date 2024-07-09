@@ -49,11 +49,10 @@ export class NotificationService extends BaseService {
             email: getEmailDetails(actionUserName, task.title)[action],
           },
         }
-
         return copilotUtils.createNotification(notificationDetails)
       })
 
-      await Promise.all(promises)
+      return await Promise.all(promises)
     } catch (error) {
       console.error(`Failed to send notifications for action: ${action}`, error)
     }
@@ -88,10 +87,11 @@ export class NotificationService extends BaseService {
           taskId: task.id,
         },
       })
-      if (!relatedNotification)
-        throw new APIError(httpStatus.INTERNAL_SERVER_ERROR, `Failed to delete client notification for task id ${task.id}`)
+      if (!relatedNotification) {
+        console.error(`Failed to delete client notification for task id ${task.id}`)
+        return
+      }
 
-      console.log('notif', relatedNotification.notificationId)
       await copilot.markNotificationAsRead(relatedNotification.notificationId)
       await this.db.clientNotification.delete({ where: { id: relatedNotification?.id } })
     } catch (e: unknown) {

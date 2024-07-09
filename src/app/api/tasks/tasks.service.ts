@@ -2,7 +2,7 @@ import { CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { BaseService } from '@api/core/services/base.service'
 import { Resource } from '@api/core/types/api'
 import { PoliciesService } from '@api/core/services/policies.service'
-import { ActivityType, StateType, AssigneeType } from '@prisma/client'
+import { ActivityType, StateType, AssigneeType, Task, WorkflowState } from '@prisma/client'
 import { UserAction, UserRole } from '@api/core/types/user'
 import { NotificationTaskActions } from '@api/core/types/tasks'
 import { getTaskTimestamps } from '@api/tasks/tasks.helpers'
@@ -112,31 +112,7 @@ export class TasksService extends BaseService {
       )
     }
 
-    // If new task is assigned to someone (IU / Client), send proper notification + email to them
-    // But if the task was assigned to the same user that created the task, skip notifications entirely
-    if (newTask.assigneeId && newTask.assigneeId !== newTask.createdById) {
-      const notificationService = new NotificationService(this.user)
-      if (newTask.assigneeType === AssigneeType.company) {
-        const copilot = new CopilotAPI(this.user.token)
-        const { recipientIds } = await notificationService.getNotificationParties(
-          copilot,
-          newTask,
-          NotificationTaskActions.AssignedToCompany,
-        )
-        await notificationService.createBulkNotification(NotificationTaskActions.AssignedToCompany, newTask, recipientIds)
-      } else {
-        const notification = await notificationService.create(NotificationTaskActions.Assigned, newTask)
-        // Create a new entry in ClientNotifications table so we can mark as read on
-        // behalf of client later
-        if (!notification) {
-          console.error('Notification failed to trigger for task:', newTask)
-        }
-        if (newTask.assigneeType === AssigneeType.client) {
-          await notificationService.addToClientNotifications(newTask, NotificationCreatedResponseSchema.parse(notification))
-        }
-      }
-    }
-
+    await this.sendTaskCreateNotifications(newTask)
     return newTask
   }
 
@@ -178,10 +154,12 @@ export class TasksService extends BaseService {
       label = z.string().parse(await labelMappingService.getLabel(data.assigneeId, data.assigneeType))
     }
     // Get the updated task
+    const { workflowState, ...prevTaskClone } = prevTask
     const updatedTask = await this.db.task.update({
       where: { id },
       data: {
         ...data,
+        assigneeId: data.assigneeId === '' ? null : data.assigneeId,
         label,
         ...(await getTaskTimestamps('update', this.user, data, prevTask)),
       },
@@ -228,50 +206,7 @@ export class TasksService extends BaseService {
       }
     }
 
-    const notificationService = new NotificationService(this.user)
-    // If task is reassigned from a client, mark prev client notification as read
-    if (prevTask?.assigneeId != updatedTask.assigneeId && prevTask.assigneeType === AssigneeType.client) {
-      console.log('prev', prevTask)
-      console.log('updated', updatedTask)
-      await notificationService.markClientNotificationAsRead(prevTask)
-    }
-
-    // If task goes from unassigned to assigned, or assigneeId does not match
-    if (prevTask?.assigneeId != updatedTask.assigneeId && updatedTask.assigneeId) {
-      const notification = await notificationService.create(NotificationTaskActions.Assigned, updatedTask)
-      // If task has been reassigned to a client and it is not in a completed state yet,
-      // add it to the ClientNotifications table as well
-      if (!notification) {
-        console.error('Failed to trigger notification for task', prevTask)
-      }
-
-      // Add ClientNotification to new client
-      if (
-        updatedTask.assigneeType === AssigneeType.client &&
-        updatedTask.workflowState.type !== NotificationTaskActions.Completed
-      ) {
-        await notificationService.addToClientNotifications(
-          updatedTask,
-          NotificationCreatedResponseSchema.parse(notification),
-        )
-      }
-    }
-    // If task was previous in another state, and is moved to a 'completed' type WorkflowState by IU
-    if (
-      prevTask?.workflowState?.type !== 'completed' &&
-      updatedTask?.workflowState?.type === 'completed' &&
-      updatedTask.assigneeId
-    ) {
-      const notificationService = new NotificationService(this.user)
-      await notificationService.create(NotificationTaskActions.Completed, updatedTask)
-      if (updatedTask.assigneeType === AssigneeType.client) {
-        try {
-          await notificationService.markClientNotificationAsRead(updatedTask)
-        } catch (e: unknown) {
-          console.error(`Failed to find ClientNotification for task ${updatedTask.id}`, e)
-        }
-      }
-    }
+    await this.sendTaskUpdateNotifications(prevTask, updatedTask)
 
     return updatedTask
   }
@@ -281,8 +216,8 @@ export class TasksService extends BaseService {
     policyGate.authorize(UserAction.Delete, Resource.Tasks)
 
     // Try to delete existing client notification related to this task if exists
-    const task = await this.db.task.findFirst({ where: { id } })
-    if (task?.assigneeType === AssigneeType.client) {
+    const task = await this.db.task.findFirst({ where: { id }, include: { workflowState: true } })
+    if (task?.assigneeType === AssigneeType.client && task.workflowState.type !== NotificationTaskActions.Completed) {
       const notificationsService = new NotificationService(this.user)
       await notificationsService.markClientNotificationAsRead(task)
     }
@@ -325,5 +260,143 @@ export class TasksService extends BaseService {
     await notificationService.create(NotificationTaskActions.Completed, updatedTask)
     await notificationService.markClientNotificationAsRead(updatedTask)
     return updatedTask
+  }
+
+  private async sendUserTaskNotification(task: Task, notificationService: NotificationService) {
+    const notification = await notificationService.create(NotificationTaskActions.Assigned, task)
+    // Create a new entry in ClientNotifications table so we can mark as read on
+    // behalf of client later
+    if (!notification) {
+      console.error('Notification failed to trigger for task:', task)
+    }
+    if (task.assigneeType === AssigneeType.client) {
+      await notificationService.addToClientNotifications(task, NotificationCreatedResponseSchema.parse(notification))
+    }
+  }
+
+  private sendCompanyTaskNotifications = async (task: Task, notificationService: NotificationService) => {
+    const copilot = new CopilotAPI(this.user.token)
+    const { recipientIds } = await notificationService.getNotificationParties(
+      copilot,
+      task,
+      NotificationTaskActions.AssignedToCompany,
+    )
+    const notifications = await notificationService.createBulkNotification(
+      NotificationTaskActions.AssignedToCompany,
+      task,
+      recipientIds,
+    )
+
+    // This is a hacky way to bulk create ClientNotifications for all company members.
+    if (notifications) {
+      const notificationPromises = []
+      for (let i = 0; i < notifications.length; i++) {
+        // Basically we are treating an individual company member as a client recipient for a notification
+        // For each loop we are considering a separate task where that particular member is the assignee
+        notificationPromises.push(
+          notificationService.addToClientNotifications(
+            { ...task, assigneeId: recipientIds[0], assigneeType: AssigneeType.client },
+            notifications[i],
+          ),
+        )
+      }
+      await Promise.all(notificationPromises)
+    }
+  }
+
+  private async sendTaskCreateNotifications(task: Task & { workflowState: WorkflowState }) {
+    // If task is unassigned, there's nobody to send notifications to
+    if (!task.assigneeId) return
+
+    // If task is assigned to the same person that created it, no need to notify yourself
+    if (task.assigneeId === task.createdById) return
+
+    // If task is created as status completed for whatever reason, don't send a notification as well
+    if (task.workflowState.type === NotificationTaskActions.Completed) return
+
+    // If new task is assigned to someone (IU / Client / Company), send proper notification + email to them
+    const notificationService = new NotificationService(this.user)
+    const sendTaskNotifications =
+      task.assigneeType === AssigneeType.company ? this.sendCompanyTaskNotifications : this.sendUserTaskNotification
+    await sendTaskNotifications(task, notificationService)
+  }
+
+  private async sendTaskUpdateNotifications(
+    prevTask: Task & { workflowState: WorkflowState },
+    updatedTask: Task & { workflowState: WorkflowState },
+  ) {
+    const notificationService = new NotificationService(this.user)
+
+    // --- Handle previous assignee notification "Mark as read" if it is updated
+    if (prevTask.assigneeId != updatedTask.assigneeId && updatedTask.workflowState.type !== StateType.completed) {
+      // If task is reassigned from a client, mark prev client notification as read
+      if (prevTask.assigneeType === AssigneeType.client) {
+        await notificationService.markClientNotificationAsRead(prevTask)
+      }
+      // If task is reassigned from a company, fetch all company members and mark all of those notifications read
+      if (prevTask.assigneeType === AssigneeType.company) {
+        const copilot = new CopilotAPI(this.user.token)
+        const { recipientIds } = await notificationService.getNotificationParties(
+          copilot,
+          prevTask,
+          NotificationTaskActions.AssignedToCompany,
+        )
+
+        const markAsReadPromises = recipientIds.map((recipientId) =>
+          notificationService.markClientNotificationAsRead({
+            ...prevTask,
+            assigneeId: recipientId,
+            assigneeType: AssigneeType.client,
+          }),
+        )
+        await Promise.all(markAsReadPromises)
+      }
+
+      // Handle new assignee notification creation
+      // If task goes from unassigned to assigned, or from one assignee to another
+      if (updatedTask.assigneeId) {
+        await this.sendTaskCreateNotifications(updatedTask)
+        //! This might come in handy later, don't delete
+        // const notification = await notificationService.create(NotificationTaskActions.Assigned, updatedTask)
+        // // If task has been reassigned to a client and it is not in a completed state yet,
+        // // add it to the ClientNotifications table as well
+        // if (!notification) {
+        //   console.error('Failed to trigger notification for task', prevTask)
+        // }
+
+        // // Add ClientNotification to new client
+        // if (
+        //   updatedTask.assigneeType === AssigneeType.client &&
+        //   updatedTask.workflowState.type !== NotificationTaskActions.Completed
+        // ) {
+        //   await notificationService.addToClientNotifications(
+        //     updatedTask,
+        //     NotificationCreatedResponseSchema.parse(notification),
+        //   )
+        // }
+      }
+    }
+
+    // --- Handle task moved to completed logic
+    // If task was previous in another state, and is moved to a 'completed' type WorkflowState by IU
+    if (
+      prevTask?.workflowState?.type !== 'completed' &&
+      updatedTask?.workflowState?.type === 'completed' &&
+      updatedTask.assigneeId
+    ) {
+      await this.sendCompletedNotification(updatedTask)
+    }
+  }
+
+  async sendCompletedNotification(task: Task) {
+    const notificationService = new NotificationService(this.user)
+    await notificationService.create(NotificationTaskActions.Completed, task)
+    if (task.assigneeType === AssigneeType.client) {
+      try {
+        await notificationService.markClientNotificationAsRead(task)
+      } catch (e: unknown) {
+        console.error(`Failed to find ClientNotification for task ${task.id}`, e)
+      }
+    }
   }
 }
