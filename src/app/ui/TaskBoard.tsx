@@ -20,6 +20,7 @@ import { z } from 'zod'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { bulkRemoveAttachments } from '@/utils/bulkRemoveAttachments'
 import Scrollbars from 'react-custom-scrollbars'
+import { CustomScrollbar } from '@/hoc/CustomScrollbar'
 
 export const TaskBoard = ({
   getSignedUrlUpload,
@@ -79,22 +80,7 @@ export const TaskBoard = ({
             {workflowStates.map((list, index) => (
               <DragDropHandler key={list.id} accept={'taskCard'} index={index} id={list.id} onDropItem={onDropItem}>
                 <TaskColumn key={list.id} columnName={list.name} taskCount={taskCountForWorkflowStateId(list.id)}>
-                  <Scrollbars
-                    autoHide
-                    renderThumbVertical={(props) => (
-                      <div
-                        {...props}
-                        style={{
-                          borderRadius: '6px',
-                          padding: '4px',
-                          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                        }}
-                      />
-                    )}
-                    autoHideTimeout={200}
-                    autoHideDuration={200}
-                    hideTracksWhenNotNeeded={true}
-                  >
+                  <CustomScrollbar style={{ padding: '4px' }}>
                     <Stack direction="column" rowGap="6px" sx={{ overflowX: 'auto' }}>
                       {filterTaskWithWorkflowStateId(list.id).map((task, index) => {
                         return (
@@ -110,7 +96,7 @@ export const TaskBoard = ({
                         )
                       })}
                     </Stack>
-                  </Scrollbars>
+                  </CustomScrollbar>
                 </TaskColumn>
               </DragDropHandler>
             ))}
@@ -125,23 +111,7 @@ export const TaskBoard = ({
             height: 'calc(100vh - 135px)',
           }}
         >
-          <Scrollbars
-            autoHide
-            renderThumbVertical={(props) => (
-              <div
-                {...props}
-                className="thumb"
-                style={{
-                  borderRadius: '6px',
-                  backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                  width: '8px',
-                }}
-              />
-            )}
-            autoHideTimeout={200}
-            autoHideDuration={200}
-            hideTracksWhenNotNeeded={true}
-          >
+          <CustomScrollbar style={{ width: '8px' }}>
             {workflowStates.map((list, index) => (
               <DragDropHandler key={list.id} accept={'taskCard'} index={index} id={list.id} onDropItem={onDropItem}>
                 <TaskRow
@@ -168,7 +138,7 @@ export const TaskBoard = ({
                 </TaskRow>
               </DragDropHandler>
             ))}
-          </Scrollbars>
+          </CustomScrollbar>
         </Stack>
       )}
 
