@@ -9,7 +9,15 @@ interface ISearchBar {
 }
 
 const SearchBar = ({ value, getSearchKeyword }: ISearchBar) => {
-  const [focused, setFocused] = useState(false)
+  const [focused, setFocused] = useState<boolean>(false)
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Escape') {
+      const inputElement = e.target as HTMLInputElement
+      inputElement.blur()
+      setFocused(false)
+    }
+  }
 
   const inputRef = useRef<HTMLInputElement | null>(null)
 
@@ -36,6 +44,7 @@ const SearchBar = ({ value, getSearchKeyword }: ISearchBar) => {
         },
       }}
       size="small"
+      onKeyDown={handleKeyDown}
       InputProps={{
         startAdornment: (
           <InputAdornment

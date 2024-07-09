@@ -16,6 +16,10 @@ export const getInProductNotificationDetails = (
       title: 'Task was assigned to you',
       body: `A new task was assigned to you by ${actionUser}. To see details about the task, navigate to the Tasks App below.`,
     },
+    [NotificationTaskActions.AssignedToCompany]: {
+      title: 'Task was assigned to your company',
+      body: `A new task was assigned to your company by ${actionUser}. To see details about the task, navigate to the Tasks App below.`,
+    },
     [NotificationTaskActions.Completed]: {
       title: 'A client completed a task',
       body: `A new task was completed by ${actionUser}. You are receiving this notification because you have access to the client.`,
@@ -48,6 +52,12 @@ export const getEmailDetails = (
       subject: 'Task was assigned to you',
       header: 'Task was assigned to you',
       body: `A new task was assigned to you by ${actionUser}. To see details about the task, navigate to the Tasks App below.`,
+    },
+    [NotificationTaskActions.AssignedToCompany]: {
+      title: 'Task was assigned to your company',
+      subject: 'Task was assigned to your company',
+      header: 'Task was assigned to your company',
+      body: `A new task was assigned to your company by ${actionUser}. To see details about the task, navigate to the Tasks App below.`,
     },
     [NotificationTaskActions.Completed]: {
       title: 'A client completed a task',

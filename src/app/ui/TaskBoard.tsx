@@ -71,14 +71,13 @@ export const TaskBoard = ({
           <Stack
             columnGap={6}
             sx={{
-              overflowX: 'auto',
               flexDirection: 'row',
             }}
           >
             {workflowStates.map((list, index) => (
               <DragDropHandler key={list.id} accept={'taskCard'} index={index} id={list.id} onDropItem={onDropItem}>
                 <TaskColumn key={list.id} columnName={list.name} taskCount={taskCountForWorkflowStateId(list.id)}>
-                  <Box mt="6px">
+                  <Box mt="6px" sx={{ overflowX: 'auto' }}>
                     {filterTaskWithWorkflowStateId(list.id).map((task, index) => {
                       return (
                         <DragDropHandler key={task.id} accept={'taskCard'} index={index} id={task.id || ''} draggable>

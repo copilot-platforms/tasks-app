@@ -64,9 +64,10 @@ export class NotificationService extends BaseService {
    * defined by NotificationTaskActions. This method returns the senderId, receiverId, and actionUser (user that is creating the notification action)
    * based on the NotificationTaskActions.
    */
-  private async getNotificationParties(copilot: CopilotAPI, task: Task, action: NotificationTaskActions) {
+  async getNotificationParties(copilot: CopilotAPI, task: Task, action: NotificationTaskActions) {
     let senderId: string
-    let recipientId: string
+    let recipientId: string = ''
+    let recipientIds: string[] = []
     let actionTrigger: CopilotUser | CompanyResponse
 
     const getAssignedTo = async (): Promise<CopilotUser | CompanyResponse> => {
@@ -88,6 +89,11 @@ export class NotificationService extends BaseService {
         recipientId = z.string().parse(task.assigneeId)
         actionTrigger = await copilot.getInternalUser(senderId)
         break
+      case NotificationTaskActions.AssignedToCompany:
+        senderId = task.createdById
+        recipientIds = (await copilot.getCompanyClients(z.string().parse(task.assigneeId))).map((client) => client.id)
+        actionTrigger = await copilot.getInternalUser(senderId)
+        break
       case NotificationTaskActions.Completed:
         senderId = z.string().parse(task.assigneeId)
         recipientId = task.createdById
@@ -106,6 +112,6 @@ export class NotificationService extends BaseService {
         ? (actionTrigger as CompanyResponse).name
         : `${(actionTrigger as CopilotUser).givenName} ${(actionTrigger as CopilotUser).familyName}`
 
-    return { senderId, recipientId, actionUser }
+    return { senderId, recipientId, recipientIds, actionUser }
   }
 }
