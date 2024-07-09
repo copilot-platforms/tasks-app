@@ -165,6 +165,19 @@ export type CopilotUser = InternalUsers | ClientResponse
 
 export type NotificationRequestBody = z.infer<typeof NotificationRequestBodySchema>
 
+export const NotificationCreatedResponseSchema = z.object({
+  id: z.string().uuid(),
+  appId: z.string().uuid().optional(),
+  createdAt: z.string().datetime(),
+  event: z.string().optional(),
+  object: z.string().optional(),
+  recipientId: z.string().optional(),
+  resourceId: z.string().optional(),
+  senderId: z.string().optional(),
+  senderType: z.string().optional(),
+})
+export type NotificationCreatedResponse = z.infer<typeof NotificationCreatedResponseSchema>
+
 export const UserSchema = z.object({
   token: z.string(),
   role: z.nativeEnum(UserRole),
