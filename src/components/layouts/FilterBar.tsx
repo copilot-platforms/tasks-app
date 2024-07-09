@@ -210,7 +210,7 @@ export const FilterBar = ({
           direction="row"
           justifyContent="space-between"
           alignItems="center"
-          sx={{ display: { sm: 'flex', sd: 'none' }, mb: { xs: '12px', md: '0px' } }}
+          sx={{ display: { sm: 'flex', sd: 'none' }, mb: { xs: '12px', md: '0px' }, maxHeight: '30px' }}
         >
           <Selector
             getSelectedValue={(_newValue) => {

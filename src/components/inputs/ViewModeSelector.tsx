@@ -15,7 +15,7 @@ export const ViewModeSelector = ({ handleModeChange, selectedMode }: Prop) => {
       sx={{
         border: (theme) => `1px solid ${theme.color.borders.border2}`,
         borderRadius: '4px',
-        padding: '4px 6px 4px 6px',
+        padding: '3px 6px 3px 6px',
         cursor: 'pointer',
       }}
     >
