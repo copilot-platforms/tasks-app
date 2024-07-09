@@ -42,6 +42,7 @@ const FilterButtonGroup = ({
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
+                  maxWidth: { xs: '55px', sm: 'none' },
                 }}
               >
                 {item.name}

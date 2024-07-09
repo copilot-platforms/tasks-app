@@ -19,6 +19,8 @@ import { handleCreate, updateTask } from '@/app/actions'
 import { z } from 'zod'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { bulkRemoveAttachments } from '@/utils/bulkRemoveAttachments'
+import Scrollbars from 'react-custom-scrollbars'
+import { CustomScrollbar } from '@/hoc/CustomScrollbar'
 
 export const TaskBoard = ({
   getSignedUrlUpload,
@@ -78,21 +80,23 @@ export const TaskBoard = ({
             {workflowStates.map((list, index) => (
               <DragDropHandler key={list.id} accept={'taskCard'} index={index} id={list.id} onDropItem={onDropItem}>
                 <TaskColumn key={list.id} columnName={list.name} taskCount={taskCountForWorkflowStateId(list.id)}>
-                  <Box mt="6px">
-                    {filterTaskWithWorkflowStateId(list.id).map((task, index) => {
-                      return (
-                        <DragDropHandler key={task.id} accept={'taskCard'} index={index} id={task.id || ''} draggable>
-                          <Box key={task.id} m="6px 0px">
-                            <TaskCard
-                              task={task}
-                              key={task.id}
-                              href={{ pathname: `/detail/${task.id}/iu`, query: { token } }}
-                            />
-                          </Box>
-                        </DragDropHandler>
-                      )
-                    })}
-                  </Box>
+                  <CustomScrollbar style={{ padding: '4px' }}>
+                    <Stack direction="column" rowGap="6px" sx={{ overflowX: 'auto' }}>
+                      {filterTaskWithWorkflowStateId(list.id).map((task, index) => {
+                        return (
+                          <DragDropHandler key={task.id} accept={'taskCard'} index={index} id={task.id || ''} draggable>
+                            <Box key={task.id}>
+                              <TaskCard
+                                task={task}
+                                key={task.id}
+                                href={{ pathname: `/detail/${task.id}/iu`, query: { token } }}
+                              />
+                            </Box>
+                          </DragDropHandler>
+                        )
+                      })}
+                    </Stack>
+                  </CustomScrollbar>
                 </TaskColumn>
               </DragDropHandler>
             ))}
@@ -103,36 +107,38 @@ export const TaskBoard = ({
       {view === View.LIST_VIEW && (
         <Stack
           sx={{
-            overflowX: 'auto',
             flexDirection: 'column',
+            height: 'calc(100vh - 135px)',
           }}
         >
-          {workflowStates.map((list, index) => (
-            <DragDropHandler key={list.id} accept={'taskCard'} index={index} id={list.id} onDropItem={onDropItem}>
-              <TaskRow
-                key={list.id}
-                columnName={list.name}
-                taskCount={taskCountForWorkflowStateId(list.id)}
-                showConfigurableIcons={false}
-                display={!!filterTaskWithWorkflowStateId(list.id).length}
-              >
-                {filterTaskWithWorkflowStateId(list.id).map((task, index) => {
-                  return (
-                    <DragDropHandler key={task.id} accept={'taskCard'} index={index} id={task.id || ''} draggable>
-                      <ListViewTaskCard
-                        key={task.id}
-                        task={task}
-                        href={{ pathname: `/detail/${task.id}/iu`, query: { token } }}
-                        updateTask={({ payload }) => {
-                          updateTask({ token: z.string().parse(token), taskId: task.id, payload })
-                        }}
-                      />
-                    </DragDropHandler>
-                  )
-                })}
-              </TaskRow>
-            </DragDropHandler>
-          ))}
+          <CustomScrollbar style={{ width: '8px' }}>
+            {workflowStates.map((list, index) => (
+              <DragDropHandler key={list.id} accept={'taskCard'} index={index} id={list.id} onDropItem={onDropItem}>
+                <TaskRow
+                  key={list.id}
+                  columnName={list.name}
+                  taskCount={taskCountForWorkflowStateId(list.id)}
+                  showConfigurableIcons={false}
+                  display={!!filterTaskWithWorkflowStateId(list.id).length}
+                >
+                  {filterTaskWithWorkflowStateId(list.id).map((task, index) => {
+                    return (
+                      <DragDropHandler key={task.id} accept={'taskCard'} index={index} id={task.id || ''} draggable>
+                        <ListViewTaskCard
+                          key={task.id}
+                          task={task}
+                          href={{ pathname: `/detail/${task.id}/iu`, query: { token } }}
+                          updateTask={({ payload }) => {
+                            updateTask({ token: z.string().parse(token), taskId: task.id, payload })
+                          }}
+                        />
+                      </DragDropHandler>
+                    )
+                  })}
+                </TaskRow>
+              </DragDropHandler>
+            ))}
+          </CustomScrollbar>
         </Stack>
       )}
 

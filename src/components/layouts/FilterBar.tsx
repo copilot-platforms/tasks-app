@@ -123,7 +123,7 @@ export const FilterBar = ({
         borderBottom: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
       }}
     >
-      <Box>
+      <Box sx={{ overflowX: 'hidden' }}>
         <AppMargin size={SizeofAppMargin.LARGE} py="12px">
           <Stack direction={'row'} justifyContent={'space-between'} sx={{ maxHeight: '32px' }}>
             <Stack direction={'row'} columnGap={3}>
@@ -210,7 +210,7 @@ export const FilterBar = ({
           direction="row"
           justifyContent="space-between"
           alignItems="center"
-          sx={{ display: { sm: 'flex', sd: 'none' }, mb: { xs: '12px', md: '0px' }, minWidth: '340px' }}
+          sx={{ display: { sm: 'flex', sd: 'none' }, mb: { xs: '12px', md: '0px' }, maxHeight: '30px' }}
         >
           <Selector
             getSelectedValue={(_newValue) => {
