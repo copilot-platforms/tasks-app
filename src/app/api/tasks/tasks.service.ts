@@ -351,8 +351,8 @@ export class TasksService extends BaseService {
     // --- Handle task moved to completed logic
     // If task was previous in another state, and is moved to a 'completed' type WorkflowState by IU
     if (
-      prevTask?.workflowState?.type !== 'completed' &&
-      updatedTask?.workflowState?.type === 'completed' &&
+      prevTask?.workflowState?.type !== StateType.completed &&
+      updatedTask?.workflowState?.type === StateType.completed &&
       updatedTask.assigneeId
     ) {
       const notificationService = new NotificationService(this.user)

@@ -88,7 +88,9 @@ export class NotificationService extends BaseService {
         },
       })
       if (!relatedNotification) {
-        console.error(`Failed to delete client notification for task id ${task.id}`)
+        console.error(
+          `Failed to delete client notification for task id ${task.id} because the notification for client ${task.assigneeId} was not found`,
+        )
         return
       }
 
@@ -130,7 +132,7 @@ export class NotificationService extends BaseService {
         case AssigneeType.internalUser:
           return await copilot.getInternalUser(senderId)
         case AssigneeType.client:
-          return await copilot.getClient(z.string().parse(task.assigneeId))
+          return await copilot.getClient(z.string().uuid().parse(task.assigneeId))
         case AssigneeType.company:
           return await copilot.getCompany(z.string().parse(task.assigneeId))
         default:
