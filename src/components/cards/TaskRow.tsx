@@ -19,6 +19,7 @@ export const TaskRow = ({ children, columnName, taskCount, showConfigurableIcons
       <Box
         sx={{
           background: (theme) => theme.color.gray[100],
+          borderBottom: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
         }}
       >
         <AppMargin size={SizeofAppMargin.LARGE} py="6px">
