@@ -19,6 +19,7 @@ import { handleCreate, updateTask } from '@/app/actions'
 import { z } from 'zod'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { bulkRemoveAttachments } from '@/utils/bulkRemoveAttachments'
+import Scrollbars from 'react-custom-scrollbars'
 
 export const TaskBoard = ({
   getSignedUrlUpload,
@@ -72,26 +73,44 @@ export const TaskBoard = ({
             columnGap={6}
             sx={{
               flexDirection: 'row',
+              overflowX: 'auto',
             }}
           >
             {workflowStates.map((list, index) => (
               <DragDropHandler key={list.id} accept={'taskCard'} index={index} id={list.id} onDropItem={onDropItem}>
                 <TaskColumn key={list.id} columnName={list.name} taskCount={taskCountForWorkflowStateId(list.id)}>
-                  <Box mt="6px" sx={{ overflowX: 'auto' }}>
-                    {filterTaskWithWorkflowStateId(list.id).map((task, index) => {
-                      return (
-                        <DragDropHandler key={task.id} accept={'taskCard'} index={index} id={task.id || ''} draggable>
-                          <Box key={task.id} m="6px 0px">
-                            <TaskCard
-                              task={task}
-                              key={task.id}
-                              href={{ pathname: `/detail/${task.id}/iu`, query: { token } }}
-                            />
-                          </Box>
-                        </DragDropHandler>
-                      )
-                    })}
-                  </Box>
+                  <Scrollbars
+                    autoHide
+                    renderThumbVertical={(props) => (
+                      <div
+                        {...props}
+                        style={{
+                          borderRadius: '6px',
+                          padding: '4px',
+                          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                        }}
+                      />
+                    )}
+                    autoHideTimeout={200}
+                    autoHideDuration={200}
+                    hideTracksWhenNotNeeded={true}
+                  >
+                    <Stack direction="column" rowGap="6px" sx={{ overflowX: 'auto' }}>
+                      {filterTaskWithWorkflowStateId(list.id).map((task, index) => {
+                        return (
+                          <DragDropHandler key={task.id} accept={'taskCard'} index={index} id={task.id || ''} draggable>
+                            <Box key={task.id}>
+                              <TaskCard
+                                task={task}
+                                key={task.id}
+                                href={{ pathname: `/detail/${task.id}/iu`, query: { token } }}
+                              />
+                            </Box>
+                          </DragDropHandler>
+                        )
+                      })}
+                    </Stack>
+                  </Scrollbars>
                 </TaskColumn>
               </DragDropHandler>
             ))}
@@ -102,36 +121,54 @@ export const TaskBoard = ({
       {view === View.LIST_VIEW && (
         <Stack
           sx={{
-            overflowX: 'auto',
             flexDirection: 'column',
+            height: 'calc(100vh - 135px)',
           }}
         >
-          {workflowStates.map((list, index) => (
-            <DragDropHandler key={list.id} accept={'taskCard'} index={index} id={list.id} onDropItem={onDropItem}>
-              <TaskRow
-                key={list.id}
-                columnName={list.name}
-                taskCount={taskCountForWorkflowStateId(list.id)}
-                showConfigurableIcons={false}
-                display={!!filterTaskWithWorkflowStateId(list.id).length}
-              >
-                {filterTaskWithWorkflowStateId(list.id).map((task, index) => {
-                  return (
-                    <DragDropHandler key={task.id} accept={'taskCard'} index={index} id={task.id || ''} draggable>
-                      <ListViewTaskCard
-                        key={task.id}
-                        task={task}
-                        href={{ pathname: `/detail/${task.id}/iu`, query: { token } }}
-                        updateTask={({ payload }) => {
-                          updateTask({ token: z.string().parse(token), taskId: task.id, payload })
-                        }}
-                      />
-                    </DragDropHandler>
-                  )
-                })}
-              </TaskRow>
-            </DragDropHandler>
-          ))}
+          <Scrollbars
+            autoHide
+            renderThumbVertical={(props) => (
+              <div
+                {...props}
+                className="thumb"
+                style={{
+                  borderRadius: '6px',
+                  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                  width: '8px',
+                }}
+              />
+            )}
+            autoHideTimeout={200}
+            autoHideDuration={200}
+            hideTracksWhenNotNeeded={true}
+          >
+            {workflowStates.map((list, index) => (
+              <DragDropHandler key={list.id} accept={'taskCard'} index={index} id={list.id} onDropItem={onDropItem}>
+                <TaskRow
+                  key={list.id}
+                  columnName={list.name}
+                  taskCount={taskCountForWorkflowStateId(list.id)}
+                  showConfigurableIcons={false}
+                  display={!!filterTaskWithWorkflowStateId(list.id).length}
+                >
+                  {filterTaskWithWorkflowStateId(list.id).map((task, index) => {
+                    return (
+                      <DragDropHandler key={task.id} accept={'taskCard'} index={index} id={task.id || ''} draggable>
+                        <ListViewTaskCard
+                          key={task.id}
+                          task={task}
+                          href={{ pathname: `/detail/${task.id}/iu`, query: { token } }}
+                          updateTask={({ payload }) => {
+                            updateTask({ token: z.string().parse(token), taskId: task.id, payload })
+                          }}
+                        />
+                      </DragDropHandler>
+                    )
+                  })}
+                </TaskRow>
+              </DragDropHandler>
+            ))}
+          </Scrollbars>
         </Stack>
       )}
 
