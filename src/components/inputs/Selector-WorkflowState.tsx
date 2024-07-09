@@ -1,8 +1,8 @@
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { SecondaryBtn } from '../buttons/SecondaryBtn'
-import { statusIcons } from '@/utils/iconMatcher'
+import { statusIcons, statusIconsMedium, statusIconsSmall } from '@/utils/iconMatcher'
 import { Box, ClickAwayListener, Popper, Stack, Typography } from '@mui/material'
-import { ReactNode, useEffect, useState } from 'react'
+import { ReactNode, useState } from 'react'
 
 export const WorkflowStateSelector = ({
   value,
@@ -29,15 +29,33 @@ export const WorkflowStateSelector = ({
     }
   }
 
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    event.stopPropagation()
+    if (event.key === 'Escape') {
+      setAnchorEl(null)
+    }
+  }
+
   return (
-    <ClickAwayListener onClickAway={() => setAnchorEl(null)}>
-      <Box>
+    <ClickAwayListener
+      onClickAway={() => {
+        setAnchorEl(null)
+      }}
+    >
+      <Box
+        onKeyDown={handleKeyDown}
+        tabIndex={0}
+        sx={{
+          outline: 'none',
+          boxShadow: 'none',
+        }}
+      >
         <Box onClick={handleClick} aria-describedby={id}>
           {disableOutline ? (
             <Stack
               direction="row"
               alignItems="center"
-              columnGap="4px"
+              columnGap="7px"
               justifyContent="flex-start"
               sx={{
                 padding: '4px 8px',
@@ -51,12 +69,13 @@ export const WorkflowStateSelector = ({
             >
               <Box>{statusIcons[value?.type]}</Box>
               <Typography
-                variant="bodySm"
+                variant="md"
                 sx={{
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
                   display: { xs: responsiveNoHide ? 'block' : 'none', sm: 'block' },
+                  lineHeight: '22px',
                 }}
               >
                 {value?.name as ReactNode}
@@ -64,9 +83,9 @@ export const WorkflowStateSelector = ({
             </Stack>
           ) : (
             <SecondaryBtn
-              startIcon={statusIcons[value?.type]}
+              startIcon={statusIconsSmall[value?.type]}
               buttonContent={
-                <Typography variant="bodySm" lineHeight="16px" sx={{ color: (theme) => theme.color.gray[600] }}>
+                <Typography variant="bodySm" sx={{ color: (theme) => theme.color.gray[600], fontSize: '12px' }}>
                   {value?.name as ReactNode}
                 </Typography>
               }
@@ -89,6 +108,7 @@ export const WorkflowStateSelector = ({
               boxShadow: '0px 6px 20px 0px rgba(0, 0, 0, 0.12)',
               background: (theme) => theme.color.base.white,
             }}
+            rowGap={'2px'}
           >
             {option.map((el, key) => {
               return (
@@ -97,7 +117,7 @@ export const WorkflowStateSelector = ({
                   key={key}
                   columnGap="12px"
                   sx={{
-                    padding: '6px 12px',
+                    padding: '4px 8px',
                     width: '180px',
                     ':hover': {
                       cursor: 'pointer',
@@ -109,8 +129,8 @@ export const WorkflowStateSelector = ({
                     setAnchorEl(null)
                   }}
                 >
-                  <Box>{statusIcons[el?.type]}</Box>
-                  <Typography variant="bodySm" fontWeight={400}>
+                  <Box padding={'4px 0px'}>{statusIconsMedium[el?.type]}</Box>
+                  <Typography variant="bodySm" fontWeight={400} lineHeight={'21px'}>
                     {el.name}
                   </Typography>
                 </Stack>
