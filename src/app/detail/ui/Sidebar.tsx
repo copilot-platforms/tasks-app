@@ -20,6 +20,7 @@ import ExtraOptionRendererAssignee from '@/components/inputs/ExtraOptionRenderer
 import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { AssigneePlaceholder } from '@/icons'
+import { updateTaskDetail } from '../[task_id]/[user_type]/actions'
 
 const StyledText = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[500],

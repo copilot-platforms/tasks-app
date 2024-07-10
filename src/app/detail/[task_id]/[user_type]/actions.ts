@@ -1,21 +1,51 @@
 'use server'
 
-import { apiUrl } from '@/config'
+import { advancedFeatureFlag, apiUrl } from '@/config'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { CreateComment } from '@/types/dto/comment.dto'
+import { UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { revalidateTag } from 'next/cache'
 import { redirect } from 'next/navigation'
 
-export const updateTaskDetail = async (token: string, task_id: string, title: string, detail: string) => {
-  await fetch(`${apiUrl}/api/tasks/${task_id}?token=${token}`, {
+export const updateTaskDetail = async ({
+  token,
+  taskId,
+  payload,
+}: {
+  token: string
+  taskId: string
+  payload: UpdateTaskRequest
+}) => {
+  await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
     method: 'PATCH',
     body: JSON.stringify({
-      title,
-      body: detail,
+      workflowStateId: payload.workflowStateId,
+      assigneeId: payload.assigneeId,
+      assigneeType: payload.assigneeType,
+      body: payload.body,
+      title: payload.title,
+      dueDate: payload.dueDate,
     }),
   })
-  revalidateTag('getAllTasks')
-  revalidateTag('getActivities')
+  revalidateTag('getTasks')
+}
+
+/**
+ * Use the new update task function instead. This will be completely removed in the upcoming PRs.
+ */
+export const updateWorkflowStateIdOfTask = async (token: string, taskId: string, targetWorkflowStateId: string) => {
+  await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
+    method: 'PATCH',
+    body: JSON.stringify({
+      workflowStateId: targetWorkflowStateId,
+    }),
+  })
+  revalidateTag('getTasks')
+  //revalidation on update assignee is disabled for now since we don't have activity log enabled
+  //this revalidation can be rethought and may not be needed to prevent unexpected flickering
+  if (advancedFeatureFlag) {
+    revalidateTag('getActivities')
+  }
 }
 
 export const updateAssignee = async (
@@ -31,16 +61,18 @@ export const updateAssignee = async (
       assigneeId,
     }),
   })
-  revalidateTag('getOneTask')
-  revalidateTag('getAllTasks')
-  revalidateTag('getActivities')
+  revalidateTag('getTasks')
+  //revalidation on update assignee is disabled for now since we don't have activity log enabled
+  //this revalidation can be rethought and may not be needed to prevent unexpected flickering
+  if (advancedFeatureFlag) {
+    revalidateTag('getActivities')
+  }
 }
 
 export const deleteTask = async (token: string, task_id: string) => {
   await fetch(`${apiUrl}/api/tasks/${task_id}?token=${token}`, {
     method: 'DELETE',
   })
-  revalidateTag('getAllTasks')
   redirect(`/?token=${token}`)
 }
 

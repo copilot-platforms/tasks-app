@@ -10,7 +10,7 @@ import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { useSelector } from 'react-redux'
 import { clearCreateTaskFields, selectCreateTask, setShowModal } from '@/redux/features/createTaskSlice'
 import store from '@/redux/store'
-import { selectTaskBoard, updateWorkflowStateIdByTaskId } from '@/redux/features/taskBoardSlice'
+import { appendTask, selectTaskBoard, updateWorkflowStateIdByTaskId } from '@/redux/features/taskBoardSlice'
 import { CreateTaskRequestSchema, TaskResponse } from '@/types/dto/tasks.dto'
 import { ListViewTaskCard } from '@/components/cards/ListViewTaskCard'
 import { TaskRow } from '@/components/cards/TaskRow'
@@ -19,7 +19,6 @@ import { handleCreate, updateTask } from '@/app/actions'
 import { z } from 'zod'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { bulkRemoveAttachments } from '@/utils/bulkRemoveAttachments'
-import Scrollbars from 'react-custom-scrollbars'
 import { CustomScrollbar } from '@/hoc/CustomScrollbar'
 
 export const TaskBoard = ({
@@ -66,6 +65,7 @@ export const TaskBoard = ({
     }
     return filteredTaskCount.toString() + '/' + taskCount.toString()
   }
+
   return (
     <>
       {view === View.BOARD_VIEW && (
@@ -168,6 +168,7 @@ export const TaskBoard = ({
                   dueDate,
                 }),
               )
+              store.dispatch(appendTask(createdTask))
               const toUploadAttachments: CreateAttachmentRequest[] = attachments.map((el) => {
                 return {
                   ...el,
