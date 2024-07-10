@@ -107,6 +107,13 @@ export const DatePickerComponent = ({ getDate, dateValue, disabled, isButton = f
                 },
               },
             },
+            yearButton: {
+              sx: {
+                '&.MuiPickersYear-yearButton.Mui-selected': {
+                  backgroundColor: '#6B6F76',
+                },
+              },
+            },
           }}
           sx={{
             '& .MuiOutlinedInput-input': {
