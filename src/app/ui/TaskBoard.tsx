@@ -19,8 +19,8 @@ import { handleCreate, updateTask } from '@/app/actions'
 import { z } from 'zod'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { bulkRemoveAttachments } from '@/utils/bulkRemoveAttachments'
-import Scrollbars from 'react-custom-scrollbars'
 import { CustomScrollbar } from '@/hoc/CustomScrollbar'
+import DashboardEmptyState from '@/components/layouts/EmptyState/DashboardEmptyState'
 
 export const TaskBoard = ({
   getSignedUrlUpload,
@@ -66,7 +66,8 @@ export const TaskBoard = ({
     }
     return filteredTaskCount.toString() + '/' + taskCount.toString()
   }
-  return (
+
+  const ViewTypeBoard = () => (
     <>
       {view === View.BOARD_VIEW && (
         <AppMargin size={SizeofAppMargin.LARGE} py="20px">
@@ -141,7 +142,12 @@ export const TaskBoard = ({
           </CustomScrollbar>
         </Stack>
       )}
+    </>
+  )
 
+  return (
+    <>
+      {tasks.length ? <ViewTypeBoard /> : <DashboardEmptyState />}
       <Modal
         open={showModal}
         onClose={async () => {
