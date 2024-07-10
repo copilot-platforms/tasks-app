@@ -218,6 +218,7 @@ export const NewTaskForm = ({
                 )
               }}
               selectorType={SelectorType.ASSIGNEE_SELECTOR}
+              buttonHeight="auto"
               buttonContent={
                 <Typography
                   variant="bodySm"
@@ -238,14 +239,13 @@ export const NewTaskForm = ({
               }
             />
           </Stack>
-          <Stack alignSelf="flex-start" sx={{ padding: { xs: '2px', sm: '0px' } }}>
+          <Stack alignSelf="flex-start">
             <Box
               sx={{
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 maxWidth: { xs: '102px', sm: 'none' },
-                display: '',
               }}
             >
               <DatePickerComponent
