@@ -27,7 +27,7 @@ export const SecondaryBtn = ({
         '&:hover': {
           border: enableBackground || outlined ? 'none' : `1px solid ${theme.color.borders.border}`,
         },
-        padding: { xs: '1px 9px', md: '4px 16px' },
+        padding: { xs: '2px 9px', md: '4px 16px' },
         cursor: 'pointer',
       })}
       onClick={handleClick}

@@ -35,6 +35,7 @@ interface Prop {
   disableOutline?: boolean
   padding?: string
   buttonWidth?: string
+  buttonHeight?: string
   responsiveNoHide?: boolean
 }
 
@@ -52,6 +53,7 @@ export default function Selector({
   disableOutline,
   padding,
   buttonWidth,
+  buttonHeight,
   responsiveNoHide,
 }: Prop) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
@@ -149,6 +151,7 @@ export default function Selector({
             outlined={disableOutline}
             disabled={disabled}
             padding={padding}
+            height={buttonHeight}
           />
         )}
       </Box>
@@ -169,6 +172,7 @@ export default function Selector({
           }}
           openOnFocus
           onKeyDown={handleKeyDown}
+          ListboxProps={{ sx: { maxHeight: { xs: '175px', sm: '299px' } } }}
           autoHighlight
           options={extraOption ? [extraOption, ...options] : options}
           value={value}
@@ -325,6 +329,7 @@ const SelectorButton = ({
   outlined,
   padding,
   disabled,
+  height,
 }: {
   startIcon?: ReactNode
   buttonContent: ReactNode
@@ -333,6 +338,7 @@ const SelectorButton = ({
   outlined?: boolean
   padding?: string
   disabled?: boolean
+  height?: string
 }) => {
   return (
     <Button
@@ -355,7 +361,7 @@ const SelectorButton = ({
             fontSize: '13px',
           },
         },
-        height: '32px',
+        height: height ? height : '32px',
       })}
       onClick={handleClick}
       disableRipple
