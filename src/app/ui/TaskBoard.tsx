@@ -14,7 +14,7 @@ import { selectTaskBoard, updateWorkflowStateIdByTaskId } from '@/redux/features
 import { CreateTaskRequestSchema, TaskResponse } from '@/types/dto/tasks.dto'
 import { ListViewTaskCard } from '@/components/cards/ListViewTaskCard'
 import { TaskRow } from '@/components/cards/TaskRow'
-import { ISignedUrlUpload, View } from '@/types/interfaces'
+import { ISignedUrlUpload, UserType, View } from '@/types/interfaces'
 import { handleCreate, updateTask } from '@/app/actions'
 import { z } from 'zod'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
@@ -147,7 +147,7 @@ export const TaskBoard = ({
 
   return (
     <>
-      {tasks.length ? <ViewTypeBoard /> : <DashboardEmptyState />}
+      {tasks.length ? <ViewTypeBoard /> : <DashboardEmptyState userType={UserType.INTERNAL_USER} />}
       <Modal
         open={showModal}
         onClose={async () => {
