@@ -93,6 +93,8 @@ export const DatePickerComponent = ({ getDate, dateValue, disabled, isButton = f
             },
           },
         ]}
+        // This hides popper's tooltip that helps position the content. display: none would mess up the positioning
+        sx={{ opacity: 0 }}
       >
         <DatePicker
           disablePast
