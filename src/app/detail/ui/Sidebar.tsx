@@ -59,7 +59,7 @@ export const Sidebar = ({
 
   const statusValue = _statusValue as WorkflowStateResponse //typecasting
   const assigneeValue = _assigneeValue as IAssigneeCombined //typecasting
-  console.log(assigneeValue)
+
   const matches = useMediaQuery('(max-width:600px)')
   return (
     <Box
