@@ -9,12 +9,14 @@ export const SecondaryBtn = ({
   handleClick,
   enableBackground,
   outlined,
+  padding,
 }: {
   startIcon?: ReactNode
   buttonContent: ReactNode
   handleClick?: (() => void) | ((e: React.MouseEvent) => void)
   enableBackground?: boolean
   outlined?: boolean
+  padding?: string
 }) => {
   return (
     <Button
@@ -27,7 +29,7 @@ export const SecondaryBtn = ({
         '&:hover': {
           border: enableBackground || outlined ? 'none' : `1px solid ${theme.color.borders.border}`,
         },
-        padding: { xs: '2px 9px', md: '4px 16px' },
+        padding: padding ? padding : { xs: '2px 9px', md: '4px 16px' },
         cursor: 'pointer',
       })}
       onClick={handleClick}
