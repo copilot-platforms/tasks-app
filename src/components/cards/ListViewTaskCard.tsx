@@ -71,11 +71,13 @@ export const ListViewTaskCard = ({
                 <Box
                   sx={{
                     display: 'flex',
-                    minWidth: '80px',
+                    maxWidth: '100px',
                     gap: '33px',
                     flexDirection: 'row',
                     alignItems: 'flex-end',
                     justifyContent: 'flex-end',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
                   }}
                 >
                   {task.dueDate && <DueDateLayout date={task.dueDate} />}
