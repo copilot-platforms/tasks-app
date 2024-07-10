@@ -21,8 +21,8 @@ export const filterUsersByKeyword = (users: FilterableUser[], keyword: string): 
   )
 }
 
-export const getDebouncedFilteredAssignees = (
-  activeDebounceTimeoutId: NodeJS.Timeout,
+export const setDebouncedFilteredAssignees = (
+  activeDebounceTimeoutId: NodeJS.Timeout | null,
   setActiveDebounceTimeoutId: Dispatch<SetStateAction<NodeJS.Timeout | null>>,
   setAssigneeState: Dispatch<SetStateAction<IAssigneeCombined[]>>,
   token: string,

@@ -21,9 +21,8 @@ import { IUTokenSchema } from '@/types/common'
 import { NoAssigneeExtraOptions } from '@/utils/noAssignee'
 import ExtraOptionRendererAssignee from '@/components/inputs/ExtraOptionRendererAssignee'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
-import { getAssigneeList } from '@/services/users'
 import { z } from 'zod'
-import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
+import { setDebouncedFilteredAssignees } from '@/utils/users'
 
 export const FilterBar = ({
   updateViewModeSetting,
@@ -168,14 +167,13 @@ export const FilterBar = ({
                     }
                     padding="2px 10px"
                     handleInputChange={async (newInputValue: string) => {
-                      if (activeDebounceTimeoutId) {
-                        clearTimeout(activeDebounceTimeoutId)
-                      }
-                      const newTimeoutId = setTimeout(async () => {
-                        const newAssignees = await getAssigneeList(z.string().parse(token), newInputValue)
-                        setFilteredAssignee(addTypeToAssignee(newAssignees))
-                      }, 1000)
-                      setActiveDebounceTimeoutId(newTimeoutId)
+                      setDebouncedFilteredAssignees(
+                        activeDebounceTimeoutId,
+                        setActiveDebounceTimeoutId,
+                        setFilteredAssignee,
+                        z.string().parse(token),
+                        newInputValue,
+                      )
                     }}
                     filterOption={(x: unknown) => x}
                   />
