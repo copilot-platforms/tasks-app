@@ -148,22 +148,20 @@ export const Sidebar = ({
             responsiveNoHide
           />
         </Stack>
-        <Stack direction="row" m="20px 0px" alignItems="center" columnGap="10px">
+        <Stack direction="row" m="20px 0px" alignItems="center" columnGap="10px" minWidth="fit-content">
           <StyledText variant="md" minWidth="80px">
             Due Date
           </StyledText>
-          <Box sx={{ minWidth: '200px' }}>
-            <DatePickerComponent
-              getDate={(date) => {
-                const isoDate = formatDate(date)
-                updateTask({
-                  dueDate: isoDate,
-                })
-              }}
-              dateValue={dueDate ? isoToReadableDate(dueDate) : undefined}
-              disabled={disabled}
-            />
-          </Box>
+          <DatePickerComponent
+            getDate={(date) => {
+              const isoDate = formatDate(date)
+              updateTask({
+                dueDate: isoDate,
+              })
+            }}
+            dateValue={dueDate ? isoToReadableDate(dueDate) : undefined}
+            disabled={disabled}
+          />
         </Stack>
       </AppMargin>
     </Box>
