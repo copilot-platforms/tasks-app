@@ -26,7 +26,6 @@ import {
   updateAssignee,
   updateTaskDetail,
 } from '@/app/detail/[task_id]/[user_type]/actions'
-import { updateTask } from '@/app/actions'
 import { updateWorkflowStateIdOfTask } from '@/app/detail/[task_id]/[user_type]/actions'
 import { MenuBoxContainer } from '@/app/detail/ui/MenuBoxContainer'
 import { ToggleButtonContainer } from '@/app/detail/ui/ToggleButtonContainer'
