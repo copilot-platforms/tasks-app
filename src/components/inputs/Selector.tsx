@@ -172,7 +172,7 @@ export default function Selector({
           }}
           openOnFocus
           onKeyDown={handleKeyDown}
-          ListboxProps={{ sx: { maxHeight: { xs: '175px', sm: '299px' } } }}
+          ListboxProps={{ sx: { maxHeight: { xs: '175px', sm: '291px' } } }}
           autoHighlight
           options={extraOption ? [extraOption, ...options] : options}
           value={value}
@@ -361,7 +361,7 @@ const SelectorButton = ({
             fontSize: '13px',
           },
         },
-        height: height ? height : '32px',
+        height: height ?? '32px',
       })}
       onClick={handleClick}
       disableRipple
