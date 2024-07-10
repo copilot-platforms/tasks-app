@@ -43,6 +43,7 @@ export const ClientTaskCard = ({
           ':hover': {
             bgcolor: (theme) => theme.color.gray[100],
           },
+          cursor: 'default',
         }}
       >
         <Stack
@@ -51,10 +52,10 @@ export const ClientTaskCard = ({
           justifyContent="space-between"
           sx={{
             borderBottom: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
-            padding: { xs: '0px 20px', sm: '0px 36px' },
+            padding: { xs: '2px 20px', sm: '2px 36px' },
           }}
         >
-          <Stack sx={{ cursor: 'default' }} direction="column">
+          <Stack direction="column">
             <Typography variant="sm" sx={{ fontSize: '13px' }}>
               {task?.title}
             </Typography>
