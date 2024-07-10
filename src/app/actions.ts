@@ -3,14 +3,17 @@ import { apiUrl } from '@/config'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
-import { revalidatePath } from 'next/cache'
 
 export const handleCreate = async (token: string, payload: CreateTaskRequest) => {
-  const response = await fetch(`${apiUrl}/api/tasks?token=${token}`, {
-    method: 'POST',
-    body: JSON.stringify(payload),
-  })
-  return await response.json()
+  try {
+    const response = await fetch(`${apiUrl}/api/tasks?token=${token}`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    })
+    return await response.json()
+  } catch (e: unknown) {
+    console.error('Something went wrong while creating task!', e)
+  }
 }
 
 export const updateTask = async ({
