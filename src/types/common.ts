@@ -186,3 +186,9 @@ export const UserSchema = z.object({
   companyId: z.string().optional(),
   internalUserId: z.string().optional(),
 })
+
+export interface FilterableUser {
+  givenName?: string
+  familyName?: string
+  name?: string
+}
