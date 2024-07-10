@@ -40,7 +40,7 @@ export const ClientTaskBoard = ({ completeTask }: { completeTask: (taskId: strin
       >
         {filterTaskWithWorkflowStateId(list.id).map((task) => {
           return (
-            <Box key={task.id} m="6px 0px">
+            <Box key={task.id}>
               <ClientTaskCard
                 task={task}
                 href={{ pathname: `/detail/${task.id}/cu`, query: { token } }}
