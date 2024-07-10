@@ -85,16 +85,10 @@ export const DatePickerComponent = ({ getDate, dateValue, disabled, isButton = f
         open={open}
         anchorEl={anchorEl}
         placement="bottom-start"
-        modifiers={[
-          {
-            name: 'offset',
-            options: {
-              offset: [0, 4],
-            },
-          },
-        ]}
         // This hides popper's tooltip that helps position the content. display: none would mess up the positioning
-        sx={{ opacity: 0 }}
+        sx={{
+          opacity: 0,
+        }}
       >
         <DatePicker
           disablePast
@@ -104,6 +98,15 @@ export const DatePickerComponent = ({ getDate, dateValue, disabled, isButton = f
           onChange={(newValue) => {
             getDate(formatDate(newValue))
             setValue(newValue)
+          }}
+          slotProps={{
+            day: {
+              sx: {
+                '&.MuiPickersDay-root.Mui-selected': {
+                  backgroundColor: (theme) => theme.color.gray[500],
+                },
+              },
+            },
           }}
           sx={{
             '& .MuiOutlinedInput-input': {
