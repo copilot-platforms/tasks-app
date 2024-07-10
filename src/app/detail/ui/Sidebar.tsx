@@ -59,7 +59,7 @@ export const Sidebar = ({
 
   const statusValue = _statusValue as WorkflowStateResponse //typecasting
   const assigneeValue = _assigneeValue as IAssigneeCombined //typecasting
-
+  console.log(assigneeValue)
   const matches = useMediaQuery('(max-width:600px)')
   return (
     <Box
@@ -120,7 +120,7 @@ export const Sidebar = ({
               )
             }
             options={assignee}
-            value={assigneeValue}
+            value={assigneeValue.name == 'No assignee' ? null : assigneeValue}
             selectorType={SelectorType.ASSIGNEE_SELECTOR}
             extraOption={NoAssigneeExtraOptions}
             extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
