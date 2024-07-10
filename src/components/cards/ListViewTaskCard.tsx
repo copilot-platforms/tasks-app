@@ -43,15 +43,14 @@ export const ListViewTaskCard = ({
         className="task-list-card"
         sx={{
           userSelect: 'none',
-          ':hover': {
-            bgcolor: (theme) => theme.color.gray[100],
-          },
+          cursor: 'default',
+          borderBottom: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
         }}
       >
         <AppMargin size={SizeofAppMargin.LARGE} py="12px">
-          <Box sx={{ paddingTop: '2px', paddingBottom: '2px' }}>
+          <Box>
             <Stack direction="row" columnGap={'20px'} alignItems="center" justifyContent="space-between">
-              <Stack sx={{ cursor: 'pointer' }} direction="row" alignItems="center" columnGap={'16px'}>
+              <Stack direction="row" alignItems="center" columnGap={'16px'}>
                 <Typography
                   variant="sm"
                   fontWeight={400}
@@ -154,7 +153,6 @@ export const ListViewTaskCard = ({
             </Stack>
           </Box>
         </AppMargin>
-        <hr />
       </Box>
     </StyledUninvasiveLink>
   )
