@@ -22,8 +22,9 @@ const FilterButtonGroup = ({
         border: `1px solid ${theme.color.borders.border}`,
         borderRadius: 1,
         columnGap: { xs: '0px', sm: '6px' },
-        alignItems: 'center',
-        padding: '2px 4px',
+        padding: { xs: '2px 4px', md: '4px' },
+        height: '32px',
+        justifyContent: 'space-between',
       })}
       direction={'row'}
     >
@@ -38,6 +39,10 @@ const FilterButtonGroup = ({
                 fontSize="12px"
                 sx={{
                   color: (theme) => (index === activeButtonIndex ? theme.color.gray[600] : theme.color.gray[500]),
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  maxWidth: { xs: '55px', sm: 'none' },
                 }}
               >
                 {item.name}

@@ -7,6 +7,7 @@ export declare module '@mui/material/styles' {
       values: {
         xs: number
         sm: number
+        sd: number
         md: number
         lg: number
       }
@@ -83,6 +84,7 @@ export declare module '@mui/material/styles' {
       values: {
         xs: number
         sm: number
+        sd: number
         md: number
         lg: number
       }

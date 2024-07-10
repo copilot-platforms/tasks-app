@@ -3,7 +3,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import dayjs, { Dayjs } from 'dayjs'
-import { CalenderIcon, CalenderIcon2 } from '@/icons'
+import { CalenderIcon, CalenderIcon2, CalenderIconSmall } from '@/icons'
 import { IsoDate } from '@/types/dto/tasks.dto'
 import { Box, Popper, Stack, Typography } from '@mui/material'
 import { SecondaryBtn } from '../buttons/SecondaryBtn'
@@ -52,20 +52,30 @@ export const DatePickerComponent = ({ getDate, dateValue, disabled, isButton = f
       >
         {isButton ? (
           <SecondaryBtn
-            startIcon={<CalenderIcon2 />}
+            startIcon={<CalenderIconSmall />}
             buttonContent={
-              <Typography variant="bodySm" lineHeight="20px" sx={{ color: (theme) => theme.color.gray[600] }}>
-                {value ? formatDate(value) : 'Due date'}
+              <Typography
+                variant="bodySm"
+                sx={{
+                  color: (theme) => theme.color.gray[600],
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  fontSize: '12px',
+                  overflow: 'hidden',
+                  maxWidth: { xs: '100px', sm: 'none' },
+                }}
+              >
+                {value ? formatDate(value) : 'Due Date'}
               </Typography>
             }
           />
         ) : (
           <>
             <Box>
-              <CalenderIcon2 />
+              <CalenderIcon />
             </Box>
-            <Typography variant="bodyMd" mt="2px">
-              {value ? formatDate(value) : 'Empty'}
+            <Typography variant="md" mt="2px" lineHeight={'22px'}>
+              {value ? formatDate(value) : 'No due date'}
             </Typography>
           </>
         )}
@@ -75,14 +85,10 @@ export const DatePickerComponent = ({ getDate, dateValue, disabled, isButton = f
         open={open}
         anchorEl={anchorEl}
         placement="bottom-start"
-        modifiers={[
-          {
-            name: 'offset',
-            options: {
-              offset: [0, 4],
-            },
-          },
-        ]}
+        // This hides popper's tooltip that helps position the content. display: none would mess up the positioning
+        sx={{
+          opacity: 0,
+        }}
       >
         <DatePicker
           disablePast
@@ -92,6 +98,15 @@ export const DatePickerComponent = ({ getDate, dateValue, disabled, isButton = f
           onChange={(newValue) => {
             getDate(formatDate(newValue))
             setValue(newValue)
+          }}
+          slotProps={{
+            day: {
+              sx: {
+                '&.MuiPickersDay-root.Mui-selected': {
+                  backgroundColor: (theme) => theme.color.gray[500],
+                },
+              },
+            },
           }}
           sx={{
             '& .MuiOutlinedInput-input': {

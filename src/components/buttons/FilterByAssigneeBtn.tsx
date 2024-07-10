@@ -15,7 +15,11 @@ export const FilterByAssigneeBtn = ({
 }) => {
   return (
     <Stack direction="row" alignItems="center" columnGap={1}>
-      <Typography variant="sm" lineHeight="30px" sx={{ color: (theme) => theme.color.gray[600] }}>
+      <Typography
+        variant="sm"
+        lineHeight="32px"
+        sx={{ color: (theme) => theme.color.gray[600], whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+      >
         Filter by
       </Typography>
       {assigneeValue?.name || assigneeValue?.givenName ? (
@@ -23,7 +27,7 @@ export const FilterByAssigneeBtn = ({
           <CopilotAvatar currentAssignee={assigneeValue} />
           <Typography
             variant="sm"
-            lineHeight="30px"
+            lineHeight="32px"
             sx={{
               color: (theme) => theme.color.gray[600],
               textOverflow: 'ellipsis',
@@ -49,7 +53,16 @@ export const FilterByAssigneeBtn = ({
           </IconButton>
         </Stack>
       ) : (
-        <Typography variant="sm" lineHeight="30px" sx={{ color: (theme) => theme.color.gray[600] }}>
+        <Typography
+          variant="sm"
+          lineHeight="32px"
+          sx={{
+            color: (theme) => theme.color.gray[600],
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+        >
           assignee
         </Typography>
       )}

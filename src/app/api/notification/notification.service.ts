@@ -1,9 +1,9 @@
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { BaseService } from '@api/core/services/base.service'
-import { AssigneeType, Task } from '@prisma/client'
+import { AssigneeType, ClientNotification, Task } from '@prisma/client'
 import { NotificationTaskActions } from '@api/core/types/tasks'
 import { z } from 'zod'
-import { CompanyResponse, CopilotUser, MeResponse } from '@/types/common'
+import { CompanyResponse, CopilotUser, MeResponse, NotificationCreatedResponse } from '@/types/common'
 import { getEmailDetails, getInProductNotificationDetails } from '@api/notification/notification.helpers'
 import APIError from '@api/core/exceptions/api'
 import httpStatus from 'http-status'
@@ -24,7 +24,7 @@ export class NotificationService extends BaseService {
         },
       }
 
-      await copilotUtils.createNotification(notificationDetails)
+      return await copilotUtils.createNotification(notificationDetails)
     } catch (error) {
       console.error(`Failed to send notification for action: ${action}`, error)
     }
@@ -49,14 +49,71 @@ export class NotificationService extends BaseService {
             email: getEmailDetails(actionUserName, task.title)[action],
           },
         }
-
         return copilotUtils.createNotification(notificationDetails)
       })
 
-      await Promise.all(promises)
+      return await Promise.all(promises)
     } catch (error) {
       console.error(`Failed to send notifications for action: ${action}`, error)
     }
+  }
+
+  /**
+   * Adds a ClientNotification column associated with a task
+   * @param task Associated task
+   * @param notification Associated notification
+   * @returns New ClientNotification object
+   */
+  async addToClientNotifications(task: Task, notification: NotificationCreatedResponse): Promise<ClientNotification> {
+    return await this.db.clientNotification.create({
+      data: {
+        clientId: z.string().parse(notification.recipientId),
+        notificationId: notification.id,
+        taskId: task.id,
+      },
+    })
+  }
+
+  /**
+   * Marks a client notification in Copilot Notifications service as read
+   * @param id Notification ID for object as exists in Copilot
+   */
+  async markClientNotificationAsRead(task: Task) {
+    const copilot = new CopilotAPI(this.user.token)
+    try {
+      const relatedNotification = await this.db.clientNotification.findFirst({
+        where: {
+          clientId: z.string().parse(task.assigneeId),
+          taskId: task.id,
+        },
+      })
+      if (!relatedNotification) {
+        console.error(
+          `Failed to delete client notification for task id ${task.id} because the notification for client ${task.assigneeId} was not found`,
+        )
+        return
+      }
+
+      await copilot.markNotificationAsRead(relatedNotification.notificationId)
+      await this.db.clientNotification.delete({ where: { id: relatedNotification?.id } })
+    } catch (e: unknown) {
+      // There may be cases where existing notification has not been updated in the ClientNotifications table yet
+      // So don't let it crash the entire program, instead just log it to stderr
+      console.error(`Failed to delete client notification for task id ${task.id}`, e)
+    }
+  }
+
+  async markAsReadForAllRecipients(task: Task) {
+    const copilot = new CopilotAPI(this.user.token)
+    const { recipientIds } = await this.getNotificationParties(copilot, task, NotificationTaskActions.AssignedToCompany)
+    const markAsReadPromises = recipientIds.map((recipientId) =>
+      this.markClientNotificationAsRead({
+        ...task,
+        assigneeId: recipientId,
+        assigneeType: AssigneeType.client,
+      }),
+    )
+    await Promise.all(markAsReadPromises)
   }
 
   /**
@@ -73,11 +130,11 @@ export class NotificationService extends BaseService {
     const getAssignedTo = async (): Promise<CopilotUser | CompanyResponse> => {
       switch (task.assigneeType) {
         case AssigneeType.internalUser:
-          return copilot.getInternalUser(senderId)
+          return await copilot.getInternalUser(senderId)
         case AssigneeType.client:
-          return copilot.getClient(recipientId)
+          return await copilot.getClient(z.string().uuid().parse(task.assigneeId))
         case AssigneeType.company:
-          return copilot.getCompany(recipientId)
+          return await copilot.getCompany(z.string().parse(task.assigneeId))
         default:
           throw new APIError(httpStatus.NOT_FOUND, `Unknown assignee type: ${task.assigneeType}`)
       }

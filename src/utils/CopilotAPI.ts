@@ -27,6 +27,8 @@ import {
   InternalUsers,
   InternalUsersSchema,
   CopilotListArgs,
+  NotificationCreatedResponseSchema,
+  NotificationCreatedResponse,
 } from '@/types/common'
 import { copilotAPIKey as apiKey } from '@/config'
 
@@ -112,9 +114,15 @@ export class CopilotAPI {
     return InternalUsersSchema.parse(await this.copilot.retrieveInternalUser({ id }))
   }
 
-  async createNotification(requestBody: NotificationRequestBody) {
-    return await this.copilot.createNotification({
-      requestBody,
-    })
+  async createNotification(requestBody: NotificationRequestBody): Promise<NotificationCreatedResponse> {
+    return NotificationCreatedResponseSchema.parse(
+      await this.copilot.createNotification({
+        requestBody,
+      }),
+    )
+  }
+
+  async markNotificationAsRead(id: string): Promise<void> {
+    await this.copilot.markNotificationRead({ id })
   }
 }
