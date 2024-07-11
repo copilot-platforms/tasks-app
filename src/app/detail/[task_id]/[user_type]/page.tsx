@@ -26,7 +26,7 @@ import {
   updateAssignee,
   updateTaskDetail,
 } from '@/app/detail/[task_id]/[user_type]/actions'
-import { updateTask, updateWorkflowStateIdOfTask } from '@/app/actions'
+import { updateWorkflowStateIdOfTask } from '@/app/detail/[task_id]/[user_type]/actions'
 import { MenuBoxContainer } from '@/app/detail/ui/MenuBoxContainer'
 import { ToggleButtonContainer } from '@/app/detail/ui/ToggleButtonContainer'
 import { ToggleController } from '@/app/detail/ui/ToggleController'
@@ -38,7 +38,6 @@ import { LogResponse } from '@/app/api/activity-logs/schemas/LogResponseSchema'
 import { ActivityType } from '@prisma/client'
 import { CreateComment } from '@/types/dto/comment.dto'
 import { CopilotAPI } from '@/utils/CopilotAPI'
-import { Token, TokenSchema } from '@/types/common'
 import EscapeHandler from '@/utils/escapeHandler'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
@@ -157,7 +156,7 @@ export default async function TaskDetailPage({
                 isEditable={params.user_type === UserType.INTERNAL_USER}
                 updateTaskDetail={async (title, detail) => {
                   'use server'
-                  await updateTaskDetail(token, task_id, title, detail)
+                  await updateTaskDetail({ token, taskId: task_id, payload: { title, body: detail } })
                 }}
                 deleteTask={async () => {
                   'use server'
@@ -242,7 +241,7 @@ export default async function TaskDetailPage({
             }}
             updateTask={async (payload) => {
               'use server'
-              await updateTask({ token, taskId: task_id, payload })
+              await updateTaskDetail({ token, taskId: task_id, payload })
             }}
             disabled={params.user_type === UserType.CLIENT_USER}
           />

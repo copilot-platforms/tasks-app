@@ -1,6 +1,6 @@
 'use client'
 
-import { Box, Stack, Typography } from '@mui/material'
+import { Box, Stack, Typography, alpha } from '@mui/material'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { TaskResponse, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { useSelector } from 'react-redux'
@@ -43,15 +43,17 @@ export const ListViewTaskCard = ({
         className="task-list-card"
         sx={{
           userSelect: 'none',
+          cursor: 'default',
+          borderBottom: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
           ':hover': {
-            bgcolor: (theme) => theme.color.gray[100],
+            bgcolor: (theme) => alpha(theme.color.gray[100], 0.5),
           },
         }}
       >
         <AppMargin size={SizeofAppMargin.LARGE} py="12px">
-          <Box sx={{ paddingTop: '2px', paddingBottom: '2px' }}>
+          <Box>
             <Stack direction="row" columnGap={'20px'} alignItems="center" justifyContent="space-between">
-              <Stack sx={{ cursor: 'pointer' }} direction="row" alignItems="center" columnGap={'16px'}>
+              <Stack direction="row" alignItems="center" columnGap={'16px'}>
                 <Typography
                   variant="sm"
                   fontWeight={400}
@@ -72,11 +74,13 @@ export const ListViewTaskCard = ({
                 <Box
                   sx={{
                     display: 'flex',
-                    minWidth: '80px',
+                    maxWidth: '100px',
                     gap: '33px',
                     flexDirection: 'row',
                     alignItems: 'flex-end',
                     justifyContent: 'flex-end',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
                   }}
                 >
                   {task.dueDate && <DueDateLayout date={task.dueDate} />}
@@ -154,7 +158,6 @@ export const ListViewTaskCard = ({
             </Stack>
           </Box>
         </AppMargin>
-        <hr />
       </Box>
     </StyledUninvasiveLink>
   )

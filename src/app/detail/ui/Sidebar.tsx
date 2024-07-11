@@ -130,7 +130,7 @@ export const Sidebar = ({
               )
             }
             options={loading ? [] : filteredAssignees}
-            value={assigneeValue}
+            value={assigneeValue.name == 'No assignee' ? null : assigneeValue}
             selectorType={SelectorType.ASSIGNEE_SELECTOR}
             extraOption={NoAssigneeExtraOptions}
             extraOptionRenderer={(setAnchorEl, anchorEl, props) => {

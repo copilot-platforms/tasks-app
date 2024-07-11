@@ -24,7 +24,7 @@ export const TaskRow = ({ children, columnName, taskCount, showConfigurableIcons
       >
         <AppMargin size={SizeofAppMargin.LARGE} py="6px">
           <Stack direction="row" justifyContent="space-between" alignItems="center">
-            <Stack direction="row" columnGap={2}>
+            <Stack direction="row" columnGap={'8px'}>
               <Typography variant="md">{columnName}</Typography>
               <Typography
                 variant="sm"
