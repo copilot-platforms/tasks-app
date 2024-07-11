@@ -123,7 +123,20 @@ export default async function Main({ searchParams }: { searchParams: { token: st
             />
           </DndWrapper>
         ) : (
-          <DashboardEmptyState userType={UserType.INTERNAL_USER} />
+          <>
+            <Header showCreateTaskButton={true} />
+            <DashboardEmptyState
+              userType={UserType.INTERNAL_USER}
+              handleCreateMultipleAttachments={async (attachments: CreateAttachmentRequest[]) => {
+                'use server'
+                await createMultipleAttachments(token, attachments)
+              }}
+              getSignedUrlUpload={async (fileName: string) => {
+                'use server'
+                return await getSignedUrlUpload(token, fileName)
+              }}
+            />
+          </>
         )}
       </ClientSideStateUpdate>
     </>

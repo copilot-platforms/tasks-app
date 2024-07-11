@@ -1,15 +1,35 @@
 'use client'
 
+import { getSignedUrlUpload, handleCreate } from '@/app/actions'
+import { NewTaskForm } from '@/app/ui/NewTaskForm'
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { AddIcon, TasksListIcon } from '@/icons'
-import { setShowModal } from '@/redux/features/createTaskSlice'
+import { clearCreateTaskFields, selectCreateTask, setShowModal } from '@/redux/features/createTaskSlice'
+import { appendTask, selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
-import { UserType } from '@/types/interfaces'
+import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
+import { CreateTaskRequestSchema } from '@/types/dto/tasks.dto'
+import { ISignedUrlUpload, UserType } from '@/types/interfaces'
+import { bulkRemoveAttachments } from '@/utils/bulkRemoveAttachments'
 import { SxCenter } from '@/utils/mui'
-import { Box, Stack, Typography } from '@mui/material'
+import { Box, Modal, Stack, Typography } from '@mui/material'
+import { useSelector } from 'react-redux'
 
-const DashboardEmptyState = ({ userType }: { userType: UserType }) => {
+const DashboardEmptyState = ({
+  userType,
+  handleCreateMultipleAttachments,
+  getSignedUrlUpload,
+}: {
+  userType: UserType
+  handleCreateMultipleAttachments?: (attachments: CreateAttachmentRequest[]) => Promise<void>
+  getSignedUrlUpload?: (fileName: string) => Promise<ISignedUrlUpload>
+}) => {
+  const { showModal } = useSelector(selectCreateTask)
+  const { token } = useSelector(selectTaskBoard)
+  const { title, description, workflowStateId, assigneeId, assigneeType, attachments, dueDate } =
+    useSelector(selectCreateTask)
+
   return (
     <AppMargin size={SizeofAppMargin.LARGE} py="20px">
       <Box
@@ -56,6 +76,47 @@ const DashboardEmptyState = ({ userType }: { userType: UserType }) => {
           )}
         </Stack>
       </Box>
+      <Modal
+        open={showModal}
+        onClose={async () => {
+          store.dispatch(setShowModal())
+          store.dispatch(clearCreateTaskFields())
+          await bulkRemoveAttachments(attachments)
+        }}
+        aria-labelledby="create-task-modal"
+        aria-describedby="add-new-task"
+      >
+        <NewTaskForm
+          handleCreate={async () => {
+            if (title) {
+              store.dispatch(setShowModal())
+              store.dispatch(clearCreateTaskFields())
+              const createdTask = await handleCreate(
+                token as string,
+                CreateTaskRequestSchema.parse({
+                  title,
+                  body: description,
+                  workflowStateId,
+                  assigneeType,
+                  assigneeId,
+                  dueDate,
+                  getSignedUrlUpload: (fileName: string) => Promise<ISignedUrlUpload>,
+                }),
+              )
+              store.dispatch(appendTask(createdTask))
+              const toUploadAttachments: CreateAttachmentRequest[] = attachments.map((el) => {
+                return {
+                  ...el,
+                  taskId: createdTask.id,
+                }
+              })
+              store.dispatch(clearCreateTaskFields())
+              handleCreateMultipleAttachments && (await handleCreateMultipleAttachments(toUploadAttachments))
+            }
+          }}
+          getSignedUrlUpload={getSignedUrlUpload as (fileName: string) => Promise<ISignedUrlUpload>}
+        />
+      </Modal>
     </AppMargin>
   )
 }
