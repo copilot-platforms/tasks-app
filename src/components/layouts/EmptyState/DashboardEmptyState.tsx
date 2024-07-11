@@ -19,9 +19,20 @@ const DashboardEmptyState = ({ userType }: { userType: UserType }) => {
       >
         <Stack rowGap={'20px'} direction={'column'} sx={{ width: '453px' }}>
           <Stack rowGap={'12px'} direction={'column'}>
-            <TasksListIcon />
+            <Box
+              sx={{
+                padding: '6px',
+                background: (theme) => theme.color.gray[150],
+                width: '40px',
+                borderRadius: '6px',
+                gap: '20px',
+                height: '40px',
+              }}
+            >
+              <TasksListIcon />
+            </Box>
 
-            <Typography variant="lg" lineHeight={'32px'}>
+            <Typography variant="2xl" lineHeight={'32px'}>
               {userType == UserType.INTERNAL_USER ? " You don't have any tasks yet" : 'No tasks assigned'}
             </Typography>
             <Typography variant="bodyLg" sx={{ color: (theme) => theme.color.gray[500] }}>
