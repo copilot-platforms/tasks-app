@@ -8,7 +8,7 @@ import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { advancedFeatureFlag, apiUrl } from '@/config'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import { TaskResponse } from '@/types/dto/tasks.dto'
-import { IAssignee, ITemplate, View } from '@/types/interfaces'
+import { IAssignee, ITemplate, UserType, View } from '@/types/interfaces'
 import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
 import { FilterBar } from '@/components/layouts/FilterBar'
 import ClientError from '@/components/clientError'
@@ -17,6 +17,7 @@ import { CopilotAPI } from '@/utils/CopilotAPI'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { createMultipleAttachments, getSignedUrlUpload, updateViewModeSettings } from '@/app/actions'
+import DashboardEmptyState from '@/components/layouts/EmptyState/DashboardEmptyState'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -101,22 +102,38 @@ export default async function Main({ searchParams }: { searchParams: { token: st
         templates={templates}
       >
         <Header showCreateTaskButton={true} />
-        <FilterBar
-          updateViewModeSetting={async (payload: CreateViewSettingsDTO) => {
-            'use server'
-            await updateViewModeSettings(token, payload)
-          }}
-        />
-        <TaskBoard
-          getSignedUrlUpload={async (fileName: string) => {
-            'use server'
-            return await getSignedUrlUpload(token, fileName)
-          }}
-          handleCreateMultipleAttachments={async (attachments: CreateAttachmentRequest[]) => {
-            'use server'
-            await createMultipleAttachments(token, attachments)
-          }}
-        />
+        {tasks && tasks.length > 0 ? (
+          <DndWrapper>
+            <FilterBar
+              updateViewModeSetting={async (payload: CreateViewSettingsDTO) => {
+                'use server'
+                await updateViewModeSettings(token, payload)
+              }}
+            />
+            <TaskBoard
+              getSignedUrlUpload={async (fileName: string) => {
+                'use server'
+                return await getSignedUrlUpload(token, fileName)
+              }}
+              handleCreateMultipleAttachments={async (attachments: CreateAttachmentRequest[]) => {
+                'use server'
+                await createMultipleAttachments(token, attachments)
+              }}
+            />
+          </DndWrapper>
+        ) : (
+          <DashboardEmptyState
+            userType={UserType.INTERNAL_USER}
+            getSignedUrlUpload={async (fileName: string) => {
+              'use server'
+              return await getSignedUrlUpload(token, fileName)
+            }}
+            handleCreateMultipleAttachments={async (attachments: CreateAttachmentRequest[]) => {
+              'use server'
+              await createMultipleAttachments(token, attachments)
+            }}
+          />
+        )}
       </ClientSideStateUpdate>
     </>
   )
