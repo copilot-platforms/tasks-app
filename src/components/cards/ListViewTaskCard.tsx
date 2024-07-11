@@ -1,6 +1,6 @@
 'use client'
 
-import { Box, Stack, Typography } from '@mui/material'
+import { Box, Stack, Typography, alpha } from '@mui/material'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { TaskResponse, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { useSelector } from 'react-redux'
@@ -46,7 +46,7 @@ export const ListViewTaskCard = ({
           cursor: 'default',
           borderBottom: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
           ':hover': {
-            bgcolor: (theme) => theme.color.gray[150],
+            bgcolor: (theme) => alpha(theme.color.gray[100], 0.5),
           },
         }}
       >
