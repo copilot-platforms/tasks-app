@@ -23,7 +23,7 @@ import ExtraOptionRendererAssignee from '@/components/inputs/ExtraOptionRenderer
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { z } from 'zod'
 import { setDebouncedFilteredAssignees } from '@/utils/users'
-import { SxCenter } from '@/utils/mui'
+import { MiniLoader } from '@/components/atoms/MiniLoader'
 
 export const FilterBar = ({
   updateViewModeSetting,
@@ -159,13 +159,7 @@ export const FilterBar = ({
                                 handleFilterOptionsChange(FilterOptions.ASSIGNEE, 'No assignee')
                               }}
                             />
-                            {loading ? (
-                              <Box sx={{ ...SxCenter, height: '28px' }}>
-                                <CircularProgress sx={{ color: '#000' }} size={14} />
-                              </Box>
-                            ) : (
-                              <></>
-                            )}
+                            {loading && <MiniLoader />}
                           </>
                         )
                       )
