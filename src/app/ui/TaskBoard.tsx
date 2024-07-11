@@ -147,7 +147,7 @@ export const TaskBoard = ({
 
   return (
     <>
-      {tasks.length > 0 ? <ViewTypeBoard /> : <DashboardEmptyState userType={UserType.INTERNAL_USER} />}
+      {tasks && tasks.length > 0 ? <ViewTypeBoard /> : <DashboardEmptyState userType={UserType.INTERNAL_USER} />}
       <Modal
         open={showModal}
         onClose={async () => {
