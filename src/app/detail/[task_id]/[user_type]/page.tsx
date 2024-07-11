@@ -119,7 +119,12 @@ export default async function TaskDetailPage({
   }
 
   return (
-    <ClientSideStateUpdate assignee={assignee} tokenPayload={tokenPayload} assigneeSuggestions={AssigneeSuggestions}>
+    <ClientSideStateUpdate
+      token={token}
+      assignee={assignee}
+      tokenPayload={tokenPayload}
+      assigneeSuggestions={AssigneeSuggestions}
+    >
       <EscapeHandler />
       <Stack direction="row">
         <ToggleController>

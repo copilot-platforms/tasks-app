@@ -1,3 +1,7 @@
-import { BoxProps } from '@mui/material'
+import { SxProps } from '@mui/material'
 
-export const SxCenter: BoxProps = { display: 'flex', justifyContent: 'center', alignItems: 'center' }
+export const SxCenter: SxProps = {
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+}

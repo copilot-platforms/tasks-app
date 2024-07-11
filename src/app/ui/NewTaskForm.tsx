@@ -13,9 +13,8 @@ import {
   setShowModal,
 } from '@/redux/features/createTaskSlice'
 import store from '@/redux/store'
-import { Close } from '@mui/icons-material'
-import { Avatar, Box, Stack, Typography, styled } from '@mui/material'
-import { useEffect } from 'react'
+import { Box, Stack, Typography, styled } from '@mui/material'
+import { useEffect, useState } from 'react'
 import { FilterOptions, IAssigneeCombined, ISignedUrlUpload, ITemplate } from '@/types/interfaces'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { useSelector } from 'react-redux'
@@ -37,6 +36,9 @@ import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowStat
 import { Tapwrite } from 'tapwrite'
 import { DatePickerComponent } from '@/components/inputs/DatePickerComponent'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
+import { setDebouncedFilteredAssignees } from '@/utils/users'
+import { z } from 'zod'
+import { MiniLoader } from '@/components/atoms/MiniLoader'
 
 const supabaseActions = new SupabaseActions()
 
@@ -47,7 +49,10 @@ export const NewTaskForm = ({
   handleCreate: () => void
   getSignedUrlUpload: (fileName: string) => Promise<ISignedUrlUpload>
 }) => {
-  const { workflowStates, assignee, token, filterOptions } = useSelector(selectTaskBoard)
+  const { workflowStates, filteredAssigneeList, token, filterOptions } = useSelector(selectTaskBoard)
+  const [filteredAssignees, setFilteredAssignees] = useState(filteredAssigneeList)
+  const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
+  const [loading, setLoading] = useState(false)
   const { templates } = useSelector(selectCreateTemplate)
 
   const { renderingItem: _statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
@@ -56,7 +61,7 @@ export const NewTaskForm = ({
   })
   const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
     item:
-      assignee.find(
+      filteredAssignees.find(
         (item) => item.id == filterOptions[FilterOptions.ASSIGNEE] || item.id == filterOptions[FilterOptions.TYPE],
       ) ?? null,
     type: SelectorType.ASSIGNEE_SELECTOR,
@@ -198,23 +203,42 @@ export const NewTaskForm = ({
                   <AssigneePlaceholderSmall />
                 )
               }
-              options={assignee}
+              options={loading ? [] : filteredAssignees}
               value={assigneeValue}
               extraOption={NoAssigneeExtraOptions}
               extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
                 return (
-                  <ExtraOptionRendererAssignee
-                    props={props}
-                    onClick={(e) => {
-                      updateAssigneeValue({ id: '', name: 'No assignee' })
-                      setAnchorEl(anchorEl ? null : e.currentTarget)
-                      store.dispatch(setCreateTaskFields({ targetField: 'assigneeType', value: null }))
-                      store.dispatch(setCreateTaskFields({ targetField: 'assigneeId', value: null }))
-                    }}
-                  />
+                  <>
+                    <ExtraOptionRendererAssignee
+                      props={props}
+                      onClick={(e) => {
+                        updateAssigneeValue({ id: '', name: 'No assignee' })
+                        setAnchorEl(anchorEl ? null : e.currentTarget)
+                        store.dispatch(setCreateTaskFields({ targetField: 'assigneeType', value: null }))
+                        store.dispatch(setCreateTaskFields({ targetField: 'assigneeId', value: null }))
+                      }}
+                    />
+                    {loading && <MiniLoader />}
+                  </>
                 )
               }}
               selectorType={SelectorType.ASSIGNEE_SELECTOR}
+              handleInputChange={async (newInputValue: string) => {
+                if (!newInputValue) {
+                  setFilteredAssignees(filteredAssigneeList)
+                  return
+                }
+
+                setDebouncedFilteredAssignees(
+                  activeDebounceTimeoutId,
+                  setActiveDebounceTimeoutId,
+                  setLoading,
+                  setFilteredAssignees,
+                  z.string().parse(token),
+                  newInputValue,
+                )
+              }}
+              filterOption={(x: unknown) => x}
               buttonHeight="auto"
               buttonContent={
                 <Typography

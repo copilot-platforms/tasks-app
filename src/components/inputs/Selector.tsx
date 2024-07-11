@@ -37,6 +37,8 @@ interface Prop {
   buttonWidth?: string
   buttonHeight?: string
   responsiveNoHide?: boolean
+  handleInputChange?: (_: string) => void
+  filterOption?: any
 }
 
 export default function Selector({
@@ -55,6 +57,8 @@ export default function Selector({
   buttonWidth,
   buttonHeight,
   responsiveNoHide,
+  handleInputChange,
+  filterOption,
 }: Prop) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
@@ -186,6 +190,7 @@ export default function Selector({
           groupBy={(option: unknown) =>
             selectorType === SelectorType.ASSIGNEE_SELECTOR ? UserTypesName[(option as IAssigneeCombined).type] : ''
           }
+          filterOptions={filterOption}
           renderGroup={(params) => {
             const hasNoAssignee =
               Array.isArray(params?.children) &&
@@ -207,6 +212,7 @@ export default function Selector({
           }}
           inputValue={inputStatusValue}
           onInputChange={(_, newInputValue) => {
+            handleInputChange?.(newInputValue)
             setInputStatusValue(newInputValue)
           }}
           renderInput={(params) => {

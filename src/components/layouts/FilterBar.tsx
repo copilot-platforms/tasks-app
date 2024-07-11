@@ -1,23 +1,16 @@
 'use client'
 
-import { Avatar, Box, IconButton, Stack, Typography } from '@mui/material'
+import { Box, CircularProgress, Stack } from '@mui/material'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { useState } from 'react'
 import store from '@/redux/store'
-import { setFilterOptions, setFilteredAssgineeList, setViewSettings } from '@/redux/features/taskBoardSlice'
+import { setFilterOptions, setViewSettings } from '@/redux/features/taskBoardSlice'
 import SearchBar from '@/components/searchBar'
 import Selector, { SelectorType } from '@/components/inputs/Selector'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { useSelector } from 'react-redux'
-import {
-  FilterByOptions,
-  FilterOptions,
-  FilterOptionsKeywords,
-  IAssigneeCombined,
-  IFilterOptions,
-  View,
-} from '@/types/interfaces'
+import { FilterByOptions, FilterOptions, FilterOptionsKeywords, IAssigneeCombined } from '@/types/interfaces'
 import { FilterByAsigneeIcon } from '@/icons'
 import { ViewModeSelector } from '../inputs/ViewModeSelector'
 import { FilterByAssigneeBtn } from '../buttons/FilterByAssigneeBtn'
@@ -28,14 +21,20 @@ import { IUTokenSchema } from '@/types/common'
 import { NoAssigneeExtraOptions } from '@/utils/noAssignee'
 import ExtraOptionRendererAssignee from '@/components/inputs/ExtraOptionRendererAssignee'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
+import { z } from 'zod'
+import { setDebouncedFilteredAssignees } from '@/utils/users'
+import { MiniLoader } from '@/components/atoms/MiniLoader'
 
 export const FilterBar = ({
   updateViewModeSetting,
 }: {
   updateViewModeSetting: (payload: CreateViewSettingsDTO) => void
 }) => {
-  const { view, filteredAssigneeList, filterOptions, assignee } = useSelector(selectTaskBoard)
+  const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
+  const { view, filteredAssigneeList, filterOptions, assignee, token } = useSelector(selectTaskBoard)
   const [filteredAssignee, setFilteredAssignee] = useState(filteredAssigneeList)
+  const [loading, setLoading] = useState(false)
+
   const handleFilterOptionsChange = async (optionType: FilterOptions, newValue: string | null) => {
     store.dispatch(setFilterOptions({ optionType, newValue }))
     newValue == FilterOptionsKeywords.CLIENTS
@@ -143,7 +142,7 @@ export const FilterBar = ({
                       handleFilterOptionsChange(FilterOptions.ASSIGNEE, newValue?.id as string)
                     }}
                     startIcon={<FilterByAsigneeIcon />}
-                    options={filteredAssignee}
+                    options={loading ? [] : filteredAssignee}
                     placeholder="Assignee"
                     value={assigneeValue}
                     selectorType={SelectorType.ASSIGNEE_SELECTOR}
@@ -151,14 +150,17 @@ export const FilterBar = ({
                     extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
                       return (
                         noAssigneOptionFlag && (
-                          <ExtraOptionRendererAssignee
-                            props={props}
-                            onClick={(e) => {
-                              updateAssigneeValue({ id: '', name: 'No assignee' })
-                              setAnchorEl(anchorEl ? null : e.currentTarget)
-                              handleFilterOptionsChange(FilterOptions.ASSIGNEE, 'No assignee')
-                            }}
-                          />
+                          <>
+                            <ExtraOptionRendererAssignee
+                              props={props}
+                              onClick={(e) => {
+                                updateAssigneeValue({ id: '', name: 'No assignee' })
+                                setAnchorEl(anchorEl ? null : e.currentTarget)
+                                handleFilterOptionsChange(FilterOptions.ASSIGNEE, 'No assignee')
+                              }}
+                            />
+                            {loading && <MiniLoader />}
+                          </>
                         )
                       )
                     }}
@@ -170,6 +172,22 @@ export const FilterBar = ({
                       />
                     }
                     padding="2px 10px"
+                    handleInputChange={async (newInputValue: string) => {
+                      if (!newInputValue) {
+                        setFilteredAssignee(filteredAssigneeList)
+                        return
+                      }
+
+                      setDebouncedFilteredAssignees(
+                        activeDebounceTimeoutId,
+                        setActiveDebounceTimeoutId,
+                        setLoading,
+                        setFilteredAssignee,
+                        z.string().parse(token),
+                        newInputValue,
+                      )
+                    }}
+                    filterOption={(x: unknown) => x}
                   />
                 </Box>
               )}
