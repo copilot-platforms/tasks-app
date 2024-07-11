@@ -126,7 +126,7 @@ export default function Selector({
               borderRadius: '4px',
               padding: '4px 8px',
               ':hover': {
-                backgroundColor: (theme) => theme.color.gray[100],
+                backgroundColor: disabled ? 'none' : (theme) => theme.color.gray[100],
               },
             }}
           >
