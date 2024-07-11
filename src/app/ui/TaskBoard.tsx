@@ -21,6 +21,7 @@ import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { bulkRemoveAttachments } from '@/utils/bulkRemoveAttachments'
 import { CustomScrollbar } from '@/hoc/CustomScrollbar'
 import DashboardEmptyState from '@/components/layouts/EmptyState/DashboardEmptyState'
+import { DndWrapper } from '@/hoc/DndWrapper'
 
 export const TaskBoard = ({
   getSignedUrlUpload,
@@ -69,7 +70,7 @@ export const TaskBoard = ({
 
   const ViewTypeBoard = () => {
     return (
-      <>
+      <DndWrapper>
         {view === View.BOARD_VIEW && (
           <AppMargin size={SizeofAppMargin.LARGE} py="20px">
             <Stack
@@ -143,7 +144,7 @@ export const TaskBoard = ({
             </CustomScrollbar>
           </Stack>
         )}
-      </>
+      </DndWrapper>
     )
   }
 

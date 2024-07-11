@@ -100,25 +100,23 @@ export default async function Main({ searchParams }: { searchParams: { token: st
         tokenPayload={tokenPayload}
         templates={templates}
       >
-        <DndWrapper>
-          <Header showCreateTaskButton={true} />
-          <FilterBar
-            updateViewModeSetting={async (payload: CreateViewSettingsDTO) => {
-              'use server'
-              await updateViewModeSettings(token, payload)
-            }}
-          />
-          <TaskBoard
-            getSignedUrlUpload={async (fileName: string) => {
-              'use server'
-              return await getSignedUrlUpload(token, fileName)
-            }}
-            handleCreateMultipleAttachments={async (attachments: CreateAttachmentRequest[]) => {
-              'use server'
-              await createMultipleAttachments(token, attachments)
-            }}
-          />
-        </DndWrapper>
+        <Header showCreateTaskButton={true} />
+        <FilterBar
+          updateViewModeSetting={async (payload: CreateViewSettingsDTO) => {
+            'use server'
+            await updateViewModeSettings(token, payload)
+          }}
+        />
+        <TaskBoard
+          getSignedUrlUpload={async (fileName: string) => {
+            'use server'
+            return await getSignedUrlUpload(token, fileName)
+          }}
+          handleCreateMultipleAttachments={async (attachments: CreateAttachmentRequest[]) => {
+            'use server'
+            await createMultipleAttachments(token, attachments)
+          }}
+        />
       </ClientSideStateUpdate>
     </>
   )
