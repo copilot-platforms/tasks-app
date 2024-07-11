@@ -32,7 +32,7 @@ export const ClientTaskBoard = ({ completeTask }: { completeTask: (taskId: strin
   }
 
   const completedTypeWorkflowState = workflowStates.find((el) => el.type === 'completed')
-  return tasks.length ? (
+  return tasks.length > 0 ? (
     workflowStates.map((list) => {
       return (
         <TaskRow

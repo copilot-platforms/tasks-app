@@ -1,3 +1,5 @@
+'use client'
+
 import { handleCreate } from '@/app/actions'
 import { NewTaskForm } from '@/app/ui/NewTaskForm'
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
@@ -19,8 +21,8 @@ const DashboardEmptyState = ({
   handleCreateMultipleAttachments,
   userType,
 }: {
-  getSignedUrlUpload: (fileName: string) => Promise<ISignedUrlUpload>
-  handleCreateMultipleAttachments: (attachments: CreateAttachmentRequest[]) => Promise<void>
+  getSignedUrlUpload?: (fileName: string) => Promise<ISignedUrlUpload>
+  handleCreateMultipleAttachments?: (attachments: CreateAttachmentRequest[]) => Promise<void>
   userType: UserType
 }) => {
   const { token } = useSelector(selectTaskBoard)
@@ -76,46 +78,48 @@ const DashboardEmptyState = ({
         </Box>
       </AppMargin>
 
-      <Modal
-        open={showModal}
-        onClose={async () => {
-          store.dispatch(setShowModal())
-          store.dispatch(clearCreateTaskFields())
-          await bulkRemoveAttachments(attachments)
-        }}
-        aria-labelledby="create-task-modal"
-        aria-describedby="add-new-task"
-      >
-        <NewTaskForm
-          handleCreate={async () => {
-            if (title) {
-              store.dispatch(setShowModal())
-              store.dispatch(clearCreateTaskFields())
-              const createdTask = await handleCreate(
-                token as string,
-                CreateTaskRequestSchema.parse({
-                  title,
-                  body: description,
-                  workflowStateId,
-                  assigneeType,
-                  assigneeId,
-                  dueDate,
-                }),
-              )
-              store.dispatch(appendTask(createdTask))
-              const toUploadAttachments: CreateAttachmentRequest[] = attachments.map((el) => {
-                return {
-                  ...el,
-                  taskId: createdTask.id,
-                }
-              })
-              store.dispatch(clearCreateTaskFields())
-              await handleCreateMultipleAttachments(toUploadAttachments)
-            }
+      {getSignedUrlUpload && handleCreateMultipleAttachments && (
+        <Modal
+          open={showModal}
+          onClose={async () => {
+            store.dispatch(setShowModal())
+            store.dispatch(clearCreateTaskFields())
+            await bulkRemoveAttachments(attachments)
           }}
-          getSignedUrlUpload={getSignedUrlUpload}
-        />
-      </Modal>
+          aria-labelledby="create-task-modal"
+          aria-describedby="add-new-task"
+        >
+          <NewTaskForm
+            handleCreate={async () => {
+              if (title) {
+                store.dispatch(setShowModal())
+                store.dispatch(clearCreateTaskFields())
+                const createdTask = await handleCreate(
+                  token as string,
+                  CreateTaskRequestSchema.parse({
+                    title,
+                    body: description,
+                    workflowStateId,
+                    assigneeType,
+                    assigneeId,
+                    dueDate,
+                  }),
+                )
+                store.dispatch(appendTask(createdTask))
+                const toUploadAttachments: CreateAttachmentRequest[] = attachments.map((el) => {
+                  return {
+                    ...el,
+                    taskId: createdTask.id,
+                  }
+                })
+                store.dispatch(clearCreateTaskFields())
+                await handleCreateMultipleAttachments(toUploadAttachments)
+              }
+            }}
+            getSignedUrlUpload={getSignedUrlUpload}
+          />
+        </Modal>
+      )}
     </>
   )
 }
