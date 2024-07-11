@@ -1,6 +1,6 @@
 'use client'
 
-import { Box, Stack } from '@mui/material'
+import { Box, CircularProgress, Stack } from '@mui/material'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { useState } from 'react'
 import store from '@/redux/store'
@@ -23,6 +23,7 @@ import ExtraOptionRendererAssignee from '@/components/inputs/ExtraOptionRenderer
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { z } from 'zod'
 import { setDebouncedFilteredAssignees } from '@/utils/users'
+import { SxCenter } from '@/utils/mui'
 
 export const FilterBar = ({
   updateViewModeSetting,
@@ -32,6 +33,8 @@ export const FilterBar = ({
   const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
   const { view, filteredAssigneeList, filterOptions, assignee, token } = useSelector(selectTaskBoard)
   const [filteredAssignee, setFilteredAssignee] = useState(filteredAssigneeList)
+  const [loading, setLoading] = useState(false)
+
   const handleFilterOptionsChange = async (optionType: FilterOptions, newValue: string | null) => {
     store.dispatch(setFilterOptions({ optionType, newValue }))
     newValue == FilterOptionsKeywords.CLIENTS
@@ -139,7 +142,7 @@ export const FilterBar = ({
                       handleFilterOptionsChange(FilterOptions.ASSIGNEE, newValue?.id as string)
                     }}
                     startIcon={<FilterByAsigneeIcon />}
-                    options={filteredAssignee}
+                    options={loading ? [] : filteredAssignee}
                     placeholder="Assignee"
                     value={assigneeValue}
                     selectorType={SelectorType.ASSIGNEE_SELECTOR}
@@ -147,14 +150,23 @@ export const FilterBar = ({
                     extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
                       return (
                         noAssigneOptionFlag && (
-                          <ExtraOptionRendererAssignee
-                            props={props}
-                            onClick={(e) => {
-                              updateAssigneeValue({ id: '', name: 'No assignee' })
-                              setAnchorEl(anchorEl ? null : e.currentTarget)
-                              handleFilterOptionsChange(FilterOptions.ASSIGNEE, 'No assignee')
-                            }}
-                          />
+                          <>
+                            <ExtraOptionRendererAssignee
+                              props={props}
+                              onClick={(e) => {
+                                updateAssigneeValue({ id: '', name: 'No assignee' })
+                                setAnchorEl(anchorEl ? null : e.currentTarget)
+                                handleFilterOptionsChange(FilterOptions.ASSIGNEE, 'No assignee')
+                              }}
+                            />
+                            {loading ? (
+                              <Box sx={{ ...SxCenter, height: '28px' }}>
+                                <CircularProgress sx={{ color: '#000' }} size={14} />
+                              </Box>
+                            ) : (
+                              <></>
+                            )}
+                          </>
                         )
                       )
                     }}
@@ -167,9 +179,15 @@ export const FilterBar = ({
                     }
                     padding="2px 10px"
                     handleInputChange={async (newInputValue: string) => {
+                      if (!newInputValue) {
+                        setFilteredAssignee(filteredAssigneeList)
+                        return
+                      }
+
                       setDebouncedFilteredAssignees(
                         activeDebounceTimeoutId,
                         setActiveDebounceTimeoutId,
+                        setLoading,
                         setFilteredAssignee,
                         z.string().parse(token),
                         newInputValue,
