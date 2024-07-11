@@ -20,6 +20,13 @@ import ExtraOptionRendererAssignee from '@/components/inputs/ExtraOptionRenderer
 import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { AssigneePlaceholder } from '@/icons'
+import { useState } from 'react'
+import { MiniLoader } from '@/components/atoms/MiniLoader'
+import { setDebouncedFilteredAssignees } from '@/utils/users'
+import { z } from 'zod'
+import { truncateText } from '@/utils/truncateText'
+import { TruncateMaxNumber } from '@/types/constants'
+import { isAssigneeTextMatching } from '@/utils/assignee'
 
 const StyledText = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[500],
@@ -45,8 +52,11 @@ export const Sidebar = ({
   assignee: IAssigneeCombined[]
   disabled: boolean
 }) => {
-  const { workflowStates } = useSelector(selectTaskBoard)
+  const { workflowStates, token } = useSelector(selectTaskBoard)
   const { showSidebar } = useSelector(selectTaskDetails)
+  const [filteredAssignees, setFilteredAssignees] = useState(assignee)
+  const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
+  const [loading, setLoading] = useState(false)
 
   const { renderingItem: _statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
     item: selectedWorkflowState,
@@ -59,6 +69,7 @@ export const Sidebar = ({
 
   const statusValue = _statusValue as WorkflowStateResponse //typecasting
   const assigneeValue = _assigneeValue as IAssigneeCombined //typecasting
+  console.log('ass', assigneeValue)
 
   const matches = useMediaQuery('(max-width:600px)')
   return (
@@ -119,20 +130,23 @@ export const Sidebar = ({
                 <CopilotAvatar currentAssignee={assigneeValue} height="16px" width="16px" fontSize="11px" />
               )
             }
-            options={assignee}
+            options={loading ? [] : filteredAssignees}
             value={assigneeValue}
             selectorType={SelectorType.ASSIGNEE_SELECTOR}
             extraOption={NoAssigneeExtraOptions}
             extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
               return (
-                <ExtraOptionRendererAssignee
-                  props={props}
-                  onClick={(e) => {
-                    updateAssigneeValue({ id: '', name: 'No assignee' })
-                    setAnchorEl(anchorEl ? null : e.currentTarget)
-                    updateAssignee(null, null)
-                  }}
-                />
+                <>
+                  <ExtraOptionRendererAssignee
+                    props={props}
+                    onClick={(e) => {
+                      updateAssigneeValue({ id: '', name: 'No assignee' })
+                      setAnchorEl(anchorEl ? null : e.currentTarget)
+                      updateAssignee(null, null)
+                    }}
+                  />
+                  {loading && <MiniLoader />}
+                </>
               )
             }}
             buttonContent={
@@ -143,6 +157,22 @@ export const Sidebar = ({
                     `${(assigneeValue as IAssigneeCombined)?.givenName ?? ''} ${(assigneeValue as IAssigneeCombined)?.familyName ?? ''}`.trim()}
               </Typography>
             }
+            handleInputChange={async (newInputValue: string) => {
+              if (!newInputValue || isAssigneeTextMatching(newInputValue, assigneeValue)) {
+                setFilteredAssignees(assignee)
+                return
+              }
+
+              setDebouncedFilteredAssignees(
+                activeDebounceTimeoutId,
+                setActiveDebounceTimeoutId,
+                setLoading,
+                setFilteredAssignees,
+                z.string().parse(token),
+                newInputValue,
+              )
+            }}
+            filterOption={(x: unknown) => x}
             disabled={disabled}
             disableOutline
             responsiveNoHide
