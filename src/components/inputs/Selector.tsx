@@ -39,6 +39,7 @@ interface Prop {
   responsiveNoHide?: boolean
   handleInputChange?: (_: string) => void
   filterOption?: any
+  loading?: boolean
 }
 
 export default function Selector({
@@ -59,6 +60,7 @@ export default function Selector({
   responsiveNoHide,
   handleInputChange,
   filterOption,
+  loading,
 }: Prop) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
@@ -175,10 +177,12 @@ export default function Selector({
             setAnchorEl(null)
           }}
           openOnFocus
+          loading={true}
+          loadingText={'Loading...'}
           onKeyDown={handleKeyDown}
           ListboxProps={{ sx: { maxHeight: { xs: '175px', sm: '291px' } } }}
           autoHighlight
-          options={extraOption ? [extraOption, ...options] : options}
+          options={loading ? [] : extraOption ? [extraOption, ...options] : options}
           value={value}
           onChange={(_, newValue: unknown) => {
             if (newValue) {

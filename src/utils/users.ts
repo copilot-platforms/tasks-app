@@ -24,16 +24,19 @@ export const filterUsersByKeyword = (users: FilterableUser[], keyword: string): 
 export const setDebouncedFilteredAssignees = (
   activeDebounceTimeoutId: NodeJS.Timeout | null,
   setActiveDebounceTimeoutId: Dispatch<SetStateAction<NodeJS.Timeout | null>>,
+  setLoading: Dispatch<SetStateAction<boolean>>,
   setAssigneeState: Dispatch<SetStateAction<IAssigneeCombined[]>>,
   token: string,
   newInputValue: string,
-) => {
+): void => {
   if (activeDebounceTimeoutId) {
     clearTimeout(activeDebounceTimeoutId)
   }
   const newTimeoutId = setTimeout(async () => {
+    setLoading(true)
     const newAssignees = await getAssigneeList(z.string().parse(token), newInputValue)
     setAssigneeState(addTypeToAssignee(newAssignees))
-  }, 1000)
+    setLoading(false)
+  }, 300)
   setActiveDebounceTimeoutId(newTimeoutId)
 }
