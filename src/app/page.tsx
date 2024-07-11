@@ -18,6 +18,7 @@ import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { createMultipleAttachments, getSignedUrlUpload, updateViewModeSettings } from '@/app/actions'
 import DashboardEmptyState from '@/components/layouts/EmptyState/DashboardEmptyState'
+import { ModalNewTaskForm } from './ui/Modal_NewTaskForm'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -90,10 +91,21 @@ export default async function Main({ searchParams }: { searchParams: { token: st
     getAllTemplates(token),
   ])
 
-  if (tasks.length === 0) {
-    return (
-      <DashboardEmptyState
-        userType={UserType.INTERNAL_USER}
+  return (
+    <ClientSideStateUpdate
+      workflowStates={workflowStates}
+      tasks={tasks}
+      token={token}
+      assignee={assignee}
+      viewSettings={viewSettings}
+      tokenPayload={tokenPayload}
+      templates={templates}
+    >
+      <DndWrapper>
+        <TaskBoard />
+      </DndWrapper>
+
+      <ModalNewTaskForm
         getSignedUrlUpload={async (fileName: string) => {
           'use server'
           return await getSignedUrlUpload(token, fileName)
@@ -103,40 +115,6 @@ export default async function Main({ searchParams }: { searchParams: { token: st
           await createMultipleAttachments(token, attachments)
         }}
       />
-    )
-  }
-
-  return (
-    <>
-      <ClientSideStateUpdate
-        workflowStates={workflowStates}
-        tasks={tasks}
-        token={token}
-        assignee={assignee}
-        viewSettings={viewSettings}
-        tokenPayload={tokenPayload}
-        templates={templates}
-      >
-        <DndWrapper>
-          <Header showCreateTaskButton={true} />
-          <FilterBar
-            updateViewModeSetting={async (payload: CreateViewSettingsDTO) => {
-              'use server'
-              await updateViewModeSettings(token, payload)
-            }}
-          />
-          <TaskBoard
-            getSignedUrlUpload={async (fileName: string) => {
-              'use server'
-              return await getSignedUrlUpload(token, fileName)
-            }}
-            handleCreateMultipleAttachments={async (attachments: CreateAttachmentRequest[]) => {
-              'use server'
-              await createMultipleAttachments(token, attachments)
-            }}
-          />
-        </DndWrapper>
-      </ClientSideStateUpdate>
-    </>
+    </ClientSideStateUpdate>
   )
 }
