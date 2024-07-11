@@ -6,6 +6,5 @@ export const completeTask = async ({ token, taskId }: { token: string; taskId: s
   await fetch(`${apiUrl}/api/tasks/${taskId}/complete?token=${token}`, {
     method: 'PATCH',
   })
-  revalidateTag('getOneTask')
   revalidateTag('getAllTasks-client')
 }

@@ -24,7 +24,7 @@ import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { useRouter } from 'next/navigation'
 import { selectCreateTemplate } from '@/redux/features/templateSlice'
-import { NoAssignee, NoAssigneeExtraOptions } from '@/utils/noAssignee'
+import { NoAssigneeExtraOptions } from '@/utils/noAssignee'
 import ExtraOptionRendererAssignee from '@/components/inputs/ExtraOptionRendererAssignee'
 import { upload } from '@vercel/blob/client'
 import { AttachmentInput } from '@/components/inputs/AttachmentInput'
@@ -33,10 +33,7 @@ import { generateRandomString } from '@/utils/generateRandomString'
 import { AttachmentCard } from '@/components/cards/AttachmentCard'
 import { bulkRemoveAttachments } from '@/utils/bulkRemoveAttachments'
 import { advancedFeatureFlag } from '@/config'
-import { getAssigneeName } from '@/utils/getAssigneeName'
 import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
-import { truncateText } from '@/utils/truncateText'
-import { TruncateMaxNumber } from '@/types/constants'
 import { Tapwrite } from 'tapwrite'
 import { DatePickerComponent } from '@/components/inputs/DatePickerComponent'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
@@ -218,6 +215,7 @@ export const NewTaskForm = ({
                 )
               }}
               selectorType={SelectorType.ASSIGNEE_SELECTOR}
+              buttonHeight="auto"
               buttonContent={
                 <Typography
                   variant="bodySm"
@@ -238,14 +236,13 @@ export const NewTaskForm = ({
               }
             />
           </Stack>
-          <Stack alignSelf="flex-start" sx={{ padding: { xs: '2px', sm: '0px' } }}>
+          <Stack alignSelf="flex-start">
             <Box
               sx={{
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 maxWidth: { xs: '102px', sm: 'none' },
-                display: '',
               }}
             >
               <DatePickerComponent

@@ -10,7 +10,7 @@ import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { useSelector } from 'react-redux'
 import { clearCreateTaskFields, selectCreateTask, setShowModal } from '@/redux/features/createTaskSlice'
 import store from '@/redux/store'
-import { selectTaskBoard, updateWorkflowStateIdByTaskId } from '@/redux/features/taskBoardSlice'
+import { appendTask, selectTaskBoard, updateWorkflowStateIdByTaskId } from '@/redux/features/taskBoardSlice'
 import { CreateTaskRequestSchema, TaskResponse } from '@/types/dto/tasks.dto'
 import { ListViewTaskCard } from '@/components/cards/ListViewTaskCard'
 import { TaskRow } from '@/components/cards/TaskRow'
@@ -174,6 +174,7 @@ export const TaskBoard = ({
                   dueDate,
                 }),
               )
+              store.dispatch(appendTask(createdTask))
               const toUploadAttachments: CreateAttachmentRequest[] = attachments.map((el) => {
                 return {
                   ...el,
