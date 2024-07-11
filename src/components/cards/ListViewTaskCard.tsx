@@ -45,6 +45,9 @@ export const ListViewTaskCard = ({
           userSelect: 'none',
           cursor: 'default',
           borderBottom: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
+          ':hover': {
+            bgcolor: (theme) => theme.color.gray[150],
+          },
         }}
       >
         <AppMargin size={SizeofAppMargin.LARGE} py="12px">

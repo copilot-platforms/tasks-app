@@ -125,9 +125,6 @@ export default function Selector({
               cursor: disabled ? 'auto' : 'pointer',
               borderRadius: '4px',
               padding: '4px 8px',
-              ':hover': {
-                backgroundColor: (theme) => theme.color.gray[100],
-              },
             }}
           >
             <Box>{startIcon}</Box>
