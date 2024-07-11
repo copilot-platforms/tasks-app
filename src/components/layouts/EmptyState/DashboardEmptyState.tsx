@@ -1,3 +1,5 @@
+'use client'
+
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { AddIcon, TasksListIcon } from '@/icons'
