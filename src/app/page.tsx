@@ -101,15 +101,16 @@ export default async function Main({ searchParams }: { searchParams: { token: st
         tokenPayload={tokenPayload}
         templates={templates}
       >
-        <DndWrapper>
-          <Header showCreateTaskButton={true} />
-          <FilterBar
-            updateViewModeSetting={async (payload: CreateViewSettingsDTO) => {
-              'use server'
-              await updateViewModeSettings(token, payload)
-            }}
-          />
-          {tasks && tasks.length > 0 ? (
+        {tasks && tasks.length > 0 ? (
+          <DndWrapper>
+            <Header showCreateTaskButton={true} />
+            <FilterBar
+              updateViewModeSetting={async (payload: CreateViewSettingsDTO) => {
+                'use server'
+                await updateViewModeSettings(token, payload)
+              }}
+            />
+
             <TaskBoard
               getSignedUrlUpload={async (fileName: string) => {
                 'use server'
@@ -120,10 +121,10 @@ export default async function Main({ searchParams }: { searchParams: { token: st
                 await createMultipleAttachments(token, attachments)
               }}
             />
-          ) : (
-            <DashboardEmptyState userType={UserType.INTERNAL_USER} />
-          )}
-        </DndWrapper>
+          </DndWrapper>
+        ) : (
+          <DashboardEmptyState userType={UserType.INTERNAL_USER} />
+        )}
       </ClientSideStateUpdate>
     </>
   )
