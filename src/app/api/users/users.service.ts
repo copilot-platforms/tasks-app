@@ -18,11 +18,11 @@ class UsersService extends BaseService {
     this.copilot = new CopilotAPI(this.user.token)
   }
 
-  async getGroupedUsers(limit: number = this.DEFAULT_USERS_LIMIT) {
+  async getGroupedUsers(limit: number = this.DEFAULT_USERS_LIMIT, nextToken?: string) {
     const user = this.user
     new PoliciesService(user).authorize(UserAction.Read, Resource.Users)
 
-    const listArgs: CopilotListArgs = { limit }
+    const listArgs: CopilotListArgs = { limit, nextToken }
 
     const [ius, clients, companies] = await Promise.all([
       this.copilot.getInternalUsers(listArgs),
@@ -46,10 +46,10 @@ class UsersService extends BaseService {
    * @param keyword
    * @returns
    */
-  async getFilteredUsersStartingWith(keyword: string) {
+  async getFilteredUsersStartingWith(keyword: string, limit?: number, nextToken?: string) {
     const filterByKeyword = (users: FilterableUser[]) => filterUsersByKeyword(users, keyword)
 
-    const { internalUsers, clients, companies } = await this.getGroupedUsers(100_000)
+    const { internalUsers, clients, companies } = await this.getGroupedUsers(limit || 500, nextToken)
     return {
       internalUsers: filterByKeyword(internalUsers),
       clients: filterByKeyword(clients),

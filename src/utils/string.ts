@@ -28,3 +28,7 @@ export const generateRandomString = (length: number): string => {
   }
   return result
 }
+
+export const buildOptionalSearchParam = <T>(paramName: string, value: T) => {
+  return value ? `&${paramName}=${value}` : ''
+}

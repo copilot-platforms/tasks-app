@@ -34,9 +34,27 @@ export const setDebouncedFilteredAssignees = (
   }
   const newTimeoutId = setTimeout(async () => {
     setLoading(true)
-    const newAssignees = await getAssigneeList(z.string().parse(token), newInputValue)
+    const newAssignees = await getAssigneeList(z.string().parse(token), newInputValue, 2000, '0') // 2000 is hardcoded for now
     setAssigneeState(addTypeToAssignee(newAssignees))
     setLoading(false)
+
+    // TODO: Incremental refetching is being blocked by a fault(?) in Copilot API pagination
+    // https://www.loom.com/share/3e9598dcf0de4180a255c5ce1f1173f0?sid=b6d7bb71-248e-4c36-a045-7cb5f31466be
+
+    // First we fetch the first `CHUNK_SIZE` number of results for each of IU / client / company
+    // const CHUNK_SIZE = 500
+    // const MAX_DEPTH = 3000
+    // const MAX_ITERATIONS = MAX_DEPTH / CHUNK_SIZE
+
+    // Need to replace fetching logic to:
+    // const newAssignees = await getAssigneeList(z.string().parse(token), newInputValue, CHUNK_SIZE, '0')
+
+    // Then we update new data for assignee list in background incrementally until we hit max depth for each of them
+    // for (let i = 1; i <= MAX_ITERATIONS; i++) {
+    //   const newAssignees = await getAssigneeList(z.string().parse(token), newInputValue, CHUNK_SIZE, `${i}`)
+    //   const newAssineeState = addTypeToAssignee(newAssignees)
+    //   setAssigneeState((prev) => [...prev, ...newAssineeState])
+    // }
   }, 300)
   setActiveDebounceTimeoutId(newTimeoutId)
 }
