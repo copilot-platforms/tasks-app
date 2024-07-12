@@ -16,7 +16,6 @@ import {
   IAssigneeSuggestions,
   IAssigneeCombined,
   ITemplate,
-  View,
 } from '@/types/interfaces'
 import { ReactNode, useEffect } from 'react'
 
