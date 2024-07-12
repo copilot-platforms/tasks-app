@@ -22,7 +22,7 @@ jobs:
         run: yarn install
 
       - name: Patch stylish.js to not cause lint issues with Next 14.1.*
-        run: cp ./src/lib/stylish.js ./node_modules/eslint/lib/cli-engine/formatters/
+        run: yarn lint:fix-stylish
 
       - name: Run linters
         run: yarn lint:check && yarn prettier:check

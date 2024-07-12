@@ -18,6 +18,7 @@
     "prepare": "husky install",
     "eslint": "eslint './src/**/*.{ts,tsx}'",
     "lint:check": "eslint \"{src,test}/**/*.{ts,tsx}\"",
+    "lint:fix-stylish": "cp ./src/lib/stylish.js ./node_modules/eslint/lib/cli-engine/formatters/",
     "lint:fix": "npm run lint:check -- --fix",
     "prettier:check": "prettier --check \"{src,test}/**/*.{ts,tsx}\"",
     "prettier:fix": "prettier --write .",
