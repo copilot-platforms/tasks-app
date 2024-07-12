@@ -43,7 +43,7 @@ export const ListViewTaskCard = ({
         className="task-list-card"
         sx={{
           userSelect: 'none',
-          cursor: 'default',
+          cursor: 'pointer',
           borderBottom: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
           ':hover': {
             bgcolor: (theme) => alpha(theme.color.gray[100], 0.5),
