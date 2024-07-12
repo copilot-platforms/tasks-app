@@ -6,9 +6,6 @@
     "nextjs",
     "nodejs"
   ],
-  "engines": {
-    "node": "^18.18"
-  },
   "repository": {
     "url": "https://github.com/copilot-platforms/tasks-app"
   },
