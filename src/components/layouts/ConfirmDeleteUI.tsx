@@ -18,8 +18,10 @@ export const ConfirmDeleteUI = ({ handleCancel, handleDelete, body = 'task' }: P
       <StyledBox>
         <AppMargin size={SizeofAppMargin.MEDIUM} py="20px">
           <Stack direction="column" rowGap={4}>
-            <Typography variant="2xl">Are you sure you want to delete this {body}?</Typography>
-            <Typography variant="lg" sx={{ color: (theme) => theme.color.gray[500] }}>
+            <Typography variant="2xl" sx={{ fontSize: { xs: '18px', sm: '24px' } }}>
+              Are you sure you want to delete this {body}?
+            </Typography>
+            <Typography variant="lg" sx={{ color: (theme) => theme.color.gray[500], fontSize: { xs: '14px', sm: '16px' } }}>
               This action can&apos;t be undone.
             </Typography>
           </Stack>
