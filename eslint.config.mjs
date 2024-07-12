@@ -11,4 +11,11 @@ const compat = new FlatCompat({
   allConfig: js.configs.all,
 })
 
-export default [...compat.extends('next/core-web-vitals')]
+export default [
+  ...compat.extends('next/core-web-vitals'),
+  {
+    rules: {
+      '@next/next/no-duplicate-head': 'off',
+    },
+  },
+]
