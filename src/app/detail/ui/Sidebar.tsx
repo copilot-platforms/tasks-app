@@ -172,7 +172,8 @@ export const Sidebar = ({
               )
             }}
             filterOption={(x: unknown) => x}
-            disabled={disabled}
+            // disabled={disabled}
+            disabled={assigneeValue?.name !== 'No assignee'}
             disableOutline
             responsiveNoHide
           />
