@@ -163,4 +163,17 @@ export class LabelMappingService extends BaseService {
       },
     })
   }
+
+  async deleteLabel(label: string) {
+    const currentLabel = await this.db.label.findFirst({
+      where: {
+        label: label,
+      },
+    })
+    await this.db.label.delete({
+      where: {
+        id: currentLabel?.id,
+      },
+    })
+  }
 }

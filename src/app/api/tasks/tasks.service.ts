@@ -151,6 +151,8 @@ export class TasksService extends BaseService {
     //generate new label if prevTask has no assignee but now assigned to someone
     if (!prevTask.assigneeId && data.assigneeId) {
       const labelMappingService = new LabelMappingService(this.user)
+      //delete the existing label
+      await labelMappingService.deleteLabel(prevTask.label)
       label = z.string().parse(await labelMappingService.getLabel(data.assigneeId, data.assigneeType))
     }
     // Get the updated task
@@ -220,6 +222,9 @@ export class TasksService extends BaseService {
       const notificationsService = new NotificationService(this.user)
       await notificationsService.markClientNotificationAsRead(task)
     }
+    //delete the associated label
+    const labelMappingService = new LabelMappingService(this.user)
+    await labelMappingService.deleteLabel(task?.label as string)
 
     return await this.db.task.delete({ where: { id } })
   }
