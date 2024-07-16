@@ -218,13 +218,16 @@ export class TasksService extends BaseService {
 
     // Try to delete existing client notification related to this task if exists
     const task = await this.db.task.findFirst({ where: { id }, include: { workflowState: true } })
+
+    if (!task) throw new APIError(httpStatus.NOT_FOUND, 'The requested task to delete was not found')
+
     if (task?.assigneeType === AssigneeType.client && task.workflowState.type !== NotificationTaskActions.Completed) {
       const notificationsService = new NotificationService(this.user)
       await notificationsService.markClientNotificationAsRead(task)
     }
     //delete the associated label
     const labelMappingService = new LabelMappingService(this.user)
-    await labelMappingService.deleteLabel(task?.label as string)
+    await labelMappingService.deleteLabel(task?.label)
 
     return await this.db.task.delete({ where: { id } })
   }
