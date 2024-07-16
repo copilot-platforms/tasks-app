@@ -46,7 +46,7 @@ model WorkflowState {
 
 model Task {
   id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  label           String        @unique
+  label           String
   workspaceId     String        @db.VarChar(32)
   assigneeId      String?       @db.Uuid
   assigneeType    AssigneeType?
@@ -65,6 +65,7 @@ model Task {
   deletedAt          DateTime?
   ClientNotification ClientNotification[]
 
+  @@unique([label, deletedAt], name: "UQ_Tablename_label_deletedAt")
   @@map("Tasks")
 }
 
@@ -179,7 +180,7 @@ model Comment {
 
 model Label {
   id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  label          String    @unique
+  label          String
   labelledEntity String
   createdAt      DateTime  @default(now()) @db.Timestamptz()
   updatedAt      DateTime  @updatedAt @db.Timestamptz()
