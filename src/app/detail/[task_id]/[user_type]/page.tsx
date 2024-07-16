@@ -39,6 +39,8 @@ import { ActivityType } from '@prisma/client'
 import { CreateComment } from '@/types/dto/comment.dto'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import EscapeHandler from '@/utils/escapeHandler'
+import { getAccessibleUsersList } from '@/utils/assignee'
+import { z } from 'zod'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
@@ -109,6 +111,12 @@ export default async function TaskDetailPage({
     getActivities(token, task_id),
     copilotClient.getTokenPayload(),
   ])
+  const copilot = new CopilotAPI(token)
+  const currentInternalUser =
+    params.user_type === UserType.INTERNAL_USER
+      ? await copilot.getInternalUser(z.string().parse(tokenPayload?.internalUserId))
+      : undefined
+  const filteredAssigneeList = getAccessibleUsersList(assignee, currentInternalUser)
   const AssigneeSuggestions = assignee.map((item) => ({
     id: item.id,
     label: item?.name ?? `${item.givenName} ${item.familyName}`,
@@ -121,7 +129,7 @@ export default async function TaskDetailPage({
   return (
     <ClientSideStateUpdate
       token={token}
-      assignee={assignee}
+      assignee={filteredAssigneeList}
       tokenPayload={tokenPayload}
       assigneeSuggestions={AssigneeSuggestions}
     >
@@ -227,7 +235,7 @@ export default async function TaskDetailPage({
         </ToggleController>
         <Box>
           <Sidebar
-            assignee={assignee}
+            assignee={filteredAssigneeList}
             selectedAssigneeId={task?.assigneeId}
             selectedWorkflowState={task?.workflowState}
             dueDate={task?.dueDate}
