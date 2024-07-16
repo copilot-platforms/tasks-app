@@ -132,22 +132,23 @@ export const Sidebar = ({
             options={loading ? [] : filteredAssignees}
             value={assigneeValue.name == 'No assignee' ? null : assigneeValue}
             selectorType={SelectorType.ASSIGNEE_SELECTOR}
-            extraOption={NoAssigneeExtraOptions}
-            extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
-              return (
-                <>
-                  <ExtraOptionRendererAssignee
-                    props={props}
-                    onClick={(e) => {
-                      updateAssigneeValue({ id: '', name: 'No assignee' })
-                      setAnchorEl(anchorEl ? null : e.currentTarget)
-                      updateAssignee(null, null)
-                    }}
-                  />
-                  {loading && <MiniLoader />}
-                </>
-              )
-            }}
+            //****Disabling re-assignment completely for now***
+            // extraOption={NoAssigneeExtraOptions}
+            // extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
+            //   return (
+            //     <>
+            //       <ExtraOptionRendererAssignee
+            //         props={props}
+            //         onClick={(e) => {
+            //           updateAssigneeValue({ id: '', name: 'No assignee' })
+            //           setAnchorEl(anchorEl ? null : e.currentTarget)
+            //           updateAssignee(null, null)
+            //         }}
+            //       />
+            //       {loading && <MiniLoader />}
+            //     </>
+            //   )
+            // }}
             buttonContent={
               <Typography variant="md" lineHeight="22px" sx={{ color: (theme) => theme.color.gray[600] }}>
                 {(assigneeValue as IAssigneeCombined)?.name == 'No assignee'
@@ -172,7 +173,8 @@ export const Sidebar = ({
               )
             }}
             filterOption={(x: unknown) => x}
-            disabled={disabled}
+            // disabled={disabled}
+            disabled={true} //for now, disable re-assignment completely
             disableOutline
             responsiveNoHide
           />

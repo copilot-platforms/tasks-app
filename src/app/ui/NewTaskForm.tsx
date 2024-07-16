@@ -205,23 +205,24 @@ export const NewTaskForm = ({
               }
               options={loading ? [] : filteredAssignees}
               value={assigneeValue}
-              extraOption={NoAssigneeExtraOptions}
-              extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
-                return (
-                  <>
-                    <ExtraOptionRendererAssignee
-                      props={props}
-                      onClick={(e) => {
-                        updateAssigneeValue({ id: '', name: 'No assignee' })
-                        setAnchorEl(anchorEl ? null : e.currentTarget)
-                        store.dispatch(setCreateTaskFields({ targetField: 'assigneeType', value: null }))
-                        store.dispatch(setCreateTaskFields({ targetField: 'assigneeId', value: null }))
-                      }}
-                    />
-                    {loading && <MiniLoader />}
-                  </>
-                )
-              }}
+              //****Disabling re-assignment completely for now***
+              // extraOption={NoAssigneeExtraOptions}
+              // extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
+              //   return (
+              //     <>
+              //       <ExtraOptionRendererAssignee
+              //         props={props}
+              //         onClick={(e) => {
+              //           updateAssigneeValue({ id: '', name: 'No assignee' })
+              //           setAnchorEl(anchorEl ? null : e.currentTarget)
+              //           store.dispatch(setCreateTaskFields({ targetField: 'assigneeType', value: null }))
+              //           store.dispatch(setCreateTaskFields({ targetField: 'assigneeId', value: null }))
+              //         }}
+              //       />
+              //       {loading && <MiniLoader />}
+              //     </>
+              //   )
+              // }}
               selectorType={SelectorType.ASSIGNEE_SELECTOR}
               handleInputChange={async (newInputValue: string) => {
                 if (!newInputValue) {
