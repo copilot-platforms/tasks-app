@@ -1,24 +1,10 @@
 import { AssigneeType as PrismaAssigneeType } from '@prisma/client'
 import { z } from 'zod'
 import { WorkflowStateResponseSchema } from './workflowStates.dto'
+import { DateStringSchema } from '@/types/date'
 
 export const AssigneeTypeSchema = z.nativeEnum(PrismaAssigneeType).nullish()
 export type AssigneeType = z.infer<typeof AssigneeTypeSchema>
-
-// Schema for validating ISO 8601 date strings
-export const IsoDateSchema = z
-  .string()
-  .refine(
-    (data) => {
-      return !isNaN(Date.parse(data))
-    },
-    {
-      message: 'Invalid date format, expected ISO 8601 string',
-    },
-  )
-  .transform((data) => new Date(data))
-
-export type IsoDate = z.infer<typeof IsoDateSchema>
 
 export const CreateTaskRequestSchema = z.object({
   assigneeId: z.string().optional().nullish(),
@@ -26,7 +12,7 @@ export const CreateTaskRequestSchema = z.object({
   title: z.string().min(1),
   body: z.string().optional(),
   workflowStateId: z.string().uuid(),
-  dueDate: IsoDateSchema.optional().nullish(),
+  dueDate: DateStringSchema.nullish(),
 })
 export type CreateTaskRequest = z.infer<typeof CreateTaskRequestSchema>
 
@@ -36,7 +22,7 @@ export const UpdateTaskRequestSchema = z.object({
   title: z.string().optional(),
   body: z.string().nullish(),
   workflowStateId: z.string().uuid().optional(),
-  dueDate: IsoDateSchema.optional(),
+  dueDate: DateStringSchema.nullish(),
 })
 export type UpdateTaskRequest = z.infer<typeof UpdateTaskRequestSchema>
 
@@ -51,7 +37,7 @@ export const TaskResponseSchema = z.object({
   createdById: z.string(),
   workflowStateId: z.string().uuid().optional(),
   workflowState: WorkflowStateResponseSchema,
-  dueDate: IsoDateSchema.optional(),
+  dueDate: DateStringSchema.optional(),
 })
 
 export type TaskResponse = z.infer<typeof TaskResponseSchema>
