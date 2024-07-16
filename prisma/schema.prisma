@@ -61,7 +61,7 @@ model Task {
 
   assignedAt         DateTime?
   completedAt        DateTime?
-  dueDate            DateTime?
+  dueDate            String?
   deletedAt          DateTime?
   ClientNotification ClientNotification[]
 
