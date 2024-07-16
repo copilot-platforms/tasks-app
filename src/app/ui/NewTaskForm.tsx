@@ -39,6 +39,7 @@ import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { setDebouncedFilteredAssignees } from '@/utils/users'
 import { z } from 'zod'
 import { MiniLoader } from '@/components/atoms/MiniLoader'
+import { formatDate } from '@/utils/dateHelper'
 
 const supabaseActions = new SupabaseActions()
 
@@ -270,7 +271,9 @@ export const NewTaskForm = ({
               }}
             >
               <DatePickerComponent
-                getDate={(value) => store.dispatch(setCreateTaskFields({ targetField: 'dueDate', value: value }))}
+                getDate={(value) =>
+                  store.dispatch(setCreateTaskFields({ targetField: 'dueDate', value: formatDate(value) }))
+                }
                 isButton={true}
               />
             </Box>
