@@ -1,2 +1,0 @@
--- AlterTable
-ALTER TABLE "Tasks" ALTER COLUMN "dueDate" SET DATA TYPE TEXT;
