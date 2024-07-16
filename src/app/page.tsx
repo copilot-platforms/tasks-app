@@ -7,7 +7,7 @@ import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { apiUrl } from '@/config'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import { TaskResponse } from '@/types/dto/tasks.dto'
-import { IAssignee, ITemplate } from '@/types/interfaces'
+import { FilterByOptions, FilterOptionsKeywords, IAssignee, ITemplate } from '@/types/interfaces'
 import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
 import ClientError from '@/components/clientError'
 import { Token, TokenSchema } from '@/types/common'
@@ -16,6 +16,8 @@ import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { createMultipleAttachments, getSignedUrlUpload } from '@/app/actions'
 import { ModalNewTaskForm } from './ui/Modal_NewTaskForm'
+import { AssigneeType } from '@prisma/client'
+import { getAccessibleUsersList } from '@/utils/assignee'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -88,12 +90,20 @@ export default async function Main({ searchParams }: { searchParams: { token: st
     getAllTemplates(token),
   ])
 
+  const copilot = new CopilotAPI(token)
+  const currentInternalUser = await copilot.getInternalUser(z.string().parse(tokenPayload.internalUserId))
+  if (!currentInternalUser) {
+    throw new Error('Could not find details for current Internal User')
+  }
+
+  const filteredAssigneeList = getAccessibleUsersList(assignee, currentInternalUser)
+
   return (
     <ClientSideStateUpdate
       workflowStates={workflowStates}
       tasks={tasks}
       token={token}
-      assignee={assignee}
+      assignee={filteredAssigneeList}
       viewSettings={viewSettings}
       tokenPayload={tokenPayload}
       templates={templates}

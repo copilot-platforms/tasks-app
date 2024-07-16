@@ -107,6 +107,8 @@ export interface IAssigneeCombined {
   name?: string
   iconImageUrl?: string
   fallbackColor?: string
+  isClientAccessLimited: boolean
+  companyAccessList: string[] | null
 }
 
 export interface IAssigneeSuggestions {
