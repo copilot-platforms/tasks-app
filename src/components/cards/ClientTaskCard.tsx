@@ -92,7 +92,7 @@ export const ClientTaskCard = ({
               >
                 {task.dueDate && (
                   <Typography variant="bodySm" sx={{ fontSize: '12px', color: (theme) => theme.color.gray[500] }}>
-                    <DueDateLayout date={task.dueDate} />
+                    <DueDateLayout dateString={task.dueDate} />
                   </Typography>
                 )}
               </Box>
