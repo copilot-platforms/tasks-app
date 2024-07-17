@@ -10,6 +10,9 @@ import { DueDateLayout } from '@/components/layouts/DueDateLayout'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { UrlObject } from 'url'
 import { StyledUninvasiveLink } from '@/app/detail/ui/styledComponent'
+import { useRouter } from 'next/navigation'
+import { useCallback } from 'react'
+import { apiUrl } from '@/config'
 
 const TaskCardContainer = styled(Stack)(({ theme }) => ({
   border: `1px solid ${theme.color.borders.border}`,
@@ -35,8 +38,14 @@ export const TaskCard = ({ task, href }: TaskCardProps) => {
 
   const currentAssignee = assignee.find((el) => el.id === task.assigneeId) ?? NoAssignee
 
+  const router = useRouter()
+
+  const handleMouseEnter = useCallback(() => {
+    router.prefetch((href as UrlObject).pathname as string)
+  }, [href, router])
+
   return (
-    <StyledUninvasiveLink href={href} prefetch={true}>
+    <StyledUninvasiveLink href={href} prefetch={false} onMouseEnter={handleMouseEnter}>
       <TaskCardContainer rowGap={1}>
         <Stack direction="row" justifyContent="space-between">
           <Stack direction="row" alignItems="center" columnGap={1}>
