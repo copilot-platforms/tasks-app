@@ -41,7 +41,9 @@ export const TaskCard = ({ task, href }: TaskCardProps) => {
   const router = useRouter()
 
   const handleMouseEnter = useCallback(() => {
-    router.prefetch((href as UrlObject).pathname as string)
+    const url = (href as UrlObject).pathname as string
+    const token = (href as any).query.token
+    router.prefetch(`${url}?token=${token}`)
   }, [href, router])
 
   return (
