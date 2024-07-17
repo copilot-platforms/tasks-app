@@ -53,9 +53,16 @@ const taskBoardSlice = createSlice({
     },
     updateWorkflowStateIdByTaskId: (state, action) => {
       let taskToUpdate = state.tasks.find((task) => task.id === action.payload.taskId)
+      let updatedTasks = [...state.tasks]
       if (taskToUpdate) {
         taskToUpdate.workflowStateId = action.payload.targetWorkflowStateId
-        const updatedTasks = [...state.tasks.filter((task) => task.id !== action.payload.taskId), taskToUpdate]
+        for (let i = 0; i < state.tasks.length; i++) {
+          if (updatedTasks[i].id === taskToUpdate.id) {
+            updatedTasks[i] = taskToUpdate
+            break // Exit the loop once the match is found and replaced
+          }
+        }
+        // const updatedTasks = [...state.tasks.filter((task) => task.id !== action.payload.taskId), taskToUpdate]
         state.tasks = updatedTasks
         state.filteredTasks = updatedTasks
       }

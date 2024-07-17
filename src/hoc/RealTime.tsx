@@ -33,6 +33,7 @@ export const RealTime = ({ children }: { children: ReactNode }) => {
         if (payload.eventType === 'DELETE') {
           console.log('delete change', payload)
         }
+        console.log('payloaddd', payload)
       })
       .subscribe()
 
