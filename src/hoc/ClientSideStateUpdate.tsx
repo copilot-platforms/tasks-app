@@ -52,9 +52,8 @@ export const ClientSideStateUpdate = ({
       store.dispatch(setWorkflowStates(workflowStates))
     }
 
-    if (tasks) {
-      let storeTasks = tasksInStore.filter((itemB) => !tasks.some((itemA) => itemA.id === itemB.id))
-      store.dispatch(setTasks([...tasks, ...storeTasks]))
+    if (tasks && tasksInStore.length === 0) {
+      store.dispatch(setTasks(tasks))
     }
 
     if (token) {
