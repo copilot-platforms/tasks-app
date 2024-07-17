@@ -40,14 +40,14 @@ export const TaskCard = ({ task, href }: TaskCardProps) => {
 
   const router = useRouter()
 
-  const handleMouseEnter = useCallback(() => {
-    const url = (href as UrlObject).pathname as string
-    const token = (href as any).query.token
-    router.prefetch(`${url}?token=${token}`)
-  }, [href, router])
+  // const handleMouseEnter = useCallback(() => {
+  //   const url = (href as UrlObject).pathname as string
+  //   const token = (href as any).query.token
+  //   router.prefetch(`${url}?token=${token}`)
+  // }, [href, router])
 
   return (
-    <StyledUninvasiveLink href={href} prefetch={false} onMouseEnter={handleMouseEnter}>
+    <StyledUninvasiveLink href={href} prefetch={false}>
       <TaskCardContainer rowGap={1}>
         <Stack direction="row" justifyContent="space-between">
           <Stack direction="row" alignItems="center" columnGap={1}>
