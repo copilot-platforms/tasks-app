@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 import { Box, Stack } from '@mui/material'
 import { TaskCard } from '@/components/cards/TaskCard'
 import { TaskColumn } from '@/components/cards/TaskColumn'
@@ -20,6 +20,7 @@ import DashboardEmptyState from '@/components/layouts/EmptyState/DashboardEmptyS
 import { Header } from '@/components/layouts/Header'
 import { FilterBar } from '@/components/layouts/FilterBar'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
+import { supabase } from '@/lib/supabase'
 
 export const TaskBoard = () => {
   const { workflowStates, tasks, token, filteredTasks, view, filterOptions } = useSelector(selectTaskBoard)
@@ -56,6 +57,19 @@ export const TaskBoard = () => {
     }
     return filteredTaskCount.toString() + '/' + taskCount.toString()
   }
+  useEffect(() => {
+    // Listen to inserts
+    const channel = supabase
+      .channel('realtime tasks')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'Tasks' }, (payload) => {
+        console.log('im here', payload)
+      })
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [])
 
   if (tasks && tasks.length === 0) {
     return <DashboardEmptyState userType={UserType.INTERNAL_USER} />
