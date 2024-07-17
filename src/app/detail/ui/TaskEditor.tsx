@@ -22,6 +22,7 @@ import { Tapwrite } from 'tapwrite'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { z } from 'zod'
 import { CreateTaskRequestSchema, TaskResponseSchema } from '@/types/dto/tasks.dto'
+import { SecurityUpdateWarningTwoTone } from '@mui/icons-material'
 
 interface Prop {
   title: string
@@ -73,6 +74,11 @@ export const TaskEditor = ({
       }
     }
   }
+
+  useEffect(() => {
+    setUpdateTitle(currentTask.title)
+    setUpdateDetail(currentTask.body)
+  }, [currentTask])
 
   return (
     <>

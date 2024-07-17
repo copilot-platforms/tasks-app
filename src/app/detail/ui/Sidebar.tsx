@@ -20,7 +20,7 @@ import ExtraOptionRendererAssignee from '@/components/inputs/ExtraOptionRenderer
 import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { AssigneePlaceholder } from '@/icons'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { MiniLoader } from '@/components/atoms/MiniLoader'
 import { setDebouncedFilteredAssignees } from '@/utils/users'
 import { z } from 'zod'
@@ -62,7 +62,7 @@ export const Sidebar = ({
   const [loading, setLoading] = useState(false)
 
   const { renderingItem: _statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
-    item: currentTask?.workflowStateId,
+    item: currentTask?.workflowState,
     type: SelectorType.STATUS_SELECTOR,
   })
   const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
@@ -74,6 +74,11 @@ export const Sidebar = ({
   const assigneeValue = _assigneeValue as IAssigneeCombined //typecasting
 
   const matches = useMediaQuery('(max-width:600px)')
+
+  useEffect(() => {
+    updateStatusValue(currentTask?.workflowState)
+    updateAssigneeValue(currentTask?.assigneeId ? assignee.find((el) => el.id === currentTask?.assigneeId) : NoAssignee)
+  }, [currentTask])
 
   return (
     <Box
