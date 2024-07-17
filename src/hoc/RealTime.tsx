@@ -15,7 +15,6 @@ export const RealTime = ({ children }: { children: ReactNode }) => {
   const { tasks } = useSelector(selectTaskBoard)
 
   useEffect(() => {
-    // Listen to inserts
     if (!tasks || tasks.length === 0) return
     const channel = supabase
       .channel('realtime tasks')
@@ -25,12 +24,13 @@ export const RealTime = ({ children }: { children: ReactNode }) => {
         }
         if (payload.eventType === 'UPDATE') {
           const updatedTask = payload.new as RealTimeTaskResponse
-          const _tasks = [...tasks]
           if (updatedTask.deletedAt) {
+            console.log('deleted', updatedTask)
             const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
             store.dispatch(setTasks(newTaskArr))
+            console.log('newTaskArry', newTaskArr)
           } else {
-            const newTaskArr = [..._tasks.filter((task) => task.id !== updatedTask.id), updatedTask]
+            const newTaskArr = [...tasks.filter((task) => task.id !== updatedTask.id), updatedTask]
             store.dispatch(setTasks(newTaskArr))
           }
         }

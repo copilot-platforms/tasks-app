@@ -27,7 +27,7 @@ export const TaskBoard = () => {
   const onDropItem = useCallback(
     (payload: { taskId: string; targetWorkflowStateId: string }) => {
       const { taskId, targetWorkflowStateId } = payload
-      // store.dispatch(updateWorkflowStateIdByTaskId({ taskId, targetWorkflowStateId }))
+      store.dispatch(updateWorkflowStateIdByTaskId({ taskId, targetWorkflowStateId }))
       updateTask({
         token: z.string().parse(token),
         taskId,
