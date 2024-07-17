@@ -250,6 +250,7 @@ export class TasksService extends BaseService {
     const completedWorkFlowState = await this.db.workflowState.findFirst({
       where: {
         type: StateType.completed,
+        workspaceId: this.user.workspaceId,
       },
     })
     const data = {
