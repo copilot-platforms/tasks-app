@@ -34,6 +34,7 @@ const StyledText = styled(Typography)(({ theme }) => ({
 }))
 
 export const Sidebar = ({
+  task_id,
   selectedWorkflowState,
   selectedAssigneeId,
   updateWorkflowState,
@@ -43,6 +44,7 @@ export const Sidebar = ({
   assignee,
   disabled,
 }: {
+  task_id: string
   selectedWorkflowState: WorkflowStateResponse
   selectedAssigneeId: string | undefined
   dueDate: IsoDate | undefined
@@ -52,18 +54,19 @@ export const Sidebar = ({
   assignee: IAssigneeCombined[]
   disabled: boolean
 }) => {
-  const { workflowStates, token } = useSelector(selectTaskBoard)
+  const { workflowStates, token, tasks } = useSelector(selectTaskBoard)
+  const currentTask = tasks.find((el) => el.id === task_id)
   const { showSidebar } = useSelector(selectTaskDetails)
   const [filteredAssignees, setFilteredAssignees] = useState(assignee)
   const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
   const [loading, setLoading] = useState(false)
 
   const { renderingItem: _statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
-    item: selectedWorkflowState,
+    item: currentTask?.workflowStateId,
     type: SelectorType.STATUS_SELECTOR,
   })
   const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
-    item: selectedAssigneeId ? assignee.find((el) => el.id === selectedAssigneeId) : NoAssignee,
+    item: currentTask?.assigneeId ? assignee.find((el) => el.id === currentTask?.assigneeId) : NoAssignee,
     type: SelectorType.ASSIGNEE_SELECTOR,
   })
 
@@ -71,6 +74,7 @@ export const Sidebar = ({
   const assigneeValue = _assigneeValue as IAssigneeCombined //typecasting
 
   const matches = useMediaQuery('(max-width:600px)')
+
   return (
     <Box
       sx={{
@@ -190,7 +194,7 @@ export const Sidebar = ({
                 dueDate: isoDate,
               })
             }}
-            dateValue={dueDate ? isoToReadableDate(dueDate) : undefined}
+            dateValue={currentTask?.dueDate ? isoToReadableDate(currentTask.dueDate) : undefined}
             disabled={disabled}
           />
         </Stack>

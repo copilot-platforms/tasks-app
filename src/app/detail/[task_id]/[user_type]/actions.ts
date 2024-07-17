@@ -4,7 +4,7 @@ import { advancedFeatureFlag, apiUrl } from '@/config'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { CreateComment } from '@/types/dto/comment.dto'
 import { UpdateTaskRequest } from '@/types/dto/tasks.dto'
-import { revalidatePath, revalidateTag } from 'next/cache'
+import { revalidateTag } from 'next/cache'
 import { redirect } from 'next/navigation'
 
 export const updateTaskDetail = async ({
@@ -27,7 +27,6 @@ export const updateTaskDetail = async ({
       dueDate: payload.dueDate,
     }),
   })
-  // revalidatePath('/')
 }
 
 /**
@@ -40,7 +39,6 @@ export const updateWorkflowStateIdOfTask = async (token: string, taskId: string,
       workflowStateId: targetWorkflowStateId,
     }),
   })
-  // revalidatePath('/')
   //revalidation on update assignee is disabled for now since we don't have activity log enabled
   //this revalidation can be rethought and may not be needed to prevent unexpected flickering
   if (advancedFeatureFlag) {
@@ -61,7 +59,6 @@ export const updateAssignee = async (
       assigneeId,
     }),
   })
-  // revalidatePath('/')
   //revalidation on update assignee is disabled for now since we don't have activity log enabled
   //this revalidation can be rethought and may not be needed to prevent unexpected flickering
   if (advancedFeatureFlag) {

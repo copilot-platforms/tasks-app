@@ -19,6 +19,9 @@ import { ISignedUrlUpload, UserType } from '@/types/interfaces'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { advancedFeatureFlag } from '@/config'
 import { Tapwrite } from 'tapwrite'
+import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { z } from 'zod'
+import { CreateTaskRequestSchema, TaskResponseSchema } from '@/types/dto/tasks.dto'
 
 interface Prop {
   title: string
@@ -49,8 +52,10 @@ export const TaskEditor = ({
   getSignedUrlUpload,
   userType,
 }: Prop) => {
-  const [updateTitle, setUpdateTitle] = useState(title)
-  const [updateDetail, setUpdateDetail] = useState(detail)
+  const { tasks } = useSelector(selectTaskBoard)
+  const currentTask = CreateTaskRequestSchema.parse(tasks.find((el) => el.id === task_id))
+  const [updateTitle, setUpdateTitle] = useState(currentTask.title)
+  const [updateDetail, setUpdateDetail] = useState(currentTask.body)
   const { showConfirmDeleteModal } = useSelector(selectTaskDetails)
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -91,13 +96,13 @@ export const TaskEditor = ({
         disabled={!isEditable}
         padding="0px"
         onBlur={() => {
-          updateTaskDetail(updateTitle, updateDetail)
+          updateTaskDetail(updateTitle, z.string().parse(updateDetail))
         }}
       />
 
       <Box
         onBlur={() => {
-          updateTaskDetail(updateTitle, updateDetail)
+          updateTaskDetail(updateTitle, z.string().parse(updateDetail))
         }}
         mt="12px"
       >
@@ -109,7 +114,7 @@ export const TaskEditor = ({
             })
             tiptapEditorUtils.setImage(newBlob.url as string)
           }}
-          content={detail}
+          content={currentTask.body ?? ''}
           getContent={(content) => setUpdateDetail(content)}
           readonly={userType === UserType.CLIENT_USER}
           editorClass="tapwrite-details-page"
