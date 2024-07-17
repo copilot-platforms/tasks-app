@@ -52,9 +52,9 @@ export const ClientSideStateUpdate = ({
       store.dispatch(setWorkflowStates(workflowStates))
     }
 
-    // if (tasks && tasksInStore.length === 0) {
-    //   store.dispatch(setTasks(tasks))
-    // }
+    if (tasks && tasksInStore.length === 0) {
+      store.dispatch(setTasks(tasks))
+    }
 
     if (token) {
       store.dispatch(setToken(token))

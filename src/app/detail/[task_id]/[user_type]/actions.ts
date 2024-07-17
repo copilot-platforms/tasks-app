@@ -73,6 +73,7 @@ export const deleteTask = async (token: string, task_id: string) => {
   await fetch(`${apiUrl}/api/tasks/${task_id}?token=${token}`, {
     method: 'DELETE',
   })
+  revalidateTag('getTasks')
   redirect(`/?token=${token}`)
 }
 

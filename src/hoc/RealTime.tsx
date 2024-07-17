@@ -17,7 +17,6 @@ export const RealTime = ({ children }: { children: ReactNode }) => {
 
   const handleTaskRealTimeUpdates = (payload: RealtimePostgresChangesPayload<RealTimeTaskResponse>) => {
     if (payload.eventType === 'INSERT') {
-      console.log('insert', payload)
       store.dispatch(setTasks([...tasks, payload.new]))
     }
     if (payload.eventType === 'UPDATE') {
