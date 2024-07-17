@@ -16,13 +16,16 @@ export const RealTime = ({ children }: { children: ReactNode }) => {
   const { tasks } = useSelector(selectTaskBoard)
 
   const handleTaskRealTimeUpdates = (payload: RealtimePostgresChangesPayload<RealTimeTaskResponse>) => {
+    console.log('im runninig', payload, tasks)
     if (payload.eventType === 'INSERT') {
       store.dispatch(setTasks([...tasks, payload.new]))
     }
     if (payload.eventType === 'UPDATE') {
       const updatedTask = payload.new
+      console.log('updatedTask', updatedTask)
       if (updatedTask.deletedAt) {
         const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
+        console.log('newTaskArr', newTaskArr)
         store.dispatch(setTasks(newTaskArr))
       } else {
         const newTaskArr = [...tasks.filter((task) => task.id !== updatedTask.id), updatedTask]

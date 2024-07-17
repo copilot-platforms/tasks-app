@@ -85,7 +85,7 @@ export const ClientSideStateUpdate = ({
     if (assigneeSuggestions) {
       store.dispatch(setAssigneeSuggestion(assigneeSuggestions))
     }
-  }, [workflowStates, token, assignee, viewSettings, tokenPayload, templates, assigneeSuggestions])
+  }, [workflowStates, tasks, token, assignee, viewSettings, tokenPayload, templates, assigneeSuggestions])
 
   return children
 }
