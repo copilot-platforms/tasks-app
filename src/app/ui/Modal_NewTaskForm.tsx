@@ -50,7 +50,7 @@ export const ModalNewTaskForm = ({
                 dueDate,
               }),
             )
-            store.dispatch(appendTask(createdTask))
+            // store.dispatch(appendTask(createdTask))
             const toUploadAttachments: CreateAttachmentRequest[] = attachments.map((el) => {
               return {
                 ...el,

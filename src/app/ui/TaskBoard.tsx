@@ -8,7 +8,7 @@ import { DragDropHandler } from '@/hoc/DragDropHandler'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { useSelector } from 'react-redux'
 import store from '@/redux/store'
-import { selectTaskBoard, updateWorkflowStateIdByTaskId } from '@/redux/features/taskBoardSlice'
+import { selectTaskBoard, setTasks, updateWorkflowStateIdByTaskId } from '@/redux/features/taskBoardSlice'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { ListViewTaskCard } from '@/components/cards/ListViewTaskCard'
 import { TaskRow } from '@/components/cards/TaskRow'
@@ -21,6 +21,7 @@ import { Header } from '@/components/layouts/Header'
 import { FilterBar } from '@/components/layouts/FilterBar'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { supabase } from '@/lib/supabase'
+import { Task } from '@prisma/client'
 
 export const TaskBoard = () => {
   const { workflowStates, tasks, token, filteredTasks, view, filterOptions } = useSelector(selectTaskBoard)
@@ -61,15 +62,32 @@ export const TaskBoard = () => {
     // Listen to inserts
     const channel = supabase
       .channel('realtime tasks')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'Tasks' }, (payload) => {
-        console.log('im here', payload)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'Tasks' }, (payload) => {
+        if (payload.eventType === 'INSERT') {
+          store.dispatch(setTasks([...tasks, payload.new as TaskResponse]))
+        }
+        if (payload.eventType === 'UPDATE') {
+          const updatedTask = payload.new as TaskResponse
+          const newTaskArr = []
+          for (let i = 0; i < tasks.length; i++) {
+            if (tasks[i].id === updatedTask.id) {
+              newTaskArr.push(updatedTask)
+            } else {
+              newTaskArr.push(tasks[i])
+            }
+          }
+          store.dispatch(setTasks(newTaskArr))
+        }
+        if (payload.eventType === 'DELETE') {
+          console.log('delete change', payload)
+        }
       })
       .subscribe()
 
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [])
+  }, [supabase])
 
   if (tasks && tasks.length === 0) {
     return <DashboardEmptyState userType={UserType.INTERNAL_USER} />
