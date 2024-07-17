@@ -70,8 +70,6 @@ export const Sidebar = ({
 
   const statusValue = _statusValue as WorkflowStateResponse //typecasting
   const assigneeValue = _assigneeValue as IAssigneeCombined //typecasting
-  console.log('status', workflowStates)
-  console.log('tasks', tasks)
 
   useEffect(() => {
     if (!workflowStates) return
