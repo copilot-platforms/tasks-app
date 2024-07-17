@@ -25,17 +25,14 @@ export const RealTime = ({ children }: { children: ReactNode }) => {
         }
         if (payload.eventType === 'UPDATE') {
           const updatedTask = payload.new as RealTimeTaskResponse
-          let _tasks = [...tasks]
+          const _tasks = [...tasks]
           if (updatedTask.deletedAt) {
-            _tasks = tasks.filter((el) => el.id !== updatedTask.id)
+            const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
+            store.dispatch(setTasks(newTaskArr))
+          } else {
+            const newTaskArr = [..._tasks.filter((task) => task.id !== updatedTask.id), updatedTask]
+            store.dispatch(setTasks(newTaskArr))
           }
-          for (let i = 0; i < _tasks.length; i++) {
-            if (_tasks[i].id === updatedTask.id) {
-              _tasks[i] = updatedTask
-              break // Exit the loop once the match is found and replaced
-            }
-          }
-          store.dispatch(setTasks(_tasks))
         }
       })
       .subscribe()
