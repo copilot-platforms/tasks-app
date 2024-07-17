@@ -262,7 +262,7 @@ export default async function TaskDetailPage({
               task_id={task_id}
               selectedAssigneeId={task?.assigneeId}
               selectedWorkflowState={task?.workflowState}
-              dueDate={task?.dueDate}
+              // dueDate={task?.dueDate}
               updateWorkflowState={async (workflowState) => {
                 'use server'
                 await updateWorkflowStateIdOfTask(token, task_id, workflowState?.id)
@@ -276,6 +276,7 @@ export default async function TaskDetailPage({
                 await updateTaskDetail({ token, taskId: task_id, payload })
               }}
               disabled={params.user_type === UserType.CLIENT_USER}
+              workflowStates={workflowStates}
             />
           </Box>
         </Stack>
