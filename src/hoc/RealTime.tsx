@@ -7,6 +7,10 @@ import { TaskResponse } from '@/types/dto/tasks.dto'
 import { ReactNode, useEffect } from 'react'
 import { useSelector } from 'react-redux'
 
+interface RealTimeTaskResponse extends TaskResponse {
+  deletedAt: string
+}
+
 export const RealTime = ({ children }: { children: ReactNode }) => {
   const { tasks } = useSelector(selectTaskBoard)
 
@@ -20,8 +24,11 @@ export const RealTime = ({ children }: { children: ReactNode }) => {
           store.dispatch(setTasks([...tasks, payload.new as TaskResponse]))
         }
         if (payload.eventType === 'UPDATE') {
-          const updatedTask = payload.new as TaskResponse
-          const _tasks = [...tasks]
+          const updatedTask = payload.new as RealTimeTaskResponse
+          let _tasks = [...tasks]
+          if (updatedTask.deletedAt) {
+            _tasks = tasks.filter((el) => el.id !== updatedTask.id)
+          }
           for (let i = 0; i < _tasks.length; i++) {
             if (_tasks[i].id === updatedTask.id) {
               _tasks[i] = updatedTask
@@ -30,10 +37,6 @@ export const RealTime = ({ children }: { children: ReactNode }) => {
           }
           store.dispatch(setTasks(_tasks))
         }
-        if (payload.eventType === 'DELETE') {
-          console.log('delete change', payload)
-        }
-        console.log('payloaddd', payload)
       })
       .subscribe()
 
