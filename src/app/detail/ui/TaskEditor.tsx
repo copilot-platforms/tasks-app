@@ -54,6 +54,7 @@ export const TaskEditor = ({
 }: Prop) => {
   const { tasks } = useSelector(selectTaskBoard)
   const currentTask = CreateTaskRequestSchema.parse(tasks.find((el) => el.id === task_id))
+  console.log('current', currentTask)
   const [updateTitle, setUpdateTitle] = useState(currentTask.title)
   const [updateDetail, setUpdateDetail] = useState(currentTask.body)
   const { showConfirmDeleteModal } = useSelector(selectTaskDetails)

@@ -92,6 +92,16 @@ async function getActivities(token: string, taskId: string): Promise<LogResponse
   return data.data
 }
 
+async function getAllTasks(token: string): Promise<TaskResponse[]> {
+  const res = await fetch(`${apiUrl}/api/tasks?token=${token}`, {
+    next: { tags: ['getTasks'] },
+  })
+
+  const data = await res.json()
+
+  return data.tasks
+}
+
 export default async function TaskDetailPage({
   params,
   searchParams,
@@ -103,12 +113,13 @@ export default async function TaskDetailPage({
   const { task_id } = params
   const copilotClient = new CopilotAPI(token)
 
-  const [task, assignee, attachments, activities, tokenPayload] = await Promise.all([
+  const [task, assignee, attachments, activities, tokenPayload, tasks] = await Promise.all([
     getOneTask(token, task_id),
     addTypeToAssignee(await getAssigneeList(token, params.user_type)),
     getAttachments(token, task_id),
     getActivities(token, task_id),
     copilotClient.getTokenPayload(),
+    getAllTasks(token),
   ])
   const AssigneeSuggestions = assignee.map((item) => ({
     id: item.id,
@@ -125,6 +136,7 @@ export default async function TaskDetailPage({
       assignee={assignee}
       tokenPayload={tokenPayload}
       assigneeSuggestions={AssigneeSuggestions}
+      tasks={tasks}
     >
       <RealTime>
         <EscapeHandler />
