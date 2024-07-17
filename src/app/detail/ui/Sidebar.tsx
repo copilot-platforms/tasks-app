@@ -76,7 +76,7 @@ export const Sidebar = ({
   useEffect(() => {
     if (!workflowStates) return
     const currentTask = tasks.find((el) => el.id === task_id)
-    const currentWorkflowState = workflowStates.find((el) => el.name === currentTask?.workflowState.name)
+    const currentWorkflowState = workflowStates.find((el) => el?.name === currentTask?.workflowState.name)
     const currentAssigneeId = currentTask?.assigneeId
     updateStatusValue(currentWorkflowState)
     updateAssigneeValue(currentAssigneeId ? assignee.find((el) => el.id === currentAssigneeId) : NoAssignee)
