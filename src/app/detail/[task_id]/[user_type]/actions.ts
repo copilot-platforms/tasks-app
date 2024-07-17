@@ -27,7 +27,7 @@ export const updateTaskDetail = async ({
       dueDate: payload.dueDate,
     }),
   })
-  revalidatePath('/')
+  // revalidatePath('/')
 }
 
 /**
@@ -40,7 +40,7 @@ export const updateWorkflowStateIdOfTask = async (token: string, taskId: string,
       workflowStateId: targetWorkflowStateId,
     }),
   })
-  revalidatePath('/')
+  // revalidatePath('/')
   //revalidation on update assignee is disabled for now since we don't have activity log enabled
   //this revalidation can be rethought and may not be needed to prevent unexpected flickering
   if (advancedFeatureFlag) {
@@ -61,7 +61,7 @@ export const updateAssignee = async (
       assigneeId,
     }),
   })
-  revalidatePath('/')
+  // revalidatePath('/')
   //revalidation on update assignee is disabled for now since we don't have activity log enabled
   //this revalidation can be rethought and may not be needed to prevent unexpected flickering
   if (advancedFeatureFlag) {
