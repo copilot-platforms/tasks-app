@@ -87,6 +87,7 @@ export default async function Main({ searchParams }: { searchParams: { token: st
     getTokenPayload(token),
     getAllTemplates(token),
   ])
+  console.log('taskssss', tasks)
 
   return (
     <ClientSideStateUpdate
