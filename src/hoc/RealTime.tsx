@@ -17,6 +17,7 @@ export const RealTime = ({ children }: { children: ReactNode }) => {
 
   const handleTaskRealTimeUpdates = (payload: RealtimePostgresChangesPayload<RealTimeTaskResponse>) => {
     if (payload.eventType === 'INSERT') {
+      console.log('insert', payload)
       store.dispatch(setTasks([...tasks, payload.new]))
     }
     if (payload.eventType === 'UPDATE') {
@@ -32,7 +33,6 @@ export const RealTime = ({ children }: { children: ReactNode }) => {
   }
 
   useEffect(() => {
-    if (!tasks || tasks.length === 0) return
     const channel = supabase
       .channel('realtime tasks')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'Tasks' }, handleTaskRealTimeUpdates)
