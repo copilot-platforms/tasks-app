@@ -15,12 +15,12 @@ export const useHandleSelectorComponent = ({ item, type }: { item: unknown; type
   }
 
   useEffect(() => {
-    if (type === SelectorType.STATUS_SELECTOR) {
+    if (type === SelectorType.STATUS_SELECTOR && item) {
       store.dispatch(setCreateTaskFields({ targetField: 'workflowStateId', value: (item as WorkflowStateResponse)?.id }))
       store.dispatch(setCreateTemplateFields({ targetField: 'workflowStateId', value: (item as WorkflowStateResponse)?.id }))
     }
 
-    if (type === SelectorType.ASSIGNEE_SELECTOR) {
+    if (type === SelectorType.ASSIGNEE_SELECTOR && item) {
       store.dispatch(setCreateTaskFields({ targetField: 'assigneeId', value: (item as IAssigneeCombined)?.id }) ?? null)
       store.dispatch(
         setCreateTaskFields({ targetField: 'assigneeType', value: getAssigneeTypeCorrected(item as IAssigneeCombined) }),

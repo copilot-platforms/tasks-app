@@ -40,6 +40,7 @@ import { CreateComment } from '@/types/dto/comment.dto'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import EscapeHandler from '@/utils/escapeHandler'
 import { RealTime } from '@/hoc/RealTime'
+import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
@@ -102,6 +103,16 @@ async function getAllTasks(token: string): Promise<TaskResponse[]> {
   return data.tasks
 }
 
+async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
+  const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
+    next: { tags: ['getAllWorkflowStates'] },
+  })
+
+  const data = await res.json()
+
+  return data.workflowStates
+}
+
 export default async function TaskDetailPage({
   params,
   searchParams,
@@ -113,7 +124,8 @@ export default async function TaskDetailPage({
   const { task_id } = params
   const copilotClient = new CopilotAPI(token)
 
-  const [task, assignee, attachments, activities, tokenPayload, tasks] = await Promise.all([
+  const [workflowStates, task, assignee, attachments, activities, tokenPayload, tasks] = await Promise.all([
+    getAllWorkflowStates(token),
     getOneTask(token, task_id),
     addTypeToAssignee(await getAssigneeList(token, params.user_type)),
     getAttachments(token, task_id),
@@ -137,6 +149,7 @@ export default async function TaskDetailPage({
       tokenPayload={tokenPayload}
       assigneeSuggestions={AssigneeSuggestions}
       tasks={tasks}
+      workflowStates={workflowStates}
     >
       <RealTime>
         <EscapeHandler />
@@ -173,6 +186,7 @@ export default async function TaskDetailPage({
                   isEditable={params.user_type === UserType.INTERNAL_USER}
                   updateTaskDetail={async (title, detail) => {
                     'use server'
+                    console.log('updateTaskDetail', title, detail)
                     await updateTaskDetail({ token, taskId: task_id, payload: { title, body: detail } })
                   }}
                   deleteTask={async () => {
@@ -244,8 +258,8 @@ export default async function TaskDetailPage({
           </ToggleController>
           <Box>
             <Sidebar
-              task_id={task_id}
               assignee={assignee}
+              task_id={task_id}
               selectedAssigneeId={task?.assigneeId}
               selectedWorkflowState={task?.workflowState}
               dueDate={task?.dueDate}

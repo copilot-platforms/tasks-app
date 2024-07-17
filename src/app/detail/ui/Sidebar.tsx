@@ -15,18 +15,15 @@ import { IsoDate, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { formatDate, isoToReadableDate } from '@/utils/dateHelper'
 import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 import { ToggleButtonContainer } from './ToggleButtonContainer'
-import { NoAssignee, NoAssigneeExtraOptions } from '@/utils/noAssignee'
-import ExtraOptionRendererAssignee from '@/components/inputs/ExtraOptionRendererAssignee'
+import { NoAssignee } from '@/utils/noAssignee'
 import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { AssigneePlaceholder } from '@/icons'
 import { useEffect, useState } from 'react'
-import { MiniLoader } from '@/components/atoms/MiniLoader'
 import { setDebouncedFilteredAssignees } from '@/utils/users'
 import { z } from 'zod'
-import { truncateText } from '@/utils/truncateText'
-import { TruncateMaxNumber } from '@/types/constants'
 import { isAssigneeTextMatching } from '@/utils/assignee'
+import LoaderComponent from '@/components/layouts/Loader'
 
 const StyledText = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[500],
@@ -54,32 +51,41 @@ export const Sidebar = ({
   assignee: IAssigneeCombined[]
   disabled: boolean
 }) => {
-  const { workflowStates, token, tasks } = useSelector(selectTaskBoard)
-  const currentTask = tasks.find((el) => el.id === task_id)
+  const { tasks, workflowStates, token } = useSelector(selectTaskBoard)
   const { showSidebar } = useSelector(selectTaskDetails)
   const [filteredAssignees, setFilteredAssignees] = useState(assignee)
   const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
   const [loading, setLoading] = useState(false)
 
   const { renderingItem: _statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
-    item: currentTask?.workflowState,
+    // item: selectedWorkflowState,
+    item: null,
     type: SelectorType.STATUS_SELECTOR,
   })
   const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
-    item: currentTask?.assigneeId ? assignee.find((el) => el.id === currentTask?.assigneeId) : NoAssignee,
+    // item: selectedAssigneeId ? assignee.find((el) => el.id === selectedAssigneeId) : NoAssignee,
+    item: null,
     type: SelectorType.ASSIGNEE_SELECTOR,
   })
 
   const statusValue = _statusValue as WorkflowStateResponse //typecasting
   const assigneeValue = _assigneeValue as IAssigneeCombined //typecasting
+  console.log('status', workflowStates)
+  console.log('tasks', tasks)
+
+  useEffect(() => {
+    const currentTask = tasks.find((el) => el.id === task_id)
+    const currentWorkflowState = workflowStates.find((el) => el.name === currentTask?.workflowState.name)
+    const currentAssigneeId = currentTask?.assigneeId
+    updateStatusValue(currentWorkflowState)
+    updateAssigneeValue(currentAssigneeId ? assignee.find((el) => el.id === currentAssigneeId) : NoAssignee)
+  }, [tasks])
 
   const matches = useMediaQuery('(max-width:600px)')
 
-  useEffect(() => {
-    updateStatusValue(currentTask?.workflowState)
-    updateAssigneeValue(currentTask?.assigneeId ? assignee.find((el) => el.id === currentTask?.assigneeId) : NoAssignee)
-  }, [currentTask])
-
+  if (!statusValue || !assigneeValue) {
+    return <LoaderComponent />
+  }
   return (
     <Box
       sx={{
@@ -139,7 +145,7 @@ export const Sidebar = ({
               )
             }
             options={loading ? [] : filteredAssignees}
-            value={assigneeValue.name == 'No assignee' ? null : assigneeValue}
+            value={assigneeValue?.name == 'No assignee' ? null : assigneeValue}
             selectorType={SelectorType.ASSIGNEE_SELECTOR}
             //****Disabling re-assignment completely for now***
             // extraOption={NoAssigneeExtraOptions}
@@ -199,7 +205,7 @@ export const Sidebar = ({
                 dueDate: isoDate,
               })
             }}
-            dateValue={currentTask?.dueDate ? isoToReadableDate(currentTask.dueDate) : undefined}
+            dateValue={dueDate ? isoToReadableDate(dueDate) : undefined}
             disabled={disabled}
           />
         </Stack>

@@ -20,10 +20,6 @@ import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { advancedFeatureFlag } from '@/config'
 import { Tapwrite } from 'tapwrite'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
-import { z } from 'zod'
-import { CreateTaskRequestSchema, TaskResponseSchema } from '@/types/dto/tasks.dto'
-import { SecurityUpdateWarningTwoTone } from '@mui/icons-material'
-import { Task } from '@prisma/client'
 
 interface Prop {
   title: string
@@ -55,11 +51,8 @@ export const TaskEditor = ({
   userType,
 }: Prop) => {
   const { tasks } = useSelector(selectTaskBoard)
-  const [currentTask, setCurrentTask] = useState<Task | null>(null)
-  console.log('current', currentTask)
-  const [updateTitle, setUpdateTitle] = useState(currentTask?.title)
-  const [updateDetail, setUpdateDetail] = useState(currentTask?.body)
-  console.log('title detail', currentTask?.title, currentTask?.body)
+  const [updateTitle, setUpdateTitle] = useState('')
+  const [updateDetail, setUpdateDetail] = useState('')
   const { showConfirmDeleteModal } = useSelector(selectTaskDetails)
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -75,11 +68,10 @@ export const TaskEditor = ({
       }
     }
   }
-
   useEffect(() => {
-    const currentTask = CreateTaskRequestSchema.parse(tasks.find((el) => el.id === task_id))
-    setCurrentTask(currentTask as Task)
-  }, [currentTask])
+    setUpdateTitle(tasks.find((el) => el.id === task_id)?.title || '')
+    setUpdateDetail(tasks.find((el) => el.id === task_id)?.body ?? '')
+  }, [tasks])
 
   return (
     <>
@@ -105,13 +97,13 @@ export const TaskEditor = ({
         disabled={!isEditable}
         padding="0px"
         onBlur={() => {
-          updateTaskDetail(z.string().parse(updateTitle), z.string().parse(updateDetail))
+          updateTaskDetail(updateTitle, updateDetail)
         }}
       />
 
       <Box
         onBlur={() => {
-          updateTaskDetail(z.string().parse(updateTitle), z.string().parse(updateDetail))
+          updateTaskDetail(updateTitle, updateDetail)
         }}
         mt="12px"
       >
@@ -123,7 +115,7 @@ export const TaskEditor = ({
             })
             tiptapEditorUtils.setImage(newBlob.url as string)
           }}
-          content={currentTask?.body ?? ''}
+          content={updateDetail}
           getContent={(content) => setUpdateDetail(content)}
           readonly={userType === UserType.CLIENT_USER}
           editorClass="tapwrite-details-page"
