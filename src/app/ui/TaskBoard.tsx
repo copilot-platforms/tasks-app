@@ -68,15 +68,14 @@ export const TaskBoard = () => {
         }
         if (payload.eventType === 'UPDATE') {
           const updatedTask = payload.new as TaskResponse
-          const newTaskArr = []
-          for (let i = 0; i < tasks.length; i++) {
-            if (tasks[i].id === updatedTask.id) {
-              newTaskArr.push(updatedTask)
-            } else {
-              newTaskArr.push(tasks[i])
+          const _tasks = [...tasks]
+          for (let i = 0; i < _tasks.length; i++) {
+            if (_tasks[i].id === updatedTask.id) {
+              _tasks[i] = updatedTask
+              break // Exit the loop once the match is found and replaced
             }
           }
-          store.dispatch(setTasks(newTaskArr))
+          store.dispatch(setTasks(_tasks))
         }
         if (payload.eventType === 'DELETE') {
           console.log('delete change', payload)
