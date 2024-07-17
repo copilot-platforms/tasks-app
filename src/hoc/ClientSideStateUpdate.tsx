@@ -52,9 +52,9 @@ export const ClientSideStateUpdate = ({
       store.dispatch(setWorkflowStates(workflowStates))
     }
 
-    // if (tasks) {
-    //   store.dispatch(setTasks(tasks))
-    // }
+    if (tasks && tasksInStore.length === 0) {
+      store.dispatch(setTasks(tasks))
+    }
 
     if (token) {
       store.dispatch(setToken(token))
@@ -85,7 +85,7 @@ export const ClientSideStateUpdate = ({
     if (assigneeSuggestions) {
       store.dispatch(setAssigneeSuggestion(assigneeSuggestions))
     }
-  }, [workflowStates, token, assignee, viewSettings, tokenPayload, templates, assigneeSuggestions])
+  }, [workflowStates, tasks, token, assignee, viewSettings, tokenPayload, templates, assigneeSuggestions])
 
   return children
 }
