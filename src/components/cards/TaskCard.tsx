@@ -4,14 +4,12 @@ import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { IAssigneeCombined } from '@/types/interfaces'
 import { NoAssignee } from '@/utils/noAssignee'
-import { Avatar, Stack, Typography, styled } from '@mui/material'
+import { Stack, Typography, styled } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { DueDateLayout } from '@/components/layouts/DueDateLayout'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { UrlObject } from 'url'
-import { StyledUninvasiveLink } from '@/app/detail/ui/styledComponent'
-import { useRouter } from 'next/navigation'
-import { useCallback } from 'react'
+import { CustomLink } from '@/hoc/CustomLink'
 
 const TaskCardContainer = styled(Stack)(({ theme }) => ({
   border: `1px solid ${theme.color.borders.border}`,
@@ -37,16 +35,8 @@ export const TaskCard = ({ task, href }: TaskCardProps) => {
 
   const currentAssignee = assignee.find((el) => el.id === task.assigneeId) ?? NoAssignee
 
-  const router = useRouter()
-
-  const handleMouseEnter = useCallback(() => {
-    const url = (href as UrlObject).pathname as string
-    const token = (href as any).query.token
-    router.prefetch(`${url}?token=${token}`)
-  }, [href, router])
-
   return (
-    <StyledUninvasiveLink href={href} prefetch={false} onMouseEnter={handleMouseEnter}>
+    <CustomLink href={href}>
       <TaskCardContainer rowGap={1}>
         <Stack direction="row" justifyContent="space-between">
           <Stack direction="row" alignItems="center" columnGap={1}>
@@ -75,6 +65,6 @@ export const TaskCard = ({ task, href }: TaskCardProps) => {
         <Typography variant="sm">{task.title}</Typography>
         {task.dueDate && <DueDateLayout date={task.dueDate} />}
       </TaskCardContainer>
-    </StyledUninvasiveLink>
+    </CustomLink>
   )
 }

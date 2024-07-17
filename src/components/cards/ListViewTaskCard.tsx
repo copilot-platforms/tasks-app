@@ -15,7 +15,7 @@ import { DueDateLayout } from '@/components/layouts/DueDateLayout'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { getAssigneeName } from '@/utils/getAssigneeName'
 import { UrlObject } from 'url'
-import { StyledUninvasiveLink } from '@/app/detail/ui/styledComponent'
+import { CustomLink } from '@/hoc/CustomLink'
 
 export const ListViewTaskCard = ({
   task,
@@ -38,7 +38,7 @@ export const ListViewTaskCard = ({
   const assigneeValue = _assigneeValue as IAssigneeCombined //typecasting
 
   return (
-    <StyledUninvasiveLink href={href} prefetch={true}>
+    <CustomLink href={href}>
       <Box
         className="task-list-card"
         sx={{
@@ -159,6 +159,6 @@ export const ListViewTaskCard = ({
           </Box>
         </AppMargin>
       </Box>
-    </StyledUninvasiveLink>
+    </CustomLink>
   )
 }
