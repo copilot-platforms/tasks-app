@@ -141,7 +141,7 @@ export default function Selector({
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
-                maxWidth: '120px',
+                maxWidth: '150px',
                 display: { xs: responsiveNoHide ? 'block' : 'none', sm: 'block' },
               }}
             >
