@@ -12,6 +12,7 @@ export const RealTime = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     // Listen to inserts
+    if (!tasks || tasks.length === 0) return
     const channel = supabase
       .channel('realtime tasks')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'Tasks' }, (payload) => {
@@ -38,7 +39,7 @@ export const RealTime = ({ children }: { children: ReactNode }) => {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [supabase])
+  }, [supabase, tasks])
 
   return children
 }
