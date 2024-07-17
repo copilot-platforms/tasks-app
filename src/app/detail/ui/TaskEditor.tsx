@@ -23,6 +23,7 @@ import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { z } from 'zod'
 import { CreateTaskRequestSchema, TaskResponseSchema } from '@/types/dto/tasks.dto'
 import { SecurityUpdateWarningTwoTone } from '@mui/icons-material'
+import { Task } from '@prisma/client'
 
 interface Prop {
   title: string
@@ -54,11 +55,11 @@ export const TaskEditor = ({
   userType,
 }: Prop) => {
   const { tasks } = useSelector(selectTaskBoard)
-  const currentTask = CreateTaskRequestSchema.parse(tasks.find((el) => el.id === task_id))
+  const [currentTask, setCurrentTask] = useState<Task | null>(null)
   console.log('current', currentTask)
-  const [updateTitle, setUpdateTitle] = useState(currentTask.title)
-  const [updateDetail, setUpdateDetail] = useState(currentTask.body)
-  console.log('title detail', currentTask.title, currentTask.body)
+  const [updateTitle, setUpdateTitle] = useState(currentTask?.title)
+  const [updateDetail, setUpdateDetail] = useState(currentTask?.body)
+  console.log('title detail', currentTask?.title, currentTask?.body)
   const { showConfirmDeleteModal } = useSelector(selectTaskDetails)
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -76,8 +77,8 @@ export const TaskEditor = ({
   }
 
   useEffect(() => {
-    setUpdateTitle(currentTask.title)
-    setUpdateDetail(currentTask.body)
+    const currentTask = CreateTaskRequestSchema.parse(tasks.find((el) => el.id === task_id))
+    setCurrentTask(currentTask as Task)
   }, [currentTask])
 
   return (
@@ -104,13 +105,13 @@ export const TaskEditor = ({
         disabled={!isEditable}
         padding="0px"
         onBlur={() => {
-          updateTaskDetail(updateTitle, z.string().parse(updateDetail))
+          updateTaskDetail(z.string().parse(updateTitle), z.string().parse(updateDetail))
         }}
       />
 
       <Box
         onBlur={() => {
-          updateTaskDetail(updateTitle, z.string().parse(updateDetail))
+          updateTaskDetail(z.string().parse(updateTitle), z.string().parse(updateDetail))
         }}
         mt="12px"
       >
@@ -122,7 +123,7 @@ export const TaskEditor = ({
             })
             tiptapEditorUtils.setImage(newBlob.url as string)
           }}
-          content={currentTask.body ?? ''}
+          content={currentTask?.body ?? ''}
           getContent={(content) => setUpdateDetail(content)}
           readonly={userType === UserType.CLIENT_USER}
           editorClass="tapwrite-details-page"
