@@ -57,6 +57,7 @@ export const TaskEditor = ({
   console.log('current', currentTask)
   const [updateTitle, setUpdateTitle] = useState(currentTask.title)
   const [updateDetail, setUpdateDetail] = useState(currentTask.body)
+  console.log('title detail', currentTask.title, currentTask.body)
   const { showConfirmDeleteModal } = useSelector(selectTaskDetails)
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
