@@ -20,8 +20,6 @@ import DashboardEmptyState from '@/components/layouts/EmptyState/DashboardEmptyS
 import { Header } from '@/components/layouts/Header'
 import { FilterBar } from '@/components/layouts/FilterBar'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
-import { supabase } from '@/lib/supabase'
-import { Task } from '@prisma/client'
 
 export const TaskBoard = () => {
   const { workflowStates, tasks, token, filteredTasks, view, filterOptions } = useSelector(selectTaskBoard)
@@ -58,35 +56,6 @@ export const TaskBoard = () => {
     }
     return filteredTaskCount.toString() + '/' + taskCount.toString()
   }
-  useEffect(() => {
-    // Listen to inserts
-    const channel = supabase
-      .channel('realtime tasks')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'Tasks' }, (payload) => {
-        if (payload.eventType === 'INSERT') {
-          store.dispatch(setTasks([...tasks, payload.new as TaskResponse]))
-        }
-        if (payload.eventType === 'UPDATE') {
-          const updatedTask = payload.new as TaskResponse
-          const _tasks = [...tasks]
-          for (let i = 0; i < _tasks.length; i++) {
-            if (_tasks[i].id === updatedTask.id) {
-              _tasks[i] = updatedTask
-              break // Exit the loop once the match is found and replaced
-            }
-          }
-          store.dispatch(setTasks(_tasks))
-        }
-        if (payload.eventType === 'DELETE') {
-          console.log('delete change', payload)
-        }
-      })
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [supabase])
 
   if (tasks && tasks.length === 0) {
     return <DashboardEmptyState userType={UserType.INTERNAL_USER} />

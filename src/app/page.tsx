@@ -16,6 +16,7 @@ import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { createMultipleAttachments, getSignedUrlUpload } from '@/app/actions'
 import { ModalNewTaskForm } from './ui/Modal_NewTaskForm'
+import { RealTime } from '@/hoc/RealTime'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -98,20 +99,22 @@ export default async function Main({ searchParams }: { searchParams: { token: st
       tokenPayload={tokenPayload}
       templates={templates}
     >
-      <DndWrapper>
-        <TaskBoard />
-      </DndWrapper>
+      <RealTime>
+        <DndWrapper>
+          <TaskBoard />
+        </DndWrapper>
 
-      <ModalNewTaskForm
-        getSignedUrlUpload={async (fileName: string) => {
-          'use server'
-          return await getSignedUrlUpload(token, fileName)
-        }}
-        handleCreateMultipleAttachments={async (attachments: CreateAttachmentRequest[]) => {
-          'use server'
-          await createMultipleAttachments(token, attachments)
-        }}
-      />
+        <ModalNewTaskForm
+          getSignedUrlUpload={async (fileName: string) => {
+            'use server'
+            return await getSignedUrlUpload(token, fileName)
+          }}
+          handleCreateMultipleAttachments={async (attachments: CreateAttachmentRequest[]) => {
+            'use server'
+            await createMultipleAttachments(token, attachments)
+          }}
+        />
+      </RealTime>
     </ClientSideStateUpdate>
   )
 }
