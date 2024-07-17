@@ -126,7 +126,7 @@ export const Sidebar = ({
               (assigneeValue as IAssigneeCombined)?.name == 'No assignee' ? (
                 <AssigneePlaceholder />
               ) : (
-                <CopilotAvatar currentAssignee={assigneeValue} height="16px" width="16px" fontSize="12px" />
+                <CopilotAvatar currentAssignee={assigneeValue} />
               )
             }
             options={loading ? [] : filteredAssignees}
