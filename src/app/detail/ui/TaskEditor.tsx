@@ -98,6 +98,7 @@ export const TaskEditor = ({
           taskUpdateDebounced(e.target.value, updateDetail)
         }}
         InputProps={{ readOnly: !isEditable }}
+        inputProps={{ maxLength: 255 }}
         disabled={!isEditable}
         padding="0px"
         onBlur={() => {
