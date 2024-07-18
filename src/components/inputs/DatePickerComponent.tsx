@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
@@ -9,14 +9,14 @@ import { Box, Popper, Stack, Typography } from '@mui/material'
 import { SecondaryBtn } from '../buttons/SecondaryBtn'
 
 interface Prop {
-  getDate: (value: string) => void
+  getDate: (value: Dayjs | null) => void
   dateValue?: IsoDate
   isButton?: boolean
   disabled?: boolean
 }
 
 export const DatePickerComponent = ({ getDate, dateValue, disabled, isButton = false }: Prop) => {
-  const [value, setValue] = React.useState<Dayjs | null>(dateValue ? dayjs(dateValue) : null)
+  const value = dateValue ? dayjs(dateValue) : null
 
   const formatDate = (date: Dayjs | null) => {
     return date ? date.format('MMM DD, YYYY') : '' // Format the date as "Mar 08, 2024"
@@ -96,8 +96,7 @@ export const DatePickerComponent = ({ getDate, dateValue, disabled, isButton = f
           open={open}
           onClose={() => setAnchorEl(null)}
           onChange={(newValue) => {
-            getDate(formatDate(newValue))
-            setValue(newValue)
+            getDate(newValue)
           }}
           slotProps={{
             day: {

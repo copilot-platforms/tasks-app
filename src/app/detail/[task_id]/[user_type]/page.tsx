@@ -276,7 +276,6 @@ export default async function TaskDetailPage({
                 await updateTaskDetail({ token, taskId: task_id, payload })
               }}
               disabled={params.user_type === UserType.CLIENT_USER}
-              workflowStates={workflowStates}
             />
           </Box>
         </Stack>

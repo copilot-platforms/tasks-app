@@ -16,9 +16,9 @@ export function isoToReadableDate(isoString: IsoDate): IsoDate {
   return IsoDateSchema.parse(readableDate)
 }
 
-export function formatDate(dateString: string): IsoDate {
+export function formatDate(dateString: unknown): IsoDate {
   // Parse the date from the input format
-  const date = new Date(dateString)
+  const date = new Date(dateString as Date)
 
   // Set the time to noon to avoid timezone issues causing date rollover
   date.setHours(12, 0, 0, 0)

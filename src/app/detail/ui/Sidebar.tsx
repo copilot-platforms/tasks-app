@@ -24,6 +24,7 @@ import { setDebouncedFilteredAssignees } from '@/utils/users'
 import { z } from 'zod'
 import { isAssigneeTextMatching } from '@/utils/assignee'
 import LoaderComponent from '@/components/layouts/Loader'
+import { Dayjs } from 'dayjs'
 
 const StyledText = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[500],
@@ -40,7 +41,6 @@ export const Sidebar = ({
   updateTask,
   assignee,
   disabled,
-  workflowStates,
 }: {
   task_id: string
   selectedWorkflowState: WorkflowStateResponse
@@ -51,23 +51,22 @@ export const Sidebar = ({
   updateTask: (payload: UpdateTaskRequest) => void
   assignee: IAssigneeCombined[]
   disabled: boolean
-  workflowStates: WorkflowStateResponse[]
 }) => {
-  const { tasks, token } = useSelector(selectTaskBoard)
+  const { tasks, token, workflowStates } = useSelector(selectTaskBoard)
   const { showSidebar } = useSelector(selectTaskDetails)
   const [filteredAssignees, setFilteredAssignees] = useState(assignee)
   const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
   const [loading, setLoading] = useState(false)
-  const [dueDate, setDueDate] = useState<Date | undefined>(undefined)
+  const [dueDate, setDueDate] = useState<Date | Dayjs | undefined>()
 
   const { renderingItem: _statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
-    item: selectedWorkflowState,
-    // item: null,
+    // item: selectedWorkflowState,
+    item: null,
     type: SelectorType.STATUS_SELECTOR,
   })
   const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
-    item: selectedAssigneeId ? assignee.find((el) => el.id === selectedAssigneeId) : NoAssignee,
-    // item: null,
+    // item: selectedAssigneeId ? assignee.find((el) => el.id === selectedAssigneeId) : NoAssignee,
+    item: null,
     type: SelectorType.ASSIGNEE_SELECTOR,
   })
 
@@ -75,15 +74,18 @@ export const Sidebar = ({
   const assigneeValue = _assigneeValue as IAssigneeCombined //typecasting
 
   useEffect(() => {
-    const currentTask = tasks.find((el) => el.id === task_id)
-    // const currentWorkflowState = workflowStates.find((el) => el?.name === currentTask?.workflowState?.name)
-    // const currentAssigneeId = currentTask?.assigneeId
-    // updateStatusValue(currentWorkflowState)
-    // updateAssigneeValue(currentAssigneeId ? assignee.find((el) => el.id === currentAssigneeId) : NoAssignee)
-    setDueDate(currentTask?.dueDate)
-  }, [tasks, workflowStates])
+    if (tasks && workflowStates) {
+      const currentTask = tasks.find((el) => el.id === task_id)
+      const currentWorkflowState = workflowStates.find((el) => el?.id === currentTask?.workflowStateId)
+      const currentAssigneeId = currentTask?.assigneeId
+      updateStatusValue(currentWorkflowState)
+      updateAssigneeValue(currentAssigneeId ? assignee.find((el) => el.id === currentAssigneeId) : NoAssignee)
+      setDueDate(currentTask?.dueDate)
+    }
+  }, [tasks])
 
   const matches = useMediaQuery('(max-width:600px)')
+  if (!tasks) return null
 
   return (
     <Box
@@ -188,7 +190,7 @@ export const Sidebar = ({
             }}
             filterOption={(x: unknown) => x}
             // disabled={disabled}
-            disabled={true} //for now, disable re-assignment completely
+            disabled={false} //for now, disable re-assignment completely
             disableOutline
             responsiveNoHide
           />
@@ -200,11 +202,12 @@ export const Sidebar = ({
           <DatePickerComponent
             getDate={(date) => {
               const isoDate = formatDate(date)
+              setDueDate(date as Dayjs)
               updateTask({
                 dueDate: isoDate,
               })
             }}
-            dateValue={dueDate ? isoToReadableDate(dueDate) : undefined}
+            dateValue={dueDate ? (dueDate as Date) : undefined}
             disabled={disabled}
           />
         </Stack>

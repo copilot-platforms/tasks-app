@@ -71,7 +71,8 @@ export const TaskEditor = ({
   useEffect(() => {
     setUpdateTitle(tasks.find((el) => el.id === task_id)?.title || '')
     setUpdateDetail(tasks.find((el) => el.id === task_id)?.body ?? '')
-  }, [tasks])
+  }, [tasks, task_id])
+  console.log('updateDetail', updateDetail)
 
   return (
     <>
