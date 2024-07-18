@@ -34,15 +34,12 @@ export const CustomLink = ({ children, href }: { children: ReactNode; href: stri
 
   const { pathname, token } = getUrl()
 
-  // const handleMouseEnter = useCallback(() => {
-  //   router.prefetch(`${pathname}?token=${token}`)
-  // }, [href])
+  const handleMouseEnter = useCallback(() => {
+    router.prefetch(`${pathname}?token=${token}`)
+  }, [href])
 
   return (
-    <div
-      // onMouseEnter={}
-      onClick={() => router.push(`${pathname}?token=${token}`)}
-    >
+    <div onMouseEnter={handleMouseEnter} onClick={() => router.push(`${pathname}?token=${token}`)}>
       {children}
     </div>
   )
