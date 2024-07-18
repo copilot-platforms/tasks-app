@@ -36,8 +36,8 @@ export const TaskCard = ({ task, href }: TaskCardProps) => {
   const currentAssignee = assignee.find((el) => el.id === task.assigneeId) ?? NoAssignee
 
   return (
-    <TaskCardContainer rowGap={1}>
-      <CustomLink href={href}>
+    <CustomLink href={href}>
+      <TaskCardContainer rowGap={1}>
         <Stack direction="row" justifyContent="space-between">
           <Stack direction="row" alignItems="center" columnGap={1}>
             <CopilotAvatar currentAssignee={currentAssignee as IAssigneeCombined} />
@@ -64,7 +64,7 @@ export const TaskCard = ({ task, href }: TaskCardProps) => {
         </Stack>
         <Typography variant="sm">{task.title}</Typography>
         {task.dueDate && <DueDateLayout date={task.dueDate} />}
-      </CustomLink>
-    </TaskCardContainer>
+      </TaskCardContainer>
+    </CustomLink>
   )
 }
