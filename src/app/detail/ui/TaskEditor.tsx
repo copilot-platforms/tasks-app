@@ -19,6 +19,7 @@ import { ISignedUrlUpload, UserType } from '@/types/interfaces'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { advancedFeatureFlag } from '@/config'
 import { Tapwrite } from 'tapwrite'
+import { useDebounce } from '@/hooks/useDebounce'
 
 interface Prop {
   title: string
@@ -67,6 +68,12 @@ export const TaskEditor = ({
     }
   }
 
+  const _taskUpdateDebounced = async (title: string, details: string) => {
+    updateTaskDetail(title, details)
+  }
+
+  const taskUpdateDebounced = useDebounce(_taskUpdateDebounced)
+
   return (
     <>
       <StyledTextField
@@ -86,7 +93,10 @@ export const TaskEditor = ({
           },
         }}
         value={updateTitle}
-        onChange={(e) => setUpdateTitle(e.target.value)}
+        onChange={(e) => {
+          setUpdateTitle(e.target.value)
+          taskUpdateDebounced(e.target.value, updateDetail)
+        }}
         InputProps={{ readOnly: !isEditable }}
         disabled={!isEditable}
         padding="0px"
@@ -110,7 +120,10 @@ export const TaskEditor = ({
             tiptapEditorUtils.setImage(newBlob.url as string)
           }}
           content={detail}
-          getContent={(content) => setUpdateDetail(content)}
+          getContent={(content) => {
+            setUpdateDetail(content)
+            taskUpdateDebounced(updateTitle, content)
+          }}
           readonly={userType === UserType.CLIENT_USER}
           editorClass="tapwrite-details-page"
           placeholder="Add description..."
