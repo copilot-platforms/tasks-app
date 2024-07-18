@@ -23,8 +23,6 @@ import { useEffect, useState } from 'react'
 import { setDebouncedFilteredAssignees } from '@/utils/users'
 import { z } from 'zod'
 import { isAssigneeTextMatching } from '@/utils/assignee'
-import { DateStringSchema } from '@/types/date'
-import { Dayjs } from 'dayjs'
 
 const StyledText = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[500],
@@ -199,7 +197,7 @@ export const Sidebar = ({
           </StyledText>
           <DatePickerComponent
             getDate={(date) => {
-              const isoDate = formatDate(date)
+              const isoDate = formatDate(date as string)
               setDueDate(date as string)
               updateTask({
                 dueDate: isoDate,
