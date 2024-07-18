@@ -15,7 +15,7 @@ interface RealTimeTaskResponse extends TaskResponse {
 }
 
 export const RealTime = ({ children }: { children: ReactNode }) => {
-  const { tasks } = useSelector(selectTaskBoard)
+  const { tasks, token } = useSelector(selectTaskBoard)
   const pathname = usePathname()
   const router = useRouter()
 
@@ -29,7 +29,7 @@ export const RealTime = ({ children }: { children: ReactNode }) => {
         const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
         store.dispatch(setTasks(newTaskArr))
         if (pathname.includes('detail')) {
-          router.push('/')
+          router.push(`/?token=${token}`)
         }
       } else {
         const newTaskArr = [...tasks.filter((task) => task.id !== updatedTask.id), updatedTask]

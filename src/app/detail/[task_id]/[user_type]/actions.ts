@@ -70,7 +70,6 @@ export const deleteTask = async (token: string, task_id: string) => {
   await fetch(`${apiUrl}/api/tasks/${task_id}?token=${token}`, {
     method: 'DELETE',
   })
-  redirect(`/?token=${token}`)
 }
 
 export const postAttachment = async (token: string, payload: CreateAttachmentRequest) => {
