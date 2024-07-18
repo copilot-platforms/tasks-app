@@ -9,7 +9,7 @@ import { Box, Popper, Stack, Typography } from '@mui/material'
 import { SecondaryBtn } from '../buttons/SecondaryBtn'
 
 interface Prop {
-  getDate: (value: Dayjs | null) => void
+  getDate: (value: unknown) => void
   dateValue?: IsoDate
   isButton?: boolean
   disabled?: boolean
