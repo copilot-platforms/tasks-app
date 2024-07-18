@@ -38,5 +38,12 @@ export const CustomLink = ({ children, href }: { children: ReactNode; href: stri
   //   router.prefetch(`${pathname}?token=${token}`)
   // }, [href])
 
-  return <div onClick={() => router.push(`${pathname}?token=${token}`)}>{children}</div>
+  return (
+    <div
+      // onMouseEnter={}
+      onClick={() => router.push(`${pathname}?token=${token}`)}
+    >
+      {children}
+    </div>
+  )
 }
