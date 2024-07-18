@@ -186,7 +186,6 @@ export default async function TaskDetailPage({
                   isEditable={params.user_type === UserType.INTERNAL_USER}
                   updateTaskDetail={async (title, detail) => {
                     'use server'
-                    console.log('updateTaskDetail', title, detail)
                     await updateTaskDetail({ token, taskId: task_id, payload: { title, body: detail } })
                   }}
                   deleteTask={async () => {

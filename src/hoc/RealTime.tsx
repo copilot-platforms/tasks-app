@@ -5,8 +5,10 @@ import { selectTaskBoard, setTasks } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
+import { usePathname } from 'next/navigation'
 import { ReactNode, useEffect } from 'react'
 import { useSelector } from 'react-redux'
+import { useRouter } from 'next/navigation'
 
 interface RealTimeTaskResponse extends TaskResponse {
   deletedAt: string
@@ -14,6 +16,8 @@ interface RealTimeTaskResponse extends TaskResponse {
 
 export const RealTime = ({ children }: { children: ReactNode }) => {
   const { tasks } = useSelector(selectTaskBoard)
+  const pathname = usePathname()
+  const router = useRouter()
 
   const handleTaskRealTimeUpdates = (payload: RealtimePostgresChangesPayload<RealTimeTaskResponse>) => {
     if (payload.eventType === 'INSERT') {
@@ -24,6 +28,9 @@ export const RealTime = ({ children }: { children: ReactNode }) => {
       if (updatedTask.deletedAt) {
         const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
         store.dispatch(setTasks(newTaskArr))
+        if (pathname.includes('detail')) {
+          router.push('/')
+        }
       } else {
         const newTaskArr = [...tasks.filter((task) => task.id !== updatedTask.id), updatedTask]
         store.dispatch(setTasks(newTaskArr))

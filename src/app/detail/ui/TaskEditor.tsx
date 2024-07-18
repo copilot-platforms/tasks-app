@@ -72,7 +72,6 @@ export const TaskEditor = ({
     setUpdateTitle(tasks.find((el) => el.id === task_id)?.title || '')
     setUpdateDetail(tasks.find((el) => el.id === task_id)?.body ?? '')
   }, [tasks, task_id])
-  console.log('updateDetail', updateDetail)
 
   return (
     <>
