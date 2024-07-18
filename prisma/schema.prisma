@@ -61,7 +61,7 @@ model Task {
 
   assignedAt         DateTime?
   completedAt        DateTime?
-  dueDate            DateTime?
+  dueDate            String?              @db.VarChar(10)
   deletedAt          DateTime?
   ClientNotification ClientNotification[]
 
