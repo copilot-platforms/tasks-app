@@ -11,8 +11,8 @@ import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { StyledBox } from './styledComponent'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
-import { IsoDate, UpdateTaskRequest } from '@/types/dto/tasks.dto'
-import { formatDate, isoToReadableDate } from '@/utils/dateHelper'
+import { UpdateTaskRequest } from '@/types/dto/tasks.dto'
+import { createDateFromFormattedDateString, formatDate } from '@/utils/dateHelper'
 import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 import { ToggleButtonContainer } from './ToggleButtonContainer'
 import { NoAssignee } from '@/utils/noAssignee'
@@ -23,7 +23,7 @@ import { useEffect, useState } from 'react'
 import { setDebouncedFilteredAssignees } from '@/utils/users'
 import { z } from 'zod'
 import { isAssigneeTextMatching } from '@/utils/assignee'
-import LoaderComponent from '@/components/layouts/Loader'
+import { DateStringSchema } from '@/types/date'
 import { Dayjs } from 'dayjs'
 
 const StyledText = styled(Typography)(({ theme }) => ({
@@ -36,7 +36,6 @@ export const Sidebar = ({
   selectedWorkflowState,
   selectedAssigneeId,
   updateWorkflowState,
-  // dueDate,
   updateAssignee,
   updateTask,
   assignee,
@@ -45,7 +44,6 @@ export const Sidebar = ({
   task_id: string
   selectedWorkflowState: WorkflowStateResponse
   selectedAssigneeId: string | undefined
-  // dueDate: IsoDate | undefined
   updateWorkflowState: (workflowState: WorkflowStateResponse) => void
   updateAssignee: (assigneeType: string | null, assigneeId: string | null) => void
   updateTask: (payload: UpdateTaskRequest) => void
@@ -57,7 +55,7 @@ export const Sidebar = ({
   const [filteredAssignees, setFilteredAssignees] = useState(assignee)
   const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
   const [loading, setLoading] = useState(false)
-  const [dueDate, setDueDate] = useState<Date | Dayjs | undefined>()
+  const [dueDate, setDueDate] = useState<Date | string | undefined>()
 
   const { renderingItem: _statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
     // item: selectedWorkflowState,
@@ -202,7 +200,7 @@ export const Sidebar = ({
           <DatePickerComponent
             getDate={(date) => {
               const isoDate = formatDate(date)
-              setDueDate(date as Dayjs)
+              setDueDate(date as string)
               updateTask({
                 dueDate: isoDate,
               })

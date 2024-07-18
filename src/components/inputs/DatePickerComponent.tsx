@@ -3,14 +3,14 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import dayjs, { Dayjs } from 'dayjs'
-import { CalenderIcon, CalenderIcon2, CalenderIconSmall } from '@/icons'
-import { IsoDate } from '@/types/dto/tasks.dto'
+import { CalenderIcon, CalenderIconSmall } from '@/icons'
 import { Box, Popper, Stack, Typography } from '@mui/material'
 import { SecondaryBtn } from '../buttons/SecondaryBtn'
+import { useState } from 'react'
 
 interface Prop {
   getDate: (value: unknown) => void
-  dateValue?: IsoDate
+  dateValue?: Date
   isButton?: boolean
   disabled?: boolean
 }
@@ -22,7 +22,7 @@ export const DatePickerComponent = ({ getDate, dateValue, disabled, isButton = f
     return date ? date.format('MMM DD, YYYY') : '' // Format the date as "Mar 08, 2024"
   }
 
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     if (!disabled) {

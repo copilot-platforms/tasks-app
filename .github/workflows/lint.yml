@@ -14,12 +14,15 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18.17.0
+          node-version: 18.18.2
           cache: yarn
           cache-dependency-path: './yarn.lock'
 
       - name: Install dependencies
         run: yarn install
+
+      - name: Patch stylish.js to not cause lint issues with Next 14.1.*
+        run: yarn lint:fix-stylish
 
       - name: Run linters
         run: yarn lint:check && yarn prettier:check

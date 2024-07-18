@@ -1,31 +1,24 @@
-import { IsoDate, IsoDateSchema } from '@/types/dto/tasks.dto'
+import { DateString } from '@/types/date'
 
-export function isoToReadableDate(isoString: IsoDate): IsoDate {
-  // Create a Date object from the ISO string
-  const date = new Date(isoString)
+export function formatDate(dateString: string): DateString {
+  // Parse the date from the input format
+  const date = new Date(dateString)
+  const day = String(date.getDate()).padStart(2, '0')
+  const month = String(date.getMonth() + 1).padStart(2, '0') // Months are zero-based
+  const year = date.getFullYear()
 
-  // Adjust date to make sure it shows correctly for all time zones
-  date.setUTCMinutes(date.getUTCMinutes() + date.getTimezoneOffset())
-
-  // Define options for date formatting
-  const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' }
-
-  // Format the date to a readable format
-  const readableDate = date.toLocaleDateString('en-US', options)
-
-  return IsoDateSchema.parse(readableDate)
+  return `${year}-${month}-${day}`
 }
 
-export function formatDate(dateString: unknown): IsoDate {
-  // Parse the date from the input format
-  const date = new Date(dateString as Date)
+/**
+ * Util to convert datestring to a Date object
+ * @param {DateString} dateString In format YYYY-MM-DD (This is human readable date - month starts from 1, not 0!)
+ * @returns {Date}
+ */
+export function createDateFromFormattedDateString(dateString: string): Date {
+  // Split the date string into day, month, and year
+  const [year, month, day] = dateString.split('-').map(Number)
 
-  // Set the time to noon to avoid timezone issues causing date rollover
-  date.setHours(12, 0, 0, 0)
-
-  // Convert the date to ISO 8601 format in UTC
-  const isoDate = date.toISOString()
-
-  // Return only the date part with time reset to midnight UTC
-  return IsoDateSchema.parse(`${isoDate.substring(0, 10)}T00:00:00Z`)
+  // IN JS month is zero-based to increase suffering for humankind, so we subtract 1 from the month
+  return new Date(year, month - 1, day)
 }

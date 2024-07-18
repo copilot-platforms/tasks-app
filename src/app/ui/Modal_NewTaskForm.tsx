@@ -11,6 +11,7 @@ import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { CreateTaskRequestSchema } from '@/types/dto/tasks.dto'
 import { NewTaskForm } from './NewTaskForm'
 import { ISignedUrlUpload } from '@/types/interfaces'
+import dayjs from 'dayjs'
 
 export const ModalNewTaskForm = ({
   getSignedUrlUpload,
@@ -39,6 +40,7 @@ export const ModalNewTaskForm = ({
           if (title) {
             store.dispatch(setShowModal())
             store.dispatch(clearCreateTaskFields())
+            const formattedDueDate = dueDate && dayjs(new Date(dueDate)).format('YYYY-MM-DD')
             const createdTask = await handleCreate(
               token as string,
               CreateTaskRequestSchema.parse({
@@ -47,7 +49,7 @@ export const ModalNewTaskForm = ({
                 workflowStateId,
                 assigneeType,
                 assigneeId,
-                dueDate,
+                dueDate: formattedDueDate,
               }),
             )
             // store.dispatch(appendTask(createdTask))
