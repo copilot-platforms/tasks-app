@@ -186,7 +186,7 @@ export const Sidebar = ({
             }}
             filterOption={(x: unknown) => x}
             // disabled={disabled}
-            disabled={false} //for now, disable re-assignment completely
+            disabled={true} //for now, disable re-assignment completely
             disableOutline
             responsiveNoHide
           />
