@@ -24,7 +24,28 @@ export const DueDateLayout = ({ dateString }: DueDateLayoutProp) => {
     } else if (parsedDate.isTomorrow()) {
       return 'Tomorrow'
     } else {
-      return parsedDate.format('MMMM D, YYYY')
+      const monthFormats: { [key: string]: string } = {
+        January: 'Jan',
+        February: 'Feb',
+        March: 'March',
+        April: 'April',
+        May: 'May',
+        June: 'June',
+        July: 'July',
+        August: 'Aug',
+        September: 'Sep',
+        October: 'Oct',
+        November: 'Nov',
+        December: 'Dec',
+      }
+
+      const month = parsedDate.format('MMMM')
+      const day = parsedDate.format('D')
+      const year = parsedDate.format('YYYY')
+
+      const formattedMonth = month.length <= 5 ? month : monthFormats[month]
+
+      return `${formattedMonth} ${day}, ${year}`
     }
   }, [date])
 
