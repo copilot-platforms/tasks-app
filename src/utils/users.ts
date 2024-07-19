@@ -2,8 +2,9 @@ import { getAssigneeList } from '@/services/users'
 import { FilterableUser } from '@/types/common'
 import { Dispatch, SetStateAction } from 'react'
 import { z } from 'zod'
-import { addTypeToAssignee } from './addTypeToAssignee'
+import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
 import { IAssigneeCombined } from '@/types/interfaces'
+import { containsCaseInsensitiveSubstring, startsWithCaseInsensitiveSubstring } from '@/utils/string'
 
 /**
  * Filters an array of Copilot IU / Client / Company to find keyword matching its name fields
@@ -12,13 +13,20 @@ import { IAssigneeCombined } from '@/types/interfaces'
  * @returns Array of matching results
  */
 export const filterUsersByKeyword = (users: FilterableUser[], keyword: string): FilterableUser[] => {
-  const lowerKeyword = keyword.toLowerCase()
-  return users.filter(
+  // Make startswith results come up first
+  const startsWith = (str: string = '') => startsWithCaseInsensitiveSubstring(str, keyword)
+  const contains = (str: string = '') => containsCaseInsensitiveSubstring(str, keyword)
+  const usersStartingWithKeyword = users.filter(
     ({ givenName, familyName, name }) =>
-      givenName?.toLowerCase().startsWith(lowerKeyword) ||
-      familyName?.toLowerCase().startsWith(lowerKeyword) ||
-      name?.toLowerCase().startsWith(lowerKeyword),
+      startsWith(givenName) || startsWith(familyName) || startsWith(`${givenName} ${familyName}`) || startsWith(name),
   )
+
+  const usersContainingKeyword = users.filter(
+    ({ givenName, familyName, name }) =>
+      contains(givenName) || contains(familyName) || contains(`${givenName} ${familyName}`) || contains(name),
+  )
+
+  return [...usersStartingWithKeyword, ...usersContainingKeyword]
 }
 
 export const setDebouncedFilteredAssignees = (

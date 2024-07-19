@@ -32,3 +32,13 @@ export const generateRandomString = (length: number): string => {
 export const buildOptionalSearchParam = <T>(paramName: string, value: T) => {
   return value ? `&${paramName}=${value}` : ''
 }
+
+export const snakeCase = (str: string): string => str.toLowerCase().trim().replaceAll(' ', '_')
+
+export const startsWithCaseInsensitiveSubstring = (str: string = '', substr: string): boolean => {
+  return snakeCase(str).startsWith(snakeCase(substr))
+}
+
+export const containsCaseInsensitiveSubstring = (str: string = '', substr: string): boolean => {
+  return snakeCase(str).includes(snakeCase(substr)) && !startsWithCaseInsensitiveSubstring(str, substr)
+}
