@@ -75,7 +75,7 @@ export const NewTaskForm = ({
   const assigneeValue = _assigneeValue as IAssigneeCombined //typecasting
   const templateValue = _templateValue as ITemplate //typecasting
   // use temp state pattern so that we don't fall into an infinite loop of assigneeValue set -> trigger -> set
-  const [tempAssignee, _] = useState<IAssigneeCombined | null>(assigneeValue)
+  const [tempAssignee, setTempAssignee] = useState<IAssigneeCombined | null>(assigneeValue)
 
   const router = useRouter()
 
@@ -189,6 +189,7 @@ export const NewTaskForm = ({
               placeholder="Change assignee"
               getSelectedValue={(_newValue) => {
                 const newValue = _newValue as IAssigneeCombined
+                setTempAssignee(newValue)
                 updateAssigneeValue(newValue)
                 store.dispatch(
                   setCreateTaskFields({
@@ -199,8 +200,8 @@ export const NewTaskForm = ({
                 store.dispatch(setCreateTaskFields({ targetField: 'assigneeId', value: newValue?.id }))
               }}
               startIcon={
-                assigneeValue ? (
-                  <CopilotAvatar currentAssignee={assigneeValue} width="12px" height="12px" isSmall={true} />
+                tempAssignee ? (
+                  <CopilotAvatar currentAssignee={tempAssignee} width="12px" height="12px" isSmall={true} />
                 ) : (
                   <AssigneePlaceholderSmall />
                 )
@@ -254,9 +255,9 @@ export const NewTaskForm = ({
                     maxWidth: { xs: '60px', sm: '100px' },
                   }}
                 >
-                  {assigneeValue
-                    ? (assigneeValue as IAssigneeCombined)?.name ||
-                      `${(assigneeValue as IAssigneeCombined)?.givenName ?? ''} ${(assigneeValue as IAssigneeCombined)?.familyName ?? ''}`.trim()
+                  {tempAssignee
+                    ? (tempAssignee as IAssigneeCombined)?.name ||
+                      `${(tempAssignee as IAssigneeCombined)?.givenName ?? ''} ${(tempAssignee as IAssigneeCombined)?.familyName ?? ''}`.trim()
                     : 'Assignee'}
                 </Typography>
               }
