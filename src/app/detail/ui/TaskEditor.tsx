@@ -113,6 +113,7 @@ export const TaskEditor = ({
           getContent={(content) => setUpdateDetail(content)}
           readonly={userType === UserType.CLIENT_USER}
           editorClass="tapwrite-details-page"
+          placeholder="Add description..."
         />
       </Box>
       {advancedFeatureFlag && (

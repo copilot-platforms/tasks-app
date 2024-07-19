@@ -14,12 +14,21 @@ interface Prop {
 
 export const ConfirmDeleteUI = ({ handleCancel, handleDelete, body = 'task' }: Prop) => {
   return (
-    <UIContainer>
+    <UIContainer sx={{ width: { xs: 'auto', sm: '470px' } }}>
       <StyledBox>
         <AppMargin size={SizeofAppMargin.MEDIUM} py="20px">
           <Stack direction="column" rowGap={4}>
-            <Typography variant="2xl">Are you sure you want to delete this {body}?</Typography>
-            <Typography variant="lg" sx={{ color: (theme) => theme.color.gray[500] }}>
+            <Typography variant="2xl" sx={{ fontSize: { xs: '18px', sm: '24px' }, lineHeight: { xs: '26px', md: '32px' } }}>
+              Are you sure you want to delete this {body}?
+            </Typography>
+            <Typography
+              variant="lg"
+              sx={{
+                color: (theme) => theme.color.gray[500],
+                fontSize: { xs: '14px', sm: '16px' },
+                lineHeight: { xs: '20px', md: '24px' },
+              }}
+            >
               This action can&apos;t be undone.
             </Typography>
           </Stack>
@@ -50,7 +59,6 @@ const UIContainer = styled(Box)(({ theme }) => ({
   top: '50%',
   left: '50%',
   transform: 'translate(-50%, -50%)',
-  width: '470px',
   borderRadius: '4px',
   backgroundColor: '#ffffff',
   boxShadow: '0px 16px 70px 0px rgba(0, 0, 0, 0.50)',

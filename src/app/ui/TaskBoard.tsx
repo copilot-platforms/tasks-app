@@ -1,38 +1,28 @@
 'use client'
 
 import { useCallback } from 'react'
-import { Box, Modal, Stack } from '@mui/material'
+import { Box, Stack } from '@mui/material'
 import { TaskCard } from '@/components/cards/TaskCard'
 import { TaskColumn } from '@/components/cards/TaskColumn'
 import { DragDropHandler } from '@/hoc/DragDropHandler'
-import { NewTaskForm } from '@/app/ui/NewTaskForm'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { useSelector } from 'react-redux'
-import { clearCreateTaskFields, selectCreateTask, setShowModal } from '@/redux/features/createTaskSlice'
 import store from '@/redux/store'
 import { selectTaskBoard, updateWorkflowStateIdByTaskId } from '@/redux/features/taskBoardSlice'
-import { CreateTaskRequestSchema, TaskResponse } from '@/types/dto/tasks.dto'
+import { TaskResponse } from '@/types/dto/tasks.dto'
 import { ListViewTaskCard } from '@/components/cards/ListViewTaskCard'
 import { TaskRow } from '@/components/cards/TaskRow'
-import { ISignedUrlUpload, View } from '@/types/interfaces'
-import { handleCreate, updateTask } from '@/app/actions'
+import { UserType, View } from '@/types/interfaces'
+import { updateTask, updateViewModeSettings } from '@/app/actions'
 import { z } from 'zod'
-import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
-import { bulkRemoveAttachments } from '@/utils/bulkRemoveAttachments'
-import Scrollbars from 'react-custom-scrollbars'
 import { CustomScrollbar } from '@/hoc/CustomScrollbar'
+import DashboardEmptyState from '@/components/layouts/EmptyState/DashboardEmptyState'
+import { Header } from '@/components/layouts/Header'
+import { FilterBar } from '@/components/layouts/FilterBar'
+import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 
-export const TaskBoard = ({
-  getSignedUrlUpload,
-  handleCreateMultipleAttachments,
-}: {
-  getSignedUrlUpload: (fileName: string) => Promise<ISignedUrlUpload>
-  handleCreateMultipleAttachments: (attachments: CreateAttachmentRequest[]) => Promise<void>
-}) => {
-  const { showModal } = useSelector(selectCreateTask)
+export const TaskBoard = () => {
   const { workflowStates, tasks, token, filteredTasks, view, filterOptions } = useSelector(selectTaskBoard)
-  const { title, description, workflowStateId, assigneeId, assigneeType, attachments, dueDate } =
-    useSelector(selectCreateTask)
 
   const onDropItem = useCallback(
     (payload: { taskId: string; targetWorkflowStateId: string }) => {
@@ -66,8 +56,19 @@ export const TaskBoard = ({
     }
     return filteredTaskCount.toString() + '/' + taskCount.toString()
   }
+
+  if (tasks && tasks.length === 0) {
+    return <DashboardEmptyState userType={UserType.INTERNAL_USER} />
+  }
+
   return (
     <>
+      <Header showCreateTaskButton={true} />
+      <FilterBar
+        updateViewModeSetting={async (payload: CreateViewSettingsDTO) => {
+          await updateViewModeSettings(z.string().parse(token), payload)
+        }}
+      />
       {view === View.BOARD_VIEW && (
         <AppMargin size={SizeofAppMargin.LARGE} py="20px">
           <Stack
@@ -141,46 +142,6 @@ export const TaskBoard = ({
           </CustomScrollbar>
         </Stack>
       )}
-
-      <Modal
-        open={showModal}
-        onClose={async () => {
-          store.dispatch(setShowModal())
-          store.dispatch(clearCreateTaskFields())
-          await bulkRemoveAttachments(attachments)
-        }}
-        aria-labelledby="create-task-modal"
-        aria-describedby="add-new-task"
-      >
-        <NewTaskForm
-          handleCreate={async () => {
-            if (title) {
-              store.dispatch(setShowModal())
-              store.dispatch(clearCreateTaskFields())
-              const createdTask = await handleCreate(
-                token as string,
-                CreateTaskRequestSchema.parse({
-                  title,
-                  body: description,
-                  workflowStateId,
-                  assigneeType,
-                  assigneeId,
-                  dueDate,
-                }),
-              )
-              const toUploadAttachments: CreateAttachmentRequest[] = attachments.map((el) => {
-                return {
-                  ...el,
-                  taskId: createdTask.id,
-                }
-              })
-              store.dispatch(clearCreateTaskFields())
-              await handleCreateMultipleAttachments(toUploadAttachments)
-            }
-          }}
-          getSignedUrlUpload={getSignedUrlUpload}
-        />
-      </Modal>
     </>
   )
 }

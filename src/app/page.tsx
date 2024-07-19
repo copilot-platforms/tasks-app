@@ -2,21 +2,20 @@ export const fetchCache = 'force-no-store'
 
 import { DndWrapper } from '@/hoc/DndWrapper'
 import { TaskBoard } from './ui/TaskBoard'
-import { Header } from '@/components/layouts/Header'
 import { z } from 'zod'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { advancedFeatureFlag, apiUrl } from '@/config'
+import { apiUrl } from '@/config'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import { TaskResponse } from '@/types/dto/tasks.dto'
-import { IAssignee, ITemplate, View } from '@/types/interfaces'
+import { IAssignee, ITemplate } from '@/types/interfaces'
 import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
-import { FilterBar } from '@/components/layouts/FilterBar'
 import ClientError from '@/components/clientError'
 import { Token, TokenSchema } from '@/types/common'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
-import { createMultipleAttachments, getSignedUrlUpload, updateViewModeSettings } from '@/app/actions'
+import { createMultipleAttachments, getSignedUrlUpload } from '@/app/actions'
+import { ModalNewTaskForm } from './ui/Modal_NewTaskForm'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -90,36 +89,29 @@ export default async function Main({ searchParams }: { searchParams: { token: st
   ])
 
   return (
-    <>
-      <ClientSideStateUpdate
-        workflowStates={workflowStates}
-        tasks={tasks}
-        token={token}
-        assignee={assignee}
-        viewSettings={viewSettings}
-        tokenPayload={tokenPayload}
-        templates={templates}
-      >
-        <DndWrapper>
-          <Header showCreateTaskButton={true} />
-          <FilterBar
-            updateViewModeSetting={async (payload: CreateViewSettingsDTO) => {
-              'use server'
-              await updateViewModeSettings(token, payload)
-            }}
-          />
-          <TaskBoard
-            getSignedUrlUpload={async (fileName: string) => {
-              'use server'
-              return await getSignedUrlUpload(token, fileName)
-            }}
-            handleCreateMultipleAttachments={async (attachments: CreateAttachmentRequest[]) => {
-              'use server'
-              await createMultipleAttachments(token, attachments)
-            }}
-          />
-        </DndWrapper>
-      </ClientSideStateUpdate>
-    </>
+    <ClientSideStateUpdate
+      workflowStates={workflowStates}
+      tasks={tasks}
+      token={token}
+      assignee={assignee}
+      viewSettings={viewSettings}
+      tokenPayload={tokenPayload}
+      templates={templates}
+    >
+      <DndWrapper>
+        <TaskBoard />
+      </DndWrapper>
+
+      <ModalNewTaskForm
+        getSignedUrlUpload={async (fileName: string) => {
+          'use server'
+          return await getSignedUrlUpload(token, fileName)
+        }}
+        handleCreateMultipleAttachments={async (attachments: CreateAttachmentRequest[]) => {
+          'use server'
+          await createMultipleAttachments(token, attachments)
+        }}
+      />
+    </ClientSideStateUpdate>
   )
 }

@@ -11,8 +11,8 @@ import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { StyledBox } from './styledComponent'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
-import { IsoDate, UpdateTaskRequest } from '@/types/dto/tasks.dto'
-import { formatDate, isoToReadableDate } from '@/utils/dateHelper'
+import { UpdateTaskRequest } from '@/types/dto/tasks.dto'
+import { createDateFromFormattedDateString, formatDate } from '@/utils/dateHelper'
 import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 import { ToggleButtonContainer } from './ToggleButtonContainer'
 import { NoAssignee, NoAssigneeExtraOptions } from '@/utils/noAssignee'
@@ -20,6 +20,12 @@ import ExtraOptionRendererAssignee from '@/components/inputs/ExtraOptionRenderer
 import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { AssigneePlaceholder } from '@/icons'
+import { useState } from 'react'
+import { MiniLoader } from '@/components/atoms/MiniLoader'
+import { setDebouncedFilteredAssignees } from '@/utils/users'
+import { z } from 'zod'
+import { isAssigneeTextMatching } from '@/utils/assignee'
+import { DateStringSchema } from '@/types/date'
 
 const StyledText = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[500],
@@ -38,15 +44,18 @@ export const Sidebar = ({
 }: {
   selectedWorkflowState: WorkflowStateResponse
   selectedAssigneeId: string | undefined
-  dueDate: IsoDate | undefined
+  dueDate: string | undefined
   updateWorkflowState: (workflowState: WorkflowStateResponse) => void
   updateAssignee: (assigneeType: string | null, assigneeId: string | null) => void
   updateTask: (payload: UpdateTaskRequest) => void
   assignee: IAssigneeCombined[]
   disabled: boolean
 }) => {
-  const { workflowStates } = useSelector(selectTaskBoard)
+  const { workflowStates, token } = useSelector(selectTaskBoard)
   const { showSidebar } = useSelector(selectTaskDetails)
+  const [filteredAssignees, setFilteredAssignees] = useState(assignee)
+  const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
+  const [loading, setLoading] = useState(false)
 
   const { renderingItem: _statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
     item: selectedWorkflowState,
@@ -119,22 +128,26 @@ export const Sidebar = ({
                 <CopilotAvatar currentAssignee={assigneeValue} height="16px" width="16px" fontSize="11px" />
               )
             }
-            options={assignee}
-            value={assigneeValue}
+            options={loading ? [] : filteredAssignees}
+            value={assigneeValue.name == 'No assignee' ? null : assigneeValue}
             selectorType={SelectorType.ASSIGNEE_SELECTOR}
-            extraOption={NoAssigneeExtraOptions}
-            extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
-              return (
-                <ExtraOptionRendererAssignee
-                  props={props}
-                  onClick={(e) => {
-                    updateAssigneeValue({ id: '', name: 'No assignee' })
-                    setAnchorEl(anchorEl ? null : e.currentTarget)
-                    updateAssignee(null, null)
-                  }}
-                />
-              )
-            }}
+            //****Disabling re-assignment completely for now***
+            // extraOption={NoAssigneeExtraOptions}
+            // extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
+            //   return (
+            //     <>
+            //       <ExtraOptionRendererAssignee
+            //         props={props}
+            //         onClick={(e) => {
+            //           updateAssigneeValue({ id: '', name: 'No assignee' })
+            //           setAnchorEl(anchorEl ? null : e.currentTarget)
+            //           updateAssignee(null, null)
+            //         }}
+            //       />
+            //       {loading && <MiniLoader />}
+            //     </>
+            //   )
+            // }}
             buttonContent={
               <Typography variant="md" lineHeight="22px" sx={{ color: (theme) => theme.color.gray[600] }}>
                 {(assigneeValue as IAssigneeCombined)?.name == 'No assignee'
@@ -143,27 +156,40 @@ export const Sidebar = ({
                     `${(assigneeValue as IAssigneeCombined)?.givenName ?? ''} ${(assigneeValue as IAssigneeCombined)?.familyName ?? ''}`.trim()}
               </Typography>
             }
-            disabled={disabled}
+            handleInputChange={async (newInputValue: string) => {
+              if (!newInputValue || isAssigneeTextMatching(newInputValue, assigneeValue)) {
+                setFilteredAssignees(assignee)
+                return
+              }
+
+              setDebouncedFilteredAssignees(
+                activeDebounceTimeoutId,
+                setActiveDebounceTimeoutId,
+                setLoading,
+                setFilteredAssignees,
+                z.string().parse(token),
+                newInputValue,
+              )
+            }}
+            filterOption={(x: unknown) => x}
+            // disabled={disabled}
+            disabled={true} //for now, disable re-assignment completely
             disableOutline
             responsiveNoHide
           />
         </Stack>
-        <Stack direction="row" m="20px 0px" alignItems="center" columnGap="10px">
+        <Stack direction="row" m="20px 0px" alignItems="center" columnGap="10px" minWidth="fit-content">
           <StyledText variant="md" minWidth="80px">
             Due Date
           </StyledText>
-          <Box sx={{ minWidth: '200px' }}>
-            <DatePickerComponent
-              getDate={(date) => {
-                const isoDate = formatDate(date)
-                updateTask({
-                  dueDate: isoDate,
-                })
-              }}
-              dateValue={dueDate ? isoToReadableDate(dueDate) : undefined}
-              disabled={disabled}
-            />
-          </Box>
+          <DatePickerComponent
+            getDate={(date) => {
+              const dueDate = DateStringSchema.parse(formatDate(date))
+              updateTask({ dueDate })
+            }}
+            dateValue={dueDate ? createDateFromFormattedDateString(dueDate) : undefined}
+            disabled={disabled}
+          />
         </Stack>
       </AppMargin>
     </Box>

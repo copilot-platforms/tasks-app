@@ -4,7 +4,7 @@ import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { IAssigneeCombined } from '@/types/interfaces'
 import { NoAssignee } from '@/utils/noAssignee'
-import { Avatar, Stack, Typography, styled } from '@mui/material'
+import { Stack, Typography, styled } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { DueDateLayout } from '@/components/layouts/DueDateLayout'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
@@ -16,6 +16,7 @@ const TaskCardContainer = styled(Stack)(({ theme }) => ({
   borderRadius: theme.spacing(theme.shape.radius100),
   background: theme.color.base.white,
   padding: '12px',
+  overflowWrap: 'break-word',
   userSelect: 'none',
   ':hover': {
     background: theme.color.gray[150],
@@ -62,7 +63,7 @@ export const TaskCard = ({ task, href }: TaskCardProps) => {
           </Typography>
         </Stack>
         <Typography variant="sm">{task.title}</Typography>
-        {task.dueDate && <DueDateLayout date={task.dueDate} />}
+        {task.dueDate && <DueDateLayout dateString={task.dueDate} />}
       </TaskCardContainer>
     </StyledUninvasiveLink>
   )

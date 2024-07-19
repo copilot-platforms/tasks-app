@@ -1,28 +1,27 @@
-import React, { useRef } from 'react'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import dayjs, { Dayjs } from 'dayjs'
-import { CalenderIcon, CalenderIcon2, CalenderIconSmall } from '@/icons'
-import { IsoDate } from '@/types/dto/tasks.dto'
+import { CalenderIcon, CalenderIconSmall } from '@/icons'
 import { Box, Popper, Stack, Typography } from '@mui/material'
 import { SecondaryBtn } from '../buttons/SecondaryBtn'
+import { useState } from 'react'
 
 interface Prop {
   getDate: (value: string) => void
-  dateValue?: IsoDate
+  dateValue?: Date
   isButton?: boolean
   disabled?: boolean
 }
 
 export const DatePickerComponent = ({ getDate, dateValue, disabled, isButton = false }: Prop) => {
-  const [value, setValue] = React.useState<Dayjs | null>(dateValue ? dayjs(dateValue) : null)
+  const [value, setValue] = useState<Dayjs | null>(dateValue ? dayjs(dateValue) : null)
 
   const formatDate = (date: Dayjs | null) => {
     return date ? date.format('MMM DD, YYYY') : '' // Format the date as "Mar 08, 2024"
   }
 
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     if (!disabled) {
@@ -85,14 +84,10 @@ export const DatePickerComponent = ({ getDate, dateValue, disabled, isButton = f
         open={open}
         anchorEl={anchorEl}
         placement="bottom-start"
-        modifiers={[
-          {
-            name: 'offset',
-            options: {
-              offset: [0, 4],
-            },
-          },
-        ]}
+        // This hides popper's tooltip that helps position the content. display: none would mess up the positioning
+        sx={{
+          opacity: 0,
+        }}
       >
         <DatePicker
           disablePast
@@ -102,6 +97,22 @@ export const DatePickerComponent = ({ getDate, dateValue, disabled, isButton = f
           onChange={(newValue) => {
             getDate(formatDate(newValue))
             setValue(newValue)
+          }}
+          slotProps={{
+            day: {
+              sx: {
+                '&.MuiPickersDay-root.Mui-selected': {
+                  backgroundColor: (theme) => theme.color.gray[500],
+                },
+              },
+            },
+            yearButton: {
+              sx: {
+                '&.MuiPickersYear-yearButton.Mui-selected': {
+                  backgroundColor: '#6B6F76',
+                },
+              },
+            },
           }}
           sx={{
             '& .MuiOutlinedInput-input': {

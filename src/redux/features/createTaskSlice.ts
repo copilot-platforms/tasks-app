@@ -2,7 +2,7 @@ import { createSlice } from '@reduxjs/toolkit'
 import { RootState } from '../store'
 import { AssigneeType } from '@prisma/client'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
-import { IsoDate } from '@/types/dto/tasks.dto'
+import { DateString } from '@/types/date'
 
 interface IInitialState {
   showModal: boolean
@@ -12,7 +12,7 @@ interface IInitialState {
   assigneeType?: AssigneeType | null
   assigneeId: string | null
   attachments: CreateAttachmentRequest[]
-  dueDate: IsoDate | null
+  dueDate: DateString | null
 }
 
 const initialState: IInitialState = {

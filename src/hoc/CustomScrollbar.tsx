@@ -1,3 +1,5 @@
+'use client'
+
 import { CSSProperties, ReactNode } from 'react'
 import Scrollbars from 'react-custom-scrollbars'
 
@@ -16,8 +18,8 @@ export const CustomScrollbar = ({ children, style }: { children: ReactNode; styl
           }}
         />
       )}
-      autoHideTimeout={200}
-      autoHideDuration={200}
+      autoHideTimeout={500}
+      autoHideDuration={500}
       hideTracksWhenNotNeeded={true}
     >
       {children}

@@ -35,7 +35,10 @@ interface Prop {
   disableOutline?: boolean
   padding?: string
   buttonWidth?: string
+  buttonHeight?: string
   responsiveNoHide?: boolean
+  handleInputChange?: (_: string) => void
+  filterOption?: any
 }
 
 export default function Selector({
@@ -52,7 +55,10 @@ export default function Selector({
   disableOutline,
   padding,
   buttonWidth,
+  buttonHeight,
   responsiveNoHide,
+  handleInputChange,
+  filterOption,
 }: Prop) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
@@ -124,7 +130,7 @@ export default function Selector({
               borderRadius: '4px',
               padding: '4px 8px',
               ':hover': {
-                backgroundColor: (theme) => theme.color.gray[100],
+                backgroundColor: disabled ? 'none' : (theme) => theme.color.gray[100],
               },
             }}
           >
@@ -149,6 +155,7 @@ export default function Selector({
             outlined={disableOutline}
             disabled={disabled}
             padding={padding}
+            height={buttonHeight}
           />
         )}
       </Box>
@@ -169,6 +176,7 @@ export default function Selector({
           }}
           openOnFocus
           onKeyDown={handleKeyDown}
+          ListboxProps={{ sx: { maxHeight: { xs: '175px', sm: '291px' } } }}
           autoHighlight
           options={extraOption ? [extraOption, ...options] : options}
           value={value}
@@ -182,6 +190,7 @@ export default function Selector({
           groupBy={(option: unknown) =>
             selectorType === SelectorType.ASSIGNEE_SELECTOR ? UserTypesName[(option as IAssigneeCombined).type] : ''
           }
+          filterOptions={filterOption}
           renderGroup={(params) => {
             const hasNoAssignee =
               Array.isArray(params?.children) &&
@@ -203,6 +212,7 @@ export default function Selector({
           }}
           inputValue={inputStatusValue}
           onInputChange={(_, newInputValue) => {
+            handleInputChange?.(newInputValue)
             setInputStatusValue(newInputValue)
           }}
           renderInput={(params) => {
@@ -238,6 +248,7 @@ export default function Selector({
     </Stack>
   )
 }
+
 const TemplateSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTMLLIElement>; option: unknown }) => {
   return (
     <Box
@@ -325,6 +336,7 @@ const SelectorButton = ({
   outlined,
   padding,
   disabled,
+  height,
 }: {
   startIcon?: ReactNode
   buttonContent: ReactNode
@@ -333,6 +345,7 @@ const SelectorButton = ({
   outlined?: boolean
   padding?: string
   disabled?: boolean
+  height?: string
 }) => {
   return (
     <Button
@@ -355,7 +368,7 @@ const SelectorButton = ({
             fontSize: '13px',
           },
         },
-        height: '32px',
+        height: height ?? '32px',
       })}
       onClick={handleClick}
       disableRipple

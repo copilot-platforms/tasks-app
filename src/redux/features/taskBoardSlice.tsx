@@ -42,6 +42,9 @@ const taskBoardSlice = createSlice({
     setTasks: (state, action: { payload: TaskResponse[] }) => {
       state.tasks = action.payload
     },
+    appendTask: (state, action: { payload: TaskResponse }) => {
+      state.tasks = [...state.tasks, action.payload]
+    },
     setFilteredTasks: (state, action: { payload: TaskResponse[] }) => {
       state.filteredTasks = action.payload
     },
@@ -93,6 +96,7 @@ export const selectTaskBoard = (state: RootState) => state.taskBoard
 export const {
   setWorkflowStates,
   setTasks,
+  appendTask,
   updateWorkflowStateIdByTaskId,
   setToken,
   setAssigneeList,

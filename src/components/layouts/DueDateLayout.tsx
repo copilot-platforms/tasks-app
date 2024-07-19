@@ -3,15 +3,18 @@ import dayjs from 'dayjs'
 import isToday from 'dayjs/plugin/isToday'
 import isTomorrow from 'dayjs/plugin/isTomorrow'
 import { useCallback } from 'react'
+import { createDateFromFormattedDateString } from '@/utils/dateHelper'
+import { DateString } from '@/types/date'
 
 dayjs.extend(isToday)
 dayjs.extend(isTomorrow)
 
 interface DueDateLayoutProp {
-  date: string | Date
+  dateString: DateString
 }
 
-export const DueDateLayout = ({ date }: DueDateLayoutProp) => {
+export const DueDateLayout = ({ dateString }: DueDateLayoutProp) => {
+  const date = createDateFromFormattedDateString(dateString)
   const now = dayjs()
   const calculateFormattedDueDate = useCallback(() => {
     const parsedDate = dayjs(date)
