@@ -24,7 +24,6 @@ import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { useRouter } from 'next/navigation'
 import { selectCreateTemplate } from '@/redux/features/templateSlice'
 import { NoAssigneeExtraOptions } from '@/utils/noAssignee'
-import ExtraOptionRendererAssignee from '@/components/inputs/ExtraOptionRendererAssignee'
 import { upload } from '@vercel/blob/client'
 import { AttachmentInput } from '@/components/inputs/AttachmentInput'
 import { SupabaseActions } from '@/utils/SupabaseActions'
@@ -75,6 +74,8 @@ export const NewTaskForm = ({
   const statusValue = _statusValue as WorkflowStateResponse //typecasting
   const assigneeValue = _assigneeValue as IAssigneeCombined //typecasting
   const templateValue = _templateValue as ITemplate //typecasting
+  // use temp state pattern so that we don't fall into an infinite loop of assigneeValue set -> trigger -> set
+  const [tempAssignee, _] = useState<IAssigneeCombined | null>(assigneeValue)
 
   const router = useRouter()
 
@@ -205,7 +206,7 @@ export const NewTaskForm = ({
                 )
               }
               options={loading ? [] : filteredAssignees}
-              value={assigneeValue}
+              value={tempAssignee}
               extraOption={NoAssigneeExtraOptions}
               extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
                 return (
@@ -230,7 +231,6 @@ export const NewTaskForm = ({
                   setFilteredAssignees(filteredAssigneeList)
                   return
                 }
-
                 setDebouncedFilteredAssignees(
                   activeDebounceTimeoutId,
                   setActiveDebounceTimeoutId,
