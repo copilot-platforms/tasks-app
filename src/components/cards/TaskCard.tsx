@@ -36,7 +36,7 @@ export const TaskCard = ({ task, href }: TaskCardProps) => {
   const currentAssignee = assignee.find((el) => el.id === task.assigneeId) ?? NoAssignee
 
   return (
-    <StyledUninvasiveLink href={href} prefetch={true}>
+    <StyledUninvasiveLink href={href} prefetch={false}>
       <TaskCardContainer rowGap={1}>
         <Stack direction="row" justifyContent="space-between">
           <Stack direction="row" alignItems="center" columnGap={1}>
