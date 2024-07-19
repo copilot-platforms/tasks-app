@@ -67,11 +67,37 @@ export class TasksService extends BaseService {
     // while clients can only view the tasks assigned to them or their company
     const filters = this.buildReadFilters()
 
-    return await this.db.task.findMany({
+    let tasks = await this.db.task.findMany({
       ...filters,
       include: {
         workflowState: { select: { name: true } },
       },
+    })
+
+    if (!this.user.internalUserId) {
+      return tasks
+    }
+
+    // Now we have the challenge of figuring out if a task is assigned to a client / company that falls in IU's access list
+    const copilot = new CopilotAPI(this.user.token)
+    const currentInternalUser = await copilot.getInternalUser(this.user.internalUserId)
+    if (!currentInternalUser.isClientAccessLimited) return tasks
+
+    const hasClientTasks = tasks.some((task) => task.assigneeType === AssigneeType.client)
+    const clients = hasClientTasks ? await copilot.getClients() : { data: [] }
+
+    return tasks.filter((task) => {
+      // Allow IU to access unassigned tasks or tasks assigned to another IU within workspace
+      if (!task.assigneeId || task.assigneeType === AssigneeType.internalUser) return true
+
+      // TODO: Refactor this hacky abomination of code as soon as copilot API natively supports access scopes
+      // Filter out only tasks that belong to a client that has companyId in IU's companyAccessList
+      if (task.assigneeType === AssigneeType.company) {
+        return currentInternalUser.companyAccessList?.includes(task.assigneeId)
+      }
+      const taskClient = clients.data?.find((client) => client.id === task.assigneeId)
+      const taskClientsCompanyId = z.string().parse(taskClient?.companyId)
+      return currentInternalUser.companyAccessList?.includes(taskClientsCompanyId)
     })
   }
 
