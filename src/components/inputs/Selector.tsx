@@ -77,10 +77,9 @@ export default function Selector({
 
   function detectSelectorType(option: unknown) {
     if (selectorType === SelectorType.ASSIGNEE_SELECTOR) {
-      return truncateText(
+      return (
         (option as IAssigneeCombined)?.name ||
-          `${(option as IAssigneeCombined)?.givenName ?? ''} ${(option as IAssigneeCombined)?.familyName ?? ''}`.trim(),
-        TruncateMaxNumber.SELECTOR,
+        `${(option as IAssigneeCombined)?.givenName ?? ''} ${(option as IAssigneeCombined)?.familyName ?? ''}`.trim()
       )
     }
 
