@@ -38,7 +38,7 @@ export const ListViewTaskCard = ({
   const assigneeValue = _assigneeValue as IAssigneeCombined //typecasting
 
   return (
-    <StyledUninvasiveLink href={href} prefetch={true}>
+    <StyledUninvasiveLink href={href} prefetch={false}>
       <Box
         className="task-list-card"
         sx={{

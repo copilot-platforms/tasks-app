@@ -37,7 +37,7 @@ export const ClientTaskCard = ({
   }
 
   return (
-    <StyledUninvasiveLink href={href} prefetch={true}>
+    <StyledUninvasiveLink href={href} prefetch={false}>
       <Box
         sx={{
           ':hover': {

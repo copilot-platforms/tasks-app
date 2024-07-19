@@ -8,6 +8,7 @@ import APIError from '@api/core/exceptions/api'
 import httpStatus from 'http-status'
 import { CopilotListArgs, FilterableUser } from '@/types/common'
 import { filterUsersByKeyword } from '@/utils/users'
+import { z } from 'zod'
 
 class UsersService extends BaseService {
   private copilot: CopilotAPI
@@ -26,19 +27,36 @@ class UsersService extends BaseService {
 
     const [ius, clients, companies] = await Promise.all([
       this.copilot.getInternalUsers(listArgs),
-      this.copilot.getClients(listArgs),
-      this.copilot.getCompanies(listArgs),
+      this.copilot.getClients({ limit: 1000, nextToken }),
+      this.copilot.getCompanies({ limit: 1000, nextToken }),
     ])
 
+    // Get current internal user as only IUs are authenticated to access this route
+    const currentInternalUser = await this.copilot.getInternalUser(z.string().parse(this.user.internalUserId))
     // Filter out companies where isPlaceholder is true if companies.data is not null
-    const filteredCompanies = companies.data ? companies.data.filter((company) => !company.isPlaceholder) : []
+    // Also filter out just companies which are accessible to this IU, since copilot doesn't do that
+    const filteredCompanies = companies.data
+      ? companies.data
+          .filter((company) => !company.isPlaceholder)
+          .filter((company) =>
+            currentInternalUser.isClientAccessLimited ? currentInternalUser.companyAccessList?.includes(company.id) : true,
+          )
+          .slice(0, limit)
+      : []
+
+    // Same for clients
     const clientsWithCompanyData =
       clients.data?.map((client) => {
         const companyForClient = filteredCompanies.find((company) => company.id === client.companyId)
         return { ...client, fallbackColor: companyForClient?.fallbackColor }
       }) || []
+    const accessibleClients = (
+      currentInternalUser.isClientAccessLimited
+        ? clientsWithCompanyData?.filter((client) => currentInternalUser.companyAccessList?.includes(client.companyId))
+        : clientsWithCompanyData
+    )?.slice(0, limit)
 
-    return { internalUsers: ius.data, clients: clientsWithCompanyData, companies: filteredCompanies }
+    return { internalUsers: ius.data, clients: accessibleClients, companies: filteredCompanies }
   }
 
   /**
