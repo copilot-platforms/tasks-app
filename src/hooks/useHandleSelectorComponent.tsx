@@ -15,6 +15,7 @@ export const useHandleSelectorComponent = ({ item, type }: { item: unknown; type
   }
 
   useEffect(() => {
+    //item can be null and we don't want this block to run if item is null, thus we are doing the below check for item
     if (type === SelectorType.STATUS_SELECTOR && item) {
       store.dispatch(setCreateTaskFields({ targetField: 'workflowStateId', value: (item as WorkflowStateResponse)?.id }))
       store.dispatch(setCreateTemplateFields({ targetField: 'workflowStateId', value: (item as WorkflowStateResponse)?.id }))
