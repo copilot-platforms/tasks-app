@@ -34,10 +34,10 @@ export const ClientTaskBoard = ({ completeTask }: { completeTask: (taskId: strin
 
   const completedTypeWorkflowState = workflowStates.find((el) => el.type === 'completed')
   return tasks.length > 0 ? (
-    workflowStates.map((list) => {
-      return (
-        <>
-          <Header showCreateTaskButton={false} />
+    <>
+      <Header showCreateTaskButton={false} />
+      {workflowStates.map((list) => {
+        return (
           <TaskRow
             key={list.id}
             columnName={list.name}
@@ -68,9 +68,9 @@ export const ClientTaskBoard = ({ completeTask }: { completeTask: (taskId: strin
               )
             })}
           </TaskRow>
-        </>
-      )
-    })
+        )
+      })}
+    </>
   ) : (
     <DashboardEmptyState userType={UserType.CLIENT_USER} />
   )
