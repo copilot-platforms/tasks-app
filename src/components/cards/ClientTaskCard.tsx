@@ -97,7 +97,13 @@ export const ClientTaskCard = ({
                 )}
               </Box>
 
-              <Stack direction="row" alignItems="flex-start" columnGap={1} sx={{ padding: '2px', maxWidth: '100px' }}>
+              <Stack
+                direction="row"
+                alignItems="flex-start"
+                justifyContent={'left'}
+                columnGap={1}
+                sx={{ padding: '2px', width: '132px' }}
+              >
                 <CopilotAvatar currentAssignee={currentAssignee as IAssigneeCombined} />
 
                 <Typography
