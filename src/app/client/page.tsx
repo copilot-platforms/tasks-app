@@ -9,6 +9,7 @@ import { IAssignee, IAssigneeCombined } from '@/types/interfaces'
 import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
 import { ClientTaskBoard } from './ui/ClientTaskBoard'
 import { completeTask } from '@/app/client/actions'
+import { RealTime } from '@/hoc/RealTime'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -48,13 +49,15 @@ export default async function ClientPage({ searchParams }: { searchParams: { tok
   return (
     <>
       <ClientSideStateUpdate workflowStates={workflowStates} tasks={tasks} token={token} assignee={assignee}>
-        <Header showCreateTaskButton={false} />
-        <ClientTaskBoard
-          completeTask={async (taskId) => {
-            'use server'
-            completeTask({ token, taskId })
-          }}
-        />
+        <RealTime>
+          <Header showCreateTaskButton={false} />
+          <ClientTaskBoard
+            completeTask={async (taskId) => {
+              'use server'
+              completeTask({ token, taskId })
+            }}
+          />
+        </RealTime>
       </ClientSideStateUpdate>
     </>
   )
