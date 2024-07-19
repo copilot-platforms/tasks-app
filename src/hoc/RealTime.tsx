@@ -21,17 +21,19 @@ export const RealTime = ({ children }: { children: ReactNode }) => {
 
   const handleTaskRealTimeUpdates = (payload: RealtimePostgresChangesPayload<RealTimeTaskResponse>) => {
     if (payload.eventType === 'INSERT') {
-      console.log('test-insert', payload)
       store.dispatch(setTasks([...tasks, payload.new]))
     }
     if (payload.eventType === 'UPDATE') {
       const updatedTask = payload.new
+      //if the task is deleted
       if (updatedTask.deletedAt) {
         const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
         store.dispatch(setTasks(newTaskArr))
+        //if a user is in the details page when the task is deleted then we want the user to get redirected to '/' route
         if (pathname.includes('detail')) {
           router.push(`/?token=${token}`)
         }
+        //if the task is updated
       } else {
         const newTaskArr = [...tasks.filter((task) => task.id !== updatedTask.id), updatedTask]
         store.dispatch(setTasks(newTaskArr))
