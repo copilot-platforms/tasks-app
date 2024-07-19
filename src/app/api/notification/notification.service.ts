@@ -160,7 +160,7 @@ export class NotificationService extends BaseService {
         const userInfo = await copilot.me()
         senderId = z.string().parse(userInfo?.id)
         recipientId = z.string().parse(task.assigneeId)
-        actionTrigger = userInfo as MeResponse
+        actionTrigger = userInfo as CopilotUser
         break
     }
 
