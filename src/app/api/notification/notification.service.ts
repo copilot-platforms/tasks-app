@@ -19,6 +19,7 @@ export class NotificationService extends BaseService {
         senderId,
         recipientId,
         deliveryTargets: {
+          // If any of the given action is not present in details obj, that type of notification is not sent
           inProduct: getInProductNotificationDetails(actionUser)[action],
           email: getEmailDetails(actionUser)[action],
         },
