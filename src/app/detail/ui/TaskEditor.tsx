@@ -95,7 +95,7 @@ export const TaskEditor = ({
         value={updateTitle}
         onChange={(e) => {
           setUpdateTitle(e.target.value)
-          taskUpdateDebounced(e.target.value, updateDetail)
+          // taskUpdateDebounced(e.target.value, updateDetail)
         }}
         InputProps={{ readOnly: !isEditable }}
         inputProps={{ maxLength: 255 }}
@@ -123,7 +123,7 @@ export const TaskEditor = ({
           content={updateDetail}
           getContent={(content) => {
             setUpdateDetail(content)
-            taskUpdateDebounced(updateTitle, content)
+            // taskUpdateDebounced(updateTitle, content)
           }}
           readonly={userType === UserType.CLIENT_USER}
           editorClass="tapwrite-details-page"
