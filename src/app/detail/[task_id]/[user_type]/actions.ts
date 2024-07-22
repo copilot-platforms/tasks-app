@@ -5,7 +5,6 @@ import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { CreateComment } from '@/types/dto/comment.dto'
 import { UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { revalidateTag } from 'next/cache'
-import { redirect } from 'next/navigation'
 
 export const updateTaskDetail = async ({
   token,

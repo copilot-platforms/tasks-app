@@ -179,10 +179,7 @@ export default async function TaskDetailPage({
               <AppMargin size={SizeofAppMargin.LARGE} py="30px">
                 <TaskEditor
                   attachment={attachments}
-                  title={task?.title || ''}
-                  workflowState={task?.workflowState}
                   task_id={task_id}
-                  detail={task?.body || ''}
                   isEditable={params.user_type === UserType.INTERNAL_USER}
                   updateTaskDetail={async (title, detail) => {
                     'use server'

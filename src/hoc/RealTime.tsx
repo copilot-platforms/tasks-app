@@ -9,6 +9,7 @@ import { usePathname } from 'next/navigation'
 import { ReactNode, useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { useRouter } from 'next/navigation'
+import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 
 interface RealTimeTaskResponse extends TaskResponse {
   deletedAt: string
@@ -16,27 +17,34 @@ interface RealTimeTaskResponse extends TaskResponse {
 
 export const RealTime = ({ children }: { children: ReactNode }) => {
   const { tasks, token } = useSelector(selectTaskBoard)
+  const { tokenPayload } = useSelector(selectAuthDetails)
   const pathname = usePathname()
   const router = useRouter()
 
   const handleTaskRealTimeUpdates = (payload: RealtimePostgresChangesPayload<RealTimeTaskResponse>) => {
     if (payload.eventType === 'INSERT') {
-      store.dispatch(setTasks([...tasks, payload.new]))
+      //check if the new task in this event belongs to the same workspaceId
+      if (payload.new.workspaceId === tokenPayload?.workspaceId) {
+        store.dispatch(setTasks([...tasks, payload.new]))
+      }
     }
     if (payload.eventType === 'UPDATE') {
       const updatedTask = payload.new
-      //if the task is deleted
-      if (updatedTask.deletedAt) {
-        const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
-        store.dispatch(setTasks(newTaskArr))
-        //if a user is in the details page when the task is deleted then we want the user to get redirected to '/' route
-        if (pathname.includes('detail')) {
-          router.push(`/?token=${token}`)
+      //check if the new task in this event belongs to the same workspaceId
+      if (payload.new.workspaceId === tokenPayload?.workspaceId) {
+        //if the task is deleted
+        if (updatedTask.deletedAt) {
+          const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
+          store.dispatch(setTasks(newTaskArr))
+          //if a user is in the details page when the task is deleted then we want the user to get redirected to '/' route
+          if (pathname.includes('detail')) {
+            router.push(`/?token=${token}`)
+          }
+          //if the task is updated
+        } else {
+          const newTaskArr = [...tasks.filter((task) => task.id !== updatedTask.id), updatedTask]
+          store.dispatch(setTasks(newTaskArr))
         }
-        //if the task is updated
-      } else {
-        const newTaskArr = [...tasks.filter((task) => task.id !== updatedTask.id), updatedTask]
-        store.dispatch(setTasks(newTaskArr))
       }
     }
   }

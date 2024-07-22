@@ -22,9 +22,6 @@ import { Tapwrite } from 'tapwrite'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 
 interface Prop {
-  title: string
-  detail: string
-  workflowState: WorkflowStateResponse
   task_id: string
   attachment: AttachmentResponseSchema[]
   isEditable: boolean
@@ -37,9 +34,6 @@ interface Prop {
 }
 
 export const TaskEditor = ({
-  title,
-  detail,
-  workflowState,
   task_id,
   attachment,
   isEditable,
