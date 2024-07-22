@@ -9,6 +9,7 @@ import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import { createNewTemplate, deleteTemplate, editTemplate } from './actions'
 import { ManageTemplateHeader } from './ui/Header'
+import { ASSIGNEE_REVALIDATION_INTERVAL, MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -21,8 +22,8 @@ async function getAllWorkflowStates(token: string): Promise<WorkflowStateRespons
 }
 
 async function getAssigneeList(token: string): Promise<IAssignee> {
-  const res = await fetch(`${apiUrl}/api/users?token=${token}`, {
-    next: { tags: ['getAssigneeList'] },
+  const res = await fetch(`${apiUrl}/api/users?token=${token}&limit=${MAX_FETCH_ASSIGNEE_COUNT}`, {
+    next: { tags: ['getAssigneeList'], revalidate: ASSIGNEE_REVALIDATION_INTERVAL },
   })
 
   const data = await res.json()

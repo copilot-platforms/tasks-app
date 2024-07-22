@@ -16,6 +16,7 @@ import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { createMultipleAttachments, getSignedUrlUpload } from '@/app/actions'
 import { ModalNewTaskForm } from './ui/Modal_NewTaskForm'
+import { ASSIGNEE_REVALIDATION_INTERVAL, MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -44,8 +45,11 @@ async function getTokenPayload(token: string): Promise<Token> {
 }
 
 async function getAssigneeList(token: string): Promise<IAssignee> {
-  const res = await fetch(`${apiUrl}/api/users?token=${token}`, {
-    next: { tags: ['getAssigneeList'] },
+  const res = await fetch(`${apiUrl}/api/users?token=${token}&limit=${MAX_FETCH_ASSIGNEE_COUNT}`, {
+    // Time-based ISR seems to be the best way we can combine performance + scalability for our app, and minimize calls to CopilotAPI
+    // Without this, we could potentially have to hit a LOT of requests to retrieve task assignee details,
+    // since by default we only get 10 users' data  from /api/users
+    next: { tags: ['getAssigneeList'], revalidate: ASSIGNEE_REVALIDATION_INTERVAL },
   })
 
   const data = await res.json()

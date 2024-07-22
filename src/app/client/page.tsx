@@ -9,6 +9,7 @@ import { IAssignee, IAssigneeCombined } from '@/types/interfaces'
 import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
 import { ClientTaskBoard } from './ui/ClientTaskBoard'
 import { completeTask } from '@/app/client/actions'
+import { ASSIGNEE_REVALIDATION_INTERVAL, MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -30,8 +31,8 @@ async function getAllTasks(token: string): Promise<TaskResponse[]> {
 }
 
 async function getAssigneeList(token: string): Promise<IAssignee> {
-  const res = await fetch(`${apiUrl}/api/users/client?token=${token}`, {
-    next: { tags: ['getAssigneeList'] },
+  const res = await fetch(`${apiUrl}/api/users/client?token=${token}&limit=${MAX_FETCH_ASSIGNEE_COUNT}`, {
+    next: { tags: ['getAssigneeList'], revalidate: ASSIGNEE_REVALIDATION_INTERVAL },
   })
   const data = await res.json()
   return data.clients

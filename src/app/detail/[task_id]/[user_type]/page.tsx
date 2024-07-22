@@ -39,6 +39,7 @@ import { ActivityType } from '@prisma/client'
 import { CreateComment } from '@/types/dto/comment.dto'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import EscapeHandler from '@/utils/escapeHandler'
+import { ASSIGNEE_REVALIDATION_INTERVAL, MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
@@ -52,8 +53,8 @@ async function getOneTask(token: string, taskId: string): Promise<TaskResponse> 
 
 async function getAssigneeList(token: string, userType: UserType): Promise<IAssignee> {
   if (userType === UserType.CLIENT_USER) {
-    const res = await fetch(`${apiUrl}/api/users/client?token=${token}`, {
-      next: { tags: ['getAssigneeList'] },
+    const res = await fetch(`${apiUrl}/api/users/client?token=${token}&limit=${MAX_FETCH_ASSIGNEE_COUNT}`, {
+      next: { tags: ['getAssigneeList'], revalidate: ASSIGNEE_REVALIDATION_INTERVAL },
     })
 
     const data = await res.json()
