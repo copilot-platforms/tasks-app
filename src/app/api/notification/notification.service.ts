@@ -78,7 +78,7 @@ export class NotificationService extends BaseService {
    * Marks a client notification in Copilot Notifications service as read
    * @param id Notification ID for object as exists in Copilot
    */
-  async markClientNotificationAsRead(task: Task) {
+  markClientNotificationAsRead = async (task: Task) => {
     const copilot = new CopilotAPI(this.user.token)
     try {
       const relatedNotification = await this.db.clientNotification.findFirst({
@@ -103,7 +103,7 @@ export class NotificationService extends BaseService {
     }
   }
 
-  async markAsReadForAllRecipients(task: Task) {
+  markAsReadForAllRecipients = async (task: Task) => {
     const copilot = new CopilotAPI(this.user.token)
     const { recipientIds } = await this.getNotificationParties(copilot, task, NotificationTaskActions.AssignedToCompany)
     const markAsReadPromises = recipientIds.map((recipientId) =>
