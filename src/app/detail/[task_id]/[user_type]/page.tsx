@@ -62,8 +62,8 @@ async function getAssigneeList(token: string, userType: UserType): Promise<IAssi
     return data.clients
   }
 
-  const res = await fetch(`${apiUrl}/api/users?token=${token}`, {
-    next: { tags: ['getAssigneeList'] },
+  const res = await fetch(`${apiUrl}/api/users?token=${token}&limit=${MAX_FETCH_ASSIGNEE_COUNT}`, {
+    next: { tags: ['getAssigneeList'], revalidate: ASSIGNEE_REVALIDATION_INTERVAL },
   })
 
   const data = await res.json()
