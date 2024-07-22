@@ -197,13 +197,7 @@ export const NewTaskForm = ({
                 )
                 store.dispatch(setCreateTaskFields({ targetField: 'assigneeId', value: newValue?.id }))
               }}
-              startIcon={
-                assigneeValue ? (
-                  <CopilotAvatar currentAssignee={assigneeValue} width="12px" height="12px" isSmall={true} />
-                ) : (
-                  <AssigneePlaceholderSmall />
-                )
-              }
+              startIcon={assigneeValue ? <CopilotAvatar currentAssignee={assigneeValue} /> : <AssigneePlaceholderSmall />}
               options={loading ? [] : filteredAssignees}
               value={assigneeValue}
               //****Disabling re-assignment completely for now***
