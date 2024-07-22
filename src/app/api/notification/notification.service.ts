@@ -113,7 +113,13 @@ export class NotificationService extends BaseService {
         assigneeType: AssigneeType.client,
       }),
     )
-    await Promise.all(markAsReadPromises)
+
+    // Mark as read while preventing burst ratelimits
+    const batchSize = 10
+    for (let i = 0; i <= markAsReadPromises.length; i += batchSize) {
+      const batchPromises = markAsReadPromises.slice(i, batchSize)
+      await Promise.all(batchPromises)
+    }
   }
 
   /**
