@@ -2,10 +2,8 @@
 
 import { AttachmentCard } from '@/components/cards/AttachmentCard'
 import { StyledTextField } from '@/components/inputs/TextField'
-import { AttachmentIcon } from '@/icons'
 import { selectTaskDetails, setShowConfirmDeleteModal } from '@/redux/features/taskDetailsSlice'
-import { statusIcons } from '@/utils/iconMatcher'
-import { Box, IconButton, Modal, Stack } from '@mui/material'
+import { Box, Modal, Stack } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
@@ -16,7 +14,6 @@ import { AttachmentInput } from '@/components/inputs/AttachmentInput'
 import { SupabaseActions } from '@/utils/SupabaseActions'
 import { generateRandomString } from '@/utils/generateRandomString'
 import { ISignedUrlUpload, UserType } from '@/types/interfaces'
-import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { advancedFeatureFlag } from '@/config'
 import { Tapwrite } from 'tapwrite'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
@@ -95,7 +92,7 @@ export const TaskEditor = ({
         value={updateTitle}
         onChange={(e) => {
           setUpdateTitle(e.target.value)
-          // taskUpdateDebounced(e.target.value, updateDetail)
+          taskUpdateDebounced(e.target.value, updateDetail)
         }}
         InputProps={{ readOnly: !isEditable }}
         inputProps={{ maxLength: 255 }}
@@ -123,7 +120,7 @@ export const TaskEditor = ({
           content={updateDetail}
           getContent={(content) => {
             setUpdateDetail(content)
-            // taskUpdateDebounced(updateTitle, content)
+            taskUpdateDebounced(updateTitle, content)
           }}
           readonly={userType === UserType.CLIENT_USER}
           editorClass="tapwrite-details-page"
