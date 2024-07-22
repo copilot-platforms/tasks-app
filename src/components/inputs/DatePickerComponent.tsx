@@ -16,7 +16,7 @@ interface Prop {
 }
 
 export const DatePickerComponent = ({ getDate, dateValue, disabled, isButton = false }: Prop) => {
-  const value = dateValue ? dayjs(dateValue) : null
+  const [value, setValue] = useState(dateValue ? dayjs(dateValue) : null)
 
   const formatDate = (date: Dayjs | null) => {
     return date ? date.format('MMM DD, YYYY') : '' // Format the date as "Mar 08, 2024"
@@ -97,6 +97,7 @@ export const DatePickerComponent = ({ getDate, dateValue, disabled, isButton = f
           onClose={() => setAnchorEl(null)}
           onChange={(newValue) => {
             getDate(formatDate(newValue))
+            setValue(newValue)
           }}
           slotProps={{
             day: {
