@@ -39,6 +39,7 @@ interface Prop {
   responsiveNoHide?: boolean
   handleInputChange?: (_: string) => void
   filterOption?: any
+  onClick?: () => void
 }
 
 export default function Selector({
@@ -59,6 +60,7 @@ export default function Selector({
   responsiveNoHide,
   handleInputChange,
   filterOption,
+  onClick,
 }: Prop) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
@@ -66,6 +68,7 @@ export default function Selector({
     if (!disabled) {
       setAnchorEl(anchorEl ? null : event.currentTarget)
     }
+    onClick?.()
   }
 
   const open = Boolean(anchorEl)

@@ -199,6 +199,11 @@ export const NewTaskForm = ({
                 )
                 store.dispatch(setCreateTaskFields({ targetField: 'assigneeId', value: newValue?.id }))
               }}
+              onClick={() => {
+                setLoading(true)
+                setFilteredAssignees(filteredAssigneeList)
+                setLoading(false)
+              }}
               startIcon={
                 tempAssignee ? (
                   <CopilotAvatar currentAssignee={tempAssignee} width="12px" height="12px" isSmall={true} />
