@@ -254,7 +254,7 @@ export class TasksService extends BaseService {
         [AssigneeType.company]: notificationsService.markAsReadForAllRecipients,
       }
       // @ts-expect-error This is completely safe
-      handleNotificationRead[task?.assigneeType]?.(task)
+      await handleNotificationRead[task?.assigneeType]?.(task)
     }
     //delete the associated label
     const labelMappingService = new LabelMappingService(this.user)
