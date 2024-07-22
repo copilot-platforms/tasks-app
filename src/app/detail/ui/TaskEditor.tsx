@@ -61,8 +61,9 @@ export const TaskEditor = ({
     }
   }
   useEffect(() => {
-    setUpdateTitle(tasks.find((el) => el.id === task_id)?.title || '')
-    setUpdateDetail(tasks.find((el) => el.id === task_id)?.body ?? '')
+    const currentTask = tasks.find((el) => el.id === task_id)
+    setUpdateTitle(currentTask?.title || '')
+    setUpdateDetail(currentTask?.body ?? '')
   }, [tasks, task_id])
 
   const _taskUpdateDebounced = async (title: string, details: string) => {

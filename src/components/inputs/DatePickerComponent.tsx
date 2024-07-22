@@ -9,7 +9,7 @@ import { SecondaryBtn } from '../buttons/SecondaryBtn'
 import { useState } from 'react'
 
 interface Prop {
-  getDate: (value: unknown) => void
+  getDate: (value: string) => void
   dateValue?: Date
   isButton?: boolean
   disabled?: boolean
@@ -96,7 +96,7 @@ export const DatePickerComponent = ({ getDate, dateValue, disabled, isButton = f
           open={open}
           onClose={() => setAnchorEl(null)}
           onChange={(newValue) => {
-            getDate(newValue)
+            getDate(formatDate(newValue))
           }}
           slotProps={{
             day: {

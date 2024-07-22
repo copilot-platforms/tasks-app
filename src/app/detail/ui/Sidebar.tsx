@@ -23,6 +23,7 @@ import { useEffect, useState } from 'react'
 import { setDebouncedFilteredAssignees } from '@/utils/users'
 import { z } from 'zod'
 import { isAssigneeTextMatching } from '@/utils/assignee'
+import { DateStringSchema } from '@/types/date'
 
 const StyledText = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[500],
@@ -78,7 +79,7 @@ export const Sidebar = ({
       updateAssigneeValue(currentAssigneeId ? assignee.find((el) => el.id === currentAssigneeId) : NoAssignee)
       setDueDate(currentTask?.dueDate)
     }
-  }, [tasks])
+  }, [tasks, workflowStates])
 
   const matches = useMediaQuery('(max-width:600px)')
   if (!tasks) return null
@@ -197,13 +198,13 @@ export const Sidebar = ({
           </StyledText>
           <DatePickerComponent
             getDate={(date) => {
-              const isoDate = formatDate(date as string)
-              setDueDate(date as string)
+              const isoDate = DateStringSchema.parse(formatDate(date))
+              setDueDate(date)
               updateTask({
                 dueDate: isoDate,
               })
             }}
-            dateValue={dueDate ? (dueDate as Date) : undefined}
+            dateValue={dueDate ? createDateFromFormattedDateString(z.string().parse(dueDate)) : undefined}
             disabled={disabled}
           />
         </Stack>
