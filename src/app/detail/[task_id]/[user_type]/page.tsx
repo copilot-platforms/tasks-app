@@ -126,7 +126,7 @@ export default async function TaskDetailPage({
       assigneeSuggestions={AssigneeSuggestions}
     >
       <EscapeHandler />
-      <Stack direction="row">
+      <Stack direction="row" sx={{ height: '100vh' }}>
         <ToggleController>
           <StyledBox>
             <AppMargin size={SizeofAppMargin.LARGE} py="16px">
@@ -145,85 +145,87 @@ export default async function TaskDetailPage({
               </Stack>
             </AppMargin>
           </StyledBox>
-          <StyledTiptapDescriptionWrapper>
-            <AppMargin size={SizeofAppMargin.LARGE} py="30px">
-              <TaskEditor
-                attachment={attachments}
-                title={task?.title || ''}
-                workflowState={task?.workflowState}
-                task_id={task_id}
-                detail={task?.body || ''}
-                isEditable={params.user_type === UserType.INTERNAL_USER}
-                updateTaskDetail={async (title, detail) => {
-                  'use server'
-                  await updateTaskDetail({ token, taskId: task_id, payload: { title, body: detail } })
-                }}
-                deleteTask={async () => {
-                  'use server'
-                  await deleteTask(token, task_id)
-                }}
-                postAttachment={async (postAttachmentPayload) => {
-                  'use server'
-                  await postAttachment(token, postAttachmentPayload)
-                }}
-                deleteAttachment={async (id: string) => {
-                  'use server'
-                  await deleteAttachment(token, id)
-                }}
-                getSignedUrlUpload={async (fileName: string) => {
-                  'use server'
-                  const data = await getSignedUrlUpload(token, fileName)
-                  return data
-                }}
-                userType={params.user_type}
-              />
-            </AppMargin>
-          </StyledTiptapDescriptionWrapper>
-          {advancedFeatureFlag && (
-            <AppMargin size={SizeofAppMargin.LARGE} py="18.5px">
-              <Stack direction="column" alignItems="left" p="10px 5px" rowGap={5}>
-                <Typography variant="xl">Activity</Typography>
-                <Stack direction="column" alignItems="left" p="10px 5px" rowGap={4}>
-                  {activities?.map((item: LogResponse, index: number) => {
-                    return (
-                      <Box
-                        sx={{
-                          height: 'auto',
-                          display: 'block',
-                        }}
-                        key={item.id}
-                      >
-                        {item.type == ActivityType.COMMENT_ADDED ? (
-                          <Comments
-                            comment={item}
-                            createComment={async (postCommentPayload: CreateComment) => {
-                              'use server'
-                              await postComment(token, postCommentPayload)
-                            }}
-                            deleteComment={async (id: string) => {
-                              'use server'
-                              await deleteComment(token, id)
-                            }}
-                            task_id={task_id}
-                          />
-                        ) : (
-                          <ActivityLog log={item} />
-                        )}
-                      </Box>
-                    )
-                  })}
+          <Box sx={{ flex: 1, overflow: 'auto', height: '100vh' }}>
+            <StyledTiptapDescriptionWrapper>
+              <AppMargin size={SizeofAppMargin.LARGE} py="30px">
+                <TaskEditor
+                  attachment={attachments}
+                  title={task?.title || ''}
+                  workflowState={task?.workflowState}
+                  task_id={task_id}
+                  detail={task?.body || ''}
+                  isEditable={params.user_type === UserType.INTERNAL_USER}
+                  updateTaskDetail={async (title, detail) => {
+                    'use server'
+                    await updateTaskDetail({ token, taskId: task_id, payload: { title, body: detail } })
+                  }}
+                  deleteTask={async () => {
+                    'use server'
+                    await deleteTask(token, task_id)
+                  }}
+                  postAttachment={async (postAttachmentPayload) => {
+                    'use server'
+                    await postAttachment(token, postAttachmentPayload)
+                  }}
+                  deleteAttachment={async (id: string) => {
+                    'use server'
+                    await deleteAttachment(token, id)
+                  }}
+                  getSignedUrlUpload={async (fileName: string) => {
+                    'use server'
+                    const data = await getSignedUrlUpload(token, fileName)
+                    return data
+                  }}
+                  userType={params.user_type}
+                />
+              </AppMargin>
+            </StyledTiptapDescriptionWrapper>
+            {advancedFeatureFlag && (
+              <AppMargin size={SizeofAppMargin.LARGE} py="18.5px">
+                <Stack direction="column" alignItems="left" p="10px 5px" rowGap={5}>
+                  <Typography variant="xl">Activity</Typography>
+                  <Stack direction="column" alignItems="left" p="10px 5px" rowGap={4}>
+                    {activities?.map((item: LogResponse, index: number) => {
+                      return (
+                        <Box
+                          sx={{
+                            height: 'auto',
+                            display: 'block',
+                          }}
+                          key={item.id}
+                        >
+                          {item.type == ActivityType.COMMENT_ADDED ? (
+                            <Comments
+                              comment={item}
+                              createComment={async (postCommentPayload: CreateComment) => {
+                                'use server'
+                                await postComment(token, postCommentPayload)
+                              }}
+                              deleteComment={async (id: string) => {
+                                'use server'
+                                await deleteComment(token, id)
+                              }}
+                              task_id={task_id}
+                            />
+                          ) : (
+                            <ActivityLog log={item} />
+                          )}
+                        </Box>
+                      )
+                    })}
 
-                  <CommentInput
-                    createComment={async (postCommentPayload: CreateComment) => {
-                      'use server'
-                      await postComment(token, postCommentPayload)
-                    }}
-                    task_id={task_id}
-                  />
+                    <CommentInput
+                      createComment={async (postCommentPayload: CreateComment) => {
+                        'use server'
+                        await postComment(token, postCommentPayload)
+                      }}
+                      task_id={task_id}
+                    />
+                  </Stack>
                 </Stack>
-              </Stack>
-            </AppMargin>
-          )}
+              </AppMargin>
+            )}
+          </Box>
         </ToggleController>
         <Box>
           <Sidebar
