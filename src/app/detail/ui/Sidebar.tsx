@@ -193,7 +193,7 @@ export const Sidebar = ({
         </Stack>
         <Stack direction="row" m="20px 0px" alignItems="center" columnGap="10px" minWidth="fit-content">
           <StyledText variant="md" minWidth="80px">
-            Due Date
+            Due date
           </StyledText>
           <DatePickerComponent
             getDate={(date) => {

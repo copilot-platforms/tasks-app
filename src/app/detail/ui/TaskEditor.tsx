@@ -20,6 +20,7 @@ import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { advancedFeatureFlag } from '@/config'
 import { Tapwrite } from 'tapwrite'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { useDebounce } from '@/hooks/useDebounce'
 
 interface Prop {
   task_id: string
@@ -67,6 +68,12 @@ export const TaskEditor = ({
     setUpdateDetail(tasks.find((el) => el.id === task_id)?.body ?? '')
   }, [tasks, task_id])
 
+  const _taskUpdateDebounced = async (title: string, details: string) => {
+    updateTaskDetail(title, details)
+  }
+
+  const taskUpdateDebounced = useDebounce(_taskUpdateDebounced)
+
   return (
     <>
       <StyledTextField
@@ -86,8 +93,12 @@ export const TaskEditor = ({
           },
         }}
         value={updateTitle}
-        onChange={(e) => setUpdateTitle(e.target.value)}
+        onChange={(e) => {
+          setUpdateTitle(e.target.value)
+          taskUpdateDebounced(e.target.value, updateDetail)
+        }}
         InputProps={{ readOnly: !isEditable }}
+        inputProps={{ maxLength: 255 }}
         disabled={!isEditable}
         padding="0px"
         onBlur={() => {
@@ -110,7 +121,10 @@ export const TaskEditor = ({
             tiptapEditorUtils.setImage(newBlob.url as string)
           }}
           content={updateDetail}
-          getContent={(content) => setUpdateDetail(content)}
+          getContent={(content) => {
+            setUpdateDetail(content)
+            taskUpdateDebounced(updateTitle, content)
+          }}
           readonly={userType === UserType.CLIENT_USER}
           editorClass="tapwrite-details-page"
           placeholder="Add description..."

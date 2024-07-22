@@ -50,7 +50,6 @@ export default async function ClientPage({ searchParams }: { searchParams: { tok
     <>
       <ClientSideStateUpdate workflowStates={workflowStates} tasks={tasks} token={token} assignee={assignee}>
         <RealTime>
-          <Header showCreateTaskButton={false} />
           <ClientTaskBoard
             completeTask={async (taskId) => {
               'use server'

@@ -146,25 +146,25 @@ export const FilterBar = ({
                     placeholder="Assignee"
                     value={assigneeValue}
                     selectorType={SelectorType.ASSIGNEE_SELECTOR}
-                    //****Disabling re-assignment completely for now***
-                    // extraOption={NoAssigneeExtraOptions}
-                    // extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
-                    //   return (
-                    //     noAssigneOptionFlag && (
-                    //       <>
-                    //         <ExtraOptionRendererAssignee
-                    //           props={props}
-                    //           onClick={(e) => {
-                    //             updateAssigneeValue({ id: '', name: 'No assignee' })
-                    //             setAnchorEl(anchorEl ? null : e.currentTarget)
-                    //             handleFilterOptionsChange(FilterOptions.ASSIGNEE, 'No assignee')
-                    //           }}
-                    //         />
-                    //         {loading && <MiniLoader />}
-                    //       </>
-                    //     )
-                    //   )
-                    // }}
+                    extraOption={NoAssigneeExtraOptions}
+                    extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
+                      return (
+                        noAssigneOptionFlag && (
+                          <>
+                            {/* //****Disabling re-assignment completely for now*** */}
+                            {/* <ExtraOptionRendererAssignee
+                              props={props}
+                              onClick={(e) => {
+                                updateAssigneeValue({ id: '', name: 'No assignee' })
+                                setAnchorEl(anchorEl ? null : e.currentTarget)
+                                handleFilterOptionsChange(FilterOptions.ASSIGNEE, 'No assignee')
+                              }}
+                            /> */}
+                            {loading && <MiniLoader />}
+                          </>
+                        )
+                      )
+                    }}
                     buttonContent={
                       <FilterByAssigneeBtn
                         assigneeValue={assigneeValue}
