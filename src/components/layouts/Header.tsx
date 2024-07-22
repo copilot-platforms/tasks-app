@@ -28,7 +28,7 @@ export const Header = ({ showCreateTaskButton }: { showCreateTaskButton: boolean
               >
                 <PrimaryBtn
                   startIcon={<AddIcon />}
-                  buttonText="New Task"
+                  buttonText="New task"
                   handleClick={() => {
                     store.dispatch(setShowModal())
                   }}

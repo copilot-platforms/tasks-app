@@ -37,7 +37,7 @@ export const ClientTaskCard = ({
   }
 
   return (
-    <StyledUninvasiveLink href={href} prefetch={true}>
+    <StyledUninvasiveLink href={href} prefetch={false}>
       <Box
         sx={{
           ':hover': {
@@ -73,14 +73,14 @@ export const ClientTaskCard = ({
           <Stack
             direction="row"
             alignItems="flex-start"
-            minWidth="fit-content"
             columnGap={{ xs: '12px', sm: '32px' }}
             justifyContent={{ xs: 'space-between', sm: 'none' }}
             sx={{
               padding: '6px 0px',
+              width: { xs: '100%', sm: 'auto' },
             }}
           >
-            <Stack direction="row" alignItems="center" minWidth="fit-content" columnGap={{ xs: '0px', sm: '20px' }}>
+            <Stack direction="row" alignItems="center" minWidth="fit-content" columnGap={{ xs: '12px', sm: '20px' }}>
               <Box
                 sx={{
                   flexDirection: 'row',
@@ -92,12 +92,18 @@ export const ClientTaskCard = ({
               >
                 {task.dueDate && (
                   <Typography variant="bodySm" sx={{ fontSize: '12px', color: (theme) => theme.color.gray[500] }}>
-                    <DueDateLayout date={task.dueDate} />
+                    <DueDateLayout dateString={task.dueDate} />
                   </Typography>
                 )}
               </Box>
 
-              <Stack direction="row" alignItems="flex-start" columnGap={1} sx={{ padding: '2px', maxWidth: '100px' }}>
+              <Stack
+                direction="row"
+                alignItems="flex-start"
+                justifyContent={'left'}
+                columnGap={1}
+                sx={{ padding: '2px', minWidth: '132px', maxWidth: '200px' }}
+              >
                 <CopilotAvatar currentAssignee={currentAssignee as IAssigneeCombined} />
 
                 <Typography
@@ -116,7 +122,13 @@ export const ClientTaskCard = ({
                 </Typography>
               </Stack>
             </Stack>
-            <Box sx={{ minWidth: '80px' }}>
+            <Box
+              sx={{
+                minWidth: '80px',
+                display: 'flex',
+                justifyContent: 'flex-end',
+              }}
+            >
               {!markdoneFlag && (
                 <SecondaryBtn
                   handleClick={handleMarkAsDoneClick}

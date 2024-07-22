@@ -151,14 +151,15 @@ export const FilterBar = ({
                       return (
                         noAssigneOptionFlag && (
                           <>
-                            <ExtraOptionRendererAssignee
+                            {/* //****Disabling re-assignment completely for now*** */}
+                            {/* <ExtraOptionRendererAssignee
                               props={props}
                               onClick={(e) => {
                                 updateAssigneeValue({ id: '', name: 'No assignee' })
                                 setAnchorEl(anchorEl ? null : e.currentTarget)
                                 handleFilterOptionsChange(FilterOptions.ASSIGNEE, 'No assignee')
                               }}
-                            />
+                            /> */}
                             {loading && <MiniLoader />}
                           </>
                         )

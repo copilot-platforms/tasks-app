@@ -38,7 +38,7 @@ export const ListViewTaskCard = ({
   const assigneeValue = _assigneeValue as IAssigneeCombined //typecasting
 
   return (
-    <StyledUninvasiveLink href={href} prefetch={true}>
+    <StyledUninvasiveLink href={href} prefetch={false}>
       <Box
         className="task-list-card"
         sx={{
@@ -83,7 +83,7 @@ export const ListViewTaskCard = ({
                     whiteSpace: 'nowrap',
                   }}
                 >
-                  {task.dueDate && <DueDateLayout date={task.dueDate} />}
+                  {task.dueDate && <DueDateLayout dateString={task.dueDate} />}
                 </Box>
                 <Box sx={{}}>
                   <Selector

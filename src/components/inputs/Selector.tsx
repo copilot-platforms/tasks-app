@@ -77,10 +77,9 @@ export default function Selector({
 
   function detectSelectorType(option: unknown) {
     if (selectorType === SelectorType.ASSIGNEE_SELECTOR) {
-      return truncateText(
+      return (
         (option as IAssigneeCombined)?.name ||
-          `${(option as IAssigneeCombined)?.givenName ?? ''} ${(option as IAssigneeCombined)?.familyName ?? ''}`.trim(),
-        TruncateMaxNumber.SELECTOR,
+        `${(option as IAssigneeCombined)?.givenName ?? ''} ${(option as IAssigneeCombined)?.familyName ?? ''}`.trim()
       )
     }
 
@@ -124,7 +123,7 @@ export default function Selector({
             columnGap="7px"
             justifyContent="flex-start"
             sx={{
-              width: { sm: responsiveNoHide ? buttonWidth ?? '100px' : '20px', md: buttonWidth ?? '100px' },
+              width: { sm: responsiveNoHide ? buttonWidth || '100px' : '20px', md: buttonWidth || '100px' },
               justifyContent: { xs: 'flex-start', sm: 'flex-start' },
               cursor: disabled ? 'auto' : 'pointer',
               borderRadius: '4px',
@@ -248,6 +247,7 @@ export default function Selector({
     </Stack>
   )
 }
+
 const TemplateSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTMLLIElement>; option: unknown }) => {
   return (
     <Box
