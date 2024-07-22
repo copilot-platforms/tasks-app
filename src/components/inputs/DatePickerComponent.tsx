@@ -64,7 +64,7 @@ export const DatePickerComponent = ({ getDate, dateValue, disabled, isButton = f
                   maxWidth: { xs: '100px', sm: 'none' },
                 }}
               >
-                {value ? formatDate(value) : 'Due Date'}
+                {value ? formatDate(value) : 'Due date'}
               </Typography>
             }
           />
