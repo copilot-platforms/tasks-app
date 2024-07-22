@@ -200,6 +200,9 @@ export const NewTaskForm = ({
                 store.dispatch(setCreateTaskFields({ targetField: 'assigneeId', value: newValue?.id }))
               }}
               onClick={() => {
+                if (activeDebounceTimeoutId) {
+                  clearTimeout(activeDebounceTimeoutId)
+                }
                 setLoading(true)
                 setFilteredAssignees(filteredAssigneeList)
                 setLoading(false)
