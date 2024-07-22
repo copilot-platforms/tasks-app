@@ -33,6 +33,10 @@ export const DatePickerComponent = ({ getDate, dateValue, disabled, isButton = f
   const open = Boolean(anchorEl)
   const id = open ? 'calender-element' : undefined
 
+  useEffect(() => {
+    setValue(dateValue ? dayjs(dateValue) : null)
+  }, [dateValue])
+
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Stack
