@@ -27,7 +27,6 @@ export const updateTaskDetail = async ({
       dueDate: payload.dueDate,
     }),
   })
-  revalidatePath('/')
 }
 
 /**
