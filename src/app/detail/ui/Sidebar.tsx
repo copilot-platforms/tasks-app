@@ -11,8 +11,8 @@ import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { StyledBox } from './styledComponent'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
-import { IsoDate, UpdateTaskRequest } from '@/types/dto/tasks.dto'
-import { formatDate, isoToReadableDate } from '@/utils/dateHelper'
+import { UpdateTaskRequest } from '@/types/dto/tasks.dto'
+import { createDateFromFormattedDateString, formatDate } from '@/utils/dateHelper'
 import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 import { ToggleButtonContainer } from './ToggleButtonContainer'
 import { NoAssignee, NoAssigneeExtraOptions } from '@/utils/noAssignee'
@@ -24,9 +24,8 @@ import { useState } from 'react'
 import { MiniLoader } from '@/components/atoms/MiniLoader'
 import { setDebouncedFilteredAssignees } from '@/utils/users'
 import { z } from 'zod'
-import { truncateText } from '@/utils/truncateText'
-import { TruncateMaxNumber } from '@/types/constants'
 import { isAssigneeTextMatching } from '@/utils/assignee'
+import { DateStringSchema } from '@/types/date'
 
 const StyledText = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[500],
@@ -45,7 +44,7 @@ export const Sidebar = ({
 }: {
   selectedWorkflowState: WorkflowStateResponse
   selectedAssigneeId: string | undefined
-  dueDate: IsoDate | undefined
+  dueDate: string | undefined
   updateWorkflowState: (workflowState: WorkflowStateResponse) => void
   updateAssignee: (assigneeType: string | null, assigneeId: string | null) => void
   updateTask: (payload: UpdateTaskRequest) => void
@@ -181,16 +180,14 @@ export const Sidebar = ({
         </Stack>
         <Stack direction="row" m="20px 0px" alignItems="center" columnGap="10px" minWidth="fit-content">
           <StyledText variant="md" minWidth="80px">
-            Due Date
+            Due date
           </StyledText>
           <DatePickerComponent
             getDate={(date) => {
-              const isoDate = formatDate(date)
-              updateTask({
-                dueDate: isoDate,
-              })
+              const dueDate = DateStringSchema.parse(formatDate(date))
+              updateTask({ dueDate })
             }}
-            dateValue={dueDate ? isoToReadableDate(dueDate) : undefined}
+            dateValue={dueDate ? createDateFromFormattedDateString(dueDate) : undefined}
             disabled={disabled}
           />
         </Stack>

@@ -83,7 +83,7 @@ export const ListViewTaskCard = ({
                     whiteSpace: 'nowrap',
                   }}
                 >
-                  {task.dueDate && <DueDateLayout date={task.dueDate} />}
+                  {task.dueDate && <DueDateLayout dateString={task.dueDate} />}
                 </Box>
                 <Box sx={{}}>
                   <Selector

@@ -63,7 +63,7 @@ export const TaskCard = ({ task, href }: TaskCardProps) => {
           </Typography>
         </Stack>
         <Typography variant="sm">{task.title}</Typography>
-        {task.dueDate && <DueDateLayout date={task.dueDate} />}
+        {task.dueDate && <DueDateLayout dateString={task.dueDate} />}
       </CustomLink>
     </TaskCardContainer>
   )

@@ -24,7 +24,6 @@ import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { useRouter } from 'next/navigation'
 import { selectCreateTemplate } from '@/redux/features/templateSlice'
 import { NoAssigneeExtraOptions } from '@/utils/noAssignee'
-import ExtraOptionRendererAssignee from '@/components/inputs/ExtraOptionRendererAssignee'
 import { upload } from '@vercel/blob/client'
 import { AttachmentInput } from '@/components/inputs/AttachmentInput'
 import { SupabaseActions } from '@/utils/SupabaseActions'
@@ -39,6 +38,7 @@ import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { setDebouncedFilteredAssignees } from '@/utils/users'
 import { z } from 'zod'
 import { MiniLoader } from '@/components/atoms/MiniLoader'
+import { formatDate } from '@/utils/dateHelper'
 
 const supabaseActions = new SupabaseActions()
 
@@ -74,6 +74,8 @@ export const NewTaskForm = ({
   const statusValue = _statusValue as WorkflowStateResponse //typecasting
   const assigneeValue = _assigneeValue as IAssigneeCombined //typecasting
   const templateValue = _templateValue as ITemplate //typecasting
+  // use temp state pattern so that we don't fall into an infinite loop of assigneeValue set -> trigger -> set
+  const [tempAssignee, setTempAssignee] = useState<IAssigneeCombined | null>(assigneeValue)
 
   const router = useRouter()
 
@@ -187,6 +189,7 @@ export const NewTaskForm = ({
               placeholder="Change assignee"
               getSelectedValue={(_newValue) => {
                 const newValue = _newValue as IAssigneeCombined
+                setTempAssignee(newValue)
                 updateAssigneeValue(newValue)
                 store.dispatch(
                   setCreateTaskFields({
@@ -197,39 +200,38 @@ export const NewTaskForm = ({
                 store.dispatch(setCreateTaskFields({ targetField: 'assigneeId', value: newValue?.id }))
               }}
               startIcon={
-                assigneeValue ? (
-                  <CopilotAvatar currentAssignee={assigneeValue} width="12px" height="12px" isSmall={true} />
+                tempAssignee ? (
+                  <CopilotAvatar currentAssignee={tempAssignee} width="12px" height="12px" isSmall={true} />
                 ) : (
                   <AssigneePlaceholderSmall />
                 )
               }
               options={loading ? [] : filteredAssignees}
-              value={assigneeValue}
-              //****Disabling re-assignment completely for now***
-              // extraOption={NoAssigneeExtraOptions}
-              // extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
-              //   return (
-              //     <>
-              //       <ExtraOptionRendererAssignee
-              //         props={props}
-              //         onClick={(e) => {
-              //           updateAssigneeValue({ id: '', name: 'No assignee' })
-              //           setAnchorEl(anchorEl ? null : e.currentTarget)
-              //           store.dispatch(setCreateTaskFields({ targetField: 'assigneeType', value: null }))
-              //           store.dispatch(setCreateTaskFields({ targetField: 'assigneeId', value: null }))
-              //         }}
-              //       />
-              //       {loading && <MiniLoader />}
-              //     </>
-              //   )
-              // }}
+              value={tempAssignee}
+              extraOption={NoAssigneeExtraOptions}
+              extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
+                return (
+                  <>
+                    {/* //****Disabling re-assignment completely for now*** */}
+                    {/* <ExtraOptionRendererAssignee
+                      props={props}
+                      onClick={(e) => {
+                        updateAssigneeValue({ id: '', name: 'No assignee' })
+                        setAnchorEl(anchorEl ? null : e.currentTarget)
+                        store.dispatch(setCreateTaskFields({ targetField: 'assigneeType', value: null }))
+                        store.dispatch(setCreateTaskFields({ targetField: 'assigneeId', value: null }))
+                      }}
+                    /> */}
+                    {loading && <MiniLoader />}
+                  </>
+                )
+              }}
               selectorType={SelectorType.ASSIGNEE_SELECTOR}
               handleInputChange={async (newInputValue: string) => {
                 if (!newInputValue) {
                   setFilteredAssignees(filteredAssigneeList)
                   return
                 }
-
                 setDebouncedFilteredAssignees(
                   activeDebounceTimeoutId,
                   setActiveDebounceTimeoutId,
@@ -253,9 +255,9 @@ export const NewTaskForm = ({
                     maxWidth: { xs: '60px', sm: '100px' },
                   }}
                 >
-                  {assigneeValue
-                    ? (assigneeValue as IAssigneeCombined)?.name ||
-                      `${(assigneeValue as IAssigneeCombined)?.givenName ?? ''} ${(assigneeValue as IAssigneeCombined)?.familyName ?? ''}`.trim()
+                  {tempAssignee
+                    ? (tempAssignee as IAssigneeCombined)?.name ||
+                      `${(tempAssignee as IAssigneeCombined)?.givenName ?? ''} ${(tempAssignee as IAssigneeCombined)?.familyName ?? ''}`.trim()
                     : 'Assignee'}
                 </Typography>
               }
@@ -271,7 +273,9 @@ export const NewTaskForm = ({
               }}
             >
               <DatePickerComponent
-                getDate={(value) => store.dispatch(setCreateTaskFields({ targetField: 'dueDate', value: value }))}
+                getDate={(value) =>
+                  store.dispatch(setCreateTaskFields({ targetField: 'dueDate', value: formatDate(value) }))
+                }
                 isButton={true}
               />
             </Box>
