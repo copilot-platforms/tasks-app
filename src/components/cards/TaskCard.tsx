@@ -9,7 +9,7 @@ import { useSelector } from 'react-redux'
 import { DueDateLayout } from '@/components/layouts/DueDateLayout'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { UrlObject } from 'url'
-import { StyledUninvasiveLink } from '@/app/detail/ui/styledComponent'
+import { CustomLink } from '@/hoc/CustomLink'
 
 const TaskCardContainer = styled(Stack)(({ theme }) => ({
   border: `1px solid ${theme.color.borders.border}`,
@@ -36,8 +36,8 @@ export const TaskCard = ({ task, href }: TaskCardProps) => {
   const currentAssignee = assignee.find((el) => el.id === task.assigneeId) ?? NoAssignee
 
   return (
-    <StyledUninvasiveLink href={href} prefetch={false}>
-      <TaskCardContainer rowGap={1}>
+    <TaskCardContainer rowGap={1}>
+      <CustomLink href={href}>
         <Stack direction="row" justifyContent="space-between">
           <Stack direction="row" alignItems="center" columnGap={1}>
             <CopilotAvatar currentAssignee={currentAssignee as IAssigneeCombined} />
@@ -64,7 +64,7 @@ export const TaskCard = ({ task, href }: TaskCardProps) => {
         </Stack>
         <Typography variant="sm">{task.title}</Typography>
         {task.dueDate && <DueDateLayout dateString={task.dueDate} />}
-      </TaskCardContainer>
-    </StyledUninvasiveLink>
+      </CustomLink>
+    </TaskCardContainer>
   )
 }
