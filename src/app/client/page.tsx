@@ -32,7 +32,7 @@ async function getAllTasks(token: string): Promise<TaskResponse[]> {
 
 async function getAssigneeList(token: string): Promise<IAssignee> {
   const res = await fetch(`${apiUrl}/api/users/client?token=${token}&limit=${MAX_FETCH_ASSIGNEE_COUNT}`, {
-    next: { tags: ['getAssigneeList'], revalidate: ASSIGNEE_REVALIDATION_INTERVAL },
+    next: { tags: ['getAssigneeList'] },
   })
   const data = await res.json()
   return data.clients

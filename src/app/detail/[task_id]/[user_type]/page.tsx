@@ -54,7 +54,7 @@ async function getOneTask(token: string, taskId: string): Promise<TaskResponse> 
 async function getAssigneeList(token: string, userType: UserType): Promise<IAssignee> {
   if (userType === UserType.CLIENT_USER) {
     const res = await fetch(`${apiUrl}/api/users/client?token=${token}&limit=${MAX_FETCH_ASSIGNEE_COUNT}`, {
-      next: { tags: ['getAssigneeList'], revalidate: ASSIGNEE_REVALIDATION_INTERVAL },
+      next: { tags: ['getAssigneeList'] },
     })
 
     const data = await res.json()
@@ -63,7 +63,7 @@ async function getAssigneeList(token: string, userType: UserType): Promise<IAssi
   }
 
   const res = await fetch(`${apiUrl}/api/users?token=${token}&limit=${MAX_FETCH_ASSIGNEE_COUNT}`, {
-    next: { tags: ['getAssigneeList'], revalidate: ASSIGNEE_REVALIDATION_INTERVAL },
+    next: { tags: ['getAssigneeList'] },
   })
 
   const data = await res.json()

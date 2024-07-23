@@ -23,7 +23,7 @@ async function getAllWorkflowStates(token: string): Promise<WorkflowStateRespons
 
 async function getAssigneeList(token: string): Promise<IAssignee> {
   const res = await fetch(`${apiUrl}/api/users?token=${token}&limit=${MAX_FETCH_ASSIGNEE_COUNT}`, {
-    next: { tags: ['getAssigneeList'], revalidate: ASSIGNEE_REVALIDATION_INTERVAL },
+    next: { tags: ['getAssigneeList'] },
   })
 
   const data = await res.json()
