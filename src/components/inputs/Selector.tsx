@@ -364,7 +364,8 @@ const SelectorButton = ({
         cursor: disabled ? 'auto' : 'pointer',
         '& .MuiButton-startIcon': {
           '& .MuiAvatar-root': {
-            fontSize: '10px',
+            fontSize: '14px',
+            fontWeight: '400',
           },
         },
         height: height ?? '32px',
