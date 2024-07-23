@@ -35,6 +35,7 @@ export const FilterByAssigneeBtn = ({
               overflow: 'hidden',
               maxWidth: '90px',
             }}
+            title={assigneeValue?.name || `${assigneeValue?.givenName ?? ''} ${assigneeValue?.familyName ?? ''}`.trim()}
           >
             {assigneeValue?.name || `${assigneeValue?.givenName ?? ''} ${assigneeValue?.familyName ?? ''}`.trim()}
           </Typography>

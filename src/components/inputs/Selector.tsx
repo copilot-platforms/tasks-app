@@ -315,7 +315,13 @@ const AssigneeSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTM
     >
       <Stack direction="row" alignItems="center" columnGap={3}>
         <CopilotAvatar currentAssignee={assignee} />
-        <Typography variant="bodySm">
+        <Typography
+          variant="bodySm"
+          title={
+            (option as IAssigneeCombined)?.name ||
+            `${(option as IAssigneeCombined)?.givenName ?? ''} ${(option as IAssigneeCombined)?.familyName ?? ''}`.trim()
+          }
+        >
           {truncateText(
             (option as IAssigneeCombined)?.name ||
               `${(option as IAssigneeCombined)?.givenName ?? ''} ${(option as IAssigneeCombined)?.familyName ?? ''}`.trim(),

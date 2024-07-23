@@ -254,6 +254,12 @@ export const NewTaskForm = ({
                     fontSize: '12px',
                     maxWidth: { xs: '60px', sm: '100px' },
                   }}
+                  title={
+                    tempAssignee
+                      ? (tempAssignee as IAssigneeCombined)?.name ||
+                        `${(tempAssignee as IAssigneeCombined)?.givenName ?? ''} ${(tempAssignee as IAssigneeCombined)?.familyName ?? ''}`.trim()
+                      : 'Assignee'
+                  }
                 >
                   {tempAssignee
                     ? (tempAssignee as IAssigneeCombined)?.name ||

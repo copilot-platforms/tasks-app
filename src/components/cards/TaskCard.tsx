@@ -51,6 +51,12 @@ export const TaskCard = ({ task, href }: TaskCardProps) => {
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
               }}
+              title={
+                (currentAssignee as IAssigneeCombined).name === 'No assignee'
+                  ? 'No assignee'
+                  : (currentAssignee as IAssigneeCombined)?.name ||
+                    `${(currentAssignee as IAssigneeCombined)?.givenName ?? ''} ${(currentAssignee as IAssigneeCombined)?.familyName ?? ''}`.trim()
+              }
             >
               {(currentAssignee as IAssigneeCombined).name === 'No assignee'
                 ? 'No assignee'

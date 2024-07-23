@@ -115,6 +115,11 @@ export const ClientTaskCard = ({
                     fontSize: '12px',
                     color: (theme) => theme.color.gray[500],
                   }}
+                  title={
+                    (currentAssignee as IAssigneeCombined)?.name ||
+                    `${(currentAssignee as IAssigneeCombined)?.givenName ?? ''} ${(currentAssignee as IAssigneeCombined)?.familyName ?? ''}`.trim() ||
+                    'No Assignee'
+                  }
                 >
                   {(currentAssignee as IAssigneeCombined)?.name ||
                     `${(currentAssignee as IAssigneeCombined)?.givenName ?? ''} ${(currentAssignee as IAssigneeCombined)?.familyName ?? ''}`.trim() ||
