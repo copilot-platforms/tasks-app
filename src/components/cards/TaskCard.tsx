@@ -36,34 +36,36 @@ export const TaskCard = ({ task, href }: TaskCardProps) => {
   const currentAssignee = assignee.find((el) => el.id === task.assigneeId) ?? NoAssignee
 
   return (
-    <TaskCardContainer rowGap={1}>
+    <TaskCardContainer>
       <CustomLink href={href}>
-        <Stack direction="row" justifyContent="space-between">
-          <Stack direction="row" alignItems="center" columnGap={1}>
-            <CopilotAvatar currentAssignee={currentAssignee as IAssigneeCombined} />
-            <Typography
-              variant="sm"
-              fontSize="12px"
-              sx={{
-                color: (theme) => theme.color.gray[500],
-                width: '146px',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {(currentAssignee as IAssigneeCombined).name === 'No assignee'
-                ? 'No assignee'
-                : (currentAssignee as IAssigneeCombined)?.name ||
-                  `${(currentAssignee as IAssigneeCombined)?.givenName ?? ''} ${(currentAssignee as IAssigneeCombined)?.familyName ?? ''}`.trim()}
+        <Stack rowGap={1}>
+          <Stack direction="row" justifyContent="space-between">
+            <Stack direction="row" alignItems="center" columnGap={1}>
+              <CopilotAvatar currentAssignee={currentAssignee as IAssigneeCombined} />
+              <Typography
+                variant="sm"
+                fontSize="12px"
+                sx={{
+                  color: (theme) => theme.color.gray[500],
+                  width: '146px',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {(currentAssignee as IAssigneeCombined).name === 'No assignee'
+                  ? 'No assignee'
+                  : (currentAssignee as IAssigneeCombined)?.name ||
+                    `${(currentAssignee as IAssigneeCombined)?.givenName ?? ''} ${(currentAssignee as IAssigneeCombined)?.familyName ?? ''}`.trim()}
+              </Typography>
+            </Stack>
+            <Typography variant="bodyXs" fontWeight={400} sx={{ color: (theme) => theme.color.gray[500] }}>
+              {task.label}
             </Typography>
           </Stack>
-          <Typography variant="bodyXs" fontWeight={400} sx={{ color: (theme) => theme.color.gray[500] }}>
-            {task.label}
-          </Typography>
+          <Typography variant="sm">{task.title}</Typography>
+          {task.dueDate && <DueDateLayout dateString={task.dueDate} />}
         </Stack>
-        <Typography variant="sm">{task.title}</Typography>
-        {task.dueDate && <DueDateLayout dateString={task.dueDate} />}
       </CustomLink>
     </TaskCardContainer>
   )
