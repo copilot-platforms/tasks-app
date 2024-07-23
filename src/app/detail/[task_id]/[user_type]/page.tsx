@@ -39,6 +39,7 @@ import { ActivityType } from '@prisma/client'
 import { CreateComment } from '@/types/dto/comment.dto'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import EscapeHandler from '@/utils/escapeHandler'
+import { CustomScrollbar } from '@/hoc/CustomScrollbar'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
@@ -145,7 +146,7 @@ export default async function TaskDetailPage({
               </Stack>
             </AppMargin>
           </StyledBox>
-          <Box sx={{ flex: 1, overflow: 'auto', height: '100vh' }}>
+          <CustomScrollbar style={{ width: '8px' }}>
             <StyledTiptapDescriptionWrapper>
               <AppMargin size={SizeofAppMargin.LARGE} py="30px">
                 <TaskEditor
@@ -225,7 +226,7 @@ export default async function TaskDetailPage({
                 </Stack>
               </AppMargin>
             )}
-          </Box>
+          </CustomScrollbar>
         </ToggleController>
         <Box>
           <Sidebar
