@@ -16,7 +16,7 @@ import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { createMultipleAttachments, getSignedUrlUpload } from '@/app/actions'
 import { ModalNewTaskForm } from './ui/Modal_NewTaskForm'
-import { ASSIGNEE_REVALIDATION_INTERVAL, MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
+import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {

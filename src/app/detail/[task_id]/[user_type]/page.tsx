@@ -39,7 +39,7 @@ import { ActivityType } from '@prisma/client'
 import { CreateComment } from '@/types/dto/comment.dto'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import EscapeHandler from '@/utils/escapeHandler'
-import { ASSIGNEE_REVALIDATION_INTERVAL, MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
+import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {

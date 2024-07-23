@@ -9,7 +9,7 @@ import { IAssignee, IAssigneeCombined } from '@/types/interfaces'
 import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
 import { ClientTaskBoard } from './ui/ClientTaskBoard'
 import { completeTask } from '@/app/client/actions'
-import { ASSIGNEE_REVALIDATION_INTERVAL, MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
+import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {

@@ -11,6 +11,7 @@ export const handleCreate = async (token: string, payload: CreateTaskRequest) =>
       method: 'POST',
       body: JSON.stringify(payload),
     })
+    revalidateTag('getAssigneeList')
     return await response.json()
   } catch (e: unknown) {
     console.error('Something went wrong while creating task!', e)
