@@ -18,7 +18,7 @@ export const CopilotAvatar = ({
   width = '20px',
   height = '20px',
   isSmall = false,
-  fontSize = '13px',
+  fontSize = '14px',
 }: CopilotAvatarProps) => {
   const avatarSx: SxProps = {
     width,

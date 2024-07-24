@@ -140,7 +140,7 @@ export default function Selector({
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
-                maxWidth: '120px',
+                maxWidth: '150px',
                 display: { xs: responsiveNoHide ? 'block' : 'none', sm: 'block' },
               }}
             >
@@ -364,7 +364,8 @@ const SelectorButton = ({
         cursor: disabled ? 'auto' : 'pointer',
         '& .MuiButton-startIcon': {
           '& .MuiAvatar-root': {
-            fontSize: '13px',
+            fontSize: '14px',
+            fontWeight: '400',
           },
         },
         height: height ?? '32px',
