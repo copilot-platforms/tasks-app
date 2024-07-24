@@ -24,7 +24,7 @@ import { useState } from 'react'
 import { MiniLoader } from '@/components/atoms/MiniLoader'
 import { setDebouncedFilteredAssignees } from '@/utils/users'
 import { z } from 'zod'
-import { isAssigneeTextMatching } from '@/utils/assignee'
+import { getAssigneeName, isAssigneeTextMatching } from '@/utils/assignee'
 import { DateStringSchema } from '@/types/date'
 
 const StyledText = styled(Typography)(({ theme }) => ({
@@ -152,8 +152,7 @@ export const Sidebar = ({
               <Typography variant="md" lineHeight="22px" sx={{ color: (theme) => theme.color.gray[600] }}>
                 {(assigneeValue as IAssigneeCombined)?.name == 'No assignee'
                   ? 'Unassigned'
-                  : (assigneeValue as IAssigneeCombined)?.name ||
-                    `${(assigneeValue as IAssigneeCombined)?.givenName ?? ''} ${(assigneeValue as IAssigneeCombined)?.familyName ?? ''}`.trim()}
+                  : getAssigneeName(assigneeValue, 'Unassigned')}
               </Typography>
             }
             handleInputChange={async (newInputValue: string) => {

@@ -3,6 +3,7 @@ import store from '@/redux/store'
 import { FilterOptions, IAssigneeCombined } from '@/types/interfaces'
 import { Avatar, IconButton, Stack, Typography } from '@mui/material'
 import { CopilotAvatar } from '../atoms/CopilotAvatar'
+import { getAssigneeName } from '@/utils/assignee'
 
 export const FilterByAssigneeBtn = ({
   assigneeValue,
@@ -35,9 +36,9 @@ export const FilterByAssigneeBtn = ({
               overflow: 'hidden',
               maxWidth: '90px',
             }}
-            title={assigneeValue?.name || `${assigneeValue?.givenName ?? ''} ${assigneeValue?.familyName ?? ''}`.trim()}
+            title={getAssigneeName(assigneeValue)}
           >
-            {assigneeValue?.name || `${assigneeValue?.givenName ?? ''} ${assigneeValue?.familyName ?? ''}`.trim()}
+            {getAssigneeName(assigneeValue)}
           </Typography>
           <IconButton
             aria-label="remove"

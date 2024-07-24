@@ -13,6 +13,7 @@ import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
 import { DueDateLayout } from '@/components/layouts/DueDateLayout'
 import { UrlObject } from 'url'
 import { CustomLink } from '@/hoc/CustomLink'
+import { getAssigneeName } from '@/utils/assignee'
 
 export const ClientTaskCard = ({
   task,
@@ -114,15 +115,9 @@ export const ClientTaskCard = ({
                     fontSize: '12px',
                     color: (theme) => theme.color.gray[500],
                   }}
-                  title={
-                    (currentAssignee as IAssigneeCombined)?.name ||
-                    `${(currentAssignee as IAssigneeCombined)?.givenName ?? ''} ${(currentAssignee as IAssigneeCombined)?.familyName ?? ''}`.trim() ||
-                    'No Assignee'
-                  }
+                  title={getAssigneeName(currentAssignee)}
                 >
-                  {(currentAssignee as IAssigneeCombined)?.name ||
-                    `${(currentAssignee as IAssigneeCombined)?.givenName ?? ''} ${(currentAssignee as IAssigneeCombined)?.familyName ?? ''}`.trim() ||
-                    'No Assignee'}
+                  {getAssigneeName(currentAssignee)}
                 </Typography>
               </Stack>
             </Stack>
