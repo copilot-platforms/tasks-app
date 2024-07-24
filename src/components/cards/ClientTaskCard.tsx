@@ -1,9 +1,8 @@
 'use client'
 
 import { useSelector } from 'react-redux'
-import { Box, Divider, Stack, Typography } from '@mui/material'
+import { Box, Stack, Typography } from '@mui/material'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
-import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { extractHtml } from '@/utils/extractHtml'
 import { truncateText } from '@/utils/truncateText'
 import { TruncateMaxNumber } from '@/types/constants'
@@ -12,8 +11,8 @@ import { IAssigneeCombined } from '@/types/interfaces'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
 import { DueDateLayout } from '@/components/layouts/DueDateLayout'
-import { StyledUninvasiveLink } from '@/app/detail/ui/styledComponent'
 import { UrlObject } from 'url'
+import { CustomLink } from '@/hoc/CustomLink'
 
 export const ClientTaskCard = ({
   task,
@@ -37,7 +36,7 @@ export const ClientTaskCard = ({
   }
 
   return (
-    <StyledUninvasiveLink href={href} prefetch={false}>
+    <CustomLink href={href}>
       <Box
         sx={{
           ':hover': {
@@ -158,6 +157,6 @@ export const ClientTaskCard = ({
           </Stack>
         </Stack>
       </Box>
-    </StyledUninvasiveLink>
+    </CustomLink>
   )
 }
