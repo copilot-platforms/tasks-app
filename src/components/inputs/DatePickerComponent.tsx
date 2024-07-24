@@ -18,7 +18,7 @@ export const DatePickerComponent = ({ getDate, dateValue, disabled, isButton = f
   const [value, setValue] = useState<Dayjs | null>(dateValue ? dayjs(dateValue) : null)
 
   const formatDate = (date: Dayjs | null) => {
-    return date ? date.format('MMM DD, YYYY') : '' // Format the date as "Mar 08, 2024"
+    return date ? date.format('MMMM DD, YYYY') : '' // Format the date as "March 08, 2024"
   }
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
@@ -73,7 +73,12 @@ export const DatePickerComponent = ({ getDate, dateValue, disabled, isButton = f
             <Box>
               <CalenderIcon />
             </Box>
-            <Typography variant="md" mt="2px" lineHeight={'22px'}>
+            <Typography
+              variant="md"
+              mt="2px"
+              lineHeight={'22px'}
+              sx={{ textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden', maxWidth: '150px' }}
+            >
               {value ? formatDate(value) : 'No due date'}
             </Typography>
           </>

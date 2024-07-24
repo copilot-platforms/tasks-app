@@ -186,7 +186,7 @@ export const NewTaskForm = ({
           </Box>
           <Stack alignSelf="flex-start">
             <Selector
-              placeholder="Change assignee"
+              placeholder="Set assignee"
               getSelectedValue={(_newValue) => {
                 const newValue = _newValue as IAssigneeCombined
                 setTempAssignee(newValue)
@@ -207,13 +207,7 @@ export const NewTaskForm = ({
                 setFilteredAssignees(filteredAssigneeList)
                 setLoading(false)
               }}
-              startIcon={
-                tempAssignee ? (
-                  <CopilotAvatar currentAssignee={tempAssignee} width="12px" height="12px" isSmall={true} />
-                ) : (
-                  <AssigneePlaceholderSmall />
-                )
-              }
+              startIcon={tempAssignee ? <CopilotAvatar currentAssignee={assigneeValue} /> : <AssigneePlaceholderSmall />}
               options={loading ? [] : filteredAssignees}
               value={tempAssignee}
               extraOption={NoAssigneeExtraOptions}
