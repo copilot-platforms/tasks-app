@@ -248,9 +248,14 @@ export class TasksService extends BaseService {
 
     if (!task) throw new APIError(httpStatus.NOT_FOUND, 'The requested task to delete was not found')
 
-    if (task?.assigneeType === AssigneeType.client && task.workflowState.type !== NotificationTaskActions.Completed) {
-      const notificationsService = new NotificationService(this.user)
-      await notificationsService.markClientNotificationAsRead(task)
+    const notificationsService = new NotificationService(this.user)
+    if (task?.assigneeType && task.workflowState.type !== NotificationTaskActions.Completed) {
+      const handleNotificationRead = {
+        [AssigneeType.client]: notificationsService.markClientNotificationAsRead,
+        [AssigneeType.company]: notificationsService.markAsReadForAllRecipients,
+      }
+      // @ts-expect-error This is completely safe
+      await handleNotificationRead[task?.assigneeType]?.(task)
     }
     //delete the associated label
     const labelMappingService = new LabelMappingService(this.user)

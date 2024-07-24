@@ -1,9 +1,13 @@
 'use client'
 
-import { MenuIcon } from '@/icons'
+import { MenuIcon, MenuToggleIcon } from '@/icons'
+import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 import { Stack } from '@mui/material'
+import { useSelector } from 'react-redux'
 
 export const ToggleBtn = ({ onClick }: { onClick: () => void }) => {
+  const { showSidebar } = useSelector(selectTaskDetails)
+
   return (
     <Stack
       direction="column"
@@ -22,7 +26,7 @@ export const ToggleBtn = ({ onClick }: { onClick: () => void }) => {
       })}
       onClick={onClick}
     >
-      <MenuIcon />
+      {showSidebar ? <MenuToggleIcon /> : <MenuIcon />}
     </Stack>
   )
 }
