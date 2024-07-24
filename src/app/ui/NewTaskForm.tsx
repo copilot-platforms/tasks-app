@@ -266,9 +266,7 @@ export const NewTaskForm = ({
               }}
             >
               <DatePickerComponent
-                getDate={(value) =>
-                  store.dispatch(setCreateTaskFields({ targetField: 'dueDate', value: formatDate(value) }))
-                }
+                getDate={(value) => store.dispatch(setCreateTaskFields({ targetField: 'dueDate', value: value as string }))}
                 isButton={true}
               />
             </Box>

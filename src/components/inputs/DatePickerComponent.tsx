@@ -1,3 +1,4 @@
+import React, { useEffect, useRef } from 'react'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
@@ -15,7 +16,7 @@ interface Prop {
 }
 
 export const DatePickerComponent = ({ getDate, dateValue, disabled, isButton = false }: Prop) => {
-  const [value, setValue] = useState<Dayjs | null>(dateValue ? dayjs(dateValue) : null)
+  const [value, setValue] = useState(dateValue ? dayjs(dateValue) : null)
 
   const formatDate = (date: Dayjs | null) => {
     return date ? date.format('MMMM DD, YYYY') : '' // Format the date as "March 08, 2024"
@@ -31,6 +32,10 @@ export const DatePickerComponent = ({ getDate, dateValue, disabled, isButton = f
 
   const open = Boolean(anchorEl)
   const id = open ? 'calender-element' : undefined
+
+  useEffect(() => {
+    setValue(dateValue ? dayjs(dateValue) : null)
+  }, [dateValue])
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
