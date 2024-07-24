@@ -45,11 +45,7 @@ class UsersService extends BaseService {
       : []
 
     // Same for clients
-    const clientsWithCompanyData =
-      clients.data?.map((client) => {
-        const companyForClient = filteredCompanies.find((company) => company.id === client.companyId)
-        return { ...client, fallbackColor: companyForClient?.fallbackColor }
-      }) || []
+    const clientsWithCompanyData = clients.data || []
     const accessibleClients = (
       currentInternalUser.isClientAccessLimited
         ? clientsWithCompanyData?.filter((client) => currentInternalUser.companyAccessList?.includes(client.companyId))
