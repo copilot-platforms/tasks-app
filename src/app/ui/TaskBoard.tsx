@@ -69,7 +69,7 @@ export const TaskBoard = () => {
         }}
       />
       {view === View.BOARD_VIEW && (
-        <AppMargin size={SizeofAppMargin.LARGE} py="20px">
+        <AppMargin size={SizeofAppMargin.CUSTOM} py="20px" px="20px">
           <Stack
             columnGap={6}
             sx={{

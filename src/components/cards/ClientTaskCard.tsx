@@ -51,11 +51,11 @@ export const ClientTaskCard = ({
           justifyContent="space-between"
           sx={{
             borderBottom: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
-            padding: { xs: '2px 20px', sm: '2px 36px' },
+            padding: { xs: '6px 18px', sm: '4px 20px' },
           }}
         >
           <Stack direction="column">
-            <Typography variant="sm" sx={{ fontSize: '13px' }}>
+            <Typography variant="sm" sx={{ fontSize: '13px', lineHeight: '21px' }}>
               {task?.title}
             </Typography>
             <Box

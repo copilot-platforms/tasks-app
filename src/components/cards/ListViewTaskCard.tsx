@@ -50,7 +50,7 @@ export const ListViewTaskCard = ({
           },
         }}
       >
-        <AppMargin size={SizeofAppMargin.LARGE} py="12px">
+        <AppMargin size={SizeofAppMargin.CUSTOM} px="20px" py="8.5px">
           <Box>
             <Stack direction="row" columnGap={'20px'} alignItems="center" justifyContent="space-between">
               <Stack direction="row" alignItems="center" columnGap={'16px'}>
@@ -60,7 +60,7 @@ export const ListViewTaskCard = ({
                   sx={{
                     color: (theme) => theme.color.gray[500],
                     flexGrow: 0,
-                    minWidth: '80px',
+                    minWidth: '60px',
                     lineHeight: '21px',
                   }}
                 >
