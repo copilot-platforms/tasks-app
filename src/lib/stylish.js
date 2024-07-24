@@ -4,28 +4,12 @@
  */
 'use strict'
 
-const chalk = require('chalk')
-const table = require('text-table')
-
-// --- Custom implementation of stripAnsi ---
-// (The way that the default stripAnsi.js package is used requires a dynamic import
-// and dynamic import is only evaluated when needed and the lib implementation can cause issues here
-// ref: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/import)
-const ansiRegex = require('ansi-regex')
-const regex = ansiRegex()
-
-/**
- * stripAnsi strips ANSI escape codes from a string
- * ref: https://en.wikipedia.org/wiki/ANSI_escape_code
- * @param {*} string
- * @returns string with ANSI escape codes removed
- */
-function stripAnsi(string) {
-  if (typeof string !== 'string') {
-    throw new TypeError(`Expected a \`string\`, got \`${typeof string}\``)
-  }
-  return string.replace(regex, '')
-}
+//! Patched strip-ansi to use dynamic import here
+const stripAnsi = import('strip-ansi')
+//! ---
+const chalk = require('chalk'),
+  //! Removed require import for strip-ansi here
+  table = require('text-table')
 
 //------------------------------------------------------------------------------
 // Helpers
