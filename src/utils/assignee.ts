@@ -15,7 +15,6 @@ export const getAssigneeName = (
   noAssigneetext: string = 'No assignee',
 ): string => {
   return assigneeValue
-    ? assigneeValue?.name ||
-        `${assigneeValue?.givenName ?? ''} ${(assigneeValue as IAssigneeCombined)?.familyName ?? ''}`.trim()
+    ? assigneeValue?.name || `${assigneeValue?.givenName ?? ''} ${assigneeValue?.familyName ?? ''}`.trim()
     : noAssigneetext
 }
