@@ -9,3 +9,12 @@ export const isAssigneeTextMatching = (newInputValue: string, assigneeValue: IAs
     truncate(newInputValue) === truncate(assigneeValue?.name?.trim() || '')
   )
 }
+
+export const getAssigneeName = (
+  assigneeValue: IAssigneeCombined | undefined,
+  noAssigneetext: string = 'No assignee',
+): string => {
+  return assigneeValue
+    ? assigneeValue?.name || `${assigneeValue?.givenName ?? ''} ${assigneeValue?.familyName ?? ''}`.trim()
+    : noAssigneetext
+}

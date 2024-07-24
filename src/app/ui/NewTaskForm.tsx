@@ -39,6 +39,7 @@ import { setDebouncedFilteredAssignees } from '@/utils/users'
 import { z } from 'zod'
 import { MiniLoader } from '@/components/atoms/MiniLoader'
 import { formatDate } from '@/utils/dateHelper'
+import { getAssigneeName } from '@/utils/assignee'
 
 const supabaseActions = new SupabaseActions()
 
@@ -255,11 +256,9 @@ export const NewTaskForm = ({
                     fontSize: '12px',
                     maxWidth: { xs: '60px', sm: '100px' },
                   }}
+                  title={getAssigneeName(assigneeValue, 'Assignee')}
                 >
-                  {tempAssignee
-                    ? (tempAssignee as IAssigneeCombined)?.name ||
-                      `${(tempAssignee as IAssigneeCombined)?.givenName ?? ''} ${(tempAssignee as IAssigneeCombined)?.familyName ?? ''}`.trim()
-                    : 'Assignee'}
+                  {getAssigneeName(assigneeValue, 'Assignee')}
                 </Typography>
               }
             />
@@ -274,9 +273,7 @@ export const NewTaskForm = ({
               }}
             >
               <DatePickerComponent
-                getDate={(value) =>
-                  store.dispatch(setCreateTaskFields({ targetField: 'dueDate', value: formatDate(value) }))
-                }
+                getDate={(value) => store.dispatch(setCreateTaskFields({ targetField: 'dueDate', value: value as string }))}
                 isButton={true}
               />
             </Box>
