@@ -22,7 +22,10 @@ export const ToggleController = ({ children }: { children: ReactNode }) => {
     <Box
       sx={{
         width: showSidebar ? 'calc(100% - 339px)' : '100%',
-        display: matches && showSidebar ? 'none' : 'block',
+        display: matches && showSidebar ? 'none' : 'flex',
+        flex: 1,
+        flexDirection: 'column',
+        overflow: 'hidden',
       }}
     >
       {children}
