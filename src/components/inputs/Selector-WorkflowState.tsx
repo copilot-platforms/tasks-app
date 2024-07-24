@@ -70,6 +70,7 @@ export const WorkflowStateSelector = ({
               <Box>{statusIcons[value?.type]}</Box>
               <Typography
                 variant="md"
+                title={value?.name}
                 sx={{
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
