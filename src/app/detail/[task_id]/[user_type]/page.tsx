@@ -39,6 +39,7 @@ import { ActivityType } from '@prisma/client'
 import { CreateComment } from '@/types/dto/comment.dto'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import EscapeHandler from '@/utils/escapeHandler'
+import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 import { RealTime } from '@/hoc/RealTime'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { CustomScrollbar } from '@/hoc/CustomScrollbar'
@@ -55,7 +56,7 @@ async function getOneTask(token: string, taskId: string): Promise<TaskResponse> 
 
 async function getAssigneeList(token: string, userType: UserType): Promise<IAssignee> {
   if (userType === UserType.CLIENT_USER) {
-    const res = await fetch(`${apiUrl}/api/users/client?token=${token}`, {
+    const res = await fetch(`${apiUrl}/api/users/client?token=${token}&limit=${MAX_FETCH_ASSIGNEE_COUNT}`, {
       next: { tags: ['getAssigneeList'] },
     })
 
@@ -64,7 +65,7 @@ async function getAssigneeList(token: string, userType: UserType): Promise<IAssi
     return data.clients
   }
 
-  const res = await fetch(`${apiUrl}/api/users?token=${token}`, {
+  const res = await fetch(`${apiUrl}/api/users?token=${token}&limit=${MAX_FETCH_ASSIGNEE_COUNT}`, {
     next: { tags: ['getAssigneeList'] },
   })
 

@@ -9,6 +9,7 @@ import { IAssignee, IAssigneeCombined } from '@/types/interfaces'
 import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
 import { ClientTaskBoard } from './ui/ClientTaskBoard'
 import { completeTask } from '@/app/client/actions'
+import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 import { RealTime } from '@/hoc/RealTime'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { Token, TokenSchema } from '@/types/common'
@@ -33,7 +34,7 @@ async function getAllTasks(token: string): Promise<TaskResponse[]> {
 }
 
 async function getAssigneeList(token: string): Promise<IAssignee> {
-  const res = await fetch(`${apiUrl}/api/users/client?token=${token}`, {
+  const res = await fetch(`${apiUrl}/api/users/client?token=${token}&limit=${MAX_FETCH_ASSIGNEE_COUNT}`, {
     next: { tags: ['getAssigneeList'] },
   })
   const data = await res.json()

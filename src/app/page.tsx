@@ -16,6 +16,7 @@ import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { createMultipleAttachments, getSignedUrlUpload } from '@/app/actions'
 import { ModalNewTaskForm } from './ui/Modal_NewTaskForm'
+import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 import { RealTime } from '@/hoc/RealTime'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
@@ -45,7 +46,7 @@ async function getTokenPayload(token: string): Promise<Token> {
 }
 
 async function getAssigneeList(token: string): Promise<IAssignee> {
-  const res = await fetch(`${apiUrl}/api/users?token=${token}`, {
+  const res = await fetch(`${apiUrl}/api/users?token=${token}&limit=${MAX_FETCH_ASSIGNEE_COUNT}`, {
     next: { tags: ['getAssigneeList'] },
   })
 
