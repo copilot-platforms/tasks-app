@@ -31,6 +31,7 @@ export const ClientTaskCard = ({
   const handleMarkAsDoneClick = (e: React.MouseEvent) => {
     // Since mark as done button is nested inside a `next/link` Link, we need to stop the event from propagating
     // to the behavior of a tag - that would redirect it to the details age
+    e.stopPropagation()
     e.preventDefault()
     handleMarkDone()
   }
