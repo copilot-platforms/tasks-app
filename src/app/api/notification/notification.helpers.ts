@@ -14,7 +14,7 @@ export const getInProductNotificationDetails = (
 ): { [key in NotificationTaskActions]: { title: string; body: string } } => {
   return {
     [NotificationTaskActions.Assigned]: {
-      title: 'A task was assigned to you',
+      title: 'Task was assigned to you',
       body: `The task ‘${taskName}’  was created and assigned to you by ${actionUser}. To see details about the task, navigate to the Tasks App below.`,
     },
     [NotificationTaskActions.AssignedToCompany]: {
@@ -22,15 +22,15 @@ export const getInProductNotificationDetails = (
       body: `A new task was assigned to your company by ${actionUser}. To see details about the task, navigate to the Tasks App below.`,
     },
     [NotificationTaskActions.ReassignedToIU]: {
-      title: 'A task was reassigned to you',
+      title: 'Task was reassigned to you',
       body: `The task ‘${taskName}’ was reassigned to you by ${actionUser}. To see details about the task, navigate to the Tasks App below.`,
     },
     [NotificationTaskActions.CompletedByCompanyMember]: {
-      title: 'A task was completed',
+      title: 'Task was completed',
       body: `The task ‘${taskName}’ was completed by ${actionUser} for ${companyName}. You are receiving this notification because you have access to the client.`,
     },
     [NotificationTaskActions.Completed]: {
-      title: 'A task was completed',
+      title: 'Task was completed',
       body: `The task ‘${taskName}’ was completed by ${actionUser}. You are receiving this notification because you have access to the client.`,
     },
     [NotificationTaskActions.Commented]: {
