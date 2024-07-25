@@ -21,6 +21,10 @@ export const getInProductNotificationDetails = (
       title: 'Task was assigned to your company',
       body: `A new task was assigned to your company by ${actionUser}. To see details about the task, navigate to the Tasks App below.`,
     },
+    [NotificationTaskActions.ReassignedToIU]: {
+      title: 'A task was reassigned to you',
+      body: `The task ‘${taskName}’ was reassigned to you by ${actionUser}. To see details about the task, navigate to the Tasks App below.`,
+    },
     [NotificationTaskActions.CompletedByCompanyMember]: {
       title: 'A task was completed',
       body: `The task ‘${taskName}’ was completed by ${actionUser} for ${companyName}. You are receiving this notification because you have access to the client.`,

@@ -319,10 +319,15 @@ export class TasksService extends BaseService {
     return updatedTask
   }
 
-  private async sendUserTaskNotification(task: Task, notificationService: NotificationService) {
-    const notification = await notificationService.create(NotificationTaskActions.Assigned, task, {
-      email: task.assigneeType === AssigneeType.internalUser,
-    })
+  private async sendUserTaskNotification(task: Task, notificationService: NotificationService, isReassigned = false) {
+    const notification = await notificationService.create(
+      //! In future when reassignment is supported, change this logic to support reassigned to client as well
+      isReassigned ? NotificationTaskActions.ReassignedToIU : NotificationTaskActions.Assigned,
+      task,
+      {
+        email: task.assigneeType === AssigneeType.internalUser,
+      },
+    )
     // Create a new entry in ClientNotifications table so we can mark as read on
     // behalf of client later
     if (!notification) {
@@ -333,7 +338,11 @@ export class TasksService extends BaseService {
     }
   }
 
-  private sendCompanyTaskNotifications = async (task: Task, notificationService: NotificationService) => {
+  private sendCompanyTaskNotifications = async (
+    task: Task,
+    notificationService: NotificationService,
+    isReassigned = false,
+  ) => {
     const copilot = new CopilotAPI(this.user.token)
     const { recipientIds } = await notificationService.getNotificationParties(
       copilot,
@@ -363,7 +372,7 @@ export class TasksService extends BaseService {
     }
   }
 
-  private async sendTaskCreateNotifications(task: Task & { workflowState: WorkflowState }) {
+  private async sendTaskCreateNotifications(task: Task & { workflowState: WorkflowState }, isReassigned = false) {
     // If task is unassigned, there's nobody to send notifications to
     if (!task.assigneeId) return
 
@@ -377,7 +386,7 @@ export class TasksService extends BaseService {
     const notificationService = new NotificationService(this.user)
     const sendTaskNotifications =
       task.assigneeType === AssigneeType.company ? this.sendCompanyTaskNotifications : this.sendUserTaskNotification
-    await sendTaskNotifications(task, notificationService)
+    await sendTaskNotifications(task, notificationService, isReassigned)
   }
 
   private async sendTaskUpdateNotifications(
@@ -397,10 +406,17 @@ export class TasksService extends BaseService {
         await notificationService.markAsReadForAllRecipients(prevTask)
       }
 
+      // If task reassigned from another user to self IU, don't send any notifications
+      if (prevTask.assigneeId !== updatedTask.assigneeId && updatedTask.assigneeId === this.user.internalUserId) {
+        return
+      }
+
       // Handle new assignee notification creation
       // If task goes from unassigned to assigned, or from one assignee to another
       if (updatedTask.assigneeId) {
-        await this.sendTaskCreateNotifications(updatedTask)
+        const isReassigned =
+          prevTask.assigneeId !== updatedTask.assigneeId && !!prevTask.assigneeId && !!updatedTask.assigneeId
+        await this.sendTaskCreateNotifications(updatedTask, isReassigned)
       }
     }
 
