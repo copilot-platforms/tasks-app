@@ -16,7 +16,7 @@ export class NotificationService extends BaseService {
       const { senderId, recipientId, actionUser } = await this.getNotificationParties(copilotUtils, task, action)
 
       const inProduct = getInProductNotificationDetails(actionUser, task.title)[action]
-      const email = disable.email ? undefined : getEmailDetails(actionUser)[action]
+      const email = disable.email ? undefined : getEmailDetails(actionUser, task.title)[action]
       const notificationDetails = {
         senderId,
         recipientId,
@@ -112,20 +112,23 @@ export class NotificationService extends BaseService {
   markAsReadForAllRecipients = async (task: Task) => {
     const copilot = new CopilotAPI(this.user.token)
     const { recipientIds } = await this.getNotificationParties(copilot, task, NotificationTaskActions.AssignedToCompany)
-    const markAsReadPromises = recipientIds.map((recipientId) =>
-      this.markClientNotificationAsRead({
+
+    for (let recipientId of recipientIds) {
+      await this.markClientNotificationAsRead({
         ...task,
         assigneeId: recipientId,
         assigneeType: AssigneeType.client,
-      }),
-    )
-
-    // Mark as read while preventing burst ratelimits
-    const batchSize = 10
-    for (let i = 0; i <= markAsReadPromises.length; i += batchSize) {
-      const batchPromises = markAsReadPromises.slice(i, batchSize)
-      await Promise.all(batchPromises)
+      })
     }
+
+    // TODO: Optimized Mark as read while preventing burst ratelimits - will probably implement `bottleneck` package for this
+    // const markAsReadPromises = recipientIds.map((recipientId) =>
+    //   this.markClientNotificationAsRead({
+    //     ...task,
+    //     assigneeId: recipientId,
+    //     assigneeType: AssigneeType.client,
+    //   }),
+    // )
   }
 
   /**
