@@ -12,7 +12,7 @@ const path = require('path')
 const prisma = new PrismaClient()
 
 async function runSqlScript() {
-  const sqlPath = path.resolve(__dirname, 'grant-privileges.sql')
+  const sqlPath = path.resolve(__dirname, 'grant-all-privileges.sql')
   const sql = fs.readFileSync(sqlPath, 'utf8')
   const statements = sql
     .split(';')
