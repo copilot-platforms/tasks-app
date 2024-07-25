@@ -14,8 +14,8 @@ export const getInProductNotificationDetails = (
 ): { [key in NotificationTaskActions]: { title: string; body: string } } => {
   return {
     [NotificationTaskActions.Assigned]: {
-      title: 'Task was assigned to you',
-      body: `A new task was assigned to you by ${actionUser}. To see details about the task, navigate to the Tasks App below.`,
+      title: 'A task was assigned to you',
+      body: `The task ‘${taskName}’  was created and assigned to you by ${actionUser}. To see details about the task, navigate to the Tasks App below.`,
     },
     [NotificationTaskActions.AssignedToCompany]: {
       title: 'Task was assigned to your company',

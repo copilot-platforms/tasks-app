@@ -320,7 +320,9 @@ export class TasksService extends BaseService {
   }
 
   private async sendUserTaskNotification(task: Task, notificationService: NotificationService) {
-    const notification = await notificationService.create(NotificationTaskActions.Assigned, task)
+    const notification = await notificationService.create(NotificationTaskActions.Assigned, task, {
+      email: task.assigneeType === AssigneeType.internalUser,
+    })
     // Create a new entry in ClientNotifications table so we can mark as read on
     // behalf of client later
     if (!notification) {

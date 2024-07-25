@@ -9,14 +9,14 @@ import APIError from '@api/core/exceptions/api'
 import httpStatus from 'http-status'
 
 export class NotificationService extends BaseService {
-  async create(action: NotificationTaskActions, task: Task) {
+  async create(action: NotificationTaskActions, task: Task, disable: { email: boolean } = { email: false }) {
     try {
       const copilotUtils = new CopilotAPI(this.user.token)
 
       const { senderId, recipientId, actionUser } = await this.getNotificationParties(copilotUtils, task, action)
 
       const inProduct = getInProductNotificationDetails(actionUser, task.title)[action]
-      const email = getEmailDetails(actionUser)[action]
+      const email = disable.email ? undefined : getEmailDetails(actionUser)[action]
       const notificationDetails = {
         senderId,
         recipientId,
