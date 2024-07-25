@@ -13,6 +13,7 @@ import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
 import { DueDateLayout } from '@/components/layouts/DueDateLayout'
 import { UrlObject } from 'url'
 import { CustomLink } from '@/hoc/CustomLink'
+import { getAssigneeName } from '@/utils/assignee'
 
 export const ClientTaskCard = ({
   task,
@@ -31,6 +32,7 @@ export const ClientTaskCard = ({
   const handleMarkAsDoneClick = (e: React.MouseEvent) => {
     // Since mark as done button is nested inside a `next/link` Link, we need to stop the event from propagating
     // to the behavior of a tag - that would redirect it to the details age
+    e.stopPropagation()
     e.preventDefault()
     handleMarkDone()
   }
@@ -114,10 +116,9 @@ export const ClientTaskCard = ({
                     fontSize: '12px',
                     color: (theme) => theme.color.gray[500],
                   }}
+                  title={getAssigneeName(currentAssignee)}
                 >
-                  {(currentAssignee as IAssigneeCombined)?.name ||
-                    `${(currentAssignee as IAssigneeCombined)?.givenName ?? ''} ${(currentAssignee as IAssigneeCombined)?.familyName ?? ''}`.trim() ||
-                    'No Assignee'}
+                  {getAssigneeName(currentAssignee)}
                 </Typography>
               </Stack>
             </Stack>

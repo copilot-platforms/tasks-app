@@ -18,7 +18,7 @@ import { useEffect, useState } from 'react'
 import { FilterOptions, IAssigneeCombined, ISignedUrlUpload, ITemplate } from '@/types/interfaces'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { useSelector } from 'react-redux'
-import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { selectTaskBoard, setAssigneeList } from '@/redux/features/taskBoardSlice'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { useRouter } from 'next/navigation'
@@ -39,6 +39,7 @@ import { setDebouncedFilteredAssignees } from '@/utils/users'
 import { z } from 'zod'
 import { MiniLoader } from '@/components/atoms/MiniLoader'
 import { formatDate } from '@/utils/dateHelper'
+import { getAssigneeName } from '@/utils/assignee'
 
 const supabaseActions = new SupabaseActions()
 
@@ -49,7 +50,7 @@ export const NewTaskForm = ({
   handleCreate: () => void
   getSignedUrlUpload: (fileName: string) => Promise<ISignedUrlUpload>
 }) => {
-  const { workflowStates, filteredAssigneeList, token, filterOptions } = useSelector(selectTaskBoard)
+  const { workflowStates, filteredAssigneeList, assignee, token, filterOptions } = useSelector(selectTaskBoard)
   const [filteredAssignees, setFilteredAssignees] = useState(filteredAssigneeList)
   const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
   const [loading, setLoading] = useState(false)
@@ -76,6 +77,13 @@ export const NewTaskForm = ({
   const templateValue = _templateValue as ITemplate //typecasting
   // use temp state pattern so that we don't fall into an infinite loop of assigneeValue set -> trigger -> set
   const [tempAssignee, setTempAssignee] = useState<IAssigneeCombined | null>(assigneeValue)
+
+  const handleCreateWithAssignee = () => {
+    if (!!tempAssignee?.id && !assignee.find((assignee) => assignee.id === tempAssignee.id)) {
+      store.dispatch(setAssigneeList([...assignee, tempAssignee]))
+    }
+    handleCreate()
+  }
 
   const router = useRouter()
 
@@ -248,11 +256,9 @@ export const NewTaskForm = ({
                     fontSize: '12px',
                     maxWidth: { xs: '60px', sm: '100px' },
                   }}
+                  title={getAssigneeName(assigneeValue, 'Assignee')}
                 >
-                  {tempAssignee
-                    ? (tempAssignee as IAssigneeCombined)?.name ||
-                      `${(tempAssignee as IAssigneeCombined)?.givenName ?? ''} ${(tempAssignee as IAssigneeCombined)?.familyName ?? ''}`.trim()
-                    : 'Assignee'}
+                  {getAssigneeName(assigneeValue, 'Assignee')}
                 </Typography>
               }
             />
@@ -267,16 +273,14 @@ export const NewTaskForm = ({
               }}
             >
               <DatePickerComponent
-                getDate={(value) =>
-                  store.dispatch(setCreateTaskFields({ targetField: 'dueDate', value: formatDate(value) }))
-                }
+                getDate={(value) => store.dispatch(setCreateTaskFields({ targetField: 'dueDate', value: value as string }))}
                 isButton={true}
               />
             </Box>
           </Stack>
         </Stack>
       </AppMargin>
-      <NewTaskFooter handleCreate={handleCreate} getSignedUrlUpload={getSignedUrlUpload} />
+      <NewTaskFooter handleCreate={handleCreateWithAssignee} getSignedUrlUpload={getSignedUrlUpload} />
     </NewTaskContainer>
   )
 }

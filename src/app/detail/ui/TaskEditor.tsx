@@ -2,10 +2,8 @@
 
 import { AttachmentCard } from '@/components/cards/AttachmentCard'
 import { StyledTextField } from '@/components/inputs/TextField'
-import { AttachmentIcon } from '@/icons'
 import { selectTaskDetails, setShowConfirmDeleteModal } from '@/redux/features/taskDetailsSlice'
-import { statusIcons } from '@/utils/iconMatcher'
-import { Box, IconButton, Modal, Stack } from '@mui/material'
+import { Box, Modal, Stack } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
@@ -16,15 +14,12 @@ import { AttachmentInput } from '@/components/inputs/AttachmentInput'
 import { SupabaseActions } from '@/utils/SupabaseActions'
 import { generateRandomString } from '@/utils/generateRandomString'
 import { ISignedUrlUpload, UserType } from '@/types/interfaces'
-import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { advancedFeatureFlag } from '@/config'
 import { Tapwrite } from 'tapwrite'
+import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { useDebounce } from '@/hooks/useDebounce'
 
 interface Prop {
-  title: string
-  detail: string
-  workflowState: WorkflowStateResponse
   task_id: string
   attachment: AttachmentResponseSchema[]
   isEditable: boolean
@@ -37,9 +32,6 @@ interface Prop {
 }
 
 export const TaskEditor = ({
-  title,
-  detail,
-  workflowState,
   task_id,
   attachment,
   isEditable,
@@ -50,8 +42,9 @@ export const TaskEditor = ({
   getSignedUrlUpload,
   userType,
 }: Prop) => {
-  const [updateTitle, setUpdateTitle] = useState(title)
-  const [updateDetail, setUpdateDetail] = useState(detail)
+  const { tasks } = useSelector(selectTaskBoard)
+  const [updateTitle, setUpdateTitle] = useState('')
+  const [updateDetail, setUpdateDetail] = useState('')
   const { showConfirmDeleteModal } = useSelector(selectTaskDetails)
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -67,6 +60,11 @@ export const TaskEditor = ({
       }
     }
   }
+  useEffect(() => {
+    const currentTask = tasks.find((el) => el.id === task_id)
+    setUpdateTitle(currentTask?.title || '')
+    setUpdateDetail(currentTask?.body ?? '')
+  }, [tasks, task_id])
 
   const _taskUpdateDebounced = async (title: string, details: string) => {
     updateTaskDetail(title, details)
@@ -120,7 +118,7 @@ export const TaskEditor = ({
             })
             tiptapEditorUtils.setImage(newBlob.url as string)
           }}
-          content={detail}
+          content={updateDetail}
           getContent={(content) => {
             setUpdateDetail(content)
             taskUpdateDebounced(updateTitle, content)
