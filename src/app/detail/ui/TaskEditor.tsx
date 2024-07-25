@@ -106,6 +106,7 @@ export const TaskEditor = ({
         value={isTyping ? tempUpdateTitle : updateTitle}
         onChange={(e) => {
           setIsTyping(true)
+          setUpdateTitle(e.target.value)
           setTempUpdateTitle(e.target.value)
           taskUpdateDebounced(e.target.value, updateDetail)
         }}
@@ -135,6 +136,7 @@ export const TaskEditor = ({
           content={isTyping ? tempUpdateDetail : updateDetail}
           getContent={(content) => {
             setIsTyping(true)
+            setUpdateDetail(content)
             setTempUpdateDetail(content)
             taskUpdateDebounced(updateTitle, content)
           }}
