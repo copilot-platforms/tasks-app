@@ -69,17 +69,13 @@ export const TaskEditor = ({
   const currentTask = tasks.find((el) => el.id === task_id)
 
   useEffect(() => {
-    setUpdateTitle(currentTask?.title || '')
-    setUpdateDetail(currentTask?.body ?? '')
+    realtimeDebounce()
   }, [tasks, task_id])
 
   useEffect(() => {
     setTempUpdateTitle(task?.title || '')
     setTempUpdateDetail(task?.body ?? '')
   }, [])
-
-  console.log(updateTitle)
-  console.log(tempUpdateTitle)
 
   console.log('detail', updateDetail)
   console.log('tempdetail', tempUpdateDetail)
@@ -88,8 +84,13 @@ export const TaskEditor = ({
     setIsTyping(false)
     updateTaskDetail(title, details)
   }
+  const _realTimeDebounce = async () => {
+    setUpdateTitle(currentTask?.title || '')
+    setUpdateDetail(currentTask?.body ?? '')
+  }
 
   const taskUpdateDebounced = useDebounce(_taskUpdateDebounced)
+  const realtimeDebounce = useDebounce(_realTimeDebounce, 1000)
   return (
     <>
       <StyledTextField
