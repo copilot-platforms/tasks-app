@@ -15,16 +15,14 @@ import { UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { createDateFromFormattedDateString, formatDate } from '@/utils/dateHelper'
 import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 import { ToggleButtonContainer } from './ToggleButtonContainer'
-import { NoAssignee, NoAssigneeExtraOptions } from '@/utils/noAssignee'
-import ExtraOptionRendererAssignee from '@/components/inputs/ExtraOptionRendererAssignee'
+import { NoAssignee } from '@/utils/noAssignee'
 import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { AssigneePlaceholder } from '@/icons'
-import { useState } from 'react'
-import { MiniLoader } from '@/components/atoms/MiniLoader'
+import { useEffect, useState } from 'react'
 import { setDebouncedFilteredAssignees } from '@/utils/users'
 import { z } from 'zod'
-import { isAssigneeTextMatching } from '@/utils/assignee'
+import { getAssigneeName, isAssigneeTextMatching } from '@/utils/assignee'
 import { DateStringSchema } from '@/types/date'
 
 const StyledText = styled(Typography)(({ theme }) => ({
@@ -33,43 +31,59 @@ const StyledText = styled(Typography)(({ theme }) => ({
 }))
 
 export const Sidebar = ({
+  task_id,
   selectedWorkflowState,
   selectedAssigneeId,
   updateWorkflowState,
-  dueDate,
   updateAssignee,
   updateTask,
   assignee,
   disabled,
 }: {
+  task_id: string
   selectedWorkflowState: WorkflowStateResponse
   selectedAssigneeId: string | undefined
-  dueDate: string | undefined
   updateWorkflowState: (workflowState: WorkflowStateResponse) => void
   updateAssignee: (assigneeType: string | null, assigneeId: string | null) => void
   updateTask: (payload: UpdateTaskRequest) => void
   assignee: IAssigneeCombined[]
   disabled: boolean
 }) => {
-  const { workflowStates, token } = useSelector(selectTaskBoard)
+  const { tasks, token, workflowStates } = useSelector(selectTaskBoard)
   const { showSidebar } = useSelector(selectTaskDetails)
   const [filteredAssignees, setFilteredAssignees] = useState(assignee)
   const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
   const [loading, setLoading] = useState(false)
+  const [dueDate, setDueDate] = useState<Date | string | undefined>()
 
   const { renderingItem: _statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
-    item: selectedWorkflowState,
+    // item: selectedWorkflowState,
+    item: null,
     type: SelectorType.STATUS_SELECTOR,
   })
   const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
-    item: selectedAssigneeId ? assignee.find((el) => el.id === selectedAssigneeId) : NoAssignee,
+    // item: selectedAssigneeId ? assignee.find((el) => el.id === selectedAssigneeId) : NoAssignee,
+    item: null,
     type: SelectorType.ASSIGNEE_SELECTOR,
   })
 
   const statusValue = _statusValue as WorkflowStateResponse //typecasting
   const assigneeValue = _assigneeValue as IAssigneeCombined //typecasting
 
+  useEffect(() => {
+    if (tasks && workflowStates) {
+      const currentTask = tasks.find((el) => el.id === task_id)
+      const currentWorkflowState = workflowStates.find((el) => el?.id === currentTask?.workflowStateId)
+      const currentAssigneeId = currentTask?.assigneeId
+      updateStatusValue(currentWorkflowState)
+      updateAssigneeValue(currentAssigneeId ? assignee.find((el) => el.id === currentAssigneeId) : NoAssignee)
+      setDueDate(currentTask?.dueDate)
+    }
+  }, [tasks, workflowStates])
+
   const matches = useMediaQuery('(max-width:600px)')
+  if (!tasks) return null
+
   return (
     <Box
       sx={{
@@ -129,7 +143,7 @@ export const Sidebar = ({
               )
             }
             options={loading ? [] : filteredAssignees}
-            value={assigneeValue.name == 'No assignee' ? null : assigneeValue}
+            value={assigneeValue?.name == 'No assignee' ? null : assigneeValue}
             selectorType={SelectorType.ASSIGNEE_SELECTOR}
             //****Disabling re-assignment completely for now***
             // extraOption={NoAssigneeExtraOptions}
@@ -152,8 +166,7 @@ export const Sidebar = ({
               <Typography variant="md" lineHeight="22px" sx={{ color: (theme) => theme.color.gray[600] }}>
                 {(assigneeValue as IAssigneeCombined)?.name == 'No assignee'
                   ? 'Unassigned'
-                  : (assigneeValue as IAssigneeCombined)?.name ||
-                    `${(assigneeValue as IAssigneeCombined)?.givenName ?? ''} ${(assigneeValue as IAssigneeCombined)?.familyName ?? ''}`.trim()}
+                  : getAssigneeName(assigneeValue, 'Unassigned')}
               </Typography>
             }
             handleInputChange={async (newInputValue: string) => {
@@ -184,10 +197,13 @@ export const Sidebar = ({
           </StyledText>
           <DatePickerComponent
             getDate={(date) => {
-              const dueDate = DateStringSchema.parse(formatDate(date))
-              updateTask({ dueDate })
+              const isoDate = DateStringSchema.parse(formatDate(date))
+              setDueDate(date)
+              updateTask({
+                dueDate: isoDate,
+              })
             }}
-            dateValue={dueDate ? createDateFromFormattedDateString(dueDate) : undefined}
+            dateValue={dueDate ? createDateFromFormattedDateString(z.string().parse(dueDate)) : undefined}
             disabled={disabled}
           />
         </Stack>

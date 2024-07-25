@@ -1,0 +1,1 @@
+export const MAX_FETCH_ASSIGNEE_COUNT = 5000

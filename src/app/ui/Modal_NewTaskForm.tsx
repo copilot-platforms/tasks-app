@@ -37,7 +37,7 @@ export const ModalNewTaskForm = ({
     >
       <NewTaskForm
         handleCreate={async () => {
-          if (title) {
+          if (title && assigneeId && assigneeType) {
             store.dispatch(setShowModal())
             store.dispatch(clearCreateTaskFields())
             const formattedDueDate = dueDate && dayjs(new Date(dueDate)).format('YYYY-MM-DD')
@@ -52,7 +52,7 @@ export const ModalNewTaskForm = ({
                 dueDate: formattedDueDate,
               }),
             )
-            store.dispatch(appendTask(createdTask))
+            // store.dispatch(appendTask(createdTask))
             const toUploadAttachments: CreateAttachmentRequest[] = attachments.map((el) => {
               return {
                 ...el,
