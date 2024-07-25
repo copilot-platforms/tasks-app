@@ -62,6 +62,7 @@ model Task {
   assignedAt         DateTime?
   completedAt        DateTime?
   dueDate            String?              @db.VarChar(10)
+  createdAt          DateTime             @default(now())
   deletedAt          DateTime?
   ClientNotification ClientNotification[]
 
@@ -81,6 +82,7 @@ model TaskTemplate {
   title        String    @db.VarChar(255)
   body         String?
   createdById  String    @db.Uuid
+  createdAt    DateTime  @default(now())
   deletedAt    DateTime?
 
   @@unique([workspaceId, templateName], name: "UQ_TaskTemplates_workspaceId_templateName")
@@ -93,6 +95,7 @@ model ViewSetting {
   userId        String    @db.Uuid
   viewMode      ViewMode  @default(board)
   workspaceId   String    @db.VarChar(32)
+  createdAt     DateTime  @default(now())
   deletedAt     DateTime?
   filterOptions Json      @db.JsonB
 

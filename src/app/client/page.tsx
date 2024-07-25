@@ -9,7 +9,10 @@ import { IAssignee, IAssigneeCombined } from '@/types/interfaces'
 import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
 import { ClientTaskBoard } from './ui/ClientTaskBoard'
 import { completeTask } from '@/app/client/actions'
-import { ASSIGNEE_REVALIDATION_INTERVAL, MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
+import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
+import { RealTime } from '@/hoc/RealTime'
+import { CopilotAPI } from '@/utils/CopilotAPI'
+import { Token, TokenSchema } from '@/types/common'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -32,29 +35,44 @@ async function getAllTasks(token: string): Promise<TaskResponse[]> {
 
 async function getAssigneeList(token: string): Promise<IAssignee> {
   const res = await fetch(`${apiUrl}/api/users/client?token=${token}&limit=${MAX_FETCH_ASSIGNEE_COUNT}`, {
-    next: { tags: ['getAssigneeList'], revalidate: ASSIGNEE_REVALIDATION_INTERVAL },
+    next: { tags: ['getAssigneeList'] },
   })
   const data = await res.json()
   return data.clients
 }
 
+async function getTokenPayload(token: string): Promise<Token> {
+  const copilotClient = new CopilotAPI(token)
+  const payload = TokenSchema.parse(await copilotClient.getTokenPayload())
+  return payload as Token
+}
+
 export default async function ClientPage({ searchParams }: { searchParams: { token: string } }) {
   const token = searchParams.token
 
-  const [workflowStates, tasks, assignee] = await Promise.all([
+  const [workflowStates, tasks, assignee, tokenPayload] = await Promise.all([
     await getAllWorkflowStates(token),
     await getAllTasks(token),
     addTypeToAssignee(await getAssigneeList(token)),
+    getTokenPayload(token),
   ])
   return (
     <>
-      <ClientSideStateUpdate workflowStates={workflowStates} tasks={tasks} token={token} assignee={assignee}>
-        <ClientTaskBoard
-          completeTask={async (taskId) => {
-            'use server'
-            completeTask({ token, taskId })
-          }}
-        />
+      <ClientSideStateUpdate
+        workflowStates={workflowStates}
+        tasks={tasks}
+        token={token}
+        assignee={assignee}
+        tokenPayload={tokenPayload}
+      >
+        <RealTime>
+          <ClientTaskBoard
+            completeTask={async (taskId) => {
+              'use server'
+              completeTask({ token, taskId })
+            }}
+          />
+        </RealTime>
       </ClientSideStateUpdate>
     </>
   )

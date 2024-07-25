@@ -45,7 +45,7 @@ function pluralize(word, count) {
 // Public Interface
 //------------------------------------------------------------------------------
 
-module.exports = function(results) {
+module.exports = function (results) {
   let output = '\n',
     errorCount = 0,
     warningCount = 0,

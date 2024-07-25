@@ -1,3 +1,1 @@
 export const MAX_FETCH_ASSIGNEE_COUNT = 5000
-
-export const ASSIGNEE_REVALIDATION_INTERVAL = 300 // 5 minutes

@@ -10,6 +10,7 @@ import { TruncateMaxNumber } from '@/types/constants'
 
 import { truncateText } from '@/utils/truncateText'
 import { CopilotAvatar } from '../atoms/CopilotAvatar'
+import { getAssigneeName } from '@/utils/assignee'
 
 export enum SelectorType {
   ASSIGNEE_SELECTOR = 'assigneeSelector',
@@ -318,12 +319,8 @@ const AssigneeSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTM
     >
       <Stack direction="row" alignItems="center" columnGap={3}>
         <CopilotAvatar currentAssignee={assignee} />
-        <Typography variant="bodySm">
-          {truncateText(
-            (option as IAssigneeCombined)?.name ||
-              `${(option as IAssigneeCombined)?.givenName ?? ''} ${(option as IAssigneeCombined)?.familyName ?? ''}`.trim(),
-            TruncateMaxNumber.SELECTOR,
-          )}
+        <Typography variant="bodySm" title={getAssigneeName(option as IAssigneeCombined)}>
+          {truncateText(getAssigneeName(option as IAssigneeCombined), TruncateMaxNumber.SELECTOR)}
         </Typography>
       </Stack>
     </Box>
