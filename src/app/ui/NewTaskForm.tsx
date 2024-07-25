@@ -18,7 +18,7 @@ import { useEffect, useState } from 'react'
 import { FilterOptions, IAssigneeCombined, ISignedUrlUpload, ITemplate } from '@/types/interfaces'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { useSelector } from 'react-redux'
-import { selectTaskBoard, setAssigneeList } from '@/redux/features/taskBoardSlice'
+import { selectTaskBoard, setAssigneeList, setFilterOptions } from '@/redux/features/taskBoardSlice'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { useRouter } from 'next/navigation'
@@ -207,7 +207,7 @@ export const NewTaskForm = ({
                 )
                 store.dispatch(setCreateTaskFields({ targetField: 'assigneeId', value: newValue?.id }))
               }}
-              startIcon={tempAssignee ? <CopilotAvatar currentAssignee={assigneeValue} /> : <AssigneePlaceholderSmall />}
+              startIcon={tempAssignee ? <CopilotAvatar currentAssignee={tempAssignee} /> : <AssigneePlaceholderSmall />}
               options={loading ? [] : filteredAssignees}
               value={tempAssignee}
               extraOption={NoAssigneeExtraOptions}
@@ -256,9 +256,9 @@ export const NewTaskForm = ({
                     fontSize: '12px',
                     maxWidth: { xs: '60px', sm: '100px' },
                   }}
-                  title={getAssigneeName(assigneeValue, 'Assignee')}
+                  title={getAssigneeName(tempAssignee as IAssigneeCombined, 'Assignee')}
                 >
-                  {getAssigneeName(assigneeValue, 'Assignee')}
+                  {getAssigneeName(tempAssignee as IAssigneeCombined, 'Assignee')}
                 </Typography>
               }
             />
