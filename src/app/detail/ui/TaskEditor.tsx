@@ -43,8 +43,11 @@ export const TaskEditor = ({
   userType,
 }: Prop) => {
   const { tasks } = useSelector(selectTaskBoard)
+  const [isTyping, setIsTyping] = useState(false)
   const [updateTitle, setUpdateTitle] = useState('')
+  const [tempUpdateTitle, setTempUpdateTitle] = useState('')
   const [updateDetail, setUpdateDetail] = useState('')
+  const [tempUpdateDetail, setTempUpdateDetail] = useState('')
   const { showConfirmDeleteModal } = useSelector(selectTaskDetails)
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -60,18 +63,24 @@ export const TaskEditor = ({
       }
     }
   }
+  const currentTask = tasks.find((el) => el.id === task_id)
+
   useEffect(() => {
-    const currentTask = tasks.find((el) => el.id === task_id)
     setUpdateTitle(currentTask?.title || '')
     setUpdateDetail(currentTask?.body ?? '')
   }, [tasks, task_id])
 
+  useEffect(() => {
+    setTempUpdateTitle(currentTask?.title || '')
+    setTempUpdateDetail(currentTask?.body ?? '')
+  }, [])
+
   const _taskUpdateDebounced = async (title: string, details: string) => {
+    setIsTyping(false)
     updateTaskDetail(title, details)
   }
 
   const taskUpdateDebounced = useDebounce(_taskUpdateDebounced)
-
   return (
     <>
       <StyledTextField
@@ -90,8 +99,10 @@ export const TaskEditor = ({
             padding: '0px 0px',
           },
         }}
-        value={updateTitle}
+        value={isTyping ? tempUpdateTitle : updateTitle}
         onChange={(e) => {
+          setIsTyping(true)
+          setTempUpdateTitle(e.target.value)
           setUpdateTitle(e.target.value)
           taskUpdateDebounced(e.target.value, updateDetail)
         }}
@@ -118,8 +129,10 @@ export const TaskEditor = ({
             })
             tiptapEditorUtils.setImage(newBlob.url as string)
           }}
-          content={updateDetail}
+          content={isTyping ? tempUpdateDetail : updateDetail}
           getContent={(content) => {
+            setIsTyping(true)
+            setTempUpdateDetail(content)
             setUpdateDetail(content)
             taskUpdateDebounced(updateTitle, content)
           }}
