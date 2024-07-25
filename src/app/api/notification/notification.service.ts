@@ -57,11 +57,7 @@ export class NotificationService extends BaseService {
           console.error(`Failed to send notifications to ${recipientId}:`, err)
         }
       }
-      // const batchSize = 10
-      // for (let i = 0; i <= promises.length; i += batchSize) {
-      //   const batchPromises = promises.slice(i, batchSize)
-      //   notifications.push(...(await Promise.all(batchPromises)))
-      // }
+      // TODO: Optimize to run parallely and not hit rate limits
       return notifications
     } catch (error) {
       console.error(`Failed to send notifications for action: ${action}`, error)
