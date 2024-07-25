@@ -76,14 +76,15 @@ export const TaskEditor = ({
   useEffect(() => {
     setTempUpdateTitle(task?.title || '')
     setTempUpdateDetail(task?.body ?? '')
-  }, [])
+  }, [currentTask])
+
+  console.log(updateTitle)
+  console.log(tempUpdateTitle)
 
   const _taskUpdateDebounced = async (title: string, details: string) => {
     setIsTyping(false)
     updateTaskDetail(title, details)
   }
-
-  console.log(tempUpdateTitle)
 
   const taskUpdateDebounced = useDebounce(_taskUpdateDebounced)
   return (
