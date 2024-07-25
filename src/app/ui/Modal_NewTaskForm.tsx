@@ -37,7 +37,7 @@ export const ModalNewTaskForm = ({
     >
       <NewTaskForm
         handleCreate={async () => {
-          if (title) {
+          if (title && assigneeId && assigneeType) {
             store.dispatch(setShowModal())
             store.dispatch(clearCreateTaskFields())
             const formattedDueDate = dueDate && dayjs(new Date(dueDate)).format('YYYY-MM-DD')
