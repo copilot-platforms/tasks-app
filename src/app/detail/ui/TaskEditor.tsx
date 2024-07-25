@@ -81,6 +81,9 @@ export const TaskEditor = ({
   console.log(updateTitle)
   console.log(tempUpdateTitle)
 
+  console.log('detail', updateDetail)
+  console.log('tempdetail', tempUpdateDetail)
+
   const _taskUpdateDebounced = async (title: string, details: string) => {
     setIsTyping(false)
     updateTaskDetail(title, details)
