@@ -76,7 +76,7 @@ export const TaskEditor = ({
   useEffect(() => {
     setTempUpdateTitle(task?.title || '')
     setTempUpdateDetail(task?.body ?? '')
-  }, [currentTask])
+  }, [])
 
   console.log(updateTitle)
   console.log(tempUpdateTitle)
