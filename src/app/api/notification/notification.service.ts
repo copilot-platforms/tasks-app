@@ -40,19 +40,29 @@ export class NotificationService extends BaseService {
       const senderId = z.string().parse(userInfo.id)
       const actionUserName = `${userInfo.givenName} ${userInfo.familyName}`
 
-      const promises = recipientIds.map((recipientId) => {
-        const notificationDetails = {
-          senderId,
-          recipientId,
-          deliveryTargets: {
-            inProduct: getInProductNotificationDetails(actionUserName, task.title)[action],
-            email: getEmailDetails(actionUserName, task.title)[action],
-          },
-        }
-        return copilotUtils.createNotification(notificationDetails)
-      })
+      const companies = await copilotUtils.getCompanies()
+      const currentCompany = companies.data?.find((company) => company.id === task.assigneeId)
+      const inProduct = getInProductNotificationDetails(actionUserName, task.title, currentCompany?.name)[action]
 
-      return await Promise.all(promises)
+      const notifications = []
+      for (let recipientId of recipientIds) {
+        try {
+          const notificationDetails = {
+            senderId,
+            recipientId,
+            deliveryTargets: { inProduct },
+          }
+          notifications.push(await copilotUtils.createNotification(notificationDetails))
+        } catch (err: unknown) {
+          console.error(`Failed to send notifications to ${recipientId}:`, err)
+        }
+      }
+      // const batchSize = 10
+      // for (let i = 0; i <= promises.length; i += batchSize) {
+      //   const batchPromises = promises.slice(i, batchSize)
+      //   notifications.push(...(await Promise.all(batchPromises)))
+      // }
+      return notifications
     } catch (error) {
       console.error(`Failed to send notifications for action: ${action}`, error)
     }
@@ -156,6 +166,16 @@ export class NotificationService extends BaseService {
         senderId = task.createdById
         recipientIds = (await copilot.getCompanyClients(z.string().parse(task.assigneeId))).map((client) => client.id)
         actionTrigger = await copilot.getInternalUser(senderId)
+        break
+      case NotificationTaskActions.CompletedByCompanyMember:
+        senderId = z.string().parse(task.assigneeId)
+        const internalUsers = await copilot.getInternalUsers()
+        recipientIds = internalUsers.data
+          .filter((iu) =>
+            iu.isClientAccessLimited ? iu.companyAccessList?.includes(z.string().parse(task.assigneeId)) : true,
+          )
+          .map((iu) => iu.id)
+        actionTrigger = await getAssignedTo()
         break
       case NotificationTaskActions.Completed:
         senderId = z.string().parse(task.assigneeId)

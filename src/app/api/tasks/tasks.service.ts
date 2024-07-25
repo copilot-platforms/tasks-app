@@ -298,11 +298,22 @@ export class TasksService extends BaseService {
     })
 
     const notificationService = new NotificationService(this.user)
-    await notificationService.create(NotificationTaskActions.Completed, updatedTask)
 
     if (updatedTask.assigneeType === AssigneeType.company) {
+      const copilot = new CopilotAPI(this.user.token)
+      const { recipientIds } = await notificationService.getNotificationParties(
+        copilot,
+        updatedTask,
+        NotificationTaskActions.CompletedByCompanyMember,
+      )
+      await notificationService.createBulkNotification(
+        NotificationTaskActions.CompletedByCompanyMember,
+        updatedTask,
+        recipientIds,
+      )
       await notificationService.markAsReadForAllRecipients(updatedTask)
     } else {
+      await notificationService.create(NotificationTaskActions.Completed, updatedTask)
       await notificationService.markClientNotificationAsRead(updatedTask)
     }
     return updatedTask
