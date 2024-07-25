@@ -296,8 +296,10 @@ export class TasksService extends BaseService {
         ...(await getTaskTimestamps('update', this.user, data, prevTask)),
       },
     })
+
     const notificationService = new NotificationService(this.user)
     await notificationService.create(NotificationTaskActions.Completed, updatedTask)
+
     if (updatedTask.assigneeType === AssigneeType.company) {
       await notificationService.markAsReadForAllRecipients(updatedTask)
     } else {
@@ -397,7 +399,6 @@ export class TasksService extends BaseService {
       updatedTask.assigneeId
     ) {
       const notificationService = new NotificationService(this.user)
-      await notificationService.create(NotificationTaskActions.Completed, updatedTask)
       if (updatedTask.assigneeType === AssigneeType.client) {
         try {
           await notificationService.markClientNotificationAsRead(updatedTask)

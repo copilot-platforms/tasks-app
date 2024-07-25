@@ -21,8 +21,8 @@ export const getInProductNotificationDetails = (
       body: `A new task was assigned to your company by ${actionUser}. To see details about the task, navigate to the Tasks App below.`,
     },
     [NotificationTaskActions.Completed]: {
-      title: 'A client completed a task',
-      body: `A new task was completed by ${actionUser}. You are receiving this notification because you have access to the client.`,
+      title: 'A task was completed',
+      body: `The task ‘${taskName}’ was completed by ${actionUser}. You are receiving this notification because you have access to the client.`,
     },
     [NotificationTaskActions.Commented]: {
       title: 'New comment on task',

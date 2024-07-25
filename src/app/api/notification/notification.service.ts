@@ -15,14 +15,13 @@ export class NotificationService extends BaseService {
 
       const { senderId, recipientId, actionUser } = await this.getNotificationParties(copilotUtils, task, action)
 
+      const inProduct = getInProductNotificationDetails(actionUser, task.title)[action]
+      const email = getEmailDetails(actionUser)[action]
       const notificationDetails = {
         senderId,
         recipientId,
-        deliveryTargets: {
-          // If any of the given action is not present in details obj, that type of notification is not sent
-          inProduct: getInProductNotificationDetails(actionUser)[action],
-          email: getEmailDetails(actionUser)[action],
-        },
+        // If any of the given action is not present in details obj, that type of notification is not sent
+        deliveryTargets: { inProduct, email },
       }
 
       return await copilotUtils.createNotification(notificationDetails)
