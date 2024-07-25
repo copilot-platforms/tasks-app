@@ -183,6 +183,7 @@ export default async function TaskDetailPage({
                   <TaskEditor
                     attachment={attachments}
                     task_id={task_id}
+                    task={task}
                     isEditable={params.user_type === UserType.INTERNAL_USER}
                     updateTaskDetail={async (title, detail) => {
                       'use server'

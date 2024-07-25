@@ -18,9 +18,11 @@ import { advancedFeatureFlag } from '@/config'
 import { Tapwrite } from 'tapwrite'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { useDebounce } from '@/hooks/useDebounce'
+import { TaskResponse } from '@/types/dto/tasks.dto'
 
 interface Prop {
   task_id: string
+  task: TaskResponse
   attachment: AttachmentResponseSchema[]
   isEditable: boolean
   updateTaskDetail: (title: string, detail: string) => void
@@ -33,6 +35,7 @@ interface Prop {
 
 export const TaskEditor = ({
   task_id,
+  task,
   attachment,
   isEditable,
   updateTaskDetail,
@@ -71,14 +74,16 @@ export const TaskEditor = ({
   }, [tasks, task_id])
 
   useEffect(() => {
-    setTempUpdateTitle(currentTask?.title || '')
-    setTempUpdateDetail(currentTask?.body ?? '')
+    setTempUpdateTitle(task?.title || '')
+    setTempUpdateDetail(task?.body ?? '')
   }, [])
 
   const _taskUpdateDebounced = async (title: string, details: string) => {
     setIsTyping(false)
     updateTaskDetail(title, details)
   }
+
+  console.log(tempUpdateTitle)
 
   const taskUpdateDebounced = useDebounce(_taskUpdateDebounced)
   return (
