@@ -57,10 +57,10 @@ export const getEmailDetails = (
 ): Partial<{ [key in NotificationTaskActions]: { title: string; subject: string; header: string; body: string } }> => {
   return {
     [NotificationTaskActions.Assigned]: {
-      title: 'Task was assigned to you',
-      subject: 'Task was assigned to you',
-      header: 'Task was assigned to you',
-      body: `A new task was assigned to you by ${actionUser}. To see details about the task, navigate to the Tasks App below.`,
+      title: 'A task was assigned to you',
+      subject: 'A task was assigned to you',
+      header: 'A task was assigned to you',
+      body: `The task ‘${taskName}’ was assigned to you by ${actionUser}. To see details about the task open it below. `,
     },
     [NotificationTaskActions.AssignedToCompany]: {
       title: 'Task was assigned to your company',
