@@ -18,11 +18,9 @@ import { advancedFeatureFlag } from '@/config'
 import { Tapwrite } from 'tapwrite'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { useDebounce } from '@/hooks/useDebounce'
-import { TaskResponse } from '@/types/dto/tasks.dto'
 
 interface Prop {
   task_id: string
-  task: TaskResponse
   attachment: AttachmentResponseSchema[]
   isEditable: boolean
   updateTaskDetail: (title: string, detail: string) => void
@@ -35,7 +33,6 @@ interface Prop {
 
 export const TaskEditor = ({
   task_id,
-  task,
   attachment,
   isEditable,
   updateTaskDetail,
@@ -46,11 +43,8 @@ export const TaskEditor = ({
   userType,
 }: Prop) => {
   const { tasks } = useSelector(selectTaskBoard)
-  const [isTyping, setIsTyping] = useState(false)
   const [updateTitle, setUpdateTitle] = useState('')
-  const [tempUpdateTitle, setTempUpdateTitle] = useState('')
   const [updateDetail, setUpdateDetail] = useState('')
-  const [tempUpdateDetail, setTempUpdateDetail] = useState('')
   const { showConfirmDeleteModal } = useSelector(selectTaskDetails)
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -66,24 +60,18 @@ export const TaskEditor = ({
       }
     }
   }
-  const currentTask = tasks.find((el) => el.id === task_id)
-
   useEffect(() => {
-    setTempUpdateTitle(task?.title || '')
-    setTempUpdateDetail(task?.body ?? '')
-  }, [])
-
-  console.log('detail', updateDetail)
-  console.log('tempdetail', tempUpdateDetail)
-
-  const _taskUpdateDebounced = async (title: string, details: string) => {
-    setIsTyping(false)
+    const currentTask = tasks.find((el) => el.id === task_id)
     setUpdateTitle(currentTask?.title || '')
     setUpdateDetail(currentTask?.body ?? '')
+  }, [tasks, task_id])
+
+  const _taskUpdateDebounced = async (title: string, details: string) => {
     updateTaskDetail(title, details)
   }
 
   const taskUpdateDebounced = useDebounce(_taskUpdateDebounced)
+
   return (
     <>
       <StyledTextField
@@ -102,10 +90,8 @@ export const TaskEditor = ({
             padding: '0px 0px',
           },
         }}
-        value={isTyping ? tempUpdateTitle : updateTitle}
+        value={updateTitle}
         onChange={(e) => {
-          setIsTyping(true)
-          setTempUpdateTitle(e.target.value)
           setUpdateTitle(e.target.value)
           taskUpdateDebounced(e.target.value, updateDetail)
         }}
@@ -132,10 +118,8 @@ export const TaskEditor = ({
             })
             tiptapEditorUtils.setImage(newBlob.url as string)
           }}
-          content={isTyping ? tempUpdateDetail : updateDetail}
+          content={updateDetail}
           getContent={(content) => {
-            setIsTyping(true)
-            setTempUpdateDetail(content)
             setUpdateDetail(content)
             taskUpdateDebounced(updateTitle, content)
           }}
