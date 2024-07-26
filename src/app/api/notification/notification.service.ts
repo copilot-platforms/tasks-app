@@ -9,19 +9,19 @@ import APIError from '@api/core/exceptions/api'
 import httpStatus from 'http-status'
 
 export class NotificationService extends BaseService {
-  async create(action: NotificationTaskActions, task: Task) {
+  async create(action: NotificationTaskActions, task: Task, disable: { email: boolean } = { email: false }) {
     try {
       const copilotUtils = new CopilotAPI(this.user.token)
 
       const { senderId, recipientId, actionUser } = await this.getNotificationParties(copilotUtils, task, action)
 
+      const inProduct = getInProductNotificationDetails(actionUser, task.title)[action]
+      const email = disable.email ? undefined : getEmailDetails(actionUser, task.title)[action]
       const notificationDetails = {
         senderId,
         recipientId,
-        deliveryTargets: {
-          inProduct: getInProductNotificationDetails(actionUser)[action],
-          email: getEmailDetails(actionUser)[action],
-        },
+        // If any of the given action is not present in details obj, that type of notification is not sent
+        deliveryTargets: { inProduct, email },
       }
 
       return await copilotUtils.createNotification(notificationDetails)
@@ -40,19 +40,25 @@ export class NotificationService extends BaseService {
       const senderId = z.string().parse(userInfo.id)
       const actionUserName = `${userInfo.givenName} ${userInfo.familyName}`
 
-      const promises = recipientIds.map((recipientId) => {
-        const notificationDetails = {
-          senderId,
-          recipientId,
-          deliveryTargets: {
-            inProduct: getInProductNotificationDetails(actionUserName, task.title)[action],
-            email: getEmailDetails(actionUserName, task.title)[action],
-          },
-        }
-        return copilotUtils.createNotification(notificationDetails)
-      })
+      const companies = await copilotUtils.getCompanies()
+      const currentCompany = companies.data?.find((company) => company.id === task.assigneeId)
+      const inProduct = getInProductNotificationDetails(actionUserName, task.title, currentCompany?.name)[action]
 
-      return await Promise.all(promises)
+      const notifications = []
+      for (let recipientId of recipientIds) {
+        try {
+          const notificationDetails = {
+            senderId,
+            recipientId,
+            deliveryTargets: { inProduct },
+          }
+          notifications.push(await copilotUtils.createNotification(notificationDetails))
+        } catch (err: unknown) {
+          console.error(`Failed to send notifications to ${recipientId}:`, err)
+        }
+      }
+      // TODO: Optimize to run parallely and not hit rate limits
+      return notifications
     } catch (error) {
       console.error(`Failed to send notifications for action: ${action}`, error)
     }
@@ -106,20 +112,23 @@ export class NotificationService extends BaseService {
   markAsReadForAllRecipients = async (task: Task) => {
     const copilot = new CopilotAPI(this.user.token)
     const { recipientIds } = await this.getNotificationParties(copilot, task, NotificationTaskActions.AssignedToCompany)
-    const markAsReadPromises = recipientIds.map((recipientId) =>
-      this.markClientNotificationAsRead({
+
+    for (let recipientId of recipientIds) {
+      await this.markClientNotificationAsRead({
         ...task,
         assigneeId: recipientId,
         assigneeType: AssigneeType.client,
-      }),
-    )
-
-    // Mark as read while preventing burst ratelimits
-    const batchSize = 10
-    for (let i = 0; i <= markAsReadPromises.length; i += batchSize) {
-      const batchPromises = markAsReadPromises.slice(i, batchSize)
-      await Promise.all(batchPromises)
+      })
     }
+
+    // TODO: Optimized Mark as read while preventing burst ratelimits - will probably implement `bottleneck` package for this
+    // const markAsReadPromises = recipientIds.map((recipientId) =>
+    //   this.markClientNotificationAsRead({
+    //     ...task,
+    //     assigneeId: recipientId,
+    //     assigneeType: AssigneeType.client,
+    //   }),
+    // )
   }
 
   /**
@@ -156,6 +165,16 @@ export class NotificationService extends BaseService {
         senderId = task.createdById
         recipientIds = (await copilot.getCompanyClients(z.string().parse(task.assigneeId))).map((client) => client.id)
         actionTrigger = await copilot.getInternalUser(senderId)
+        break
+      case NotificationTaskActions.CompletedByCompanyMember:
+        senderId = z.string().parse(task.assigneeId)
+        const internalUsers = await copilot.getInternalUsers()
+        recipientIds = internalUsers.data
+          .filter((iu) =>
+            iu.isClientAccessLimited ? iu.companyAccessList?.includes(z.string().parse(task.assigneeId)) : true,
+          )
+          .map((iu) => iu.id)
+        actionTrigger = await getAssignedTo()
         break
       case NotificationTaskActions.Completed:
         senderId = z.string().parse(task.assigneeId)

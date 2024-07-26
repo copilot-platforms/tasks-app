@@ -40,6 +40,7 @@ interface Prop {
   responsiveNoHide?: boolean
   handleInputChange?: (_: string) => void
   filterOption?: any
+  onClick?: () => void
 }
 
 export default function Selector({
@@ -60,6 +61,7 @@ export default function Selector({
   responsiveNoHide,
   handleInputChange,
   filterOption,
+  onClick,
 }: Prop) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
@@ -67,6 +69,7 @@ export default function Selector({
     if (!disabled) {
       setAnchorEl(anchorEl ? null : event.currentTarget)
     }
+    onClick?.()
   }
 
   const open = Boolean(anchorEl)
@@ -211,10 +214,6 @@ export default function Selector({
             )
           }}
           inputValue={inputStatusValue}
-          onInputChange={(_, newInputValue) => {
-            handleInputChange?.(newInputValue)
-            setInputStatusValue(newInputValue)
-          }}
           renderInput={(params) => {
             return (
               <StyledTextField
@@ -226,6 +225,10 @@ export default function Selector({
                 sx={{
                   width: '200px',
                   visibility: { xs: 'none', sm: 'visible' },
+                }}
+                onChange={(e) => {
+                  handleInputChange?.(e.target.value)
+                  setInputStatusValue(e.target.value)
                 }}
               />
             )

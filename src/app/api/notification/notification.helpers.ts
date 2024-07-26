@@ -10,19 +10,28 @@ import { NotificationTaskActions } from '@api/core/types/tasks'
 export const getInProductNotificationDetails = (
   actionUser: string,
   taskName?: string,
+  companyName?: string,
 ): { [key in NotificationTaskActions]: { title: string; body: string } } => {
   return {
     [NotificationTaskActions.Assigned]: {
       title: 'Task was assigned to you',
-      body: `A new task was assigned to you by ${actionUser}. To see details about the task, navigate to the Tasks App below.`,
+      body: `The task ‘${taskName}’  was created and assigned to you by ${actionUser}. To see details about the task, navigate to the Tasks App below.`,
     },
     [NotificationTaskActions.AssignedToCompany]: {
       title: 'Task was assigned to your company',
       body: `A new task was assigned to your company by ${actionUser}. To see details about the task, navigate to the Tasks App below.`,
     },
+    [NotificationTaskActions.ReassignedToIU]: {
+      title: 'Task was reassigned to you',
+      body: `The task ‘${taskName}’ was reassigned to you by ${actionUser}. To see details about the task, navigate to the Tasks App below.`,
+    },
+    [NotificationTaskActions.CompletedByCompanyMember]: {
+      title: 'Task was completed',
+      body: `The task ‘${taskName}’ was completed by ${actionUser} for ${companyName}. You are receiving this notification because you have access to the client.`,
+    },
     [NotificationTaskActions.Completed]: {
-      title: 'A client completed a task',
-      body: `A new task was completed by ${actionUser}. You are receiving this notification because you have access to the client.`,
+      title: 'Task was completed',
+      body: `The task ‘${taskName}’ was completed by ${actionUser}. You are receiving this notification because you have access to the client.`,
     },
     [NotificationTaskActions.Commented]: {
       title: 'New comment on task',
@@ -45,13 +54,13 @@ export const getInProductNotificationDetails = (
 export const getEmailDetails = (
   actionUser: string,
   taskName?: string,
-): { [key in NotificationTaskActions]: { title: string; subject: string; header: string; body: string } } => {
+): Partial<{ [key in NotificationTaskActions]: { title: string; subject: string; header: string; body: string } }> => {
   return {
     [NotificationTaskActions.Assigned]: {
-      title: 'Task was assigned to you',
-      subject: 'Task was assigned to you',
-      header: 'Task was assigned to you',
-      body: `A new task was assigned to you by ${actionUser}. To see details about the task, navigate to the Tasks App below.`,
+      title: 'A task was assigned to you',
+      subject: 'A task was assigned to you',
+      header: 'A task was assigned to you',
+      body: `The task ‘${taskName}’ was assigned to you by ${actionUser}. To see details about the task open it below. `,
     },
     [NotificationTaskActions.AssignedToCompany]: {
       title: 'Task was assigned to your company',
@@ -59,12 +68,13 @@ export const getEmailDetails = (
       header: 'Task was assigned to your company',
       body: `A new task was assigned to your company by ${actionUser}. To see details about the task, navigate to the Tasks App below.`,
     },
-    [NotificationTaskActions.Completed]: {
-      title: 'A client completed a task',
-      subject: 'A client completed a task',
-      header: 'A client completed a task',
-      body: `A new task was completed by ${actionUser}. You are receiving this notification because you have access to the client.`,
-    },
+    //! Currently disable all IU email notifications
+    // [NotificationTaskActions.Completed]: {
+    //   title: 'A client completed a task',
+    //   subject: 'A client completed a task',
+    //   header: 'A client completed a task',
+    //   body: `A new task was completed by ${actionUser}. You are receiving this notification because you have access to the client.`,
+    // },
     [NotificationTaskActions.Commented]: {
       subject: 'New comment on task',
       header: 'New comment on task',
