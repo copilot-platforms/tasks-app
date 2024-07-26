@@ -46,7 +46,8 @@ export const TaskEditor = ({
   userType,
 }: Prop) => {
   const { tasks } = useSelector(selectTaskBoard)
-  const [isTyping, setIsTyping] = useState(false)
+  const [isTitleTyping, setIsTitleTyping] = useState(false)
+  const [isDetailTyping, setIsDetailTyping] = useState(false)
   const [updateTitle, setUpdateTitle] = useState('')
   const [tempUpdateTitle, setTempUpdateTitle] = useState('')
   const [updateDetail, setUpdateDetail] = useState('')
@@ -101,9 +102,9 @@ export const TaskEditor = ({
             padding: '0px 0px',
           },
         }}
-        value={isTyping ? tempUpdateTitle : updateTitle}
+        value={isTitleTyping ? tempUpdateTitle : updateTitle}
         onChange={(e) => {
-          setIsTyping(true)
+          setIsTitleTyping(true)
           setUpdateTitle(e.target.value)
           setTempUpdateTitle(e.target.value)
           taskUpdateDebounced(e.target.value, updateDetail)
@@ -113,7 +114,7 @@ export const TaskEditor = ({
         disabled={!isEditable}
         padding="0px"
         onBlur={() => {
-          setIsTyping(false)
+          setIsTitleTyping(false)
           updateTaskDetail(tempUpdateTitle, tempUpdateDetail)
           setTempUpdateTitle(currentTask?.title ?? '')
         }}
@@ -121,7 +122,7 @@ export const TaskEditor = ({
 
       <Box
         onBlur={() => {
-          setIsTyping(false)
+          setIsDetailTyping(false)
           updateTaskDetail(tempUpdateTitle, tempUpdateDetail)
           setTempUpdateDetail(currentTask?.body ?? '')
         }}
@@ -135,9 +136,9 @@ export const TaskEditor = ({
             })
             tiptapEditorUtils.setImage(newBlob.url as string)
           }}
-          content={isTyping ? tempUpdateDetail : updateDetail}
+          content={isDetailTyping ? tempUpdateDetail : updateDetail}
           getContent={(content) => {
-            setIsTyping(true)
+            setIsDetailTyping(true)
             setUpdateDetail(content)
             setTempUpdateDetail(content)
             taskUpdateDebounced(updateTitle, content)
