@@ -47,9 +47,9 @@ export const TaskEditor = ({
   const [updateTitle, setUpdateTitle] = useState('')
   const [updateDetail, setUpdateDetail] = useState('')
   const [isUserTyping, setIsUserTyping] = useState(false)
+  const skipUpdate = useRef(false)
   const { showConfirmDeleteModal } = useSelector(selectTaskDetails)
 
-  // Store the original state to detect conflicts
   const originalTask = useRef({ title: '', body: '' })
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -67,19 +67,19 @@ export const TaskEditor = ({
   }
 
   useEffect(() => {
-    if (!isUserTyping) {
+    if (!skipUpdate.current) {
       const currentTask = tasks.find((el) => el.id === task_id)
       if (currentTask) {
         setUpdateTitle(currentTask.title || '')
         setUpdateDetail(currentTask.body ?? '')
-        // Update original task state
         originalTask.current = { title: currentTask.title || '', body: currentTask.body || '' }
       }
+    } else {
+      skipUpdate.current = false
     }
-  }, [tasks, task_id, isUserTyping])
+  }, [tasks, task_id])
 
   const _taskUpdateDebounced = async (title: string, details: string) => {
-    // Compare the current state with the original state to detect conflicts
     const currentTask = tasks.find((el) => el.id === task_id)
     if (currentTask) {
       const newTitle = title !== originalTask.current.title ? title : currentTask.title
@@ -93,6 +93,7 @@ export const TaskEditor = ({
 
   const resetTypingFlag = useCallback(() => {
     setIsUserTyping(false)
+    skipUpdate.current = true
   }, [])
 
   const debouncedResetTypingFlag = useDebounce(resetTypingFlag, 1000)
