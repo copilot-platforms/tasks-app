@@ -18,6 +18,8 @@ import { createMultipleAttachments, getSignedUrlUpload } from '@/app/actions'
 import { ModalNewTaskForm } from './ui/Modal_NewTaskForm'
 import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 import { RealTime } from '@/hoc/RealTime'
+import { redirect } from 'next/navigation'
+import { redirectIfTaskCta } from '@/utils/redirect'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -72,14 +74,15 @@ async function getAllTemplates(token: string): Promise<ITemplate[]> {
   return templates.data
 }
 
-export default async function Main({ searchParams }: { searchParams: { token: string } }) {
+export default async function Main({ searchParams }: { searchParams: { token: string; taskId?: string } }) {
   const token = searchParams.token
 
   const parsedToken = z.string().safeParse(searchParams.token)
-
   if (!parsedToken.success) {
     return <ClientError message={'Please provide a Valid Token'} />
   }
+
+  redirectIfTaskCta(searchParams)
 
   const [workflowStates, tasks, assignee, viewSettings, tokenPayload, templates] = await Promise.all([
     getAllWorkflowStates(token),

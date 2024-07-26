@@ -3396,10 +3396,10 @@ convert-source-map@^2.0.0:
   resolved "https://registry.yarnpkg.com/convert-source-map/-/convert-source-map-2.0.0.tgz#4b560f649fc4e918dd0ab75cf4961e8bc882d82a"
   integrity sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==
 
-copilot-node-sdk@^2.0.0:
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/copilot-node-sdk/-/copilot-node-sdk-2.3.0.tgz#4b3ac86c0bc2a3baf777ed75dc8b8ea0f52974e5"
-  integrity sha512-Oy6pxwRo/anPbhmc3HKCjW+nRnIiEVS4wh5c7bHh/99x4FRJdwGmESD/lrQyzAe+3TPI8fVBFofP9viI9bXF4A==
+copilot-node-sdk@^3.2.0:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/copilot-node-sdk/-/copilot-node-sdk-3.2.0.tgz#ab81fadb9a84f718689c0de1d4f26fc53108e3ca"
+  integrity sha512-ZcsPu2GgRJPdTeaN1zNNy/Bm2A4+7G6/AU3en90Xg1U5ResvgJ5GH1KXtxQWiK3mi6dbss1eBnTtmfd33rLrYg==
   dependencies:
     isomorphic-fetch "^3.0.0"
     next "^14.0.2"

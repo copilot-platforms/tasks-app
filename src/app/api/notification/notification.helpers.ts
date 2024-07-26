@@ -1,4 +1,5 @@
 import { NotificationTaskActions } from '@api/core/types/tasks'
+import { Task } from '@prisma/client'
 
 /**
  * Helper function that sets the in-product notification title and body for a given notification trigger
@@ -9,13 +10,16 @@ import { NotificationTaskActions } from '@api/core/types/tasks'
  */
 export const getInProductNotificationDetails = (
   actionUser: string,
-  taskName?: string,
+  task?: Task,
   companyName?: string,
-): { [key in NotificationTaskActions]: { title: string; body: string } } => {
+): { [key in NotificationTaskActions]: { title: string; body: string; ctaParams?: Record<string, unknown> } } => {
+  const ctaParams = { taskId: task?.id }
+
   return {
     [NotificationTaskActions.Assigned]: {
       title: 'Task was assigned to you',
-      body: `The task ‘${taskName}’  was created and assigned to you by ${actionUser}. To see details about the task, navigate to the Tasks App below.`,
+      body: `The task ‘${task?.title}’  was created and assigned to you by ${actionUser}. To see details about the task, navigate to the Tasks App below.`,
+      ctaParams,
     },
     [NotificationTaskActions.AssignedToCompany]: {
       title: 'Task was assigned to your company',
@@ -23,23 +27,28 @@ export const getInProductNotificationDetails = (
     },
     [NotificationTaskActions.ReassignedToIU]: {
       title: 'Task was reassigned to you',
-      body: `The task ‘${taskName}’ was reassigned to you by ${actionUser}. To see details about the task, navigate to the Tasks App below.`,
+      body: `The task ‘${task?.title}’ was reassigned to you by ${actionUser}. To see details about the task, navigate to the Tasks App below.`,
+      ctaParams,
     },
     [NotificationTaskActions.CompletedByCompanyMember]: {
       title: 'Task was completed',
-      body: `The task ‘${taskName}’ was completed by ${actionUser} for ${companyName}. You are receiving this notification because you have access to the client.`,
+      body: `The task ‘${task?.title}’ was completed by ${actionUser} for ${companyName}. You are receiving this notification because you have access to the client.`,
+      ctaParams,
     },
     [NotificationTaskActions.Completed]: {
       title: 'Task was completed',
-      body: `The task ‘${taskName}’ was completed by ${actionUser}. You are receiving this notification because you have access to the client.`,
+      body: `The task ‘${task?.title}’ was completed by ${actionUser}. You are receiving this notification because you have access to the client.`,
+      ctaParams,
     },
     [NotificationTaskActions.Commented]: {
       title: 'New comment on task',
       body: `A new comment was left by ${actionUser} on a task where you are set as the assignee. To see details about the task, navigate to the Tasks App below.`,
+      ctaParams,
     },
     [NotificationTaskActions.Mentioned]: {
       title: 'You were mentioned in a task comment',
-      body: `You were mentioned in a comment on task ${taskName} by ${actionUser}. To see details about the task, navigate to the Tasks App below. `,
+      body: `You were mentioned in a comment on task ${task?.title} by ${actionUser}. To see details about the task, navigate to the Tasks App below. `,
+      ctaParams,
     },
   }
 }
