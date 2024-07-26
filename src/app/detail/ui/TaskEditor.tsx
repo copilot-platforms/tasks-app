@@ -66,9 +66,8 @@ export const TaskEditor = ({
       }
     }
   }
-
+  const currentTask = tasks.find((el) => el.id === task_id)
   useEffect(() => {
-    const currentTask = tasks.find((el) => el.id === task_id)
     setUpdateTitle(currentTask?.title || '')
     setUpdateDetail(currentTask?.body ?? '')
   }, [tasks, task_id])
@@ -116,6 +115,7 @@ export const TaskEditor = ({
         onBlur={() => {
           setIsTyping(false)
           updateTaskDetail(updateTitle, updateDetail)
+          setTempUpdateTitle(currentTask?.title ?? '')
         }}
       />
 
@@ -123,6 +123,7 @@ export const TaskEditor = ({
         onBlur={() => {
           setIsTyping(false)
           updateTaskDetail(updateTitle, updateDetail)
+          setTempUpdateDetail(currentTask?.body ?? '')
         }}
         mt="12px"
       >
