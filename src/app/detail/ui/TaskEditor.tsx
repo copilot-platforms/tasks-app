@@ -4,7 +4,7 @@ import { AttachmentCard } from '@/components/cards/AttachmentCard'
 import { StyledTextField } from '@/components/inputs/TextField'
 import { selectTaskDetails, setShowConfirmDeleteModal } from '@/redux/features/taskDetailsSlice'
 import { Box, Modal, Stack } from '@mui/material'
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useSelector } from 'react-redux'
 import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
 import store from '@/redux/store'
@@ -24,8 +24,7 @@ interface Prop {
   task_id: string
   attachment: AttachmentResponseSchema[]
   isEditable: boolean
-  updateTaskDetail: (detail: string) => void
-  updateTaskTitle: (title: string) => void
+  updateTaskDetail: (title: string, detail: string) => void
   deleteTask: () => void
   postAttachment: (postAttachmentPayload: CreateAttachmentRequest) => void
   deleteAttachment: (id: string) => void
@@ -38,18 +37,20 @@ export const TaskEditor = ({
   attachment,
   isEditable,
   updateTaskDetail,
-  updateTaskTitle,
   deleteTask,
   postAttachment,
   deleteAttachment,
   getSignedUrlUpload,
   userType,
 }: Prop) => {
+  const { showConfirmDeleteModal } = useSelector(selectTaskDetails)
   const { tasks } = useSelector(selectTaskBoard)
   const [updateTitle, setUpdateTitle] = useState('')
   const [updateDetail, setUpdateDetail] = useState('')
-  const { showConfirmDeleteModal } = useSelector(selectTaskDetails)
   const [isUserTyping, setIsUserTyping] = useState(false)
+
+  // Store the original state to detect conflicts
+  const originalTask = useRef({ title: '', body: '' })
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     event.preventDefault()
@@ -71,16 +72,20 @@ export const TaskEditor = ({
       if (currentTask) {
         setUpdateTitle(currentTask.title || '')
         setUpdateDetail(currentTask.body ?? '')
+        // Update original task state
+        originalTask.current = { title: currentTask.title || '', body: currentTask.body || '' }
       }
     }
   }, [tasks, task_id, isUserTyping])
 
-  const _taskUpdateDebounced = async ({ title, details }: { title?: string; details?: string }) => {
-    if (details) {
-      updateTaskDetail(details)
-    }
-    if (title) {
-      updateTaskTitle(title)
+  const _taskUpdateDebounced = async (title: string, details: string) => {
+    // Compare the current state with the original state to detect conflicts
+    const currentTask = tasks.find((el) => el.id === task_id)
+    if (currentTask) {
+      const newTitle = title !== originalTask.current.title ? title : currentTask.title
+      const newDetail = details !== originalTask.current.body ? details : currentTask.body
+
+      updateTaskDetail(newTitle as string, newDetail as string)
     }
   }
 
@@ -96,14 +101,14 @@ export const TaskEditor = ({
     const newTitle = e.target.value
     setUpdateTitle(newTitle)
     setIsUserTyping(true)
-    taskUpdateDebounced({ title: newTitle })
+    taskUpdateDebounced(newTitle, updateDetail)
     debouncedResetTypingFlag()
   }
 
   const handleDetailChange = (content: string) => {
     setUpdateDetail(content)
     setIsUserTyping(true)
-    taskUpdateDebounced({ details: content })
+    taskUpdateDebounced(updateTitle, content)
     debouncedResetTypingFlag()
   }
 
