@@ -43,14 +43,12 @@ export const TaskEditor = ({
   getSignedUrlUpload,
   userType,
 }: Prop) => {
-  const { showConfirmDeleteModal } = useSelector(selectTaskDetails)
   const { tasks } = useSelector(selectTaskBoard)
   const [updateTitle, setUpdateTitle] = useState('')
   const [updateDetail, setUpdateDetail] = useState('')
   const [isUserTyping, setIsUserTyping] = useState(false)
-
-  // Store the original state to detect conflicts
   const originalTask = useRef({ title: '', body: '' })
+  const { showConfirmDeleteModal } = useSelector(selectTaskDetails)
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     event.preventDefault()
@@ -72,21 +70,13 @@ export const TaskEditor = ({
       if (currentTask) {
         setUpdateTitle(currentTask.title || '')
         setUpdateDetail(currentTask.body ?? '')
-        // Update original task state
         originalTask.current = { title: currentTask.title || '', body: currentTask.body || '' }
       }
     }
   }, [tasks, task_id, isUserTyping])
 
   const _taskUpdateDebounced = async (title: string, details: string) => {
-    // Compare the current state with the original state to detect conflicts
-    const currentTask = tasks.find((el) => el.id === task_id)
-    if (currentTask) {
-      const newTitle = title !== originalTask.current.title ? title : currentTask.title
-      const newDetail = details !== originalTask.current.body ? details : currentTask.body
-
-      updateTaskDetail(newTitle as string, newDetail as string)
-    }
+    updateTaskDetail(title, details)
   }
 
   const taskUpdateDebounced = useDebounce(_taskUpdateDebounced)
