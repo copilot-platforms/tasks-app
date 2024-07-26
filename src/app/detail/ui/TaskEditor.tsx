@@ -4,7 +4,7 @@ import { AttachmentCard } from '@/components/cards/AttachmentCard'
 import { StyledTextField } from '@/components/inputs/TextField'
 import { selectTaskDetails, setShowConfirmDeleteModal } from '@/redux/features/taskDetailsSlice'
 import { Box, Modal, Stack } from '@mui/material'
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useSelector } from 'react-redux'
 import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
 import store from '@/redux/store'
@@ -43,15 +43,11 @@ export const TaskEditor = ({
   getSignedUrlUpload,
   userType,
 }: Prop) => {
-  //test purpose only
   const { tasks } = useSelector(selectTaskBoard)
   const [updateTitle, setUpdateTitle] = useState('')
   const [updateDetail, setUpdateDetail] = useState('')
-  const [isUserTyping, setIsUserTyping] = useState(false)
-  const skipUpdate = useRef(false)
   const { showConfirmDeleteModal } = useSelector(selectTaskDetails)
-
-  const originalTask = useRef({ title: '', body: '' })
+  const [isUserTyping, setIsUserTyping] = useState(false)
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     event.preventDefault()
@@ -68,33 +64,23 @@ export const TaskEditor = ({
   }
 
   useEffect(() => {
-    if (!skipUpdate.current) {
+    if (!isUserTyping) {
       const currentTask = tasks.find((el) => el.id === task_id)
       if (currentTask) {
         setUpdateTitle(currentTask.title || '')
         setUpdateDetail(currentTask.body ?? '')
-        originalTask.current = { title: currentTask.title || '', body: currentTask.body || '' }
       }
-    } else {
-      skipUpdate.current = false
     }
-  }, [tasks, task_id])
+  }, [tasks, task_id, isUserTyping])
 
   const _taskUpdateDebounced = async (title: string, details: string) => {
-    const currentTask = tasks.find((el) => el.id === task_id)
-    if (currentTask) {
-      const newTitle = title !== originalTask.current.title ? title : currentTask.title
-      const newDetail = details !== originalTask.current.body ? details : currentTask.body
-
-      updateTaskDetail(newTitle as string, newDetail ?? '')
-    }
+    updateTaskDetail(title, details)
   }
 
   const taskUpdateDebounced = useDebounce(_taskUpdateDebounced)
 
   const resetTypingFlag = useCallback(() => {
     setIsUserTyping(false)
-    skipUpdate.current = true
   }, [])
 
   const debouncedResetTypingFlag = useDebounce(resetTypingFlag, 1000)
