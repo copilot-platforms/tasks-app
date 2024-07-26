@@ -75,17 +75,11 @@ export const TaskEditor = ({
     }
   }, [tasks, task_id, isUserTyping])
 
-  // const _taskUpdateDebounced = async (title: string, details: string) => {
-  //   updateTaskDetail(title, details)
-  // }
+  const _titleUpdateDebounced = async (title: string) => updateTaskTitle(title)
 
-  // const taskUpdateDebounced = useDebounce(_taskUpdateDebounced)
-  const _titleUpdateDebounced = async (title: string) => {
-    updateTaskTitle(title)
-  }
   const titleUpdateDebounced = useDebounce(_titleUpdateDebounced)
 
-  const _detailsUpdateDebounced = async (details: string) => [updateTaskDetail(details)]
+  const _detailsUpdateDebounced = async (details: string) => updateTaskDetail(details)
   const detailsUpdateDebounced = useDebounce(_detailsUpdateDebounced)
 
   const resetTypingFlag = useCallback(() => {
@@ -98,7 +92,6 @@ export const TaskEditor = ({
     const newTitle = e.target.value
     setUpdateTitle(newTitle)
     setIsUserTyping(true)
-    // taskUpdateDebounced(newTitle, updateDetail)
     titleUpdateDebounced(newTitle)
     debouncedResetTypingFlag()
   }
@@ -106,7 +99,6 @@ export const TaskEditor = ({
   const handleDetailChange = (content: string) => {
     setUpdateDetail(content)
     setIsUserTyping(true)
-    // taskUpdateDebounced(updateTitle, content)
     detailsUpdateDebounced(content)
     debouncedResetTypingFlag()
   }
