@@ -50,7 +50,7 @@ export const ListViewTaskCard = ({
           },
         }}
       >
-        <AppMargin size={SizeofAppMargin.CUSTOM} px="20px" py="8.5px">
+        <Box sx={{ padding: '8.5px 20px' }}>
           <Box>
             <Stack direction="row" columnGap={'20px'} alignItems="center" justifyContent="space-between">
               <Stack direction="row" alignItems="center" columnGap={'16px'}>
@@ -157,7 +157,7 @@ export const ListViewTaskCard = ({
               </Stack>
             </Stack>
           </Box>
-        </AppMargin>
+        </Box>
       </Box>
     </CustomLink>
   )

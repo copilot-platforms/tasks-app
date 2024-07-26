@@ -16,7 +16,7 @@ export const Header = ({ showCreateTaskButton }: { showCreateTaskButton: boolean
         border: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
       }}
     >
-      <AppMargin size={SizeofAppMargin.CUSTOM} py="14px">
+      <AppMargin size={SizeofAppMargin.HEADER} py="14px">
         <Stack direction="row" alignItems="center" justifyContent="space-between">
           <Typography variant="lg">Tasks</Typography>
           {showCreateTaskButton && (
