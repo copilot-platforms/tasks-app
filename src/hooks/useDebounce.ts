@@ -49,7 +49,7 @@ export function useDebounce<Func extends SomeFunction>(func: Func, delay = 500) 
       lastArgs.current = args
       if (timer.current) clearTimeout(timer.current)
       timer.current = setTimeout(() => {
-        if (lastArgs.current) func(...lastArgs.current)
+        func(...args)
       }, delay)
     },
     [func, delay],
@@ -57,22 +57,16 @@ export function useDebounce<Func extends SomeFunction>(func: Func, delay = 500) 
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (lastArgs.current && timer.current) {
-        clearTimeout(timer.current)
-        timer.current = setTimeout(() => {
-          if (lastArgs.current) func(...lastArgs.current)
-        }, delay)
+      if (lastArgs.current) {
+        func(...lastArgs.current)
       }
     }, delay)
 
-    return () => clearInterval(interval)
-  }, [func, delay])
-
-  useEffect(() => {
     return () => {
+      clearInterval(interval)
       if (timer.current) clearTimeout(timer.current)
     }
-  }, [])
+  }, [func, delay])
 
   return debouncedFunction as Func
 }
