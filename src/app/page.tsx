@@ -18,6 +18,7 @@ import { createMultipleAttachments, getSignedUrlUpload } from '@/app/actions'
 import { ModalNewTaskForm } from './ui/Modal_NewTaskForm'
 import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 import { RealTime } from '@/hoc/RealTime'
+import { headers } from 'next/headers'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -80,6 +81,12 @@ export default async function Main({ searchParams }: { searchParams: { token: st
   if (!parsedToken.success) {
     return <ClientError message={'Please provide a Valid Token'} />
   }
+
+  const headersList = headers()
+  const domain = headersList.get('host') || ''
+  const fullUrl = headersList.get('referer') || ''
+  console.log('domain', domain)
+  console.log('fullUrl', fullUrl)
 
   const [workflowStates, tasks, assignee, viewSettings, tokenPayload, templates] = await Promise.all([
     getAllWorkflowStates(token),
