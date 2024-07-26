@@ -79,7 +79,6 @@ export const TaskEditor = ({
   }, [])
 
   const _taskUpdateDebounced = async (title: string, details: string) => {
-    setIsTyping(false)
     updateTaskDetail(title, details)
   }
 
@@ -115,12 +114,14 @@ export const TaskEditor = ({
         disabled={!isEditable}
         padding="0px"
         onBlur={() => {
+          setIsTyping(false)
           updateTaskDetail(updateTitle, updateDetail)
         }}
       />
 
       <Box
         onBlur={() => {
+          setIsTyping(false)
           updateTaskDetail(updateTitle, updateDetail)
         }}
         mt="12px"
