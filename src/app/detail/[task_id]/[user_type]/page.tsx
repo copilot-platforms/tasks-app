@@ -184,9 +184,13 @@ export default async function TaskDetailPage({
                     attachment={attachments}
                     task_id={task_id}
                     isEditable={params.user_type === UserType.INTERNAL_USER}
-                    updateTaskDetail={async (title, detail) => {
+                    updateTaskDetail={async (detail) => {
                       'use server'
-                      await updateTaskDetail({ token, taskId: task_id, payload: { title, body: detail } })
+                      await updateTaskDetail({ token, taskId: task_id, payload: { body: detail } })
+                    }}
+                    updateTaskTitle={async (title) => {
+                      'use server'
+                      await updateTaskDetail({ token, taskId: task_id, payload: { title } })
                     }}
                     deleteTask={async () => {
                       'use server'

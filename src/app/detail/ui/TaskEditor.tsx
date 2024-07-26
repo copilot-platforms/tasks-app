@@ -24,7 +24,8 @@ interface Prop {
   task_id: string
   attachment: AttachmentResponseSchema[]
   isEditable: boolean
-  updateTaskDetail: (title: string, detail: string) => void
+  updateTaskDetail: (detail: string) => void
+  updateTaskTitle: (title: string) => void
   deleteTask: () => void
   postAttachment: (postAttachmentPayload: CreateAttachmentRequest) => void
   deleteAttachment: (id: string) => void
@@ -37,6 +38,7 @@ export const TaskEditor = ({
   attachment,
   isEditable,
   updateTaskDetail,
+  updateTaskTitle,
   deleteTask,
   postAttachment,
   deleteAttachment,
@@ -73,8 +75,13 @@ export const TaskEditor = ({
     }
   }, [tasks, task_id, isUserTyping])
 
-  const _taskUpdateDebounced = async (title: string, details: string) => {
-    updateTaskDetail(title, details)
+  const _taskUpdateDebounced = async (title?: string, details?: string) => {
+    if (details) {
+      updateTaskDetail(details)
+    }
+    if (title) {
+      updateTaskTitle(title)
+    }
   }
 
   const taskUpdateDebounced = useDebounce(_taskUpdateDebounced)
@@ -89,14 +96,14 @@ export const TaskEditor = ({
     const newTitle = e.target.value
     setUpdateTitle(newTitle)
     setIsUserTyping(true)
-    taskUpdateDebounced(newTitle, updateDetail)
+    taskUpdateDebounced(newTitle)
     debouncedResetTypingFlag()
   }
 
   const handleDetailChange = (content: string) => {
     setUpdateDetail(content)
     setIsUserTyping(true)
-    taskUpdateDebounced(updateTitle, content)
+    taskUpdateDebounced(content)
     debouncedResetTypingFlag()
   }
 
