@@ -14,6 +14,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "db:grant-supabase-privileges": "node src/lib/supabase-privilege",
     "vercel-build": "prisma generate && next build",
     "prepare": "husky install",
     "eslint": "eslint './src/**/*.{ts,tsx}'",
