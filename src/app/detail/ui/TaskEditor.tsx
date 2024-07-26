@@ -75,7 +75,7 @@ export const TaskEditor = ({
     const currentTask = tasks.find((el) => el.id === task_id)
     setTempUpdateDetail(currentTask?.body || '')
     setTempUpdateTitle(currentTask?.title || '')
-  }, [])
+  }, [isTyping])
 
   const _taskUpdateDebounced = async (title: string, details: string) => {
     updateTaskDetail(title, details)
