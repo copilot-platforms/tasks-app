@@ -83,6 +83,13 @@ export const TaskEditor = ({
 
   const taskUpdateDebounced = useDebounce(_taskUpdateDebounced)
 
+  const handleBlur = () => {
+    setIsTyping(false)
+    setUpdateTitle(tempUpdateTitle)
+    setUpdateDetail(tempUpdateDetail)
+    updateTaskDetail(tempUpdateTitle, tempUpdateDetail)
+  }
+
   return (
     <>
       <StyledTextField
@@ -104,7 +111,6 @@ export const TaskEditor = ({
         value={isTyping ? tempUpdateTitle : updateTitle}
         onChange={(e) => {
           setIsTyping(true)
-          // setUpdateTitle(e.target.value)
           setTempUpdateTitle(e.target.value)
           taskUpdateDebounced(e.target.value, tempUpdateDetail)
         }}
@@ -112,19 +118,10 @@ export const TaskEditor = ({
         inputProps={{ maxLength: 255 }}
         disabled={!isEditable}
         padding="0px"
-        onBlur={() => {
-          setIsTyping(false)
-          updateTaskDetail(tempUpdateTitle, tempUpdateDetail)
-        }}
+        onBlur={handleBlur}
       />
 
-      <Box
-        onBlur={() => {
-          setIsTyping(false)
-          updateTaskDetail(tempUpdateTitle, tempUpdateDetail)
-        }}
-        mt="12px"
-      >
+      <Box onBlur={handleBlur} mt="12px">
         <Tapwrite
           uploadFn={async (file, tiptapEditorUtils) => {
             const newBlob = await upload(file.name, file, {
@@ -136,7 +133,6 @@ export const TaskEditor = ({
           content={isTyping ? tempUpdateDetail : updateDetail}
           getContent={(content) => {
             setIsTyping(true)
-            // setUpdateDetail(content)
             setTempUpdateDetail(content)
             taskUpdateDebounced(tempUpdateTitle, content)
           }}
