@@ -4,7 +4,7 @@ import { AttachmentCard } from '@/components/cards/AttachmentCard'
 import { StyledTextField } from '@/components/inputs/TextField'
 import { selectTaskDetails, setShowConfirmDeleteModal } from '@/redux/features/taskDetailsSlice'
 import { Box, Modal, Stack } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useSelector } from 'react-redux'
 import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
 import store from '@/redux/store'
@@ -47,6 +47,7 @@ export const TaskEditor = ({
   const [updateTitle, setUpdateTitle] = useState('')
   const [updateDetail, setUpdateDetail] = useState('')
   const { showConfirmDeleteModal } = useSelector(selectTaskDetails)
+  const [isUserTyping, setIsUserTyping] = useState(false)
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     event.preventDefault()
@@ -63,12 +64,14 @@ export const TaskEditor = ({
   }
 
   useEffect(() => {
-    const currentTask = tasks.find((el) => el.id === task_id)
-    if (currentTask) {
-      setUpdateTitle(currentTask.title || '')
-      setUpdateDetail(currentTask.body ?? '')
+    if (!isUserTyping) {
+      const currentTask = tasks.find((el) => el.id === task_id)
+      if (currentTask) {
+        setUpdateTitle(currentTask.title || '')
+        setUpdateDetail(currentTask.body ?? '')
+      }
     }
-  }, [tasks, task_id])
+  }, [tasks, task_id, isUserTyping])
 
   const _taskUpdateDebounced = async (title: string, details: string) => {
     updateTaskDetail(title, details)
@@ -76,15 +79,25 @@ export const TaskEditor = ({
 
   const taskUpdateDebounced = useDebounce(_taskUpdateDebounced)
 
+  const resetTypingFlag = useCallback(() => {
+    setIsUserTyping(false)
+  }, [])
+
+  const debouncedResetTypingFlag = useDebounce(resetTypingFlag, 1000)
+
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newTitle = e.target.value
     setUpdateTitle(newTitle)
+    setIsUserTyping(true)
     taskUpdateDebounced(newTitle, updateDetail)
+    debouncedResetTypingFlag()
   }
 
   const handleDetailChange = (content: string) => {
     setUpdateDetail(content)
+    setIsUserTyping(true)
     taskUpdateDebounced(updateTitle, content)
+    debouncedResetTypingFlag()
   }
 
   return (
