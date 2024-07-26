@@ -214,10 +214,6 @@ export default function Selector({
             )
           }}
           inputValue={inputStatusValue}
-          onInputChange={(_, newInputValue) => {
-            handleInputChange?.(newInputValue)
-            setInputStatusValue(newInputValue)
-          }}
           renderInput={(params) => {
             return (
               <StyledTextField
@@ -229,6 +225,10 @@ export default function Selector({
                 sx={{
                   width: '200px',
                   visibility: { xs: 'none', sm: 'visible' },
+                }}
+                onChange={(e) => {
+                  handleInputChange?.(e.target.value)
+                  setInputStatusValue(e.target.value)
                 }}
               />
             )
