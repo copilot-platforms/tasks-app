@@ -24,7 +24,8 @@ interface Prop {
   task_id: string
   attachment: AttachmentResponseSchema[]
   isEditable: boolean
-  updateTaskDetail: (title: string, detail: string) => void
+  updateTaskDetail: (detail: string) => void
+  updateTaskTitle: (title: string) => void
   deleteTask: () => void
   postAttachment: (postAttachmentPayload: CreateAttachmentRequest) => void
   deleteAttachment: (id: string) => void
@@ -37,6 +38,7 @@ export const TaskEditor = ({
   attachment,
   isEditable,
   updateTaskDetail,
+  updateTaskTitle,
   deleteTask,
   postAttachment,
   deleteAttachment,
@@ -73,30 +75,39 @@ export const TaskEditor = ({
     }
   }, [tasks, task_id, isUserTyping])
 
-  const _taskUpdateDebounced = async (title: string, details: string) => {
-    updateTaskDetail(title, details)
-  }
+  // const _taskUpdateDebounced = async (title: string, details: string) => {
+  //   updateTaskDetail(title, details)
+  // }
 
-  const taskUpdateDebounced = useDebounce(_taskUpdateDebounced)
+  // const taskUpdateDebounced = useDebounce(_taskUpdateDebounced)
+  const _titleUpdateDebounced = async (title: string) => {
+    updateTaskTitle(title)
+  }
+  const titleUpdateDebounced = useDebounce(_titleUpdateDebounced)
+
+  const _detailsUpdateDebounced = async (details: string) => [updateTaskDetail(details)]
+  const detailsUpdateDebounced = useDebounce(_detailsUpdateDebounced)
 
   const resetTypingFlag = useCallback(() => {
     setIsUserTyping(false)
   }, [])
 
-  const debouncedResetTypingFlag = useDebounce(resetTypingFlag, 1000)
+  const debouncedResetTypingFlag = useDebounce(resetTypingFlag, 1500)
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newTitle = e.target.value
     setUpdateTitle(newTitle)
     setIsUserTyping(true)
-    taskUpdateDebounced(newTitle, updateDetail)
+    // taskUpdateDebounced(newTitle, updateDetail)
+    titleUpdateDebounced(newTitle)
     debouncedResetTypingFlag()
   }
 
   const handleDetailChange = (content: string) => {
     setUpdateDetail(content)
     setIsUserTyping(true)
-    taskUpdateDebounced(updateTitle, content)
+    // taskUpdateDebounced(updateTitle, content)
+    detailsUpdateDebounced(content)
     debouncedResetTypingFlag()
   }
 
