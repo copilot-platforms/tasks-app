@@ -75,7 +75,7 @@ export const TaskEditor = ({
     }
   }, [tasks, task_id, isUserTyping])
 
-  const _taskUpdateDebounced = async (title?: string, details?: string) => {
+  const _taskUpdateDebounced = async ({ title, details }: { title?: string; details?: string }) => {
     if (details) {
       updateTaskDetail(details)
     }
@@ -96,14 +96,14 @@ export const TaskEditor = ({
     const newTitle = e.target.value
     setUpdateTitle(newTitle)
     setIsUserTyping(true)
-    taskUpdateDebounced(newTitle)
+    taskUpdateDebounced({ title: newTitle })
     debouncedResetTypingFlag()
   }
 
   const handleDetailChange = (content: string) => {
     setUpdateDetail(content)
     setIsUserTyping(true)
-    taskUpdateDebounced(content)
+    taskUpdateDebounced({ details: content })
     debouncedResetTypingFlag()
   }
 
