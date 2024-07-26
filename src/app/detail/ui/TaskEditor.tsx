@@ -4,7 +4,7 @@ import { AttachmentCard } from '@/components/cards/AttachmentCard'
 import { StyledTextField } from '@/components/inputs/TextField'
 import { selectTaskDetails, setShowConfirmDeleteModal } from '@/redux/features/taskDetailsSlice'
 import { Box, Modal, Stack } from '@mui/material'
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useSelector } from 'react-redux'
 import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
 import store from '@/redux/store'
@@ -24,7 +24,7 @@ interface Prop {
   task_id: string
   attachment: AttachmentResponseSchema[]
   isEditable: boolean
-  updateTaskDetail: (title: string, detail: string) => void
+  updateTaskDetail: (title?: string, detail?: string) => void
   deleteTask: () => void
   postAttachment: (postAttachmentPayload: CreateAttachmentRequest) => void
   deleteAttachment: (id: string) => void
@@ -46,9 +46,8 @@ export const TaskEditor = ({
   const { tasks } = useSelector(selectTaskBoard)
   const [updateTitle, setUpdateTitle] = useState('')
   const [updateDetail, setUpdateDetail] = useState('')
-  const [isUserTyping, setIsUserTyping] = useState(false)
-  const originalTask = useRef({ title: '', body: '' })
   const { showConfirmDeleteModal } = useSelector(selectTaskDetails)
+  const [isUserTyping, setIsUserTyping] = useState(false)
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     event.preventDefault()
@@ -70,16 +69,23 @@ export const TaskEditor = ({
       if (currentTask) {
         setUpdateTitle(currentTask.title || '')
         setUpdateDetail(currentTask.body ?? '')
-        originalTask.current = { title: currentTask.title || '', body: currentTask.body || '' }
       }
     }
   }, [tasks, task_id, isUserTyping])
 
-  const _taskUpdateDebounced = async (title: string, details: string) => {
-    updateTaskDetail(title, details)
+  // const _taskUpdateDebounced = async (title: string, details: string) => {
+  //   updateTaskDetail(title, details)
+  // }
+  // const taskUpdateDebounced = useDebounce(_taskUpdateDebounced)
+  const _titleUpdateDebounced = async (title: string) => {
+    updateTaskDetail(title)
+  }
+  const _detailsUpdateDebounced = async (details: string) => {
+    updateTaskDetail(details)
   }
 
-  const taskUpdateDebounced = useDebounce(_taskUpdateDebounced)
+  const titleUpdateDebounced = useDebounce(_titleUpdateDebounced)
+  const detailsUpdateDebounced = useDebounce(_detailsUpdateDebounced)
 
   const resetTypingFlag = useCallback(() => {
     setIsUserTyping(false)
@@ -91,14 +97,16 @@ export const TaskEditor = ({
     const newTitle = e.target.value
     setUpdateTitle(newTitle)
     setIsUserTyping(true)
-    taskUpdateDebounced(newTitle, updateDetail)
+    // taskUpdateDebounced(newTitle, updateDetail)
+    titleUpdateDebounced(newTitle)
     debouncedResetTypingFlag()
   }
 
   const handleDetailChange = (content: string) => {
     setUpdateDetail(content)
     setIsUserTyping(true)
-    taskUpdateDebounced(updateTitle, content)
+    // taskUpdateDebounced(updateTitle, content)
+    detailsUpdateDebounced(content)
     debouncedResetTypingFlag()
   }
 
