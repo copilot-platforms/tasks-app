@@ -63,6 +63,6 @@ export const setDebouncedFilteredAssignees = (
     //   const newAssineeState = addTypeToAssignee(newAssignees)
     //   setAssigneeState((prev) => [...prev, ...newAssineeState])
     // }
-  }, 300)
+  }, 200)
   setActiveDebounceTimeoutId(newTimeoutId)
 }
