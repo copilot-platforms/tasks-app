@@ -19,6 +19,7 @@ import { ModalNewTaskForm } from './ui/Modal_NewTaskForm'
 import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 import { RealTime } from '@/hoc/RealTime'
 import { redirect } from 'next/navigation'
+import { redirectIfTaskCta } from '@/utils/redirect'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -81,10 +82,7 @@ export default async function Main({ searchParams }: { searchParams: { token: st
     return <ClientError message={'Please provide a Valid Token'} />
   }
 
-  const taskId = z.string().safeParse(searchParams.taskId)
-  if (taskId.data) {
-    redirect(`${apiUrl}/detail/${taskId.data}/iu?token=${token}`)
-  }
+  redirectIfTaskCta(searchParams)
 
   const [workflowStates, tasks, assignee, viewSettings, tokenPayload, templates] = await Promise.all([
     getAllWorkflowStates(token),
