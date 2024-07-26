@@ -22,7 +22,6 @@ import { TaskResponse } from '@/types/dto/tasks.dto'
 
 interface Prop {
   task_id: string
-  task: TaskResponse
   attachment: AttachmentResponseSchema[]
   isEditable: boolean
   updateTaskDetail: (title: string, detail: string) => void
@@ -35,7 +34,6 @@ interface Prop {
 
 export const TaskEditor = ({
   task_id,
-  task,
   attachment,
   isEditable,
   updateTaskDetail,
@@ -46,8 +44,7 @@ export const TaskEditor = ({
   userType,
 }: Prop) => {
   const { tasks } = useSelector(selectTaskBoard)
-  const [isTitleTyping, setIsTitleTyping] = useState(false)
-  const [isDetailTyping, setIsDetailTyping] = useState(false)
+  const [isTyping, setIsTyping] = useState(false)
   const [updateTitle, setUpdateTitle] = useState('')
   const [tempUpdateTitle, setTempUpdateTitle] = useState('')
   const [updateDetail, setUpdateDetail] = useState('')
@@ -67,15 +64,17 @@ export const TaskEditor = ({
       }
     }
   }
-  const currentTask = tasks.find((el) => el.id === task_id)
+
   useEffect(() => {
+    const currentTask = tasks.find((el) => el.id === task_id)
     setUpdateTitle(currentTask?.title || '')
     setUpdateDetail(currentTask?.body ?? '')
   }, [tasks, task_id])
 
   useEffect(() => {
-    setTempUpdateDetail(task.body || '')
-    setTempUpdateTitle(task.title || '')
+    const currentTask = tasks.find((el) => el.id === task_id)
+    setTempUpdateDetail(currentTask?.body || '')
+    setTempUpdateTitle(currentTask?.title || '')
   }, [])
 
   const _taskUpdateDebounced = async (title: string, details: string) => {
@@ -102,29 +101,27 @@ export const TaskEditor = ({
             padding: '0px 0px',
           },
         }}
-        value={isTitleTyping ? tempUpdateTitle : updateTitle}
+        value={isTyping ? tempUpdateTitle : updateTitle}
         onChange={(e) => {
-          setIsTitleTyping(true)
-          setUpdateTitle(e.target.value)
+          setIsTyping(true)
+          // setUpdateTitle(e.target.value)
           setTempUpdateTitle(e.target.value)
-          taskUpdateDebounced(e.target.value, updateDetail)
+          taskUpdateDebounced(e.target.value, tempUpdateDetail)
         }}
         InputProps={{ readOnly: !isEditable }}
         inputProps={{ maxLength: 255 }}
         disabled={!isEditable}
         padding="0px"
         onBlur={() => {
-          setIsTitleTyping(false)
+          setIsTyping(false)
           updateTaskDetail(tempUpdateTitle, tempUpdateDetail)
-          setTempUpdateTitle(currentTask?.title ?? '')
         }}
       />
 
       <Box
         onBlur={() => {
-          setIsDetailTyping(false)
+          setIsTyping(false)
           updateTaskDetail(tempUpdateTitle, tempUpdateDetail)
-          setTempUpdateDetail(currentTask?.body ?? '')
         }}
         mt="12px"
       >
@@ -136,12 +133,12 @@ export const TaskEditor = ({
             })
             tiptapEditorUtils.setImage(newBlob.url as string)
           }}
-          content={isDetailTyping ? tempUpdateDetail : updateDetail}
+          content={isTyping ? tempUpdateDetail : updateDetail}
           getContent={(content) => {
-            setIsDetailTyping(true)
-            setUpdateDetail(content)
+            setIsTyping(true)
+            // setUpdateDetail(content)
             setTempUpdateDetail(content)
-            taskUpdateDebounced(updateTitle, content)
+            taskUpdateDebounced(tempUpdateTitle, content)
           }}
           readonly={userType === UserType.CLIENT_USER}
           editorClass="tapwrite-details-page"
