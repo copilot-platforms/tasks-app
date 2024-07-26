@@ -44,11 +44,8 @@ export const TaskEditor = ({
   userType,
 }: Prop) => {
   const { tasks } = useSelector(selectTaskBoard)
-  const [isTyping, setIsTyping] = useState(false)
   const [updateTitle, setUpdateTitle] = useState('')
-  const [tempUpdateTitle, setTempUpdateTitle] = useState('')
   const [updateDetail, setUpdateDetail] = useState('')
-  const [tempUpdateDetail, setTempUpdateDetail] = useState('')
   const { showConfirmDeleteModal } = useSelector(selectTaskDetails)
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -67,15 +64,11 @@ export const TaskEditor = ({
 
   useEffect(() => {
     const currentTask = tasks.find((el) => el.id === task_id)
-    setUpdateTitle(currentTask?.title || '')
-    setUpdateDetail(currentTask?.body ?? '')
+    if (currentTask) {
+      setUpdateTitle(currentTask.title || '')
+      setUpdateDetail(currentTask.body ?? '')
+    }
   }, [tasks, task_id])
-
-  useEffect(() => {
-    const currentTask = tasks.find((el) => el.id === task_id)
-    setTempUpdateDetail(currentTask?.body || '')
-    setTempUpdateTitle(currentTask?.title || '')
-  }, [isTyping])
 
   const _taskUpdateDebounced = async (title: string, details: string) => {
     updateTaskDetail(title, details)
@@ -83,11 +76,15 @@ export const TaskEditor = ({
 
   const taskUpdateDebounced = useDebounce(_taskUpdateDebounced)
 
-  const handleBlur = () => {
-    setIsTyping(false)
-    setUpdateTitle(tempUpdateTitle)
-    setUpdateDetail(tempUpdateDetail)
-    updateTaskDetail(tempUpdateTitle, tempUpdateDetail)
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newTitle = e.target.value
+    setUpdateTitle(newTitle)
+    taskUpdateDebounced(newTitle, updateDetail)
+  }
+
+  const handleDetailChange = (content: string) => {
+    setUpdateDetail(content)
+    taskUpdateDebounced(updateTitle, content)
   }
 
   return (
@@ -108,20 +105,15 @@ export const TaskEditor = ({
             padding: '0px 0px',
           },
         }}
-        value={isTyping ? tempUpdateTitle : updateTitle}
-        onChange={(e) => {
-          setIsTyping(true)
-          setTempUpdateTitle(e.target.value)
-          taskUpdateDebounced(e.target.value, tempUpdateDetail)
-        }}
+        value={updateTitle}
+        onChange={handleTitleChange}
         InputProps={{ readOnly: !isEditable }}
         inputProps={{ maxLength: 255 }}
         disabled={!isEditable}
         padding="0px"
-        onBlur={handleBlur}
       />
 
-      <Box onBlur={handleBlur} mt="12px">
+      <Box mt="12px">
         <Tapwrite
           uploadFn={async (file, tiptapEditorUtils) => {
             const newBlob = await upload(file.name, file, {
@@ -130,12 +122,8 @@ export const TaskEditor = ({
             })
             tiptapEditorUtils.setImage(newBlob.url as string)
           }}
-          content={isTyping ? tempUpdateDetail : updateDetail}
-          getContent={(content) => {
-            setIsTyping(true)
-            setTempUpdateDetail(content)
-            taskUpdateDebounced(tempUpdateTitle, content)
-          }}
+          content={updateDetail}
+          getContent={handleDetailChange}
           readonly={userType === UserType.CLIENT_USER}
           editorClass="tapwrite-details-page"
           placeholder="Add description..."
