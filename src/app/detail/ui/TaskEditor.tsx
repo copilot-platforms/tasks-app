@@ -84,7 +84,7 @@ export const TaskEditor = ({
     }
   }
 
-  const taskUpdateDebounced = useDebounce(_taskUpdateDebounced, 1000)
+  const taskUpdateDebounced = useDebounce(_taskUpdateDebounced)
 
   const resetTypingFlag = useCallback(() => {
     setIsUserTyping(false)
