@@ -23,7 +23,6 @@
   border: 1px solid #d1d5db;
   background-color: #ffffff;
   border-radius: 4px;
-  font-size: 0.875rem;
   resize: vertical;
   overflow: auto;
 }
@@ -34,36 +33,4 @@
 
 .tapwrite-task-description:focus-within {
   border-color: #000000;
-}
-
-.tapwrite-task-description h1 {
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 500;
-  line-height: 24px;
-  color: #212b36 !important;
-}
-
-.tapwrite-task-description h2 {
-  font-size: 14px;
-  font-style: normal;
-  font-weight: 500;
-  line-height: 22px;
-  color: #212b36;
-}
-
-.tapwrite-task-description h3 {
-  font-size: 13px;
-  font-style: normal;
-  font-weight: 500;
-  line-height: 21px;
-  color: #212b36;
-}
-
-.tapwrite-task-description p {
-  font-size: 14px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: 22px;
-  color: #6b6f76;
 }
