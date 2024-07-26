@@ -122,7 +122,7 @@ export const TaskEditor = ({
       <Box
         onBlur={() => {
           setIsTyping(false)
-          updateTaskDetail(updateTitle, updateDetail)
+          updateTaskDetail(tempUpdateTitle, tempUpdateDetail)
           setTempUpdateDetail(currentTask?.body ?? '')
         }}
         mt="12px"
