@@ -48,6 +48,9 @@ export const ClientSideStateUpdate = ({
 }) => {
   const { tasks: tasksInStore } = useSelector(selectTaskBoard)
   useEffect(() => {
+    console.log('xxx', window.parent.location)
+  }, [])
+  useEffect(() => {
     if (workflowStates) {
       store.dispatch(setWorkflowStates(workflowStates))
     }
