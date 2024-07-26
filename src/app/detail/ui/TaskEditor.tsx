@@ -46,8 +46,7 @@ export const TaskEditor = ({
   userType,
 }: Prop) => {
   const { tasks } = useSelector(selectTaskBoard)
-  const [isTitleTyping, setIsTitleTyping] = useState(false)
-  const [isDetailTyping, setIsDetailTyping] = useState(false)
+  const [isTyping, setIsTyping] = useState(false)
   const [updateTitle, setUpdateTitle] = useState('')
   const [tempUpdateTitle, setTempUpdateTitle] = useState('')
   const [updateDetail, setUpdateDetail] = useState('')
@@ -102,9 +101,9 @@ export const TaskEditor = ({
             padding: '0px 0px',
           },
         }}
-        value={isTitleTyping ? tempUpdateTitle : updateTitle}
+        value={isTyping ? tempUpdateTitle : updateTitle}
         onChange={(e) => {
-          setIsTitleTyping(true)
+          setIsTyping(true)
           setUpdateTitle(e.target.value)
           setTempUpdateTitle(e.target.value)
           taskUpdateDebounced(e.target.value, updateDetail)
@@ -114,15 +113,15 @@ export const TaskEditor = ({
         disabled={!isEditable}
         padding="0px"
         onBlur={() => {
-          setIsTitleTyping(false)
-          updateTaskDetail(updateTitle, updateDetail)
+          setIsTyping(false)
+          updateTaskDetail(tempUpdateTitle, tempUpdateDetail)
           setTempUpdateTitle(currentTask?.title ?? '')
         }}
       />
 
       <Box
         onBlur={() => {
-          setIsDetailTyping(false)
+          setIsTyping(false)
           updateTaskDetail(updateTitle, updateDetail)
           setTempUpdateDetail(currentTask?.body ?? '')
         }}
@@ -136,9 +135,9 @@ export const TaskEditor = ({
             })
             tiptapEditorUtils.setImage(newBlob.url as string)
           }}
-          content={isDetailTyping ? tempUpdateDetail : updateDetail}
+          content={isTyping ? tempUpdateDetail : updateDetail}
           getContent={(content) => {
-            setIsDetailTyping(true)
+            setIsTyping(true)
             setUpdateDetail(content)
             setTempUpdateDetail(content)
             taskUpdateDebounced(updateTitle, content)
