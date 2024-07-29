@@ -21,9 +21,8 @@ export const ClientTaskBoard = ({ completeTask }: { completeTask: (taskId: strin
    * This function is responsible for returning the tasks that matches the workflowStateId of the workflowState and assigneeType
    */
   const filterTaskWithWorkflowStateIdAndAssigneeType = (workflowStateId: string): TaskResponse[] => {
-    return tasks
-      .filter((task) => task.workflowStateId === workflowStateId)
-      .filter((task) => task.assigneeType === 'internalUser')
+    return tasks.filter((task) => task.workflowStateId === workflowStateId)
+    // .filter((task) => task.assigneeType === 'internalUser')
   }
 
   /**
