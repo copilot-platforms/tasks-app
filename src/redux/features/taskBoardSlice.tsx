@@ -5,6 +5,7 @@ import { TaskResponse } from '@/types/dto/tasks.dto'
 import { AssigneeType, FilterByOptions, FilterOptions, IAssigneeCombined, IFilterOptions, View } from '@/types/interfaces'
 import { ViewMode } from '@prisma/client'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
+import { sortTaskByDescendingOrder } from '@/utils/sortTask'
 
 interface IInitialState {
   workflowStates: WorkflowStateResponse[]
@@ -40,21 +41,13 @@ const taskBoardSlice = createSlice({
       state.workflowStates = action.payload
     },
     setTasks: (state, action: { payload: TaskResponse[] }) => {
-      state.tasks = [...state.tasks, ...action.payload].sort((a, b) => {
-        const dateA = new Date(a.createdAt).getTime()
-        const dateB = new Date(b.createdAt).getTime()
-        return dateA - dateB
-      })
+      state.tasks = action.payload
     },
     appendTask: (state, action: { payload: TaskResponse }) => {
       state.tasks = [...state.tasks, action.payload]
     },
     setFilteredTasks: (state, action: { payload: TaskResponse[] }) => {
-      state.filteredTasks = [...state.filteredTasks, ...action.payload].sort((a, b) => {
-        const dateA = new Date(a.createdAt).getTime()
-        const dateB = new Date(b.createdAt).getTime()
-        return dateA - dateB
-      })
+      state.filteredTasks = sortTaskByDescendingOrder(action.payload)
     },
     setToken: (state, action: { payload: string }) => {
       state.token = action.payload
@@ -63,13 +56,10 @@ const taskBoardSlice = createSlice({
       let taskToUpdate = state.tasks.find((task) => task.id === action.payload.taskId)
       if (taskToUpdate) {
         taskToUpdate.workflowStateId = action.payload.targetWorkflowStateId
-        const updatedTasks = [...state.tasks.filter((task) => task.id !== action.payload.taskId), taskToUpdate].sort(
-          (a, b) => {
-            const dateA = new Date(a.createdAt).getTime()
-            const dateB = new Date(b.createdAt).getTime()
-            return dateA - dateB
-          },
-        )
+        const updatedTasks = sortTaskByDescendingOrder([
+          ...state.tasks.filter((task) => task.id !== action.payload.taskId),
+          taskToUpdate,
+        ])
         state.tasks = updatedTasks
         state.filteredTasks = updatedTasks
       }
