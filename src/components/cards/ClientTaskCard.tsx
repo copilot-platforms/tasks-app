@@ -75,35 +75,34 @@ export const ClientTaskCard = ({
             direction="row"
             alignItems="flex-start"
             columnGap={{ xs: '12px', sm: '32px' }}
-            justifyContent={{ xs: 'space-between', sm: 'none' }}
+            justifyContent={{ xs: 'space-between', sm: 'space-between' }}
             sx={{
               padding: '6px 0px',
               width: { xs: '100%', sm: 'auto' },
             }}
           >
             <Stack direction="row" alignItems="center" minWidth="fit-content" columnGap={{ xs: '12px', sm: '20px' }}>
-              <Box
-                sx={{
-                  flexDirection: 'row',
-                  alignItems: { sm: 'flex-end' },
-                  justifyContent: { sm: 'right' },
-                  display: 'flex',
-                  minWidth: '100px',
-                }}
-              >
-                {task.dueDate && (
+              {task.dueDate && (
+                <Box
+                  sx={{
+                    flexDirection: 'row',
+                    alignItems: { sm: 'flex-end' },
+                    justifyContent: { sm: 'right' },
+                    display: 'flex',
+                    minWidth: '90px',
+                  }}
+                >
                   <Typography variant="bodySm" sx={{ fontSize: '12px', color: (theme) => theme.color.gray[500] }}>
                     <DueDateLayout dateString={task.dueDate} />
                   </Typography>
-                )}
-              </Box>
-
+                </Box>
+              )}
               <Stack
                 direction="row"
                 alignItems="flex-start"
                 justifyContent={'left'}
                 columnGap={1}
-                sx={{ padding: '2px', minWidth: '132px', maxWidth: '200px' }}
+                sx={{ padding: '2px', maxWidth: { xs: '132px', sm: '235px' } }}
               >
                 <CopilotAvatar currentAssignee={currentAssignee as IAssigneeCombined} />
 
