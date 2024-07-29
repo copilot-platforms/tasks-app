@@ -125,37 +125,36 @@ export const FilterBar = ({
         borderBottom: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
       }}
     >
-      <Box sx={{ overflowX: 'hidden' }}>
-        <AppMargin size={SizeofAppMargin.LARGE} py="12px">
-          <Stack direction={'row'} justifyContent={'space-between'} sx={{ maxHeight: '32px' }}>
-            <Stack direction={'row'} columnGap={3}>
-              <Box>
-                <FilterButtonGroup filterButtons={filterButtons} activeButtonIndex={ButtonIndex} />
-              </Box>
-              {filterOptions[FilterOptions.TYPE] !== tokenPayload?.internalUserId && (
-                <Box
-                  sx={{
-                    display: { xs: 'none', sm: 'none', sd: 'block' },
+      <Box sx={{ overflowX: 'hidden', padding: { xs: '12px 20px', sm: '12px 20px' } }}>
+        <Stack direction={'row'} justifyContent={'space-between'} sx={{ maxHeight: '32px' }}>
+          <Stack direction={'row'} columnGap={3}>
+            <Box>
+              <FilterButtonGroup filterButtons={filterButtons} activeButtonIndex={ButtonIndex} />
+            </Box>
+            {filterOptions[FilterOptions.TYPE] !== tokenPayload?.internalUserId && (
+              <Box
+                sx={{
+                  display: { xs: 'none', sm: 'none', sd: 'block' },
+                }}
+              >
+                <Selector
+                  getSelectedValue={(_newValue) => {
+                    const newValue = _newValue as IAssigneeCombined
+                    updateAssigneeValue(newValue)
+                    handleFilterOptionsChange(FilterOptions.ASSIGNEE, newValue?.id as string)
                   }}
-                >
-                  <Selector
-                    getSelectedValue={(_newValue) => {
-                      const newValue = _newValue as IAssigneeCombined
-                      updateAssigneeValue(newValue)
-                      handleFilterOptionsChange(FilterOptions.ASSIGNEE, newValue?.id as string)
-                    }}
-                    startIcon={<FilterByAsigneeIcon />}
-                    options={loading ? [] : filteredAssignee}
-                    placeholder="Assignee"
-                    value={assigneeValue}
-                    selectorType={SelectorType.ASSIGNEE_SELECTOR}
-                    extraOption={NoAssigneeExtraOptions}
-                    extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
-                      return (
-                        noAssigneOptionFlag && (
-                          <>
-                            {/* //****Disabling re-assignment completely for now*** */}
-                            {/* <ExtraOptionRendererAssignee
+                  startIcon={<FilterByAsigneeIcon />}
+                  options={loading ? [] : filteredAssignee}
+                  placeholder="Assignee"
+                  value={assigneeValue}
+                  selectorType={SelectorType.ASSIGNEE_SELECTOR}
+                  extraOption={NoAssigneeExtraOptions}
+                  extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
+                    return (
+                      noAssigneOptionFlag && (
+                        <>
+                          {/* //****Disabling re-assignment completely for now*** */}
+                          {/* <ExtraOptionRendererAssignee
                               props={props}
                               onClick={(e) => {
                                 updateAssigneeValue({ id: '', name: 'No assignee' })
@@ -163,69 +162,68 @@ export const FilterBar = ({
                                 handleFilterOptionsChange(FilterOptions.ASSIGNEE, 'No assignee')
                               }}
                             /> */}
-                            {loading && <MiniLoader />}
-                          </>
-                        )
+                          {loading && <MiniLoader />}
+                        </>
                       )
-                    }}
-                    buttonContent={
-                      <FilterByAssigneeBtn
-                        assigneeValue={assigneeValue}
-                        updateAssigneeValue={updateAssigneeValue}
-                        handleClick={handleFilterOptionsChange}
-                      />
+                    )
+                  }}
+                  buttonContent={
+                    <FilterByAssigneeBtn
+                      assigneeValue={assigneeValue}
+                      updateAssigneeValue={updateAssigneeValue}
+                      handleClick={handleFilterOptionsChange}
+                    />
+                  }
+                  padding="2px 10px"
+                  handleInputChange={async (newInputValue: string) => {
+                    if (!newInputValue) {
+                      setFilteredAssignee(filteredAssigneeList)
+                      return
                     }
-                    padding="2px 10px"
-                    handleInputChange={async (newInputValue: string) => {
-                      if (!newInputValue) {
-                        setFilteredAssignee(filteredAssigneeList)
-                        return
-                      }
 
-                      setDebouncedFilteredAssignees(
-                        activeDebounceTimeoutId,
-                        setActiveDebounceTimeoutId,
-                        setLoading,
-                        setFilteredAssignee,
-                        z.string().parse(token),
-                        newInputValue,
-                      )
-                    }}
-                    filterOption={(x: unknown) => x}
-                  />
-                </Box>
-              )}
-            </Stack>
-            <Stack direction="row" alignItems="center" columnGap={3}>
-              <Box
-                sx={{
-                  display: { xs: 'none', sd: 'block' },
-                }}
-              >
-                <SearchBar
-                  value={filterOptions.keyword}
-                  getSearchKeyword={(keyword) => {
-                    handleFilterOptionsChange(FilterOptions.KEYWORD, keyword)
+                    setDebouncedFilteredAssignees(
+                      activeDebounceTimeoutId,
+                      setActiveDebounceTimeoutId,
+                      setLoading,
+                      setFilteredAssignee,
+                      z.string().parse(token),
+                      newInputValue,
+                    )
                   }}
+                  filterOption={(x: unknown) => x}
                 />
               </Box>
-
-              <Box
-                sx={{
-                  display: { xs: 'none', sm: 'none', sd: 'block' },
-                }}
-              >
-                <ViewModeSelector
-                  selectedMode={view}
-                  handleModeChange={(mode) => {
-                    store.dispatch(setViewSettings({ viewMode: mode, filterOptions: filterOptions }))
-                    updateViewModeSetting({ viewMode: mode, filterOptions: filterOptions })
-                  }}
-                />
-              </Box>
-            </Stack>
+            )}
           </Stack>
-        </AppMargin>
+          <Stack direction="row" alignItems="center" columnGap={3}>
+            <Box
+              sx={{
+                display: { xs: 'none', sd: 'block' },
+              }}
+            >
+              <SearchBar
+                value={filterOptions.keyword}
+                getSearchKeyword={(keyword) => {
+                  handleFilterOptionsChange(FilterOptions.KEYWORD, keyword)
+                }}
+              />
+            </Box>
+
+            <Box
+              sx={{
+                display: { xs: 'none', sm: 'none', sd: 'block' },
+              }}
+            >
+              <ViewModeSelector
+                selectedMode={view}
+                handleModeChange={(mode) => {
+                  store.dispatch(setViewSettings({ viewMode: mode, filterOptions: filterOptions }))
+                  updateViewModeSetting({ viewMode: mode, filterOptions: filterOptions })
+                }}
+              />
+            </Box>
+          </Stack>
+        </Stack>
       </Box>
       <AppMargin size={SizeofAppMargin.LARGE}>
         <Stack

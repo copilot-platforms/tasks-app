@@ -69,7 +69,7 @@ export const TaskBoard = () => {
         }}
       />
       {view === View.BOARD_VIEW && (
-        <AppMargin size={SizeofAppMargin.LARGE} py="20px">
+        <Box sx={{ padding: '20px 20px' }}>
           <Stack
             columnGap={6}
             sx={{
@@ -101,7 +101,7 @@ export const TaskBoard = () => {
               </DragDropHandler>
             ))}
           </Stack>
-        </AppMargin>
+        </Box>
       )}
 
       {view === View.LIST_VIEW && (

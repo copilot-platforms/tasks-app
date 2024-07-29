@@ -49,21 +49,22 @@ export const ClientTaskCard = ({
       >
         <Stack
           direction={{ xs: 'column', sm: 'row' }}
-          alignItems="flex-start"
+          alignItems="center"
           justifyContent="space-between"
           sx={{
             borderBottom: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
-            padding: { xs: '2px 20px', sm: '2px 36px' },
+            padding: { xs: '8px 18px', sm: '6px 40px 6px 20px' },
           }}
         >
           <Stack direction="column">
-            <Typography variant="sm" sx={{ fontSize: '13px' }}>
+            <Typography variant="sm" sx={{ fontSize: '13px', lineHeight: '21px' }}>
               {task?.title}
             </Typography>
             <Box
               sx={{
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
+                display: 'felx',
               }}
             >
               <Typography variant="bodySm" sx={{ fontSize: '12px', color: (theme) => theme.color.gray[500] }}>
@@ -100,10 +101,10 @@ export const ClientTaskCard = ({
 
               <Stack
                 direction="row"
-                alignItems="flex-start"
+                alignItems="center"
                 justifyContent={'left'}
-                columnGap={1}
-                sx={{ padding: '2px', minWidth: '132px', maxWidth: '200px' }}
+                columnGap={'4px'}
+                sx={{ padding: '2px', minWidth: '140px' }}
               >
                 <CopilotAvatar currentAssignee={currentAssignee as IAssigneeCombined} />
 
@@ -114,6 +115,7 @@ export const ClientTaskCard = ({
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
                     fontSize: '12px',
+                    maxWidth: '110px',
                     color: (theme) => theme.color.gray[500],
                   }}
                   title={getAssigneeName(currentAssignee)}
