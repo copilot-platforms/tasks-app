@@ -31,6 +31,7 @@ export const TaskBoard = () => {
       return dateB - dateA
     })
   }, [_filteredTasks])
+  console.log('filteredTask', filteredTasks)
 
   const onDropItem = useCallback(
     (payload: { taskId: string; targetWorkflowStateId: string }) => {
