@@ -32,8 +32,6 @@ const StyledText = styled(Typography)(({ theme }) => ({
 
 export const Sidebar = ({
   task_id,
-  selectedWorkflowState,
-  selectedAssigneeId,
   updateWorkflowState,
   updateAssignee,
   updateTask,
@@ -198,7 +196,6 @@ export const Sidebar = ({
           <DatePickerComponent
             getDate={(date) => {
               const isoDate = DateStringSchema.parse(formatDate(date))
-              setDueDate(date)
               updateTask({
                 dueDate: isoDate,
               })
