@@ -37,13 +37,16 @@ export const FilterBar = ({
 
   const handleFilterOptionsChange = async (optionType: FilterOptions, newValue: string | null) => {
     store.dispatch(setFilterOptions({ optionType, newValue }))
-    newValue == FilterOptionsKeywords.CLIENTS
-      ? setFilteredAssignee(assignee.filter((el) => el.type == FilterByOptions.CLIENT || el.type == FilterByOptions.COMPANY))
-      : newValue == FilterOptionsKeywords.TEAM
-        ? setFilteredAssignee(assignee.filter((el) => el.type == FilterByOptions.IUS))
-        : newValue == ''
-          ? setFilteredAssignee(assignee)
-          : setFilteredAssignee(assignee) //FilteredAssignee is also updated in the component's state and used in Selector's autocomplete to mitigate the time taken to update the store and fetch values to the Selector's autocomplete.
+    optionType === FilterOptions.TYPE &&
+      (newValue == FilterOptionsKeywords.CLIENTS
+        ? setFilteredAssignee(
+            assignee.filter((el) => el.type == FilterByOptions.CLIENT || el.type == FilterByOptions.COMPANY),
+          )
+        : newValue == FilterOptionsKeywords.TEAM
+          ? setFilteredAssignee(assignee.filter((el) => el.type == FilterByOptions.IUS))
+          : newValue == ''
+            ? setFilteredAssignee(assignee)
+            : setFilteredAssignee(assignee)) //FilteredAssignee is also updated in the component's state and used in Selector's autocomplete to mitigate the time taken to update the store and fetch values to the Selector's autocomplete.
     const updatedFilterOptions = store.getState().taskBoard.filterOptions
     updateViewModeSetting({
       viewMode: view,

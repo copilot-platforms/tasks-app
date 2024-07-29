@@ -15,7 +15,7 @@ export class NotificationService extends BaseService {
 
       const { senderId, recipientId, actionUser } = await this.getNotificationParties(copilotUtils, task, action)
 
-      const inProduct = getInProductNotificationDetails(actionUser, task.title)[action]
+      const inProduct = getInProductNotificationDetails(actionUser, task)[action]
       const email = disable.email ? undefined : getEmailDetails(actionUser, task.title)[action]
       const notificationDetails = {
         senderId,
@@ -42,7 +42,7 @@ export class NotificationService extends BaseService {
 
       const companies = await copilotUtils.getCompanies()
       const currentCompany = companies.data?.find((company) => company.id === task.assigneeId)
-      const inProduct = getInProductNotificationDetails(actionUserName, task.title, currentCompany?.name)[action]
+      const inProduct = getInProductNotificationDetails(actionUserName, task, currentCompany?.name)[action]
 
       const notifications = []
       for (let recipientId of recipientIds) {
