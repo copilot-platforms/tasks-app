@@ -50,7 +50,7 @@ export const ListViewTaskCard = ({
           },
         }}
       >
-        <Box sx={{ padding: '8.5px 20px' }}>
+        <Box sx={{ padding: '8.5px 12px 8.5px 20px' }}>
           <Box>
             <Stack direction="row" columnGap={'20px'} alignItems="center" justifyContent="space-between">
               <Stack direction="row" alignItems="center" columnGap={'16px'}>
@@ -66,15 +66,25 @@ export const ListViewTaskCard = ({
                 >
                   {task.label}
                 </Typography>
-                <Typography variant="sm" sx={{ lineHeight: '21px' }}>
-                  {task?.title}
-                </Typography>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap' }}>
+                  <Typography
+                    variant="sm"
+                    sx={{
+                      lineHeight: '21px',
+                      wordBreak: 'break-word',
+                      flexGrow: 1,
+                      minWidth: '0',
+                    }}
+                  >
+                    {task?.title}
+                  </Typography>
+                </Box>
               </Stack>
               <Stack direction="row" alignItems="center" justifyContent={'space-between'} columnGap={2}>
                 <Box
                   sx={{
                     display: 'flex',
-                    maxWidth: '100px',
+                    maxWidth: '80px',
                     gap: '33px',
                     flexDirection: 'row',
                     alignItems: 'flex-end',
@@ -90,7 +100,7 @@ export const ListViewTaskCard = ({
                     placeholder="Change assignee"
                     disableOutline
                     disabled
-                    buttonWidth="160px"
+                    buttonWidth="150px"
                     getSelectedValue={(_newValue) => {
                       const newValue = _newValue as IAssigneeCombined
                       updateAssigneeValue(newValue)

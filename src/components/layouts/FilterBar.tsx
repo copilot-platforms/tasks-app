@@ -122,7 +122,7 @@ export const FilterBar = ({
         borderBottom: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
       }}
     >
-      <Box sx={{ overflowX: 'hidden', padding: { xs: '12px 22px', sm: '12px 24px' } }}>
+      <Box sx={{ overflowX: 'hidden', padding: { xs: '12px 20px', sm: '12px 20px' } }}>
         <Stack direction={'row'} justifyContent={'space-between'} sx={{ maxHeight: '32px' }}>
           <Stack direction={'row'} columnGap={3}>
             <Box>

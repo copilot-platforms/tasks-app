@@ -37,7 +37,7 @@ export const AppMargin = ({
       <Box
         sx={{
           ...sx,
-          padding: { xs: `${py ? py : '12px'} 18px`, sm: `${py ? py : '19.5px'} 20px` },
+          padding: { xs: `${py ? py : '12px'} 20px`, sm: `${py ? py : '19.5px'} 20px` },
         }}
       >
         {children}
