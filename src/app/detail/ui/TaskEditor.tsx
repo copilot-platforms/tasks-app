@@ -4,7 +4,7 @@ import { AttachmentCard } from '@/components/cards/AttachmentCard'
 import { StyledTextField } from '@/components/inputs/TextField'
 import { selectTaskDetails, setShowConfirmDeleteModal } from '@/redux/features/taskDetailsSlice'
 import { Box, Modal, Stack } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useSelector } from 'react-redux'
 import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
 import store from '@/redux/store'
@@ -18,12 +18,14 @@ import { advancedFeatureFlag } from '@/config'
 import { Tapwrite } from 'tapwrite'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { useDebounce } from '@/hooks/useDebounce'
+import { TaskResponse } from '@/types/dto/tasks.dto'
 
 interface Prop {
   task_id: string
   attachment: AttachmentResponseSchema[]
   isEditable: boolean
-  updateTaskDetail: (title: string, detail: string) => void
+  updateTaskDetail: (detail: string) => void
+  updateTaskTitle: (title: string) => void
   deleteTask: () => void
   postAttachment: (postAttachmentPayload: CreateAttachmentRequest) => void
   deleteAttachment: (id: string) => void
@@ -36,6 +38,7 @@ export const TaskEditor = ({
   attachment,
   isEditable,
   updateTaskDetail,
+  updateTaskTitle,
   deleteTask,
   postAttachment,
   deleteAttachment,
@@ -46,6 +49,7 @@ export const TaskEditor = ({
   const [updateTitle, setUpdateTitle] = useState('')
   const [updateDetail, setUpdateDetail] = useState('')
   const { showConfirmDeleteModal } = useSelector(selectTaskDetails)
+  const [isUserTyping, setIsUserTyping] = useState(false)
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     event.preventDefault()
@@ -60,17 +64,44 @@ export const TaskEditor = ({
       }
     }
   }
-  useEffect(() => {
-    const currentTask = tasks.find((el) => el.id === task_id)
-    setUpdateTitle(currentTask?.title || '')
-    setUpdateDetail(currentTask?.body ?? '')
-  }, [tasks, task_id])
 
-  const _taskUpdateDebounced = async (title: string, details: string) => {
-    updateTaskDetail(title, details)
+  useEffect(() => {
+    if (!isUserTyping) {
+      const currentTask = tasks.find((el) => el.id === task_id)
+      if (currentTask) {
+        setUpdateTitle(currentTask.title || '')
+        setUpdateDetail(currentTask.body ?? '')
+      }
+    }
+  }, [tasks, task_id, isUserTyping])
+
+  const _titleUpdateDebounced = async (title: string) => updateTaskTitle(title)
+
+  const titleUpdateDebounced = useDebounce(_titleUpdateDebounced)
+
+  const _detailsUpdateDebounced = async (details: string) => updateTaskDetail(details)
+  const detailsUpdateDebounced = useDebounce(_detailsUpdateDebounced)
+
+  const resetTypingFlag = useCallback(() => {
+    setIsUserTyping(false)
+  }, [])
+
+  const debouncedResetTypingFlag = useDebounce(resetTypingFlag, 1500)
+
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newTitle = e.target.value
+    setUpdateTitle(newTitle)
+    setIsUserTyping(true)
+    titleUpdateDebounced(newTitle)
+    debouncedResetTypingFlag()
   }
 
-  const taskUpdateDebounced = useDebounce(_taskUpdateDebounced)
+  const handleDetailChange = (content: string) => {
+    setUpdateDetail(content)
+    setIsUserTyping(true)
+    detailsUpdateDebounced(content)
+    debouncedResetTypingFlag()
+  }
 
   return (
     <>
@@ -91,25 +122,14 @@ export const TaskEditor = ({
           },
         }}
         value={updateTitle}
-        onChange={(e) => {
-          setUpdateTitle(e.target.value)
-          taskUpdateDebounced(e.target.value, updateDetail)
-        }}
+        onChange={handleTitleChange}
         InputProps={{ readOnly: !isEditable }}
         inputProps={{ maxLength: 255 }}
         disabled={!isEditable}
         padding="0px"
-        onBlur={() => {
-          updateTaskDetail(updateTitle, updateDetail)
-        }}
       />
 
-      <Box
-        onBlur={() => {
-          updateTaskDetail(updateTitle, updateDetail)
-        }}
-        mt="12px"
-      >
+      <Box mt="12px">
         <Tapwrite
           uploadFn={async (file, tiptapEditorUtils) => {
             const newBlob = await upload(file.name, file, {
@@ -119,10 +139,7 @@ export const TaskEditor = ({
             tiptapEditorUtils.setImage(newBlob.url as string)
           }}
           content={updateDetail}
-          getContent={(content) => {
-            setUpdateDetail(content)
-            taskUpdateDebounced(updateTitle, content)
-          }}
+          getContent={handleDetailChange}
           readonly={userType === UserType.CLIENT_USER}
           editorClass="tapwrite-details-page"
           placeholder="Add description..."
