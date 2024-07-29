@@ -39,6 +39,7 @@ export const Sidebar = ({
   updateTask,
   assignee,
   disabled,
+  workflowDisabled,
 }: {
   task_id: string
   selectedWorkflowState: WorkflowStateResponse
@@ -48,6 +49,7 @@ export const Sidebar = ({
   updateTask: (payload: UpdateTaskRequest) => void
   assignee: IAssigneeCombined[]
   disabled: boolean
+  workflowDisabled?: false
 }) => {
   const { tasks, token, workflowStates } = useSelector(selectTaskBoard)
   const { showSidebar } = useSelector(selectTaskDetails)
@@ -117,7 +119,7 @@ export const Sidebar = ({
               updateStatusValue(value)
               updateWorkflowState(value)
             }}
-            disabled={disabled}
+            disabled={workflowDisabled}
             disableOutline
             responsiveNoHide
           />

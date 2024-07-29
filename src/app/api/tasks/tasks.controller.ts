@@ -50,10 +50,10 @@ export const deleteTask = async (req: NextRequest, { params: { id } }: IdParams)
   return new NextResponse(null, { status: httpStatus.NO_CONTENT })
 }
 
-export const completeTask = async (req: NextRequest, { params: { id } }: IdParams) => {
+export const clientUpdateTask = async (req: NextRequest, { params: { id } }: IdParams) => {
   const user = await authenticate(req)
-
+  const workflowStateId = req.nextUrl.searchParams.get('workflowStateId') ?? undefined
   const tasksService = new TasksService(user)
-  const completedTask = await tasksService.completeTask(id)
+  const completedTask = await tasksService.clientUpdateTask(id, workflowStateId)
   return NextResponse.json({ completedTask })
 }

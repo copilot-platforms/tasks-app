@@ -1,4 +1,4 @@
 import { withErrorHandler } from '@/app/api/core/utils/withErrorHandler'
-import { completeTask } from '@/app/api/tasks/tasks.controller'
+import { clientUpdateTask } from '@/app/api/tasks/tasks.controller'
 
-export const PATCH = withErrorHandler(completeTask)
+export const PATCH = withErrorHandler(clientUpdateTask)
