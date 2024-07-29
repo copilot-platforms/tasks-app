@@ -7,7 +7,6 @@ import store from '@/redux/store'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { Box } from '@mui/material'
 import { useSelector } from 'react-redux'
-import { useRouter } from 'next/navigation'
 import { StateType } from '@prisma/client'
 import DashboardEmptyState from '@/components/layouts/EmptyState/DashboardEmptyState'
 import { UserType } from '@/types/interfaces'
@@ -16,12 +15,10 @@ import { Header } from '@/components/layouts/Header'
 export const ClientTaskBoard = ({ completeTask }: { completeTask: (taskId: string) => void }) => {
   const { workflowStates, tasks, filteredTasks, token } = useSelector(selectTaskBoard)
 
-  const router = useRouter()
-
   /**
-   * This function is responsible for returning the tasks that matches the workflowStateId of the workflowState
+   * This function is responsible for returning the tasks that matches the workflowStateId of the workflowState and assigneeType
    */
-  const filterTaskWithWorkflowStateId = (workflowStateId: string): TaskResponse[] => {
+  const filterTaskWithWorkflowStateIdAndAssigneeType = (workflowStateId: string): TaskResponse[] => {
     return tasks
       .filter((task) => task.workflowStateId === workflowStateId)
       .filter((task) => task.assigneeType !== 'internalUser')
@@ -46,7 +43,7 @@ export const ClientTaskBoard = ({ completeTask }: { completeTask: (taskId: strin
             taskCount={taskCountForWorkflowStateId(list.id)}
             showConfigurableIcons={false}
           >
-            {filterTaskWithWorkflowStateId(list.id).map((task) => {
+            {filterTaskWithWorkflowStateIdAndAssigneeType(list.id).map((task) => {
               return (
                 <Box key={task.id}>
                   <ClientTaskCard

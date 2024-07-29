@@ -80,9 +80,9 @@ class UsersService extends BaseService {
     const [clients, companies] = await Promise.all([this.copilot.getClients(), this.copilot.getCompanies()])
 
     // Filter out companies where isPlaceholder is true if companies.data is not null
-    const filteredCompanies = companies.data ? companies.data.filter((company) => !company.isPlaceholder) : []
+    // const filteredCompanies = companies.data ? companies.data.filter((company) => !company.isPlaceholder) : []
 
-    return { clients: clients.data, companies: filteredCompanies }
+    return { clients: clients.data, companies: companies.data }
   }
 }
 
