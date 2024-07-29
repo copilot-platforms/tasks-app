@@ -28,9 +28,9 @@ export const TaskBoard = () => {
     return [..._filteredTasks].sort((a, b) => {
       const dateA = new Date(a.createdAt).getTime()
       const dateB = new Date(b.createdAt).getTime()
-      return dateB - dateA
+      return dateA - dateB
     })
-  }, [tasks, _filteredTasks])
+  }, [_filteredTasks])
   console.log('filteredTask', filteredTasks)
 
   const onDropItem = useCallback(
