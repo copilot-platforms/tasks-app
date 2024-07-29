@@ -30,7 +30,7 @@ export const TaskBoard = () => {
       const dateB = new Date(b.createdAt).getTime()
       return dateA - dateB
     })
-  }, [_filteredTasks])
+  }, [tasks, _filteredTasks])
   console.log('filteredTask', filteredTasks)
 
   const onDropItem = useCallback(
