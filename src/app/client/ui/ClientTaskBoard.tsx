@@ -7,12 +7,12 @@ import store from '@/redux/store'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { Box } from '@mui/material'
 import { useSelector } from 'react-redux'
-import { AssigneeType, StateType } from '@prisma/client'
+import { StateType } from '@prisma/client'
 import DashboardEmptyState from '@/components/layouts/EmptyState/DashboardEmptyState'
 import { UserType } from '@/types/interfaces'
 import { Header } from '@/components/layouts/Header'
-import authDetailsSlice, { selectAuthDetails } from '@/redux/features/authDetailsSlice'
-import { useCallback, useMemo } from 'react'
+import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
+import { useMemo } from 'react'
 
 export const ClientTaskBoard = ({ completeTask }: { completeTask: (taskId: string) => void }) => {
   const { workflowStates, tasks, token } = useSelector(selectTaskBoard)
