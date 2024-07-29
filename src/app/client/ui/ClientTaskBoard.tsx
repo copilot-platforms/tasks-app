@@ -11,9 +11,11 @@ import { StateType } from '@prisma/client'
 import DashboardEmptyState from '@/components/layouts/EmptyState/DashboardEmptyState'
 import { UserType } from '@/types/interfaces'
 import { Header } from '@/components/layouts/Header'
+import authDetailsSlice, { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 
 export const ClientTaskBoard = ({ completeTask }: { completeTask: (taskId: string) => void }) => {
   const { workflowStates, tasks, filteredTasks, token } = useSelector(selectTaskBoard)
+  const { tokenPayload } = useSelector(selectAuthDetails)
 
   /**
    * This function is responsible for returning the tasks that matches the workflowStateId of the workflowState and assigneeType
@@ -44,6 +46,7 @@ export const ClientTaskBoard = ({ completeTask }: { completeTask: (taskId: strin
             showConfigurableIcons={false}
           >
             {filterTaskWithWorkflowStateIdAndAssigneeType(list.id).map((task) => {
+              console.log('filteredTaskWith...', filterTaskWithWorkflowStateIdAndAssigneeType(list.id))
               return (
                 <Box key={task.id}>
                   <ClientTaskCard
