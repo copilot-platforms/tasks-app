@@ -53,7 +53,7 @@ export const ClientTaskCard = ({
           justifyContent="space-between"
           sx={{
             borderBottom: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
-            padding: { xs: '6px 18px', sm: '4px 20px' },
+            padding: { xs: '8px 18px', sm: '6px 40px 6px 20px' },
           }}
         >
           <Stack direction="column">
