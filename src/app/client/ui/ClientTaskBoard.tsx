@@ -27,7 +27,7 @@ export const ClientTaskBoard = ({ completeTask }: { completeTask: (taskId: strin
   /**
    * This function is responsible for returning the tasks that matches the workflowStateId of the workflowState and assigneeType
    */
-  const filterTaskWithWorkflowStateIdAndAssigneeType = (workflowStateId: string): TaskResponse[] => {
+  const filterTaskWithWorkflowStateId = (workflowStateId: string): TaskResponse[] => {
     return filteredTask.filter((task) => task.workflowStateId === workflowStateId)
   }
 
@@ -50,7 +50,7 @@ export const ClientTaskBoard = ({ completeTask }: { completeTask: (taskId: strin
             taskCount={taskCountForWorkflowStateId(list.id)}
             showConfigurableIcons={false}
           >
-            {filterTaskWithWorkflowStateIdAndAssigneeType(list.id).map((task) => {
+            {filterTaskWithWorkflowStateId(list.id).map((task) => {
               return (
                 <Box key={task.id}>
                   <ClientTaskCard
