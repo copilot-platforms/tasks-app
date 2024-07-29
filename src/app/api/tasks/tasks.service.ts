@@ -66,6 +66,8 @@ export class TasksService extends BaseService {
     // Build query filters based on role of user. IU can access all tasks related to a workspace
     // while clients can only view the tasks assigned to them or their company
     const filters = this.buildReadFilters()
+    console.log('filterssss', filters)
+    console.log('userrrrrrrrrr', this.user)
 
     let tasks = await this.db.task.findMany({
       ...filters,
@@ -75,31 +77,31 @@ export class TasksService extends BaseService {
       },
     })
 
-    // if (!this.user.internalUserId) {
-    return tasks
-    // }
+    if (!this.user.internalUserId) {
+      return tasks
+    }
 
     // Now we have the challenge of figuring out if a task is assigned to a client / company that falls in IU's access list
-    // const copilot = new CopilotAPI(this.user.token)
-    // const currentInternalUser = await copilot.getInternalUser(this.user.internalUserId)
-    // if (!currentInternalUser.isClientAccessLimited) return tasks
+    const copilot = new CopilotAPI(this.user.token)
+    const currentInternalUser = await copilot.getInternalUser(this.user.internalUserId)
+    if (!currentInternalUser.isClientAccessLimited) return tasks
 
-    // const hasClientTasks = tasks.some((task) => task.assigneeType === AssigneeType.client)
-    // const clients = hasClientTasks ? await copilot.getClients() : { data: [] }
+    const hasClientTasks = tasks.some((task) => task.assigneeType === AssigneeType.client)
+    const clients = hasClientTasks ? await copilot.getClients() : { data: [] }
 
-    // return tasks.filter((task) => {
-    //   // Allow IU to access unassigned tasks or tasks assigned to another IU within workspace
-    //   if (!task.assigneeId || task.assigneeType === AssigneeType.internalUser) return true
+    return tasks.filter((task) => {
+      // Allow IU to access unassigned tasks or tasks assigned to another IU within workspace
+      if (!task.assigneeId || task.assigneeType === AssigneeType.internalUser) return true
 
-    //   // TODO: Refactor this hacky abomination of code as soon as copilot API natively supports access scopes
-    //   // Filter out only tasks that belong to a client that has companyId in IU's companyAccessList
-    //   if (task.assigneeType === AssigneeType.company) {
-    //     return currentInternalUser.companyAccessList?.includes(task.assigneeId)
-    //   }
-    //   const taskClient = clients.data?.find((client) => client.id === task.assigneeId)
-    //   const taskClientsCompanyId = z.string().parse(taskClient?.companyId)
-    //   return currentInternalUser.companyAccessList?.includes(taskClientsCompanyId)
-    // })
+      // TODO: Refactor this hacky abomination of code as soon as copilot API natively supports access scopes
+      // Filter out only tasks that belong to a client that has companyId in IU's companyAccessList
+      if (task.assigneeType === AssigneeType.company) {
+        return currentInternalUser.companyAccessList?.includes(task.assigneeId)
+      }
+      const taskClient = clients.data?.find((client) => client.id === task.assigneeId)
+      const taskClientsCompanyId = z.string().parse(taskClient?.companyId)
+      return currentInternalUser.companyAccessList?.includes(taskClientsCompanyId)
+    })
   }
 
   async createTask(data: CreateTaskRequest) {
@@ -266,7 +268,7 @@ export class TasksService extends BaseService {
 
   async completeTask(id: string) {
     //Apply custom authorization here. Policy service is not used because this api is for client's Mark done function only. Only clients can use this.
-    if (this.user.role !== UserRole.Client) {
+    if (this.user.role === UserRole.IU) {
       throw new APIError(httpStatus.UNAUTHORIZED, 'You are not authorized to perform this action')
     }
 
