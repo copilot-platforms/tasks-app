@@ -50,7 +50,7 @@ export const DatePickerComponent = ({ getDate, dateValue, disabled, isButton = f
           padding: isButton ? '0px' : '4px 8px',
           borderRadius: '4px',
           ':hover': {
-            backgroundColor: (theme) => theme.color.gray[100],
+            backgroundColor: (theme) => (disabled ? theme.color.base.white : theme.color.gray[100]),
           },
         }}
       >

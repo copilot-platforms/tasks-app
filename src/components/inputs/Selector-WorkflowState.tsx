@@ -63,7 +63,7 @@ export const WorkflowStateSelector = ({
                 cursor: disabled ? 'auto' : 'pointer',
                 borderRadius: '4px',
                 ':hover': {
-                  backgroundColor: (theme) => theme.color.gray[100],
+                  backgroundColor: (theme) => (disabled ? theme.color.base.white : theme.color.gray[100]),
                 },
               }}
             >
