@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { Box, Stack } from '@mui/material'
 import { TaskCard } from '@/components/cards/TaskCard'
 import { TaskColumn } from '@/components/cards/TaskColumn'
@@ -22,7 +22,15 @@ import { FilterBar } from '@/components/layouts/FilterBar'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 
 export const TaskBoard = () => {
-  const { workflowStates, tasks, token, filteredTasks, view, filterOptions } = useSelector(selectTaskBoard)
+  const { workflowStates, tasks, token, filteredTasks: _filteredTasks, view, filterOptions } = useSelector(selectTaskBoard)
+
+  const filteredTasks = useMemo(() => {
+    return [..._filteredTasks].sort((a, b) => {
+      const dateA = new Date(a.createdAt).getTime()
+      const dateB = new Date(b.createdAt).getTime()
+      return dateB - dateA
+    })
+  }, [_filteredTasks])
 
   const onDropItem = useCallback(
     (payload: { taskId: string; targetWorkflowStateId: string }) => {

@@ -38,6 +38,7 @@ export const TaskResponseSchema = z.object({
   workflowStateId: z.string().uuid().optional(),
   workflowState: WorkflowStateResponseSchema,
   dueDate: DateStringSchema.optional(),
+  createdAt: z.date(),
 })
 
 export type TaskResponse = z.infer<typeof TaskResponseSchema>
