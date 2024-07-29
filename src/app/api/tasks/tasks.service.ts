@@ -66,8 +66,6 @@ export class TasksService extends BaseService {
     // Build query filters based on role of user. IU can access all tasks related to a workspace
     // while clients can only view the tasks assigned to them or their company
     const filters = this.buildReadFilters()
-    console.log('filterssss', filters)
-    console.log('userrrrrrrrrr', this.user)
 
     let tasks = await this.db.task.findMany({
       ...filters,

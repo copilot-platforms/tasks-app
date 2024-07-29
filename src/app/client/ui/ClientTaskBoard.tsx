@@ -7,7 +7,7 @@ import store from '@/redux/store'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { Box } from '@mui/material'
 import { useSelector } from 'react-redux'
-import { StateType } from '@prisma/client'
+import { AssigneeType, StateType } from '@prisma/client'
 import DashboardEmptyState from '@/components/layouts/EmptyState/DashboardEmptyState'
 import { UserType } from '@/types/interfaces'
 import { Header } from '@/components/layouts/Header'
@@ -21,7 +21,12 @@ export const ClientTaskBoard = ({ completeTask }: { completeTask: (taskId: strin
    * This function is responsible for returning the tasks that matches the workflowStateId of the workflowState and assigneeType
    */
   const filterTaskWithWorkflowStateIdAndAssigneeType = (workflowStateId: string): TaskResponse[] => {
-    return tasks.filter((task) => task.workflowStateId === workflowStateId)
+    // return tasks.filter((task) => task.workflowStateId === workflowStateId)
+    return tasks.filter((task) => {
+      if (task.workflowStateId === workflowStateId) {
+        if (task.assigneeId === tokenPayload?.clientId || task.assigneeId === tokenPayload?.companyId) return true
+      }
+    })
     // .filter((task) => task.assigneeType === 'internalUser')
   }
 
