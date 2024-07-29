@@ -23,7 +23,7 @@ export const ClientTaskBoard = ({ completeTask }: { completeTask: (taskId: strin
   const filterTaskWithWorkflowStateIdAndAssigneeType = (workflowStateId: string): TaskResponse[] => {
     return tasks
       .filter((task) => task.workflowStateId === workflowStateId)
-      .filter((task) => task.assigneeType !== 'internalUser')
+      .filter((task) => task.assigneeType === 'internalUser')
   }
 
   /**
