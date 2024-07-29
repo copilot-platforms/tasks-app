@@ -55,7 +55,13 @@ const taskBoardSlice = createSlice({
       let taskToUpdate = state.tasks.find((task) => task.id === action.payload.taskId)
       if (taskToUpdate) {
         taskToUpdate.workflowStateId = action.payload.targetWorkflowStateId
-        const updatedTasks = [...state.tasks.filter((task) => task.id !== action.payload.taskId), taskToUpdate]
+        const updatedTasks = [...state.tasks.filter((task) => task.id !== action.payload.taskId), taskToUpdate].sort(
+          (a, b) => {
+            const dateA = new Date(a.createdAt).getTime()
+            const dateB = new Date(b.createdAt).getTime()
+            return dateA - dateB
+          },
+        )
         state.tasks = updatedTasks
         state.filteredTasks = updatedTasks
       }
