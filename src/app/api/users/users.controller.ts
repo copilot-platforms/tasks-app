@@ -28,6 +28,7 @@ export const getClients = async (req: NextRequest) => {
   const limit = rawLimit ? +rawLimit : undefined
 
   const usersService = new UsersService(user)
-  const clients = await usersService.getClient(limit)
+  // const clients = await usersService.getClient(limit)
+  const clients = await usersService.getGroupedUsers(limit)
   return NextResponse.json({ clients })
 }
