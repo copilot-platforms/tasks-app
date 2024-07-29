@@ -22,16 +22,7 @@ import { FilterBar } from '@/components/layouts/FilterBar'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 
 export const TaskBoard = () => {
-  const { workflowStates, tasks, token, filteredTasks: _filteredTasks, view, filterOptions } = useSelector(selectTaskBoard)
-
-  const filteredTasks = useMemo(() => {
-    return [..._filteredTasks].sort((a, b) => {
-      const dateA = new Date(a.createdAt).getTime()
-      const dateB = new Date(b.createdAt).getTime()
-      return dateA - dateB
-    })
-  }, [tasks, _filteredTasks])
-  console.log('filteredTask', filteredTasks)
+  const { workflowStates, tasks, token, filteredTasks, view, filterOptions } = useSelector(selectTaskBoard)
 
   const onDropItem = useCallback(
     (payload: { taskId: string; targetWorkflowStateId: string }) => {

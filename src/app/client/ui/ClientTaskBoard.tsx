@@ -19,15 +19,9 @@ export const ClientTaskBoard = ({ completeTask }: { completeTask: (taskId: strin
   const { tokenPayload } = useSelector(selectAuthDetails)
 
   const filteredTask = useMemo(() => {
-    return tasks
-      .filter((task) => {
-        if (task.assigneeId === tokenPayload?.clientId || task.assigneeId === tokenPayload?.companyId) return true
-      })
-      .sort((a, b) => {
-        const dateA = new Date(a.createdAt).getTime()
-        const dateB = new Date(b.createdAt).getTime()
-        return dateB - dateA
-      })
+    return tasks.filter((task) => {
+      if (task.assigneeId === tokenPayload?.clientId || task.assigneeId === tokenPayload?.companyId) return true
+    })
   }, [tasks])
 
   /**

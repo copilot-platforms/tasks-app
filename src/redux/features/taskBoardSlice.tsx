@@ -40,13 +40,21 @@ const taskBoardSlice = createSlice({
       state.workflowStates = action.payload
     },
     setTasks: (state, action: { payload: TaskResponse[] }) => {
-      state.tasks = action.payload
+      state.tasks = [...state.tasks, ...action.payload].sort((a, b) => {
+        const dateA = new Date(a.createdAt).getTime()
+        const dateB = new Date(b.createdAt).getTime()
+        return dateA - dateB
+      })
     },
     appendTask: (state, action: { payload: TaskResponse }) => {
       state.tasks = [...state.tasks, action.payload]
     },
     setFilteredTasks: (state, action: { payload: TaskResponse[] }) => {
-      state.filteredTasks = action.payload
+      state.filteredTasks = [...state.filteredTasks, ...action.payload].sort((a, b) => {
+        const dateA = new Date(a.createdAt).getTime()
+        const dateB = new Date(b.createdAt).getTime()
+        return dateA - dateB
+      })
     },
     setToken: (state, action: { payload: string }) => {
       state.token = action.payload
