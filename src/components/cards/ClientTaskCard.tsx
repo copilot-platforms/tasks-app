@@ -75,7 +75,7 @@ export const ClientTaskCard = ({
             direction="row"
             alignItems="flex-start"
             columnGap={{ xs: '12px', sm: '32px' }}
-            justifyContent={{ xs: 'space-between', sm: 'space-between' }}
+            justifyContent={{ xs: 'space-between', sm: 'none' }}
             sx={{
               padding: '6px 0px',
               width: { xs: '100%', sm: 'auto' },
@@ -102,7 +102,7 @@ export const ClientTaskCard = ({
                 alignItems="flex-start"
                 justifyContent={'left'}
                 columnGap={1}
-                sx={{ padding: '2px', maxWidth: { xs: '132px', sm: '235px' } }}
+                sx={{ padding: '2px', width: { xs: '100px', sm: '132px' } }}
               >
                 <CopilotAvatar currentAssignee={currentAssignee as IAssigneeCombined} />
 
