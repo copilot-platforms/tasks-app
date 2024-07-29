@@ -51,7 +51,6 @@ export const ClientTaskBoard = ({ completeTask }: { completeTask: (taskId: strin
             showConfigurableIcons={false}
           >
             {filterTaskWithWorkflowStateIdAndAssigneeType(list.id).map((task) => {
-              console.log('filteredTaskWith...', filterTaskWithWorkflowStateIdAndAssigneeType(list.id))
               return (
                 <Box key={task.id}>
                   <ClientTaskCard

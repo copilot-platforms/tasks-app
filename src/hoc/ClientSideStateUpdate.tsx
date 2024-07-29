@@ -53,7 +53,6 @@ export const ClientSideStateUpdate = ({
     }
 
     if (tasks && tasksInStore.length === 0) {
-      console.log('tasks', tasks)
       store.dispatch(setTasks(tasks))
     }
 
@@ -62,7 +61,6 @@ export const ClientSideStateUpdate = ({
     }
 
     if (assignee) {
-      console.log('assignee', assignee)
       store.dispatch(setAssigneeList(assignee))
     }
 
