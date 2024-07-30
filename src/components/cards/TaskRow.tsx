@@ -22,7 +22,7 @@ export const TaskRow = ({ children, columnName, taskCount, showConfigurableIcons
           borderBottom: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
         }}
       >
-        <AppMargin size={SizeofAppMargin.LARGE} py="6px">
+        <AppMargin size={SizeofAppMargin.HEADER} py="6px">
           <Stack direction="row" justifyContent="space-between" alignItems="center">
             <Stack direction="row" columnGap={'8px'}>
               <Typography variant="md">{columnName}</Typography>
