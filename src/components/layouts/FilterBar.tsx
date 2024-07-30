@@ -206,6 +206,9 @@ export const FilterBar = ({
                 getSearchKeyword={(keyword) => {
                   handleFilterOptionsChange(FilterOptions.KEYWORD, keyword)
                 }}
+                onClear={() => {
+                  handleFilterOptionsChange(FilterOptions.KEYWORD, '')
+                }}
               />
             </Box>
 
@@ -274,6 +277,9 @@ export const FilterBar = ({
                 value={filterOptions.keyword}
                 getSearchKeyword={(keyword) => {
                   handleFilterOptionsChange(FilterOptions.KEYWORD, keyword)
+                }}
+                onClear={() => {
+                  handleFilterOptionsChange(FilterOptions.KEYWORD, 'keyword')
                 }}
               />
             </Box>
