@@ -427,7 +427,9 @@ export class TasksService extends BaseService {
       updatedTask?.workflowState?.type === StateType.completed &&
       updatedTask.assigneeId
     ) {
-      await notificationService.create(NotificationTaskActions.Completed, updatedTask, { email: true })
+      if (updatedTask.createdById !== updatedTask.assigneeId) {
+        await notificationService.create(NotificationTaskActions.Completed, updatedTask, { email: true })
+      }
 
       if (updatedTask.assigneeType === AssigneeType.client) {
         try {
