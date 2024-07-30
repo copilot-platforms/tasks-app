@@ -19,6 +19,7 @@ import { ModalNewTaskForm } from './ui/Modal_NewTaskForm'
 import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 import { RealTime } from '@/hoc/RealTime'
 import { redirectIfTaskCta } from '@/utils/redirect'
+import { sortTaskByDescendingOrder } from '@/utils/sortTask'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -37,7 +38,7 @@ async function getAllTasks(token: string): Promise<TaskResponse[]> {
 
   const data = await res.json()
 
-  return data.tasks
+  return sortTaskByDescendingOrder(data.tasks)
 }
 
 async function getTokenPayload(token: string): Promise<Token> {
