@@ -41,7 +41,7 @@ export const getInProductNotificationDetails = (
       ctaParams,
     },
     [NotificationTaskActions.Commented]: {
-      title: 'Tew comment on task',
+      title: 'New comment on task',
       body: `A new comment was left by ${actionUser} on a task where you are set as the assignee. To see details about the task, navigate to the Tasks App below.`,
       ctaParams,
     },
