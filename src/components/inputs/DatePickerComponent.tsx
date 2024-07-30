@@ -106,8 +106,8 @@ export const DatePickerComponent = ({ getDate, dateValue, disabled, isButton = f
           open={open}
           onClose={() => setAnchorEl(null)}
           onChange={(newValue) => {
-            getDate(formatDate(newValue))
             setValue(newValue)
+            getDate(formatDate(newValue))
           }}
           slotProps={{
             day: {
