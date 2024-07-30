@@ -1,15 +1,19 @@
 import { InputAdornment, SxProps, Theme, styled } from '@mui/material'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { StyledTextField } from '@/components/inputs/TextField'
-import { SearchIcon } from '@/icons'
+import { CrossIconSmall, SearchIcon } from '@/icons'
+import { FilterOptions } from '@/types/interfaces'
+import { useDebounce } from '@/hooks/useDebounce'
 
 interface ISearchBar {
   value: string
   getSearchKeyword: (keyword: string) => void
+  onClear: () => void
 }
 
-const SearchBar = ({ value, getSearchKeyword }: ISearchBar) => {
+const SearchBar = ({ value, getSearchKeyword, onClear }: ISearchBar) => {
   const [focused, setFocused] = useState<boolean>(false)
+  const [fieldValue, setFieldValue] = useState(value)
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Escape') {
@@ -27,17 +31,22 @@ const SearchBar = ({ value, getSearchKeyword }: ISearchBar) => {
       inputRef.current.focus()
     }
   }
+  const getSearchKeywordDebounced = useDebounce(getSearchKeyword, 300)
 
   return (
     <StyledTextField
       inputRef={inputRef}
-      value={value}
+      value={fieldValue}
       focused={focused}
       variant="outlined"
       placeholder={focused ? 'Search...' : 'Search'}
       basePadding="4.4px 8px"
       sx={{
-        width: { md: focused ? '220px' : '90px', sd: focused ? '90px' : '30px', xs: focused ? '100px' : '30px' },
+        width: {
+          md: focused || fieldValue ? '220px' : '90px',
+          sd: focused ? '90px' : '30px',
+          xs: focused ? '100px' : '30px',
+        },
         transition: 'width 0.5s',
         '& .MuiOutlinedInput-input': {
           cursor: 'pointer',
@@ -56,11 +65,32 @@ const SearchBar = ({ value, getSearchKeyword }: ISearchBar) => {
             <SearchIcon onClick={handleIconClick} />
           </InputAdornment>
         ),
+        endAdornment: (
+          <InputAdornment
+            position="end"
+            sx={{
+              cursor: 'default',
+              display: fieldValue ? 'flex' : 'none',
+            }}
+          >
+            <CrossIconSmall
+              onClick={() => {
+                onClear()
+                setFieldValue('')
+              }}
+            />
+          </InputAdornment>
+        ),
       }}
       autoComplete="off"
       onBlur={() => setFocused(false)}
-      onFocus={() => setFocused(true)}
-      onChange={(e) => getSearchKeyword(e.target.value)}
+      onFocus={() => {
+        setFocused(true)
+      }}
+      onChange={(e) => {
+        setFieldValue(e.target.value)
+        getSearchKeywordDebounced(e.target.value)
+      }}
     />
   )
 }
