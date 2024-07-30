@@ -11,6 +11,7 @@ import { TruncateMaxNumber } from '@/types/constants'
 import { truncateText } from '@/utils/truncateText'
 import { CopilotAvatar } from '../atoms/CopilotAvatar'
 import { getAssigneeName } from '@/utils/assignee'
+import { StyledHelperText } from '../error/FormHelperText'
 
 export enum SelectorType {
   ASSIGNEE_SELECTOR = 'assigneeSelector',
@@ -41,6 +42,7 @@ interface Prop {
   handleInputChange?: (_: string) => void
   filterOption?: any
   onClick?: () => void
+  error?: boolean
 }
 
 export default function Selector({
@@ -62,6 +64,7 @@ export default function Selector({
   handleInputChange,
   filterOption,
   onClick,
+  error,
 }: Prop) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
@@ -152,14 +155,18 @@ export default function Selector({
             </Typography>
           </Stack>
         ) : (
-          <SelectorButton
-            startIcon={startIcon}
-            buttonContent={buttonContent}
-            outlined={disableOutline}
-            disabled={disabled}
-            padding={padding}
-            height={buttonHeight}
-          />
+          <>
+            <SelectorButton
+              startIcon={startIcon}
+              buttonContent={buttonContent}
+              outlined={disableOutline}
+              disabled={disabled}
+              padding={padding}
+              height={buttonHeight}
+              error={error}
+            />
+            {error && <StyledHelperText> Required</StyledHelperText>}
+          </>
         )}
       </Box>
       <Popper
@@ -336,6 +343,7 @@ const SelectorButton = ({
   padding,
   disabled,
   height,
+  error,
 }: {
   startIcon?: ReactNode
   buttonContent: ReactNode
@@ -345,6 +353,7 @@ const SelectorButton = ({
   padding?: string
   disabled?: boolean
   height?: string
+  error?: boolean
 }) => {
   return (
     <Button
@@ -352,10 +361,20 @@ const SelectorButton = ({
       startIcon={startIcon ? startIcon : null}
       sx={(theme) => ({
         textTransform: 'none',
-        border: enableBackground || outlined ? 'none' : `1px solid ${theme.color.borders.border}`,
+        border:
+          enableBackground || outlined
+            ? 'none'
+            : error
+              ? `1px solid ${theme.color.muiError}`
+              : `1px solid ${theme.color.borders.border}`,
         bgcolor: enableBackground ? theme.color.gray[150] : '',
         '&:hover': {
-          border: enableBackground || outlined ? 'none' : `1px solid ${theme.color.borders.border}`,
+          border:
+            enableBackground || outlined
+              ? 'none'
+              : error
+                ? `1px solid ${theme.color.muiError}`
+                : `1px solid ${theme.color.borders.border}`,
         },
         '.MuiTouchRipple-child': {
           bgcolor: theme.color.borders.border,

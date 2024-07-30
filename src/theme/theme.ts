@@ -78,6 +78,7 @@ export const theme = createTheme({
       bgCallout: '#F8F9FB',
     },
     error: '#CC0000',
+    muiError: '#D32F2F',
   },
   typography: {
     fontFamily: inter.style.fontFamily,

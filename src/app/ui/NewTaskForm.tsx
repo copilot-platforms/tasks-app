@@ -40,6 +40,7 @@ import { z } from 'zod'
 import { MiniLoader } from '@/components/atoms/MiniLoader'
 import { formatDate } from '@/utils/dateHelper'
 import { getAssigneeName } from '@/utils/assignee'
+import { Dispatch, SetStateAction } from 'react'
 
 const supabaseActions = new SupabaseActions()
 
@@ -54,6 +55,8 @@ export const NewTaskForm = ({
   const [filteredAssignees, setFilteredAssignees] = useState(filteredAssigneeList)
   const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
   const [loading, setLoading] = useState(false)
+  const [titleError, setTitleError] = useState(false)
+  const [assigneeError, setAssigneeError] = useState(false)
   const { templates } = useSelector(selectCreateTemplate)
 
   const { renderingItem: _statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
@@ -179,7 +182,7 @@ export const NewTaskForm = ({
       </Stack>
 
       <AppMargin size={SizeofAppMargin.MEDIUM} py="16px">
-        <NewTaskFormInputs />
+        <NewTaskFormInputs titleError={titleError} setTitleError={setTitleError} />
 
         <Stack direction="row" columnGap={3} position="relative" sx={{ flexWrap: 'wrap' }}>
           <Box sx={{ padding: 0.1 }}>
@@ -196,6 +199,7 @@ export const NewTaskForm = ({
             <Selector
               placeholder="Set assignee"
               getSelectedValue={(_newValue) => {
+                setAssigneeError(false)
                 const newValue = _newValue as IAssigneeCombined
                 setTempAssignee(newValue)
                 updateAssigneeValue(newValue)
@@ -269,6 +273,7 @@ export const NewTaskForm = ({
                   {getAssigneeName(tempAssignee as IAssigneeCombined, 'Assignee')}
                 </Typography>
               }
+              error={assigneeError}
             />
           </Stack>
           <Stack alignSelf="flex-start">
@@ -288,12 +293,23 @@ export const NewTaskForm = ({
           </Stack>
         </Stack>
       </AppMargin>
-      <NewTaskFooter handleCreate={handleCreateWithAssignee} getSignedUrlUpload={getSignedUrlUpload} />
+      <NewTaskFooter
+        handleCreate={handleCreateWithAssignee}
+        getSignedUrlUpload={getSignedUrlUpload}
+        setTitleError={setTitleError}
+        setAssigneeError={setAssigneeError}
+      />
     </NewTaskContainer>
   )
 }
 
-const NewTaskFormInputs = () => {
+const NewTaskFormInputs = ({
+  titleError,
+  setTitleError,
+}: {
+  titleError: boolean
+  setTitleError: Dispatch<SetStateAction<boolean>>
+}) => {
   const { title, description, attachments } = useSelector(selectCreateTask)
 
   return (
@@ -305,7 +321,12 @@ const NewTaskFormInputs = () => {
           padding="8px 0px"
           autoFocus={true}
           value={title}
-          onChange={(e) => store.dispatch(setCreateTaskFields({ targetField: 'title', value: e.target.value }))}
+          onChange={(e) => {
+            store.dispatch(setCreateTaskFields({ targetField: 'title', value: e.target.value }))
+            setTitleError(false)
+          }}
+          error={titleError}
+          helperText={titleError && 'Required'}
         />
       </Stack>
       <Stack direction="column" rowGap={1} m="16px 0px">
@@ -347,11 +368,15 @@ const NewTaskFormInputs = () => {
 const NewTaskFooter = ({
   handleCreate,
   getSignedUrlUpload,
+  setTitleError,
+  setAssigneeError,
 }: {
   handleCreate: () => void
   getSignedUrlUpload: (fileName: string) => Promise<ISignedUrlUpload>
+  setTitleError: Dispatch<SetStateAction<boolean>>
+  setAssigneeError: Dispatch<SetStateAction<boolean>>
 }) => {
-  const { attachments } = useSelector(selectCreateTask)
+  const { attachments, title, assigneeId } = useSelector(selectCreateTask)
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     event.preventDefault()
     const files = event.target.files
@@ -382,7 +407,14 @@ const NewTaskFooter = ({
                 </Typography>
               }
             />
-            <PrimaryBtn handleClick={handleCreate} buttonText="Create" />
+            <PrimaryBtn
+              handleClick={() => {
+                !title && setTitleError(true)
+                !assigneeId && setAssigneeError(true)
+                handleCreate()
+              }}
+              buttonText="Create"
+            />
           </Stack>
         </Stack>
       </AppMargin>
