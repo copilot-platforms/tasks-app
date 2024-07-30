@@ -163,8 +163,12 @@ export default async function TaskDetailPage({
                   <Stack direction="row" alignItems="center" columnGap={3}>
                     <Link href={params.user_type === UserType.INTERNAL_USER ? `/?token=${token}` : `/client?token=${token}`}>
                       <SecondaryBtn
-                        buttonContent={<StyledTypography variant="sm">Tasks</StyledTypography>}
-                        enableBackground
+                        buttonContent={
+                          <StyledTypography variant="sm" lineHeight={'21px'}>
+                            Tasks
+                          </StyledTypography>
+                        }
+                        variant="breadcrumb"
                       />
                     </Link>
                     <StyledKeyboardIcon />
