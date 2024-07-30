@@ -97,6 +97,9 @@ export const TaskEditor = ({
   }
 
   const handleDetailChange = (content: string) => {
+    if (content == updateDetail) {
+      return
+    }
     setUpdateDetail(content)
     setIsUserTyping(true)
     detailsUpdateDebounced(content)
