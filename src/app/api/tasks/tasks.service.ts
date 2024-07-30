@@ -428,7 +428,11 @@ export class TasksService extends BaseService {
       updatedTask.assigneeId
     ) {
       if (updatedTask.createdById !== updatedTask.assigneeId) {
-        await notificationService.create(NotificationTaskActions.Completed, updatedTask, { email: true })
+        const action =
+          updatedTask.assigneeType === AssigneeType.company
+            ? NotificationTaskActions.CompletedByCompanyMember
+            : NotificationTaskActions.Completed
+        await notificationService.create(action, updatedTask, { email: true })
       }
 
       if (updatedTask.assigneeType === AssigneeType.client) {
