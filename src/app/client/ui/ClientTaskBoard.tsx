@@ -7,29 +7,35 @@ import store from '@/redux/store'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { Box } from '@mui/material'
 import { useSelector } from 'react-redux'
-import { useRouter } from 'next/navigation'
 import { StateType } from '@prisma/client'
 import DashboardEmptyState from '@/components/layouts/EmptyState/DashboardEmptyState'
 import { UserType } from '@/types/interfaces'
 import { Header } from '@/components/layouts/Header'
+import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
+import { useMemo } from 'react'
 
 export const ClientTaskBoard = ({ completeTask }: { completeTask: (taskId: string) => void }) => {
-  const { workflowStates, tasks, filteredTasks, token } = useSelector(selectTaskBoard)
+  const { workflowStates, tasks, token } = useSelector(selectTaskBoard)
+  const { tokenPayload } = useSelector(selectAuthDetails)
 
-  const router = useRouter()
+  const filteredTask = useMemo(() => {
+    return tasks.filter((task) => {
+      if (task.assigneeId === tokenPayload?.clientId || task.assigneeId === tokenPayload?.companyId) return true
+    })
+  }, [tasks])
 
   /**
-   * This function is responsible for returning the tasks that matches the workflowStateId of the workflowState
+   * This function is responsible for returning the tasks that matches the workflowStateId of the workflowState and assigneeType
    */
   const filterTaskWithWorkflowStateId = (workflowStateId: string): TaskResponse[] => {
-    return tasks.filter((task) => task.workflowStateId === workflowStateId)
+    return filteredTask.filter((task) => task.workflowStateId === workflowStateId)
   }
 
   /**
    * This function is responsible for calculating the task count based on the workflowStateId
    */
   const taskCountForWorkflowStateId = (workflowStateId: string): string => {
-    return tasks.filter((task) => task.workflowStateId === workflowStateId).length.toString()
+    return filteredTask.filter((task) => task.workflowStateId === workflowStateId).length.toString()
   }
 
   const completedTypeWorkflowState = workflowStates.find((el) => el.type === 'completed')

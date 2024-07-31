@@ -266,7 +266,7 @@ export class TasksService extends BaseService {
 
   async clientUpdateTask(id: string, targetWorkflowStateId?: string | null) {
     //Apply custom authorization here. Policy service is not used because this api is for client's Mark done function only. Only clients can use this.
-    if (this.user.role !== UserRole.Client) {
+    if (this.user.role === UserRole.IU) {
       throw new APIError(httpStatus.UNAUTHORIZED, 'You are not authorized to perform this action')
     }
 

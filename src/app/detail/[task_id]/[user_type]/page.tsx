@@ -271,7 +271,6 @@ export default async function TaskDetailPage({
               task_id={task_id}
               selectedAssigneeId={task?.assigneeId}
               selectedWorkflowState={task?.workflowState}
-              // dueDate={task?.dueDate}
               updateWorkflowState={async (workflowState) => {
                 'use server'
                 params.user_type === UserType.CLIENT_USER
