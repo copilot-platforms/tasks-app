@@ -142,7 +142,7 @@ export default async function TaskDetailPage({
   if (!tokenPayload) {
     throw new Error('Token cannot be found')
   }
-  redirectIfResourceNotFound(searchParams, task)
+  redirectIfResourceNotFound(searchParams, task, !!tokenPayload.internalUserId)
 
   const AssigneeSuggestions = assignee.map((item) => ({
     id: item.id,

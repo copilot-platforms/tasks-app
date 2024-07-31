@@ -10,6 +10,8 @@ import { ReactNode, useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { useRouter } from 'next/navigation'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
+import { RESOURCE_NOT_FOUND_REDIRECT_PATHS } from '@/utils/redirect'
+import { UserType } from '@/types/interfaces'
 
 interface RealTimeTaskResponse extends TaskResponse {
   deletedAt: string
@@ -38,7 +40,9 @@ export const RealTime = ({ children }: { children: ReactNode }) => {
           store.dispatch(setTasks(newTaskArr))
           //if a user is in the details page when the task is deleted then we want the user to get redirected to '/' route
           if (pathname.includes('detail')) {
-            router.push(`/?token=${token}`)
+            router.push(
+              `${RESOURCE_NOT_FOUND_REDIRECT_PATHS[tokenPayload.internalUserId ? UserType.INTERNAL_USER : UserType.CLIENT_USER]}?token=${token}`,
+            )
           }
           //if the task is updated
         } else {

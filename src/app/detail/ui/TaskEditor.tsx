@@ -19,6 +19,7 @@ import { Tapwrite } from 'tapwrite'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useRouter } from 'next/navigation'
+import { RESOURCE_NOT_FOUND_REDIRECT_PATHS } from '@/utils/redirect'
 
 interface Prop {
   task_id: string
@@ -70,7 +71,7 @@ export const TaskEditor = ({
   useEffect(() => {
     const currentTask = tasks.find((el) => el.id === task_id)
     if (!currentTask) {
-      router.push(`/?token=${token}`)
+      router.push(`${RESOURCE_NOT_FOUND_REDIRECT_PATHS[userType]}?token=${token}`)
       return // Just to keep TSC happy below
     }
 
