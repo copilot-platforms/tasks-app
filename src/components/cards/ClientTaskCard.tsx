@@ -49,7 +49,7 @@ export const ClientTaskCard = ({
       >
         <Stack
           direction={{ xs: 'column', sm: 'row' }}
-          alignItems="center"
+          alignItems={{ xs: 'left', sm: 'center' }}
           justifyContent="space-between"
           sx={{
             borderBottom: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
@@ -83,28 +83,27 @@ export const ClientTaskCard = ({
             }}
           >
             <Stack direction="row" alignItems="center" minWidth="fit-content" columnGap={{ xs: '12px', sm: '20px' }}>
-              <Box
-                sx={{
-                  flexDirection: 'row',
-                  alignItems: { sm: 'flex-end' },
-                  justifyContent: { sm: 'right' },
-                  display: 'flex',
-                  minWidth: '100px',
-                }}
-              >
-                {task.dueDate && (
+              {task.dueDate && (
+                <Box
+                  sx={{
+                    flexDirection: 'row',
+                    alignItems: { sm: 'flex-end' },
+                    justifyContent: { sm: 'right' },
+                    display: 'flex',
+                    minWidth: '90px',
+                  }}
+                >
                   <Typography variant="bodySm" sx={{ fontSize: '12px', color: (theme) => theme.color.gray[500] }}>
                     <DueDateLayout dateString={task.dueDate} />
                   </Typography>
-                )}
-              </Box>
-
+                </Box>
+              )}
               <Stack
                 direction="row"
                 alignItems="center"
                 justifyContent={'left'}
                 columnGap={'4px'}
-                sx={{ padding: '2px', minWidth: '140px' }}
+                sx={{ padding: '2px', width: { xs: '100px', sm: '132px' } }}
               >
                 <CopilotAvatar currentAssignee={currentAssignee as IAssigneeCombined} />
 
@@ -115,12 +114,13 @@ export const ClientTaskCard = ({
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
                     fontSize: '12px',
-                    maxWidth: '110px',
                     color: (theme) => theme.color.gray[500],
                   }}
                   title={getAssigneeName(currentAssignee)}
                 >
-                  {getAssigneeName(currentAssignee)}
+                  {getAssigneeName(currentAssignee) == 'Apple'
+                    ? 'asdhaskdhjlkasdhkasdgkjashdlasd'
+                    : getAssigneeName(currentAssignee)}
                 </Typography>
               </Stack>
             </Stack>

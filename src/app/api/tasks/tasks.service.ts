@@ -434,7 +434,14 @@ export class TasksService extends BaseService {
       updatedTask?.workflowState?.type === StateType.completed &&
       updatedTask.assigneeId
     ) {
-      const notificationService = new NotificationService(this.user)
+      if (updatedTask.createdById !== updatedTask.assigneeId) {
+        const action =
+          updatedTask.assigneeType === AssigneeType.company
+            ? NotificationTaskActions.CompletedByCompanyMember
+            : NotificationTaskActions.Completed
+        await notificationService.create(action, updatedTask, { email: true })
+      }
+
       if (updatedTask.assigneeType === AssigneeType.client) {
         try {
           await notificationService.markClientNotificationAsRead(updatedTask)
