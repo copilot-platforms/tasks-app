@@ -360,6 +360,7 @@ export class TasksService extends BaseService {
       NotificationTaskActions.AssignedToCompany,
       task,
       recipientIds,
+      { email: true },
     )
 
     // This is a hacky way to bulk create ClientNotifications for all company members.
@@ -391,6 +392,7 @@ export class TasksService extends BaseService {
 
     // If new task is assigned to someone (IU / Client / Company), send proper notification + email to them
     const notificationService = new NotificationService(this.user)
+    console.log('xxx', task.assigneeType)
     const sendTaskNotifications =
       task.assigneeType === AssigneeType.company ? this.sendCompanyTaskNotifications : this.sendUserTaskNotification
     await sendTaskNotifications(task, notificationService, isReassigned)

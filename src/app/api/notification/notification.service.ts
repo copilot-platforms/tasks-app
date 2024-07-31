@@ -16,7 +16,7 @@ export class NotificationService extends BaseService {
       const { senderId, recipientId, actionUser } = await this.getNotificationParties(copilot, task, action)
 
       const inProduct = getInProductNotificationDetails(actionUser, task)[action]
-      const email = disable.email ? undefined : getEmailDetails(actionUser, task.title)[action]
+      const email = disable.email ? undefined : getEmailDetails(actionUser, task)[action]
       const notificationDetails = {
         senderId,
         recipientId,
@@ -30,7 +30,12 @@ export class NotificationService extends BaseService {
     }
   }
 
-  async createBulkNotification(action: NotificationTaskActions, task: Task, recipientIds: string[]) {
+  async createBulkNotification(
+    action: NotificationTaskActions,
+    task: Task,
+    recipientIds: string[],
+    enable?: { email: boolean },
+  ) {
     try {
       const copilot = new CopilotAPI(this.user.token)
       const userInfo = await copilot.me()
@@ -45,6 +50,7 @@ export class NotificationService extends BaseService {
           ? await copilot.getCompany(task?.assigneeId)
           : undefined
       const inProduct = getInProductNotificationDetails(actionUserName, task, company?.name)[action]
+      const email = enable?.email ? getEmailDetails(actionUserName, task)[action] : undefined
 
       const notifications = []
       for (let recipientId of recipientIds) {
@@ -52,7 +58,7 @@ export class NotificationService extends BaseService {
           const notificationDetails = {
             senderId,
             recipientId,
-            deliveryTargets: { inProduct },
+            deliveryTargets: { inProduct, email },
           }
           notifications.push(await copilot.createNotification(notificationDetails))
         } catch (err: unknown) {
