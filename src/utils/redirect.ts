@@ -8,3 +8,9 @@ export const redirectIfTaskCta = (searchParams: Record<string, string>) => {
     redirect(`${apiUrl}/detail/${taskId.data}/iu?token=${z.string().parse(searchParams.token)}`)
   }
 }
+
+export const redirectIfResourceNotFound = <R>(searchParams: Record<string, string>, resource: R): void => {
+  if (!resource) {
+    redirect(`${apiUrl}/?token=${z.string().parse(searchParams.token)}`)
+  }
+}

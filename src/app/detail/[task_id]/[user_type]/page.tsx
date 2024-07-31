@@ -44,6 +44,7 @@ import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 import { RealTime } from '@/hoc/RealTime'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { CustomScrollbar } from '@/hoc/CustomScrollbar'
+import { redirectIfResourceNotFound } from '@/utils/redirect'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
@@ -136,14 +137,17 @@ export default async function TaskDetailPage({
     copilotClient.getTokenPayload(),
     getAllTasks(token),
   ])
+
+  // Basic validation
+  if (!tokenPayload) {
+    throw new Error('Token cannot be found')
+  }
+  redirectIfResourceNotFound(searchParams, task)
+
   const AssigneeSuggestions = assignee.map((item) => ({
     id: item.id,
     label: item?.name ?? `${item.givenName} ${item.familyName}`,
   }))
-
-  if (!tokenPayload) {
-    throw new Error('Token cannot be found')
-  }
 
   return (
     <ClientSideStateUpdate
