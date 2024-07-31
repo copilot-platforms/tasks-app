@@ -46,7 +46,7 @@ export const updateWorkflowStateIdOfTask = async (token: string, taskId: string,
 }
 
 export const clientUpdateTask = async (token: string, taskId: string, targetWorkflowStateId: string) => {
-  await fetch(`${apiUrl}/api/tasks/${taskId}/complete?token=${token}&workflowStateId=${targetWorkflowStateId}`, {
+  await fetch(`${apiUrl}/api/tasks/${taskId}/client?token=${token}&workflowStateId=${targetWorkflowStateId}`, {
     method: 'PATCH',
   })
   revalidateTag('getAllTasks-client')

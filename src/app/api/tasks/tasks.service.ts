@@ -264,7 +264,7 @@ export class TasksService extends BaseService {
     return await this.db.task.delete({ where: { id } })
   }
 
-  async clientUpdateTask(id: string, targetWorkflowStateId?: string) {
+  async clientUpdateTask(id: string, targetWorkflowStateId?: string | null) {
     //Apply custom authorization here. Policy service is not used because this api is for client's Mark done function only. Only clients can use this.
     if (this.user.role !== UserRole.Client) {
       throw new APIError(httpStatus.UNAUTHORIZED, 'You are not authorized to perform this action')
@@ -279,7 +279,7 @@ export class TasksService extends BaseService {
     if (!prevTask) throw new APIError(httpStatus.NOT_FOUND, 'The requested task was not found')
 
     //get Completed or custom workflowState data
-    const completedWorkFlowState = targetWorkflowStateId
+    const updatedWorkflowState = targetWorkflowStateId
       ? await this.db.workflowState.findFirst({
           where: {
             id: targetWorkflowStateId,
@@ -293,7 +293,7 @@ export class TasksService extends BaseService {
           },
         })
     const data = {
-      workflowStateId: completedWorkFlowState?.id,
+      workflowStateId: updatedWorkflowState?.id,
     }
     // Get the updated task
     const updatedTask = await this.db.task.update({
