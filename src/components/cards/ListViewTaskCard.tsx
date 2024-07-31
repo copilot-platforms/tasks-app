@@ -13,9 +13,10 @@ import { NoAssignee, NoAssigneeExtraOptions } from '@/utils/noAssignee'
 import ExtraOptionRendererAssignee from '@/components/inputs/ExtraOptionRendererAssignee'
 import { DueDateLayout } from '@/components/layouts/DueDateLayout'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
-import { getAssigneeName } from '@/utils/getAssigneeName'
 import { UrlObject } from 'url'
 import { CustomLink } from '@/hoc/CustomLink'
+import { getAssigneeName } from '@/utils/assignee'
+import { AssigneeType } from '@prisma/client'
 
 export const ListViewTaskCard = ({
   task,
@@ -72,7 +73,6 @@ export const ListViewTaskCard = ({
                     lineHeight: '21px',
                     wordBreak: 'break-word',
                     flexGrow: 1,
-                    minWidth: '0',
                   }}
                 >
                   {task?.title}
@@ -102,28 +102,18 @@ export const ListViewTaskCard = ({
                 getSelectedValue={(_newValue) => {
                   const newValue = _newValue as IAssigneeCombined
                   updateAssigneeValue(newValue)
-                  const assigneeType = newValue?.type
+                  const assigneeType = newValue.type as AssigneeType
                   if (updateTask) {
                     updateTask({
                       payload: {
-                        assigneeType:
-                          assigneeType === 'ius'
-                            ? 'internalUser'
-                            : assigneeType === 'clients'
-                              ? 'client'
-                              : assigneeType === 'companies'
-                                ? 'company'
-                                : 'internalUser',
+                        assigneeType: AssigneeType[assigneeType],
                         assigneeId: newValue?.id,
                       },
                     })
                   }
                 }}
                 startIcon={
-                  <CopilotAvatar
-                    currentAssignee={currentAssignee as IAssigneeCombined}
-                    alt={getAssigneeName(assigneeValue)}
-                  />
+                  <CopilotAvatar currentAssignee={assigneeValue as IAssigneeCombined} alt={getAssigneeName(assigneeValue)} />
                 }
                 options={assignee}
                 value={assigneeValue}
@@ -156,8 +146,7 @@ export const ListViewTaskCard = ({
                       color: (theme) => theme.color.gray[600],
                     }}
                   >
-                    {(assigneeValue as IAssigneeCombined)?.name ||
-                      `${(assigneeValue as IAssigneeCombined)?.givenName ?? ''} ${(assigneeValue as IAssigneeCombined)?.familyName ?? ''}`.trim()}
+                    {getAssigneeName(assigneeValue)}
                   </Typography>
                 }
               />
