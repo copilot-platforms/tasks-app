@@ -66,16 +66,16 @@ export const getEmailDetails = (
 ): Partial<{ [key in NotificationTaskActions]: { title: string; subject: string; header: string; body: string } }> => {
   return {
     [NotificationTaskActions.Assigned]: {
-      title: 'A task was assigned to you',
       subject: 'A task was assigned to you',
       header: 'A task was assigned to you',
       body: `The task ‘${task?.title}’ was assigned to you by ${actionUser}. To see details about the task open it below. `,
+      title: 'View task',
     },
     [NotificationTaskActions.AssignedToCompany]: {
-      title: 'Task was assigned to your company',
       subject: 'Task was assigned to your company',
       header: 'Task was assigned to your company',
       body: `A new task was assigned to your company by ${actionUser}. To see details about the task, navigate to the Tasks App below.`,
+      title: 'View task',
     },
     //! Currently disable all IU email notifications
     // [NotificationTaskActions.Completed]: {
@@ -87,14 +87,14 @@ export const getEmailDetails = (
     [NotificationTaskActions.Commented]: {
       subject: 'New comment on task',
       header: 'New comment on task',
-      title: 'New comment on task',
       body: `A new comment was left by ${actionUser} on a task where you are set as the assignee. To see details about the task, navigate to the Tasks App below.`,
+      title: 'View task',
     },
     [NotificationTaskActions.Mentioned]: {
       subject: 'You were mentioned in a task comment',
       header: 'You were mentioned in a task comment',
-      title: 'You were mentioned in a task comment',
       body: `You were mentioned in a comment on task ${task?.title} by ${actionUser}. To see details about the task, navigate to the Tasks App below. `,
+      title: 'View task',
     },
   }
 }
