@@ -18,6 +18,7 @@ import Link from 'next/link'
 import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import {
+  clientUpdateTask,
   deleteAttachment,
   deleteComment,
   deleteTask,
@@ -273,7 +274,9 @@ export default async function TaskDetailPage({
               // dueDate={task?.dueDate}
               updateWorkflowState={async (workflowState) => {
                 'use server'
-                await updateWorkflowStateIdOfTask(token, task_id, workflowState?.id)
+                params.user_type === UserType.CLIENT_USER
+                  ? await clientUpdateTask(token, task_id, workflowState.id)
+                  : await updateWorkflowStateIdOfTask(token, task_id, workflowState?.id)
               }}
               updateAssignee={async (assigneeType, assigneeId) => {
                 'use server'

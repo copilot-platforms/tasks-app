@@ -45,6 +45,12 @@ export const updateWorkflowStateIdOfTask = async (token: string, taskId: string,
   }
 }
 
+export const clientUpdateTask = async (token: string, taskId: string, targetWorkflowStateId: string) => {
+  await fetch(`${apiUrl}/api/tasks/${taskId}/client?token=${token}&workflowStateId=${targetWorkflowStateId}`, {
+    method: 'PATCH',
+  })
+}
+
 export const updateAssignee = async (
   token: string,
   task_id: string,
