@@ -226,38 +226,65 @@ export const FilterBar = ({
           <FilterButtonGroup filterButtons={filterButtons} activeButtonIndex={ButtonIndex} />
 
           <Stack direction="row" justifyContent="space-between" alignItems="center">
-            <Selector
-              getSelectedValue={(_newValue) => {
-                const newValue = _newValue as IAssigneeCombined
-                updateAssigneeValue(newValue)
-                handleFilterOptionsChange(FilterOptions.ASSIGNEE, newValue.id as string)
-              }}
-              startIcon={<FilterByAsigneeIcon />}
-              options={filteredAssigneeList}
-              placeholder="Assignee"
-              value={assigneeValue}
-              selectorType={SelectorType.ASSIGNEE_SELECTOR}
-              extraOption={NoAssigneeExtraOptions}
-              extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
-                return (
-                  <ExtraOptionRendererAssignee
-                    props={props}
-                    onClick={(e) => {
-                      updateAssigneeValue({ id: '', name: 'No assignee' })
-                      setAnchorEl(anchorEl ? null : e.currentTarget)
-                      handleFilterOptionsChange(FilterOptions.ASSIGNEE, 'No assignee')
-                    }}
-                  />
-                )
-              }}
-              buttonContent={
-                <FilterByAssigneeBtn
-                  assigneeValue={assigneeValue}
-                  updateAssigneeValue={updateAssigneeValue}
-                  handleClick={handleFilterOptionsChange}
+            <Box>
+              {filterOptions[FilterOptions.TYPE] !== tokenPayload?.internalUserId && (
+                <Selector
+                  getSelectedValue={(_newValue) => {
+                    const newValue = _newValue as IAssigneeCombined
+                    updateAssigneeValue(newValue)
+                    handleFilterOptionsChange(FilterOptions.ASSIGNEE, newValue?.id as string)
+                  }}
+                  startIcon={<FilterByAsigneeIcon />}
+                  options={loading ? [] : filteredAssignee}
+                  placeholder="Assignee"
+                  value={assigneeValue}
+                  selectorType={SelectorType.ASSIGNEE_SELECTOR}
+                  extraOption={NoAssigneeExtraOptions}
+                  extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
+                    return (
+                      noAssigneOptionFlag && (
+                        <>
+                          {/* //****Disabling re-assignment completely for now*** */}
+                          {/* <ExtraOptionRendererAssignee
+                              props={props}
+                              onClick={(e) => {
+                                updateAssigneeValue({ id: '', name: 'No assignee' })
+                                setAnchorEl(anchorEl ? null : e.currentTarget)
+                                handleFilterOptionsChange(FilterOptions.ASSIGNEE, 'No assignee')
+                              }}
+                            /> */}
+                          {loading && <MiniLoader />}
+                        </>
+                      )
+                    )
+                  }}
+                  buttonContent={
+                    <FilterByAssigneeBtn
+                      assigneeValue={assigneeValue}
+                      updateAssigneeValue={updateAssigneeValue}
+                      handleClick={handleFilterOptionsChange}
+                    />
+                  }
+                  padding="2px 10px"
+                  handleInputChange={async (newInputValue: string) => {
+                    if (!newInputValue) {
+                      setFilteredAssignee(filteredAssigneeList)
+                      return
+                    }
+
+                    setDebouncedFilteredAssignees(
+                      activeDebounceTimeoutId,
+                      setActiveDebounceTimeoutId,
+                      setLoading,
+                      setFilteredAssignee,
+                      z.string().parse(token),
+                      newInputValue,
+                    )
+                  }}
+                  filterOption={(x: unknown) => x}
                 />
-              }
-            />
+              )}
+            </Box>
             <Stack direction={'row'} columnGap={2}>
               <SearchBar
                 value={filterOptions.keyword}
