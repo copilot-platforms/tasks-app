@@ -128,7 +128,7 @@ export const FilterBar = ({
       <Box
         sx={{
           overflowX: 'hidden',
-          padding: { xs: '12px 20px', sm: '12px 20px' },
+          padding: '12px 20px',
           display: { xs: 'none', sm: 'none', sd: 'block' },
         }}
       >
@@ -221,7 +221,7 @@ export const FilterBar = ({
           </Stack>
         </Stack>
       </Box>
-      <Box sx={{ padding: { xs: '12px 20px', sm: '12px 20px' }, display: { sm: 'block', sd: 'none' } }}>
+      <Box sx={{ padding: '12px 20px', display: { sm: 'block', sd: 'none' } }}>
         <Stack direction="column" rowGap={'8px'}>
           <FilterButtonGroup filterButtons={filterButtons} activeButtonIndex={ButtonIndex} />
 
