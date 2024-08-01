@@ -34,17 +34,9 @@ export const RealTime = ({ children }: { children: ReactNode }) => {
       const updatedTask = payload.new
       //check if the new task in this event belongs to the same workspaceId
       if (payload.new.workspaceId === tokenPayload?.workspaceId) {
-        //if the task is deleted
-        // This solution is good but causes all active users, even those that don't have that task open to
         if (updatedTask.deletedAt) {
           const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
           store.dispatch(setTasks(newTaskArr))
-          // //if a user is in the details page when the task is deleted then we want the user to get redirected to '/' route
-          // if (pathname.includes('detail')) {
-          //   router.push(
-          //     `${RESOURCE_NOT_FOUND_REDIRECT_PATHS[tokenPayload.internalUserId ? UserType.INTERNAL_USER : UserType.CLIENT_USER]}?token=${token}`,
-          //   )
-          // }
         } else {
           const newTaskArr = [...tasks.filter((task) => task.id !== updatedTask.id), updatedTask]
           store.dispatch(setTasks(newTaskArr))
