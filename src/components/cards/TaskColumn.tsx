@@ -11,7 +11,7 @@ const TaskColumnHeader = styled(Stack)({
 })
 
 const TaskColumnContainer = styled(Stack)({
-  width: '292px',
+  width: '295px',
   margin: '0 auto',
   height: 'calc(100vh - 185px)',
   marginTop: '6px',
