@@ -125,12 +125,17 @@ export const FilterBar = ({
         borderBottom: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
       }}
     >
-      <Box sx={{ overflowX: 'hidden', padding: { xs: '12px 20px', sm: '12px 20px' } }}>
+      <Box
+        sx={{
+          overflowX: 'hidden',
+          padding: { xs: '12px 20px', sm: '12px 20px' },
+          display: { xs: 'none', sm: 'none', sd: 'block' },
+        }}
+      >
         <Stack direction={'row'} justifyContent={'space-between'} sx={{ maxHeight: '32px' }}>
           <Stack direction={'row'} columnGap={3}>
-            <Box>
-              <FilterButtonGroup filterButtons={filterButtons} activeButtonIndex={ButtonIndex} />
-            </Box>
+            <FilterButtonGroup filterButtons={filterButtons} activeButtonIndex={ButtonIndex} />
+
             {filterOptions[FilterOptions.TYPE] !== tokenPayload?.internalUserId && (
               <Box
                 sx={{
@@ -196,93 +201,15 @@ export const FilterBar = ({
             )}
           </Stack>
           <Stack direction="row" alignItems="center" columnGap={3}>
-            <Box
-              sx={{
-                display: { xs: 'none', sd: 'block' },
+            <SearchBar
+              value={filterOptions.keyword}
+              getSearchKeyword={(keyword) => {
+                handleFilterOptionsChange(FilterOptions.KEYWORD, keyword)
               }}
-            >
-              <SearchBar
-                value={filterOptions.keyword}
-                getSearchKeyword={(keyword) => {
-                  handleFilterOptionsChange(FilterOptions.KEYWORD, keyword)
-                }}
-                onClear={() => {
-                  handleFilterOptionsChange(FilterOptions.KEYWORD, '')
-                }}
-              />
-            </Box>
-
-            <Box
-              sx={{
-                display: { xs: 'none', sm: 'none', sd: 'block' },
+              onClear={() => {
+                handleFilterOptionsChange(FilterOptions.KEYWORD, '')
               }}
-            >
-              <ViewModeSelector
-                selectedMode={view}
-                handleModeChange={(mode) => {
-                  store.dispatch(setViewSettings({ viewMode: mode, filterOptions: filterOptions }))
-                  updateViewModeSetting({ viewMode: mode, filterOptions: filterOptions })
-                }}
-              />
-            </Box>
-          </Stack>
-        </Stack>
-      </Box>
-      <AppMargin size={SizeofAppMargin.LARGE}>
-        <Stack
-          direction="row"
-          justifyContent="space-between"
-          alignItems="center"
-          sx={{ display: { sm: 'flex', sd: 'none' }, mb: { xs: '12px', md: '0px' }, maxHeight: '30px' }}
-        >
-          <Selector
-            getSelectedValue={(_newValue) => {
-              const newValue = _newValue as IAssigneeCombined
-              updateAssigneeValue(newValue)
-              handleFilterOptionsChange(FilterOptions.ASSIGNEE, newValue.id as string)
-            }}
-            startIcon={<FilterByAsigneeIcon />}
-            options={filteredAssigneeList}
-            placeholder="Assignee"
-            value={assigneeValue}
-            selectorType={SelectorType.ASSIGNEE_SELECTOR}
-            extraOption={NoAssigneeExtraOptions}
-            extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
-              return (
-                <ExtraOptionRendererAssignee
-                  props={props}
-                  onClick={(e) => {
-                    updateAssigneeValue({ id: '', name: 'No assignee' })
-                    setAnchorEl(anchorEl ? null : e.currentTarget)
-                    handleFilterOptionsChange(FilterOptions.ASSIGNEE, 'No assignee')
-                  }}
-                />
-              )
-            }}
-            buttonContent={
-              <FilterByAssigneeBtn
-                assigneeValue={assigneeValue}
-                updateAssigneeValue={updateAssigneeValue}
-                handleClick={handleFilterOptionsChange}
-              />
-            }
-          />
-          <Stack direction={'row'} columnGap={2}>
-            <Box
-              sx={{
-                display: { xs: 'block', sd: 'none', md: 'none' },
-              }}
-            >
-              <SearchBar
-                value={filterOptions.keyword}
-                getSearchKeyword={(keyword) => {
-                  handleFilterOptionsChange(FilterOptions.KEYWORD, keyword)
-                }}
-                onClear={() => {
-                  handleFilterOptionsChange(FilterOptions.KEYWORD, 'keyword')
-                }}
-              />
-            </Box>
+            />
 
             <ViewModeSelector
               selectedMode={view}
@@ -293,7 +220,66 @@ export const FilterBar = ({
             />
           </Stack>
         </Stack>
-      </AppMargin>
+      </Box>
+      <Box sx={{ padding: { xs: '12px 20px', sm: '12px 20px' }, display: { sm: 'block', sd: 'none' } }}>
+        <Stack direction="column" rowGap={'8px'}>
+          <FilterButtonGroup filterButtons={filterButtons} activeButtonIndex={ButtonIndex} />
+
+          <Stack direction="row" justifyContent="space-between" alignItems="center">
+            <Selector
+              getSelectedValue={(_newValue) => {
+                const newValue = _newValue as IAssigneeCombined
+                updateAssigneeValue(newValue)
+                handleFilterOptionsChange(FilterOptions.ASSIGNEE, newValue.id as string)
+              }}
+              startIcon={<FilterByAsigneeIcon />}
+              options={filteredAssigneeList}
+              placeholder="Assignee"
+              value={assigneeValue}
+              selectorType={SelectorType.ASSIGNEE_SELECTOR}
+              extraOption={NoAssigneeExtraOptions}
+              extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
+                return (
+                  <ExtraOptionRendererAssignee
+                    props={props}
+                    onClick={(e) => {
+                      updateAssigneeValue({ id: '', name: 'No assignee' })
+                      setAnchorEl(anchorEl ? null : e.currentTarget)
+                      handleFilterOptionsChange(FilterOptions.ASSIGNEE, 'No assignee')
+                    }}
+                  />
+                )
+              }}
+              buttonContent={
+                <FilterByAssigneeBtn
+                  assigneeValue={assigneeValue}
+                  updateAssigneeValue={updateAssigneeValue}
+                  handleClick={handleFilterOptionsChange}
+                />
+              }
+            />
+            <Stack direction={'row'} columnGap={2}>
+              <SearchBar
+                value={filterOptions.keyword}
+                getSearchKeyword={(keyword) => {
+                  handleFilterOptionsChange(FilterOptions.KEYWORD, keyword)
+                }}
+                onClear={() => {
+                  handleFilterOptionsChange(FilterOptions.KEYWORD, 'keyword')
+                }}
+              />
+
+              <ViewModeSelector
+                selectedMode={view}
+                handleModeChange={(mode) => {
+                  store.dispatch(setViewSettings({ viewMode: mode, filterOptions: filterOptions }))
+                  updateViewModeSetting({ viewMode: mode, filterOptions: filterOptions })
+                }}
+              />
+            </Stack>
+          </Stack>
+        </Stack>
+      </Box>
     </Box>
   )
 }
