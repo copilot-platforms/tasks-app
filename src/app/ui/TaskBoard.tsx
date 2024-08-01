@@ -86,7 +86,10 @@ export const TaskBoard = () => {
                       {filterTaskWithWorkflowStateId(list.id).map((task, index) => {
                         return (
                           <DragDropHandler key={task.id} accept={'taskCard'} index={index} id={task.id || ''} draggable>
-                            <CustomLink href={{ pathname: `/detail/${task.id}/iu`, query: { token } }}>
+                            <CustomLink
+                              href={{ pathname: `/detail/${task.id}/iu`, query: { token } }}
+                              style={{ width: 'fit-content' }}
+                            >
                               <Box key={task.id}>
                                 <TaskCard
                                   task={task}
