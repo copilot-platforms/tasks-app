@@ -44,8 +44,8 @@ const SearchBar = ({ value, getSearchKeyword, onClear }: ISearchBar) => {
       sx={{
         width: {
           md: focused || fieldValue ? '220px' : '90px',
-          sd: focused ? '90px' : '30px',
-          xs: focused ? '100px' : '30px',
+          sd: focused ? '90px' : '28px',
+          xs: focused ? '100px' : '28px',
         },
         transition: 'width 0.5s',
         '& .MuiOutlinedInput-input': {
