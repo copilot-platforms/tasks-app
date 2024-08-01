@@ -50,8 +50,8 @@ export const NewTaskForm = ({
   handleCreate: () => void
   getSignedUrlUpload: (fileName: string) => Promise<ISignedUrlUpload>
 }) => {
-  const { workflowStates, filteredAssigneeList, assignee, token, filterOptions } = useSelector(selectTaskBoard)
-  const [filteredAssignees, setFilteredAssignees] = useState(filteredAssigneeList)
+  const { workflowStates, assignee, token, filterOptions } = useSelector(selectTaskBoard)
+  const [filteredAssignees, setFilteredAssignees] = useState(assignee)
   const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
   const [loading, setLoading] = useState(false)
   const { templates } = useSelector(selectCreateTemplate)
@@ -213,7 +213,7 @@ export const NewTaskForm = ({
                   clearTimeout(activeDebounceTimeoutId)
                 }
                 setLoading(true)
-                setFilteredAssignees(filteredAssigneeList)
+                setFilteredAssignees(assignee)
                 setLoading(false)
               }}
               options={loading ? [] : filteredAssignees}
@@ -239,7 +239,7 @@ export const NewTaskForm = ({
               selectorType={SelectorType.ASSIGNEE_SELECTOR}
               handleInputChange={async (newInputValue: string) => {
                 if (!newInputValue) {
-                  setFilteredAssignees(filteredAssigneeList)
+                  setFilteredAssignees(assignee)
                   return
                 }
                 setDebouncedFilteredAssignees(
