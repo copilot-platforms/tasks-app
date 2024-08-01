@@ -127,7 +127,7 @@ export default function Selector({
             columnGap="7px"
             justifyContent="flex-start"
             sx={{
-              width: { sm: responsiveNoHide ? buttonWidth || '100px' : '20px', md: buttonWidth || '100px' },
+              width: { sm: responsiveNoHide ? buttonWidth || '100px' : '36px', md: buttonWidth || '100px' },
               justifyContent: { xs: 'flex-start', sm: 'flex-start' },
               cursor: disabled ? 'auto' : 'pointer',
               borderRadius: '4px',
