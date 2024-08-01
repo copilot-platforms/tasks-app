@@ -102,11 +102,11 @@ export const ListViewTaskCard = ({
                 getSelectedValue={(_newValue) => {
                   const newValue = _newValue as IAssigneeCombined
                   updateAssigneeValue(newValue)
-                  const assigneeType = newValue.type as AssigneeType
+                  const assigneeType = newValue.type ? AssigneeType[newValue.type as AssigneeType] : null
                   if (updateTask) {
                     updateTask({
                       payload: {
-                        assigneeType: AssigneeType[assigneeType],
+                        assigneeType: assigneeType,
                         assigneeId: newValue?.id,
                       },
                     })
