@@ -39,7 +39,7 @@ export const CustomLink = ({ children, href }: { children: ReactNode; href: stri
   }, [href])
 
   return (
-    <div onMouseEnter={handleMouseEnter} onClick={() => router.push(`${pathname}?token=${token}`)}>
+    <div onMouseEnter={handleMouseEnter} onClick={() => router.push(`${pathname}?token=${token}`)} className="link">
       {children}
     </div>
   )
