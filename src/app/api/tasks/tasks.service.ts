@@ -86,8 +86,8 @@ export class TasksService extends BaseService {
     console.log(3, currentInternalUser)
     const hasClientTasks = tasks.some((task) => task.assigneeType === AssigneeType.client)
     const clients = hasClientTasks ? await copilot.getClients() : { data: [] }
+    console.log(clients, clients)
     console.log(4, tasks)
-
     return tasks.filter((task) => {
       // Allow IU to access unassigned tasks or tasks assigned to another IU within workspace
       if (!task.assigneeId || task.assigneeType === AssigneeType.internalUser) return true
@@ -98,8 +98,9 @@ export class TasksService extends BaseService {
         return currentInternalUser.companyAccessList?.includes(task.assigneeId)
       }
       const taskClient = clients.data?.find((client) => client.id === task.assigneeId)
-      const taskClientsCompanyId = z.string().parse(taskClient?.companyId)
-      return currentInternalUser.companyAccessList?.includes(taskClientsCompanyId)
+      console.log(taskClient, 'taskClient')
+      const taskClientsCompanyId = z.string().optional().parse(taskClient?.companyId)
+      return taskClientsCompanyId && currentInternalUser.companyAccessList?.includes(taskClientsCompanyId)
     })
   }
 
