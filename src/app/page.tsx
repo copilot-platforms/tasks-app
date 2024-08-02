@@ -35,6 +35,7 @@ async function getAllTasks(token: string): Promise<any> {
     next: { tags: ['getTasks'] },
   })
   console.log(6, 'before data')
+  console.log(7, res)
   const data = await res.json()
   console.log(5, data)
   return data.tasks
