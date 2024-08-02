@@ -10,9 +10,9 @@ export const StateOptimizer = ({ task_id, children }: { task_id: string; childre
   const { tasks, workflowStates, assignee } = useSelector(selectTaskBoard)
 
   useMemo(() => {
-    // const currentTask = tasks.find((el) => el.id === task_id)
-    // const currentWorkflowState = workflowStates.find((el) => el?.id === currentTask?.workflowStateId)
-    // const currentAssignee = assignee.find((el) => el.id === currentTask?.assigneeId)
+    const currentTask = tasks.find((el) => el.id === task_id)
+    const currentWorkflowState = workflowStates.find((el) => el?.id === currentTask?.workflowStateId)
+    const currentAssignee = assignee.find((el) => el.id === currentTask?.assigneeId)
 
     store.dispatch(
       setStateOptimizers_taskDetailsSlice({
