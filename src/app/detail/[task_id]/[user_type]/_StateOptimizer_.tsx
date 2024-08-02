@@ -14,13 +14,7 @@ export const StateOptimizer = ({ task_id, children }: { task_id: string; childre
     const currentWorkflowState = workflowStates.find((el) => el?.id === currentTask?.workflowStateId)
     const currentAssignee = assignee.find((el) => el.id === currentTask?.assigneeId)
 
-    store.dispatch(
-      setStateOptimizers_taskDetailsSlice({
-        currentTask: tasks[0],
-        currentWorkflowState: workflowStates[0],
-        currentAssignee: assignee[0],
-      }),
-    )
+    store.dispatch(setStateOptimizers_taskDetailsSlice({ currentTask, currentWorkflowState, currentAssignee }))
   }, [tasks, workflowStates, assignee])
 
   return children
