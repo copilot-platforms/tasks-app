@@ -360,6 +360,7 @@ export class TasksService extends BaseService {
       NotificationTaskActions.AssignedToCompany,
       task,
       recipientIds,
+      { email: true },
     )
 
     // This is a hacky way to bulk create ClientNotifications for all company members.
