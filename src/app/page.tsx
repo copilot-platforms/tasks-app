@@ -18,7 +18,6 @@ import { createMultipleAttachments, getSignedUrlUpload } from '@/app/actions'
 import { ModalNewTaskForm } from './ui/Modal_NewTaskForm'
 import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 import { RealTime } from '@/hoc/RealTime'
-import { redirect } from 'next/navigation'
 import { redirectIfTaskCta } from '@/utils/redirect'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
