@@ -192,6 +192,7 @@ export const UserSchema = z.object({
 })
 
 export interface FilterableUser {
+  id: string
   givenName?: string
   familyName?: string
   name?: string
