@@ -34,9 +34,9 @@ async function getAllTasks(token: string): Promise<any> {
   const res = await fetch(`${apiUrl}/api/tasks?token=${token}`, {
     next: { tags: ['getTasks'] },
   })
-
+  console.log(6, 'before data')
   const data = await res.json()
-
+  console.log(5, data)
   return data.tasks
 }
 
