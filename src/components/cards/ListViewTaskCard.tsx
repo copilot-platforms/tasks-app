@@ -39,121 +39,119 @@ export const ListViewTaskCard = ({
   const assigneeValue = _assigneeValue as IAssigneeCombined //typecasting
 
   return (
-    <CustomLink href={href}>
-      <Box
-        className="task-list-card"
-        sx={{
-          userSelect: 'none',
-          cursor: 'pointer',
-          borderBottom: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
-          ':hover': {
-            bgcolor: (theme) => alpha(theme.color.gray[100], 0.5),
-          },
-        }}
-      >
-        <Box sx={{ padding: '8.5px 12px 8.5px 20px' }}>
-          <Stack direction="row" columnGap={'20px'} alignItems="center" justifyContent="space-between">
-            <Stack direction="row" alignItems="center" columnGap={'16px'}>
+    <Box
+      className="task-list-card"
+      sx={{
+        userSelect: 'none',
+        cursor: 'pointer',
+        borderBottom: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
+        ':hover': {
+          bgcolor: (theme) => alpha(theme.color.gray[100], 0.5),
+        },
+      }}
+    >
+      <Box sx={{ padding: '8.5px 12px 8.5px 20px' }}>
+        <Stack direction="row" columnGap={'20px'} alignItems="center" justifyContent="space-between">
+          <Stack direction="row" alignItems="center" columnGap={'16px'}>
+            <Typography
+              variant="sm"
+              fontWeight={400}
+              sx={{
+                color: (theme) => theme.color.gray[500],
+                flexGrow: 0,
+                minWidth: '60px',
+                lineHeight: '21px',
+              }}
+            >
+              {task.label}
+            </Typography>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap' }}>
               <Typography
                 variant="sm"
-                fontWeight={400}
                 sx={{
-                  color: (theme) => theme.color.gray[500],
-                  flexGrow: 0,
-                  minWidth: '60px',
                   lineHeight: '21px',
+                  wordBreak: 'break-word',
+                  flexGrow: 1,
                 }}
               >
-                {task.label}
+                {task?.title}
               </Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap' }}>
+            </Box>
+          </Stack>
+          <Stack direction="row" alignItems="center" columnGap={'20px'}>
+            <Box
+              sx={{
+                display: 'flex',
+                maxWidth: '80px',
+                flexDirection: 'row',
+                alignItems: 'flex-end',
+                justifyContent: 'flex-end',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {task.dueDate && <DueDateLayout dateString={task.dueDate} />}
+            </Box>
+
+            <Selector
+              placeholder="Change assignee"
+              disableOutline
+              disabled
+              buttonWidth="150px"
+              getSelectedValue={(_newValue) => {
+                const newValue = _newValue as IAssigneeCombined
+                updateAssigneeValue(newValue)
+                const assigneeType = newValue.type ? AssigneeType[newValue.type as AssigneeType] : null
+                if (updateTask) {
+                  updateTask({
+                    payload: {
+                      assigneeType: assigneeType,
+                      assigneeId: newValue?.id,
+                    },
+                  })
+                }
+              }}
+              startIcon={
+                <CopilotAvatar currentAssignee={assigneeValue as IAssigneeCombined} alt={getAssigneeName(assigneeValue)} />
+              }
+              options={assignee}
+              value={assigneeValue}
+              selectorType={SelectorType.ASSIGNEE_SELECTOR}
+              extraOption={NoAssigneeExtraOptions}
+              extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
+                return (
+                  <ExtraOptionRendererAssignee
+                    props={props}
+                    onClick={(e) => {
+                      updateAssigneeValue({ id: '', name: 'No assignee' })
+                      setAnchorEl(anchorEl ? null : e.currentTarget)
+                      if (updateTask) {
+                        updateTask({
+                          payload: {
+                            assigneeType: null,
+                            assigneeId: null,
+                          },
+                        })
+                      }
+                    }}
+                  />
+                )
+              }}
+              buttonContent={
                 <Typography
-                  variant="sm"
+                  variant="bodySm"
+                  lineHeight="20px"
                   sx={{
-                    lineHeight: '21px',
-                    wordBreak: 'break-word',
-                    flexGrow: 1,
+                    color: (theme) => theme.color.gray[600],
                   }}
                 >
-                  {task?.title}
+                  {getAssigneeName(assigneeValue)}
                 </Typography>
-              </Box>
-            </Stack>
-            <Stack direction="row" alignItems="center" columnGap={'20px'}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  maxWidth: '80px',
-                  flexDirection: 'row',
-                  alignItems: 'flex-end',
-                  justifyContent: 'flex-end',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {task.dueDate && <DueDateLayout dateString={task.dueDate} />}
-              </Box>
-
-              <Selector
-                placeholder="Change assignee"
-                disableOutline
-                disabled
-                buttonWidth="150px"
-                getSelectedValue={(_newValue) => {
-                  const newValue = _newValue as IAssigneeCombined
-                  updateAssigneeValue(newValue)
-                  const assigneeType = newValue.type ? AssigneeType[newValue.type as AssigneeType] : null
-                  if (updateTask) {
-                    updateTask({
-                      payload: {
-                        assigneeType: assigneeType,
-                        assigneeId: newValue?.id,
-                      },
-                    })
-                  }
-                }}
-                startIcon={
-                  <CopilotAvatar currentAssignee={assigneeValue as IAssigneeCombined} alt={getAssigneeName(assigneeValue)} />
-                }
-                options={assignee}
-                value={assigneeValue}
-                selectorType={SelectorType.ASSIGNEE_SELECTOR}
-                extraOption={NoAssigneeExtraOptions}
-                extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
-                  return (
-                    <ExtraOptionRendererAssignee
-                      props={props}
-                      onClick={(e) => {
-                        updateAssigneeValue({ id: '', name: 'No assignee' })
-                        setAnchorEl(anchorEl ? null : e.currentTarget)
-                        if (updateTask) {
-                          updateTask({
-                            payload: {
-                              assigneeType: null,
-                              assigneeId: null,
-                            },
-                          })
-                        }
-                      }}
-                    />
-                  )
-                }}
-                buttonContent={
-                  <Typography
-                    variant="bodySm"
-                    lineHeight="20px"
-                    sx={{
-                      color: (theme) => theme.color.gray[600],
-                    }}
-                  >
-                    {getAssigneeName(assigneeValue)}
-                  </Typography>
-                }
-              />
-            </Stack>
+              }
+            />
           </Stack>
-        </Box>
+        </Stack>
       </Box>
-    </CustomLink>
+    </Box>
   )
 }
