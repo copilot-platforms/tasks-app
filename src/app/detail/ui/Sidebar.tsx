@@ -50,19 +50,17 @@ export const Sidebar = ({
   workflowDisabled?: false
 }) => {
   const { tasks, token, workflowStates } = useSelector(selectTaskBoard)
-  const { showSidebar } = useSelector(selectTaskDetails)
+  const { currentTask, currentAssignee, currentWorkflowState, showSidebar } = useSelector(selectTaskDetails)
   const [filteredAssignees, setFilteredAssignees] = useState(assignee)
   const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
   const [loading, setLoading] = useState(false)
   const [dueDate, setDueDate] = useState<Date | string | undefined>()
 
   const { renderingItem: _statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
-    // item: selectedWorkflowState,
     item: null,
     type: SelectorType.STATUS_SELECTOR,
   })
   const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
-    // item: selectedAssigneeId ? assignee.find((el) => el.id === selectedAssigneeId) : NoAssignee,
     item: null,
     type: SelectorType.ASSIGNEE_SELECTOR,
   })
@@ -71,15 +69,13 @@ export const Sidebar = ({
   const assigneeValue = _assigneeValue as IAssigneeCombined //typecasting
 
   useEffect(() => {
-    if (tasks && workflowStates) {
-      const currentTask = tasks.find((el) => el.id === task_id)
-      const currentWorkflowState = workflowStates.find((el) => el?.id === currentTask?.workflowStateId)
+    if (currentTask && currentWorkflowState) {
       const currentAssigneeId = currentTask?.assigneeId
       updateStatusValue(currentWorkflowState)
-      updateAssigneeValue(currentAssigneeId ? assignee.find((el) => el.id === currentAssigneeId) : NoAssignee)
+      updateAssigneeValue(currentAssigneeId ? currentAssignee : NoAssignee)
       setDueDate(currentTask?.dueDate)
     }
-  }, [tasks, workflowStates])
+  }, [currentAssignee, currentTask, currentWorkflowState])
 
   const matches = useMediaQuery('(max-width:600px)')
   if (!tasks) return null
