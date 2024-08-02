@@ -45,11 +45,11 @@ export const useFilter = (filterOptions: IFilterOptions) => {
 
   function applyFilter(tasks: TaskResponse[], filterOptions: IFilterOptions) {
     let filteredTasks = [...tasks]
-    for (const [filterType, filterValue] of Object.entries(filterOptions)) {
-      if (!filterValue) continue
-      const filterFn = FilterFunctions[filterType as FilterOptions]
-      filteredTasks = filterFn(filteredTasks, filterValue)
-    }
+    // for (const [filterType, filterValue] of Object.entries(filterOptions)) {
+    //   if (!filterValue) continue
+    //   const filterFn = FilterFunctions[filterType as FilterOptions]
+    //   filteredTasks = filterFn(filteredTasks, filterValue)
+    // }
     store.dispatch(setFilteredTasks(filteredTasks))
   }
 

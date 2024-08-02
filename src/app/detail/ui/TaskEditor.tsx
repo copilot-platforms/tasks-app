@@ -45,7 +45,6 @@ export const TaskEditor = ({
   getSignedUrlUpload,
   userType,
 }: Prop) => {
-  const { tasks } = useSelector(selectTaskBoard)
   const [updateTitle, setUpdateTitle] = useState('')
   const [updateDetail, setUpdateDetail] = useState('')
   const { currentTask, showConfirmDeleteModal } = useSelector(selectTaskDetails)
