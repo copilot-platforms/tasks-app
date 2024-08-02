@@ -29,7 +29,7 @@ export const createMultipleAttachments = async (req: NextRequest) => {
 }
 
 export const getAttachments = async (req: NextRequest) => {
-  noStore()
+  // noStore()
   const taskId = req.nextUrl.searchParams.get('taskId')
   if (!taskId) {
     throw new APIError(httpStatus.BAD_REQUEST, 'taskId is required')

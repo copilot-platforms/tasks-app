@@ -1,4 +1,5 @@
-export const fetchCache = 'force-no-store'
+// export const fetchCache = 'force-no-store'
+export const revalidate = 1000
 
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { TaskEditor } from '@/app/detail/ui/TaskEditor'

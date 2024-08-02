@@ -5,7 +5,7 @@ import { IdParams } from '@api/core/types/api'
 import { unstable_noStore as noStore } from 'next/cache'
 
 export const GET = async (req: NextRequest, { params: { id } }: IdParams) => {
-  noStore()
+  // noStore()
   const user = await authenticate(req)
 
   const activityLogger = new ActivityLogService(user)
