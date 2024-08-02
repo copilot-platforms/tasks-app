@@ -61,7 +61,6 @@ export const TaskBoard = () => {
     return <DashboardEmptyState userType={UserType.INTERNAL_USER} />
   }
 
-  console.log(tasks, 'here')
   return (
     <>
       <Header showCreateTaskButton={true} />

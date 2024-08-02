@@ -30,14 +30,11 @@ async function getAllWorkflowStates(token: string): Promise<WorkflowStateRespons
   return data.workflowStates
 }
 
-async function getAllTasks(token: string): Promise<any> {
+async function getAllTasks(token: string): Promise<TaskResponse[]> {
   const res = await fetch(`${apiUrl}/api/tasks?token=${token}`, {
     next: { tags: ['getTasks'] },
   })
-  console.log(6, 'before data')
-  console.log(7, res)
   const data = await res.json()
-  console.log(5, data)
   return data.tasks
 }
 
