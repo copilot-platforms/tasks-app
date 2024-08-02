@@ -1,3 +1,5 @@
+'use client'
+
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { setStateOptimizers_taskDetailsSlice } from '@/redux/features/taskDetailsSlice'
 import store from '@/redux/store'
@@ -12,17 +14,7 @@ export const StateOptimizer = ({ task_id, children }: { task_id: string; childre
     const currentWorkflowState = workflowStates.find((el) => el?.id === currentTask?.workflowStateId)
     const currentAssignee = assignee.find((el) => el.id === currentTask?.assigneeId)
 
-    if (currentTask) {
-      store.dispatch(setStateOptimizers_taskDetailsSlice({ currentTask }))
-    }
-
-    if (currentWorkflowState) {
-      store.dispatch(setStateOptimizers_taskDetailsSlice({ currentWorkflowState }))
-    }
-
-    if (currentAssignee) {
-      store.dispatch(setStateOptimizers_taskDetailsSlice({ currentAssignee }))
-    }
+    store.dispatch(setStateOptimizers_taskDetailsSlice({ currentTask, currentWorkflowState, currentAssignee }))
   }, [tasks, workflowStates, assignee])
 
   return children

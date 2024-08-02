@@ -72,7 +72,7 @@ export const TaskEditor = ({
         setUpdateDetail(currentTask.body ?? '')
       }
     }
-  }, [currentTask, task_id, isUserTyping])
+  }, [currentTask, isUserTyping])
 
   const _titleUpdateDebounced = async (title: string) => updateTaskTitle(title)
 
