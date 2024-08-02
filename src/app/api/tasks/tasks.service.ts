@@ -62,7 +62,7 @@ export class TasksService extends BaseService {
     // Check if given user role is authorized access to this resource
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Read, Resource.Tasks)
-
+    console.log(1, this.user)
     // Build query filters based on role of user. IU can access all tasks related to a workspace
     // while clients can only view the tasks assigned to them or their company
     const filters = this.buildReadFilters()
@@ -78,12 +78,12 @@ export class TasksService extends BaseService {
     if (!this.user.internalUserId) {
       return tasks
     }
-
+    console.log(2)
     // Now we have the challenge of figuring out if a task is assigned to a client / company that falls in IU's access list
     const copilot = new CopilotAPI(this.user.token)
     const currentInternalUser = await copilot.getInternalUser(this.user.internalUserId)
     if (!currentInternalUser.isClientAccessLimited) return tasks
-
+    console.log(3, currentInternalUser)
     const hasClientTasks = tasks.some((task) => task.assigneeType === AssigneeType.client)
     const clients = hasClientTasks ? await copilot.getClients() : { data: [] }
 
