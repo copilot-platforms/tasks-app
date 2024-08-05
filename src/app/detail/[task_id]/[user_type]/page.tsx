@@ -267,7 +267,6 @@ export default async function TaskDetailPage({
           </ToggleController>
           <Box>
             <Sidebar
-              assignee={assignee}
               task_id={task_id}
               selectedAssigneeId={task?.assigneeId}
               selectedWorkflowState={task?.workflowState}

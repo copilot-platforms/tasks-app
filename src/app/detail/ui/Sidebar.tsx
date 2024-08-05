@@ -35,7 +35,6 @@ export const Sidebar = ({
   updateWorkflowState,
   updateAssignee,
   updateTask,
-  assignee,
   disabled,
   workflowDisabled,
 }: {
@@ -45,11 +44,10 @@ export const Sidebar = ({
   updateWorkflowState: (workflowState: WorkflowStateResponse) => void
   updateAssignee: (assigneeType: string | null, assigneeId: string | null) => void
   updateTask: (payload: UpdateTaskRequest) => void
-  assignee: IAssigneeCombined[]
   disabled: boolean
   workflowDisabled?: false
 }) => {
-  const { tasks, token, workflowStates } = useSelector(selectTaskBoard)
+  const { tasks, token, workflowStates, assignee } = useSelector(selectTaskBoard)
   const { showSidebar } = useSelector(selectTaskDetails)
   const [filteredAssignees, setFilteredAssignees] = useState(assignee)
   const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)

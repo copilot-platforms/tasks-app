@@ -57,6 +57,7 @@ export const ClientSideStateUpdate = ({
     }
 
     if (token) {
+      console.log('tttt', token)
       store.dispatch(setToken(token))
     }
 
