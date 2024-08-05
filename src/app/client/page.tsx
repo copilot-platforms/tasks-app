@@ -13,6 +13,7 @@ import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 import { RealTime } from '@/hoc/RealTime'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { Token, TokenSchema } from '@/types/common'
+import { sortTaskByDescendingOrder } from '@/utils/sortTask'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -30,7 +31,7 @@ async function getAllTasks(token: string): Promise<TaskResponse[]> {
   })
 
   const data = await res.json()
-  return data.tasks
+  return sortTaskByDescendingOrder(data.tasks)
 }
 
 async function getAssigneeList(token: string): Promise<IAssignee> {

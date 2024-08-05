@@ -69,7 +69,7 @@ export class TasksService extends BaseService {
 
     let tasks = await this.db.task.findMany({
       ...filters,
-      orderBy: { createdAt: 'asc' },
+      orderBy: { createdAt: 'desc' },
       include: {
         workflowState: { select: { name: true } },
       },
