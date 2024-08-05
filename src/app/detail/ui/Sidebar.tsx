@@ -71,17 +71,20 @@ export const Sidebar = ({
   const assigneeValue = _assigneeValue as IAssigneeCombined //typecasting
 
   useEffect(() => {
-    if (tasks && workflowStates) {
+    if (tasks && workflowStates && assignee) {
       const currentTask = tasks.find((el) => el.id === task_id)
+      console.log('task>', currentTask)
+      console.log('assignee>', assignee)
       const currentWorkflowState = workflowStates.find((el) => el?.id === currentTask?.workflowStateId)
       const currentAssigneeId = currentTask?.assigneeId
+      console.log('assigneeId>>', currentAssigneeId)
       const currentAssignee = currentAssigneeId ? assignee.find((el) => el.id === currentAssigneeId) : NoAssignee
       console.log('current>>', currentAssignee)
       updateStatusValue(currentWorkflowState)
       updateAssigneeValue(currentAssignee)
       setDueDate(currentTask?.dueDate)
     }
-  }, [tasks, workflowStates])
+  }, [tasks, workflowStates, assignee])
   console.log('assignee', assigneeValue)
 
   const matches = useMediaQuery('(max-width:600px)')
