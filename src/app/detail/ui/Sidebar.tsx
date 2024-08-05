@@ -80,6 +80,7 @@ export const Sidebar = ({
       setDueDate(currentTask?.dueDate)
     }
   }, [tasks, workflowStates])
+  console.log('assignee', assigneeValue)
 
   const matches = useMediaQuery('(max-width:600px)')
   if (!tasks) return null
