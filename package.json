@@ -25,7 +25,8 @@
     "prettier:fix": "prettier --write .",
     "lint-staged": "npx lint-staged",
     "postinstall": "prisma generate",
-    "test": "jest"
+    "test": "jest",
+    "loadtest": "tsx ./src/cmd/load-testing"
   },
   "dependencies": {
     "@emotion/react": "^11.11.3",
@@ -40,6 +41,7 @@
     "@types/date-fns": "^2.6.0",
     "@vercel/blob": "^0.23.2",
     "@vercel/postgres": "^0.8.0",
+    "bottleneck": "^2.19.5",
     "copilot-node-sdk": "^3.2.0",
     "dayjs": "^1.11.10",
     "http-status": "^1.7.4",
@@ -57,6 +59,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@faker-js/faker": "^8.4.1",
     "@svgr/webpack": "^8.1.0",
     "@types/jest": "^29.5.12",
     "@types/node": "^20",
@@ -72,6 +75,7 @@
     "postcss": "^8",
     "prettier": "^3.1.1",
     "tailwindcss": "^3.3.0",
+    "tsx": "^4.16.5",
     "typescript": "^5"
   },
   "lint-staged": {
