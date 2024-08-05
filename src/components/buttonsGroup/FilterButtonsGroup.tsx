@@ -21,10 +21,13 @@ const FilterButtonGroup = ({
       sx={(theme) => ({
         border: `1px solid ${theme.color.borders.border}`,
         borderRadius: 1,
-        columnGap: '6px',
+        columnGap: '8px',
         padding: '2px 6px',
-        height: '32px',
+        height: { xs: 'auto', sm: '32px' },
         justifyContent: 'space-between',
+        '@media (max-width: 330px)': {
+          flexWrap: 'wrap',
+        },
       })}
       direction={'row'}
     >
@@ -42,6 +45,7 @@ const FilterButtonGroup = ({
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
+                  maxWidth: '100%',
                 }}
               >
                 {item.name}
