@@ -5,6 +5,7 @@ import { TaskResponse } from '@/types/dto/tasks.dto'
 import { AssigneeType, FilterByOptions, FilterOptions, IAssigneeCombined, IFilterOptions, View } from '@/types/interfaces'
 import { ViewMode } from '@prisma/client'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
+import { sortTaskByDescendingOrder } from '@/utils/sortTask'
 
 interface IInitialState {
   workflowStates: WorkflowStateResponse[]
@@ -46,7 +47,7 @@ const taskBoardSlice = createSlice({
       state.tasks = [...state.tasks, action.payload]
     },
     setFilteredTasks: (state, action: { payload: TaskResponse[] }) => {
-      state.filteredTasks = action.payload
+      state.filteredTasks = sortTaskByDescendingOrder(action.payload)
     },
     setToken: (state, action: { payload: string }) => {
       state.token = action.payload
@@ -55,7 +56,10 @@ const taskBoardSlice = createSlice({
       let taskToUpdate = state.tasks.find((task) => task.id === action.payload.taskId)
       if (taskToUpdate) {
         taskToUpdate.workflowStateId = action.payload.targetWorkflowStateId
-        const updatedTasks = [...state.tasks.filter((task) => task.id !== action.payload.taskId), taskToUpdate]
+        const updatedTasks = sortTaskByDescendingOrder([
+          ...state.tasks.filter((task) => task.id !== action.payload.taskId),
+          taskToUpdate,
+        ])
         state.tasks = updatedTasks
         state.filteredTasks = updatedTasks
       }
