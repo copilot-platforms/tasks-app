@@ -1,4 +1,5 @@
 import { UserRole } from '@/app/api/core/types/user'
+import { HexColorSchema } from '@/types/basic'
 import { z } from 'zod'
 
 export type CopilotListArgs = {
@@ -89,6 +90,13 @@ export const CompaniesResponseSchema = z.object({
 })
 export type CompaniesResponse = z.infer<typeof CompaniesResponseSchema>
 
+export const CompanyCreateRequestSchema = z.object({
+  name: z.string(),
+  iconImageUrl: z.string().optional(),
+  fallbackColor: HexColorSchema.optional(),
+})
+export type CompanyCreateRequest = z.infer<typeof CompanyCreateRequestSchema>
+
 export const CustomFieldSchema = z.object({
   id: z.string(),
   key: z.string(),
@@ -114,11 +122,12 @@ export const CustomFieldResponseSchema = z.object({
 export type CustomFieldResponse = z.infer<typeof CustomFieldResponseSchema>
 
 export const ClientRequestSchema = z.object({
-  id: z.string().uuid(),
-  givenName: z.string().optional(),
-  familyName: z.string().optional(),
+  givenName: z.string(),
+  familyName: z.string(),
+  email: z.string().email(),
   companyId: z.string().uuid().optional(),
-  customFields: z.record(z.string(), z.union([z.string(), z.array(z.string())]).nullish()).nullish(),
+  // NOTE: customFields can also be passed as a JSON object, but CopilotAPI has its type defined to stringified JSON
+  customFields: z.string().optional(),
 })
 export type ClientRequest = z.infer<typeof ClientRequestSchema>
 
