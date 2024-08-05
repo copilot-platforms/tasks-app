@@ -124,7 +124,6 @@ export default async function TaskDetailPage({
   searchParams: { token: string }
 }) {
   const { token } = searchParams
-  console.log('token from server', token)
   const { task_id } = params
   const copilotClient = new CopilotAPI(token)
 
@@ -137,8 +136,7 @@ export default async function TaskDetailPage({
     copilotClient.getTokenPayload(),
     getAllTasks(token),
   ])
-  console.log('assignee list', assignee)
-  console.log('get assignee list', await getAssigneeList(token, params.user_type))
+
   const AssigneeSuggestions = assignee.map((item) => ({
     id: item.id,
     label: item?.name ?? `${item.givenName} ${item.familyName}`,

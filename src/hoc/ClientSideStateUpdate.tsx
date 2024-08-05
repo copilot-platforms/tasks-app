@@ -57,12 +57,10 @@ export const ClientSideStateUpdate = ({
     }
 
     if (token) {
-      console.log('tttt', token)
       store.dispatch(setToken(token))
     }
 
     if (assignee?.length) {
-      console.log('from state update, assigneeee>>>', assignee)
       store.dispatch(setAssigneeList(assignee))
     }
 
