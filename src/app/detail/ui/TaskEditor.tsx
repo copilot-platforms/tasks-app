@@ -18,7 +18,8 @@ import { advancedFeatureFlag } from '@/config'
 import { Tapwrite } from 'tapwrite'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { useDebounce } from '@/hooks/useDebounce'
-import { TaskResponse } from '@/types/dto/tasks.dto'
+import { useRouter } from 'next/navigation'
+import { RESOURCE_NOT_FOUND_REDIRECT_PATHS } from '@/utils/redirect'
 
 interface Prop {
   task_id: string
@@ -45,7 +46,7 @@ export const TaskEditor = ({
   getSignedUrlUpload,
   userType,
 }: Prop) => {
-  const { tasks } = useSelector(selectTaskBoard)
+  const { tasks, token } = useSelector(selectTaskBoard)
   const [updateTitle, setUpdateTitle] = useState('')
   const [updateDetail, setUpdateDetail] = useState('')
   const { showConfirmDeleteModal } = useSelector(selectTaskDetails)
@@ -65,13 +66,18 @@ export const TaskEditor = ({
     }
   }
 
+  const router = useRouter()
+
   useEffect(() => {
+    const currentTask = tasks.find((el) => el.id === task_id)
+    if (!currentTask) {
+      router.push(`${RESOURCE_NOT_FOUND_REDIRECT_PATHS[userType]}?token=${token}`)
+      return // Just to keep TSC happy below
+    }
+
     if (!isUserTyping) {
-      const currentTask = tasks.find((el) => el.id === task_id)
-      if (currentTask) {
-        setUpdateTitle(currentTask.title || '')
-        setUpdateDetail(currentTask.body ?? '')
-      }
+      setUpdateTitle(currentTask.title || '')
+      setUpdateDetail(currentTask.body ?? '')
     }
   }, [tasks, task_id, isUserTyping])
 
