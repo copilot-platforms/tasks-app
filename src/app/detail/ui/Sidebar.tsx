@@ -75,8 +75,10 @@ export const Sidebar = ({
       const currentTask = tasks.find((el) => el.id === task_id)
       const currentWorkflowState = workflowStates.find((el) => el?.id === currentTask?.workflowStateId)
       const currentAssigneeId = currentTask?.assigneeId
+      const currentAssignee = currentAssigneeId ? assignee.find((el) => el.id === currentAssigneeId) : NoAssignee
+      console.log('current>>', currentAssignee)
       updateStatusValue(currentWorkflowState)
-      updateAssigneeValue(currentAssigneeId ? assignee.find((el) => el.id === currentAssigneeId) : NoAssignee)
+      updateAssigneeValue(currentAssignee)
       setDueDate(currentTask?.dueDate)
     }
   }, [tasks, workflowStates])
