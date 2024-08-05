@@ -74,7 +74,7 @@ export const Sidebar = ({
     if (tasks && workflowStates && assignee) {
       const currentTask = tasks.find((el) => el.id === task_id)
       console.log('task>', currentTask)
-      console.log('assignee>', assignee)
+      console.log('assignee list>', assignee)
       const currentWorkflowState = workflowStates.find((el) => el?.id === currentTask?.workflowStateId)
       const currentAssigneeId = currentTask?.assigneeId
       console.log('assigneeId>>', currentAssigneeId)
@@ -85,7 +85,7 @@ export const Sidebar = ({
       setDueDate(currentTask?.dueDate)
     }
   }, [tasks, workflowStates, assignee])
-  console.log('assignee', assigneeValue)
+  console.log('assignee value', assigneeValue)
 
   const matches = useMediaQuery('(max-width:600px)')
   if (!tasks) return null
