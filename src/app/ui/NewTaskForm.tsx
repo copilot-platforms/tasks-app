@@ -10,12 +10,13 @@ import {
   removeOneAttachment,
   selectCreateTask,
   setCreateTaskFields,
+  setErrors,
   setShowModal,
 } from '@/redux/features/createTaskSlice'
 import store from '@/redux/store'
 import { Box, Stack, Typography, styled } from '@mui/material'
 import { useEffect, useState } from 'react'
-import { FilterOptions, IAssigneeCombined, ISignedUrlUpload, ITemplate } from '@/types/interfaces'
+import { CreateTaskErrors, FilterOptions, IAssigneeCombined, ISignedUrlUpload, ITemplate } from '@/types/interfaces'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { useSelector } from 'react-redux'
 import { selectTaskBoard, setAssigneeList, setFilterOptions } from '@/redux/features/taskBoardSlice'
@@ -51,12 +52,11 @@ export const NewTaskForm = ({
   handleCreate: () => void
   getSignedUrlUpload: (fileName: string) => Promise<ISignedUrlUpload>
 }) => {
+  const { errors } = useSelector(selectCreateTask)
   const { workflowStates, assignee, token, filterOptions } = useSelector(selectTaskBoard)
   const [filteredAssignees, setFilteredAssignees] = useState(assignee)
   const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
   const [loading, setLoading] = useState(false)
-  const [titleError, setTitleError] = useState(false)
-  const [assigneeError, setAssigneeError] = useState(false)
   const { templates } = useSelector(selectCreateTemplate)
 
   const { renderingItem: _statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
@@ -182,7 +182,7 @@ export const NewTaskForm = ({
       </Stack>
 
       <AppMargin size={SizeofAppMargin.MEDIUM} py="16px">
-        <NewTaskFormInputs titleError={titleError} setTitleError={setTitleError} />
+        <NewTaskFormInputs />
 
         <Stack direction="row" columnGap={3} position="relative" sx={{ flexWrap: 'wrap' }}>
           <Box sx={{ padding: 0.1 }}>
@@ -199,7 +199,7 @@ export const NewTaskForm = ({
             <Selector
               placeholder="Set assignee"
               getSelectedValue={(_newValue) => {
-                setAssigneeError(false)
+                store.dispatch(setErrors({ key: CreateTaskErrors.ASSIGNEE, value: false }))
                 const newValue = _newValue as IAssigneeCombined
                 setTempAssignee(newValue)
                 updateAssigneeValue(newValue)
@@ -273,7 +273,7 @@ export const NewTaskForm = ({
                   {getAssigneeName(tempAssignee as IAssigneeCombined, 'Assignee')}
                 </Typography>
               }
-              error={assigneeError}
+              error={errors.assignee}
             />
           </Stack>
           <Stack alignSelf="flex-start">
@@ -293,24 +293,14 @@ export const NewTaskForm = ({
           </Stack>
         </Stack>
       </AppMargin>
-      <NewTaskFooter
-        handleCreate={handleCreateWithAssignee}
-        getSignedUrlUpload={getSignedUrlUpload}
-        setTitleError={setTitleError}
-        setAssigneeError={setAssigneeError}
-      />
+      <NewTaskFooter handleCreate={handleCreateWithAssignee} getSignedUrlUpload={getSignedUrlUpload} />
     </NewTaskContainer>
   )
 }
 
-const NewTaskFormInputs = ({
-  titleError,
-  setTitleError,
-}: {
-  titleError: boolean
-  setTitleError: Dispatch<SetStateAction<boolean>>
-}) => {
+const NewTaskFormInputs = () => {
   const { title, description, attachments } = useSelector(selectCreateTask)
+  const { errors } = useSelector(selectCreateTask)
 
   return (
     <>
@@ -323,10 +313,10 @@ const NewTaskFormInputs = ({
           value={title}
           onChange={(e) => {
             store.dispatch(setCreateTaskFields({ targetField: 'title', value: e.target.value }))
-            setTitleError(false)
+            store.dispatch(setErrors({ key: CreateTaskErrors.TITLE, value: false }))
           }}
-          error={titleError}
-          helperText={titleError && 'Required'}
+          error={errors.title}
+          helperText={errors.title && 'Required'}
         />
       </Stack>
       <Stack direction="column" rowGap={1} m="16px 0px">
@@ -368,13 +358,9 @@ const NewTaskFormInputs = ({
 const NewTaskFooter = ({
   handleCreate,
   getSignedUrlUpload,
-  setTitleError,
-  setAssigneeError,
 }: {
   handleCreate: () => void
   getSignedUrlUpload: (fileName: string) => Promise<ISignedUrlUpload>
-  setTitleError: Dispatch<SetStateAction<boolean>>
-  setAssigneeError: Dispatch<SetStateAction<boolean>>
 }) => {
   const { attachments, title, assigneeId } = useSelector(selectCreateTask)
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -409,8 +395,9 @@ const NewTaskFooter = ({
             />
             <PrimaryBtn
               handleClick={() => {
-                !title && setTitleError(true)
-                !assigneeId && setAssigneeError(true)
+                !title && store.dispatch(setErrors({ key: CreateTaskErrors.TITLE, value: true }))
+                !assigneeId && store.dispatch(setErrors({ key: CreateTaskErrors.ASSIGNEE, value: true }))
+
                 handleCreate()
               }}
               buttonText="Create"
