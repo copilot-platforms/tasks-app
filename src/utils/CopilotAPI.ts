@@ -1,36 +1,37 @@
-import { copilotApi } from 'copilot-node-sdk'
-import type { CopilotAPI as SDK } from 'copilot-node-sdk'
+import { copilotAPIKey as apiKey } from '@/config'
 import {
+  ClientRequest,
   ClientResponse,
   ClientResponseSchema,
   ClientsResponseSchema,
-  CompanyResponse,
-  CompanyResponseSchema,
-  ClientRequest,
-  CustomFieldResponse,
-  CustomFieldResponseSchema,
-  MeResponse,
-  MeResponseSchema,
-  CompaniesResponse,
-  CompaniesResponseSchema,
-  WorkspaceResponse,
-  WorkspaceResponseSchema,
-  Token,
-  TokenSchema,
   ClientToken,
   ClientTokenSchema,
-  IUTokenSchema,
-  IUToken,
-  NotificationRequestBody,
+  CompaniesResponse,
+  CompaniesResponseSchema,
+  CompanyCreateRequest,
+  CompanyResponse,
+  CompanyResponseSchema,
+  CopilotListArgs,
+  CustomFieldResponse,
+  CustomFieldResponseSchema,
+  InternalUsers,
   InternalUsersResponse,
   InternalUsersResponseSchema,
-  InternalUsers,
   InternalUsersSchema,
-  CopilotListArgs,
-  NotificationCreatedResponseSchema,
+  IUToken,
+  IUTokenSchema,
+  MeResponse,
+  MeResponseSchema,
   NotificationCreatedResponse,
+  NotificationCreatedResponseSchema,
+  NotificationRequestBody,
+  Token,
+  TokenSchema,
+  WorkspaceResponse,
+  WorkspaceResponseSchema,
 } from '@/types/common'
-import { copilotAPIKey as apiKey } from '@/config'
+import type { CopilotAPI as SDK } from 'copilot-node-sdk'
+import { copilotApi } from 'copilot-node-sdk'
 
 export class CopilotAPI {
   copilot: SDK
@@ -77,6 +78,10 @@ export class CopilotAPI {
     return IUTokenSchema.parse(tokenPayload)
   }
 
+  async createClient(requestBody: ClientRequest, sendInvite: boolean = false): Promise<ClientResponse> {
+    return ClientResponseSchema.parse(await this.copilot.createClient({ sendInvite, requestBody }))
+  }
+
   async getClient(id: string): Promise<ClientResponse> {
     return ClientResponseSchema.parse(await this.copilot.retrieveClient({ id }))
   }
@@ -88,6 +93,10 @@ export class CopilotAPI {
   async updateClient(id: string, requestBody: ClientRequest): Promise<ClientResponse> {
     // @ts-ignore
     return ClientResponseSchema.parse(await this.copilot.updateClient({ id, requestBody }))
+  }
+
+  async createCompany(requestBody: CompanyCreateRequest) {
+    return CompanyResponseSchema.parse(await this.copilot.createCompany({ requestBody }))
   }
 
   async getCompany(id: string): Promise<CompanyResponse> {
