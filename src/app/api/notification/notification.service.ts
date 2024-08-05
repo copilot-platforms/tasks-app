@@ -11,12 +11,12 @@ import httpStatus from 'http-status'
 export class NotificationService extends BaseService {
   async create(action: NotificationTaskActions, task: Task, disable: { email: boolean } = { email: false }) {
     try {
-      const copilotUtils = new CopilotAPI(this.user.token)
+      const copilot = new CopilotAPI(this.user.token)
 
-      const { senderId, recipientId, actionUser } = await this.getNotificationParties(copilotUtils, task, action)
+      const { senderId, recipientId, actionUser } = await this.getNotificationParties(copilot, task, action)
 
       const inProduct = getInProductNotificationDetails(actionUser, task)[action]
-      const email = disable.email ? undefined : getEmailDetails(actionUser, task.title)[action]
+      const email = disable.email ? undefined : getEmailDetails(actionUser, task)[action]
       const notificationDetails = {
         senderId,
         recipientId,
@@ -24,25 +24,33 @@ export class NotificationService extends BaseService {
         deliveryTargets: { inProduct, email },
       }
 
-      return await copilotUtils.createNotification(notificationDetails)
+      return await copilot.createNotification(notificationDetails)
     } catch (error) {
       console.error(`Failed to send notification for action: ${action}`, error)
     }
   }
 
-  async createBulkNotification(action: NotificationTaskActions, task: Task, recipientIds: string[]) {
+  async createBulkNotification(
+    action: NotificationTaskActions,
+    task: Task,
+    recipientIds: string[],
+    enable?: { email: boolean },
+  ) {
     try {
-      const copilotUtils = new CopilotAPI(this.user.token)
-      const userInfo = await copilotUtils.me()
+      const copilot = new CopilotAPI(this.user.token)
+      const userInfo = await copilot.me()
       if (!userInfo) {
         throw new APIError(httpStatus.NOT_FOUND, `User not found for token ${this.user.token}`)
       }
       const senderId = z.string().parse(userInfo.id)
       const actionUserName = `${userInfo.givenName} ${userInfo.familyName}`
 
-      const companies = await copilotUtils.getCompanies()
-      const currentCompany = companies.data?.find((company) => company.id === task.assigneeId)
-      const inProduct = getInProductNotificationDetails(actionUserName, task, currentCompany?.name)[action]
+      const company =
+        task?.assigneeId && task?.assigneeType === AssigneeType.company
+          ? await copilot.getCompany(task?.assigneeId)
+          : undefined
+      const inProduct = getInProductNotificationDetails(actionUserName, task, company?.name)[action]
+      const email = enable?.email ? getEmailDetails(actionUserName, task)[action] : undefined
 
       const notifications = []
       for (let recipientId of recipientIds) {
@@ -50,9 +58,9 @@ export class NotificationService extends BaseService {
           const notificationDetails = {
             senderId,
             recipientId,
-            deliveryTargets: { inProduct },
+            deliveryTargets: { inProduct, email },
           }
-          notifications.push(await copilotUtils.createNotification(notificationDetails))
+          notifications.push(await copilot.createNotification(notificationDetails))
         } catch (err: unknown) {
           console.error(`Failed to send notifications to ${recipientId}:`, err)
         }

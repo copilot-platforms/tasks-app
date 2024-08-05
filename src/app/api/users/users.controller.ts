@@ -24,8 +24,10 @@ export const getUsers = async (req: NextRequest) => {
 export const getClients = async (req: NextRequest) => {
   noStore()
   const user = await authenticate(req)
+  const rawLimit = req.nextUrl.searchParams.get('limit')
+  const limit = rawLimit ? +rawLimit : undefined
 
   const usersService = new UsersService(user)
-  const clients = await usersService.getClient()
+  const clients = await usersService.getClient(limit)
   return NextResponse.json({ clients })
 }

@@ -32,13 +32,12 @@ const StyledText = styled(Typography)(({ theme }) => ({
 
 export const Sidebar = ({
   task_id,
-  selectedWorkflowState,
-  selectedAssigneeId,
   updateWorkflowState,
   updateAssignee,
   updateTask,
   assignee,
   disabled,
+  workflowDisabled,
 }: {
   task_id: string
   selectedWorkflowState: WorkflowStateResponse
@@ -48,6 +47,7 @@ export const Sidebar = ({
   updateTask: (payload: UpdateTaskRequest) => void
   assignee: IAssigneeCombined[]
   disabled: boolean
+  workflowDisabled?: false
 }) => {
   const { tasks, token, workflowStates } = useSelector(selectTaskBoard)
   const { showSidebar } = useSelector(selectTaskDetails)
@@ -117,7 +117,7 @@ export const Sidebar = ({
               updateStatusValue(value)
               updateWorkflowState(value)
             }}
-            disabled={disabled}
+            disabled={workflowDisabled}
             disableOutline
             responsiveNoHide
           />
@@ -198,7 +198,6 @@ export const Sidebar = ({
           <DatePickerComponent
             getDate={(date) => {
               const isoDate = DateStringSchema.parse(formatDate(date))
-              setDueDate(date)
               updateTask({
                 dueDate: isoDate,
               })

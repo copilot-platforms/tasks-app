@@ -1,9 +1,17 @@
 import { useRouter } from 'next/navigation'
-import { ReactNode, useCallback } from 'react'
+import { CSSProperties, ReactNode, useCallback } from 'react'
 import { UrlObject } from 'url'
 import { z } from 'zod'
 
-export const CustomLink = ({ children, href }: { children: ReactNode; href: string | UrlObject }) => {
+export const CustomLink = ({
+  children,
+  href,
+  style,
+}: {
+  children: ReactNode
+  href: string | UrlObject
+  style?: CSSProperties
+}) => {
   const router = useRouter()
 
   type UrlDetails = {
@@ -39,7 +47,7 @@ export const CustomLink = ({ children, href }: { children: ReactNode; href: stri
   }, [href])
 
   return (
-    <div onMouseEnter={handleMouseEnter} onClick={() => router.push(`${pathname}?token=${token}`)}>
+    <div onMouseEnter={handleMouseEnter} onClick={() => router.push(`${pathname}?token=${token}`)} style={style}>
       {children}
     </div>
   )
