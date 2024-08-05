@@ -317,6 +317,9 @@ const NewTaskFormInputs = () => {
           }}
           error={errors.title}
           helperText={errors.title && 'Required'}
+          inputProps={{
+            maxLength: 255,
+          }}
         />
       </Stack>
       <Stack direction="column" rowGap={1} m="16px 0px">
