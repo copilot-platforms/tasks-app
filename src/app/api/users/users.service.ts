@@ -6,7 +6,7 @@ import { Resource } from '@api/core/types/api'
 import { UserAction, UserRole } from '@api/core/types/user'
 import APIError from '@api/core/exceptions/api'
 import httpStatus from 'http-status'
-import { CopilotListArgs, FilterableUser } from '@/types/common'
+import { CompanyResponse, CopilotListArgs, FilterableUser } from '@/types/common'
 import { filterUsersByKeyword } from '@/utils/users'
 import { z } from 'zod'
 
@@ -35,14 +35,18 @@ class UsersService extends BaseService {
     const currentInternalUser = await this.copilot.getInternalUser(z.string().parse(this.user.internalUserId))
     // Filter out companies where isPlaceholder is true if companies.data is not null
     // Also filter out just companies which are accessible to this IU, since copilot doesn't do that
-    const filteredCompanies = companies.data
-      ? companies.data
-          .filter((company) => !company.isPlaceholder)
-          .filter((company) =>
-            currentInternalUser.isClientAccessLimited ? currentInternalUser.companyAccessList?.includes(company.id) : true,
-          )
-          .slice(0, limit)
-      : []
+    const currentWorkspace = await this.copilot.getWorkspace()
+
+    // If current workspace setting does not have companies enabled, don't return any companies
+    let filteredCompanies: CompanyResponse[] = []
+    if (currentWorkspace.isCompaniesEnabled && companies.data) {
+      filteredCompanies = companies.data
+        .filter((company) => !company.isPlaceholder)
+        .filter((company) =>
+          currentInternalUser.isClientAccessLimited ? currentInternalUser.companyAccessList?.includes(company.id) : true,
+        )
+        .slice(0, limit)
+    }
 
     // Same for clients
     const clientsWithCompanyData = clients.data || []
