@@ -36,8 +36,8 @@ import { copilotApi } from 'copilot-node-sdk'
 export class CopilotAPI {
   copilot: SDK
 
-  constructor(token: string) {
-    this.copilot = copilotApi({ apiKey, token })
+  constructor(token: string, customApiKey?: string) {
+    this.copilot = copilotApi({ apiKey: customApiKey ?? apiKey, token })
   }
 
   async getTokenPayload(): Promise<Token | null> {
