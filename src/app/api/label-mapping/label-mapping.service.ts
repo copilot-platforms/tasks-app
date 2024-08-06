@@ -31,7 +31,7 @@ export class LabelMappingService extends BaseService {
       return newLabel
     }
 
-    const copilotUtils = new CopilotAPI(this.user.token)
+    const copilotUtils = new CopilotAPI(this.user.token, this.customApiKey)
 
     if (assigneeType === AssigneeType.internalUser) {
       const workspace = await copilotUtils.getWorkspace()
