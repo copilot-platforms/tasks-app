@@ -16,9 +16,20 @@ export const run = async () => {
   const individualClients = await loadTester.seedClients(config.individualClients)
   const { companies, clients: companyClients } = await loadTester.seedCompanyClients(config.companies, config.companyClients)
 
-  await loadTester.seedClientTasks(individualClients, config.countsToAssign.individualClients)
-  await loadTester.seedCompanyTasks(companies, config.countsToAssign.companies)
-  await loadTester.seedClientTasks(companyClients, config.countsToAssign.companyClients)
+  await loadTester.seedClientTasks(
+    individualClients.slice(0, config.countsToAssign.individualClients),
+    config.taskPerAssigneeType.individualClients,
+  )
+
+  await loadTester.seedCompanyTasks(
+    companies.slice(0, config.countsToAssign.companies),
+    config.taskPerAssigneeType.companies,
+  )
+
+  await loadTester.seedClientTasks(
+    companyClients.slice(0, config.countsToAssign.companyClients),
+    config.taskPerAssigneeType.companyClients,
+  )
 }
 
 run()

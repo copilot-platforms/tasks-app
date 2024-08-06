@@ -1,10 +1,16 @@
 {
-  "individualClients": 2,
-  "companies": 2,
-  "companyClients": 2,
+  "individualClients": 1000,
+  "companies": 20,
+  "companyClients": 1000,
+
   "countsToAssign": {
-    "individualClients": 980,
-    "companies": 20,
-    "companyClients": 1000
+    "individualClients": 196,
+    "companies": 5,
+    "companyClients": 100
+  },
+  "taskPerAssigneeType": {
+    "individualClients": 5,
+    "companies": 4,
+    "companyClients": 10
   }
 }
