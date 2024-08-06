@@ -36,7 +36,7 @@ class LoadTester {
   // Ref: https://www.npmjs.com/package/bottleneck
   private bottlenecks = {
     copilot: new Bottleneck({ minTime: 150, maxConcurrent: 2 }),
-    db: new Bottleneck({ minTime: 50, maxConcurrent: 5 }),
+    db: new Bottleneck({ minTime: 100, maxConcurrent: 5 }),
   }
 
   /**

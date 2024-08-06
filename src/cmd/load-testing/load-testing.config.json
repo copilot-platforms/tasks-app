@@ -1,7 +1,7 @@
 {
   "individualClients": 1000,
   "companies": 20,
-  "companyClients": 1000,
+  "companyClients": 200,
 
   "countsToAssign": {
     "individualClients": 196,
