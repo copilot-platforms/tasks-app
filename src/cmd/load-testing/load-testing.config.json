@@ -1,8 +1,10 @@
 {
+  "individualClients": 2,
   "companies": 2,
-  "clients": {
-    "individual": 5,
-    "company": 3
-  },
-  "tasks": 10
+  "companyClients": 2,
+  "countsToAssign": {
+    "individualClients": 980,
+    "companies": 20,
+    "companyClients": 1000
+  }
 }
