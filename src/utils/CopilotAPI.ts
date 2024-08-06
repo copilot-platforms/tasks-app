@@ -95,6 +95,10 @@ export class CopilotAPI {
     return ClientResponseSchema.parse(await this.copilot.updateClient({ id, requestBody }))
   }
 
+  async deleteClient(id: string) {
+    return await this.copilot.deleteClient({ id })
+  }
+
   async createCompany(requestBody: CompanyCreateRequest) {
     return CompanyResponseSchema.parse(await this.copilot.createCompany({ requestBody }))
   }

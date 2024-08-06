@@ -13,19 +13,18 @@ import LoadTester from '@cmd/load-testing/load-testing.service'
 */
 export const run = async () => {
   const loadTester = new LoadTester()
-  const individualClients = await loadTester.seedClients(config.individualClients)
-  const { companies, clients: companyClients } = await loadTester.seedCompanyClients(config.companies, config.companyClients)
 
+  const individualClients = await loadTester.seedClients(config.individualClients)
   await loadTester.seedClientTasks(
     individualClients.slice(0, config.countsToAssign.individualClients),
     config.taskPerAssigneeType.individualClients,
   )
 
+  const { companies, clients: companyClients } = await loadTester.seedCompanyClients(config.companies, config.companyClients)
   await loadTester.seedCompanyTasks(
     companies.slice(0, config.countsToAssign.companies),
     config.taskPerAssigneeType.companies,
   )
-
   await loadTester.seedClientTasks(
     companyClients.slice(0, config.countsToAssign.companyClients),
     config.taskPerAssigneeType.companyClients,

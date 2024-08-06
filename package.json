@@ -26,7 +26,8 @@
     "lint-staged": "npx lint-staged",
     "postinstall": "prisma generate",
     "test": "jest",
-    "loadtest": "tsx ./src/cmd/load-testing"
+    "loadtest": "tsx ./src/cmd/load-testing",
+    "loadtest:delete-clients": "tsx ./src/cmd/load-testing/deleteClients.ts"
   },
   "dependencies": {
     "@emotion/react": "^11.11.3",
