@@ -126,6 +126,9 @@ export const TaskEditor = ({
             color: (theme) => theme.color.gray[600],
             fontWeight: 500,
           },
+          '& .MuiInputBase-input.Mui-disabled': {
+            WebkitTextFillColor: (theme) => theme.color.gray[600],
+          },
           '& .MuiInputBase-root': {
             padding: '0px 0px',
           },
