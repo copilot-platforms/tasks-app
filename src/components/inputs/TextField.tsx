@@ -31,12 +31,17 @@ export const StyledTextField = styled(TextField, {
     '&.MuiTextField-root': {
       backgroundColor: '#fff',
     },
+
     input: {
       '&::placeholder': {
         opacity: 1,
         fontSize: '12px',
       },
       fontSize: '12px',
+    },
+    '& .MuiFormHelperText-root': {
+      textAlign: 'right',
+      marginRight: 0,
     },
   }),
 )
