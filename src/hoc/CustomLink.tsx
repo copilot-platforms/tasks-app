@@ -1,5 +1,6 @@
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { CSSProperties, ReactNode, useCallback } from 'react'
+import { CSSProperties, ReactNode, useCallback, useState } from 'react'
 import { UrlObject } from 'url'
 import { z } from 'zod'
 
@@ -42,13 +43,16 @@ export const CustomLink = ({
 
   const { pathname, token } = getUrl()
 
+  const [shouldPrefetch, setShouldPrefetch] = useState(false)
+
   const handleMouseEnter = useCallback(() => {
-    router.prefetch(`${pathname}?token=${token}`)
+    // router.prefetch(`${pathname}?token=${token}`)
+    setShouldPrefetch(true)
   }, [href])
 
   return (
-    <div onMouseEnter={handleMouseEnter} onClick={() => router.push(`${pathname}?token=${token}`)} style={style}>
+    <Link href={`${pathname}?token=${token}`} onMouseEnter={handleMouseEnter} style={style} prefetch={shouldPrefetch}>
       {children}
-    </div>
+    </Link>
   )
 }

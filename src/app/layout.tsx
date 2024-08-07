@@ -8,6 +8,7 @@ import ThemeRegistry from './ThemeRegistry'
 import { ProviderWrapper } from '@/redux/ProviderWrapper'
 import './tapwrite.css'
 import { InterrupCmdK } from '@/hoc/Interrupt_CmdK'
+import { ProgressLoad } from '@/hoc/ProgressLoader'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -20,6 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className={inter.className}>
+        <ProgressLoad />
         <InterrupCmdK>
           <ProviderWrapper>
             <ThemeRegistry options={{ key: 'mui' }}>{children}</ThemeRegistry>
