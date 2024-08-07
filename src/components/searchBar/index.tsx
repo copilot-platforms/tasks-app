@@ -44,8 +44,8 @@ const SearchBar = ({ value, getSearchKeyword, onClear }: ISearchBar) => {
       sx={{
         width: {
           md: focused || fieldValue ? '220px' : '90px',
-          sd: focused ? '90px' : '30px',
-          xs: focused ? '100px' : '30px',
+          sd: focused || fieldValue ? '90px' : '32px',
+          xs: focused || fieldValue ? '100px' : '32px',
         },
         transition: 'width 0.5s',
         '& .MuiOutlinedInput-input': {
@@ -60,6 +60,8 @@ const SearchBar = ({ value, getSearchKeyword, onClear }: ISearchBar) => {
             position="start"
             sx={{
               cursor: 'default',
+
+              marginLeft: { xs: '2px', md: '0px' },
             }}
           >
             <SearchIcon onClick={handleIconClick} />
