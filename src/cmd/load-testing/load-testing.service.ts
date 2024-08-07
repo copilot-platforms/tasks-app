@@ -95,6 +95,7 @@ class LoadTester {
       const workflowStates = await this.db.workflowState.findMany({
         where: {
           type: { not: 'completed' },
+          workspaceId: currentUser.workspaceId,
         },
         select: { id: true, type: true },
       })
@@ -121,8 +122,8 @@ class LoadTester {
     return await Promise.all(seedPromises)
   }
 
-  private seedTasksFactory = (assigneeType: TaskableAssigneeType) => (users: Taskable[], num: number) =>
-    this.seedTasks(users, assigneeType, num)
+  private seedTasksFactory = (assigneeType: TaskableAssigneeType) => async (users: Taskable[], num: number) =>
+    await this.seedTasks(users, assigneeType, num)
 
   seedClientTasks = this.seedTasksFactory(AssigneeType.client)
   seedCompanyTasks = this.seedTasksFactory(AssigneeType.company)
