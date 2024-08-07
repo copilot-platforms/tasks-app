@@ -28,7 +28,7 @@ export const TertiaryBtn = ({
           border: enableBackground || outlined ? 'none' : `1px solid ${theme.color.borders.border}`,
         },
 
-        padding: { xs: '4px 9px', md: '4px 16px' },
+        padding: '2px 6px',
         cursor: 'pointer',
       })}
       onClick={handleClick}
