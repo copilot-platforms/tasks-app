@@ -237,6 +237,10 @@ export default function Selector({
                   handleInputChange?.(e.target.value)
                   setInputStatusValue(e.target.value)
                 }}
+                onBlur={() => {
+                  setInputStatusValue('')
+                  handleInputChange?.('')
+                }}
               />
             )
           }}
