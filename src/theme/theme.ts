@@ -187,8 +187,8 @@ export const theme = createTheme({
     MuiAutocomplete: {
       styleOverrides: {
         option: {
-          height: '32px !important',
-          minHeight: '32px !important', //minHeight required here because in selector component, props className MuiAutocomplete-options overrides by applying minWidth : 48px in smaller screens
+          height: '32px',
+          minHeight: '32px', //minHeight required here because in selector component, props className MuiAutocomplete-options overrides by applying minWidth : 48px in smaller screens
         },
       },
     },
