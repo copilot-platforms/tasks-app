@@ -104,7 +104,7 @@ class LoadTester {
         const title = faker.music.songName()
         console.info(`Seeding task "${title}" for ${assigneeType} with ID ${user.id}`)
         data.push({
-          title: faker.music.songName(),
+          title,
           body: faker.lorem.paragraph({ min: 1, max: 10 }),
           createdById: z.string().parse(currentUser.internalUserId),
           workflowStateId: workflowStates[Math.floor(Math.random() * workflowStates.length)].id,
