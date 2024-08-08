@@ -43,6 +43,7 @@ interface Prop {
   filterOption?: any
   onClick?: () => void
   error?: boolean
+  endIcon?: ReactNode
 }
 
 export default function Selector({
@@ -65,6 +66,7 @@ export default function Selector({
   filterOption,
   onClick,
   error,
+  endIcon,
 }: Prop) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
@@ -164,6 +166,7 @@ export default function Selector({
               padding={padding}
               height={buttonHeight}
               error={error}
+              endIcon={endIcon}
             />
             {error && <StyledHelperText> Required</StyledHelperText>}
           </>
@@ -356,6 +359,7 @@ const SelectorButton = ({
   disabled,
   height,
   error,
+  endIcon,
 }: {
   startIcon?: ReactNode
   buttonContent: ReactNode
@@ -366,11 +370,13 @@ const SelectorButton = ({
   disabled?: boolean
   height?: string
   error?: boolean
+  endIcon?: ReactNode
 }) => {
   return (
     <Button
       variant="outlined"
       startIcon={startIcon ? startIcon : null}
+      endIcon={endIcon ? endIcon : null}
       sx={(theme) => ({
         textTransform: 'none',
         border:
@@ -381,6 +387,7 @@ const SelectorButton = ({
               : `1px solid ${theme.color.borders.border}`,
         bgcolor: enableBackground ? theme.color.gray[150] : '',
         '&:hover': {
+          bgcolor: theme.color.base.white,
           border:
             enableBackground || outlined
               ? 'none'
