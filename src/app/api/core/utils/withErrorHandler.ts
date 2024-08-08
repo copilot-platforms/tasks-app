@@ -36,6 +36,7 @@ export const withErrorHandler = (handler: RequestHandler): RequestHandler => {
       // Default staus and message for JSON error response
       let status: number = httpStatus.BAD_REQUEST
       let message: string | ZodIssue[] = 'Something went wrong'
+      let errors: unknown[] | undefined = undefined
 
       // Build a proper response based on the type of Error encountered
       if (error instanceof ZodError) {
@@ -47,6 +48,7 @@ export const withErrorHandler = (handler: RequestHandler): RequestHandler => {
       } else if (error instanceof APIError) {
         status = error.status
         message = error.message || message
+        errors = error.errors
       } else if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2025') {
           // Code for NOT FOUND in Prisma
@@ -55,7 +57,7 @@ export const withErrorHandler = (handler: RequestHandler): RequestHandler => {
         }
       }
 
-      return NextResponse.json({ error: message }, { status })
+      return NextResponse.json({ error: message, errors }, { status })
     }
   }
 }
