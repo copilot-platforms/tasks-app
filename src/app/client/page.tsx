@@ -5,7 +5,6 @@ import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import { IAssignee } from '@/types/interfaces'
 import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
 import { ClientTaskBoard } from './ui/ClientTaskBoard'
-import { completeTask } from '@/app/client/actions'
 import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 
 async function getAssigneeList(token: string): Promise<IAssignee> {
@@ -24,12 +23,7 @@ export default async function ClientPage({ searchParams }: { searchParams: { tok
   return (
     <>
       <ClientSideStateUpdate assignee={assignee}>
-        <ClientTaskBoard
-          completeTask={async (taskId) => {
-            'use server'
-            completeTask({ token, taskId })
-          }}
-        />
+        <ClientTaskBoard />
       </ClientSideStateUpdate>
     </>
   )

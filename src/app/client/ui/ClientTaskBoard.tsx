@@ -13,8 +13,10 @@ import { UserType } from '@/types/interfaces'
 import { Header } from '@/components/layouts/Header'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { useMemo } from 'react'
+import { completeTask } from '../actions'
+import { z } from 'zod'
 
-export const ClientTaskBoard = ({ completeTask }: { completeTask: (taskId: string) => void }) => {
+export const ClientTaskBoard = () => {
   const { workflowStates, tasks, token } = useSelector(selectTaskBoard)
   const { tokenPayload } = useSelector(selectAuthDetails)
 
@@ -58,7 +60,7 @@ export const ClientTaskBoard = ({ completeTask }: { completeTask: (taskId: strin
                     href={{ pathname: `/detail/${task.id}/cu`, query: { token } }}
                     key={task.id}
                     markdoneFlag={list.type == StateType.completed}
-                    handleMarkDone={() => {
+                    handleMarkDone={async () => {
                       if (completedTypeWorkflowState?.id) {
                         store.dispatch(
                           updateWorkflowStateIdByTaskId({
@@ -66,7 +68,7 @@ export const ClientTaskBoard = ({ completeTask }: { completeTask: (taskId: strin
                             targetWorkflowStateId: completedTypeWorkflowState?.id,
                           }),
                         )
-                        completeTask(task.id)
+                        await completeTask({ token: z.string().parse(token), taskId: task.id })
                       }
                     }}
                   />
