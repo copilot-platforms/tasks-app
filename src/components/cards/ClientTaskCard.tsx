@@ -85,13 +85,17 @@ export const ClientTaskCard = ({
             direction="row"
             alignItems="flex-start"
             columnGap={{ xs: '12px', sm: '32px' }}
+            rowGap={{ xs: '12px', sm: '32px' }}
             justifyContent={{ xs: 'space-between', sm: 'none' }}
             sx={{
               padding: '6px 0px',
-              width: { xs: '100%', sm: 'auto' },
+              '@media (max-width: 335px)': {
+                flexWrap: 'wrap',
+                height: 'auto',
+              },
             }}
           >
-            <Stack direction="row" alignItems="center" minWidth="fit-content" columnGap={{ xs: '12px', sm: '20px' }}>
+            <Stack direction="row" alignItems="center" columnGap={{ xs: '12px', sm: '20px' }}>
               {task.dueDate && (
                 <Box
                   sx={{
@@ -112,7 +116,7 @@ export const ClientTaskCard = ({
                 alignItems="center"
                 justifyContent={'left'}
                 columnGap={'4px'}
-                sx={{ padding: '2px', width: { xs: '100px', sm: '132px' } }}
+                sx={{ padding: '2px', width: { xs: 'auto', sm: '132px' } }}
               >
                 <CopilotAvatar currentAssignee={currentAssignee as IAssigneeCombined} />
 
@@ -124,12 +128,20 @@ export const ClientTaskCard = ({
                     overflow: 'hidden',
                     fontSize: '12px',
                     color: (theme) => theme.color.gray[500],
+
+                    '@media (max-width: 400px)': {
+                      maxWidth: task.dueDate ? '80px' : '150px',
+                    },
+                    '@media (min-width: 400px) and (max-width: 500px)': {
+                      maxWidth: task.dueDate ? '120px' : '220px',
+                    },
+                    '@media (min-width: 500px) and (max-width: 600px)': {
+                      maxWidth: task.dueDate ? '200px' : '300px',
+                    },
                   }}
                   title={getAssigneeName(currentAssignee)}
                 >
-                  {getAssigneeName(currentAssignee) == 'Apple'
-                    ? 'asdhaskdhjlkasdhkasdgkjashdlasd'
-                    : getAssigneeName(currentAssignee)}
+                  {getAssigneeName(currentAssignee)}
                 </Typography>
               </Stack>
             </Stack>
