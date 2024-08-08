@@ -7,7 +7,7 @@ dotenv.config()
 const run = async () => {
   if (process.env.VERCEL_ENV === 'production') {
     console.error("It's a bad idea to run this in prod.")
-    return
+    process.exit(1)
   }
 
   const token = z.string().parse(process.env.LOAD_TESTING_COPILOT_TOKEN)

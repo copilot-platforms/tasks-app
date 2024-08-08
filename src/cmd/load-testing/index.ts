@@ -14,7 +14,7 @@ import LoadTester from '@cmd/load-testing/load-testing.service'
 export const run = async () => {
   if (process.env.VERCEL_ENV === 'production') {
     console.error("It's a bad idea to run this in prod")
-    return
+    process.exit(1)
   }
 
   const loadTester = new LoadTester()
