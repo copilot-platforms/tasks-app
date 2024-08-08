@@ -128,171 +128,159 @@ export default async function TaskDetailPage({
   const { task_id } = params
   const copilotClient = new CopilotAPI(token)
 
-  const [workflowStates, task, assignee, attachments, activities, tokenPayload, tasks] = await Promise.all([
-    getAllWorkflowStates(token),
+  const [task, attachments, activities] = await Promise.all([
     getOneTask(token, task_id),
-    addTypeToAssignee(await getAssigneeList(token, params.user_type)),
     getAttachments(token, task_id),
     getActivities(token, task_id),
-    copilotClient.getTokenPayload(),
-    getAllTasks(token),
   ])
 
   // Basic validation
-  if (!tokenPayload) {
-    throw new Error('Token cannot be found')
-  }
-  redirectIfResourceNotFound(searchParams, task, !!tokenPayload.internalUserId)
+  // if (!tokenPayload) {
+  //   throw new Error('Token cannot be found')
+  // }
 
-  const AssigneeSuggestions = assignee.map((item) => ({
-    id: item.id,
-    label: item?.name ?? `${item.givenName} ${item.familyName}`,
-  }))
+  redirectIfResourceNotFound(searchParams, task, params.user_type === UserType.INTERNAL_USER)
+
+  // const AssigneeSuggestions = assignee.map((item) => ({
+  //   id: item.id,
+  //   label: item?.name ?? `${item.givenName} ${item.familyName}`,
+  // }))
 
   return (
-    <ClientSideStateUpdate
-      token={token}
-      assignee={assignee}
-      tokenPayload={tokenPayload}
-      assigneeSuggestions={AssigneeSuggestions}
-      tasks={tasks}
-      workflowStates={workflowStates}
-    >
-      <RealTime>
-        <EscapeHandler />
-        <Stack direction="row" sx={{ height: '100vh' }}>
-          <ToggleController>
-            <StyledBox>
-              <AppMargin size={SizeofAppMargin.LARGE} py="16px">
-                <Stack direction="row" justifyContent="space-between">
-                  <Stack direction="row" alignItems="center" columnGap={3}>
-                    <Link href={params.user_type === UserType.INTERNAL_USER ? `/?token=${token}` : `/client?token=${token}`}>
-                      <SecondaryBtn
-                        buttonContent={
-                          <StyledTypography variant="sm" lineHeight={'21px'}>
-                            Tasks
-                          </StyledTypography>
-                        }
-                        variant="breadcrumb"
-                      />
-                    </Link>
-                    <StyledKeyboardIcon />
-                    <Typography variant="sm">{task?.label}</Typography>
-                  </Stack>
-                  <Stack direction="row" alignItems="center" columnGap="8px">
-                    {params.user_type === UserType.INTERNAL_USER && <MenuBoxContainer />}
-                    <ToggleButtonContainer />
+    <>
+      <EscapeHandler />
+      <Stack direction="row" sx={{ height: '100vh' }}>
+        <ToggleController>
+          <StyledBox>
+            <AppMargin size={SizeofAppMargin.LARGE} py="16px">
+              <Stack direction="row" justifyContent="space-between">
+                <Stack direction="row" alignItems="center" columnGap={3}>
+                  <Link href={params.user_type === UserType.INTERNAL_USER ? `/?token=${token}` : `/client?token=${token}`}>
+                    <SecondaryBtn
+                      buttonContent={
+                        <StyledTypography variant="sm" lineHeight={'21px'}>
+                          Tasks
+                        </StyledTypography>
+                      }
+                      variant="breadcrumb"
+                    />
+                  </Link>
+                  <StyledKeyboardIcon />
+                  <Typography variant="sm">{task?.label}</Typography>
+                </Stack>
+                <Stack direction="row" alignItems="center" columnGap="8px">
+                  {params.user_type === UserType.INTERNAL_USER && <MenuBoxContainer />}
+                  <ToggleButtonContainer />
+                </Stack>
+              </Stack>
+            </AppMargin>
+          </StyledBox>
+          <CustomScrollbar style={{ width: '8px' }}>
+            <StyledTiptapDescriptionWrapper>
+              <AppMargin size={SizeofAppMargin.LARGE} py="30px">
+                <TaskEditor
+                  attachment={attachments}
+                  task_id={task_id}
+                  isEditable={params.user_type === UserType.INTERNAL_USER}
+                  updateTaskDetail={async (detail) => {
+                    'use server'
+                    await updateTaskDetail({ token, taskId: task_id, payload: { body: detail } })
+                  }}
+                  updateTaskTitle={async (title) => {
+                    'use server'
+                    await updateTaskDetail({ token, taskId: task_id, payload: { title } })
+                  }}
+                  deleteTask={async () => {
+                    'use server'
+                    await deleteTask(token, task_id)
+                  }}
+                  postAttachment={async (postAttachmentPayload) => {
+                    'use server'
+                    await postAttachment(token, postAttachmentPayload)
+                  }}
+                  deleteAttachment={async (id: string) => {
+                    'use server'
+                    await deleteAttachment(token, id)
+                  }}
+                  getSignedUrlUpload={async (fileName: string) => {
+                    'use server'
+                    const data = await getSignedUrlUpload(token, fileName)
+                    return data
+                  }}
+                  userType={params.user_type}
+                />
+              </AppMargin>
+            </StyledTiptapDescriptionWrapper>
+            {advancedFeatureFlag && (
+              <AppMargin size={SizeofAppMargin.LARGE} py="18.5px">
+                <Stack direction="column" alignItems="left" p="10px 5px" rowGap={5}>
+                  <Typography variant="xl">Activity</Typography>
+                  <Stack direction="column" alignItems="left" p="10px 5px" rowGap={4}>
+                    {activities?.map((item: LogResponse, index: number) => {
+                      return (
+                        <Box
+                          sx={{
+                            height: 'auto',
+                            display: 'block',
+                          }}
+                          key={item.id}
+                        >
+                          {item.type == ActivityType.COMMENT_ADDED ? (
+                            <Comments
+                              comment={item}
+                              createComment={async (postCommentPayload: CreateComment) => {
+                                'use server'
+                                await postComment(token, postCommentPayload)
+                              }}
+                              deleteComment={async (id: string) => {
+                                'use server'
+                                await deleteComment(token, id)
+                              }}
+                              task_id={task_id}
+                            />
+                          ) : (
+                            <ActivityLog log={item} />
+                          )}
+                        </Box>
+                      )
+                    })}
+
+                    <CommentInput
+                      createComment={async (postCommentPayload: CreateComment) => {
+                        'use server'
+                        await postComment(token, postCommentPayload)
+                      }}
+                      task_id={task_id}
+                    />
                   </Stack>
                 </Stack>
               </AppMargin>
-            </StyledBox>
-            <CustomScrollbar style={{ width: '8px' }}>
-              <StyledTiptapDescriptionWrapper>
-                <AppMargin size={SizeofAppMargin.LARGE} py="30px">
-                  <TaskEditor
-                    attachment={attachments}
-                    task_id={task_id}
-                    isEditable={params.user_type === UserType.INTERNAL_USER}
-                    updateTaskDetail={async (detail) => {
-                      'use server'
-                      await updateTaskDetail({ token, taskId: task_id, payload: { body: detail } })
-                    }}
-                    updateTaskTitle={async (title) => {
-                      'use server'
-                      await updateTaskDetail({ token, taskId: task_id, payload: { title } })
-                    }}
-                    deleteTask={async () => {
-                      'use server'
-                      await deleteTask(token, task_id)
-                    }}
-                    postAttachment={async (postAttachmentPayload) => {
-                      'use server'
-                      await postAttachment(token, postAttachmentPayload)
-                    }}
-                    deleteAttachment={async (id: string) => {
-                      'use server'
-                      await deleteAttachment(token, id)
-                    }}
-                    getSignedUrlUpload={async (fileName: string) => {
-                      'use server'
-                      const data = await getSignedUrlUpload(token, fileName)
-                      return data
-                    }}
-                    userType={params.user_type}
-                  />
-                </AppMargin>
-              </StyledTiptapDescriptionWrapper>
-              {advancedFeatureFlag && (
-                <AppMargin size={SizeofAppMargin.LARGE} py="18.5px">
-                  <Stack direction="column" alignItems="left" p="10px 5px" rowGap={5}>
-                    <Typography variant="xl">Activity</Typography>
-                    <Stack direction="column" alignItems="left" p="10px 5px" rowGap={4}>
-                      {activities?.map((item: LogResponse, index: number) => {
-                        return (
-                          <Box
-                            sx={{
-                              height: 'auto',
-                              display: 'block',
-                            }}
-                            key={item.id}
-                          >
-                            {item.type == ActivityType.COMMENT_ADDED ? (
-                              <Comments
-                                comment={item}
-                                createComment={async (postCommentPayload: CreateComment) => {
-                                  'use server'
-                                  await postComment(token, postCommentPayload)
-                                }}
-                                deleteComment={async (id: string) => {
-                                  'use server'
-                                  await deleteComment(token, id)
-                                }}
-                                task_id={task_id}
-                              />
-                            ) : (
-                              <ActivityLog log={item} />
-                            )}
-                          </Box>
-                        )
-                      })}
-
-                      <CommentInput
-                        createComment={async (postCommentPayload: CreateComment) => {
-                          'use server'
-                          await postComment(token, postCommentPayload)
-                        }}
-                        task_id={task_id}
-                      />
-                    </Stack>
-                  </Stack>
-                </AppMargin>
-              )}
-            </CustomScrollbar>
-          </ToggleController>
-          <Box>
-            <Sidebar
-              task_id={task_id}
-              selectedAssigneeId={task?.assigneeId}
-              selectedWorkflowState={task?.workflowState}
-              updateWorkflowState={async (workflowState) => {
-                'use server'
-                params.user_type === UserType.CLIENT_USER
-                  ? await clientUpdateTask(token, task_id, workflowState.id)
-                  : await updateWorkflowStateIdOfTask(token, task_id, workflowState?.id)
-              }}
-              updateAssignee={async (assigneeType, assigneeId) => {
-                'use server'
-                await updateAssignee(token, task_id, assigneeType, assigneeId)
-              }}
-              updateTask={async (payload) => {
-                'use server'
-                await updateTaskDetail({ token, taskId: task_id, payload })
-              }}
-              disabled={params.user_type === UserType.CLIENT_USER}
-            />
-          </Box>
-        </Stack>
-      </RealTime>
-    </ClientSideStateUpdate>
+            )}
+          </CustomScrollbar>
+        </ToggleController>
+        <Box>
+          <Sidebar
+            task_id={task_id}
+            selectedAssigneeId={task?.assigneeId}
+            selectedWorkflowState={task?.workflowState}
+            updateWorkflowState={async (workflowState) => {
+              'use server'
+              params.user_type === UserType.CLIENT_USER
+                ? await clientUpdateTask(token, task_id, workflowState.id)
+                : await updateWorkflowStateIdOfTask(token, task_id, workflowState?.id)
+            }}
+            updateAssignee={async (assigneeType, assigneeId) => {
+              'use server'
+              await updateAssignee(token, task_id, assigneeType, assigneeId)
+            }}
+            updateTask={async (payload) => {
+              'use server'
+              await updateTaskDetail({ token, taskId: task_id, payload })
+            }}
+            disabled={params.user_type === UserType.CLIENT_USER}
+          />
+        </Box>
+      </Stack>
+    </>
   )
 }
