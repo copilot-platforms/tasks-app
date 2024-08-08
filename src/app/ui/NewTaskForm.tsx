@@ -398,10 +398,14 @@ const NewTaskFooter = ({
             />
             <PrimaryBtn
               handleClick={() => {
-                !title && store.dispatch(setErrors({ key: CreateTaskErrors.TITLE, value: true }))
-                !assigneeId && store.dispatch(setErrors({ key: CreateTaskErrors.ASSIGNEE, value: true }))
-
-                handleCreate()
+                const hasTitleError = !title.trim()
+                const hasAssigneeError = !assigneeId
+                if (hasTitleError || hasAssigneeError) {
+                  hasTitleError && store.dispatch(setErrors({ key: CreateTaskErrors.TITLE, value: true }))
+                  hasAssigneeError && store.dispatch(setErrors({ key: CreateTaskErrors.ASSIGNEE, value: true }))
+                } else {
+                  handleCreate()
+                }
               }}
               buttonText="Create"
             />
