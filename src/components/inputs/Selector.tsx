@@ -187,7 +187,6 @@ export default function Selector({
           openOnFocus
           onKeyDown={handleKeyDown}
           ListboxProps={{ sx: { maxHeight: { xs: '175px', sm: '291px' } } }}
-          autoHighlight
           options={extraOption ? [extraOption, ...options] : options}
           value={value}
           onChange={(_, newValue: unknown) => {
@@ -320,21 +319,22 @@ const StatusSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTMLL
 }
 const AssigneeSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTMLLIElement>; option: unknown }) => {
   const assignee = option as IAssigneeCombined
+
   return (
     <Box
       component="li"
       {...props}
-      sx={{
+      sx={(theme) => ({
         overflow: 'hidden',
         textOverflow: 'ellipsis',
         whiteSpace: 'nowrap',
-        '&.MuiAutocomplete-option[aria-selected="true"]': {
-          bgcolor: (theme) => theme.color.gray[100],
-        },
         '&.MuiAutocomplete-option[aria-selected="true"].Mui-focused': {
-          bgcolor: (theme) => theme.color.gray[100],
+          bgcolor: theme.color.gray[150],
         },
-      }}
+        '&.MuiAutocomplete-option.Mui-focused': {
+          bgcolor: theme.color.gray[150],
+        },
+      })}
     >
       <Stack direction="row" alignItems="center" columnGap={3}>
         <CopilotAvatar currentAssignee={assignee} />
