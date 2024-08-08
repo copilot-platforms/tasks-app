@@ -16,7 +16,7 @@ export const handleWebhookEvent = async (req: NextRequest) => {
 
   const webhookEvent = WebhookSchema.safeParse(await req.json())
   if (!webhookEvent.success) {
-    throw new APIError(httpStatus.UNPROCESSABLE_ENTITY, JSON.stringify(webhookEvent.error.issues))
+    throw new APIError(httpStatus.UNPROCESSABLE_ENTITY, 'Failed to parse webhook event', webhookEvent.error.issues)
   }
 
   const eventType = webhookEvent.data.eventType as HANDLEABLE_EVENTS
