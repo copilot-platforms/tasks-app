@@ -12,6 +12,11 @@ import LoadTester from '@cmd/load-testing/load-testing.service'
       - 2000 tasks
 */
 export const run = async () => {
+  if (process.env.VERCEL_ENV === 'production') {
+    console.error("It's a bad idea to run this in prod")
+    return
+  }
+
   const loadTester = new LoadTester()
 
   const individualClients = await loadTester.seedClients(config.individualClients)

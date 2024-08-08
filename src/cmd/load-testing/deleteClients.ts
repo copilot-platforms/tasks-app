@@ -5,6 +5,11 @@ import { z } from 'zod'
 dotenv.config()
 
 const run = async () => {
+  if (process.env.VERCEL_ENV === 'production') {
+    console.error("It's a bad idea to run this in prod.")
+    return
+  }
+
   const token = z.string().parse(process.env.LOAD_TESTING_COPILOT_TOKEN)
   const apiKey = z.string().parse(process.env.COPILOT_API_KEY)
   const copilot = new CopilotAPI(token, apiKey)
