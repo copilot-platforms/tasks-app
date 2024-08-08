@@ -8,7 +8,7 @@ export const ProgressLoad = () => {
       <ProgressLoader
         color="#212B36"
         crawlSpeed={100}
-        height={5}
+        height={4}
         template='<div class="bar" role="bar"><div class="peg"></div></div>'
       />
     </Suspense>
