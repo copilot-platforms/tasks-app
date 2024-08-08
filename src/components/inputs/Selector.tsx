@@ -212,7 +212,15 @@ export default function Selector({
             ) : (
               <Box key={params.key} component="li">
                 <Stack direction="row" alignItems="center" columnGap={2}>
-                  <Typography variant={'sm'} sx={{ color: (theme) => theme.color.gray[500], marginLeft: '10px' }} p={1}>
+                  <Typography
+                    variant={'sm'}
+                    sx={{
+                      color: (theme) => theme.color.gray[500],
+                      marginLeft: '18px',
+                      padding: '2px 0px',
+                      lineHeight: '24px',
+                    }}
+                  >
                     {params.group}
                   </Typography>
                 </Stack>

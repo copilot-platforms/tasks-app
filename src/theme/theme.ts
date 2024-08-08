@@ -183,4 +183,17 @@ export const theme = createTheme({
       lineHeight: '18px',
     },
   },
+  components: {
+    MuiAutocomplete: {
+      styleOverrides: {
+        option: {
+          '&[aria-selected="true"]': {
+            backgroundColor: '#e3abed',
+          },
+          height: '32px !important',
+          minHeight: '32px !important',
+        },
+      },
+    },
+  },
 })
