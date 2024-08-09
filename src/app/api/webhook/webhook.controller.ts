@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import authenticate from '@api/core/utils/authenticate'
-import WebhookService from './webhook.service'
+import WebhookService from '@api/webhook/webhook.service'
 
 export const handleWebhookEvent = async (req: NextRequest) => {
   const user = await authenticate(req)
