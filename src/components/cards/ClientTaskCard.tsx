@@ -14,6 +14,7 @@ import { DueDateLayout } from '@/components/layouts/DueDateLayout'
 import { UrlObject } from 'url'
 import { CustomLink } from '@/hoc/CustomLink'
 import { getAssigneeName } from '@/utils/assignee'
+import { GetMaxAssigneeNameWidth } from '@/utils/getMaxAssigneeNameWidth'
 
 export const ClientTaskCard = ({
   task,
@@ -128,16 +129,7 @@ export const ClientTaskCard = ({
                     overflow: 'hidden',
                     fontSize: '12px',
                     color: (theme) => theme.color.gray[500],
-
-                    '@media (max-width: 400px)': {
-                      maxWidth: task.dueDate ? '80px' : '150px',
-                    },
-                    '@media (min-width: 400px) and (max-width: 500px)': {
-                      maxWidth: task.dueDate ? '120px' : '220px',
-                    },
-                    '@media (min-width: 500px) and (max-width: 600px)': {
-                      maxWidth: task.dueDate ? '200px' : '300px',
-                    },
+                    maxWidth: GetMaxAssigneeNameWidth(task?.dueDate),
                   }}
                   title={getAssigneeName(currentAssignee)}
                 >
