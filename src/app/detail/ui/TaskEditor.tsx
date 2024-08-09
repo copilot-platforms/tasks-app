@@ -96,6 +96,9 @@ export const TaskEditor = ({
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newTitle = e.target.value
+    if (newTitle.trim() == '') {
+      return
+    }
     setUpdateTitle(newTitle)
     setIsUserTyping(true)
     titleUpdateDebounced(newTitle)
