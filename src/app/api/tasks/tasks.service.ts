@@ -266,24 +266,20 @@ export class TasksService extends BaseService {
 
   async deleteAllAssigneeTasks(assigneeId: string, assigneeType: AssigneeType) {
     // Policies validation shouldn't be required here because token is from a webhook event
-    const referenceTask = await this.db.task.findFirst({
+    const tasks = await this.db.task.findMany({
       where: { assigneeId, assigneeType, workspaceId: this.user.workspaceId },
     })
-    if (!referenceTask) {
+    if (!tasks.length) {
       // If assignee doesn't have an associated task at all, skip logic
       return
     }
-
-    const label = await this.db.label.findFirst({
-      where: { label: referenceTask.label },
-    })
-    const labelId = z.string().parse(label?.id)
+    const labels = tasks.map((task) => task.label)
 
     await this.db.$transaction([
       this.db.task.deleteMany({
         where: { assigneeId, assigneeType, workspaceId: this.user.workspaceId },
       }),
-      this.db.label.delete({ where: { id: labelId } }),
+      this.db.label.deleteMany({ where: { label: { in: labels } } }),
     ])
   }
 
