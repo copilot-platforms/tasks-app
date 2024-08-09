@@ -1,6 +1,7 @@
 import { NoAssigneeAvatar, NoAssigneeAvatarSmall } from '@/icons'
 import { copilotTheme } from '@/theme/copilot'
 import { IAssigneeCombined } from '@/types/interfaces'
+import { getAssigneeName } from '@/utils/assignee'
 import { Avatar, SxProps } from '@mui/material'
 
 interface CopilotAvatarProps {
@@ -55,7 +56,7 @@ export const CopilotAvatar = ({
       }}
       variant={avatarVariant}
     >
-      {currentAssignee?.givenName?.[0] || currentAssignee?.familyName?.[0] || currentAssignee?.name?.[0] || '?'}
+      {getAssigneeName(currentAssignee)[0].toUpperCase()}
     </Avatar>
   )
 }
