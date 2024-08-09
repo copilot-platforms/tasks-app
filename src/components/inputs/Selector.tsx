@@ -328,6 +328,9 @@ const AssigneeSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTM
       component="li"
       {...props}
       sx={(theme) => ({
+        '&.MuiAutocomplete-option': {
+          minHeight: { xs: '32px' },
+        },
         overflow: 'hidden',
         textOverflow: 'ellipsis',
         whiteSpace: 'nowrap',
