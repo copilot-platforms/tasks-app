@@ -18,7 +18,7 @@ async function getAssigneeList(token: string): Promise<IAssignee> {
 export default async function ClientPage({ searchParams }: { searchParams: { token: string } }) {
   const token = searchParams.token
 
-  const [assignee] = await Promise.all([addTypeToAssignee(await getAssigneeList(token))])
+  const assignee = addTypeToAssignee(await getAssigneeList(token))
 
   return (
     <>

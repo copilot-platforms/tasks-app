@@ -15,6 +15,7 @@ import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { useMemo } from 'react'
 import { completeTask } from '../actions'
 import { z } from 'zod'
+import { CustomLink } from '@/hoc/CustomLink'
 
 export const ClientTaskBoard = () => {
   const { workflowStates, tasks, token } = useSelector(selectTaskBoard)
@@ -54,25 +55,27 @@ export const ClientTaskBoard = () => {
           >
             {filterTaskWithWorkflowStateId(list.id).map((task) => {
               return (
-                <Box key={task.id}>
-                  <ClientTaskCard
-                    task={task}
-                    href={{ pathname: `/detail/${task.id}/cu`, query: { token } }}
-                    key={task.id}
-                    markdoneFlag={list.type == StateType.completed}
-                    handleMarkDone={async () => {
-                      if (completedTypeWorkflowState?.id) {
-                        store.dispatch(
-                          updateWorkflowStateIdByTaskId({
-                            taskId: task.id,
-                            targetWorkflowStateId: completedTypeWorkflowState?.id,
-                          }),
-                        )
-                        await completeTask({ token: z.string().parse(token), taskId: task.id })
-                      }
-                    }}
-                  />
-                </Box>
+                <CustomLink href={{ pathname: `/detail/${task.id}/cu`, query: { token } }} style={{ width: 'fit-content' }}>
+                  <Box key={task.id}>
+                    <ClientTaskCard
+                      task={task}
+                      href={{ pathname: `/detail/${task.id}/cu`, query: { token } }}
+                      key={task.id}
+                      markdoneFlag={list.type == StateType.completed}
+                      handleMarkDone={async () => {
+                        if (completedTypeWorkflowState?.id) {
+                          store.dispatch(
+                            updateWorkflowStateIdByTaskId({
+                              taskId: task.id,
+                              targetWorkflowStateId: completedTypeWorkflowState?.id,
+                            }),
+                          )
+                          await completeTask({ token: z.string().parse(token), taskId: task.id })
+                        }
+                      }}
+                    />
+                  </Box>
+                </CustomLink>
               )
             })}
           </TaskRow>
