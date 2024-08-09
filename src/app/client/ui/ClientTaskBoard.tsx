@@ -55,7 +55,11 @@ export const ClientTaskBoard = () => {
           >
             {filterTaskWithWorkflowStateId(list.id).map((task) => {
               return (
-                <CustomLink href={{ pathname: `/detail/${task.id}/cu`, query: { token } }} style={{ width: 'fit-content' }}>
+                <CustomLink
+                  key={task.id}
+                  href={{ pathname: `/detail/${task.id}/cu`, query: { token } }}
+                  style={{ width: 'fit-content' }}
+                >
                   <Box key={task.id}>
                     <ClientTaskCard
                       task={task}
