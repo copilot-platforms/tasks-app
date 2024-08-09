@@ -166,7 +166,10 @@ export default async function TaskDetailPage({
               <AppMargin size={SizeofAppMargin.LARGE} py="16px">
                 <Stack direction="row" justifyContent="space-between">
                   <Stack direction="row" alignItems="center" columnGap={3}>
-                    <Link href={params.user_type === UserType.INTERNAL_USER ? `/?token=${token}` : `/client?token=${token}`}>
+                    <Link
+                      href={params.user_type === UserType.INTERNAL_USER ? `/?token=${token}` : `/client?token=${token}`}
+                      prefetch={true}
+                    >
                       <SecondaryBtn
                         buttonContent={
                           <StyledTypography variant="sm" lineHeight={'21px'}>
