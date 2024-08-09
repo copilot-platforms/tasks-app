@@ -17,6 +17,11 @@ export enum View {
   BOARD_VIEW = 'board',
 }
 
+export enum CreateTaskErrors {
+  TITLE = 'title',
+  ASSIGNEE = 'assignee',
+}
+
 export enum FileTypes {
   PNG = 'image/png',
   PDF = 'application/pdf',

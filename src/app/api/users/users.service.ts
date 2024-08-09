@@ -24,11 +24,12 @@ class UsersService extends BaseService {
     new PoliciesService(user).authorize(UserAction.Read, Resource.Users)
 
     const listArgs: CopilotListArgs = { limit, nextToken }
+    const maxLimitForFiltering = 10_000
 
     const [ius, clients, companies] = await Promise.all([
       this.copilot.getInternalUsers(listArgs),
-      this.copilot.getClients({ limit: 1000, nextToken }),
-      this.copilot.getCompanies({ limit: 1000, nextToken }),
+      this.copilot.getClients({ limit: maxLimitForFiltering, nextToken }),
+      this.copilot.getCompanies({ limit: maxLimitForFiltering, nextToken }),
     ])
 
     // Get current internal user as only IUs are authenticated to access this route

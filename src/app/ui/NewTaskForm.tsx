@@ -10,12 +10,13 @@ import {
   removeOneAttachment,
   selectCreateTask,
   setCreateTaskFields,
+  setErrors,
   setShowModal,
 } from '@/redux/features/createTaskSlice'
 import store from '@/redux/store'
 import { Box, Stack, Typography, styled } from '@mui/material'
 import { useEffect, useState } from 'react'
-import { FilterOptions, IAssigneeCombined, ISignedUrlUpload, ITemplate } from '@/types/interfaces'
+import { CreateTaskErrors, FilterOptions, IAssigneeCombined, ISignedUrlUpload, ITemplate } from '@/types/interfaces'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { useSelector } from 'react-redux'
 import { selectTaskBoard, setAssigneeList, setFilterOptions } from '@/redux/features/taskBoardSlice'
@@ -40,6 +41,7 @@ import { z } from 'zod'
 import { MiniLoader } from '@/components/atoms/MiniLoader'
 import { formatDate } from '@/utils/dateHelper'
 import { getAssigneeName } from '@/utils/assignee'
+import { Dispatch, SetStateAction } from 'react'
 
 const supabaseActions = new SupabaseActions()
 
@@ -50,6 +52,7 @@ export const NewTaskForm = ({
   handleCreate: () => void
   getSignedUrlUpload: (fileName: string) => Promise<ISignedUrlUpload>
 }) => {
+  const { errors } = useSelector(selectCreateTask)
   const { workflowStates, assignee, token, filterOptions } = useSelector(selectTaskBoard)
   const [filteredAssignees, setFilteredAssignees] = useState(assignee)
   const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
@@ -196,6 +199,7 @@ export const NewTaskForm = ({
             <Selector
               placeholder="Set assignee"
               getSelectedValue={(_newValue) => {
+                store.dispatch(setErrors({ key: CreateTaskErrors.ASSIGNEE, value: false }))
                 const newValue = _newValue as IAssigneeCombined
                 setTempAssignee(newValue)
                 updateAssigneeValue(newValue)
@@ -269,6 +273,7 @@ export const NewTaskForm = ({
                   {getAssigneeName(tempAssignee as IAssigneeCombined, 'Assignee')}
                 </Typography>
               }
+              error={errors.assignee}
             />
           </Stack>
           <Stack alignSelf="flex-start">
@@ -295,6 +300,7 @@ export const NewTaskForm = ({
 
 const NewTaskFormInputs = () => {
   const { title, description, attachments } = useSelector(selectCreateTask)
+  const { errors } = useSelector(selectCreateTask)
 
   return (
     <>
@@ -305,7 +311,15 @@ const NewTaskFormInputs = () => {
           padding="8px 0px"
           autoFocus={true}
           value={title}
-          onChange={(e) => store.dispatch(setCreateTaskFields({ targetField: 'title', value: e.target.value }))}
+          onChange={(e) => {
+            store.dispatch(setCreateTaskFields({ targetField: 'title', value: e.target.value }))
+            store.dispatch(setErrors({ key: CreateTaskErrors.TITLE, value: false }))
+          }}
+          error={errors.title}
+          helperText={errors.title && 'Required'}
+          inputProps={{
+            maxLength: 255,
+          }}
         />
       </Stack>
       <Stack direction="column" rowGap={1} m="16px 0px">
@@ -351,7 +365,7 @@ const NewTaskFooter = ({
   handleCreate: () => void
   getSignedUrlUpload: (fileName: string) => Promise<ISignedUrlUpload>
 }) => {
-  const { attachments } = useSelector(selectCreateTask)
+  const { attachments, title, assigneeId } = useSelector(selectCreateTask)
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     event.preventDefault()
     const files = event.target.files
@@ -382,7 +396,15 @@ const NewTaskFooter = ({
                 </Typography>
               }
             />
-            <PrimaryBtn handleClick={handleCreate} buttonText="Create" />
+            <PrimaryBtn
+              handleClick={() => {
+                !title && store.dispatch(setErrors({ key: CreateTaskErrors.TITLE, value: true }))
+                !assigneeId && store.dispatch(setErrors({ key: CreateTaskErrors.ASSIGNEE, value: true }))
+
+                handleCreate()
+              }}
+              buttonText="Create"
+            />
           </Stack>
         </Stack>
       </AppMargin>

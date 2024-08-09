@@ -52,13 +52,22 @@ export const ClientTaskCard = ({
         justifyContent="space-between"
         sx={{
           borderBottom: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
-          padding: { xs: '8px 18px', sm: '6px 40px 6px 20px' },
+          padding: { xs: '8px 20px', sm: '6px 40px 6px 20px' },
         }}
       >
-        <Stack direction="column">
+        <Stack
+          direction="column"
+          sx={{
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            display: 'felx',
+            wordBreak: 'break-all',
+          }}
+        >
           <Typography variant="sm" sx={{ fontSize: '13px', lineHeight: '21px' }}>
             {task?.title}
           </Typography>
+
           <Box
             sx={{
               overflow: 'hidden',
