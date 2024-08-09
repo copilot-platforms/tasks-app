@@ -43,6 +43,7 @@ interface Prop {
   filterOption?: any
   onClick?: () => void
   error?: boolean
+  endIcon?: ReactNode
 }
 
 export default function Selector({
@@ -65,6 +66,7 @@ export default function Selector({
   filterOption,
   onClick,
   error,
+  endIcon,
 }: Prop) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
@@ -164,6 +166,7 @@ export default function Selector({
               padding={padding}
               height={buttonHeight}
               error={error}
+              endIcon={endIcon}
             />
             {error && <StyledHelperText> Required</StyledHelperText>}
           </>
@@ -187,7 +190,6 @@ export default function Selector({
           openOnFocus
           onKeyDown={handleKeyDown}
           ListboxProps={{ sx: { maxHeight: { xs: '175px', sm: '291px' } } }}
-          autoHighlight
           options={extraOption ? [extraOption, ...options] : options}
           value={value}
           onChange={(_, newValue: unknown) => {
@@ -212,7 +214,15 @@ export default function Selector({
             ) : (
               <Box key={params.key} component="li">
                 <Stack direction="row" alignItems="center" columnGap={2}>
-                  <Typography variant={'sm'} sx={{ color: (theme) => theme.color.gray[500], marginLeft: '10px' }} p={1}>
+                  <Typography
+                    variant={'sm'}
+                    sx={{
+                      color: (theme) => theme.color.gray[500],
+                      marginLeft: '18px',
+                      padding: '2px 0px',
+                      lineHeight: '24px',
+                    }}
+                  >
                     {params.group}
                   </Typography>
                 </Stack>
@@ -236,6 +246,10 @@ export default function Selector({
                 onChange={(e) => {
                   handleInputChange?.(e.target.value)
                   setInputStatusValue(e.target.value)
+                }}
+                onBlur={() => {
+                  setInputStatusValue('')
+                  handleInputChange?.('')
                 }}
               />
             )
@@ -308,21 +322,25 @@ const StatusSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTMLL
 }
 const AssigneeSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTMLLIElement>; option: unknown }) => {
   const assignee = option as IAssigneeCombined
+
   return (
     <Box
       component="li"
       {...props}
-      sx={{
+      sx={(theme) => ({
+        '&.MuiAutocomplete-option': {
+          minHeight: { xs: '32px' },
+        },
         overflow: 'hidden',
         textOverflow: 'ellipsis',
         whiteSpace: 'nowrap',
-        '&.MuiAutocomplete-option[aria-selected="true"]': {
-          bgcolor: (theme) => theme.color.gray[100],
-        },
         '&.MuiAutocomplete-option[aria-selected="true"].Mui-focused': {
-          bgcolor: (theme) => theme.color.gray[100],
+          bgcolor: theme.color.gray[150],
         },
-      }}
+        '&.MuiAutocomplete-option.Mui-focused': {
+          bgcolor: theme.color.gray[150],
+        },
+      })}
     >
       <Stack direction="row" alignItems="center" columnGap={3}>
         <CopilotAvatar currentAssignee={assignee} />
@@ -344,6 +362,7 @@ const SelectorButton = ({
   disabled,
   height,
   error,
+  endIcon,
 }: {
   startIcon?: ReactNode
   buttonContent: ReactNode
@@ -354,11 +373,13 @@ const SelectorButton = ({
   disabled?: boolean
   height?: string
   error?: boolean
+  endIcon?: ReactNode
 }) => {
   return (
     <Button
       variant="outlined"
       startIcon={startIcon ? startIcon : null}
+      endIcon={endIcon ? endIcon : null}
       sx={(theme) => ({
         textTransform: 'none',
         border:
@@ -369,6 +390,7 @@ const SelectorButton = ({
               : `1px solid ${theme.color.borders.border}`,
         bgcolor: enableBackground ? theme.color.gray[150] : '',
         '&:hover': {
+          bgcolor: theme.color.base.white,
           border:
             enableBackground || outlined
               ? 'none'

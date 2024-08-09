@@ -1,6 +1,6 @@
 'use client'
 
-import { Box, CircularProgress, Stack } from '@mui/material'
+import { Box, CircularProgress, IconButton, Stack } from '@mui/material'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { useState } from 'react'
 import store from '@/redux/store'
@@ -11,7 +11,7 @@ import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { useSelector } from 'react-redux'
 import { FilterByOptions, FilterOptions, FilterOptionsKeywords, IAssigneeCombined } from '@/types/interfaces'
-import { FilterByAsigneeIcon } from '@/icons'
+import { CrossIcon, FilterByAsigneeIcon } from '@/icons'
 import { ViewModeSelector } from '../inputs/ViewModeSelector'
 import { FilterByAssigneeBtn } from '../buttons/FilterByAssigneeBtn'
 import FilterButtonGroup from '@/components/buttonsGroup/FilterButtonsGroup'
@@ -24,6 +24,7 @@ import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { z } from 'zod'
 import { setDebouncedFilteredAssignees } from '@/utils/users'
 import { MiniLoader } from '@/components/atoms/MiniLoader'
+import { getAssigneeName } from '@/utils/getAssigneeName'
 
 export const FilterBar = ({
   updateViewModeSetting,
@@ -149,6 +150,31 @@ export const FilterBar = ({
                     handleFilterOptionsChange(FilterOptions.ASSIGNEE, newValue?.id as string)
                   }}
                   startIcon={<FilterByAsigneeIcon />}
+                  endIcon={
+                    getAssigneeName(assigneeValue) && (
+                      <IconButton
+                        aria-label="remove"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          updateAssigneeValue(null)
+                          handleFilterOptionsChange(FilterOptions.ASSIGNEE, '')
+                        }}
+                        sx={{
+                          cursor: 'default',
+                          borderRadius: 0,
+                          padding: '6px 10px 6px 6px',
+
+                          '&:hover': {
+                            bgcolor: (theme) => theme.color.gray[100],
+                          },
+                        }}
+                        disableRipple
+                        disableTouchRipple
+                      >
+                        <CrossIcon />
+                      </IconButton>
+                    )
+                  }
                   options={loading ? [] : filteredAssignee}
                   placeholder="Assignee"
                   value={assigneeValue}
@@ -172,14 +198,8 @@ export const FilterBar = ({
                       )
                     )
                   }}
-                  buttonContent={
-                    <FilterByAssigneeBtn
-                      assigneeValue={assigneeValue}
-                      updateAssigneeValue={updateAssigneeValue}
-                      handleClick={handleFilterOptionsChange}
-                    />
-                  }
-                  padding="2px 10px"
+                  buttonContent={<FilterByAssigneeBtn assigneeValue={assigneeValue} />}
+                  padding="2px 5px 2px 10px"
                   handleInputChange={async (newInputValue: string) => {
                     if (!newInputValue) {
                       setFilteredAssignee(filteredAssigneeList)
@@ -235,6 +255,31 @@ export const FilterBar = ({
                     handleFilterOptionsChange(FilterOptions.ASSIGNEE, newValue?.id as string)
                   }}
                   startIcon={<FilterByAsigneeIcon />}
+                  endIcon={
+                    getAssigneeName(assigneeValue) && (
+                      <IconButton
+                        aria-label="remove"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          updateAssigneeValue(null)
+                          handleFilterOptionsChange(FilterOptions.ASSIGNEE, '')
+                        }}
+                        sx={{
+                          cursor: 'default',
+                          borderRadius: 0,
+                          padding: '6px 10px 6px 6px',
+
+                          '&:hover': {
+                            bgcolor: (theme) => theme.color.gray[100],
+                          },
+                        }}
+                        disableRipple
+                        disableTouchRipple
+                      >
+                        <CrossIcon />
+                      </IconButton>
+                    )
+                  }
                   options={loading ? [] : filteredAssignee}
                   placeholder="Assignee"
                   value={assigneeValue}
@@ -246,26 +291,20 @@ export const FilterBar = ({
                         <>
                           {/* //****Disabling re-assignment completely for now*** */}
                           {/* <ExtraOptionRendererAssignee
-                              props={props}
-                              onClick={(e) => {
-                                updateAssigneeValue({ id: '', name: 'No assignee' })
-                                setAnchorEl(anchorEl ? null : e.currentTarget)
-                                handleFilterOptionsChange(FilterOptions.ASSIGNEE, 'No assignee')
-                              }}
-                            /> */}
+                             props={props}
+                             onClick={(e) => {
+                               updateAssigneeValue({ id: '', name: 'No assignee' })
+                               setAnchorEl(anchorEl ? null : e.currentTarget)
+                               handleFilterOptionsChange(FilterOptions.ASSIGNEE, 'No assignee')
+                             }}
+                           /> */}
                           {loading && <MiniLoader />}
                         </>
                       )
                     )
                   }}
-                  buttonContent={
-                    <FilterByAssigneeBtn
-                      assigneeValue={assigneeValue}
-                      updateAssigneeValue={updateAssigneeValue}
-                      handleClick={handleFilterOptionsChange}
-                    />
-                  }
-                  padding="2px 10px"
+                  buttonContent={<FilterByAssigneeBtn assigneeValue={assigneeValue} />}
+                  padding="2px 5px 2px 10px"
                   handleInputChange={async (newInputValue: string) => {
                     if (!newInputValue) {
                       setFilteredAssignee(filteredAssigneeList)
