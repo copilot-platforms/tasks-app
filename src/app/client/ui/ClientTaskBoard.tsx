@@ -13,8 +13,11 @@ import { UserType } from '@/types/interfaces'
 import { Header } from '@/components/layouts/Header'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { useMemo } from 'react'
+import { completeTask } from '../actions'
+import { z } from 'zod'
+import { CustomLink } from '@/hoc/CustomLink'
 
-export const ClientTaskBoard = ({ completeTask }: { completeTask: (taskId: string) => void }) => {
+export const ClientTaskBoard = () => {
   const { workflowStates, tasks, token } = useSelector(selectTaskBoard)
   const { tokenPayload } = useSelector(selectAuthDetails)
 
@@ -52,25 +55,31 @@ export const ClientTaskBoard = ({ completeTask }: { completeTask: (taskId: strin
           >
             {filterTaskWithWorkflowStateId(list.id).map((task) => {
               return (
-                <Box key={task.id}>
-                  <ClientTaskCard
-                    task={task}
-                    href={{ pathname: `/detail/${task.id}/cu`, query: { token } }}
-                    key={task.id}
-                    markdoneFlag={list.type == StateType.completed}
-                    handleMarkDone={() => {
-                      if (completedTypeWorkflowState?.id) {
-                        store.dispatch(
-                          updateWorkflowStateIdByTaskId({
-                            taskId: task.id,
-                            targetWorkflowStateId: completedTypeWorkflowState?.id,
-                          }),
-                        )
-                        completeTask(task.id)
-                      }
-                    }}
-                  />
-                </Box>
+                <CustomLink
+                  key={task.id}
+                  href={{ pathname: `/detail/${task.id}/cu`, query: { token } }}
+                  style={{ width: 'fit-content' }}
+                >
+                  <Box key={task.id}>
+                    <ClientTaskCard
+                      task={task}
+                      href={{ pathname: `/detail/${task.id}/cu`, query: { token } }}
+                      key={task.id}
+                      markdoneFlag={list.type == StateType.completed}
+                      handleMarkDone={async () => {
+                        if (completedTypeWorkflowState?.id) {
+                          store.dispatch(
+                            updateWorkflowStateIdByTaskId({
+                              taskId: task.id,
+                              targetWorkflowStateId: completedTypeWorkflowState?.id,
+                            }),
+                          )
+                          await completeTask({ token: z.string().parse(token), taskId: task.id })
+                        }
+                      }}
+                    />
+                  </Box>
+                </CustomLink>
               )
             })}
           </TaskRow>
