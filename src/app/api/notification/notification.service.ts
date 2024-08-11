@@ -191,7 +191,8 @@ export class NotificationService extends BaseService {
         actionTrigger = await getAssignedTo()
         break
       case NotificationTaskActions.CompletedForCompanyByIU:
-        companyName = (await copilot.getCompany(z.string().parse(task.assigneeId))).name
+        const company = await copilot.getCompany(z.string().parse(task.assigneeId))
+        companyName = company.name
       case NotificationTaskActions.CompletedByIU:
         senderId = z.string().parse(this.user.internalUserId)
         recipientId = task.createdById
