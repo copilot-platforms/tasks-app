@@ -328,8 +328,12 @@ export class TasksService extends BaseService {
     // --------------------------
     const notificationService = new NotificationService(this.user)
 
-    // If task has been moved back to ToDo from Completed
-    if (updatedWorkflowState?.type === StateType.unstarted && prevTask.workflowState.type === StateType.completed) {
+    // If task has been moved back to another non-completed state from Completed
+    if (
+      updatedWorkflowState &&
+      updatedWorkflowState.type !== StateType.completed &&
+      prevTask.workflowState.type === StateType.completed
+    ) {
       // We need to trigger the notification count for client again!
       await this.sendTaskCreateNotifications({ ...updatedTask, workflowState: updatedWorkflowState })
     }
