@@ -66,7 +66,9 @@ export default async function ClientPage({ searchParams }: { searchParams: { tok
         assignee={assignee}
         tokenPayload={tokenPayload}
       >
-        <ClientTaskBoard />
+        <RealTime>
+          <ClientTaskBoard />
+        </RealTime>
       </ClientSideStateUpdate>
     </>
   )

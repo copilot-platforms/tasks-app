@@ -103,20 +103,22 @@ export default async function Main({ searchParams }: { searchParams: { token: st
       tokenPayload={tokenPayload}
       templates={templates}
     >
-      <DndWrapper>
-        <TaskBoard />
-      </DndWrapper>
+      <RealTime>
+        <DndWrapper>
+          <TaskBoard />
+        </DndWrapper>
 
-      <ModalNewTaskForm
-        getSignedUrlUpload={async (fileName: string) => {
-          'use server'
-          return await getSignedUrlUpload(token, fileName)
-        }}
-        handleCreateMultipleAttachments={async (attachments: CreateAttachmentRequest[]) => {
-          'use server'
-          await createMultipleAttachments(token, attachments)
-        }}
-      />
+        <ModalNewTaskForm
+          getSignedUrlUpload={async (fileName: string) => {
+            'use server'
+            return await getSignedUrlUpload(token, fileName)
+          }}
+          handleCreateMultipleAttachments={async (attachments: CreateAttachmentRequest[]) => {
+            'use server'
+            await createMultipleAttachments(token, attachments)
+          }}
+        />
+      </RealTime>
     </ClientSideStateUpdate>
   )
 }

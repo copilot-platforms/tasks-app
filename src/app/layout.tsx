@@ -6,7 +6,6 @@ import { ProviderWrapper } from '@/redux/ProviderWrapper'
 import './tapwrite.css'
 import { InterrupCmdK } from '@/hoc/Interrupt_CmdK'
 import { ProgressLoad } from '@/hoc/ProgressLoader'
-import { RealTime } from '@/hoc/RealTime'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -22,9 +21,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <ProgressLoad />
         <InterrupCmdK>
           <ProviderWrapper>
-            <RealTime>
-              <ThemeRegistry options={{ key: 'mui' }}>{children}</ThemeRegistry>
-            </RealTime>
+            <ThemeRegistry options={{ key: 'mui' }}>{children}</ThemeRegistry>
           </ProviderWrapper>
         </InterrupCmdK>
       </body>
