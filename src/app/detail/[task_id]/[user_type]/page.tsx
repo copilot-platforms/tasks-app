@@ -15,6 +15,8 @@ import {
   StyledTypography,
 } from '@/app/detail/ui/styledComponent'
 import Link from 'next/link'
+import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
+import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import {
   clientUpdateTask,
   deleteAttachment,
@@ -36,7 +38,11 @@ import { CommentInput } from '@/components/inputs/CommentInput'
 import { LogResponse } from '@/app/api/activity-logs/schemas/LogResponseSchema'
 import { ActivityType } from '@prisma/client'
 import { CreateComment } from '@/types/dto/comment.dto'
+import { CopilotAPI } from '@/utils/CopilotAPI'
 import EscapeHandler from '@/utils/escapeHandler'
+import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
+import { RealTime } from '@/hoc/RealTime'
+import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { CustomScrollbar } from '@/hoc/CustomScrollbar'
 import { redirectIfResourceNotFound } from '@/utils/redirect'
 
@@ -48,6 +54,26 @@ async function getOneTask(token: string, taskId: string): Promise<TaskResponse> 
   const data = await res.json()
 
   return data.task
+}
+
+async function getAssigneeList(token: string, userType: UserType): Promise<IAssignee> {
+  if (userType === UserType.CLIENT_USER) {
+    const res = await fetch(`${apiUrl}/api/users/client?token=${token}&limit=${MAX_FETCH_ASSIGNEE_COUNT}`, {
+      next: { tags: ['getAssigneeList'] },
+    })
+
+    const data = await res.json()
+
+    return data.clients
+  }
+
+  const res = await fetch(`${apiUrl}/api/users?token=${token}&limit=${MAX_FETCH_ASSIGNEE_COUNT}`, {
+    next: { tags: ['getAssigneeList'] },
+  })
+
+  const data = await res.json()
+
+  return data.users
 }
 
 async function getAttachments(token: string, taskId: string): Promise<AttachmentResponseSchema[]> {
@@ -71,6 +97,26 @@ async function getActivities(token: string, taskId: string): Promise<LogResponse
   return data.data
 }
 
+async function getAllTasks(token: string): Promise<TaskResponse[]> {
+  const res = await fetch(`${apiUrl}/api/tasks?token=${token}`, {
+    next: { tags: ['getTasks'] },
+  })
+
+  const data = await res.json()
+
+  return data.tasks
+}
+
+async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
+  const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
+    next: { tags: ['getAllWorkflowStates'] },
+  })
+
+  const data = await res.json()
+
+  return data.workflowStates
+}
+
 export default async function TaskDetailPage({
   params,
   searchParams,
@@ -80,17 +126,38 @@ export default async function TaskDetailPage({
 }) {
   const { token } = searchParams
   const { task_id } = params
+  const copilotClient = new CopilotAPI(token)
 
-  const [task, attachments, activities] = await Promise.all([
+  const [workflowStates, task, assignee, attachments, activities, tokenPayload, tasks] = await Promise.all([
+    getAllWorkflowStates(token),
     getOneTask(token, task_id),
+    addTypeToAssignee(await getAssigneeList(token, params.user_type)),
     getAttachments(token, task_id),
     getActivities(token, task_id),
+    copilotClient.getTokenPayload(),
+    getAllTasks(token),
   ])
 
-  redirectIfResourceNotFound(searchParams, task, params.user_type === UserType.INTERNAL_USER)
+  // Basic validation
+  if (!tokenPayload) {
+    throw new Error('Token cannot be found')
+  }
+  redirectIfResourceNotFound(searchParams, task, !!tokenPayload.internalUserId)
+
+  const AssigneeSuggestions = assignee.map((item) => ({
+    id: item.id,
+    label: item?.name ?? `${item.givenName} ${item.familyName}`,
+  }))
 
   return (
-    <>
+    <ClientSideStateUpdate
+      token={token}
+      assignee={assignee}
+      tokenPayload={tokenPayload}
+      assigneeSuggestions={AssigneeSuggestions}
+      tasks={tasks}
+      workflowStates={workflowStates}
+    >
       <EscapeHandler />
       <Stack direction="row" sx={{ height: '100vh' }}>
         <ToggleController>
@@ -224,6 +291,6 @@ export default async function TaskDetailPage({
           />
         </Box>
       </Stack>
-    </>
+    </ClientSideStateUpdate>
   )
 }
