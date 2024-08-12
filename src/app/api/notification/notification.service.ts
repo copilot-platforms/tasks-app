@@ -13,9 +13,9 @@ export class NotificationService extends BaseService {
     try {
       const copilot = new CopilotAPI(this.user.token)
 
-      const { senderId, recipientId, actionUser } = await this.getNotificationParties(copilot, task, action)
+      const { senderId, recipientId, actionUser, companyName } = await this.getNotificationParties(copilot, task, action)
 
-      const inProduct = getInProductNotificationDetails(actionUser, task)[action]
+      const inProduct = getInProductNotificationDetails(actionUser, task, companyName)[action]
       const email = disable.email ? undefined : getEmailDetails(actionUser, task)[action]
       const notificationDetails = {
         senderId,
@@ -149,6 +149,7 @@ export class NotificationService extends BaseService {
     let recipientId: string = ''
     let recipientIds: string[] = []
     let actionTrigger: CopilotUser | CompanyResponse
+    let companyName: string | undefined
 
     const getAssignedTo = async (): Promise<CopilotUser | CompanyResponse> => {
       switch (task.assigneeType) {
@@ -189,6 +190,14 @@ export class NotificationService extends BaseService {
         recipientId = task.createdById
         actionTrigger = await getAssignedTo()
         break
+      case NotificationTaskActions.CompletedForCompanyByIU:
+        const company = await copilot.getCompany(z.string().parse(task.assigneeId))
+        companyName = company.name
+      case NotificationTaskActions.CompletedByIU:
+        senderId = z.string().parse(this.user.internalUserId)
+        recipientId = task.createdById
+        actionTrigger = await copilot.getInternalUser(senderId)
+        break
       default:
         const userInfo = await copilot.me()
         senderId = z.string().parse(userInfo?.id)
@@ -197,11 +206,11 @@ export class NotificationService extends BaseService {
         break
     }
 
-    const actionUser =
-      task.assigneeType === AssigneeType.company
+    let actionUser =
+      task.assigneeType === AssigneeType.company && action !== NotificationTaskActions.CompletedForCompanyByIU
         ? (actionTrigger as CompanyResponse).name
         : `${(actionTrigger as CopilotUser).givenName} ${(actionTrigger as CopilotUser).familyName}`
 
-    return { senderId, recipientId, recipientIds, actionUser }
+    return { senderId, recipientId, recipientIds, actionUser, companyName }
   }
 }
