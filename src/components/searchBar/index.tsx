@@ -65,6 +65,7 @@ const SearchBar = ({ value, getSearchKeyword, onClear, title }: ISearchBar) => {
           },
         },
         '& .MuiOutlinedInput-root': {
+          cursor: 'pointer',
           '&:hover': {
             backgroundColor: (theme) => theme.color.gray[100],
           },
