@@ -9,9 +9,10 @@ interface ISearchBar {
   value: string
   getSearchKeyword: (keyword: string) => void
   onClear: () => void
+  title?: string
 }
 
-const SearchBar = ({ value, getSearchKeyword, onClear }: ISearchBar) => {
+const SearchBar = ({ value, getSearchKeyword, onClear, title }: ISearchBar) => {
   const [focused, setFocused] = useState<boolean>(false)
   const [fieldValue, setFieldValue] = useState(value)
 
@@ -39,17 +40,34 @@ const SearchBar = ({ value, getSearchKeyword, onClear }: ISearchBar) => {
       value={fieldValue}
       focused={focused}
       variant="outlined"
-      placeholder={focused ? 'Search...' : 'Search'}
-      basePadding="4.4px 8px"
+      placeholder={focused ? 'Find in view...' : 'Search'}
+      basePadding="4px 4px 4px 8px"
+      title={value ? value : (title ?? 'Find in view...')}
       sx={{
         width: {
-          md: focused || fieldValue ? '220px' : '90px',
-          sd: focused || fieldValue ? '90px' : '32px',
-          xs: focused || fieldValue ? '100px' : '32px',
+          md: focused || fieldValue ? '220px' : '80px',
+          sm: focused || fieldValue ? '120px' : '32px',
+          xs: focused || fieldValue ? '110px' : '32px',
         },
+
         transition: 'width 0.5s',
         '& .MuiOutlinedInput-input': {
+          fontSize: '12px',
+          fontStyle: 'normal',
+          fontWeight: 500,
+          lineHeight: '15px',
           cursor: 'pointer',
+          '&::placeholder': {
+            fontSize: '12px',
+            fontStyle: 'normal',
+            fontWeight: 500,
+            lineHeight: '15px',
+          },
+        },
+        '& .MuiOutlinedInput-root': {
+          '&:hover': {
+            backgroundColor: (theme) => theme.color.gray[100],
+          },
         },
       }}
       size="small"
@@ -59,7 +77,7 @@ const SearchBar = ({ value, getSearchKeyword, onClear }: ISearchBar) => {
           <InputAdornment
             position="start"
             sx={{
-              cursor: 'default',
+              cursor: 'pointer',
 
               marginLeft: { xs: '2px', md: '0px' },
             }}
@@ -71,7 +89,7 @@ const SearchBar = ({ value, getSearchKeyword, onClear }: ISearchBar) => {
           <InputAdornment
             position="end"
             sx={{
-              cursor: 'default',
+              cursor: 'pointer',
               display: fieldValue ? 'flex' : 'none',
             }}
           >
