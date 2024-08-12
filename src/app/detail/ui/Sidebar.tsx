@@ -98,7 +98,7 @@ export const Sidebar = ({
           display="flex"
           justifyContent="space-between"
           alignItems="center"
-          sx={{ height: '60px', padding: '16px 20px' }}
+          sx={{ padding: { xs: '16px 20px', sm: '20px 20px' } }}
         >
           <Typography variant="sm">Properties</Typography>
           <Box
