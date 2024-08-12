@@ -1,9 +1,8 @@
 'use client'
-
 import { ProgressLoader } from 'nextjs-progressloader'
 import { Suspense } from 'react'
 
-export const TopLoader = () => {
+export const ProgressLoad = () => {
   return (
     <Suspense fallback={null}>
       <ProgressLoader

@@ -5,14 +5,13 @@ import { TaskRow } from '@/components/cards/TaskRow'
 import { selectTaskBoard, updateWorkflowStateIdByTaskId } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
 import { TaskResponse } from '@/types/dto/tasks.dto'
-import { Box } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { StateType } from '@prisma/client'
 import DashboardEmptyState from '@/components/layouts/EmptyState/DashboardEmptyState'
 import { UserType } from '@/types/interfaces'
 import { Header } from '@/components/layouts/Header'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 export const ClientTaskBoard = ({ completeTask }: { completeTask: (taskId: string) => void }) => {
   const { workflowStates, tasks, token } = useSelector(selectTaskBoard)
@@ -39,6 +38,16 @@ export const ClientTaskBoard = ({ completeTask }: { completeTask: (taskId: strin
   }
 
   const completedTypeWorkflowState = workflowStates.find((el) => el.type === 'completed')
+
+  //this state tracks if the component is in client side or not during hydration
+  const [isCLient, setIsClient] = useState(false)
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  if (!isCLient) return null
+
   return tasks.length > 0 ? (
     <>
       <Header showCreateTaskButton={false} />
@@ -52,25 +61,23 @@ export const ClientTaskBoard = ({ completeTask }: { completeTask: (taskId: strin
           >
             {filterTaskWithWorkflowStateId(list.id).map((task) => {
               return (
-                <Box key={task.id}>
-                  <ClientTaskCard
-                    task={task}
-                    href={{ pathname: `/detail/${task.id}/cu`, query: { token } }}
-                    key={task.id}
-                    markdoneFlag={list.type == StateType.completed}
-                    handleMarkDone={() => {
-                      if (completedTypeWorkflowState?.id) {
-                        store.dispatch(
-                          updateWorkflowStateIdByTaskId({
-                            taskId: task.id,
-                            targetWorkflowStateId: completedTypeWorkflowState?.id,
-                          }),
-                        )
-                        completeTask(task.id)
-                      }
-                    }}
-                  />
-                </Box>
+                <ClientTaskCard
+                  task={task}
+                  href={{ pathname: `/detail/${task.id}/cu`, query: { token } }}
+                  key={task.id}
+                  markdoneFlag={list.type == StateType.completed}
+                  handleMarkDone={() => {
+                    if (completedTypeWorkflowState?.id) {
+                      store.dispatch(
+                        updateWorkflowStateIdByTaskId({
+                          taskId: task.id,
+                          targetWorkflowStateId: completedTypeWorkflowState?.id,
+                        }),
+                      )
+                      completeTask(task.id)
+                    }
+                  }}
+                />
               )
             })}
           </TaskRow>

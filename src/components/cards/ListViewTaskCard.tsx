@@ -1,7 +1,6 @@
 'use client'
 
 import { Box, Stack, Typography, alpha } from '@mui/material'
-import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { TaskResponse, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { useSelector } from 'react-redux'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
@@ -14,7 +13,6 @@ import ExtraOptionRendererAssignee from '@/components/inputs/ExtraOptionRenderer
 import { DueDateLayout } from '@/components/layouts/DueDateLayout'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { UrlObject } from 'url'
-import { CustomLink } from '@/hoc/CustomLink'
 import { getAssigneeName } from '@/utils/assignee'
 import { AssigneeType } from '@prisma/client'
 

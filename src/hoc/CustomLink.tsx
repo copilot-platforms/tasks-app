@@ -47,8 +47,8 @@ export const CustomLink = ({
   }, [href])
 
   return (
-    <div onMouseEnter={handleMouseEnter} onClick={() => router.push(`${pathname}?token=${token}`)} style={style}>
+    <a onMouseEnter={handleMouseEnter} onClick={() => router.push(`${pathname}?token=${token}`)} style={style}>
       {children}
-    </div>
+    </a>
   )
 }
