@@ -52,6 +52,7 @@ export const ClientTaskCard = ({
           direction={{ xs: 'column', sm: 'row' }}
           alignItems={{ xs: 'left', sm: 'center' }}
           justifyContent="space-between"
+          columnGap={{ sm: '20px', md: '40px' }}
           sx={{
             borderBottom: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
             padding: { xs: '8px 20px', sm: '6px 40px 6px 20px' },
@@ -96,8 +97,24 @@ export const ClientTaskCard = ({
               },
             }}
           >
-            <Stack direction="row" alignItems="center" columnGap={{ xs: '12px', sm: '20px' }}>
+            <Stack direction="row" alignItems="center" minWidth="fit-content" columnGap={{ xs: '12px', sm: '20px' }}>
               {task.dueDate && (
+                <Box
+                  sx={{
+                    flexDirection: 'row',
+                    alignItems: { sm: 'flex-end' },
+                    justifyContent: { sm: 'right' },
+                    display: { xs: 'flex', sm: 'flex', sd: 'none ' },
+                    minWidth: '90px',
+                  }}
+                >
+                  <Typography variant="bodySm" sx={{ fontSize: '12px', color: (theme) => theme.color.gray[500] }}>
+                    <DueDateLayout dateString={task.dueDate} />
+                  </Typography>
+                </Box>
+              )}
+
+              <Box sx={{ display: { xs: 'none', sm: 'none', sd: 'flex ' } }}>
                 <Box
                   sx={{
                     flexDirection: 'row',
@@ -107,11 +124,14 @@ export const ClientTaskCard = ({
                     minWidth: '90px',
                   }}
                 >
-                  <Typography variant="bodySm" sx={{ fontSize: '12px', color: (theme) => theme.color.gray[500] }}>
-                    <DueDateLayout dateString={task.dueDate} />
-                  </Typography>
+                  {task.dueDate && (
+                    <Typography variant="bodySm" sx={{ fontSize: '12px', color: (theme) => theme.color.gray[500] }}>
+                      <DueDateLayout dateString={task.dueDate} />
+                    </Typography>
+                  )}
                 </Box>
-              )}
+              </Box>
+
               <Stack
                 direction="row"
                 alignItems="center"
