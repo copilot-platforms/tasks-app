@@ -104,7 +104,7 @@ export const ClientTaskCard = ({
                     flexDirection: 'row',
                     alignItems: { sm: 'flex-end' },
                     justifyContent: { sm: 'right' },
-                    display: { xs: 'block', sm: 'flex', sd: 'none ' },
+                    display: { xs: 'flex', sm: 'flex', sd: 'none ' },
                     minWidth: '90px',
                   }}
                 >
