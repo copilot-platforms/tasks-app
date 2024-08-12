@@ -57,7 +57,7 @@ export const ListViewTaskCard = ({
               sx={{
                 color: (theme) => theme.color.gray[500],
                 flexGrow: 0,
-                minWidth: '60px',
+                minWidth: '75px',
                 lineHeight: '21px',
               }}
             >

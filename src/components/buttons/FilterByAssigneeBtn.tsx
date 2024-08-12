@@ -5,15 +5,7 @@ import { Avatar, IconButton, Stack, Typography } from '@mui/material'
 import { CopilotAvatar } from '../atoms/CopilotAvatar'
 import { getAssigneeName } from '@/utils/assignee'
 
-export const FilterByAssigneeBtn = ({
-  assigneeValue,
-  updateAssigneeValue,
-  handleClick,
-}: {
-  assigneeValue: IAssigneeCombined
-  updateAssigneeValue: (newValue: unknown) => void
-  handleClick: (optionType: FilterOptions, value: string | null) => void
-}) => {
+export const FilterByAssigneeBtn = ({ assigneeValue }: { assigneeValue: IAssigneeCombined }) => {
   return (
     <Stack direction="row" alignItems="center" columnGap={1}>
       <Typography
@@ -34,25 +26,12 @@ export const FilterByAssigneeBtn = ({
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
               overflow: 'hidden',
-              maxWidth: '90px',
+              maxWidth: '100px',
             }}
             title={getAssigneeName(assigneeValue)}
           >
             {getAssigneeName(assigneeValue)}
           </Typography>
-          <IconButton
-            aria-label="remove"
-            onClick={(e) => {
-              e.stopPropagation()
-              updateAssigneeValue(null)
-              handleClick(FilterOptions.ASSIGNEE, '')
-            }}
-            sx={{ cursor: 'pointer' }}
-            disableRipple
-            disableTouchRipple
-          >
-            <CrossIcon />
-          </IconButton>
         </Stack>
       ) : (
         <Typography

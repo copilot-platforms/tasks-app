@@ -14,7 +14,7 @@ interface Prop {
 
 export const ConfirmDeleteUI = ({ handleCancel, handleDelete, body = 'task' }: Prop) => {
   return (
-    <UIContainer sx={{ width: { xs: 'auto', sm: '470px' } }}>
+    <UIContainer sx={{ width: { xs: '80%', sm: '470px' } }}>
       <StyledBox>
         <AppMargin size={SizeofAppMargin.MEDIUM} py="20px">
           <Stack direction="column" rowGap={4}>
