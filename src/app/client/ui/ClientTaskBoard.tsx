@@ -39,15 +39,6 @@ export const ClientTaskBoard = ({ completeTask }: { completeTask: (taskId: strin
 
   const completedTypeWorkflowState = workflowStates.find((el) => el.type === 'completed')
 
-  //this state tracks if the component is in client side or not during hydration
-  const [isCLient, setIsClient] = useState(false)
-
-  useEffect(() => {
-    setIsClient(true)
-  }, [])
-
-  if (!isCLient) return null
-
   return tasks.length > 0 ? (
     <>
       <Header showCreateTaskButton={false} />

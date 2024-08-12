@@ -19,7 +19,7 @@ import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 import { RealTime } from '@/hoc/RealTime'
 import { sortTaskByDescendingOrder } from '@/utils/sortTask'
 import { z } from 'zod'
-import { ProgressLoad } from '@/hoc/TopLoader'
+import { ProgressLoad } from '@/components/TopLoader'
 
 const inter = Inter({ subsets: ['latin'] })
 

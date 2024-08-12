@@ -7,6 +7,7 @@ import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
 import { ClientTaskBoard } from './ui/ClientTaskBoard'
 import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 import { completeTask } from './actions'
+import { ForceDisableServerRender } from '@/hoc/ForceDisableServerRender'
 
 async function getAssigneeList(token: string): Promise<IAssignee> {
   const res = await fetch(`${apiUrl}/api/users/client?token=${token}&limit=${MAX_FETCH_ASSIGNEE_COUNT}`, {
@@ -24,12 +25,14 @@ export default async function ClientPage({ searchParams }: { searchParams: { tok
   return (
     <>
       <ClientSideStateUpdate assignee={assignee}>
-        <ClientTaskBoard
-          completeTask={async (taskId) => {
-            'use server'
-            completeTask({ token, taskId })
-          }}
-        />
+        <ForceDisableServerRender>
+          <ClientTaskBoard
+            completeTask={async (taskId) => {
+              'use server'
+              completeTask({ token, taskId })
+            }}
+          />
+        </ForceDisableServerRender>
       </ClientSideStateUpdate>
     </>
   )
