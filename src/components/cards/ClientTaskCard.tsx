@@ -67,7 +67,7 @@ export const ClientTaskCard = ({
               wordBreak: 'break-all',
             }}
           >
-            <Typography variant="sm" sx={{ fontSize: '13px', lineHeight: '21px' }}>
+            <Typography variant="sm" sx={{ fontSize: '13px', lineHeight: '21px', color: (theme) => theme.color.gray[600] }}>
               {task?.title}
             </Typography>
 
