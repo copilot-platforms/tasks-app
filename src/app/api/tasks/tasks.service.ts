@@ -264,6 +264,25 @@ export class TasksService extends BaseService {
     return await this.db.task.delete({ where: { id } })
   }
 
+  async deleteAllAssigneeTasks(assigneeId: string, assigneeType: AssigneeType) {
+    // Policies validation shouldn't be required here because token is from a webhook event
+    const tasks = await this.db.task.findMany({
+      where: { assigneeId, assigneeType, workspaceId: this.user.workspaceId },
+    })
+    if (!tasks.length) {
+      // If assignee doesn't have an associated task at all, skip logic
+      return
+    }
+    const labels = tasks.map((task) => task.label)
+
+    await this.db.$transaction([
+      this.db.task.deleteMany({
+        where: { assigneeId, assigneeType, workspaceId: this.user.workspaceId },
+      }),
+      this.db.label.deleteMany({ where: { label: { in: labels } } }),
+    ])
+  }
+
   async clientUpdateTask(id: string, targetWorkflowStateId?: string | null) {
     //Apply custom authorization here. Policy service is not used because this api is for client's Mark done function only. Only clients can use this.
     if (this.user.role === UserRole.IU) {
