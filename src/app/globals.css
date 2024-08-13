@@ -5,17 +5,7 @@
 }
 
 .tapwrite-details-page {
-  min-height: 45vh;
-}
-
-@media (min-width: 768px) {
-  .tapwrite-details-page {
-    min-height: 55vh;
-  }
-}
-
-@media (min-width: 1200px) {
-  .tapwrite-details-page {
-    min-height: 65vh;
-  }
+  flex-grow: 1;
+  overflow-y: auto;
+  height: calc(100vh - 300px);
 }
