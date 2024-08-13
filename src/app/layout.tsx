@@ -20,6 +20,7 @@ import { RealTime } from '@/hoc/RealTime'
 import { sortTaskByDescendingOrder } from '@/utils/sortTask'
 import { z } from 'zod'
 import { ProgressLoad } from '@/components/TopLoader'
+import ClientError from '@/components/clientError'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -84,6 +85,10 @@ async function getAllTemplates(token: string): Promise<ITemplate[]> {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const headersList = headers()
   const token = z.string().parse(headersList.get('clientToken'))
+
+  if (!token) {
+    return <ClientError message={'Please provide a Valid Token'} />
+  }
 
   const [workflowStates, tasks, assignee, viewSettings, tokenPayload, templates] = await Promise.all([
     getAllWorkflowStates(token),
