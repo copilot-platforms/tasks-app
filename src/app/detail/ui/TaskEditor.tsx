@@ -115,6 +115,14 @@ export const TaskEditor = ({
     debouncedResetTypingFlag()
   }
 
+  useEffect(() => {
+    if (userType === UserType.INTERNAL_USER) {
+      router.prefetch(`/?token=${token}`)
+    } else {
+      router.prefetch(`/client?token=${token}`)
+    }
+  }, [])
+
   return (
     <>
       <StyledTextField
