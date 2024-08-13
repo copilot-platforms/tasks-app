@@ -84,7 +84,7 @@ async function getAllTemplates(token: string): Promise<ITemplate[]> {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const headersList = headers()
-  const token = z.string().parse(headersList.get('clientToken'))
+  const token = z.string().parse(headersList.get('token'))
 
   if (!token) {
     return <ClientError message={'Please provide a Valid Token'} />
