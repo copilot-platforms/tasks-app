@@ -4,7 +4,7 @@ import { AttachmentCard } from '@/components/cards/AttachmentCard'
 import { StyledTextField } from '@/components/inputs/TextField'
 import { selectTaskDetails, setShowConfirmDeleteModal } from '@/redux/features/taskDetailsSlice'
 import { Box, Modal, Stack } from '@mui/material'
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useSelector } from 'react-redux'
 import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
 import store from '@/redux/store'
@@ -89,6 +89,11 @@ export const TaskEditor = ({
   const _detailsUpdateDebounced = async (details: string) => updateTaskDetail(details)
   const detailsUpdateDebounced = useDebounce(_detailsUpdateDebounced)
 
+  const debouncedResetTitleAndError = useDebounce((prevTitle: string) => {
+    setTitleError(false)
+    setUpdateTitle(prevTitle)
+  }, 2000)
+
   const resetTypingFlag = useCallback(() => {
     setIsUserTyping(false)
   }, [])
@@ -101,10 +106,7 @@ export const TaskEditor = ({
     setUpdateTitle(newTitle)
     if (newTitle.trim() == '') {
       setTitleError(true)
-      setTimeout(() => {
-        setTitleError(false)
-        setUpdateTitle(prevTitle)
-      }, 2000)
+      debouncedResetTitleAndError(prevTitle)
       return
     }
     setTitleError(false)
