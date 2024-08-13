@@ -94,7 +94,12 @@ export const Sidebar = ({
       }}
     >
       <Stack direction="row" justifyContent="space-between" alignItems="center">
-        <StyledBox p="20px 20px" display="flex" justifyContent="space-between" alignItems="center">
+        <StyledBox
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          sx={{ padding: { xs: '16px 20px', sm: '20px 20px' } }}
+        >
           <Typography variant="sm">Properties</Typography>
           <Box
             sx={{
