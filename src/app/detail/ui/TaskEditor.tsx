@@ -107,7 +107,7 @@ export const TaskEditor = ({
       }, 2000)
       return
     }
-
+    setTitleError(false)
     setIsUserTyping(true)
     titleUpdateDebounced(newTitle)
     debouncedResetTypingFlag()
