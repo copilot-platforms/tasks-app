@@ -96,14 +96,18 @@ export const TaskEditor = ({
   const debouncedResetTypingFlag = useDebounce(resetTypingFlag, 1500)
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const prevTitle = updateTitle
     const newTitle = e.target.value
     setUpdateTitle(newTitle)
-
     if (newTitle.trim() == '') {
       setTitleError(true)
-      setTimeout(() => setTitleError(false), 2000)
+      setTimeout(() => {
+        setTitleError(false)
+        setUpdateTitle(prevTitle)
+      }, 2000)
       return
     }
+
     setIsUserTyping(true)
     titleUpdateDebounced(newTitle)
     debouncedResetTypingFlag()
