@@ -199,7 +199,7 @@ export default async function TaskDetailPage({
                     }}
                     updateTaskTitle={async (title) => {
                       'use server'
-                      await updateTaskDetail({ token, taskId: task_id, payload: { title } })
+                      title.trim() != '' && (await updateTaskDetail({ token, taskId: task_id, payload: { title } }))
                     }}
                     deleteTask={async () => {
                       'use server'
