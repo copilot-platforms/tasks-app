@@ -17,7 +17,7 @@ import { ISignedUrlUpload, UserType } from '@/types/interfaces'
 import { advancedFeatureFlag } from '@/config'
 import { Tapwrite } from 'tapwrite'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
-import { useDebounce } from '@/hooks/useDebounce'
+import { useDebounce, useDebounceWithCancel } from '@/hooks/useDebounce'
 import { useRouter } from 'next/navigation'
 import { RESOURCE_NOT_FOUND_REDIRECT_PATHS } from '@/utils/redirect'
 
@@ -89,7 +89,7 @@ export const TaskEditor = ({
   const _detailsUpdateDebounced = async (details: string) => updateTaskDetail(details)
   const detailsUpdateDebounced = useDebounce(_detailsUpdateDebounced)
 
-  const debouncedResetTitleAndError = useDebounce((prevTitle: string) => {
+  const [debouncedResetTitleAndError, cancelDebouncedResetTitleAndError] = useDebounceWithCancel((prevTitle: string) => {
     console.log('debounced')
     setTitleError(false)
     setUpdateTitle(prevTitle)
@@ -110,6 +110,7 @@ export const TaskEditor = ({
       debouncedResetTitleAndError(prevTitle)
       return
     }
+    cancelDebouncedResetTitleAndError()
     setTitleError(false)
     setIsUserTyping(true)
     titleUpdateDebounced(newTitle)
