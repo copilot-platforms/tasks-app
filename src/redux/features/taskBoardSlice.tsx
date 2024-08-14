@@ -41,10 +41,10 @@ const taskBoardSlice = createSlice({
       state.workflowStates = action.payload
     },
     setTasks: (state, action: { payload: TaskResponse[] }) => {
-      state.tasks = action.payload
+      state.tasks = sortTaskByDescendingOrder(action.payload)
     },
     appendTask: (state, action: { payload: TaskResponse }) => {
-      state.tasks = [...state.tasks, action.payload]
+      state.tasks = sortTaskByDescendingOrder([...state.tasks, action.payload])
     },
     setFilteredTasks: (state, action: { payload: TaskResponse[] }) => {
       state.filteredTasks = sortTaskByDescendingOrder(action.payload)
