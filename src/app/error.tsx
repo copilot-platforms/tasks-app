@@ -1,8 +1,11 @@
 'use client'
 
+import { isProd } from '@/config'
 import React from 'react'
 
 const ClientErrorBoundary = ({ error }: { error: Error & { digest: string } }) => {
+  const errorMessage =
+    error.message === 'Please provide a Valid Token' ? error.message : isProd ? 'Something went wrong' : error.message
   return (
     <div
       style={{
@@ -14,7 +17,7 @@ const ClientErrorBoundary = ({ error }: { error: Error & { digest: string } }) =
         fontFamily: 'monospace',
       }}
     >
-      {error.message}
+      {errorMessage}
     </div>
   )
 }
