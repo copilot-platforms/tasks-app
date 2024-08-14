@@ -90,6 +90,7 @@ export const TaskEditor = ({
   const detailsUpdateDebounced = useDebounce(_detailsUpdateDebounced)
 
   const debouncedResetTitleAndError = useDebounce((prevTitle: string) => {
+    console.log('debounced')
     setTitleError(false)
     setUpdateTitle(prevTitle)
   }, 2000)
