@@ -91,6 +91,7 @@ export const TaskEditor = ({
   const resetTypingFlag = useCallback(() => {
     setIsUserTyping(false)
     if (userType === UserType.INTERNAL_USER) {
+      console.log('runninggggg')
       router.prefetch(`/?token=${token}`)
     } else {
       router.prefetch(`/client?token=${token}`)
