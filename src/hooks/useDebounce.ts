@@ -28,30 +28,3 @@ export function useDebounce<Func extends SomeFunction>(func: Func, delay = 500) 
 
   return debouncedFunction
 }
-
-export function useDebounceWithCancel<Func extends SomeFunction>(func: Func, delay = 500) {
-  const timer = useRef<Timer | null>(null)
-  useEffect(() => {
-    return () => {
-      if (!timer.current) return
-      clearTimeout(timer.current)
-    }
-  }, [])
-
-  const debouncedFunction = ((...args: Parameters<Func>) => {
-    const newTimer = setTimeout(() => {
-      func(...args)
-    }, delay)
-    timer.current && clearTimeout(timer.current)
-    timer.current = newTimer
-  }) as Func
-
-  const cancel = () => {
-    if (timer.current) {
-      clearTimeout(timer.current)
-      timer.current = null
-    }
-  }
-
-  return [debouncedFunction, cancel] as const
-}

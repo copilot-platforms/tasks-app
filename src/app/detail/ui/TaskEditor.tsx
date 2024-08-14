@@ -17,7 +17,7 @@ import { ISignedUrlUpload, UserType } from '@/types/interfaces'
 import { advancedFeatureFlag } from '@/config'
 import { Tapwrite } from 'tapwrite'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
-import { useDebounce, useDebounceWithCancel } from '@/hooks/useDebounce'
+import { useDebounce } from '@/hooks/useDebounce'
 import { useRouter } from 'next/navigation'
 import { RESOURCE_NOT_FOUND_REDIRECT_PATHS } from '@/utils/redirect'
 
@@ -68,9 +68,8 @@ export const TaskEditor = ({
   }
 
   const router = useRouter()
-
+  const currentTask = tasks.find((el) => el.id === task_id)
   useEffect(() => {
-    const currentTask = tasks.find((el) => el.id === task_id)
     if (!currentTask) {
       router.push(`${RESOURCE_NOT_FOUND_REDIRECT_PATHS[userType]}?token=${token}`)
       return // Just to keep TSC happy below
@@ -89,11 +88,6 @@ export const TaskEditor = ({
   const _detailsUpdateDebounced = async (details: string) => updateTaskDetail(details)
   const detailsUpdateDebounced = useDebounce(_detailsUpdateDebounced)
 
-  const [debouncedResetTitleAndError, cancelDebouncedResetTitleAndError] = useDebounceWithCancel((prevTitle: string) => {
-    setTitleError(false)
-    setUpdateTitle(prevTitle)
-  }, 2000)
-
   const resetTypingFlag = useCallback(() => {
     setIsUserTyping(false)
   }, [])
@@ -101,19 +95,26 @@ export const TaskEditor = ({
   const debouncedResetTypingFlag = useDebounce(resetTypingFlag, 1500)
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const prevTitle = updateTitle
     const newTitle = e.target.value
     setUpdateTitle(newTitle)
     if (newTitle.trim() == '') {
-      setTitleError(true)
-      debouncedResetTitleAndError(prevTitle)
       return
     }
-    cancelDebouncedResetTitleAndError()
+
     setTitleError(false)
     setIsUserTyping(true)
     titleUpdateDebounced(newTitle)
     debouncedResetTypingFlag()
+  }
+
+  const handleTitleBlur = () => {
+    if (updateTitle.trim() == '') {
+      setTitleError(true)
+      setTimeout(() => {
+        setTitleError(false)
+        setUpdateTitle(currentTask?.title || '')
+      }, 1000)
+    }
   }
 
   const handleDetailChange = (content: string) => {
@@ -154,6 +155,7 @@ export const TaskEditor = ({
         disabled={!isEditable}
         padding="0px"
         error={titleError}
+        onBlur={handleTitleBlur}
         helperText={titleError && 'Required'}
       />
 
