@@ -1,16 +1,11 @@
 'use client'
 
-import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
-import { Box, Stack } from '@mui/material'
-import { useRouter } from 'next/navigation'
 import React from 'react'
 
-const ClientErrorBoundary = ({ error, reset }: { error: Error & { digest: string }; reset: () => void }) => {
-  const router = useRouter()
-
+const ClientErrorBoundary = ({ error }: { error: Error & { digest: string } }) => {
   return (
-    <Box
-      sx={{
+    <div
+      style={{
         display: 'flex',
         height: '100vh',
         marginTop: '20vh',
@@ -19,19 +14,8 @@ const ClientErrorBoundary = ({ error, reset }: { error: Error & { digest: string
         fontFamily: 'monospace',
       }}
     >
-      <Stack direction="column" rowGap={3}>
-        {error.message}
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <PrimaryBtn buttonText="Try again" handleClick={() => reset()} />
-        </Box>
-      </Stack>
-    </Box>
+      {error.message}
+    </div>
   )
 }
 
