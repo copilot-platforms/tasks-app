@@ -113,7 +113,7 @@ export const TaskEditor = ({
       setTimeout(() => {
         setTitleError(false)
         setUpdateTitle(currentTask?.title || '')
-      }, 1000)
+      }, 2000)
     }
   }
 
