@@ -275,12 +275,10 @@ export class TasksService extends BaseService {
     }
     const labels = tasks.map((task) => task.label)
 
-    await this.db.$transaction([
-      this.db.task.deleteMany({
-        where: { assigneeId, assigneeType, workspaceId: this.user.workspaceId },
-      }),
-      this.db.label.deleteMany({ where: { label: { in: labels } } }),
-    ])
+    await this.db.task.deleteMany({
+      where: { assigneeId, assigneeType, workspaceId: this.user.workspaceId },
+    })
+    await this.db.label.deleteMany({ where: { label: { in: labels } } })
   }
 
   async clientUpdateTask(id: string, targetWorkflowStateId?: string | null) {
