@@ -11,11 +11,7 @@ import { upload } from '@vercel/blob/client'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { ISignedUrlUpload, UserType } from '@/types/interfaces'
 import { Tapwrite } from 'tapwrite'
-import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { useDebounce } from '@/hooks/useDebounce'
-import { useRouter } from 'next/navigation'
-import { RESOURCE_NOT_FOUND_REDIRECT_PATHS } from '@/utils/redirect'
-import { TaskResponse } from '@/types/dto/tasks.dto'
 
 interface Prop {
   task_id: string
@@ -42,7 +38,6 @@ export const TaskEditor = ({
   getSignedUrlUpload,
   userType,
 }: Prop) => {
-  const { tasks, token } = useSelector(selectTaskBoard)
   const [updateTitle, setUpdateTitle] = useState('')
   const [updateDetail, setUpdateDetail] = useState('')
   const { showConfirmDeleteModal, task } = useSelector(selectTaskDetails)
@@ -62,18 +57,12 @@ export const TaskEditor = ({
   //   }
   // }
 
-  const router = useRouter()
-
   useEffect(() => {
-    // const currentTask = tasks.find((el) => el.id === task_id)
-    if (!task) {
-      // router.push(`${RESOURCE_NOT_FOUND_REDIRECT_PATHS[userType]}?token=${token}`)
-      return // Just to keep TSC happy below
-    }
-
-    if (!isUserTyping) {
-      setUpdateTitle(task.title || '')
-      setUpdateDetail(task.body ?? '')
+    if (task) {
+      if (!isUserTyping) {
+        setUpdateTitle(task?.title || '')
+        setUpdateDetail(task?.body ?? '')
+      }
     }
   }, [task, task_id, isUserTyping])
 

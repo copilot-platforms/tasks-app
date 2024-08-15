@@ -24,7 +24,6 @@ import { setDebouncedFilteredAssignees } from '@/utils/users'
 import { z } from 'zod'
 import { getAssigneeName, isAssigneeTextMatching } from '@/utils/assignee'
 import { DateStringSchema } from '@/types/date'
-import store from '@/redux/store'
 
 const StyledText = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[500],
@@ -32,14 +31,12 @@ const StyledText = styled(Typography)(({ theme }) => ({
 }))
 
 export const Sidebar = ({
-  task_id,
   updateWorkflowState,
   updateAssignee,
   updateTask,
   disabled,
   workflowDisabled,
 }: {
-  task_id: string
   selectedWorkflowState: WorkflowStateResponse
   selectedAssigneeId: string | undefined
   updateWorkflowState: (workflowState: WorkflowStateResponse) => void
@@ -56,12 +53,10 @@ export const Sidebar = ({
   const [dueDate, setDueDate] = useState<Date | string | undefined>()
 
   const { renderingItem: _statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
-    // item: selectedWorkflowState,
     item: null,
     type: SelectorType.STATUS_SELECTOR,
   })
   const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
-    // item: selectedAssigneeId ? assignee.find((el) => el.id === selectedAssigneeId) : NoAssignee,
     item: null,
     type: SelectorType.ASSIGNEE_SELECTOR,
   })
@@ -71,9 +66,9 @@ export const Sidebar = ({
 
   useEffect(() => {
     if (task && assignee && workflowStates) {
-      const currentWorkflowState = workflowStates.find((el) => el?.id === task?.workflowStateId)
+      const currentWorkflowState = workflowStates?.find((el) => el?.id === task?.workflowStateId)
       const currentAssigneeId = task?.assigneeId
-      const currentAssignee = currentAssigneeId ? assignee.find((el) => el.id === currentAssigneeId) : NoAssignee
+      const currentAssignee = currentAssigneeId ? assignee?.find((el) => el?.id === currentAssigneeId) : NoAssignee
       updateStatusValue(currentWorkflowState)
       updateAssigneeValue(currentAssignee)
       setDueDate(task?.dueDate)

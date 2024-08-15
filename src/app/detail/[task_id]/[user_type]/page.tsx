@@ -191,7 +191,6 @@ export default async function TaskDetailPage({
               <WorkflowStateFetcher token={token}>
                 <AssigneeFetcher token={token} />
                 <Sidebar
-                  task_id={task_id}
                   selectedAssigneeId={task?.assigneeId}
                   selectedWorkflowState={task?.workflowState}
                   updateWorkflowState={async (workflowState) => {
