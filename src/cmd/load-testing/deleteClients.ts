@@ -14,7 +14,6 @@ const run = async () => {
   const apiKey = z.string().parse(process.env.COPILOT_API_KEY)
   const copilot = new CopilotAPI(token, apiKey)
   const clients = await copilot.getClients({ limit: 10_000 })
-  console.log('Clients:', clients.data?.length)
 
   if (!clients.data) {
     throw new Error('No clients to delete')
