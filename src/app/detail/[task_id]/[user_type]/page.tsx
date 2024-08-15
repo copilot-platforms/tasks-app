@@ -1,10 +1,12 @@
+import { Suspense } from 'react'
+
 export const fetchCache = 'force-no-store'
 
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { TaskEditor } from '@/app/detail/ui/TaskEditor'
 import { Box, Stack, Typography } from '@mui/material'
 import { Sidebar } from '@/app/detail/ui/Sidebar'
-import { IAssignee, UserType } from '@/types/interfaces'
+import { UserType } from '@/types/interfaces'
 import { advancedFeatureFlag, apiUrl } from '@/config'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
@@ -40,11 +42,11 @@ import { ActivityType } from '@prisma/client'
 import { CreateComment } from '@/types/dto/comment.dto'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import EscapeHandler from '@/utils/escapeHandler'
-import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 import { RealTime } from '@/hoc/RealTime'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { CustomScrollbar } from '@/hoc/CustomScrollbar'
 import { redirectIfResourceNotFound } from '@/utils/redirect'
+import { AssigneeFetcher } from '@/app/_fetchers/AssigneeFetcher'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
@@ -54,26 +56,6 @@ async function getOneTask(token: string, taskId: string): Promise<TaskResponse> 
   const data = await res.json()
 
   return data.task
-}
-
-async function getAssigneeList(token: string, userType: UserType): Promise<IAssignee> {
-  if (userType === UserType.CLIENT_USER) {
-    const res = await fetch(`${apiUrl}/api/users/client?token=${token}&limit=${MAX_FETCH_ASSIGNEE_COUNT}`, {
-      next: { tags: ['getAssigneeList'] },
-    })
-
-    const data = await res.json()
-
-    return data.clients
-  }
-
-  const res = await fetch(`${apiUrl}/api/users?token=${token}&limit=${MAX_FETCH_ASSIGNEE_COUNT}`, {
-    next: { tags: ['getAssigneeList'] },
-  })
-
-  const data = await res.json()
-
-  return data.users
 }
 
 async function getAttachments(token: string, taskId: string): Promise<AttachmentResponseSchema[]> {
@@ -97,16 +79,6 @@ async function getActivities(token: string, taskId: string): Promise<LogResponse
   return data.data
 }
 
-async function getAllTasks(token: string): Promise<TaskResponse[]> {
-  const res = await fetch(`${apiUrl}/api/tasks?token=${token}`, {
-    next: { tags: ['getTasks'] },
-  })
-
-  const data = await res.json()
-
-  return data.tasks
-}
-
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
     next: { tags: ['getAllWorkflowStates'] },
@@ -128,14 +100,12 @@ export default async function TaskDetailPage({
   const { task_id } = params
   const copilotClient = new CopilotAPI(token)
 
-  const [workflowStates, task, assignee, attachments, activities, tokenPayload, tasks] = await Promise.all([
+  const [workflowStates, task, attachments, activities, tokenPayload] = await Promise.all([
     getAllWorkflowStates(token),
     getOneTask(token, task_id),
-    addTypeToAssignee(await getAssigneeList(token, params.user_type)),
     getAttachments(token, task_id),
     getActivities(token, task_id),
     copilotClient.getTokenPayload(),
-    getAllTasks(token),
   ])
 
   // Basic validation
@@ -144,20 +114,11 @@ export default async function TaskDetailPage({
   }
   redirectIfResourceNotFound(searchParams, task, !!tokenPayload.internalUserId)
 
-  const AssigneeSuggestions = assignee.map((item) => ({
-    id: item.id,
-    label: item?.name ?? `${item.givenName} ${item.familyName}`,
-  }))
-
   return (
-    <ClientSideStateUpdate
-      token={token}
-      assignee={assignee}
-      tokenPayload={tokenPayload}
-      assigneeSuggestions={AssigneeSuggestions}
-      tasks={tasks}
-      workflowStates={workflowStates}
-    >
+    <ClientSideStateUpdate token={token} tokenPayload={tokenPayload} workflowStates={workflowStates}>
+      <Suspense fallback={null}>
+        <AssigneeFetcher token={token} userType={params.user_type} />
+      </Suspense>
       <RealTime>
         <EscapeHandler />
         <Stack direction="row" sx={{ height: '100vh' }}>

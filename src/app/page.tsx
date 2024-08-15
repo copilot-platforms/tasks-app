@@ -1,3 +1,5 @@
+import { Suspense } from 'react'
+
 export const fetchCache = 'force-no-store'
 
 import { DndWrapper } from '@/hoc/DndWrapper'
@@ -20,6 +22,7 @@ import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 import { RealTime } from '@/hoc/RealTime'
 import { redirectIfTaskCta } from '@/utils/redirect'
 import { sortTaskByDescendingOrder } from '@/utils/sortTask'
+import { AssigneeFetcher } from '@/app/_fetchers/AssigneeFetcher'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -45,16 +48,6 @@ async function getTokenPayload(token: string): Promise<Token> {
   const copilotClient = new CopilotAPI(token)
   const payload = TokenSchema.parse(await copilotClient.getTokenPayload())
   return payload as Token
-}
-
-async function getAssigneeList(token: string): Promise<IAssignee> {
-  const res = await fetch(`${apiUrl}/api/users?token=${token}&limit=${MAX_FETCH_ASSIGNEE_COUNT}`, {
-    next: { tags: ['getAssigneeList'] },
-  })
-
-  const data = await res.json()
-
-  return data.users
 }
 
 async function getViewSettings(token: string): Promise<CreateViewSettingsDTO> {
@@ -84,10 +77,9 @@ export default async function Main({ searchParams }: { searchParams: { token: st
 
   redirectIfTaskCta(searchParams)
 
-  const [workflowStates, tasks, assignee, viewSettings, tokenPayload, templates] = await Promise.all([
+  const [workflowStates, tasks, viewSettings, tokenPayload, templates] = await Promise.all([
     getAllWorkflowStates(token),
     getAllTasks(token),
-    addTypeToAssignee(await getAssigneeList(token)),
     getViewSettings(token),
     getTokenPayload(token),
     getAllTemplates(token),
@@ -98,11 +90,13 @@ export default async function Main({ searchParams }: { searchParams: { token: st
       workflowStates={workflowStates}
       tasks={tasks}
       token={token}
-      assignee={assignee}
       viewSettings={viewSettings}
       tokenPayload={tokenPayload}
       templates={templates}
     >
+      <Suspense fallback={null}>
+        <AssigneeFetcher token={token} />
+      </Suspense>
       <RealTime>
         <DndWrapper>
           <TaskBoard />
