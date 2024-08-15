@@ -15,7 +15,7 @@ import { WorkflowStateUpdatedSchema } from '@api/activity-logs/schemas/WorkflowS
 import { NotificationService } from '@api/notification/notification.service'
 import { LabelMappingService } from '@api/label-mapping/label-mapping.service'
 import { z } from 'zod'
-import { NotificationCreatedResponseSchema } from '@/types/common'
+import { ClientResponse, CompanyResponse, InternalUsers, NotificationCreatedResponseSchema } from '@/types/common'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 
 type FilterByAssigneeId = {
@@ -162,10 +162,10 @@ export class TasksService extends BaseService {
     return task
   }
 
-  async getTaskAssignee(task: Task) {
+  async getTaskAssignee(task: Task): Promise<InternalUsers | ClientResponse | CompanyResponse | undefined> {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Read, Resource.Tasks)
-    if (!task.assigneeId || !task.assigneeType) return {}
+    if (!task.assigneeId || !task.assigneeType) return undefined
 
     const copilot = new CopilotAPI(this.user.token)
     switch (task.assigneeType) {
