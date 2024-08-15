@@ -66,7 +66,6 @@ model Task {
   deletedAt          DateTime?
   ClientNotification ClientNotification[]
 
-  @@unique([label, deletedAt], name: "UQ_Tablename_label_deletedAt")
   @@map("Tasks")
 }
 
