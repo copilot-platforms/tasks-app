@@ -48,7 +48,7 @@ export const Sidebar = ({
   workflowDisabled?: false
 }) => {
   const { tasks, token, workflowStates, assignee } = useSelector(selectTaskBoard)
-  const { showSidebar } = useSelector(selectTaskDetails)
+  const { showSidebar, task } = useSelector(selectTaskDetails)
   const [filteredAssignees, setFilteredAssignees] = useState(assignee)
   const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
   const [loading, setLoading] = useState(false)
@@ -69,20 +69,16 @@ export const Sidebar = ({
   const assigneeValue = _assigneeValue as IAssigneeCombined //typecasting
 
   useEffect(() => {
-    if (tasks && workflowStates && assignee) {
-      const currentTask = tasks.find((el) => el.id === task_id)
-      const currentWorkflowState = workflowStates.find((el) => el?.id === currentTask?.workflowStateId)
-      const currentAssigneeId = currentTask?.assigneeId
-      console.log('assigneeId>>', currentAssigneeId)
-      const currentAssignee = currentAssigneeId ? assignee.find((el) => el.id === currentAssigneeId) : NoAssignee
+    if (task) {
+      const currentWorkflowState = task.workflowState
+      const currentAssignee = task.assignee
       updateStatusValue(currentWorkflowState)
       updateAssigneeValue(currentAssignee)
-      setDueDate(currentTask?.dueDate)
+      setDueDate(task.dueDate)
     }
-  }, [tasks, workflowStates, assignee])
+  }, [task])
 
   const matches = useMediaQuery('(max-width:600px)')
-  if (!tasks) return null
 
   return (
     <Box

@@ -67,7 +67,7 @@ export const TaskEditor = ({
   useEffect(() => {
     // const currentTask = tasks.find((el) => el.id === task_id)
     if (!task) {
-      router.push(`${RESOURCE_NOT_FOUND_REDIRECT_PATHS[userType]}?token=${token}`)
+      // router.push(`${RESOURCE_NOT_FOUND_REDIRECT_PATHS[userType]}?token=${token}`)
       return // Just to keep TSC happy below
     }
 

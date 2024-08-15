@@ -37,7 +37,7 @@ export const ClientSideStateUpdate = ({
   assigneeSuggestions,
   task,
 }: {
-  children: ReactNode
+  children?: ReactNode
   workflowStates?: WorkflowStateResponse[]
   tasks?: TaskResponse[]
   assignee?: IAssigneeCombined[]
