@@ -168,12 +168,13 @@ export class TasksService extends BaseService {
     if (!task.assigneeId || !task.assigneeType) return {}
 
     const copilot = new CopilotAPI(this.user.token)
-    if (task.assigneeType === AssigneeType.internalUser) {
-      return await copilot.getInternalUser(task.assigneeId)
-    } else if (task.assigneeType === AssigneeType.client) {
-      return await copilot.getClient(task.assigneeId)
-    } else {
-      return await copilot.getCompany(task.assigneeId)
+    switch (task.assigneeType) {
+      case AssigneeType.internalUser:
+        return await copilot.getInternalUser(task.assigneeId)
+      case AssigneeType.client:
+        return await copilot.getClient(task.assigneeId)
+      default:
+        return await copilot.getCompany(task.assigneeId)
     }
   }
 
