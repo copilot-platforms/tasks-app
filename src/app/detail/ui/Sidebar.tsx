@@ -70,11 +70,12 @@ export const Sidebar = ({
 
   useEffect(() => {
     if (task) {
-      const currentWorkflowState = task.workflowState
-      const currentAssignee = task.assignee
+      const currentWorkflowState = workflowStates.find((el) => el?.id === task?.workflowStateId)
+      const currentAssigneeId = task?.assigneeId
+      const currentAssignee = currentAssigneeId ? assignee.find((el) => el.id === currentAssigneeId) : NoAssignee
       updateStatusValue(currentWorkflowState)
       updateAssigneeValue(currentAssignee)
-      setDueDate(task.dueDate)
+      setDueDate(task?.dueDate)
     }
   }, [task])
 
