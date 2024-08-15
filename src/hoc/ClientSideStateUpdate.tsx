@@ -3,7 +3,7 @@
 import { setTokenPayload } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard, setAssigneeList, setFilteredAssgineeList, setViewSettings } from '@/redux/features/taskBoardSlice'
 import { setTasks, setToken, setWorkflowStates } from '@/redux/features/taskBoardSlice'
-import { setAssigneeSuggestion } from '@/redux/features/taskDetailsSlice'
+import { setAssigneeSuggestion, setTask } from '@/redux/features/taskDetailsSlice'
 import { setTemplates } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
 import { Token } from '@/types/common'
@@ -35,6 +35,7 @@ export const ClientSideStateUpdate = ({
   tokenPayload,
   templates,
   assigneeSuggestions,
+  task,
 }: {
   children: ReactNode
   workflowStates?: WorkflowStateResponse[]
@@ -45,6 +46,7 @@ export const ClientSideStateUpdate = ({
   tokenPayload?: Token | null
   templates?: ITemplate[]
   assigneeSuggestions?: IAssigneeSuggestions[]
+  task?: TaskResponse
 }) => {
   const { tasks: tasksInStore } = useSelector(selectTaskBoard)
   useEffect(() => {
@@ -84,6 +86,10 @@ export const ClientSideStateUpdate = ({
 
     if (assigneeSuggestions) {
       store.dispatch(setAssigneeSuggestion(assigneeSuggestions))
+    }
+
+    if (task) {
+      store.dispatch(setTask(task))
     }
   }, [workflowStates, tasks, token, assignee, viewSettings, tokenPayload, templates, assigneeSuggestions])
 

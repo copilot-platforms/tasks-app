@@ -5,23 +5,22 @@ import { selectTaskBoard, setTasks } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
-import { usePathname } from 'next/navigation'
 import { ReactNode, useEffect } from 'react'
 import { useSelector } from 'react-redux'
-import { useRouter } from 'next/navigation'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
-import { RESOURCE_NOT_FOUND_REDIRECT_PATHS } from '@/utils/redirect'
-import { UserType } from '@/types/interfaces'
+import { usePathname } from 'next/navigation'
+import { selectTaskDetails, setTask } from '@/redux/features/taskDetailsSlice'
 
 interface RealTimeTaskResponse extends TaskResponse {
   deletedAt: string
 }
 
 export const RealTime = ({ children }: { children: ReactNode }) => {
-  const { tasks, token } = useSelector(selectTaskBoard)
+  const { tasks } = useSelector(selectTaskBoard)
   const { tokenPayload } = useSelector(selectAuthDetails)
-  const pathname = usePathname()
-  const router = useRouter()
+  const { task } = useSelector(selectTaskDetails)
+  const path = usePathname()
+  console.log('pathhh', path)
 
   const handleTaskRealTimeUpdates = (payload: RealtimePostgresChangesPayload<RealTimeTaskResponse>) => {
     if (payload.eventType === 'INSERT') {
@@ -46,15 +45,37 @@ export const RealTime = ({ children }: { children: ReactNode }) => {
   }
 
   useEffect(() => {
-    const channel = supabase
-      .channel('realtime tasks')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'Tasks' }, handleTaskRealTimeUpdates)
-      .subscribe()
+    if (path.includes('/detail') && task) {
+      const channel = supabase
+        .channel('realtime tasks details')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'Tasks',
+            filter: `id=eq.${task.id}`,
+          },
+          (payload: RealtimePostgresChangesPayload<any>) => {
+            console.log('payload', payload)
+            store.dispatch(setTask(payload.new))
+          },
+        )
+        .subscribe()
+      return () => {
+        supabase.removeChannel(channel)
+      }
+    } else {
+      const channel = supabase
+        .channel('realtime tasks')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'Tasks' }, handleTaskRealTimeUpdates)
+        .subscribe()
 
-    return () => {
-      supabase.removeChannel(channel)
+      return () => {
+        supabase.removeChannel(channel)
+      }
     }
-  }, [supabase, tasks])
+  }, [supabase, tasks, path, task])
 
   return children
 }
