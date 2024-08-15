@@ -7,8 +7,6 @@ import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { apiUrl } from '@/config'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import { TaskResponse } from '@/types/dto/tasks.dto'
-import { IAssignee, ITemplate } from '@/types/interfaces'
-import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
 import ClientError from '@/components/clientError'
 import { Token, TokenSchema } from '@/types/common'
 import { CopilotAPI } from '@/utils/CopilotAPI'
@@ -16,7 +14,6 @@ import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { createMultipleAttachments, getSignedUrlUpload } from '@/app/actions'
 import { ModalNewTaskForm } from './ui/Modal_NewTaskForm'
-import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 import { RealTime } from '@/hoc/RealTime'
 import { redirectIfTaskCta } from '@/utils/redirect'
 import { sortTaskByDescendingOrder } from '@/utils/sortTask'
@@ -49,16 +46,6 @@ async function getTokenPayload(token: string): Promise<Token> {
   return payload as Token
 }
 
-async function getAssigneeList(token: string): Promise<IAssignee> {
-  const res = await fetch(`${apiUrl}/api/users?token=${token}&limit=${MAX_FETCH_ASSIGNEE_COUNT}`, {
-    next: { tags: ['getAssigneeList'] },
-  })
-
-  const data = await res.json()
-
-  return data.users
-}
-
 async function getViewSettings(token: string): Promise<CreateViewSettingsDTO> {
   const res = await fetch(`${apiUrl}/api/view-settings?token=${token}`, {
     next: { tags: ['getViewSettings'] },
@@ -66,14 +53,6 @@ async function getViewSettings(token: string): Promise<CreateViewSettingsDTO> {
   const data = await res.json()
 
   return data
-}
-
-async function getAllTemplates(token: string): Promise<ITemplate[]> {
-  const res = await fetch(`${apiUrl}/api/tasks/templates?token=${token}`, {})
-
-  const templates = await res.json()
-
-  return templates.data
 }
 
 export default async function Main({ searchParams }: { searchParams: { token: string; taskId?: string } }) {

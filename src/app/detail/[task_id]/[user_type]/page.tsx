@@ -3,7 +3,7 @@ export const fetchCache = 'force-no-store'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { TaskEditor } from '@/app/detail/ui/TaskEditor'
 import { Box, Stack, Typography } from '@mui/material'
-import { Sidebar } from '@/app/detail/ui/Sidebar'
+import { Sidebar, SidebarSkeleton } from '@/app/detail/ui/Sidebar'
 import { UserType } from '@/types/interfaces'
 import { apiUrl } from '@/config'
 import { TaskResponse } from '@/types/dto/tasks.dto'
@@ -33,6 +33,9 @@ import EscapeHandler from '@/utils/escapeHandler'
 import { RealTime } from '@/hoc/RealTime'
 import { CustomScrollbar } from '@/hoc/CustomScrollbar'
 import { redirectIfResourceNotFound } from '@/utils/redirect'
+import { Suspense } from 'react'
+import { WorkflowStateFetcher } from '@/app/_fetchers/WorkflowStateFetcher'
+import { AssigneeFetcher } from '@/app/_fetchers/AssigneeFetcher'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
@@ -184,26 +187,31 @@ export default async function TaskDetailPage({
             </CustomScrollbar>
           </ToggleController>
           <Box>
-            <Sidebar
-              task_id={task_id}
-              selectedAssigneeId={task?.assigneeId}
-              selectedWorkflowState={task?.workflowState}
-              updateWorkflowState={async (workflowState) => {
-                'use server'
-                params.user_type === UserType.CLIENT_USER
-                  ? await clientUpdateTask(token, task_id, workflowState.id)
-                  : await updateWorkflowStateIdOfTask(token, task_id, workflowState?.id)
-              }}
-              updateAssignee={async (assigneeType, assigneeId) => {
-                'use server'
-                await updateAssignee(token, task_id, assigneeType, assigneeId)
-              }}
-              updateTask={async (payload) => {
-                'use server'
-                await updateTaskDetail({ token, taskId: task_id, payload })
-              }}
-              disabled={params.user_type === UserType.CLIENT_USER}
-            />
+            <Suspense fallback={<SidebarSkeleton />}>
+              <WorkflowStateFetcher token={token}>
+                <AssigneeFetcher token={token} />
+                <Sidebar
+                  task_id={task_id}
+                  selectedAssigneeId={task?.assigneeId}
+                  selectedWorkflowState={task?.workflowState}
+                  updateWorkflowState={async (workflowState) => {
+                    'use server'
+                    params.user_type === UserType.CLIENT_USER
+                      ? await clientUpdateTask(token, task_id, workflowState.id)
+                      : await updateWorkflowStateIdOfTask(token, task_id, workflowState?.id)
+                  }}
+                  updateAssignee={async (assigneeType, assigneeId) => {
+                    'use server'
+                    await updateAssignee(token, task_id, assigneeType, assigneeId)
+                  }}
+                  updateTask={async (payload) => {
+                    'use server'
+                    await updateTaskDetail({ token, taskId: task_id, payload })
+                  }}
+                  disabled={params.user_type === UserType.CLIENT_USER}
+                />
+              </WorkflowStateFetcher>
+            </Suspense>
           </Box>
         </Stack>
       </RealTime>
