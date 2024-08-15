@@ -1,7 +1,7 @@
 'use client'
 
 import { useSelector } from 'react-redux'
-import { Box, Stack, Typography } from '@mui/material'
+import { Box, Skeleton, Stack, Typography } from '@mui/material'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { extractHtml } from '@/utils/extractHtml'
 import { truncateText } from '@/utils/truncateText'
@@ -15,6 +15,7 @@ import { UrlObject } from 'url'
 import { CustomLink } from '@/hoc/CustomLink'
 import { getAssigneeName } from '@/utils/assignee'
 import { GetMaxAssigneeNameWidth } from '@/utils/getMaxAssigneeNameWidth'
+import { useEffect, useState } from 'react'
 
 export const ClientTaskCard = ({
   task,
@@ -28,7 +29,14 @@ export const ClientTaskCard = ({
   href: string | UrlObject
 }) => {
   const { assignee } = useSelector(selectTaskBoard)
-  const currentAssignee = assignee.find((el) => el.id === task.assigneeId)
+  const [currentAssignee, setCurrentAssignee] = useState<IAssigneeCombined | undefined>(undefined)
+
+  useEffect(() => {
+    if (assignee.length > 0) {
+      const currentAssignee = assignee.find((el) => el.id === task.assigneeId)
+      setCurrentAssignee(currentAssignee)
+    }
+  }, [assignee])
 
   const handleMarkAsDoneClick = (e: React.MouseEvent) => {
     // Since mark as done button is nested inside a `next/link` Link, we need to stop the event from propagating
@@ -139,7 +147,14 @@ export const ClientTaskCard = ({
                 columnGap={'4px'}
                 sx={{ padding: '2px', width: { xs: 'auto', sm: '132px' } }}
               >
-                <CopilotAvatar currentAssignee={currentAssignee as IAssigneeCombined} />
+                {currentAssignee ? (
+                  <CopilotAvatar currentAssignee={currentAssignee as IAssigneeCombined} />
+                ) : (
+                  <Stack direction="row" justifyContent="space-between" alignItems="center" columnGap={'4px'}>
+                    <Skeleton variant="circular" width={20} height={20} />
+                    <Skeleton variant="rectangular" width="100px" height="12px" />
+                  </Stack>
+                )}
 
                 <Typography
                   variant="bodySm"

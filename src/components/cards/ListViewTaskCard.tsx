@@ -1,6 +1,6 @@
 'use client'
 
-import { Box, Stack, Typography, alpha } from '@mui/material'
+import { Box, Skeleton, Stack, Typography, alpha } from '@mui/material'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { TaskResponse, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { useSelector } from 'react-redux'
@@ -17,6 +17,7 @@ import { UrlObject } from 'url'
 import { CustomLink } from '@/hoc/CustomLink'
 import { getAssigneeName } from '@/utils/assignee'
 import { AssigneeType } from '@prisma/client'
+import { useEffect, useState } from 'react'
 
 export const ListViewTaskCard = ({
   task,
@@ -29,7 +30,14 @@ export const ListViewTaskCard = ({
 }) => {
   const { assignee } = useSelector(selectTaskBoard)
 
-  const currentAssignee = assignee.find((el) => el.id === task.assigneeId) ?? NoAssignee
+  const [currentAssignee, setCurrentAssignee] = useState<IAssigneeCombined | undefined>(undefined)
+
+  useEffect(() => {
+    if (assignee.length > 0) {
+      const currentAssignee = assignee.find((el) => el.id === task.assigneeId)
+      setCurrentAssignee(currentAssignee)
+    }
+  }, [assignee])
 
   const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
     item: currentAssignee,
@@ -93,62 +101,69 @@ export const ListViewTaskCard = ({
               {task.dueDate && <DueDateLayout dateString={task.dueDate} />}
             </Box>
 
-            <Selector
-              placeholder="Change assignee"
-              disableOutline
-              disabled
-              buttonWidth="150px"
-              getSelectedValue={(_newValue) => {
-                const newValue = _newValue as IAssigneeCombined
-                updateAssigneeValue(newValue)
-                const assigneeType = newValue.type ? AssigneeType[newValue.type as AssigneeType] : null
-                if (updateTask) {
-                  updateTask({
-                    payload: {
-                      assigneeType: assigneeType,
-                      assigneeId: newValue?.id,
-                    },
-                  })
+            {currentAssignee ? (
+              <Selector
+                placeholder="Change assignee"
+                disableOutline
+                disabled
+                buttonWidth="150px"
+                getSelectedValue={(_newValue) => {
+                  const newValue = _newValue as IAssigneeCombined
+                  updateAssigneeValue(newValue)
+                  const assigneeType = newValue.type ? AssigneeType[newValue.type as AssigneeType] : null
+                  if (updateTask) {
+                    updateTask({
+                      payload: {
+                        assigneeType: assigneeType,
+                        assigneeId: newValue?.id,
+                      },
+                    })
+                  }
+                }}
+                startIcon={
+                  <CopilotAvatar currentAssignee={assigneeValue as IAssigneeCombined} alt={getAssigneeName(assigneeValue)} />
                 }
-              }}
-              startIcon={
-                <CopilotAvatar currentAssignee={assigneeValue as IAssigneeCombined} alt={getAssigneeName(assigneeValue)} />
-              }
-              options={assignee}
-              value={assigneeValue}
-              selectorType={SelectorType.ASSIGNEE_SELECTOR}
-              extraOption={NoAssigneeExtraOptions}
-              extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
-                return (
-                  <ExtraOptionRendererAssignee
-                    props={props}
-                    onClick={(e) => {
-                      updateAssigneeValue({ id: '', name: 'No assignee' })
-                      setAnchorEl(anchorEl ? null : e.currentTarget)
-                      if (updateTask) {
-                        updateTask({
-                          payload: {
-                            assigneeType: null,
-                            assigneeId: null,
-                          },
-                        })
-                      }
+                options={assignee}
+                value={assigneeValue}
+                selectorType={SelectorType.ASSIGNEE_SELECTOR}
+                extraOption={NoAssigneeExtraOptions}
+                extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
+                  return (
+                    <ExtraOptionRendererAssignee
+                      props={props}
+                      onClick={(e) => {
+                        updateAssigneeValue({ id: '', name: 'No assignee' })
+                        setAnchorEl(anchorEl ? null : e.currentTarget)
+                        if (updateTask) {
+                          updateTask({
+                            payload: {
+                              assigneeType: null,
+                              assigneeId: null,
+                            },
+                          })
+                        }
+                      }}
+                    />
+                  )
+                }}
+                buttonContent={
+                  <Typography
+                    variant="bodySm"
+                    lineHeight="20px"
+                    sx={{
+                      color: (theme) => theme.color.gray[600],
                     }}
-                  />
-                )
-              }}
-              buttonContent={
-                <Typography
-                  variant="bodySm"
-                  lineHeight="20px"
-                  sx={{
-                    color: (theme) => theme.color.gray[600],
-                  }}
-                >
-                  {getAssigneeName(assigneeValue)}
-                </Typography>
-              }
-            />
+                  >
+                    {getAssigneeName(assigneeValue)}
+                  </Typography>
+                }
+              />
+            ) : (
+              <Stack direction="row" justifyContent="space-between" alignItems="center" columnGap={'4px'}>
+                <Skeleton variant="circular" width={20} height={20} />
+                <Skeleton variant="rectangular" width="100px" height="12px" />
+              </Stack>
+            )}
           </Stack>
         </Stack>
       </Box>
