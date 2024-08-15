@@ -10,19 +10,20 @@ import { useSelector } from 'react-redux'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { usePathname } from 'next/navigation'
 import { selectTaskDetails, setTask } from '@/redux/features/taskDetailsSlice'
+import { useRouter } from 'next/navigation'
 
 interface RealTimeTaskResponse extends TaskResponse {
   deletedAt: string
 }
 
 export const RealTime = ({ children }: { children: ReactNode }) => {
-  const { tasks } = useSelector(selectTaskBoard)
+  const { tasks, token } = useSelector(selectTaskBoard)
   const { tokenPayload } = useSelector(selectAuthDetails)
   const { task } = useSelector(selectTaskDetails)
   const path = usePathname()
-  console.log('pathhh', path)
+  const router = useRouter()
 
-  const handleTaskRealTimeUpdates = (payload: RealtimePostgresChangesPayload<RealTimeTaskResponse>) => {
+  const handleTaskRealTimeUpdatesInRoot = (payload: RealtimePostgresChangesPayload<RealTimeTaskResponse>) => {
     if (payload.eventType === 'INSERT') {
       //check if the new task in this event belongs to the same workspaceId
       if (payload.new.workspaceId === tokenPayload?.workspaceId) {
@@ -43,6 +44,18 @@ export const RealTime = ({ children }: { children: ReactNode }) => {
       }
     }
   }
+  const handleTaskRealTimeUpdatesDetails = (payload: RealtimePostgresChangesPayload<RealTimeTaskResponse>) => {
+    const updatedTask = payload.new as RealTimeTaskResponse
+    if (updatedTask.deletedAt) {
+      if (path.includes('/iu')) {
+        router.push(`/?token=${token}`)
+      } else {
+        router.push(`/client?token=${token}`)
+      }
+    } else {
+      store.dispatch(setTask(updatedTask))
+    }
+  }
 
   useEffect(() => {
     if (path.includes('/detail') && task) {
@@ -56,10 +69,7 @@ export const RealTime = ({ children }: { children: ReactNode }) => {
             table: 'Tasks',
             filter: `id=eq.${task.id}`,
           },
-          (payload: RealtimePostgresChangesPayload<any>) => {
-            console.log('payload', payload)
-            store.dispatch(setTask(payload.new))
-          },
+          handleTaskRealTimeUpdatesDetails,
         )
         .subscribe()
       return () => {
@@ -68,7 +78,7 @@ export const RealTime = ({ children }: { children: ReactNode }) => {
     } else {
       const channel = supabase
         .channel('realtime tasks')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'Tasks' }, handleTaskRealTimeUpdates)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'Tasks' }, handleTaskRealTimeUpdatesInRoot)
         .subscribe()
 
       return () => {

@@ -33,8 +33,6 @@ import EscapeHandler from '@/utils/escapeHandler'
 import { RealTime } from '@/hoc/RealTime'
 import { CustomScrollbar } from '@/hoc/CustomScrollbar'
 import { redirectIfResourceNotFound } from '@/utils/redirect'
-import { Suspense } from 'react'
-import { AssigneeFetcher } from '@/app/_fetchers/AssigneeFetcher'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
@@ -74,9 +72,6 @@ export default async function TaskDetailPage({
 
   return (
     <ClientSideStateUpdate token={token} tokenPayload={tokenPayload} task={task}>
-      <Suspense fallback={null}>
-        <AssigneeFetcher token={token} userType={params.user_type} />
-      </Suspense>
       <RealTime>
         <EscapeHandler />
         <Stack direction="row" sx={{ height: '100vh' }}>
