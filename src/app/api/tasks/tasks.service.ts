@@ -162,6 +162,21 @@ export class TasksService extends BaseService {
     return task
   }
 
+  async getTaskAssignee(task: Task) {
+    const policyGate = new PoliciesService(this.user)
+    policyGate.authorize(UserAction.Read, Resource.Tasks)
+    if (!task.assigneeId || !task.assigneeType) return {}
+
+    const copilot = new CopilotAPI(this.user.token)
+    if (task.assigneeType === AssigneeType.internalUser) {
+      return await copilot.getInternalUser(task.assigneeId)
+    } else if (task.assigneeType === AssigneeType.client) {
+      return await copilot.getClient(task.assigneeId)
+    } else {
+      return await copilot.getCompany(task.assigneeId)
+    }
+  }
+
   async updateOneTask(id: string, data: UpdateTaskRequest) {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Update, Resource.Tasks)
