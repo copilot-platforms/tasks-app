@@ -20,6 +20,9 @@ import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useRouter } from 'next/navigation'
 import { RESOURCE_NOT_FOUND_REDIRECT_PATHS } from '@/utils/redirect'
+import { CustomScrollbar } from '@/hoc/CustomScrollbar'
+import { StyledTiptapDescriptionWrapper } from './styledComponent'
+import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 
 interface Prop {
   task_id: string
@@ -117,49 +120,58 @@ export const TaskEditor = ({
 
   return (
     <>
-      <StyledTextField
-        type="text"
-        multiline
-        borderLess
-        sx={{
-          width: '100%',
-          '& .MuiInputBase-input': {
-            fontSize: '20px',
-            lineHeight: '28px',
-            color: (theme) => theme.color.gray[600],
-            fontWeight: 500,
-          },
-          '& .MuiInputBase-input.Mui-disabled': {
-            WebkitTextFillColor: (theme) => theme.color.gray[600],
-          },
-          '& .MuiInputBase-root': {
-            padding: '0px 0px',
-          },
-        }}
-        value={updateTitle}
-        onChange={handleTitleChange}
-        InputProps={{ readOnly: !isEditable }}
-        inputProps={{ maxLength: 255 }}
-        disabled={!isEditable}
-        padding="0px"
-      />
-
-      <Box mt="12px">
-        <Tapwrite
-          uploadFn={async (file, tiptapEditorUtils) => {
-            const newBlob = await upload(file.name, file, {
-              access: 'public',
-              handleUploadUrl: '/api/upload',
-            })
-            tiptapEditorUtils.setImage(newBlob.url as string)
-          }}
-          content={updateDetail}
-          getContent={handleDetailChange}
-          readonly={userType === UserType.CLIENT_USER}
-          editorClass="tapwrite-details-page"
-          placeholder="Add description..."
-        />
-      </Box>
+      <StyledTiptapDescriptionWrapper>
+        <AppMargin size={SizeofAppMargin.LARGE} py="30px">
+          <StyledTextField
+            type="text"
+            multiline
+            borderLess
+            sx={{
+              width: '100%',
+              '& .MuiInputBase-input': {
+                fontSize: '20px',
+                lineHeight: '28px',
+                color: (theme) => theme.color.gray[600],
+                fontWeight: 500,
+              },
+              '& .MuiInputBase-input.Mui-disabled': {
+                WebkitTextFillColor: (theme) => theme.color.gray[600],
+              },
+              '& .MuiInputBase-root': {
+                padding: '0px 0px',
+              },
+            }}
+            value={updateTitle}
+            onChange={handleTitleChange}
+            InputProps={{ readOnly: !isEditable }}
+            inputProps={{ maxLength: 255 }}
+            disabled={!isEditable}
+            padding="0px"
+          />
+        </AppMargin>
+      </StyledTiptapDescriptionWrapper>
+      <CustomScrollbar style={{ width: '8px' }}>
+        <StyledTiptapDescriptionWrapper>
+          <AppMargin size={SizeofAppMargin.LARGE} py="30px">
+            <Box mt="12px">
+              <Tapwrite
+                uploadFn={async (file, tiptapEditorUtils) => {
+                  const newBlob = await upload(file.name, file, {
+                    access: 'public',
+                    handleUploadUrl: '/api/upload',
+                  })
+                  tiptapEditorUtils.setImage(newBlob.url as string)
+                }}
+                content={updateDetail}
+                getContent={handleDetailChange}
+                readonly={userType === UserType.CLIENT_USER}
+                editorClass="tapwrite-details-page"
+                placeholder="Add description..."
+              />
+            </Box>
+          </AppMargin>
+        </StyledTiptapDescriptionWrapper>
+      </CustomScrollbar>
       {advancedFeatureFlag && (
         <>
           <Stack direction="row" columnGap={3} rowGap={3} mt={3} flexWrap={'wrap'}>
