@@ -54,7 +54,7 @@ export const ClientSideStateUpdate = ({
       store.dispatch(setWorkflowStates(workflowStates))
     }
 
-    if (tasks && tasksInStore.length === 0) {
+    if (tasks?.length) {
       store.dispatch(setTasks(tasks))
     }
 

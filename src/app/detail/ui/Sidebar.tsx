@@ -36,9 +36,7 @@ export const Sidebar = ({
   updateTask,
   disabled,
   workflowDisabled,
-  task_id,
 }: {
-  task_id: string
   selectedWorkflowState: WorkflowStateResponse
   selectedAssigneeId: string | undefined
   updateWorkflowState: (workflowState: WorkflowStateResponse) => void
@@ -47,8 +45,8 @@ export const Sidebar = ({
   disabled: boolean
   workflowDisabled?: false
 }) => {
-  const { token, workflowStates, assignee, tasks } = useSelector(selectTaskBoard)
-  const { showSidebar } = useSelector(selectTaskDetails)
+  const { token, workflowStates, assignee } = useSelector(selectTaskBoard)
+  const { showSidebar, task } = useSelector(selectTaskDetails)
   const [filteredAssignees, setFilteredAssignees] = useState(assignee)
   const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
   const [loading, setLoading] = useState(false)
@@ -67,16 +65,15 @@ export const Sidebar = ({
   const assigneeValue = _assigneeValue as IAssigneeCombined //typecasting
 
   useEffect(() => {
-    if (tasks && workflowStates && assignee) {
-      const currentTask = tasks.find((el) => el.id === task_id)
-      const currentWorkflowState = workflowStates.find((el) => el?.id === currentTask?.workflowStateId)
-      const currentAssigneeId = currentTask?.assigneeId
-      const currentAssignee = currentAssigneeId ? assignee.find((el) => el.id === currentAssigneeId) : NoAssignee
+    if (task && assignee && workflowStates) {
+      const currentWorkflowState = workflowStates?.find((el) => el?.id === task?.workflowStateId)
+      const currentAssigneeId = task?.assigneeId
+      const currentAssignee = currentAssigneeId ? assignee?.find((el) => el?.id === currentAssigneeId) : NoAssignee
       updateStatusValue(currentWorkflowState)
       updateAssigneeValue(currentAssignee)
-      setDueDate(currentTask?.dueDate)
+      setDueDate(task?.dueDate)
     }
-  }, [tasks, workflowStates, assignee])
+  }, [task, assignee, workflowStates])
 
   const matches = useMediaQuery('(max-width:600px)')
 

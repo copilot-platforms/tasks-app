@@ -42,8 +42,8 @@ export const TaskEditor = ({
 }: Prop) => {
   const [updateTitle, setUpdateTitle] = useState('')
   const [updateDetail, setUpdateDetail] = useState('')
-  const { showConfirmDeleteModal } = useSelector(selectTaskDetails)
-  const { token, tasks } = useSelector(selectTaskBoard)
+  const { showConfirmDeleteModal, task } = useSelector(selectTaskDetails)
+  const { token } = useSelector(selectTaskBoard)
   const [isUserTyping, setIsUserTyping] = useState(false)
   const router = useRouter()
 
@@ -62,12 +62,13 @@ export const TaskEditor = ({
   // }
 
   useEffect(() => {
-    const currentTask = tasks.find((el) => el.id === task_id)
-    if (!isUserTyping) {
-      setUpdateTitle(currentTask?.title || '')
-      setUpdateDetail(currentTask?.body ?? '')
+    if (task) {
+      if (!isUserTyping) {
+        setUpdateTitle(task?.title || '')
+        setUpdateDetail(task?.body ?? '')
+      }
     }
-  }, [tasks, task_id, isUserTyping])
+  }, [task, task_id, isUserTyping])
 
   const _titleUpdateDebounced = async (title: string) => updateTaskTitle(title)
 
