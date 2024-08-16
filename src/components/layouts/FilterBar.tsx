@@ -123,7 +123,7 @@ export const FilterBar = ({
   return (
     <Box
       sx={{
-        borderBottom: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
+        border: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
       }}
     >
       <Box
