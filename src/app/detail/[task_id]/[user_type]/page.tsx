@@ -36,6 +36,7 @@ import { redirectIfResourceNotFound } from '@/utils/redirect'
 import { Suspense } from 'react'
 import { WorkflowStateFetcher } from '@/app/_fetchers/WorkflowStateFetcher'
 import { AssigneeFetcher } from '@/app/_fetchers/AssigneeFetcher'
+import { CustomLink } from '@/hoc/CustomLink'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
@@ -83,7 +84,9 @@ export default async function TaskDetailPage({
               <AppMargin size={SizeofAppMargin.LARGE} py="16px">
                 <Stack direction="row" justifyContent="space-between">
                   <Stack direction="row" alignItems="center" columnGap={3}>
-                    <Link href={params.user_type === UserType.INTERNAL_USER ? `/?token=${token}` : `/client?token=${token}`}>
+                    <CustomLink
+                      href={params.user_type === UserType.INTERNAL_USER ? `/?token=${token}` : `/client?token=${token}`}
+                    >
                       <SecondaryBtn
                         buttonContent={
                           <StyledTypography variant="sm" lineHeight={'21px'}>
@@ -92,7 +95,7 @@ export default async function TaskDetailPage({
                         }
                         variant="breadcrumb"
                       />
-                    </Link>
+                    </CustomLink>
                     <StyledKeyboardIcon />
                     <Typography variant="sm">{task?.label}</Typography>
                   </Stack>
