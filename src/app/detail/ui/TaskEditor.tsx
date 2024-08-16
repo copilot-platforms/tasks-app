@@ -92,6 +92,15 @@ export const TaskEditor = ({
     setIsUserTyping(false)
   }, [])
 
+  useEffect(() => {
+    if (userType === UserType.INTERNAL_USER) {
+      console.log('runninggggg')
+      router.prefetch(`/?token=${token}`)
+    } else {
+      router.prefetch(`/client?token=${token}`)
+    }
+  }, [])
+
   const debouncedResetTypingFlag = useDebounce(resetTypingFlag, 1500)
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
