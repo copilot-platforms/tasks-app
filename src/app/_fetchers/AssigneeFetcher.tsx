@@ -1,3 +1,5 @@
+export const fetchCache = 'force-no-store'
+
 import { IAssignee, UserType } from '@/types/interfaces'
 import { apiUrl } from '@/config'
 import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
