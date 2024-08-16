@@ -264,6 +264,23 @@ export class TasksService extends BaseService {
     return await this.db.task.delete({ where: { id } })
   }
 
+  async deleteAllAssigneeTasks(assigneeId: string, assigneeType: AssigneeType) {
+    // Policies validation shouldn't be required here because token is from a webhook event
+    const tasks = await this.db.task.findMany({
+      where: { assigneeId, assigneeType, workspaceId: this.user.workspaceId },
+    })
+    if (!tasks.length) {
+      // If assignee doesn't have an associated task at all, skip logic
+      return
+    }
+    const labels = tasks.map((task) => task.label)
+
+    await this.db.task.deleteMany({
+      where: { assigneeId, assigneeType, workspaceId: this.user.workspaceId },
+    })
+    await this.db.label.deleteMany({ where: { label: { in: labels } } })
+  }
+
   async clientUpdateTask(id: string, targetWorkflowStateId?: string | null) {
     //Apply custom authorization here. Policy service is not used because this api is for client's Mark done function only. Only clients can use this.
     if (this.user.role === UserRole.IU) {
@@ -304,24 +321,40 @@ export class TasksService extends BaseService {
       },
     })
 
+    // --------------------------
+    // --- Notifications Logic
+    // --------------------------
     const notificationService = new NotificationService(this.user)
 
-    if (updatedTask.assigneeType === AssigneeType.company) {
-      const copilot = new CopilotAPI(this.user.token)
-      const { recipientIds } = await notificationService.getNotificationParties(
-        copilot,
-        updatedTask,
-        NotificationTaskActions.CompletedByCompanyMember,
-      )
-      await notificationService.createBulkNotification(
-        NotificationTaskActions.CompletedByCompanyMember,
-        updatedTask,
-        recipientIds,
-      )
-      await notificationService.markAsReadForAllRecipients(updatedTask)
-    } else {
-      await notificationService.create(NotificationTaskActions.Completed, updatedTask)
-      await notificationService.markClientNotificationAsRead(updatedTask)
+    // If task has been moved back to another non-completed state from Completed
+    if (
+      updatedWorkflowState &&
+      updatedWorkflowState.type !== StateType.completed &&
+      prevTask.workflowState.type === StateType.completed
+    ) {
+      // We need to trigger the notification count for client again!
+      await this.sendTaskCreateNotifications({ ...updatedTask, workflowState: updatedWorkflowState })
+    }
+
+    // If task has been moved to completed from a non-complete state, remove all notification counts
+    if (updatedWorkflowState?.type === StateType.completed && prevTask.workflowState.type !== StateType.completed) {
+      if (updatedTask.assigneeType === AssigneeType.company) {
+        const copilot = new CopilotAPI(this.user.token)
+        const { recipientIds } = await notificationService.getNotificationParties(
+          copilot,
+          updatedTask,
+          NotificationTaskActions.CompletedByCompanyMember,
+        )
+        await notificationService.createBulkNotification(
+          NotificationTaskActions.CompletedByCompanyMember,
+          updatedTask,
+          recipientIds,
+        )
+        await notificationService.markAsReadForAllRecipients(updatedTask)
+      } else {
+        await notificationService.create(NotificationTaskActions.Completed, updatedTask)
+        await notificationService.markClientNotificationAsRead(updatedTask)
+      }
     }
     return updatedTask
   }
@@ -438,8 +471,8 @@ export class TasksService extends BaseService {
       if (updatedTask.createdById !== updatedTask.assigneeId) {
         const action =
           updatedTask.assigneeType === AssigneeType.company
-            ? NotificationTaskActions.CompletedByCompanyMember
-            : NotificationTaskActions.Completed
+            ? NotificationTaskActions.CompletedForCompanyByIU
+            : NotificationTaskActions.CompletedByIU
         await notificationService.create(action, updatedTask, { email: true })
       }
 
