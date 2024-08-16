@@ -106,6 +106,7 @@ export const TaskEditor = ({
   }
 
   const handleTitleBlur = () => {
+    console.log(currentTask?.title)
     if (updateTitle.trim() == '') {
       setTimeout(() => {
         setUpdateTitle(currentTask?.title || '')
