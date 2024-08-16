@@ -18,6 +18,7 @@ class WebhookService extends BaseService {
     const eventType = webhookEvent.eventType as HANDLEABLE_EVENT
     const isValidWebhook = [
       HANDLEABLE_EVENT.InternalUserDeleted,
+      HANDLEABLE_EVENT.ClientCreated,
       HANDLEABLE_EVENT.ClientDeleted,
       HANDLEABLE_EVENT.CompanyDeleted,
     ].includes(eventType)
@@ -29,6 +30,7 @@ class WebhookService extends BaseService {
     const assigneeId = deletedEntity.id
     const assigneeType = {
       [HANDLEABLE_EVENT.InternalUserDeleted]: AssigneeType.internalUser,
+      [HANDLEABLE_EVENT.ClientCreated]: AssigneeType.client,
       [HANDLEABLE_EVENT.ClientDeleted]: AssigneeType.client,
       [HANDLEABLE_EVENT.CompanyDeleted]: AssigneeType.company,
     }[eventType]
