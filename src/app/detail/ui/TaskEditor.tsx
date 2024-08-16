@@ -156,6 +156,7 @@ export const TaskEditor = ({
         padding="0px"
         onBlur={handleTitleBlur}
         error={titleError}
+        helperText={titleError && 'Required'}
       />
 
       <Box mt="12px">
