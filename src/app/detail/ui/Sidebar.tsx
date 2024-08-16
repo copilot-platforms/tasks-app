@@ -73,7 +73,6 @@ export const Sidebar = ({
       const currentTask = tasks.find((el) => el.id === task_id)
       const currentWorkflowState = workflowStates.find((el) => el?.id === currentTask?.workflowStateId)
       const currentAssigneeId = currentTask?.assigneeId
-      console.log('assigneeId>>', currentAssigneeId)
       const currentAssignee = currentAssigneeId ? assignee.find((el) => el.id === currentAssigneeId) : NoAssignee
       updateStatusValue(currentWorkflowState)
       updateAssigneeValue(currentAssignee)

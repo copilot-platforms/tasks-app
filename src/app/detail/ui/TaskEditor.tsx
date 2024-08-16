@@ -97,6 +97,15 @@ export const TaskEditor = ({
 
   const [debouncedResetTypingFlag, cancelDebouncedResetTypingFlag] = useDebounceWithCancel(resetTypingFlag, 1500)
 
+  useEffect(() => {
+    if (userType === UserType.INTERNAL_USER) {
+      console.log('runninggggg')
+      router.prefetch(`/?token=${token}`)
+    } else {
+      router.prefetch(`/client?token=${token}`)
+    }
+  }, [])
+
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newTitle = e.target.value
     setUpdateTitle(newTitle)
