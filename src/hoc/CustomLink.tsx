@@ -49,8 +49,7 @@ export const CustomLink = ({
   const handleMouseEnter = useCallback(() => {
     hoverTimeoutRef.current = setTimeout(() => {
       setShouldPrefetch(true)
-      console.log('running', shouldPrefetch)
-    }, 1000) // 1 second delay
+    }, 500)
   }, [href])
 
   const handleMouseLeave = useCallback(() => {
