@@ -51,6 +51,7 @@ export const TaskEditor = ({
   const [updateDetail, setUpdateDetail] = useState('')
   const { showConfirmDeleteModal } = useSelector(selectTaskDetails)
   const [isUserTyping, setIsUserTyping] = useState(false)
+  const [titleError, setTitleError] = useState(false)
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     event.preventDefault()
@@ -99,7 +100,7 @@ export const TaskEditor = ({
     if (newTitle.trim() == '') {
       return
     }
-
+    setTitleError(false)
     setIsUserTyping(true)
     titleUpdateDebounced(newTitle)
     debouncedResetTypingFlag()
@@ -108,7 +109,9 @@ export const TaskEditor = ({
   const handleTitleBlur = () => {
     console.log(currentTask?.title)
     if (updateTitle.trim() == '') {
+      setTitleError(true)
       setTimeout(() => {
+        setTitleError(false)
         setUpdateTitle(currentTask?.title || '')
       }, 2000)
     }
@@ -152,6 +155,7 @@ export const TaskEditor = ({
         disabled={!isEditable}
         padding="0px"
         onBlur={handleTitleBlur}
+        error={titleError}
       />
 
       <Box mt="12px">
