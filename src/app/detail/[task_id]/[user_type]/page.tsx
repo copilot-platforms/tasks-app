@@ -36,6 +36,7 @@ import { redirectIfResourceNotFound } from '@/utils/redirect'
 import { Suspense } from 'react'
 import { WorkflowStateFetcher } from '@/app/_fetchers/WorkflowStateFetcher'
 import { AssigneeFetcher } from '@/app/_fetchers/AssigneeFetcher'
+import { TasksFetcher } from '@/app/_fetchers/TasksFetcher'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
@@ -75,6 +76,9 @@ export default async function TaskDetailPage({
 
   return (
     <ClientSideStateUpdate token={token} tokenPayload={tokenPayload} task={task}>
+      <Suspense fallback={null}>
+        <TasksFetcher token={token} />
+      </Suspense>
       <RealTime>
         <EscapeHandler />
         <Stack direction="row" sx={{ height: '100vh' }}>
@@ -191,6 +195,7 @@ export default async function TaskDetailPage({
               <WorkflowStateFetcher token={token}>
                 <AssigneeFetcher token={token} />
                 <Sidebar
+                  task_id={task_id}
                   selectedAssigneeId={task?.assigneeId}
                   selectedWorkflowState={task?.workflowState}
                   updateWorkflowState={async (workflowState) => {
