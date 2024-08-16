@@ -7,3 +7,8 @@
 .tapwrite-details-page {
   min-height: 75vh;
 }
+
+
+a {
+  text-decoration: none;
+}

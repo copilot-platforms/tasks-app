@@ -79,7 +79,9 @@ export const TaskCard = ({ task, href }: TaskCardProps) => {
             {task.label}
           </Typography>
         </Stack>
-        <Typography variant="sm">{task.title}</Typography>
+        <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[600] }}>
+          {task.title}
+        </Typography>
         {task.dueDate && <DueDateLayout dateString={task.dueDate} />}
       </Stack>
     </TaskCardContainer>
