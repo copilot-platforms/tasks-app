@@ -38,6 +38,7 @@ export const updateWorkflowStateIdOfTask = async (token: string, taskId: string,
       workflowStateId: targetWorkflowStateId,
     }),
   })
+  revalidateTag('getTasks')
   //revalidation on update assignee is disabled for now since we don't have activity log enabled
   //this revalidation can be rethought and may not be needed to prevent unexpected flickering
   if (advancedFeatureFlag) {
@@ -49,6 +50,7 @@ export const clientUpdateTask = async (token: string, taskId: string, targetWork
   await fetch(`${apiUrl}/api/tasks/${taskId}/client?token=${token}&workflowStateId=${targetWorkflowStateId}`, {
     method: 'PATCH',
   })
+  revalidateTag('getAllTasks-client')
 }
 
 export const updateAssignee = async (
