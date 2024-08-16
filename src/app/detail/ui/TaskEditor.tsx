@@ -75,14 +75,12 @@ export const TaskEditor = ({
     }
 
     if (!isUserTyping) {
-      console.log('triggered!!')
       setUpdateTitle(currentTask?.title || '')
       setUpdateDetail(currentTask?.body ?? '')
     }
   }, [tasks, task_id, isUserTyping, token])
 
   const _titleUpdateDebounced = async (title: string) => {
-    console.log('debounced,,, ', title)
     updateTaskTitle(title)
   }
 
@@ -112,14 +110,11 @@ export const TaskEditor = ({
     debouncedResetTypingFlag()
   }
 
-  console.log(updateTitle)
-
   const handleTitleBlur = () => {
-    console.log(currentTask?.title)
     if (updateTitle.trim() == '') {
       setTimeout(() => {
         setUpdateTitle(currentTask?.title || '')
-      }, 2000)
+      }, 300)
     }
   }
 
