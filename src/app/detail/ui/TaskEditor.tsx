@@ -81,11 +81,16 @@ export const TaskEditor = ({
     }
   }, [tasks, task_id, isUserTyping, token])
 
-  const _titleUpdateDebounced = async (title: string) => updateTaskTitle(title)
+  const _titleUpdateDebounced = async (title: string) => {
+    console.log('debounced,,, ', title)
+    updateTaskTitle(title)
+  }
 
   const titleUpdateDebounced = useDebounce(_titleUpdateDebounced)
 
-  const _detailsUpdateDebounced = async (details: string) => updateTaskDetail(details)
+  const _detailsUpdateDebounced = async (details: string) => {
+    updateTaskDetail(details)
+  }
   const detailsUpdateDebounced = useDebounce(_detailsUpdateDebounced)
 
   const resetTypingFlag = useCallback(() => {
