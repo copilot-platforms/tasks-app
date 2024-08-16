@@ -81,13 +81,13 @@ export const TaskEditor = ({
     setIsUserTyping(false)
   }, [])
 
-  useEffect(() => {
-    if (userType === UserType.INTERNAL_USER) {
-      router.prefetch(`/?token=${token}`)
-    } else {
-      router.prefetch(`/client?token=${token}`)
-    }
-  }, [])
+  // useEffect(() => {
+  //  if (userType === UserType.INTERNAL_USER) {
+  //    router.prefetch(`/?token=${token}`)
+  //  } else {
+  //    router.prefetch(`/client?token=${token}`)
+  //  }
+  // }, [])
 
   const debouncedResetTypingFlag = useDebounce(resetTypingFlag, 1500)
 
