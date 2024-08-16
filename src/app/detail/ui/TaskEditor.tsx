@@ -12,6 +12,8 @@ import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { ISignedUrlUpload, UserType } from '@/types/interfaces'
 import { Tapwrite } from 'tapwrite'
 import { useDebounce } from '@/hooks/useDebounce'
+import { useRouter } from 'next/router'
+import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 
 interface Prop {
   task_id: string
@@ -41,7 +43,9 @@ export const TaskEditor = ({
   const [updateTitle, setUpdateTitle] = useState('')
   const [updateDetail, setUpdateDetail] = useState('')
   const { showConfirmDeleteModal, task } = useSelector(selectTaskDetails)
+  const { token } = useSelector(selectTaskBoard)
   const [isUserTyping, setIsUserTyping] = useState(false)
+  const router = useRouter()
 
   // const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
   //   event.preventDefault()
@@ -75,6 +79,14 @@ export const TaskEditor = ({
 
   const resetTypingFlag = useCallback(() => {
     setIsUserTyping(false)
+  }, [])
+
+  useEffect(() => {
+    if (userType === UserType.INTERNAL_USER) {
+      router.prefetch(`/?token=${token}`)
+    } else {
+      router.prefetch(`/client?token=${token}`)
+    }
   }, [])
 
   const debouncedResetTypingFlag = useDebounce(resetTypingFlag, 1500)
