@@ -110,6 +110,8 @@ export const TaskEditor = ({
     debouncedResetTypingFlag()
   }
 
+  console.log(updateTitle)
+
   const handleTitleBlur = () => {
     console.log(currentTask?.title)
     if (updateTitle.trim() == '') {
