@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { CSSProperties, ReactNode, useCallback } from 'react'
 import { UrlObject } from 'url'
@@ -47,8 +48,8 @@ export const CustomLink = ({
   }, [href])
 
   return (
-    <div onMouseEnter={handleMouseEnter} onClick={() => router.push(`${pathname}?token=${token}`)} style={style}>
+    <Link href={`${pathname}?token=${token}`} style={style} prefetch={false}>
       {children}
-    </div>
+    </Link>
   )
 }
