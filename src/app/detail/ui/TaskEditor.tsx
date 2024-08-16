@@ -87,7 +87,7 @@ export const TaskEditor = ({
     } else {
       router.prefetch(`/client?token=${token}`)
     }
-  }, [])
+  }, [task])
 
   const debouncedResetTypingFlag = useDebounce(resetTypingFlag, 1500)
 
