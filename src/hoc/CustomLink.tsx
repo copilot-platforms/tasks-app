@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { CSSProperties, ReactNode, useCallback, useState } from 'react'
+import { CSSProperties, ReactNode, useCallback, useState, useRef } from 'react'
 import { UrlObject } from 'url'
 import { z } from 'zod'
 
@@ -44,13 +44,30 @@ export const CustomLink = ({
   const { pathname, token } = getUrl()
 
   const [shouldPrefetch, setShouldPrefetch] = useState(false)
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const handleMouseEnter = useCallback(() => {
-    setShouldPrefetch(true)
+    hoverTimeoutRef.current = setTimeout(() => {
+      setShouldPrefetch(true)
+      console.log('running', shouldPrefetch)
+    }, 1000) // 1 second delay
   }, [href])
 
+  const handleMouseLeave = useCallback(() => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current)
+      hoverTimeoutRef.current = null
+    }
+  }, [])
+
   return (
-    <Link href={`${pathname}?token=${token}`} style={style} prefetch={shouldPrefetch} onMouseEnter={handleMouseEnter}>
+    <Link
+      href={`${pathname}?token=${token}`}
+      style={style}
+      prefetch={shouldPrefetch}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
       {children}
     </Link>
   )
