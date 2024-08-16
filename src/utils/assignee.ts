@@ -18,3 +18,7 @@ export const getAssigneeName = (
     ? assigneeValue?.name || `${assigneeValue?.givenName ?? ''} ${assigneeValue?.familyName ?? ''}`.trim()
     : noAssigneetext
 }
+
+export const checkAssignee = (assigneeValue: IAssigneeCombined | undefined): boolean => {
+  return !!assigneeValue
+}

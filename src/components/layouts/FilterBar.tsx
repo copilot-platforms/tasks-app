@@ -19,12 +19,11 @@ import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { useFilter } from '@/hooks/useFilter'
 import { IUTokenSchema } from '@/types/common'
 import { NoAssigneeExtraOptions } from '@/utils/noAssignee'
-import ExtraOptionRendererAssignee from '@/components/inputs/ExtraOptionRendererAssignee'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { z } from 'zod'
 import { setDebouncedFilteredAssignees } from '@/utils/users'
 import { MiniLoader } from '@/components/atoms/MiniLoader'
-import { getAssigneeName } from '@/utils/getAssigneeName'
+import { checkAssignee, getAssigneeName } from '@/utils/assignee'
 
 export const FilterBar = ({
   updateViewModeSetting,
@@ -151,7 +150,7 @@ export const FilterBar = ({
                   }}
                   startIcon={<FilterByAsigneeIcon />}
                   endIcon={
-                    getAssigneeName(assigneeValue) && (
+                    checkAssignee(assigneeValue) && (
                       <IconButton
                         aria-label="remove"
                         onClick={(e) => {
@@ -162,7 +161,7 @@ export const FilterBar = ({
                         sx={{
                           cursor: 'default',
                           borderRadius: 0,
-                          padding: '6px 10px 6px 6px',
+                          padding: '6px 5px 6px 6px',
 
                           '&:hover': {
                             bgcolor: (theme) => theme.color.gray[100],
@@ -199,7 +198,7 @@ export const FilterBar = ({
                     )
                   }}
                   buttonContent={<FilterByAssigneeBtn assigneeValue={assigneeValue} />}
-                  padding="2px 5px 2px 10px"
+                  padding="2px 10px 2px 10px"
                   handleInputChange={async (newInputValue: string) => {
                     if (!newInputValue) {
                       setFilteredAssignee(filteredAssigneeList)
@@ -256,7 +255,7 @@ export const FilterBar = ({
                   }}
                   startIcon={<FilterByAsigneeIcon />}
                   endIcon={
-                    getAssigneeName(assigneeValue) && (
+                    checkAssignee(assigneeValue) && (
                       <IconButton
                         aria-label="remove"
                         onClick={(e) => {
@@ -267,7 +266,7 @@ export const FilterBar = ({
                         sx={{
                           cursor: 'default',
                           borderRadius: 0,
-                          padding: '6px 10px 6px 6px',
+                          padding: '6px 5px 6px 6px',
 
                           '&:hover': {
                             bgcolor: (theme) => theme.color.gray[100],
@@ -304,7 +303,7 @@ export const FilterBar = ({
                     )
                   }}
                   buttonContent={<FilterByAssigneeBtn assigneeValue={assigneeValue} />}
-                  padding="2px 5px 2px 10px"
+                  padding="2px 10px 2px 10px"
                   handleInputChange={async (newInputValue: string) => {
                     if (!newInputValue) {
                       setFilteredAssignee(filteredAssigneeList)
