@@ -75,6 +75,7 @@ export const TaskEditor = ({
     }
 
     if (!isUserTyping) {
+      console.log('triggered!!')
       setUpdateTitle(currentTask?.title || '')
       setUpdateDetail(currentTask?.body ?? '')
     }
