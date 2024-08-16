@@ -12,7 +12,7 @@ import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { ISignedUrlUpload, UserType } from '@/types/interfaces'
 import { Tapwrite } from 'tapwrite'
 import { useDebounce } from '@/hooks/useDebounce'
-import { useRouter } from 'next/router'
+import { useRouter } from 'next/navigation'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 
 interface Prop {
