@@ -1,16 +1,22 @@
-import { CircularProgress } from '@mui/material'
+import { Box, CircularProgress } from '@mui/material'
 
 const LoaderComponent = () => {
   return (
-    <CircularProgress
+    <Box
       sx={{
         position: 'absolute',
-        top: '45%',
-        left: '50%',
-        color: '#000',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        bgcolor: 'transparent',
       }}
-      size={40}
-    />
+    >
+      <CircularProgress color="inherit" size={40} />
+    </Box>
   )
 }
 

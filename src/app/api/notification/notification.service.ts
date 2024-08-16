@@ -7,6 +7,7 @@ import { CompanyResponse, CopilotUser, MeResponse, NotificationCreatedResponse }
 import { getEmailDetails, getInProductNotificationDetails } from '@api/notification/notification.helpers'
 import APIError from '@api/core/exceptions/api'
 import httpStatus from 'http-status'
+import Bottleneck from 'bottleneck'
 
 export class NotificationService extends BaseService {
   async create(action: NotificationTaskActions, task: Task, disable: { email: boolean } = { email: false }) {
@@ -137,6 +138,42 @@ export class NotificationService extends BaseService {
     //     assigneeType: AssigneeType.client,
     //   }),
     // )
+  }
+
+  async readAllUserNotifications(userId: string, userType: AssigneeType) {
+    const copilot = new CopilotAPI(this.user.token)
+
+    if (userType === AssigneeType.internalUser) {
+      return
+    }
+    if (userType === AssigneeType.client) {
+      return await this.markAllAsReadForClients([userId])
+    }
+    if (userType === AssigneeType.company) {
+      // In this case, we need to find out all the clients inside this deleted company, then pass that array to markAllAsReadForClients
+      const clients = await copilot.getCompanyClients(userId)
+      return await this.markAllAsReadForClients(clients.map((client) => client.id))
+    }
+
+    throw new APIError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to parse assignee')
+  }
+
+  async markAllAsReadForClients(clientIds: string[]) {
+    const copilot = new CopilotAPI(this.user.token)
+    const notifications = await this.db.clientNotification.findMany({
+      where: {
+        clientId: { in: clientIds },
+      },
+    })
+    // Get an array of notification ids for Copilot API
+    const notificationPromises = []
+    const bottleneck = new Bottleneck({ minTime: 250, maxConcurrent: 4 })
+    for (let notification of notifications) {
+      const promise = bottleneck.schedule(() => copilot.markNotificationAsRead(notification.notificationId))
+      notificationPromises.push(promise)
+    }
+    await Promise.all(notificationPromises)
+    await this.db.clientNotification.deleteMany({ where: { id: { in: notifications.map((obj) => obj.id) } } })
   }
 
   /**

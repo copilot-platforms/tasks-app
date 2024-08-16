@@ -275,12 +275,10 @@ export class TasksService extends BaseService {
     }
     const labels = tasks.map((task) => task.label)
 
-    await this.db.$transaction([
-      this.db.task.deleteMany({
-        where: { assigneeId, assigneeType, workspaceId: this.user.workspaceId },
-      }),
-      this.db.label.deleteMany({ where: { label: { in: labels } } }),
-    ])
+    await this.db.task.deleteMany({
+      where: { assigneeId, assigneeType, workspaceId: this.user.workspaceId },
+    })
+    await this.db.label.deleteMany({ where: { label: { in: labels } } })
   }
 
   async clientUpdateTask(id: string, targetWorkflowStateId?: string | null) {
@@ -323,24 +321,40 @@ export class TasksService extends BaseService {
       },
     })
 
+    // --------------------------
+    // --- Notifications Logic
+    // --------------------------
     const notificationService = new NotificationService(this.user)
 
-    if (updatedTask.assigneeType === AssigneeType.company) {
-      const copilot = new CopilotAPI(this.user.token)
-      const { recipientIds } = await notificationService.getNotificationParties(
-        copilot,
-        updatedTask,
-        NotificationTaskActions.CompletedByCompanyMember,
-      )
-      await notificationService.createBulkNotification(
-        NotificationTaskActions.CompletedByCompanyMember,
-        updatedTask,
-        recipientIds,
-      )
-      await notificationService.markAsReadForAllRecipients(updatedTask)
-    } else {
-      await notificationService.create(NotificationTaskActions.Completed, updatedTask)
-      await notificationService.markClientNotificationAsRead(updatedTask)
+    // If task has been moved back to another non-completed state from Completed
+    if (
+      updatedWorkflowState &&
+      updatedWorkflowState.type !== StateType.completed &&
+      prevTask.workflowState.type === StateType.completed
+    ) {
+      // We need to trigger the notification count for client again!
+      await this.sendTaskCreateNotifications({ ...updatedTask, workflowState: updatedWorkflowState })
+    }
+
+    // If task has been moved to completed from a non-complete state, remove all notification counts
+    if (updatedWorkflowState?.type === StateType.completed && prevTask.workflowState.type !== StateType.completed) {
+      if (updatedTask.assigneeType === AssigneeType.company) {
+        const copilot = new CopilotAPI(this.user.token)
+        const { recipientIds } = await notificationService.getNotificationParties(
+          copilot,
+          updatedTask,
+          NotificationTaskActions.CompletedByCompanyMember,
+        )
+        await notificationService.createBulkNotification(
+          NotificationTaskActions.CompletedByCompanyMember,
+          updatedTask,
+          recipientIds,
+        )
+        await notificationService.markAsReadForAllRecipients(updatedTask)
+      } else {
+        await notificationService.create(NotificationTaskActions.Completed, updatedTask)
+        await notificationService.markClientNotificationAsRead(updatedTask)
+      }
     }
     return updatedTask
   }

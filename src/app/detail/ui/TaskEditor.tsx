@@ -70,16 +70,16 @@ export const TaskEditor = ({
   const router = useRouter()
   const currentTask = tasks.find((el) => el.id === task_id)
   useEffect(() => {
-    if (!currentTask) {
+    if (!currentTask && token) {
       router.push(`${RESOURCE_NOT_FOUND_REDIRECT_PATHS[userType]}?token=${token}`)
       return // Just to keep TSC happy below
     }
 
     if (!isUserTyping) {
-      setUpdateTitle(currentTask.title || '')
-      setUpdateDetail(currentTask.body ?? '')
+      setUpdateTitle(currentTask?.title || '')
+      setUpdateDetail(currentTask?.body ?? '')
     }
-  }, [tasks, task_id, isUserTyping])
+  }, [tasks, task_id, isUserTyping, token])
 
   const _titleUpdateDebounced = async (title: string) => updateTaskTitle(title)
 
