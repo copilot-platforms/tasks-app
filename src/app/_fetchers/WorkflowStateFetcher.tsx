@@ -1,5 +1,3 @@
-export const fetchCache = 'force-no-store'
-
 import { apiUrl } from '@/config'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
