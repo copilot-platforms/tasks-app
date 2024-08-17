@@ -1,6 +1,5 @@
 export const fetchCache = 'force-no-store'
 
-import { Header } from '@/components/layouts/Header'
 import { apiUrl } from '@/config'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import { TaskResponse } from '@/types/dto/tasks.dto'
@@ -14,6 +13,7 @@ import { RealTime } from '@/hoc/RealTime'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { Token, TokenSchema } from '@/types/common'
 import { sortTaskByDescendingOrder } from '@/utils/sortTask'
+import { CheckStaleToken } from '@/components/_fetchers/CheckStaleToken'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -59,6 +59,7 @@ export default async function ClientPage({ searchParams }: { searchParams: { tok
   ])
   return (
     <>
+      <CheckStaleToken token={token} />
       <ClientSideStateUpdate
         workflowStates={workflowStates}
         tasks={tasks}
