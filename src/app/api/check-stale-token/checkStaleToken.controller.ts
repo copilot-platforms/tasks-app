@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import authenticate from '../core/utils/authenticate'
+import authenticate from '@api/core/utils/authenticate'
 import { z } from 'zod'
-import APIError from '../core/exceptions/api'
+import APIError from '@api/core/exceptions/api'
 import httpStatus from 'http-status'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 
