@@ -120,46 +120,49 @@ class WebhookService extends BaseService {
       previousAttributes: { companyId: prevCompanyId },
     } = data
     // If company hasn't been changed - don't bother with any of this
-    if (!prevCompanyId) return
+    if (prevCompanyId === newCompanyId) return
 
-    // First find all tasks related to previous company
-    const prevCompanyTasks = await this.db.task.findMany({
-      where: {
-        assigneeId: prevCompanyId,
-        assigneeType: AssigneeType.company,
-        workflowState: {
-          type: { not: StateType.completed },
-        },
-      },
-    })
-    // NOTE: workspaceId filter is not used because:
-    // (i) Webhook request doesn't provide workspaceId
-    // (ii) Company is not shared across workspaces
-    const prevCompanyTaskIds = prevCompanyTasks.map((task) => task.id)
-
-    // Find all triggered notifications for this client, on behalf of prev company
-    const prevCompanyNotifications = await this.db.clientNotification.findMany({
-      where: {
-        taskId: { in: prevCompanyTaskIds },
-        clientId,
-      },
-    })
-    const notificationIds = prevCompanyNotifications.map((notification) => notification.id)
-
-    // Delete all task notifications triggered for client for previous company
-    const deletePromises = []
+    // Only delete prev notifications if client had a valid company before
     const copilot = new CopilotAPI(this.user.token)
-    const bottleneck = new Bottleneck({ minTime: 250, maxConcurrent: 2 })
+    const prevCompany = prevCompanyId ? await copilot.getCompany(prevCompanyId) : null
+    // NOTE: If prev company was not a valid company, instead a randomly generated placeholder company,
+    // prevCompany.name will be an empty string
+    if (prevCompany && prevCompany.name !== '') {
+      // First find all tasks related to previous company
+      const prevCompanyTasks = await this.db.task.findMany({
+        where: {
+          assigneeId: prevCompanyId,
+          assigneeType: AssigneeType.company,
+          workflowState: {
+            type: { not: StateType.completed },
+          },
+        },
+      })
+      const prevCompanyTaskIds = prevCompanyTasks.map((task) => task.id)
 
-    for (let notification of prevCompanyNotifications) {
-      deletePromises.push(
-        bottleneck.schedule(() => {
-          return copilot.markNotificationAsRead(notification.notificationId)
-        }),
-      )
+      // Find all triggered notifications for this client, on behalf of prev company
+      const prevCompanyNotifications = await this.db.clientNotification.findMany({
+        where: {
+          taskId: { in: prevCompanyTaskIds },
+          clientId,
+        },
+      })
+      const notificationIds = prevCompanyNotifications.map((notification) => notification.id)
+
+      // Delete all task notifications triggered for client for previous company
+      const deletePromises = []
+      const bottleneck = new Bottleneck({ minTime: 250, maxConcurrent: 2 })
+
+      for (let notification of prevCompanyNotifications) {
+        deletePromises.push(
+          bottleneck.schedule(() => {
+            return copilot.markNotificationAsRead(notification.notificationId)
+          }),
+        )
+      }
+      await Promise.all(deletePromises)
+      await this.db.clientNotification.deleteMany({ where: { id: { in: notificationIds } } })
     }
-    await Promise.all(deletePromises)
-    await this.db.clientNotification.deleteMany({ where: { id: { in: notificationIds } } })
 
     // Trigger new notifications for new company's tasks (if exists)
     if (!newCompanyId) return
