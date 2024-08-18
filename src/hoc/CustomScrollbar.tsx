@@ -30,7 +30,7 @@ export const CustomScrollbar = ({ children, style }: { children: ReactNode; styl
       }}
       autoHideTimeout={500}
       autoHideDuration={500}
-      // hideTracksWhenNotNeeded={true}
+      hideTracksWhenNotNeeded={true}
     >
       {children}
     </Scrollbars>
