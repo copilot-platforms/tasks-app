@@ -17,7 +17,8 @@ export const CheckStaleToken = ({ token }: CheckStaleTokenProps) => {
     const response = await fetch(`/api/check-stale-token?token=${token}`)
     const isTokenStale = CheckStaleTokenResponse.parse(await response.json())
     if (isTokenStale) {
-      router.refresh()
+      // TODO: Use App Bridge to make iframe parent generate a new token with new data encoded
+      console.error('Token is stale. Oh no!')
     }
   }
 
