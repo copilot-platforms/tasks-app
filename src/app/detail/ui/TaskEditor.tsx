@@ -4,7 +4,7 @@ import { AttachmentCard } from '@/components/cards/AttachmentCard'
 import { StyledTextField } from '@/components/inputs/TextField'
 import { selectTaskDetails, setShowConfirmDeleteModal } from '@/redux/features/taskDetailsSlice'
 import { Box, Modal, Stack } from '@mui/material'
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useSelector } from 'react-redux'
 import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
 import store from '@/redux/store'
@@ -17,7 +17,7 @@ import { ISignedUrlUpload, UserType } from '@/types/interfaces'
 import { advancedFeatureFlag } from '@/config'
 import { Tapwrite } from 'tapwrite'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
-import { useDebounce } from '@/hooks/useDebounce'
+import { useDebounce, useDebounceWithCancel } from '@/hooks/useDebounce'
 import { useRouter } from 'next/navigation'
 import { RESOURCE_NOT_FOUND_REDIRECT_PATHS } from '@/utils/redirect'
 
@@ -67,9 +67,8 @@ export const TaskEditor = ({
   }
 
   const router = useRouter()
-
+  const currentTask = tasks.find((el) => el.id === task_id)
   useEffect(() => {
-    const currentTask = tasks.find((el) => el.id === task_id)
     if (!currentTask && token) {
       router.push(`${RESOURCE_NOT_FOUND_REDIRECT_PATHS[userType]}?token=${token}`)
       return // Just to keep TSC happy below
@@ -81,16 +80,22 @@ export const TaskEditor = ({
     }
   }, [tasks, task_id, isUserTyping, token])
 
-  const _titleUpdateDebounced = async (title: string) => updateTaskTitle(title)
+  const _titleUpdateDebounced = async (title: string) => {
+    updateTaskTitle(title)
+  }
 
-  const titleUpdateDebounced = useDebounce(_titleUpdateDebounced)
+  const [titleUpdateDebounced, cancelTitleUpdateDebounced] = useDebounceWithCancel(_titleUpdateDebounced)
 
-  const _detailsUpdateDebounced = async (details: string) => updateTaskDetail(details)
+  const _detailsUpdateDebounced = async (details: string) => {
+    updateTaskDetail(details)
+  }
   const detailsUpdateDebounced = useDebounce(_detailsUpdateDebounced)
 
   const resetTypingFlag = useCallback(() => {
     setIsUserTyping(false)
   }, [])
+
+  const [debouncedResetTypingFlag, cancelDebouncedResetTypingFlag] = useDebounceWithCancel(resetTypingFlag, 1500)
 
   useEffect(() => {
     if (userType === UserType.INTERNAL_USER) {
@@ -101,17 +106,25 @@ export const TaskEditor = ({
     }
   }, [])
 
-  const debouncedResetTypingFlag = useDebounce(resetTypingFlag, 1500)
-
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newTitle = e.target.value
+    setUpdateTitle(newTitle)
     if (newTitle.trim() == '') {
+      cancelTitleUpdateDebounced()
+      cancelDebouncedResetTypingFlag()
       return
     }
-    setUpdateTitle(newTitle)
     setIsUserTyping(true)
     titleUpdateDebounced(newTitle)
     debouncedResetTypingFlag()
+  }
+
+  const handleTitleBlur = () => {
+    if (updateTitle.trim() == '') {
+      setTimeout(() => {
+        setUpdateTitle(currentTask?.title || '')
+      }, 300)
+    }
   }
 
   const handleDetailChange = (content: string) => {
@@ -151,6 +164,7 @@ export const TaskEditor = ({
         inputProps={{ maxLength: 255 }}
         disabled={!isEditable}
         padding="0px"
+        onBlur={handleTitleBlur}
       />
 
       <Box mt="12px">
