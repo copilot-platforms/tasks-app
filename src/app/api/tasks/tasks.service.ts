@@ -264,6 +264,13 @@ export class TasksService extends BaseService {
     return await this.db.task.delete({ where: { id } })
   }
 
+  async getUnfilteredTasksForUser(assigneeId: string): Promise<(Task & { workflowState: WorkflowState })[]> {
+    return await this.db.task.findMany({
+      where: { assigneeId },
+      include: { workflowState: true },
+    })
+  }
+
   async deleteAllAssigneeTasks(assigneeId: string, assigneeType: AssigneeType) {
     // Policies validation shouldn't be required here because token is from a webhook event
     const tasks = await this.db.task.findMany({
@@ -413,7 +420,7 @@ export class TasksService extends BaseService {
     }
   }
 
-  private async sendTaskCreateNotifications(task: Task & { workflowState: WorkflowState }, isReassigned = false) {
+  async sendTaskCreateNotifications(task: Task & { workflowState: WorkflowState }, isReassigned = false) {
     // If task is unassigned, there's nobody to send notifications to
     if (!task.assigneeId) return
 
