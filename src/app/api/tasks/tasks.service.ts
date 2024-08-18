@@ -264,9 +264,10 @@ export class TasksService extends BaseService {
     return await this.db.task.delete({ where: { id } })
   }
 
-  async getUnfilteredTasksForUser(assigneeId: string): Promise<(Task & { workflowState: WorkflowState })[]> {
+  async getIncompleteTasksForCompany(assigneeId: string): Promise<(Task & { workflowState: WorkflowState })[]> {
+    // This works across workspaces
     return await this.db.task.findMany({
-      where: { assigneeId },
+      where: { assigneeId, assigneeType: AssigneeType.company, workflowState: { type: { not: StateType.completed } } },
       include: { workflowState: true },
     })
   }
