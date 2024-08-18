@@ -2,7 +2,7 @@ import { Avatar, Box, Button, Popper, Stack, Typography } from '@mui/material'
 import { StyledAutocomplete } from '@/components/inputs/Autocomplete'
 import { statusIcons } from '@/utils/iconMatcher'
 import { useFocusableInput } from '@/hooks/useFocusableInput'
-import { HTMLAttributes, ReactNode, useEffect, useState } from 'react'
+import { HTMLAttributes, ReactNode, Ref, forwardRef, useEffect, useState } from 'react'
 import { StyledTextField } from './TextField'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { IAssigneeCombined, IExtraOption, ITemplate, UserType, UserTypesName } from '@/types/interfaces'
@@ -12,6 +12,8 @@ import { truncateText } from '@/utils/truncateText'
 import { CopilotAvatar } from '../atoms/CopilotAvatar'
 import { getAssigneeName } from '@/utils/assignee'
 import { StyledHelperText } from '../error/FormHelperText'
+import React from 'react'
+import Scrollbars, { ScrollbarProps } from 'react-custom-scrollbars'
 
 export enum SelectorType {
   ASSIGNEE_SELECTOR = 'assigneeSelector',
@@ -198,6 +200,7 @@ export default function Selector({
               setAnchorEl(null)
             }
           }}
+          ListboxComponent={ListComponent}
           getOptionLabel={(option: unknown) => detectSelectorType(option)}
           groupBy={(option: unknown) =>
             selectorType === SelectorType.ASSIGNEE_SELECTOR ? UserTypesName[(option as IAssigneeCombined).type] : ''
@@ -419,3 +422,37 @@ const SelectorButton = ({
     </Button>
   )
 }
+
+interface ListComponentProps extends Omit<ScrollbarProps, 'ref'> {
+  children: React.ReactNode
+}
+
+const ListComponentInternal = forwardRef<Scrollbars, ListComponentProps>((props, ref) => {
+  const { children, ...comProps } = props
+
+  return (
+    <Scrollbars
+      {...comProps}
+      renderThumbVertical={(scrollbarProps) => (
+        <div
+          {...scrollbarProps}
+          className="thumb"
+          style={{
+            borderRadius: '6px',
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          }}
+        />
+      )}
+      autoHeight
+      autoHide
+      autoHideTimeout={500}
+      autoHideDuration={500}
+      hideTracksWhenNotNeeded
+    >
+      {children}
+    </Scrollbars>
+  )
+})
+ListComponentInternal.displayName = 'ListComponentInternal'
+
+const ListComponent = (props: JSX.IntrinsicElements['div']) => <ListComponentInternal {...(props as ListComponentProps)} />
