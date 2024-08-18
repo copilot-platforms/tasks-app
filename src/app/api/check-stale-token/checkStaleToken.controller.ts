@@ -4,6 +4,7 @@ import { z } from 'zod'
 import APIError from '@api/core/exceptions/api'
 import httpStatus from 'http-status'
 import { CopilotAPI } from '@/utils/CopilotAPI'
+import { CheckStaleTokenResponse } from '@/types/dto/checkStaleToken.dto'
 
 export const checkStaleToken = async (req: NextRequest) => {
   const user = await authenticate(req)
@@ -17,6 +18,8 @@ export const checkStaleToken = async (req: NextRequest) => {
 
   // --- Validation criteria
   // companyId encoded in token payload must match copilot client's companyId
-  const isValid = client.companyId !== user.companyId
-  return NextResponse.json(isValid)
+  const isStaleToken = client.companyId !== user.companyId
+  const response = CheckStaleTokenResponse.parse(isStaleToken)
+
+  return NextResponse.json(response)
 }
