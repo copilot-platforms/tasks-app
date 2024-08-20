@@ -2,8 +2,8 @@
 
 import { StyledTextField } from '@/components/inputs/TextField'
 import { selectTaskDetails, setShowConfirmDeleteModal } from '@/redux/features/taskDetailsSlice'
-import { Box, Modal } from '@mui/material'
 import { useEffect, useState, useCallback } from 'react'
+import { Box, Modal, Stack } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
 import store from '@/redux/store'
@@ -11,7 +11,7 @@ import { upload } from '@vercel/blob/client'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { ISignedUrlUpload, UserType } from '@/types/interfaces'
 import { Tapwrite } from 'tapwrite'
-import { useDebounce } from '@/hooks/useDebounce'
+import { useDebounce, useDebounceWithCancel } from '@/hooks/useDebounce'
 import { useRouter } from 'next/navigation'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 
@@ -70,16 +70,22 @@ export const TaskEditor = ({
     }
   }, [task, task_id, isUserTyping])
 
-  const _titleUpdateDebounced = async (title: string) => updateTaskTitle(title)
+  const _titleUpdateDebounced = async (title: string) => {
+    updateTaskTitle(title)
+  }
 
-  const titleUpdateDebounced = useDebounce(_titleUpdateDebounced)
+  const [titleUpdateDebounced, cancelTitleUpdateDebounced] = useDebounceWithCancel(_titleUpdateDebounced)
 
-  const _detailsUpdateDebounced = async (details: string) => updateTaskDetail(details)
+  const _detailsUpdateDebounced = async (details: string) => {
+    updateTaskDetail(details)
+  }
   const detailsUpdateDebounced = useDebounce(_detailsUpdateDebounced)
 
   const resetTypingFlag = useCallback(() => {
     setIsUserTyping(false)
   }, [])
+
+  const [debouncedResetTypingFlag, cancelDebouncedResetTypingFlag] = useDebounceWithCancel(resetTypingFlag, 1500)
 
   // useEffect(() => {
   //   if (userType === UserType.INTERNAL_USER) {
@@ -89,17 +95,25 @@ export const TaskEditor = ({
   //   }
   // }, [])
 
-  const debouncedResetTypingFlag = useDebounce(resetTypingFlag, 1500)
-
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newTitle = e.target.value
+    setUpdateTitle(newTitle)
     if (newTitle.trim() == '') {
+      cancelTitleUpdateDebounced()
+      cancelDebouncedResetTypingFlag()
       return
     }
-    setUpdateTitle(newTitle)
     setIsUserTyping(true)
     titleUpdateDebounced(newTitle)
     debouncedResetTypingFlag()
+  }
+
+  const handleTitleBlur = () => {
+    if (updateTitle.trim() == '') {
+      setTimeout(() => {
+        setUpdateTitle(task?.title || '')
+      }, 300)
+    }
   }
 
   const handleDetailChange = (content: string) => {
@@ -139,6 +153,7 @@ export const TaskEditor = ({
         inputProps={{ maxLength: 255 }}
         disabled={!isEditable}
         padding="0px"
+        onBlur={handleTitleBlur}
       />
 
       <Box mt="12px">

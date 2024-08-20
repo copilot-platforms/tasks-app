@@ -15,7 +15,7 @@ import { WorkflowStateUpdatedSchema } from '@api/activity-logs/schemas/WorkflowS
 import { NotificationService } from '@api/notification/notification.service'
 import { LabelMappingService } from '@api/label-mapping/label-mapping.service'
 import { z } from 'zod'
-import { NotificationCreatedResponseSchema } from '@/types/common'
+import { ClientResponse, CompanyResponse, InternalUsers, NotificationCreatedResponseSchema } from '@/types/common'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 
 type FilterByAssigneeId = {
@@ -162,10 +162,10 @@ export class TasksService extends BaseService {
     return task
   }
 
-  async getTaskAssignee(task: Task) {
+  async getTaskAssignee(task: Task): Promise<InternalUsers | ClientResponse | CompanyResponse | undefined> {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Read, Resource.Tasks)
-    if (!task.assigneeId || !task.assigneeType) return {}
+    if (!task.assigneeId || !task.assigneeType) return undefined
 
     const copilot = new CopilotAPI(this.user.token)
     switch (task.assigneeType) {
@@ -278,6 +278,14 @@ export class TasksService extends BaseService {
     await labelMappingService.deleteLabel(task?.label)
 
     return await this.db.task.delete({ where: { id } })
+  }
+
+  async getIncompleteTasksForCompany(assigneeId: string): Promise<(Task & { workflowState: WorkflowState })[]> {
+    // This works across workspaces
+    return await this.db.task.findMany({
+      where: { assigneeId, assigneeType: AssigneeType.company, workflowState: { type: { not: StateType.completed } } },
+      include: { workflowState: true },
+    })
   }
 
   async deleteAllAssigneeTasks(assigneeId: string, assigneeType: AssigneeType) {
@@ -429,7 +437,7 @@ export class TasksService extends BaseService {
     }
   }
 
-  private async sendTaskCreateNotifications(task: Task & { workflowState: WorkflowState }, isReassigned = false) {
+  async sendTaskCreateNotifications(task: Task & { workflowState: WorkflowState }, isReassigned = false) {
     // If task is unassigned, there's nobody to send notifications to
     if (!task.assigneeId) return
 

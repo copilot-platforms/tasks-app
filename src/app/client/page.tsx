@@ -13,6 +13,8 @@ import { Token, TokenSchema } from '@/types/common'
 import { sortTaskByDescendingOrder } from '@/utils/sortTask'
 import { Suspense } from 'react'
 import { AssigneeFetcher } from '../_fetchers/AssigneeFetcher'
+import { z } from 'zod'
+import ClientError from '@/components/clientError'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -41,6 +43,9 @@ async function getTokenPayload(token: string): Promise<Token> {
 
 export default async function ClientPage({ searchParams }: { searchParams: { token: string } }) {
   const token = searchParams.token
+  if (!z.string().safeParse(token).success) {
+    return <ClientError message={'Please provide a Valid Token'} />
+  }
 
   const [workflowStates, tasks, tokenPayload] = await Promise.all([
     await getAllWorkflowStates(token),

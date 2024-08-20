@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import authenticate from '@api/core/utils/authenticate'
 import WebhookService from '@api/webhook/webhook.service'
-import { TasksService } from '@api/tasks/tasks.service'
-import { NotificationService } from '@api/notification/notification.service'
+import { ClientUpdatedEventDataSchema, HANDLEABLE_EVENT } from '@/types/webhook'
 
 export const handleWebhookEvent = async (req: NextRequest) => {
   const user = await authenticate(req)
@@ -16,14 +15,16 @@ export const handleWebhookEvent = async (req: NextRequest) => {
   }
   const { assigneeId, assigneeType } = webhookService.parseAssigneeData(webhookEvent, eventType)
 
-  // Delete corresponding tasks
-  const tasksService = new TasksService(user)
-  console.info(`Deleting all tasks for ${assigneeType} ${assigneeId}`)
-  await tasksService.deleteAllAssigneeTasks(assigneeId, assigneeType)
+  switch (eventType) {
+    case HANDLEABLE_EVENT.ClientCreated:
+      await webhookService.handleClientCreated(assigneeId)
+      break
+    case HANDLEABLE_EVENT.ClientUpdated:
+      await webhookService.handleClientUpdated(ClientUpdatedEventDataSchema.parse(webhookEvent.data))
+      break
+    default:
+      await webhookService.handleUserDeleted(assigneeId, assigneeType)
+  }
 
-  // Delete corresponding notifications
-  const notificationService = new NotificationService(user)
-  await notificationService.readAllUserNotifications(assigneeId, assigneeType)
-
-  return NextResponse.json({ message: 'Webhook request handled successfully' })
+  return NextResponse.json({ message: `${eventType} webhook request handled successfully` })
 }
