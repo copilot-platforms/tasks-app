@@ -1,7 +1,7 @@
 'use client'
 
 import { setTokenPayload } from '@/redux/features/authDetailsSlice'
-import { selectTaskBoard, setAssigneeList, setFilteredAssgineeList, setViewSettings } from '@/redux/features/taskBoardSlice'
+import { setAssigneeList, setFilteredAssgineeList, setViewSettings } from '@/redux/features/taskBoardSlice'
 import { setTasks, setToken, setWorkflowStates } from '@/redux/features/taskBoardSlice'
 import { setAssigneeSuggestion, setTask } from '@/redux/features/taskDetailsSlice'
 import { setTemplates } from '@/redux/features/templateSlice'
@@ -18,7 +18,6 @@ import {
   ITemplate,
 } from '@/types/interfaces'
 import { ReactNode, useEffect } from 'react'
-import { useSelector } from 'react-redux'
 
 /**
  * This HOC is responsible in updating the client side state of the responses that are fetched in the server components.
@@ -48,7 +47,6 @@ export const ClientSideStateUpdate = ({
   assigneeSuggestions?: IAssigneeSuggestions[]
   task?: TaskResponse
 }) => {
-  const { tasks: tasksInStore } = useSelector(selectTaskBoard)
   useEffect(() => {
     if (workflowStates) {
       store.dispatch(setWorkflowStates(workflowStates))

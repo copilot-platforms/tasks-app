@@ -5,13 +5,15 @@ import { useFocusableInput } from '@/hooks/useFocusableInput'
 import { HTMLAttributes, ReactNode, useEffect, useState } from 'react'
 import { StyledTextField } from './TextField'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { IAssigneeCombined, IExtraOption, ITemplate, UserType, UserTypesName } from '@/types/interfaces'
+import { IAssigneeCombined, IExtraOption, ITemplate, UserTypesName } from '@/types/interfaces'
 import { TruncateMaxNumber } from '@/types/constants'
 
 import { truncateText } from '@/utils/truncateText'
-import { CopilotAvatar } from '../atoms/CopilotAvatar'
+import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { getAssigneeName } from '@/utils/assignee'
-import { StyledHelperText } from '../error/FormHelperText'
+import { StyledHelperText } from '@/components/error/FormHelperText'
+import React from 'react'
+import { ListComponent } from '@/components/inputs/ListComponent'
 
 export enum SelectorType {
   ASSIGNEE_SELECTOR = 'assigneeSelector',
@@ -198,6 +200,7 @@ export default function Selector({
               setAnchorEl(null)
             }
           }}
+          ListboxComponent={ListComponent}
           getOptionLabel={(option: unknown) => detectSelectorType(option)}
           groupBy={(option: unknown) =>
             selectorType === SelectorType.ASSIGNEE_SELECTOR ? UserTypesName[(option as IAssigneeCombined).type] : ''
@@ -390,7 +393,7 @@ const SelectorButton = ({
               : `1px solid ${theme.color.borders.border}`,
         bgcolor: enableBackground ? theme.color.gray[150] : '',
         '&:hover': {
-          bgcolor: theme.color.base.white,
+          bgcolor: theme.color.gray[100],
           border:
             enableBackground || outlined
               ? 'none'

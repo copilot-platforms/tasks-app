@@ -62,15 +62,11 @@ export const WorkflowStateSelector = ({
                 justifyContent: { xs: 'end', sm: 'flex-start' },
                 cursor: disabled ? 'auto' : 'pointer',
                 borderRadius: '4px',
-                ':hover': {
-                  backgroundColor: (theme) => (disabled ? theme.color.base.white : theme.color.gray[100]),
-                },
               }}
             >
               <Box>{statusIcons[value?.type]}</Box>
               <Typography
                 variant="md"
-                title={value?.name}
                 sx={{
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',

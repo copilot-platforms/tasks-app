@@ -42,7 +42,6 @@ const SearchBar = ({ value, getSearchKeyword, onClear, title }: ISearchBar) => {
       variant="outlined"
       placeholder={focused ? 'Find in view...' : 'Search'}
       basePadding="4px 4px 4px 8px"
-      title={value ? value : (title ?? 'Find in view...')}
       sx={{
         width: {
           md: focused || fieldValue ? '220px' : '80px',

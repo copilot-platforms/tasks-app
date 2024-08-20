@@ -16,7 +16,6 @@ import { createMultipleAttachments, getSignedUrlUpload } from '@/app/actions'
 import { ModalNewTaskForm } from './ui/Modal_NewTaskForm'
 import { RealTime } from '@/hoc/RealTime'
 import { redirectIfTaskCta } from '@/utils/redirect'
-import { sortTaskByDescendingOrder } from '@/utils/sortTask'
 import { Suspense } from 'react'
 import { AssigneeFetcher } from './_fetchers/AssigneeFetcher'
 
@@ -37,7 +36,7 @@ async function getAllTasks(token: string): Promise<TaskResponse[]> {
 
   const data = await res.json()
 
-  return sortTaskByDescendingOrder(data.tasks)
+  return data.tasks
 }
 
 async function getTokenPayload(token: string): Promise<Token> {
