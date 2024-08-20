@@ -85,7 +85,7 @@ export default async function TaskDetailPage({
                 <Stack direction="row" justifyContent="space-between">
                   <Stack direction="row" alignItems="center" columnGap={3}>
                     <CustomLink
-                      href={{ pathname: params.user_type === UserType.INTERNAL_USER ? `/` : `/client`, query: token }}
+                      href={{ pathname: params.user_type === UserType.INTERNAL_USER ? `/` : `/client`, query: { token } }}
                     >
                       <SecondaryBtn
                         buttonContent={
