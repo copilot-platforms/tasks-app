@@ -493,11 +493,17 @@ export class TasksService extends BaseService {
       updatedTask.assigneeId
     ) {
       if (updatedTask.createdById !== updatedTask.assigneeId) {
-        const action =
-          updatedTask.assigneeType === AssigneeType.company
-            ? NotificationTaskActions.CompletedForCompanyByIU
-            : NotificationTaskActions.CompletedByIU
-        await notificationService.create(action, updatedTask, { email: true })
+        // Make sure company task is not marked as complete by IU
+        if (
+          (updatedTask.assigneeType === AssigneeType.company || updatedTask.assigneeType === AssigneeType.internalUser) &&
+          updatedTask.createdById !== this.user.internalUserId
+        ) {
+          const action =
+            updatedTask.assigneeType === AssigneeType.company
+              ? NotificationTaskActions.CompletedForCompanyByIU
+              : NotificationTaskActions.CompletedByIU
+          await notificationService.create(action, updatedTask, { email: true })
+        }
       }
 
       if (updatedTask.assigneeType === AssigneeType.client) {
