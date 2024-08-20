@@ -1,6 +1,6 @@
 # Task App
 
-### Task App is part of the Copilot internal App Store. Task App is a comprehensive task management app that allows SB (Service Business) to create and assign tasks to their clients.
+### Task App is part of the Copilot internal App Store. Task App is a comprehensive task management app that allows SB (Service Business) to create and assign tasks to their clients
 
 Task App uses NextJS for both the frontend UI and API routes. Postgres, coupled with Prisma, powers the database operations. Deployment is seamlessly handled by Vercel.
 

@@ -493,11 +493,17 @@ export class TasksService extends BaseService {
       updatedTask.assigneeId
     ) {
       if (updatedTask.createdById !== updatedTask.assigneeId) {
-        const action =
-          updatedTask.assigneeType === AssigneeType.company
-            ? NotificationTaskActions.CompletedForCompanyByIU
-            : NotificationTaskActions.CompletedByIU
-        await notificationService.create(action, updatedTask, { email: true })
+        // Make sure company task is not marked as complete by IU
+        if (
+          (updatedTask.assigneeType === AssigneeType.company || updatedTask.assigneeType === AssigneeType.internalUser) &&
+          updatedTask.createdById !== this.user.internalUserId
+        ) {
+          const action =
+            updatedTask.assigneeType === AssigneeType.company
+              ? NotificationTaskActions.CompletedForCompanyByIU
+              : NotificationTaskActions.CompletedByIU
+          await notificationService.create(action, updatedTask, { email: true })
+        }
       }
 
       if (updatedTask.assigneeType === AssigneeType.client) {
@@ -508,6 +514,17 @@ export class TasksService extends BaseService {
         }
       }
     }
+
+    if (
+      prevTask.workflowState?.type === StateType.completed &&
+      updatedTask.workflowState?.type !== StateType.completed &&
+      updatedTask.assigneeId
+    ) {
+      // If IU decides to move a task back to an incomplete state, trigger client / company notifications
+      await this.sendTaskCreateNotifications(updatedTask)
+    }
+
+    // --- Handle task moved to complete
     await notificationService.markAsReadForAllRecipients(updatedTask)
   }
 }
