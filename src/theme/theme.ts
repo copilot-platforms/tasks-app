@@ -51,6 +51,7 @@ export const theme = createTheme({
       300: '#C9CBCD',
       400: '#90959D',
       500: '#6B6F76',
+      550: '#60606A',
       600: '#212B36',
       700: '#0E0E10',
     },
@@ -65,7 +66,6 @@ export const theme = createTheme({
       text: '#212B36',
       textSecondary: '#6B6F76',
       textDisabled: '#90959D',
-      textGray: '#60606A',
     },
     borders: {
       border: '#DFE1E4',

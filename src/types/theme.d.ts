@@ -49,6 +49,7 @@ export declare module '@mui/material/styles' {
         300: string
         400: string
         500: string
+        550: string
         600: string
         700: string
       }
@@ -63,7 +64,6 @@ export declare module '@mui/material/styles' {
         text: string
         textSecondary: string
         textDisabled: string
-        textGray: string
       }
       borders: {
         border: string
@@ -128,6 +128,7 @@ export declare module '@mui/material/styles' {
         300: React.CSSProperties['color']
         400: React.CSSProperties['color']
         500: React.CSSProperties['color']
+        550: React.CSSProperties['color']
         600: React.CSSProperties['color']
         700: React.CSSProperties['color']
       }
@@ -142,7 +143,6 @@ export declare module '@mui/material/styles' {
         text: React.CSSProperties['color']
         textSecondary: React.CSSProperties['color']
         textDisabled: React.CSSProperties['color']
-        textGray: React.CSSProperties['color']
       }
       borders: {
         border: React.CSSProperties['color']

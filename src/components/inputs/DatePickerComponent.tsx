@@ -63,7 +63,7 @@ export const DatePickerComponent = ({ getDate, dateValue, disabled, isButton = f
                   fontSize: '12px',
                   overflow: 'hidden',
                   maxWidth: { xs: '100px', sm: 'none' },
-                  color: (theme) => (value ? theme.color.gray[600] : theme.color.text.textGray),
+                  color: (theme) => (value ? theme.color.gray[600] : theme.color.gray[550]),
                 }}
               >
                 {value ? formatDate(value) : 'Due date'}

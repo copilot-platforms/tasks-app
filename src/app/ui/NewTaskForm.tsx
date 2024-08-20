@@ -261,7 +261,7 @@ export const NewTaskForm = ({
                 <Typography
                   variant="bodySm"
                   sx={{
-                    color: (theme) => (tempAssignee ? theme.color.gray[600] : theme.color.text.textGray),
+                    color: (theme) => (tempAssignee ? theme.color.gray[600] : theme.color.gray[550]),
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
 
