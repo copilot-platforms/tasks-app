@@ -20,6 +20,9 @@ import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { useDebounce, useDebounceWithCancel } from '@/hooks/useDebounce'
 import { useRouter } from 'next/navigation'
 import { RESOURCE_NOT_FOUND_REDIRECT_PATHS } from '@/utils/redirect'
+import { CustomScrollbar } from '@/hoc/CustomScrollbar'
+import { StyledTiptapDescriptionWrapper } from './styledComponent'
+import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 
 interface Prop {
   task_id: string
@@ -138,93 +141,98 @@ export const TaskEditor = ({
   }
 
   return (
-    <>
-      <StyledTextField
-        type="text"
-        multiline
-        borderLess
-        sx={{
-          width: '100%',
-          '& .MuiInputBase-input': {
-            fontSize: '20px',
-            lineHeight: '28px',
-            color: (theme) => theme.color.gray[600],
-            fontWeight: 500,
-          },
-          '& .MuiInputBase-input.Mui-disabled': {
-            WebkitTextFillColor: (theme) => theme.color.gray[600],
-          },
-          '& .MuiInputBase-root': {
-            padding: '0px 0px',
-          },
-        }}
-        value={updateTitle}
-        onChange={handleTitleChange}
-        InputProps={{ readOnly: !isEditable }}
-        inputProps={{ maxLength: 255 }}
-        disabled={!isEditable}
-        padding="0px"
-        onBlur={handleTitleBlur}
-      />
+    <CustomScrollbar style={{ width: '8px' }} key={task_id}>
+      <StyledTiptapDescriptionWrapper>
+        <AppMargin size={SizeofAppMargin.LARGE} py="30px">
+          <StyledTextField
+            type="text"
+            multiline
+            borderLess
+            sx={{
+              width: '100%',
+              '& .MuiInputBase-input': {
+                fontSize: '20px',
+                lineHeight: '28px',
+                color: (theme) => theme.color.gray[600],
+                fontWeight: 500,
+              },
+              '& .MuiInputBase-input.Mui-disabled': {
+                WebkitTextFillColor: (theme) => theme.color.gray[600],
+              },
+              '& .MuiInputBase-root': {
+                padding: '0px 0px',
+              },
+            }}
+            value={updateTitle}
+            onChange={handleTitleChange}
+            InputProps={{ readOnly: !isEditable }}
+            inputProps={{ maxLength: 255 }}
+            disabled={!isEditable}
+            padding="0px"
+            onBlur={handleTitleBlur}
+          />
 
-      <Box mt="12px">
-        <Tapwrite
-          uploadFn={async (file, tiptapEditorUtils) => {
-            const newBlob = await upload(file.name, file, {
-              access: 'public',
-              handleUploadUrl: '/api/upload',
-            })
-            tiptapEditorUtils.setImage(newBlob.url as string)
-          }}
-          content={updateDetail}
-          getContent={handleDetailChange}
-          readonly={userType === UserType.CLIENT_USER}
-          editorClass="tapwrite-details-page"
-          placeholder="Add description..."
-        />
-      </Box>
-      {advancedFeatureFlag && (
-        <>
-          <Stack direction="row" columnGap={3} rowGap={3} mt={3} flexWrap={'wrap'}>
-            {attachment?.map((el, key) => {
-              return (
-                <Box key={key}>
-                  <AttachmentCard
-                    file={el}
-                    deleteAttachment={async (event: any) => {
-                      event.stopPropagation()
-                      const supabaseActions = new SupabaseActions()
-                      const { data } = await supabaseActions.removeAttachment(el.filePath)
-                      if (data && el.id) {
-                        deleteAttachment(el.id)
-                      }
-                    }}
-                  />
-                </Box>
-              )
-            })}
-          </Stack>
+          <Box mt="12px" sx={{ height: '100%' }}>
+            <Tapwrite
+              uploadFn={async (file, tiptapEditorUtils) => {
+                const newBlob = await upload(file.name, file, {
+                  access: 'public',
+                  handleUploadUrl: '/api/upload',
+                })
+                tiptapEditorUtils.setImage(newBlob.url as string)
+              }}
+              content={updateDetail}
+              getContent={handleDetailChange}
+              readonly={userType === UserType.CLIENT_USER}
+              editorClass="tapwrite-details-page"
+              placeholder="Add description..."
+            />
+          </Box>
 
-          <Stack direction="row" mt={3} justifyContent="flex-end">
-            <AttachmentInput handleFileSelect={handleFileSelect} />
-          </Stack>
-        </>
-      )}
+          {advancedFeatureFlag && (
+            <>
+              <Stack direction="row" columnGap={3} rowGap={3} mt={3} flexWrap={'wrap'}>
+                {attachment?.map((el, key) => {
+                  return (
+                    <Box key={key}>
+                      <AttachmentCard
+                        file={el}
+                        deleteAttachment={async (event: any) => {
+                          event.stopPropagation()
+                          const supabaseActions = new SupabaseActions()
+                          const { data } = await supabaseActions.removeAttachment(el.filePath)
+                          if (data && el.id) {
+                            deleteAttachment(el.id)
+                          }
+                        }}
+                      />
+                    </Box>
+                  )
+                })}
+              </Stack>
 
-      <Modal
-        open={showConfirmDeleteModal}
-        onClose={() => store.dispatch(setShowConfirmDeleteModal())}
-        aria-labelledby="delete-task-modal"
-        aria-describedby="delete-task"
-      >
-        <ConfirmDeleteUI
-          handleCancel={() => store.dispatch(setShowConfirmDeleteModal())}
-          handleDelete={() => {
-            deleteTask()
-            store.dispatch(setShowConfirmDeleteModal())
-          }}
-        />
-      </Modal>
-    </>
+              <Stack direction="row" mt={3} justifyContent="flex-end">
+                <AttachmentInput handleFileSelect={handleFileSelect} />
+              </Stack>
+            </>
+          )}
+
+          <Modal
+            open={showConfirmDeleteModal}
+            onClose={() => store.dispatch(setShowConfirmDeleteModal())}
+            aria-labelledby="delete-task-modal"
+            aria-describedby="delete-task"
+          >
+            <ConfirmDeleteUI
+              handleCancel={() => store.dispatch(setShowConfirmDeleteModal())}
+              handleDelete={() => {
+                deleteTask()
+                store.dispatch(setShowConfirmDeleteModal())
+              }}
+            />
+          </Modal>
+        </AppMargin>
+      </StyledTiptapDescriptionWrapper>
+    </CustomScrollbar>
   )
 }
