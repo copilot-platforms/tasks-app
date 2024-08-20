@@ -14,8 +14,6 @@ export const CustomLink = ({
   href: string | UrlObject
   style?: CSSProperties
 }) => {
-  const router = useRouter()
-
   type UrlDetails = {
     pathname?: string
     token?: string
@@ -59,7 +57,6 @@ export const CustomLink = ({
       hoverTimeoutRef.current = null
     }
   }, [])
-  console.log('should', shouldPrefetch)
 
   return (
     <Link
