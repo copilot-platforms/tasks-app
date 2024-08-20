@@ -50,7 +50,7 @@ export const setDebouncedFilteredAssignees = (
   setAssigneeState: Dispatch<SetStateAction<IAssigneeCombined[]>>,
   token: string,
   newInputValue: string,
-  filterOptions: string,
+  filterOptions?: string,
 ): void => {
   if (activeDebounceTimeoutId) {
     clearTimeout(activeDebounceTimeoutId)
