@@ -44,6 +44,7 @@ export const updateViewModeSettings = async (token: string, payload: CreateViewS
     method: 'PATCH',
     body: JSON.stringify(payload),
   })
+  revalidateTag('getViewSettings')
 }
 
 export const getSignedUrlUpload = async (token: string, fileName: string) => {

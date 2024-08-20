@@ -46,7 +46,9 @@ async function getTokenPayload(token: string): Promise<Token> {
 }
 
 async function getViewSettings(token: string): Promise<CreateViewSettingsDTO> {
-  const res = await fetch(`${apiUrl}/api/view-settings?token=${token}`, { next: { revalidate: 0 } })
+  const res = await fetch(`${apiUrl}/api/view-settings?token=${token}`, {
+    next: { tags: ['getViewSettings'] },
+  })
   const data = await res.json()
 
   return data
