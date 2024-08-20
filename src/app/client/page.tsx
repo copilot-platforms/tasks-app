@@ -33,7 +33,7 @@ async function getAllTasks(token: string): Promise<TaskResponse[]> {
   })
 
   const data = await res.json()
-  return sortTaskByDescendingOrder(data.tasks)
+  return data.tasks
 }
 
 async function getAssigneeList(token: string): Promise<IAssignee> {
