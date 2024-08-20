@@ -9,6 +9,7 @@ import httpStatus from 'http-status'
 import { CompanyResponse, CopilotListArgs, FilterableUser } from '@/types/common'
 import { filterUsersByKeyword } from '@/utils/users'
 import { z } from 'zod'
+import { FilterOptionsKeywords } from '@/types/interfaces'
 
 class UsersService extends BaseService {
   private copilot: CopilotAPI
@@ -65,9 +66,25 @@ class UsersService extends BaseService {
    * @param keyword
    * @returns
    */
-  async getFilteredUsersStartingWith(keyword: string, limit?: number, nextToken?: string) {
+  async getFilteredUsersStartingWith(keyword: string, userType?: string, limit?: number, nextToken?: string) {
     const filterByKeyword = (users: FilterableUser[]) => filterUsersByKeyword(users, keyword)
 
+    if (userType) {
+      if (userType === FilterOptionsKeywords.CLIENTS) {
+        const { clients, companies } = await this.getGroupedUsers(limit || 500, nextToken)
+        return {
+          clients: filterByKeyword(clients),
+          companies: filterByKeyword(companies),
+        }
+      }
+
+      if (userType === FilterOptionsKeywords.TEAM) {
+        const { internalUsers } = await this.getGroupedUsers(limit || 500, nextToken)
+        return {
+          internalUsers: filterByKeyword(internalUsers),
+        }
+      }
+    }
     const { internalUsers, clients, companies } = await this.getGroupedUsers(limit || 500, nextToken)
     return {
       internalUsers: filterByKeyword(internalUsers),

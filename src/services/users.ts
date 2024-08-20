@@ -12,12 +12,14 @@ export async function getAssigneeList(
   keyword?: string,
   limit?: number,
   nextToken?: string,
+  filterOptions?: string,
 ): Promise<IAssignee> {
   const reqUrl =
     `/api/users?token=${token}` +
     buildOptionalSearchParam('search', keyword) +
     buildOptionalSearchParam('limit', limit) +
-    buildOptionalSearchParam('nextToken', nextToken)
+    buildOptionalSearchParam('nextToken', nextToken) +
+    buildOptionalSearchParam('userType', filterOptions)
   const res = await fetch(reqUrl, {
     next: { tags: ['getAssigneeList'] },
   })
