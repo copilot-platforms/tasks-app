@@ -61,7 +61,6 @@ export const ClientSideStateUpdate = ({
     }
 
     if (assignee?.length) {
-      console.log('assigneeee', assignee)
       store.dispatch(setAssigneeList(assignee))
     }
 
