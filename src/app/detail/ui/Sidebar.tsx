@@ -1,7 +1,7 @@
 'use client'
 
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
-import { Box, Stack, Typography, styled, useMediaQuery } from '@mui/material'
+import { Box, Skeleton, Stack, Typography, styled, useMediaQuery } from '@mui/material'
 import Selector, { SelectorType } from '@/components/inputs/Selector'
 import { IAssigneeCombined } from '@/types/interfaces'
 import { DatePickerComponent } from '@/components/inputs/DatePickerComponent'
@@ -13,7 +13,7 @@ import { StyledBox } from './styledComponent'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { createDateFromFormattedDateString, formatDate } from '@/utils/dateHelper'
-import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
+import { selectTaskDetails, setShowSidebar } from '@/redux/features/taskDetailsSlice'
 import { ToggleButtonContainer } from './ToggleButtonContainer'
 import { NoAssignee } from '@/utils/noAssignee'
 import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
@@ -31,14 +31,12 @@ const StyledText = styled(Typography)(({ theme }) => ({
 }))
 
 export const Sidebar = ({
-  task_id,
   updateWorkflowState,
   updateAssignee,
   updateTask,
   disabled,
   workflowDisabled,
 }: {
-  task_id: string
   selectedWorkflowState: WorkflowStateResponse
   selectedAssigneeId: string | undefined
   updateWorkflowState: (workflowState: WorkflowStateResponse) => void
@@ -47,20 +45,18 @@ export const Sidebar = ({
   disabled: boolean
   workflowDisabled?: false
 }) => {
-  const { tasks, token, workflowStates, assignee } = useSelector(selectTaskBoard)
-  const { showSidebar } = useSelector(selectTaskDetails)
+  const { token, workflowStates, assignee } = useSelector(selectTaskBoard)
+  const { showSidebar, task } = useSelector(selectTaskDetails)
   const [filteredAssignees, setFilteredAssignees] = useState(assignee)
   const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
   const [loading, setLoading] = useState(false)
   const [dueDate, setDueDate] = useState<Date | string | undefined>()
 
   const { renderingItem: _statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
-    // item: selectedWorkflowState,
     item: null,
     type: SelectorType.STATUS_SELECTOR,
   })
   const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
-    // item: selectedAssigneeId ? assignee.find((el) => el.id === selectedAssigneeId) : NoAssignee,
     item: null,
     type: SelectorType.ASSIGNEE_SELECTOR,
   })
@@ -69,19 +65,17 @@ export const Sidebar = ({
   const assigneeValue = _assigneeValue as IAssigneeCombined //typecasting
 
   useEffect(() => {
-    if (tasks && workflowStates && assignee) {
-      const currentTask = tasks.find((el) => el.id === task_id)
-      const currentWorkflowState = workflowStates.find((el) => el?.id === currentTask?.workflowStateId)
-      const currentAssigneeId = currentTask?.assigneeId
-      const currentAssignee = currentAssigneeId ? assignee.find((el) => el.id === currentAssigneeId) : NoAssignee
+    if (task && assignee && workflowStates) {
+      const currentWorkflowState = workflowStates?.find((el) => el?.id === task?.workflowStateId)
+      const currentAssigneeId = task?.assigneeId
+      const currentAssignee = currentAssigneeId ? assignee?.find((el) => el?.id === currentAssigneeId) : NoAssignee
       updateStatusValue(currentWorkflowState)
       updateAssigneeValue(currentAssignee)
-      setDueDate(currentTask?.dueDate)
+      setDueDate(task?.dueDate)
     }
-  }, [tasks, workflowStates, assignee])
+  }, [task, assignee, workflowStates])
 
   const matches = useMediaQuery('(max-width:600px)')
-  if (!tasks) return null
 
   return (
     <Box
@@ -209,6 +203,59 @@ export const Sidebar = ({
             dateValue={dueDate ? createDateFromFormattedDateString(z.string().parse(dueDate)) : undefined}
             disabled={disabled}
           />
+        </Stack>
+      </AppMargin>
+    </Box>
+  )
+}
+
+export const SidebarSkeleton = () => {
+  const matches = useMediaQuery('(max-width:600px)')
+
+  return (
+    <Box
+      sx={{
+        borderLeft: (theme) => `1px solid ${theme.color.borders.border2}`,
+        height: '100vh',
+        display: 'block',
+        width: matches ? '100vw' : '25vw',
+      }}
+    >
+      <Stack direction="row" justifyContent="space-between" alignItems="center">
+        <StyledBox
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          sx={{ padding: { xs: '16px 20px', sm: '20px 20px' } }}
+        >
+          <Typography variant="sm">Properties</Typography>
+          <Box
+            sx={{
+              display: matches ? 'block' : 'none',
+            }}
+          >
+            <ToggleButtonContainer />
+          </Box>
+        </StyledBox>
+      </Stack>
+      <AppMargin size={SizeofAppMargin.SMALL}>
+        <Stack direction="row" alignItems="center" m="20px 0px" columnGap="10px">
+          <StyledText variant="md" minWidth="80px">
+            Status
+          </StyledText>
+          <Skeleton variant="rectangular" width={120} height={15} />
+        </Stack>
+        <Stack direction="row" m="20px 0px" alignItems="center" columnGap="10px">
+          <StyledText variant="md" minWidth="80px">
+            Assignee
+          </StyledText>
+          <Skeleton variant="rectangular" width={120} height={15} />
+        </Stack>
+        <Stack direction="row" m="20px 0px" alignItems="center" columnGap="10px" minWidth="fit-content">
+          <StyledText variant="md" minWidth="80px">
+            Due date
+          </StyledText>
+          <Skeleton variant="rectangular" width={120} height={15} />
         </Stack>
       </AppMargin>
     </Box>

@@ -53,25 +53,23 @@ export const ClientTaskBoard = ({ completeTask }: { completeTask: (taskId: strin
           >
             {sortTaskByDescendingOrder(filterTaskWithWorkflowStateId(list.id)).map((task) => {
               return (
-                <Box key={task.id}>
-                  <ClientTaskCard
-                    task={task}
-                    href={{ pathname: `/detail/${task.id}/cu`, query: { token } }}
-                    key={task.id}
-                    markdoneFlag={list.type == StateType.completed}
-                    handleMarkDone={() => {
-                      if (completedTypeWorkflowState?.id) {
-                        store.dispatch(
-                          updateWorkflowStateIdByTaskId({
-                            taskId: task.id,
-                            targetWorkflowStateId: completedTypeWorkflowState?.id,
-                          }),
-                        )
-                        completeTask(task.id)
-                      }
-                    }}
-                  />
-                </Box>
+                <ClientTaskCard
+                  task={task}
+                  href={{ pathname: `/detail/${task.id}/cu`, query: { token } }}
+                  key={task.id}
+                  markdoneFlag={list.type == StateType.completed}
+                  handleMarkDone={() => {
+                    if (completedTypeWorkflowState?.id) {
+                      store.dispatch(
+                        updateWorkflowStateIdByTaskId({
+                          taskId: task.id,
+                          targetWorkflowStateId: completedTypeWorkflowState?.id,
+                        }),
+                      )
+                      completeTask(task.id)
+                    }
+                  }}
+                />
               )
             })}
           </TaskRow>

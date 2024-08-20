@@ -1,5 +1,7 @@
+'use client'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { CSSProperties, ReactNode, useCallback } from 'react'
+import { CSSProperties, ReactNode, useCallback, useState, useRef } from 'react'
 import { UrlObject } from 'url'
 import { z } from 'zod'
 
@@ -12,8 +14,6 @@ export const CustomLink = ({
   href: string | UrlObject
   style?: CSSProperties
 }) => {
-  const router = useRouter()
-
   type UrlDetails = {
     pathname?: string
     token?: string
@@ -42,13 +42,31 @@ export const CustomLink = ({
 
   const { pathname, token } = getUrl()
 
+  const [shouldPrefetch, setShouldPrefetch] = useState(false)
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+
   const handleMouseEnter = useCallback(() => {
-    router.prefetch(`${pathname}?token=${token}`)
+    hoverTimeoutRef.current = setTimeout(() => {
+      setShouldPrefetch(true)
+    }, 500) //500 ms delay is introduced to keep it safe from [ApiError]: Generic Error: status: 429; status text: ; body: "code": "rate_limit_exceeded", "message": "Rate limit exceeded."}
   }, [href])
 
+  const handleMouseLeave = useCallback(() => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current)
+      hoverTimeoutRef.current = null
+    }
+  }, [])
+
   return (
-    <div onMouseEnter={handleMouseEnter} onClick={() => router.push(`${pathname}?token=${token}`)} style={style}>
+    <Link
+      href={`${pathname}?token=${token}`}
+      style={style}
+      prefetch={shouldPrefetch}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
       {children}
-    </div>
+    </Link>
   )
 }

@@ -2,6 +2,7 @@ import { AssigneeType as PrismaAssigneeType } from '@prisma/client'
 import { z } from 'zod'
 import { WorkflowStateResponseSchema } from './workflowStates.dto'
 import { DateStringSchema } from '@/types/date'
+import { ClientResponseSchema, CompanyResponseSchema, InternalUsersSchema } from '../common'
 
 export const AssigneeTypeSchema = z.nativeEnum(PrismaAssigneeType).nullish()
 export type AssigneeType = z.infer<typeof AssigneeTypeSchema>
@@ -39,6 +40,7 @@ export const TaskResponseSchema = z.object({
   workflowState: WorkflowStateResponseSchema,
   dueDate: DateStringSchema.optional(),
   createdAt: z.date(),
+  assignee: z.union([ClientResponseSchema, InternalUsersSchema, CompanyResponseSchema]),
 })
 
 export type TaskResponse = z.infer<typeof TaskResponseSchema>
