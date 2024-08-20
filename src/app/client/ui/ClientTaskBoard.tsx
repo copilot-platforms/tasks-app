@@ -13,6 +13,7 @@ import { UserType } from '@/types/interfaces'
 import { Header } from '@/components/layouts/Header'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { useMemo } from 'react'
+import { sortTaskByDescendingOrder } from '@/utils/sortTask'
 
 export const ClientTaskBoard = ({ completeTask }: { completeTask: (taskId: string) => void }) => {
   const { workflowStates, tasks, token } = useSelector(selectTaskBoard)
@@ -50,7 +51,7 @@ export const ClientTaskBoard = ({ completeTask }: { completeTask: (taskId: strin
             taskCount={taskCountForWorkflowStateId(list.id)}
             showConfigurableIcons={false}
           >
-            {filterTaskWithWorkflowStateId(list.id).map((task) => {
+            {sortTaskByDescendingOrder(filterTaskWithWorkflowStateId(list.id)).map((task) => {
               return (
                 <Box key={task.id}>
                   <ClientTaskCard
