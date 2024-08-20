@@ -508,6 +508,17 @@ export class TasksService extends BaseService {
         }
       }
     }
+
+    if (
+      prevTask.workflowState?.type === StateType.completed &&
+      updatedTask.workflowState?.type !== StateType.completed &&
+      updatedTask.assigneeId
+    ) {
+      // If IU decides to move a task back to an incomplete state, trigger client / company notifications
+      await this.sendTaskCreateNotifications(updatedTask)
+    }
+
+    // --- Handle task moved to complete
     await notificationService.markAsReadForAllRecipients(updatedTask)
   }
 }
