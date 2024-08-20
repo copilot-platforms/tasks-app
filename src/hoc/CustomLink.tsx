@@ -48,17 +48,18 @@ export const CustomLink = ({
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const handleMouseEnter = useCallback(() => {
-    // hoverTimeoutRef.current = setTimeout(() => {
-    setShouldPrefetch(true)
-    // }, 500) //500 ms delay is introduced to keep it safe from [ApiError]: Generic Error: status: 429; status text: ; body: "code": "rate_limit_exceeded", "message": "Rate limit exceeded."}
+    hoverTimeoutRef.current = setTimeout(() => {
+      setShouldPrefetch(true)
+    }, 500) //500 ms delay is introduced to keep it safe from [ApiError]: Generic Error: status: 429; status text: ; body: "code": "rate_limit_exceeded", "message": "Rate limit exceeded."}
   }, [href])
 
-  // const handleMouseLeave = useCallback(() => {
-  //   if (hoverTimeoutRef.current) {
-  //     clearTimeout(hoverTimeoutRef.current)
-  //     hoverTimeoutRef.current = null
-  //   }
-  // }, [])
+  const handleMouseLeave = useCallback(() => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current)
+      hoverTimeoutRef.current = null
+    }
+  }, [])
+  console.log('should', shouldPrefetch)
 
   return (
     <Link
@@ -66,7 +67,7 @@ export const CustomLink = ({
       style={style}
       prefetch={shouldPrefetch}
       onMouseEnter={handleMouseEnter}
-      // onMouseLeave={handleMouseLeave}
+      onMouseLeave={handleMouseLeave}
     >
       {children}
     </Link>
