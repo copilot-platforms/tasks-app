@@ -5,23 +5,17 @@ import { selectTaskBoard, setTasks } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
-import { usePathname } from 'next/navigation'
 import { ReactNode, useEffect } from 'react'
 import { useSelector } from 'react-redux'
-import { useRouter } from 'next/navigation'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
-import { RESOURCE_NOT_FOUND_REDIRECT_PATHS } from '@/utils/redirect'
-import { UserType } from '@/types/interfaces'
 
 interface RealTimeTaskResponse extends TaskResponse {
   deletedAt: string
 }
 
 export const RealTime = ({ children }: { children: ReactNode }) => {
-  const { tasks, token } = useSelector(selectTaskBoard)
+  const { tasks } = useSelector(selectTaskBoard)
   const { tokenPayload } = useSelector(selectAuthDetails)
-  const pathname = usePathname()
-  const router = useRouter()
 
   const handleTaskRealTimeUpdates = (payload: RealtimePostgresChangesPayload<RealTimeTaskResponse>) => {
     if (payload.eventType === 'INSERT') {
