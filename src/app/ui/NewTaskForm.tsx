@@ -268,7 +268,6 @@ export const NewTaskForm = ({
                     fontSize: '12px',
                     maxWidth: { xs: '60px', sm: '100px' },
                   }}
-                  title={getAssigneeName(tempAssignee as IAssigneeCombined, 'Assignee')}
                 >
                   {getAssigneeName(tempAssignee as IAssigneeCombined, 'Assignee')}
                 </Typography>

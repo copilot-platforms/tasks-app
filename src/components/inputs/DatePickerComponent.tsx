@@ -68,7 +68,6 @@ export const DatePickerComponent = ({ getDate, dateValue, disabled, isButton = f
                   overflow: 'hidden',
                   maxWidth: { xs: '100px', sm: 'none' },
                 }}
-                title={value ? formatDate(value) : 'Due date'}
               >
                 {value ? formatDate(value) : 'Due date'}
               </Typography>
