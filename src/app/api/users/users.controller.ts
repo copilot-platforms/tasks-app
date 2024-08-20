@@ -14,7 +14,7 @@ export const getUsers = async (req: NextRequest) => {
   const nextToken = req.nextUrl.searchParams.get('nextToken') || undefined
   // "search" param condition has been separated so we can unplug it in the future after CopilotAPI implements keyword match natively
   const users = await (keyword
-    ? usersService.getFilteredUsersStartingWith(keyword, limit, nextToken, userType)
+    ? usersService.getFilteredUsersStartingWith(keyword, userType, limit, nextToken)
     : usersService.getGroupedUsers(limit))
 
   return NextResponse.json({ users })

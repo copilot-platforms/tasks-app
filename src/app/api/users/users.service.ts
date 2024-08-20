@@ -66,12 +66,12 @@ class UsersService extends BaseService {
    * @param keyword
    * @returns
    */
-  async getFilteredUsersStartingWith(keyword: string, limit?: number, nextToken?: string, userType?: string) {
+  async getFilteredUsersStartingWith(keyword: string, userType?: string, limit?: number, nextToken?: string) {
     const filterByKeyword = (users: FilterableUser[]) => filterUsersByKeyword(users, keyword)
-    const { internalUsers, clients, companies } = await this.getGroupedUsers(limit || 500, nextToken)
 
     if (userType) {
       if (userType === FilterOptionsKeywords.CLIENTS) {
+        const { clients, companies } = await this.getGroupedUsers(limit || 500, nextToken)
         return {
           clients: filterByKeyword(clients),
           companies: filterByKeyword(companies),
@@ -79,12 +79,13 @@ class UsersService extends BaseService {
       }
 
       if (userType === FilterOptionsKeywords.TEAM) {
+        const { internalUsers } = await this.getGroupedUsers(limit || 500, nextToken)
         return {
           internalUsers: filterByKeyword(internalUsers),
         }
       }
     }
-
+    const { internalUsers, clients, companies } = await this.getGroupedUsers(limit || 500, nextToken)
     return {
       internalUsers: filterByKeyword(internalUsers),
       clients: filterByKeyword(clients),
