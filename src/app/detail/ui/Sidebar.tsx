@@ -211,7 +211,6 @@ export const Sidebar = ({
 
 export const SidebarSkeleton = () => {
   const matches = useMediaQuery('(max-width:600px)')
-  const { showSidebar } = useSelector(selectTaskDetails)
 
   return (
     <Box
