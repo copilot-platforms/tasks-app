@@ -151,6 +151,11 @@ export const TaskEditor = ({
             disabled={!isEditable}
             padding="0px"
             onBlur={handleTitleBlur}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault() //prevent users from breaking line
+              }
+            }}
           />
 
           <Box mt="12px">
