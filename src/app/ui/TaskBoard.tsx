@@ -24,7 +24,6 @@ import { sortTaskByDescendingOrder } from '@/utils/sortTask'
 
 export const TaskBoard = () => {
   const { workflowStates, tasks, token, filteredTasks, view, filterOptions } = useSelector(selectTaskBoard)
-  console.log('tasks', tasks)
 
   const onDropItem = useCallback(
     (payload: { taskId: string; targetWorkflowStateId: string }) => {
