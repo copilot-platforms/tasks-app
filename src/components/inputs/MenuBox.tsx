@@ -1,9 +1,8 @@
 'use client'
 
 import { MoreBtn } from '@/components/buttons/MoreBtn'
-import { Box, Popper } from '@mui/material'
+import { Box, ClickAwayListener, Popper } from '@mui/material'
 import { ReactNode, useState } from 'react'
-import { ClickAwayListener } from '@mui/base'
 
 export const MenuBox = ({
   menuContent,

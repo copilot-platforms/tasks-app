@@ -37,5 +37,9 @@ const fetchAssignee = async (
 
 export const AssigneeFetcher = async ({ token, userType, viewSettings }: Props) => {
   const assignableUsersWithType = addTypeToAssignee(await fetchAssignee(token, userType))
-  return <ClientSideStateUpdate assignee={assignableUsersWithType} viewSettings={viewSettings} />
+  return (
+    <ClientSideStateUpdate assignee={assignableUsersWithType} viewSettings={viewSettings}>
+      {null}
+    </ClientSideStateUpdate>
+  )
 }
