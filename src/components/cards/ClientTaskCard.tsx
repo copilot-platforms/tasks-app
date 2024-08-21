@@ -32,9 +32,11 @@ export const ClientTaskCard = ({
   const [currentAssignee, setCurrentAssignee] = useState<IAssigneeCombined | undefined>(undefined)
 
   useEffect(() => {
+    console.log('client task board', assignee)
     if (assignee.length > 0) {
       const currentAssignee = assignee.find((el) => el.id === task.assigneeId)
-      setCurrentAssignee(currentAssignee)
+      //@ts-ignore
+      setCurrentAssignee(currentAssignee ?? NoAssignee)
     }
   }, [assignee])
 
