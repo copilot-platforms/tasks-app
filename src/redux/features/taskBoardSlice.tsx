@@ -71,6 +71,12 @@ const taskBoardSlice = createSlice({
     },
     setViewSettings: (state, action: { payload: CreateViewSettingsDTO }) => {
       state.view = action.payload.viewMode
+      if (action.payload.filterOptions.assignee) {
+        const assigneeCheck = state.assignee.find((assignee) => assignee.id == action.payload.filterOptions.assignee)
+        if (!assigneeCheck) {
+          action.payload.filterOptions.assignee = ''
+        }
+      }
       state.filterOptions = action.payload.filterOptions
     },
     setFilterOptions: (state, action: { payload: { optionType: FilterOptions; newValue: string | null } }) => {
