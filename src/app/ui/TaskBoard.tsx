@@ -1,14 +1,13 @@
 'use client'
 
-import { useCallback, useEffect } from 'react'
+import { useCallback } from 'react'
 import { Box, Stack } from '@mui/material'
 import { TaskCard } from '@/components/cards/TaskCard'
 import { TaskColumn } from '@/components/cards/TaskColumn'
 import { DragDropHandler } from '@/hoc/DragDropHandler'
-import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { useSelector } from 'react-redux'
 import store from '@/redux/store'
-import { selectTaskBoard, setTasks, updateWorkflowStateIdByTaskId } from '@/redux/features/taskBoardSlice'
+import { selectTaskBoard, updateWorkflowStateIdByTaskId } from '@/redux/features/taskBoardSlice'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { ListViewTaskCard } from '@/components/cards/ListViewTaskCard'
 import { TaskRow } from '@/components/cards/TaskRow'
@@ -20,6 +19,8 @@ import DashboardEmptyState from '@/components/layouts/EmptyState/DashboardEmptyS
 import { Header } from '@/components/layouts/Header'
 import { FilterBar } from '@/components/layouts/FilterBar'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
+import { CustomLink } from '@/hoc/CustomLink'
+import { sortTaskByDescendingOrder } from '@/utils/sortTask'
 
 export const TaskBoard = () => {
   const { workflowStates, tasks, token, filteredTasks, view, filterOptions } = useSelector(selectTaskBoard)
@@ -82,16 +83,21 @@ export const TaskBoard = () => {
                 <TaskColumn key={list.id} columnName={list.name} taskCount={taskCountForWorkflowStateId(list.id)}>
                   <CustomScrollbar style={{ padding: '4px' }}>
                     <Stack direction="column" rowGap="6px" sx={{ overflowX: 'auto' }}>
-                      {filterTaskWithWorkflowStateId(list.id).map((task, index) => {
+                      {sortTaskByDescendingOrder(filterTaskWithWorkflowStateId(list.id)).map((task, index) => {
                         return (
                           <DragDropHandler key={task.id} accept={'taskCard'} index={index} id={task.id || ''} draggable>
-                            <Box key={task.id}>
-                              <TaskCard
-                                task={task}
-                                key={task.id}
-                                href={{ pathname: `/detail/${task.id}/iu`, query: { token } }}
-                              />
-                            </Box>
+                            <CustomLink
+                              href={{ pathname: `/detail/${task.id}/iu`, query: { token } }}
+                              // style={{ width: 'fit-content' }}
+                            >
+                              <Box key={task.id}>
+                                <TaskCard
+                                  task={task}
+                                  key={task.id}
+                                  href={{ pathname: `/detail/${task.id}/iu`, query: { token } }}
+                                />
+                              </Box>
+                            </CustomLink>
                           </DragDropHandler>
                         )
                       })}
@@ -121,17 +127,19 @@ export const TaskBoard = () => {
                   showConfigurableIcons={false}
                   display={!!filterTaskWithWorkflowStateId(list.id).length}
                 >
-                  {filterTaskWithWorkflowStateId(list.id).map((task, index) => {
+                  {sortTaskByDescendingOrder(filterTaskWithWorkflowStateId(list.id)).map((task, index) => {
                     return (
                       <DragDropHandler key={task.id} accept={'taskCard'} index={index} id={task.id || ''} draggable>
-                        <ListViewTaskCard
-                          key={task.id}
-                          task={task}
-                          href={{ pathname: `/detail/${task.id}/iu`, query: { token } }}
-                          updateTask={({ payload }) => {
-                            updateTask({ token: z.string().parse(token), taskId: task.id, payload })
-                          }}
-                        />
+                        <CustomLink href={{ pathname: `/detail/${task.id}/iu`, query: { token } }}>
+                          <ListViewTaskCard
+                            key={task.id}
+                            task={task}
+                            href={{ pathname: `/detail/${task.id}/iu`, query: { token } }}
+                            updateTask={({ payload }) => {
+                              updateTask({ token: z.string().parse(token), taskId: task.id, payload })
+                            }}
+                          />
+                        </CustomLink>
                       </DragDropHandler>
                     )
                   })}
