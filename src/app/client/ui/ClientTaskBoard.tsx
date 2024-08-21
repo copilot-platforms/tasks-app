@@ -13,6 +13,7 @@ import { UserType } from '@/types/interfaces'
 import { Header } from '@/components/layouts/Header'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { useMemo } from 'react'
+import { sortTaskByDescendingOrder } from '@/utils/sortTask'
 
 export const ClientTaskBoard = ({ completeTask }: { completeTask: (taskId: string) => void }) => {
   const { workflowStates, tasks, token } = useSelector(selectTaskBoard)
@@ -50,27 +51,25 @@ export const ClientTaskBoard = ({ completeTask }: { completeTask: (taskId: strin
             taskCount={taskCountForWorkflowStateId(list.id)}
             showConfigurableIcons={false}
           >
-            {filterTaskWithWorkflowStateId(list.id).map((task) => {
+            {sortTaskByDescendingOrder(filterTaskWithWorkflowStateId(list.id)).map((task) => {
               return (
-                <Box key={task.id}>
-                  <ClientTaskCard
-                    task={task}
-                    href={{ pathname: `/detail/${task.id}/cu`, query: { token } }}
-                    key={task.id}
-                    markdoneFlag={list.type == StateType.completed}
-                    handleMarkDone={() => {
-                      if (completedTypeWorkflowState?.id) {
-                        store.dispatch(
-                          updateWorkflowStateIdByTaskId({
-                            taskId: task.id,
-                            targetWorkflowStateId: completedTypeWorkflowState?.id,
-                          }),
-                        )
-                        completeTask(task.id)
-                      }
-                    }}
-                  />
-                </Box>
+                <ClientTaskCard
+                  task={task}
+                  href={{ pathname: `/detail/${task.id}/cu`, query: { token } }}
+                  key={task.id}
+                  markdoneFlag={list.type == StateType.completed}
+                  handleMarkDone={() => {
+                    if (completedTypeWorkflowState?.id) {
+                      store.dispatch(
+                        updateWorkflowStateIdByTaskId({
+                          taskId: task.id,
+                          targetWorkflowStateId: completedTypeWorkflowState?.id,
+                        }),
+                      )
+                      completeTask(task.id)
+                    }
+                  }}
+                />
               )
             })}
           </TaskRow>
