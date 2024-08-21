@@ -12,8 +12,8 @@ const nextConfig = {
     return config
   },
   experimental: {
-    ppr: true
-  }
+    ppr: true,
+  },
 }
 
 module.exports = withSentryConfig(nextConfig, {
