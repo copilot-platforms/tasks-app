@@ -87,7 +87,6 @@ export const NewTaskForm = ({
     }
     handleCreate()
   }
-
   const router = useRouter()
 
   const todoWorkflowState = workflowStates.find((el) => el.key === 'todo') || workflowStates[0]
@@ -96,7 +95,7 @@ export const NewTaskForm = ({
     function handleCloseModal(e: KeyboardEvent) {
       if (e.key === 'Escape') {
         store.dispatch(setShowModal())
-        store.dispatch(clearCreateTaskFields())
+        store.dispatch(clearCreateTaskFields({ isFilterOn: !!filterOptions[FilterOptions.ASSIGNEE] }))
       }
     }
 
@@ -174,7 +173,7 @@ export const NewTaskForm = ({
               style={{ cursor: 'pointer' }}
               onClick={() => {
                 store.dispatch(setShowModal())
-                store.dispatch(clearCreateTaskFields())
+                store.dispatch(clearCreateTaskFields({ isFilterOn: !!filterOptions[FilterOptions.ASSIGNEE] }))
               }}
             />
           </Stack>
@@ -366,6 +365,8 @@ const NewTaskFooter = ({
   getSignedUrlUpload: (fileName: string) => Promise<ISignedUrlUpload>
 }) => {
   const { attachments, title, assigneeId } = useSelector(selectCreateTask)
+  const { filterOptions } = useSelector(selectTaskBoard)
+
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     event.preventDefault()
     const files = event.target.files
@@ -378,6 +379,7 @@ const NewTaskFooter = ({
       }
     }
   }
+  console.log(assigneeId)
   return (
     <Box sx={{ borderTop: (theme) => `1px solid ${theme.color.borders.border2}` }}>
       <AppMargin size={SizeofAppMargin.MEDIUM} py="21px">
@@ -387,7 +389,7 @@ const NewTaskFooter = ({
             <SecondaryBtn
               handleClick={async () => {
                 store.dispatch(setShowModal())
-                store.dispatch(clearCreateTaskFields())
+                store.dispatch(clearCreateTaskFields({ isFilterOn: !!filterOptions[FilterOptions.ASSIGNEE] }))
                 await bulkRemoveAttachments(attachments)
               }}
               buttonContent={

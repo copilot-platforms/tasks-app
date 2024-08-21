@@ -59,12 +59,15 @@ const createTaskSlice = createSlice({
       state[targetField] = value
     },
 
-    clearCreateTaskFields: (state) => {
+    clearCreateTaskFields: (state, action: { payload: { isFilterOn: boolean } }) => {
+      const { isFilterOn } = action.payload
       state.title = ''
       state.workflowStateId = ''
       state.description = ''
-      state.assigneeType = null
-      state.assigneeId = null
+      if (!isFilterOn) {
+        state.assigneeType = null
+        state.assigneeId = null
+      }
       state.attachments = []
       state.dueDate = null
       state.errors = {
