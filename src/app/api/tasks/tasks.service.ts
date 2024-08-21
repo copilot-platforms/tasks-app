@@ -295,7 +295,7 @@ export class TasksService extends BaseService {
     })
     if (!tasks.length) {
       // If assignee doesn't have an associated task at all, skip logic
-      return
+      return []
     }
     const labels = tasks.map((task) => task.label)
 

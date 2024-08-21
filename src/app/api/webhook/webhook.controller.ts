@@ -9,6 +9,7 @@ export const handleWebhookEvent = async (req: NextRequest) => {
   const webhookService = new WebhookService(user)
   const webhookEvent = await webhookService.parseWebhook(req)
 
+  console.info(`Handling webhook event ${webhookEvent.eventType} with data`, webhookEvent.data)
   const eventType = webhookService.validateHandleableEvent(webhookEvent)
   if (!eventType) {
     return NextResponse.json({})
