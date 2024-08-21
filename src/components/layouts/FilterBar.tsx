@@ -218,6 +218,7 @@ export const FilterBar = ({
                       setFilteredAssignee,
                       z.string().parse(token),
                       newInputValue,
+                      filterOptions.type,
                     )
                   }}
                   filterOption={(x: unknown) => x}
