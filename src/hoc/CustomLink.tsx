@@ -1,3 +1,5 @@
+'use client'
+
 import { useRouter } from 'next/navigation'
 import { ReactNode, useCallback } from 'react'
 import { UrlObject } from 'url'
