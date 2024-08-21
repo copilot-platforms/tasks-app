@@ -25,7 +25,25 @@ export class NotificationService extends BaseService {
         deliveryTargets: { inProduct, email },
       }
 
-      return await copilot.createNotification(notificationDetails)
+      const notification = await copilot.createNotification(notificationDetails)
+      if (
+        [
+          NotificationTaskActions.Completed,
+          NotificationTaskActions.CompletedByIU,
+          NotificationTaskActions.CompletedForCompanyByIU,
+          NotificationTaskActions.CompletedByCompanyMember,
+        ].includes(action)
+      ) {
+        // Notification recipient is IU in this case
+        await this.db.internalUserNotification.create({
+          data: {
+            internalUserId: recipientId,
+            notificationId: notification.id,
+            taskId: task.id,
+          },
+        })
+      }
+      return notification
     } catch (error) {
       console.error(`Failed to send notification for action: ${action}`, error)
     }
@@ -87,6 +105,24 @@ export class NotificationService extends BaseService {
         taskId: task.id,
       },
     })
+  }
+
+  deleteInternalUserNotificationForTask = async (taskId: string) => {
+    const copilot = new CopilotAPI(this.user.token)
+    const notifications = await this.db.internalUserNotification.findMany({ where: { taskId } })
+    const markAsReadPromises = []
+    const bottleneck = new Bottleneck({ minTime: 250, maxConcurrent: 2 })
+    for (let notification of notifications) {
+      markAsReadPromises.push(
+        // Mark IU notification as read
+        bottleneck.schedule(() => {
+          return copilot.deleteNotification(notification.notificationId)
+        }),
+      )
+    }
+    console.info(`Deleting all notifications triggerd by task ${taskId}`)
+    await Promise.all(markAsReadPromises)
+    await this.db.internalUserNotification.deleteMany({ where: { taskId } })
   }
 
   /**
