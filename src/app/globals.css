@@ -5,9 +5,28 @@
 }
 
 .tapwrite-details-page {
-  min-height: 75vh;
+  height: calc(100vh - 50vh);
+  overflow-y: auto;
 }
 
 a {
   text-decoration: none;
+}
+
+@media (min-width: 1150px) {
+  .tapwrite-details-page {
+    height: calc(100vh - 30vh);
+  }
+}
+
+@media (min-width: 800px) {
+  .tapwrite-details-page {
+    height: calc(100vh - 35vh);
+  }
+}
+
+@media (min-width: 450px) {
+  .tapwrite-details-page {
+    height: calc(100vh - 40vh);
+  }
 }

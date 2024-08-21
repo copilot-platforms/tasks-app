@@ -147,7 +147,7 @@ export const TaskEditor = ({
         }}
       />
 
-      <Box mt="12px" sx={{ height: '100%' }}>
+      <Box mt="12px">
         <Tapwrite
           uploadFn={async (file, tiptapEditorUtils) => {
             const newBlob = await upload(file.name, file, {
