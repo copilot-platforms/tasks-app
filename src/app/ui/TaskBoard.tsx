@@ -88,7 +88,7 @@ export const TaskBoard = () => {
                           <DragDropHandler key={task.id} accept={'taskCard'} index={index} id={task.id || ''} draggable>
                             <CustomLink
                               href={{ pathname: `/detail/${task.id}/iu`, query: { token } }}
-                              // style={{ width: 'fit-content' }}
+                              style={{ width: 'fit-content' }}
                             >
                               <Box key={task.id}>
                                 <TaskCard
