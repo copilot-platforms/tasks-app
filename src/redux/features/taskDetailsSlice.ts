@@ -10,7 +10,7 @@ interface IInitialState {
 
 const initialState: IInitialState = {
   showConfirmDeleteModal: false,
-  showSidebar: false,
+  showSidebar: true,
   assigneeSuggestions: [],
 }
 
