@@ -37,6 +37,7 @@ import { Suspense } from 'react'
 import { WorkflowStateFetcher } from '@/app/_fetchers/WorkflowStateFetcher'
 import { AssigneeFetcher } from '@/app/_fetchers/AssigneeFetcher'
 import { CustomLink } from '@/hoc/CustomLink'
+import { TasksFetcher } from '@/app/_fetchers/TasksFetcher'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
@@ -77,6 +78,9 @@ export default async function TaskDetailPage({
   return (
     <ClientSideStateUpdate token={token} tokenPayload={tokenPayload}>
       <RealTime>
+        <Suspense fallback={null}>
+          <TasksFetcher token={token} />
+        </Suspense>
         <EscapeHandler />
         <Stack direction="row" sx={{ height: '100vh' }}>
           <ToggleController>
