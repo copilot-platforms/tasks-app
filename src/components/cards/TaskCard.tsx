@@ -4,12 +4,13 @@ import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { IAssigneeCombined } from '@/types/interfaces'
 import { NoAssignee } from '@/utils/noAssignee'
-import { Stack, Typography, styled } from '@mui/material'
+import { Box, Skeleton, Stack, Typography, styled } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { DueDateLayout } from '@/components/layouts/DueDateLayout'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { UrlObject } from 'url'
 import { CustomLink } from '@/hoc/CustomLink'
+import { useEffect, useState } from 'react'
 
 const TaskCardContainer = styled(Stack)(({ theme }) => ({
   border: `1px solid ${theme.color.borders.border}`,
@@ -33,13 +34,21 @@ interface TaskCardProps {
 export const TaskCard = ({ task, href }: TaskCardProps) => {
   const { assignee } = useSelector(selectTaskBoard)
 
-  const currentAssignee = assignee.find((el) => el.id === task.assigneeId) ?? NoAssignee
+  const [currentAssignee, setCurrentAssignee] = useState<IAssigneeCombined | undefined>(undefined)
+
+  useEffect(() => {
+    if (assignee.length > 0) {
+      const currentAssignee = assignee.find((el) => el.id === task.assigneeId)
+      //@ts-ignore
+      setCurrentAssignee(currentAssignee ?? NoAssignee)
+    }
+  }, [assignee])
 
   return (
     <TaskCardContainer>
-      <CustomLink href={href}>
-        <Stack rowGap={1}>
-          <Stack direction="row" justifyContent="space-between">
+      <Stack rowGap={1}>
+        <Stack direction="row" justifyContent="space-between">
+          {currentAssignee ? (
             <Stack direction="row" alignItems="center" columnGap={1}>
               <CopilotAvatar currentAssignee={currentAssignee as IAssigneeCombined} />
               <Typography
@@ -59,14 +68,23 @@ export const TaskCard = ({ task, href }: TaskCardProps) => {
                     `${(currentAssignee as IAssigneeCombined)?.givenName ?? ''} ${(currentAssignee as IAssigneeCombined)?.familyName ?? ''}`.trim()}
               </Typography>
             </Stack>
-            <Typography variant="bodyXs" fontWeight={400} sx={{ color: (theme) => theme.color.gray[500] }}>
-              {task.label}
-            </Typography>
-          </Stack>
-          <Typography variant="sm">{task.title}</Typography>
-          {task.dueDate && <DueDateLayout dateString={task.dueDate} />}
+          ) : (
+            <Box>
+              <Stack direction="row" justifyContent="space-between" alignItems="center" columnGap={'4px'}>
+                <Skeleton variant="circular" width={20} height={20} />
+                <Skeleton variant="rectangular" width="146px" height="12px" />
+              </Stack>
+            </Box>
+          )}
+          <Typography variant="bodyXs" fontWeight={400} sx={{ color: (theme) => theme.color.gray[500] }}>
+            {task.label}
+          </Typography>
         </Stack>
-      </CustomLink>
+        <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[600] }}>
+          {task.title}
+        </Typography>
+        {task.dueDate && <DueDateLayout dateString={task.dueDate} />}
+      </Stack>
     </TaskCardContainer>
   )
 }
