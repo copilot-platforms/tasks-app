@@ -22,7 +22,7 @@ import { TaskResponse } from '@/types/dto/tasks.dto'
 
 interface Prop {
   task_id: string
-  attachment: AttachmentResponseSchema[]
+  // attachment: AttachmentResponseSchema[]
   isEditable: boolean
   updateTaskDetail: (detail: string) => void
   updateTaskTitle: (title: string) => void
@@ -35,7 +35,7 @@ interface Prop {
 
 export const TaskEditor = ({
   task_id,
-  attachment,
+  // attachment,
   isEditable,
   updateTaskDetail,
   updateTaskTitle,
@@ -145,33 +145,33 @@ export const TaskEditor = ({
           placeholder="Add description..."
         />
       </Box>
-      {advancedFeatureFlag && (
-        <>
-          <Stack direction="row" columnGap={3} rowGap={3} mt={3} flexWrap={'wrap'}>
-            {attachment?.map((el, key) => {
-              return (
-                <Box key={key}>
-                  <AttachmentCard
-                    file={el}
-                    deleteAttachment={async (event: any) => {
-                      event.stopPropagation()
-                      const supabaseActions = new SupabaseActions()
-                      const { data } = await supabaseActions.removeAttachment(el.filePath)
-                      if (data && el.id) {
-                        deleteAttachment(el.id)
-                      }
-                    }}
-                  />
-                </Box>
-              )
-            })}
-          </Stack>
+      {/* {advancedFeatureFlag && ( */}
+      {/*   <> */}
+      {/*     <Stack direction="row" columnGap={3} rowGap={3} mt={3} flexWrap={'wrap'}> */}
+      {/*       {attachment?.map((el, key) => { */}
+      {/*         return ( */}
+      {/*           <Box key={key}> */}
+      {/*             <AttachmentCard */}
+      {/*               file={el} */}
+      {/*               deleteAttachment={async (event: any) => { */}
+      {/*                 event.stopPropagation() */}
+      {/*                 const supabaseActions = new SupabaseActions() */}
+      {/*                 const { data } = await supabaseActions.removeAttachment(el.filePath) */}
+      {/*                 if (data && el.id) { */}
+      {/*                   deleteAttachment(el.id) */}
+      {/*                 } */}
+      {/*               }} */}
+      {/*             /> */}
+      {/*           </Box> */}
+      {/*         ) */}
+      {/*       })} */}
+      {/*     </Stack> */}
 
-          <Stack direction="row" mt={3} justifyContent="flex-end">
-            <AttachmentInput handleFileSelect={handleFileSelect} />
-          </Stack>
-        </>
-      )}
+      {/*     <Stack direction="row" mt={3} justifyContent="flex-end"> */}
+      {/*       <AttachmentInput handleFileSelect={handleFileSelect} /> */}
+      {/*     </Stack> */}
+      {/*   </> */}
+      {/* )} */}
 
       <Modal
         open={showConfirmDeleteModal}

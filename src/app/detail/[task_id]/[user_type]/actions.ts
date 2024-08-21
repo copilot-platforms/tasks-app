@@ -65,6 +65,12 @@ export const updateAssignee = async (
   }
 }
 
+export const clientUpdateTask = async (token: string, taskId: string, targetWorkflowStateId: string) => {
+  await fetch(`${apiUrl}/api/tasks/${taskId}/client?token=${token}&workflowStateId=${targetWorkflowStateId}`, {
+    method: 'PATCH',
+  })
+}
+
 export const deleteTask = async (token: string, task_id: string) => {
   await fetch(`${apiUrl}/api/tasks/${task_id}?token=${token}`, {
     method: 'DELETE',

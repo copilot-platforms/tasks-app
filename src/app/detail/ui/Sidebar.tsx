@@ -1,7 +1,7 @@
 'use client'
 
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
-import { Box, Stack, Typography, styled, useMediaQuery } from '@mui/material'
+import { Box, Skeleton, Stack, Typography, styled, useMediaQuery } from '@mui/material'
 import Selector, { SelectorType } from '@/components/inputs/Selector'
 import { IAssigneeCombined } from '@/types/interfaces'
 import { DatePickerComponent } from '@/components/inputs/DatePickerComponent'
@@ -13,7 +13,7 @@ import { StyledBox } from './styledComponent'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { createDateFromFormattedDateString, formatDate } from '@/utils/dateHelper'
-import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
+import { selectTaskDetails, setShowSidebar } from '@/redux/features/taskDetailsSlice'
 import { ToggleButtonContainer } from './ToggleButtonContainer'
 import { NoAssignee } from '@/utils/noAssignee'
 import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
@@ -35,8 +35,8 @@ export const Sidebar = ({
   updateWorkflowState,
   updateAssignee,
   updateTask,
-  assignee,
   disabled,
+  workflowDisabled,
 }: {
   task_id: string
   selectedWorkflowState: WorkflowStateResponse
@@ -44,10 +44,10 @@ export const Sidebar = ({
   updateWorkflowState: (workflowState: WorkflowStateResponse) => void
   updateAssignee: (assigneeType: string | null, assigneeId: string | null) => void
   updateTask: (payload: UpdateTaskRequest) => void
-  assignee: IAssigneeCombined[]
   disabled: boolean
+  workflowDisabled?: false
 }) => {
-  const { tasks, token, workflowStates } = useSelector(selectTaskBoard)
+  const { tasks, token, workflowStates, assignee } = useSelector(selectTaskBoard)
   const { showSidebar } = useSelector(selectTaskDetails)
   const [filteredAssignees, setFilteredAssignees] = useState(assignee)
   const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
@@ -92,7 +92,12 @@ export const Sidebar = ({
       }}
     >
       <Stack direction="row" justifyContent="space-between" alignItems="center">
-        <StyledBox p="20px 20px" display="flex" justifyContent="space-between" alignItems="center">
+        <StyledBox
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          sx={{ padding: { xs: '16px 20px', sm: '20px 20px' } }}
+        >
           <Typography variant="sm">Properties</Typography>
           <Box
             sx={{
@@ -115,7 +120,7 @@ export const Sidebar = ({
               updateStatusValue(value)
               updateWorkflowState(value)
             }}
-            disabled={disabled}
+            disabled={workflowDisabled}
             disableOutline
             responsiveNoHide
           />
@@ -203,6 +208,59 @@ export const Sidebar = ({
             dateValue={dueDate ? createDateFromFormattedDateString(z.string().parse(dueDate)) : undefined}
             disabled={disabled}
           />
+        </Stack>
+      </AppMargin>
+    </Box>
+  )
+}
+
+export const SidebarSkeleton = () => {
+  const matches = useMediaQuery('(max-width:600px)')
+
+  return (
+    <Box
+      sx={{
+        borderLeft: (theme) => `1px solid ${theme.color.borders.border2}`,
+        height: '100vh',
+        display: 'block',
+        width: matches ? '100vw' : '25vw',
+      }}
+    >
+      <Stack direction="row" justifyContent="space-between" alignItems="center">
+        <StyledBox
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          sx={{ padding: { xs: '16px 20px', sm: '20px 20px' } }}
+        >
+          <Typography variant="sm">Properties</Typography>
+          <Box
+            sx={{
+              display: matches ? 'block' : 'none',
+            }}
+          >
+            <ToggleButtonContainer />
+          </Box>
+        </StyledBox>
+      </Stack>
+      <AppMargin size={SizeofAppMargin.SMALL}>
+        <Stack direction="row" alignItems="center" m="20px 0px" columnGap="10px">
+          <StyledText variant="md" minWidth="80px">
+            Status
+          </StyledText>
+          <Skeleton variant="rectangular" width={120} height={15} />
+        </Stack>
+        <Stack direction="row" m="20px 0px" alignItems="center" columnGap="10px">
+          <StyledText variant="md" minWidth="80px">
+            Assignee
+          </StyledText>
+          <Skeleton variant="rectangular" width={120} height={15} />
+        </Stack>
+        <Stack direction="row" m="20px 0px" alignItems="center" columnGap="10px" minWidth="fit-content">
+          <StyledText variant="md" minWidth="80px">
+            Due date
+          </StyledText>
+          <Skeleton variant="rectangular" width={120} height={15} />
         </Stack>
       </AppMargin>
     </Box>
