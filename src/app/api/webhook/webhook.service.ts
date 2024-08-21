@@ -56,8 +56,14 @@ class WebhookService extends BaseService {
   async handleClientCreated(assigneeId: string) {
     // First fetch all the current non-complete tasks for client's company, if exists
     const client = await this.copilot.getClient(assigneeId)
-    const company = await this.copilot.getCompany(client.companyId)
-    if (company.name === '') {
+    let company
+    try {
+      // Accomodate indididual client's company id behavior for copilot
+      company = await this.copilot.getCompany(client.companyId)
+    } catch (e: unknown) {
+      company = null
+    }
+    if (!company?.name) {
       // Client does not have a fixed company!
       return
     }
@@ -65,7 +71,6 @@ class WebhookService extends BaseService {
     const tasksService = new TasksService(this.user)
     const tasks = await tasksService.getIncompleteTasksForCompany(company.id)
     if (!tasks.length) return
-    console.log('creating task notifications for', client.givenName, tasks.length)
 
     // Then trigger appropriate notifications
     const bottleneck = new Bottleneck({ minTime: 250, maxConcurrent: 2 })
@@ -101,7 +106,6 @@ class WebhookService extends BaseService {
       createNotificationPromises.push(bottleneck.schedule(() => this.copilot.createNotification(notificationDetails)))
     }
     const notifications = await Promise.all(createNotificationPromises)
-    console.log('create notifications length', notifications.length)
 
     // Now add appropriate records to our ClientNotifications table
     const insertBottleneck = new Bottleneck({ minTime: 100, maxConcurrent: 4 })
@@ -113,8 +117,7 @@ class WebhookService extends BaseService {
         insertBottleneck.schedule(() => notificationService.addToClientNotifications(tasks[i], notifications[i])),
       )
     }
-    const inserts = await Promise.all(insertPromises)
-    console.log('inserts length', inserts.length)
+    await Promise.all(insertPromises)
   }
 
   async handleUserDeleted(assigneeId: string, assigneeType: AssigneeType) {
@@ -136,7 +139,6 @@ class WebhookService extends BaseService {
       companyId: newCompanyId,
       previousAttributes: { companyId: prevCompanyId },
     } = data
-    console.log('changed company', newCompanyId, prevCompanyId)
     // If company hasn't been changed - don't bother with any of this
     if (prevCompanyId === newCompanyId || !prevCompanyId) return
 
@@ -173,7 +175,6 @@ class WebhookService extends BaseService {
 
   private async handleCompanyUnassignment(clientId: string, prevCompanyId: string) {
     const company = await this.copilot.getCompany(prevCompanyId)
-    console.log('unassigned', company)
 
     // NOTE: If prev company was not a valid company, instead a randomly generated placeholder company,
     // prevCompany.name will be an empty string
@@ -192,7 +193,6 @@ class WebhookService extends BaseService {
       },
     })
     const prevCompanyTaskIds = prevCompanyTasks.map((task) => task.id)
-    console.log('unassigned tasks', prevCompanyTaskIds.length)
 
     // Find all triggered notifications for this client, on behalf of prev company
     const prevCompanyNotifications = await this.db.clientNotification.findMany({
@@ -202,7 +202,6 @@ class WebhookService extends BaseService {
       },
     })
     const notificationIds = prevCompanyNotifications.map((notification) => notification.id)
-    console.log('unassigned nots', notificationIds.length)
 
     // Delete all task notifications triggered for client for previous company
     const deletePromises = []
