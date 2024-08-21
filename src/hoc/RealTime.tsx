@@ -38,7 +38,11 @@ export const RealTime = ({ children }: { children: ReactNode }) => {
           store.dispatch(setTasks(newTaskArr))
           //if a user is in the details page when the task is deleted then we want the user to get redirected to '/' route
           if (pathname.includes('detail')) {
-            router.push(`/?token=${token}`)
+            if (pathname.includes('cu')) {
+              router.push(`/client?token=${token}`)
+            } else {
+              router.push(`/?token=${token}`)
+            }
           }
           //if the task is updated
         } else {
