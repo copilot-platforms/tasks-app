@@ -56,7 +56,11 @@ export const RealTime = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const channel = supabase
       .channel('realtime tasks')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'Tasks' }, handleTaskRealTimeUpdates)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'Tasks', filter: `workspaceId=eq.${tokenPayload?.workspaceId}` },
+        handleTaskRealTimeUpdates,
+      )
       .subscribe()
 
     return () => {
