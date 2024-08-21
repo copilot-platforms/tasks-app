@@ -32,5 +32,5 @@ const fetchAssignee = async (token: string, userType?: UserType): Promise<IAssig
 export const AssigneeFetcher = async ({ token, userType }: Props) => {
   const assignableUsersWithType = addTypeToAssignee(await fetchAssignee(token, userType))
 
-  return <ClientSideStateUpdate assignee={assignableUsersWithType} />
+  return <ClientSideStateUpdate assignee={assignableUsersWithType}>{null}</ClientSideStateUpdate>
 }
