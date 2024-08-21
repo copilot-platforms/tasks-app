@@ -458,6 +458,8 @@ export class TasksService extends BaseService {
     prevTask: Task & { workflowState: WorkflowState },
     updatedTask: Task & { workflowState: WorkflowState },
   ) {
+    if (prevTask.workflowStateId === updatedTask.workflowStateId) return
+
     const notificationService = new NotificationService(this.user)
 
     // --- Handle previous assignee notification "Mark as read" if it is updated
