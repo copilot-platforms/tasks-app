@@ -379,7 +379,7 @@ const NewTaskFooter = ({
       }
     }
   }
-  console.log(assigneeId)
+
   return (
     <Box sx={{ borderTop: (theme) => `1px solid ${theme.color.borders.border2}` }}>
       <AppMargin size={SizeofAppMargin.MEDIUM} py="21px">
