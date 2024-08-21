@@ -1,24 +1,19 @@
 'use client'
 
-import { AttachmentCard } from '@/components/cards/AttachmentCard'
 import { StyledTextField } from '@/components/inputs/TextField'
 import { selectTaskDetails, setShowConfirmDeleteModal } from '@/redux/features/taskDetailsSlice'
-import { Box, Modal, Stack } from '@mui/material'
+import { Box, Modal } from '@mui/material'
 import { useEffect, useState, useCallback } from 'react'
 import { useSelector } from 'react-redux'
 import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
 import store from '@/redux/store'
 import { upload } from '@vercel/blob/client'
-import { AttachmentResponseSchema, CreateAttachmentRequest } from '@/types/dto/attachments.dto'
-import { AttachmentInput } from '@/components/inputs/AttachmentInput'
-import { SupabaseActions } from '@/utils/SupabaseActions'
-import { generateRandomString } from '@/utils/generateRandomString'
+import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { ISignedUrlUpload, UserType } from '@/types/interfaces'
-import { advancedFeatureFlag } from '@/config'
 import { Tapwrite } from 'tapwrite'
+import { useDebounce, useDebounceWithCancel } from '@/hooks/useDebounce'
+import { useRouter } from 'next/navigation'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
-import { useDebounce } from '@/hooks/useDebounce'
-import { TaskResponse } from '@/types/dto/tasks.dto'
 
 interface Prop {
   task_id: string
@@ -45,25 +40,25 @@ export const TaskEditor = ({
   getSignedUrlUpload,
   userType,
 }: Prop) => {
-  const { tasks } = useSelector(selectTaskBoard)
   const [updateTitle, setUpdateTitle] = useState('')
   const [updateDetail, setUpdateDetail] = useState('')
   const { showConfirmDeleteModal } = useSelector(selectTaskDetails)
+  const { tasks } = useSelector(selectTaskBoard)
   const [isUserTyping, setIsUserTyping] = useState(false)
 
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    event.preventDefault()
-    const files = event.target.files
-    if (files && files.length > 0) {
-      const file = files[0]
-      const supabaseActions = new SupabaseActions()
-      const signedUrl: ISignedUrlUpload = await getSignedUrlUpload(generateRandomString(file.name))
-      const filePayload = await supabaseActions.uploadAttachment(file, signedUrl, task_id)
-      if (filePayload) {
-        postAttachment({ ...filePayload, taskId: filePayload.taskId })
-      }
-    }
-  }
+  // const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  //   event.preventDefault()
+  //   const files = event.target.files
+  //   if (files && files.length > 0) {
+  //     const file = files[0]
+  //     const supabaseActions = new SupabaseActions()
+  //     const signedUrl: ISignedUrlUpload = await getSignedUrlUpload(generateRandomString(file.name))
+  //     const filePayload = await supabaseActions.uploadAttachment(file, signedUrl, task_id)
+  //     if (filePayload) {
+  //       postAttachment({ ...filePayload, taskId: filePayload.taskId })
+  //     }
+  //   }
+  // }
 
   useEffect(() => {
     if (!isUserTyping) {
@@ -77,7 +72,7 @@ export const TaskEditor = ({
 
   const _titleUpdateDebounced = async (title: string) => updateTaskTitle(title)
 
-  const titleUpdateDebounced = useDebounce(_titleUpdateDebounced)
+  const [titleUpdateDebounced, cancelTitleUpdateDebounced] = useDebounceWithCancel(_titleUpdateDebounced)
 
   const _detailsUpdateDebounced = async (details: string) => updateTaskDetail(details)
   const detailsUpdateDebounced = useDebounce(_detailsUpdateDebounced)
@@ -86,17 +81,34 @@ export const TaskEditor = ({
     setIsUserTyping(false)
   }, [])
 
-  const debouncedResetTypingFlag = useDebounce(resetTypingFlag, 1500)
+  const [debouncedResetTypingFlag, cancelDebouncedResetTypingFlag] = useDebounceWithCancel(resetTypingFlag, 1500)
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newTitle = e.target.value
     setUpdateTitle(newTitle)
+    if (newTitle.trim() == '') {
+      cancelTitleUpdateDebounced()
+      cancelDebouncedResetTypingFlag()
+      return
+    }
     setIsUserTyping(true)
     titleUpdateDebounced(newTitle)
     debouncedResetTypingFlag()
   }
 
+  const handleTitleBlur = () => {
+    if (updateTitle.trim() == '') {
+      setTimeout(() => {
+        const currentTask = tasks.find((el) => el.id === task_id)
+        setUpdateTitle(currentTask?.title ?? '')
+      }, 300)
+    }
+  }
+
   const handleDetailChange = (content: string) => {
+    if (content === updateDetail) {
+      return
+    }
     setUpdateDetail(content)
     setIsUserTyping(true)
     detailsUpdateDebounced(content)
@@ -117,6 +129,9 @@ export const TaskEditor = ({
             color: (theme) => theme.color.gray[600],
             fontWeight: 500,
           },
+          '& .MuiInputBase-input.Mui-disabled': {
+            WebkitTextFillColor: (theme) => theme.color.gray[600],
+          },
           '& .MuiInputBase-root': {
             padding: '0px 0px',
           },
@@ -127,9 +142,15 @@ export const TaskEditor = ({
         inputProps={{ maxLength: 255 }}
         disabled={!isEditable}
         padding="0px"
+        onBlur={handleTitleBlur}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault() //prevent users from breaking line
+          }
+        }}
       />
 
-      <Box mt="12px">
+      <Box mt="12px" sx={{ height: '100%' }}>
         <Tapwrite
           uploadFn={async (file, tiptapEditorUtils) => {
             const newBlob = await upload(file.name, file, {
@@ -145,6 +166,7 @@ export const TaskEditor = ({
           placeholder="Add description..."
         />
       </Box>
+
       {/* {advancedFeatureFlag && ( */}
       {/*   <> */}
       {/*     <Stack direction="row" columnGap={3} rowGap={3} mt={3} flexWrap={'wrap'}> */}
