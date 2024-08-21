@@ -1,7 +1,7 @@
 'use client'
 
 import { useSelector } from 'react-redux'
-import { Box, Stack, Typography } from '@mui/material'
+import { Box, Skeleton, Stack, Typography } from '@mui/material'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { extractHtml } from '@/utils/extractHtml'
 import { truncateText } from '@/utils/truncateText'
@@ -14,6 +14,8 @@ import { DueDateLayout } from '@/components/layouts/DueDateLayout'
 import { UrlObject } from 'url'
 import { CustomLink } from '@/hoc/CustomLink'
 import { getAssigneeName } from '@/utils/assignee'
+import { GetMaxAssigneeNameWidth } from '@/utils/getMaxAssigneeNameWidth'
+import { useEffect, useState } from 'react'
 
 export const ClientTaskCard = ({
   task,
@@ -27,7 +29,14 @@ export const ClientTaskCard = ({
   href: string | UrlObject
 }) => {
   const { assignee } = useSelector(selectTaskBoard)
-  const currentAssignee = assignee.find((el) => el.id === task.assigneeId)
+  const [currentAssignee, setCurrentAssignee] = useState<IAssigneeCombined | undefined>(undefined)
+
+  useEffect(() => {
+    if (assignee.length > 0) {
+      const currentAssignee = assignee.find((el) => el.id === task.assigneeId)
+      setCurrentAssignee(currentAssignee)
+    }
+  }, [assignee])
 
   const handleMarkAsDoneClick = (e: React.MouseEvent) => {
     // Since mark as done button is nested inside a `next/link` Link, we need to stop the event from propagating
@@ -38,123 +47,198 @@ export const ClientTaskCard = ({
   }
 
   return (
-    <CustomLink href={href}>
-      <Box
+    <Box
+      sx={{
+        ':hover': {
+          bgcolor: (theme) => theme.color.gray[100],
+        },
+        cursor: 'default',
+      }}
+    >
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        alignItems={{ xs: 'left', sm: 'center' }}
+        justifyContent="space-between"
+        columnGap={{ sm: '20px', md: '32px' }}
         sx={{
-          ':hover': {
-            bgcolor: (theme) => theme.color.gray[100],
-          },
-          cursor: 'default',
+          borderBottom: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
+          padding: { xs: '8px 20px', sm: '6px 40px 6px 20px' },
         }}
       >
-        <Stack
-          direction={{ xs: 'column', sm: 'row' }}
-          alignItems="center"
-          justifyContent="space-between"
-          sx={{
-            borderBottom: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
-            padding: { xs: '8px 18px', sm: '6px 40px 6px 20px' },
+        <CustomLink
+          href={href}
+          style={{
+            flexBasis: '100%',
           }}
         >
-          <Stack direction="column">
-            <Typography variant="sm" sx={{ fontSize: '13px', lineHeight: '21px' }}>
-              {task?.title}
-            </Typography>
-            <Box
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            alignItems={{ xs: 'left', sm: 'center' }}
+            justifyContent="space-between"
+            flexBasis="100%"
+          >
+            <Stack
+              direction="column"
               sx={{
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 display: 'felx',
+                wordBreak: 'break-all',
               }}
             >
-              <Typography variant="bodySm" sx={{ fontSize: '12px', color: (theme) => theme.color.gray[500] }}>
-                {truncateText(extractHtml(task.body ?? ''), TruncateMaxNumber.CLIENT_TASK_DESCRIPTION)}
+              <Typography
+                variant="sm"
+                sx={{ fontSize: '13px', lineHeight: '21px', color: (theme) => theme.color.gray[600] }}
+              >
+                {task?.title}
               </Typography>
-            </Box>
-          </Stack>
-          <Stack
-            direction="row"
-            alignItems="flex-start"
-            columnGap={{ xs: '12px', sm: '32px' }}
-            justifyContent={{ xs: 'space-between', sm: 'none' }}
-            sx={{
-              padding: '6px 0px',
-              width: { xs: '100%', sm: 'auto' },
-            }}
-          >
-            <Stack direction="row" alignItems="center" minWidth="fit-content" columnGap={{ xs: '12px', sm: '20px' }}>
+
               <Box
                 sx={{
-                  flexDirection: 'row',
-                  alignItems: { sm: 'flex-end' },
-                  justifyContent: { sm: 'right' },
-                  display: 'flex',
-                  minWidth: '100px',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  display: 'felx',
                 }}
               >
-                {task.dueDate && (
-                  <Typography variant="bodySm" sx={{ fontSize: '12px', color: (theme) => theme.color.gray[500] }}>
-                    <DueDateLayout dateString={task.dueDate} />
-                  </Typography>
-                )}
-              </Box>
-
-              <Stack
-                direction="row"
-                alignItems="center"
-                justifyContent={'left'}
-                columnGap={'4px'}
-                sx={{ padding: '2px', minWidth: '140px' }}
-              >
-                <CopilotAvatar currentAssignee={currentAssignee as IAssigneeCombined} />
-
-                <Typography
-                  variant="bodySm"
-                  sx={{
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    fontSize: '12px',
-                    maxWidth: '110px',
-                    color: (theme) => theme.color.gray[500],
-                  }}
-                  title={getAssigneeName(currentAssignee)}
-                >
-                  {getAssigneeName(currentAssignee)}
+                <Typography variant="bodySm" sx={{ fontSize: '12px', color: (theme) => theme.color.gray[500] }}>
+                  {truncateText(extractHtml(task.body ?? ''), TruncateMaxNumber.CLIENT_TASK_DESCRIPTION)}
                 </Typography>
-              </Stack>
+              </Box>
             </Stack>
-            <Box
+            <Stack
+              direction="row"
+              alignItems="flex-start"
+              columnGap={{ xs: '12px', sm: '32px' }}
+              rowGap={{ xs: '12px', sm: '32px' }}
+              justifyContent={{ xs: 'space-between', sm: 'none' }}
               sx={{
-                minWidth: '80px',
-                display: 'flex',
-                justifyContent: 'flex-end',
+                padding: '6px 0px',
+                '@media (max-width: 335px)': {
+                  flexWrap: 'wrap',
+                  height: 'auto',
+                },
               }}
             >
-              {!markdoneFlag && (
-                <SecondaryBtn
-                  handleClick={handleMarkAsDoneClick}
-                  padding="2px 8px"
-                  buttonContent={
-                    <Typography
-                      variant="sm"
-                      sx={{
-                        color: (theme) => theme.color.gray[700],
-                        zIndex: '99',
-                        whiteSpace: 'nowrap',
-                        textOverflow: 'ellipsis',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      Mark done
+              <Stack direction="row" alignItems="center" minWidth="fit-content" columnGap={{ xs: '12px', sm: '20px' }}>
+                {task.dueDate && (
+                  <Box
+                    sx={{
+                      flexDirection: 'row',
+                      alignItems: { sm: 'flex-end' },
+                      justifyContent: { sm: 'right' },
+                      display: { xs: 'flex', sm: 'flex', sd: 'none ' },
+                      minWidth: '90px',
+                    }}
+                  >
+                    <Typography variant="bodySm" sx={{ fontSize: '12px', color: (theme) => theme.color.gray[500] }}>
+                      <DueDateLayout dateString={task.dueDate} />
                     </Typography>
-                  }
-                />
-              )}
-            </Box>
+                  </Box>
+                )}
+
+                <Box sx={{ display: { xs: 'none', sm: 'none', sd: 'flex ' } }}>
+                  <Box
+                    sx={{
+                      flexDirection: 'row',
+                      alignItems: { sm: 'flex-end' },
+                      justifyContent: { sm: 'right' },
+                      display: 'flex',
+                      minWidth: '90px',
+                    }}
+                  >
+                    {task.dueDate && (
+                      <Typography variant="bodySm" sx={{ fontSize: '12px', color: (theme) => theme.color.gray[500] }}>
+                        <DueDateLayout dateString={task.dueDate} />
+                      </Typography>
+                    )}
+                  </Box>
+                </Box>
+
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  justifyContent={'left'}
+                  columnGap={'4px'}
+                  sx={{ padding: '2px', width: { xs: 'auto', sm: '132px' } }}
+                >
+                  <CopilotAvatar currentAssignee={currentAssignee as IAssigneeCombined} />
+
+                  <Typography
+                    variant="bodySm"
+                    sx={{
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      fontSize: '12px',
+                      color: (theme) => theme.color.gray[500],
+                      maxWidth: GetMaxAssigneeNameWidth(task?.dueDate),
+                    }}
+                    title={getAssigneeName(currentAssignee)}
+                  >
+                    {getAssigneeName(currentAssignee)}
+                  </Typography>
+                </Stack>
+              </Stack>
+              <Box
+                sx={{
+                  minWidth: '80px',
+                  display: { xs: 'flex', md: 'none' },
+                  justifyContent: 'flex-end',
+                }}
+              >
+                {!markdoneFlag && (
+                  <SecondaryBtn
+                    handleClick={handleMarkAsDoneClick}
+                    padding="2px 8px"
+                    buttonContent={
+                      <Typography
+                        variant="sm"
+                        sx={{
+                          color: (theme) => theme.color.gray[700],
+                          zIndex: '99',
+                          whiteSpace: 'nowrap',
+                          textOverflow: 'ellipsis',
+                          overflow: 'hidden',
+                        }}
+                      >
+                        Mark done
+                      </Typography>
+                    }
+                  />
+                )}
+              </Box>
+            </Stack>
           </Stack>
-        </Stack>
-      </Box>
-    </CustomLink>
+        </CustomLink>
+        <Box
+          sx={{
+            minWidth: '80px',
+            display: { xs: 'none', md: 'flex' },
+            justifyContent: 'flex-end',
+          }}
+        >
+          {!markdoneFlag && (
+            <SecondaryBtn
+              handleClick={handleMarkAsDoneClick}
+              padding="2px 8px"
+              buttonContent={
+                <Typography
+                  variant="sm"
+                  sx={{
+                    color: (theme) => theme.color.gray[700],
+                    zIndex: '99',
+                    whiteSpace: 'nowrap',
+                    textOverflow: 'ellipsis',
+                    overflow: 'hidden',
+                  }}
+                >
+                  Mark done
+                </Typography>
+              }
+            />
+          )}
+        </Box>
+      </Stack>
+    </Box>
   )
 }
