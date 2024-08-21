@@ -80,7 +80,7 @@ export default async function Main({ searchParams }: { searchParams: { token: st
       tokenPayload={tokenPayload}
     >
       <Suspense fallback={null}>
-        <AssigneeFetcher token={token} />
+        <AssigneeFetcher token={token} viewSettings={viewSettings} />
       </Suspense>
       <RealTime>
         <DndWrapper>
