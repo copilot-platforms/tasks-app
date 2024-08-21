@@ -49,9 +49,6 @@ export const DatePickerComponent = ({ getDate, dateValue, disabled, isButton = f
           cursor: disabled ? 'auto' : 'pointer',
           padding: isButton ? '0px' : '4px 8px',
           borderRadius: '4px',
-          ':hover': {
-            backgroundColor: (theme) => (disabled ? theme.color.base.white : theme.color.gray[100]),
-          },
         }}
       >
         {isButton ? (
@@ -61,14 +58,13 @@ export const DatePickerComponent = ({ getDate, dateValue, disabled, isButton = f
               <Typography
                 variant="bodySm"
                 sx={{
-                  color: (theme) => theme.color.gray[600],
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
                   fontSize: '12px',
                   overflow: 'hidden',
                   maxWidth: { xs: '100px', sm: 'none' },
+                  color: (theme) => (value ? theme.color.gray[600] : theme.color.gray[550]),
                 }}
-                title={value ? formatDate(value) : 'Due date'}
               >
                 {value ? formatDate(value) : 'Due date'}
               </Typography>

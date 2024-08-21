@@ -51,6 +51,7 @@ export const theme = createTheme({
       300: '#C9CBCD',
       400: '#90959D',
       500: '#6B6F76',
+      550: '#60606A',
       600: '#212B36',
       700: '#0E0E10',
     },
@@ -78,6 +79,7 @@ export const theme = createTheme({
       bgCallout: '#F8F9FB',
     },
     error: '#CC0000',
+    muiError: '#D32F2F',
   },
   typography: {
     fontFamily: inter.style.fontFamily,

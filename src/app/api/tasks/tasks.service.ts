@@ -15,7 +15,7 @@ import { WorkflowStateUpdatedSchema } from '@api/activity-logs/schemas/WorkflowS
 import { NotificationService } from '@api/notification/notification.service'
 import { LabelMappingService } from '@api/label-mapping/label-mapping.service'
 import { z } from 'zod'
-import { NotificationCreatedResponseSchema } from '@/types/common'
+import { ClientResponse, CompanyResponse, InternalUsers, NotificationCreatedResponseSchema } from '@/types/common'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 
 type FilterByAssigneeId = {
@@ -69,7 +69,7 @@ export class TasksService extends BaseService {
 
     let tasks = await this.db.task.findMany({
       ...filters,
-      orderBy: { createdAt: 'asc' },
+      orderBy: { createdAt: 'desc' },
       include: {
         workflowState: { select: { name: true } },
       },
@@ -160,6 +160,22 @@ export class TasksService extends BaseService {
     if (!task) throw new APIError(httpStatus.NOT_FOUND, 'The requested task was not found')
 
     return task
+  }
+
+  async getTaskAssignee(task: Task): Promise<InternalUsers | ClientResponse | CompanyResponse | undefined> {
+    const policyGate = new PoliciesService(this.user)
+    policyGate.authorize(UserAction.Read, Resource.Tasks)
+    if (!task.assigneeId || !task.assigneeType) return undefined
+
+    const copilot = new CopilotAPI(this.user.token)
+    switch (task.assigneeType) {
+      case AssigneeType.internalUser:
+        return await copilot.getInternalUser(task.assigneeId)
+      case AssigneeType.client:
+        return await copilot.getClient(task.assigneeId)
+      default:
+        return await copilot.getCompany(task.assigneeId)
+    }
   }
 
   async updateOneTask(id: string, data: UpdateTaskRequest) {
@@ -264,7 +280,32 @@ export class TasksService extends BaseService {
     return await this.db.task.delete({ where: { id } })
   }
 
-  async completeTask(id: string) {
+  async getIncompleteTasksForCompany(assigneeId: string): Promise<(Task & { workflowState: WorkflowState })[]> {
+    // This works across workspaces
+    return await this.db.task.findMany({
+      where: { assigneeId, assigneeType: AssigneeType.company, workflowState: { type: { not: StateType.completed } } },
+      include: { workflowState: true },
+    })
+  }
+
+  async deleteAllAssigneeTasks(assigneeId: string, assigneeType: AssigneeType) {
+    // Policies validation shouldn't be required here because token is from a webhook event
+    const tasks = await this.db.task.findMany({
+      where: { assigneeId, assigneeType, workspaceId: this.user.workspaceId },
+    })
+    if (!tasks.length) {
+      // If assignee doesn't have an associated task at all, skip logic
+      return
+    }
+    const labels = tasks.map((task) => task.label)
+
+    await this.db.task.deleteMany({
+      where: { assigneeId, assigneeType, workspaceId: this.user.workspaceId },
+    })
+    await this.db.label.deleteMany({ where: { label: { in: labels } } })
+  }
+
+  async clientUpdateTask(id: string, targetWorkflowStateId?: string | null) {
     //Apply custom authorization here. Policy service is not used because this api is for client's Mark done function only. Only clients can use this.
     if (this.user.role === UserRole.IU) {
       throw new APIError(httpStatus.UNAUTHORIZED, 'You are not authorized to perform this action')
@@ -278,15 +319,22 @@ export class TasksService extends BaseService {
     })
     if (!prevTask) throw new APIError(httpStatus.NOT_FOUND, 'The requested task was not found')
 
-    //get Completed workflowState data
-    const completedWorkFlowState = await this.db.workflowState.findFirst({
-      where: {
-        type: StateType.completed,
-        workspaceId: this.user.workspaceId,
-      },
-    })
+    //get Completed or custom workflowState data
+    const updatedWorkflowState = targetWorkflowStateId
+      ? await this.db.workflowState.findFirst({
+          where: {
+            id: targetWorkflowStateId,
+            workspaceId: this.user.workspaceId,
+          },
+        })
+      : await this.db.workflowState.findFirst({
+          where: {
+            type: StateType.completed,
+            workspaceId: this.user.workspaceId,
+          },
+        })
     const data = {
-      workflowStateId: completedWorkFlowState?.id,
+      workflowStateId: updatedWorkflowState?.id,
     }
     // Get the updated task
     const updatedTask = await this.db.task.update({
@@ -297,24 +345,40 @@ export class TasksService extends BaseService {
       },
     })
 
+    // --------------------------
+    // --- Notifications Logic
+    // --------------------------
     const notificationService = new NotificationService(this.user)
 
-    if (updatedTask.assigneeType === AssigneeType.company) {
-      const copilot = new CopilotAPI(this.user.token)
-      const { recipientIds } = await notificationService.getNotificationParties(
-        copilot,
-        updatedTask,
-        NotificationTaskActions.CompletedByCompanyMember,
-      )
-      await notificationService.createBulkNotification(
-        NotificationTaskActions.CompletedByCompanyMember,
-        updatedTask,
-        recipientIds,
-      )
-      await notificationService.markAsReadForAllRecipients(updatedTask)
-    } else {
-      await notificationService.create(NotificationTaskActions.Completed, updatedTask)
-      await notificationService.markClientNotificationAsRead(updatedTask)
+    // If task has been moved back to another non-completed state from Completed
+    if (
+      updatedWorkflowState &&
+      updatedWorkflowState.type !== StateType.completed &&
+      prevTask.workflowState.type === StateType.completed
+    ) {
+      // We need to trigger the notification count for client again!
+      await this.sendTaskCreateNotifications({ ...updatedTask, workflowState: updatedWorkflowState })
+    }
+
+    // If task has been moved to completed from a non-complete state, remove all notification counts
+    if (updatedWorkflowState?.type === StateType.completed && prevTask.workflowState.type !== StateType.completed) {
+      if (updatedTask.assigneeType === AssigneeType.company) {
+        const copilot = new CopilotAPI(this.user.token)
+        const { recipientIds } = await notificationService.getNotificationParties(
+          copilot,
+          updatedTask,
+          NotificationTaskActions.CompletedByCompanyMember,
+        )
+        await notificationService.createBulkNotification(
+          NotificationTaskActions.CompletedByCompanyMember,
+          updatedTask,
+          recipientIds,
+        )
+        await notificationService.markAsReadForAllRecipients(updatedTask)
+      } else {
+        await notificationService.create(NotificationTaskActions.Completed, updatedTask)
+        await notificationService.markClientNotificationAsRead(updatedTask)
+      }
     }
     return updatedTask
   }
@@ -353,6 +417,7 @@ export class TasksService extends BaseService {
       NotificationTaskActions.AssignedToCompany,
       task,
       recipientIds,
+      { email: true },
     )
 
     // This is a hacky way to bulk create ClientNotifications for all company members.
@@ -372,7 +437,7 @@ export class TasksService extends BaseService {
     }
   }
 
-  private async sendTaskCreateNotifications(task: Task & { workflowState: WorkflowState }, isReassigned = false) {
+  async sendTaskCreateNotifications(task: Task & { workflowState: WorkflowState }, isReassigned = false) {
     // If task is unassigned, there's nobody to send notifications to
     if (!task.assigneeId) return
 
@@ -427,7 +492,20 @@ export class TasksService extends BaseService {
       updatedTask?.workflowState?.type === StateType.completed &&
       updatedTask.assigneeId
     ) {
-      const notificationService = new NotificationService(this.user)
+      if (updatedTask.createdById !== updatedTask.assigneeId) {
+        // Make sure company task is not marked as complete by IU
+        if (
+          (updatedTask.assigneeType === AssigneeType.company || updatedTask.assigneeType === AssigneeType.internalUser) &&
+          updatedTask.createdById !== this.user.internalUserId
+        ) {
+          const action =
+            updatedTask.assigneeType === AssigneeType.company
+              ? NotificationTaskActions.CompletedForCompanyByIU
+              : NotificationTaskActions.CompletedByIU
+          await notificationService.create(action, updatedTask, { email: true })
+        }
+      }
+
       if (updatedTask.assigneeType === AssigneeType.client) {
         try {
           await notificationService.markClientNotificationAsRead(updatedTask)
@@ -436,6 +514,17 @@ export class TasksService extends BaseService {
         }
       }
     }
+
+    if (
+      prevTask.workflowState?.type === StateType.completed &&
+      updatedTask.workflowState?.type !== StateType.completed &&
+      updatedTask.assigneeId
+    ) {
+      // If IU decides to move a task back to an incomplete state, trigger client / company notifications
+      await this.sendTaskCreateNotifications(updatedTask)
+    }
+
+    // --- Handle task moved to complete
     await notificationService.markAsReadForAllRecipients(updatedTask)
   }
 }

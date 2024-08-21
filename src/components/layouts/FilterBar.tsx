@@ -1,8 +1,8 @@
 'use client'
 
-import { Box, CircularProgress, Stack } from '@mui/material'
+import { Box, CircularProgress, IconButton, Stack } from '@mui/material'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import store from '@/redux/store'
 import { setFilterOptions, setViewSettings } from '@/redux/features/taskBoardSlice'
 import SearchBar from '@/components/searchBar'
@@ -11,7 +11,7 @@ import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { useSelector } from 'react-redux'
 import { FilterByOptions, FilterOptions, FilterOptionsKeywords, IAssigneeCombined } from '@/types/interfaces'
-import { FilterByAsigneeIcon } from '@/icons'
+import { CrossIcon, FilterByAsigneeIcon } from '@/icons'
 import { ViewModeSelector } from '../inputs/ViewModeSelector'
 import { FilterByAssigneeBtn } from '../buttons/FilterByAssigneeBtn'
 import FilterButtonGroup from '@/components/buttonsGroup/FilterButtonsGroup'
@@ -24,6 +24,8 @@ import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { z } from 'zod'
 import { setDebouncedFilteredAssignees } from '@/utils/users'
 import { MiniLoader } from '@/components/atoms/MiniLoader'
+import { getAssigneeName } from '@/utils/getAssigneeName'
+import { checkAssignee } from '@/utils/assignee'
 
 export const FilterBar = ({
   updateViewModeSetting,
@@ -34,6 +36,10 @@ export const FilterBar = ({
   const { view, filteredAssigneeList, filterOptions, assignee, token } = useSelector(selectTaskBoard)
   const [filteredAssignee, setFilteredAssignee] = useState(filteredAssigneeList)
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    setFilteredAssignee(filteredAssigneeList)
+  }, [filteredAssigneeList]) //to prevent filteredAssignee not updating when filteredAssigneeList changes when fetching assignee is delayed
 
   const handleFilterOptionsChange = async (optionType: FilterOptions, newValue: string | null) => {
     store.dispatch(setFilterOptions({ optionType, newValue }))
@@ -122,15 +128,20 @@ export const FilterBar = ({
   return (
     <Box
       sx={{
-        borderBottom: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
+        border: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
       }}
     >
-      <Box sx={{ overflowX: 'hidden', padding: { xs: '12px 20px', sm: '12px 20px' } }}>
+      <Box
+        sx={{
+          overflowX: 'hidden',
+          padding: '12px 20px',
+          display: { xs: 'none', sm: 'none', sd: 'block' },
+        }}
+      >
         <Stack direction={'row'} justifyContent={'space-between'} sx={{ maxHeight: '32px' }}>
           <Stack direction={'row'} columnGap={3}>
-            <Box>
-              <FilterButtonGroup filterButtons={filterButtons} activeButtonIndex={ButtonIndex} />
-            </Box>
+            <FilterButtonGroup filterButtons={filterButtons} activeButtonIndex={ButtonIndex} />
+
             {filterOptions[FilterOptions.TYPE] !== tokenPayload?.internalUserId && (
               <Box
                 sx={{
@@ -144,6 +155,31 @@ export const FilterBar = ({
                     handleFilterOptionsChange(FilterOptions.ASSIGNEE, newValue?.id as string)
                   }}
                   startIcon={<FilterByAsigneeIcon />}
+                  endIcon={
+                    checkAssignee(assigneeValue) && (
+                      <IconButton
+                        aria-label="remove"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          updateAssigneeValue(null)
+                          handleFilterOptionsChange(FilterOptions.ASSIGNEE, '')
+                        }}
+                        sx={{
+                          cursor: 'default',
+                          borderRadius: 0,
+                          padding: '6px 5px 6px 6px',
+
+                          '&:hover': {
+                            bgcolor: (theme) => theme.color.gray[100],
+                          },
+                        }}
+                        disableRipple
+                        disableTouchRipple
+                      >
+                        <CrossIcon />
+                      </IconButton>
+                    )
+                  }
                   options={loading ? [] : filteredAssignee}
                   placeholder="Assignee"
                   value={assigneeValue}
@@ -167,14 +203,8 @@ export const FilterBar = ({
                       )
                     )
                   }}
-                  buttonContent={
-                    <FilterByAssigneeBtn
-                      assigneeValue={assigneeValue}
-                      updateAssigneeValue={updateAssigneeValue}
-                      handleClick={handleFilterOptionsChange}
-                    />
-                  }
-                  padding="2px 10px"
+                  buttonContent={<FilterByAssigneeBtn assigneeValue={assigneeValue} />}
+                  padding="2px 10px 2px 10px"
                   handleInputChange={async (newInputValue: string) => {
                     if (!newInputValue) {
                       setFilteredAssignee(filteredAssigneeList)
@@ -196,87 +226,15 @@ export const FilterBar = ({
             )}
           </Stack>
           <Stack direction="row" alignItems="center" columnGap={3}>
-            <Box
-              sx={{
-                display: { xs: 'none', sd: 'block' },
+            <SearchBar
+              value={filterOptions.keyword}
+              getSearchKeyword={(keyword) => {
+                handleFilterOptionsChange(FilterOptions.KEYWORD, keyword)
               }}
-            >
-              <SearchBar
-                value={filterOptions.keyword}
-                getSearchKeyword={(keyword) => {
-                  handleFilterOptionsChange(FilterOptions.KEYWORD, keyword)
-                }}
-              />
-            </Box>
-
-            <Box
-              sx={{
-                display: { xs: 'none', sm: 'none', sd: 'block' },
+              onClear={() => {
+                handleFilterOptionsChange(FilterOptions.KEYWORD, '')
               }}
-            >
-              <ViewModeSelector
-                selectedMode={view}
-                handleModeChange={(mode) => {
-                  store.dispatch(setViewSettings({ viewMode: mode, filterOptions: filterOptions }))
-                  updateViewModeSetting({ viewMode: mode, filterOptions: filterOptions })
-                }}
-              />
-            </Box>
-          </Stack>
-        </Stack>
-      </Box>
-      <AppMargin size={SizeofAppMargin.LARGE}>
-        <Stack
-          direction="row"
-          justifyContent="space-between"
-          alignItems="center"
-          sx={{ display: { sm: 'flex', sd: 'none' }, mb: { xs: '12px', md: '0px' }, maxHeight: '30px' }}
-        >
-          <Selector
-            getSelectedValue={(_newValue) => {
-              const newValue = _newValue as IAssigneeCombined
-              updateAssigneeValue(newValue)
-              handleFilterOptionsChange(FilterOptions.ASSIGNEE, newValue.id as string)
-            }}
-            startIcon={<FilterByAsigneeIcon />}
-            options={filteredAssigneeList}
-            placeholder="Assignee"
-            value={assigneeValue}
-            selectorType={SelectorType.ASSIGNEE_SELECTOR}
-            extraOption={NoAssigneeExtraOptions}
-            extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
-              return (
-                <ExtraOptionRendererAssignee
-                  props={props}
-                  onClick={(e) => {
-                    updateAssigneeValue({ id: '', name: 'No assignee' })
-                    setAnchorEl(anchorEl ? null : e.currentTarget)
-                    handleFilterOptionsChange(FilterOptions.ASSIGNEE, 'No assignee')
-                  }}
-                />
-              )
-            }}
-            buttonContent={
-              <FilterByAssigneeBtn
-                assigneeValue={assigneeValue}
-                updateAssigneeValue={updateAssigneeValue}
-                handleClick={handleFilterOptionsChange}
-              />
-            }
-          />
-          <Stack direction={'row'} columnGap={2}>
-            <Box
-              sx={{
-                display: { xs: 'block', sd: 'none', md: 'none' },
-              }}
-            >
-              <SearchBar
-                value={filterOptions.keyword}
-                getSearchKeyword={(keyword) => {
-                  handleFilterOptionsChange(FilterOptions.KEYWORD, keyword)
-                }}
-              />
-            </Box>
+            />
 
             <ViewModeSelector
               selectedMode={view}
@@ -287,7 +245,113 @@ export const FilterBar = ({
             />
           </Stack>
         </Stack>
-      </AppMargin>
+      </Box>
+      <Box sx={{ padding: '12px 20px', display: { sm: 'block', sd: 'none' } }}>
+        <Stack direction="column" rowGap={'8px'}>
+          <FilterButtonGroup filterButtons={filterButtons} activeButtonIndex={ButtonIndex} />
+
+          <Stack direction="row" justifyContent="space-between" alignItems="center">
+            <Box>
+              {filterOptions[FilterOptions.TYPE] !== tokenPayload?.internalUserId && (
+                <Selector
+                  getSelectedValue={(_newValue) => {
+                    const newValue = _newValue as IAssigneeCombined
+                    updateAssigneeValue(newValue)
+                    handleFilterOptionsChange(FilterOptions.ASSIGNEE, newValue?.id as string)
+                  }}
+                  startIcon={<FilterByAsigneeIcon />}
+                  endIcon={
+                    checkAssignee(assigneeValue) && (
+                      <IconButton
+                        aria-label="remove"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          updateAssigneeValue(null)
+                          handleFilterOptionsChange(FilterOptions.ASSIGNEE, '')
+                        }}
+                        sx={{
+                          cursor: 'default',
+                          borderRadius: 0,
+                          padding: '6px 5px 6px 6px',
+
+                          '&:hover': {
+                            bgcolor: (theme) => theme.color.gray[100],
+                          },
+                        }}
+                        disableRipple
+                        disableTouchRipple
+                      >
+                        <CrossIcon />
+                      </IconButton>
+                    )
+                  }
+                  options={loading ? [] : filteredAssignee}
+                  placeholder="Assignee"
+                  value={assigneeValue}
+                  selectorType={SelectorType.ASSIGNEE_SELECTOR}
+                  extraOption={NoAssigneeExtraOptions}
+                  extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
+                    return (
+                      noAssigneOptionFlag && (
+                        <>
+                          {/* //****Disabling re-assignment completely for now*** */}
+                          {/* <ExtraOptionRendererAssignee
+                             props={props}
+                             onClick={(e) => {
+                               updateAssigneeValue({ id: '', name: 'No assignee' })
+                               setAnchorEl(anchorEl ? null : e.currentTarget)
+                               handleFilterOptionsChange(FilterOptions.ASSIGNEE, 'No assignee')
+                             }}
+                           /> */}
+                          {loading && <MiniLoader />}
+                        </>
+                      )
+                    )
+                  }}
+                  buttonContent={<FilterByAssigneeBtn assigneeValue={assigneeValue} />}
+                  padding="2px 10px 2px 10px"
+                  handleInputChange={async (newInputValue: string) => {
+                    if (!newInputValue) {
+                      setFilteredAssignee(filteredAssigneeList)
+                      return
+                    }
+
+                    setDebouncedFilteredAssignees(
+                      activeDebounceTimeoutId,
+                      setActiveDebounceTimeoutId,
+                      setLoading,
+                      setFilteredAssignee,
+                      z.string().parse(token),
+                      newInputValue,
+                      filterOptions.type,
+                    )
+                  }}
+                  filterOption={(x: unknown) => x}
+                />
+              )}
+            </Box>
+            <Stack direction={'row'} columnGap={2}>
+              <SearchBar
+                value={filterOptions.keyword}
+                getSearchKeyword={(keyword) => {
+                  handleFilterOptionsChange(FilterOptions.KEYWORD, keyword)
+                }}
+                onClear={() => {
+                  handleFilterOptionsChange(FilterOptions.KEYWORD, 'keyword')
+                }}
+              />
+
+              <ViewModeSelector
+                selectedMode={view}
+                handleModeChange={(mode) => {
+                  store.dispatch(setViewSettings({ viewMode: mode, filterOptions: filterOptions }))
+                  updateViewModeSetting({ viewMode: mode, filterOptions: filterOptions })
+                }}
+              />
+            </Stack>
+          </Stack>
+        </Stack>
+      </Box>
     </Box>
   )
 }

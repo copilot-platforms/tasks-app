@@ -8,8 +8,10 @@ import User from '@api/core/models/User.model'
 export class BaseService {
   protected db: PrismaClient = DBClient.getInstance()
   public user: User
+  public customApiKey?: string
 
-  constructor(user: User) {
+  constructor(user: User, customCopilotApiKey?: string) {
     this.user = user
+    this.customApiKey = customCopilotApiKey
   }
 }

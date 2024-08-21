@@ -7,16 +7,17 @@ import { CompanyResponse, CopilotUser, MeResponse, NotificationCreatedResponse }
 import { getEmailDetails, getInProductNotificationDetails } from '@api/notification/notification.helpers'
 import APIError from '@api/core/exceptions/api'
 import httpStatus from 'http-status'
+import Bottleneck from 'bottleneck'
 
 export class NotificationService extends BaseService {
   async create(action: NotificationTaskActions, task: Task, disable: { email: boolean } = { email: false }) {
     try {
-      const copilotUtils = new CopilotAPI(this.user.token)
+      const copilot = new CopilotAPI(this.user.token)
 
-      const { senderId, recipientId, actionUser } = await this.getNotificationParties(copilotUtils, task, action)
+      const { senderId, recipientId, actionUser, companyName } = await this.getNotificationParties(copilot, task, action)
 
-      const inProduct = getInProductNotificationDetails(actionUser, task)[action]
-      const email = disable.email ? undefined : getEmailDetails(actionUser, task.title)[action]
+      const inProduct = getInProductNotificationDetails(actionUser, task, companyName)[action]
+      const email = disable.email ? undefined : getEmailDetails(actionUser, task)[action]
       const notificationDetails = {
         senderId,
         recipientId,
@@ -24,25 +25,33 @@ export class NotificationService extends BaseService {
         deliveryTargets: { inProduct, email },
       }
 
-      return await copilotUtils.createNotification(notificationDetails)
+      return await copilot.createNotification(notificationDetails)
     } catch (error) {
       console.error(`Failed to send notification for action: ${action}`, error)
     }
   }
 
-  async createBulkNotification(action: NotificationTaskActions, task: Task, recipientIds: string[]) {
+  async createBulkNotification(
+    action: NotificationTaskActions,
+    task: Task,
+    recipientIds: string[],
+    enable?: { email: boolean },
+  ) {
     try {
-      const copilotUtils = new CopilotAPI(this.user.token)
-      const userInfo = await copilotUtils.me()
+      const copilot = new CopilotAPI(this.user.token)
+      const userInfo = await copilot.me()
       if (!userInfo) {
         throw new APIError(httpStatus.NOT_FOUND, `User not found for token ${this.user.token}`)
       }
       const senderId = z.string().parse(userInfo.id)
       const actionUserName = `${userInfo.givenName} ${userInfo.familyName}`
 
-      const companies = await copilotUtils.getCompanies()
-      const currentCompany = companies.data?.find((company) => company.id === task.assigneeId)
-      const inProduct = getInProductNotificationDetails(actionUserName, task, currentCompany?.name)[action]
+      const company =
+        task?.assigneeId && task?.assigneeType === AssigneeType.company
+          ? await copilot.getCompany(task?.assigneeId)
+          : undefined
+      const inProduct = getInProductNotificationDetails(actionUserName, task, company?.name)[action]
+      const email = enable?.email ? getEmailDetails(actionUserName, task)[action] : undefined
 
       const notifications = []
       for (let recipientId of recipientIds) {
@@ -50,9 +59,9 @@ export class NotificationService extends BaseService {
           const notificationDetails = {
             senderId,
             recipientId,
-            deliveryTargets: { inProduct },
+            deliveryTargets: { inProduct, email },
           }
-          notifications.push(await copilotUtils.createNotification(notificationDetails))
+          notifications.push(await copilot.createNotification(notificationDetails))
         } catch (err: unknown) {
           console.error(`Failed to send notifications to ${recipientId}:`, err)
         }
@@ -131,6 +140,42 @@ export class NotificationService extends BaseService {
     // )
   }
 
+  async readAllUserNotifications(userId: string, userType: AssigneeType) {
+    const copilot = new CopilotAPI(this.user.token)
+
+    if (userType === AssigneeType.internalUser) {
+      return
+    }
+    if (userType === AssigneeType.client) {
+      return await this.markAllAsReadForClients([userId])
+    }
+    if (userType === AssigneeType.company) {
+      // In this case, we need to find out all the clients inside this deleted company, then pass that array to markAllAsReadForClients
+      const clients = await copilot.getCompanyClients(userId)
+      return await this.markAllAsReadForClients(clients.map((client) => client.id))
+    }
+
+    throw new APIError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to parse assignee')
+  }
+
+  async markAllAsReadForClients(clientIds: string[]) {
+    const copilot = new CopilotAPI(this.user.token)
+    const notifications = await this.db.clientNotification.findMany({
+      where: {
+        clientId: { in: clientIds },
+      },
+    })
+    // Get an array of notification ids for Copilot API
+    const notificationPromises = []
+    const bottleneck = new Bottleneck({ minTime: 250, maxConcurrent: 4 })
+    for (let notification of notifications) {
+      const promise = bottleneck.schedule(() => copilot.markNotificationAsRead(notification.notificationId))
+      notificationPromises.push(promise)
+    }
+    await Promise.all(notificationPromises)
+    await this.db.clientNotification.deleteMany({ where: { id: { in: notifications.map((obj) => obj.id) } } })
+  }
+
   /**
    * Get the concerned sender and receiver for a notification based on the action that triggered it. There are various actions
    * defined by NotificationTaskActions. This method returns the senderId, receiverId, and actionUser (user that is creating the notification action)
@@ -141,6 +186,7 @@ export class NotificationService extends BaseService {
     let recipientId: string = ''
     let recipientIds: string[] = []
     let actionTrigger: CopilotUser | CompanyResponse
+    let companyName: string | undefined
 
     const getAssignedTo = async (): Promise<CopilotUser | CompanyResponse> => {
       switch (task.assigneeType) {
@@ -181,6 +227,14 @@ export class NotificationService extends BaseService {
         recipientId = task.createdById
         actionTrigger = await getAssignedTo()
         break
+      case NotificationTaskActions.CompletedForCompanyByIU:
+        const company = await copilot.getCompany(z.string().parse(task.assigneeId))
+        companyName = company.name
+      case NotificationTaskActions.CompletedByIU:
+        senderId = z.string().parse(this.user.internalUserId)
+        recipientId = task.createdById
+        actionTrigger = await copilot.getInternalUser(senderId)
+        break
       default:
         const userInfo = await copilot.me()
         senderId = z.string().parse(userInfo?.id)
@@ -189,11 +243,11 @@ export class NotificationService extends BaseService {
         break
     }
 
-    const actionUser =
-      task.assigneeType === AssigneeType.company
+    let actionUser =
+      task.assigneeType === AssigneeType.company && action !== NotificationTaskActions.CompletedForCompanyByIU
         ? (actionTrigger as CompanyResponse).name
         : `${(actionTrigger as CopilotUser).givenName} ${(actionTrigger as CopilotUser).familyName}`
 
-    return { senderId, recipientId, recipientIds, actionUser }
+    return { senderId, recipientId, recipientIds, actionUser, companyName }
   }
 }

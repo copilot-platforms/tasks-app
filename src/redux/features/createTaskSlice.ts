@@ -3,6 +3,12 @@ import { RootState } from '../store'
 import { AssigneeType } from '@prisma/client'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { DateString } from '@/types/date'
+import { CreateTaskErrors } from '@/types/interfaces'
+
+interface IErrors {
+  [CreateTaskErrors.TITLE]: boolean
+  [CreateTaskErrors.ASSIGNEE]: boolean
+}
 
 interface IInitialState {
   showModal: boolean
@@ -13,6 +19,7 @@ interface IInitialState {
   assigneeId: string | null
   attachments: CreateAttachmentRequest[]
   dueDate: DateString | null
+  errors: IErrors
 }
 
 const initialState: IInitialState = {
@@ -24,6 +31,10 @@ const initialState: IInitialState = {
   assigneeId: null,
   attachments: [],
   dueDate: null,
+  errors: {
+    [CreateTaskErrors.TITLE]: false,
+    [CreateTaskErrors.ASSIGNEE]: false,
+  },
 }
 
 const createTaskSlice = createSlice({
@@ -48,20 +59,33 @@ const createTaskSlice = createSlice({
       state[targetField] = value
     },
 
-    clearCreateTaskFields: (state) => {
+    clearCreateTaskFields: (state, action: { payload: { isFilterOn: boolean } }) => {
+      const { isFilterOn } = action.payload
       state.title = ''
       state.workflowStateId = ''
       state.description = ''
-      state.assigneeType = null
-      state.assigneeId = null
+      if (!isFilterOn) {
+        state.assigneeType = null
+        state.assigneeId = null
+      }
       state.attachments = []
       state.dueDate = null
+      state.errors = {
+        [CreateTaskErrors.TITLE]: false,
+        [CreateTaskErrors.ASSIGNEE]: false,
+      }
+    },
+
+    setErrors: (state, action: { payload: { key: CreateTaskErrors; value: boolean } }) => {
+      const { key, value } = action.payload
+      state.errors[key] = value
     },
   },
 })
 
 export const selectCreateTask = (state: RootState) => state.createTask
 
-export const { setShowModal, setCreateTaskFields, clearCreateTaskFields, removeOneAttachment } = createTaskSlice.actions
+export const { setShowModal, setCreateTaskFields, clearCreateTaskFields, removeOneAttachment, setErrors } =
+  createTaskSlice.actions
 
 export default createTaskSlice.reducer

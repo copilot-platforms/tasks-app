@@ -26,7 +26,21 @@ export const filterUsersByKeyword = (users: FilterableUser[], keyword: string): 
       contains(givenName) || contains(familyName) || contains(`${givenName} ${familyName}`) || contains(name),
   )
 
-  return [...usersStartingWithKeyword, ...usersContainingKeyword]
+  const combinedUsers = [...usersStartingWithKeyword, ...usersContainingKeyword]
+
+  // Use a set to prevent dup records
+  const addedIds = new Set<string>()
+  const uniqueUsers = combinedUsers.filter((user) => {
+    let isUniqueId = false
+    if (!addedIds.has(user.id)) {
+      addedIds.add(user.id)
+      isUniqueId = true
+    }
+
+    return isUniqueId
+  })
+
+  return uniqueUsers
 }
 
 export const setDebouncedFilteredAssignees = (
@@ -36,13 +50,16 @@ export const setDebouncedFilteredAssignees = (
   setAssigneeState: Dispatch<SetStateAction<IAssigneeCombined[]>>,
   token: string,
   newInputValue: string,
+  filterOptions?: string,
 ): void => {
   if (activeDebounceTimeoutId) {
     clearTimeout(activeDebounceTimeoutId)
   }
   const newTimeoutId = setTimeout(async () => {
     setLoading(true)
-    const newAssignees = await getAssigneeList(z.string().parse(token), newInputValue, 2000, '0') // 2000 is hardcoded for now
+
+    const newAssignees = await getAssigneeList(z.string().parse(token), newInputValue, 10000, '0')
+
     setAssigneeState(addTypeToAssignee(newAssignees))
     setLoading(false)
 

@@ -49,6 +49,7 @@ export declare module '@mui/material/styles' {
         300: string
         400: string
         500: string
+        550: string
         600: string
         700: string
       }
@@ -76,6 +77,7 @@ export declare module '@mui/material/styles' {
         bgCallout: string
       }
       error: string
+      muiError: string
     }
   }
 
@@ -126,6 +128,7 @@ export declare module '@mui/material/styles' {
         300: React.CSSProperties['color']
         400: React.CSSProperties['color']
         500: React.CSSProperties['color']
+        550: React.CSSProperties['color']
         600: React.CSSProperties['color']
         700: React.CSSProperties['color']
       }
@@ -153,6 +156,7 @@ export declare module '@mui/material/styles' {
         bgCallout: React.CSSProperties['color']
       }
       error: React.CSSProperties['color']
+      muiError: React.CSSProperties['color']
     }
   }
 

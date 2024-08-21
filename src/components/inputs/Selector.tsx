@@ -5,12 +5,15 @@ import { useFocusableInput } from '@/hooks/useFocusableInput'
 import { HTMLAttributes, ReactNode, useEffect, useState } from 'react'
 import { StyledTextField } from './TextField'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { IAssigneeCombined, IExtraOption, ITemplate, UserType, UserTypesName } from '@/types/interfaces'
+import { IAssigneeCombined, IExtraOption, ITemplate, UserTypesName } from '@/types/interfaces'
 import { TruncateMaxNumber } from '@/types/constants'
 
 import { truncateText } from '@/utils/truncateText'
-import { CopilotAvatar } from '../atoms/CopilotAvatar'
+import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { getAssigneeName } from '@/utils/assignee'
+import { StyledHelperText } from '@/components/error/FormHelperText'
+import React from 'react'
+import { ListComponent } from '@/components/inputs/ListComponent'
 
 export enum SelectorType {
   ASSIGNEE_SELECTOR = 'assigneeSelector',
@@ -41,6 +44,8 @@ interface Prop {
   handleInputChange?: (_: string) => void
   filterOption?: any
   onClick?: () => void
+  error?: boolean
+  endIcon?: ReactNode
 }
 
 export default function Selector({
@@ -62,6 +67,8 @@ export default function Selector({
   handleInputChange,
   filterOption,
   onClick,
+  error,
+  endIcon,
 }: Prop) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
@@ -127,7 +134,7 @@ export default function Selector({
             columnGap="7px"
             justifyContent="flex-start"
             sx={{
-              width: { sm: responsiveNoHide ? buttonWidth || '100px' : '20px', md: buttonWidth || '100px' },
+              width: { sm: responsiveNoHide ? buttonWidth || '100px' : '36px', md: buttonWidth || '100px' },
               justifyContent: { xs: 'flex-start', sm: 'flex-start' },
               cursor: disabled ? 'auto' : 'pointer',
               borderRadius: '4px',
@@ -152,14 +159,19 @@ export default function Selector({
             </Typography>
           </Stack>
         ) : (
-          <SelectorButton
-            startIcon={startIcon}
-            buttonContent={buttonContent}
-            outlined={disableOutline}
-            disabled={disabled}
-            padding={padding}
-            height={buttonHeight}
-          />
+          <>
+            <SelectorButton
+              startIcon={startIcon}
+              buttonContent={buttonContent}
+              outlined={disableOutline}
+              disabled={disabled}
+              padding={padding}
+              height={buttonHeight}
+              error={error}
+              endIcon={endIcon}
+            />
+            {error && <StyledHelperText> Required</StyledHelperText>}
+          </>
         )}
       </Box>
       <Popper
@@ -180,7 +192,6 @@ export default function Selector({
           openOnFocus
           onKeyDown={handleKeyDown}
           ListboxProps={{ sx: { maxHeight: { xs: '175px', sm: '291px' } } }}
-          autoHighlight
           options={extraOption ? [extraOption, ...options] : options}
           value={value}
           onChange={(_, newValue: unknown) => {
@@ -189,6 +200,7 @@ export default function Selector({
               setAnchorEl(null)
             }
           }}
+          ListboxComponent={ListComponent}
           getOptionLabel={(option: unknown) => detectSelectorType(option)}
           groupBy={(option: unknown) =>
             selectorType === SelectorType.ASSIGNEE_SELECTOR ? UserTypesName[(option as IAssigneeCombined).type] : ''
@@ -205,7 +217,15 @@ export default function Selector({
             ) : (
               <Box key={params.key} component="li">
                 <Stack direction="row" alignItems="center" columnGap={2}>
-                  <Typography variant={'sm'} sx={{ color: (theme) => theme.color.gray[500], marginLeft: '10px' }} p={1}>
+                  <Typography
+                    variant={'sm'}
+                    sx={{
+                      color: (theme) => theme.color.gray[500],
+                      marginLeft: '18px',
+                      padding: '2px 0px',
+                      lineHeight: '24px',
+                    }}
+                  >
                     {params.group}
                   </Typography>
                 </Stack>
@@ -229,6 +249,10 @@ export default function Selector({
                 onChange={(e) => {
                   handleInputChange?.(e.target.value)
                   setInputStatusValue(e.target.value)
+                }}
+                onBlur={() => {
+                  setInputStatusValue('')
+                  handleInputChange?.('')
                 }}
               />
             )
@@ -301,21 +325,25 @@ const StatusSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTMLL
 }
 const AssigneeSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTMLLIElement>; option: unknown }) => {
   const assignee = option as IAssigneeCombined
+
   return (
     <Box
       component="li"
       {...props}
-      sx={{
+      sx={(theme) => ({
+        '&.MuiAutocomplete-option': {
+          minHeight: { xs: '32px' },
+        },
         overflow: 'hidden',
         textOverflow: 'ellipsis',
         whiteSpace: 'nowrap',
-        '&.MuiAutocomplete-option[aria-selected="true"]': {
-          bgcolor: (theme) => theme.color.gray[100],
-        },
         '&.MuiAutocomplete-option[aria-selected="true"].Mui-focused': {
-          bgcolor: (theme) => theme.color.gray[100],
+          bgcolor: theme.color.gray[150],
         },
-      }}
+        '&.MuiAutocomplete-option.Mui-focused': {
+          bgcolor: theme.color.gray[150],
+        },
+      })}
     >
       <Stack direction="row" alignItems="center" columnGap={3}>
         <CopilotAvatar currentAssignee={assignee} />
@@ -336,6 +364,8 @@ const SelectorButton = ({
   padding,
   disabled,
   height,
+  error,
+  endIcon,
 }: {
   startIcon?: ReactNode
   buttonContent: ReactNode
@@ -345,17 +375,31 @@ const SelectorButton = ({
   padding?: string
   disabled?: boolean
   height?: string
+  error?: boolean
+  endIcon?: ReactNode
 }) => {
   return (
     <Button
       variant="outlined"
       startIcon={startIcon ? startIcon : null}
+      endIcon={endIcon ? endIcon : null}
       sx={(theme) => ({
         textTransform: 'none',
-        border: enableBackground || outlined ? 'none' : `1px solid ${theme.color.borders.border}`,
+        border:
+          enableBackground || outlined
+            ? 'none'
+            : error
+              ? `1px solid ${theme.color.muiError}`
+              : `1px solid ${theme.color.borders.border}`,
         bgcolor: enableBackground ? theme.color.gray[150] : '',
         '&:hover': {
-          border: enableBackground || outlined ? 'none' : `1px solid ${theme.color.borders.border}`,
+          bgcolor: theme.color.gray[100],
+          border:
+            enableBackground || outlined
+              ? 'none'
+              : error
+                ? `1px solid ${theme.color.muiError}`
+                : `1px solid ${theme.color.borders.border}`,
         },
         '.MuiTouchRipple-child': {
           bgcolor: theme.color.borders.border,

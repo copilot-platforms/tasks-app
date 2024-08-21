@@ -8,5 +8,12 @@ export const extractHtml = (contents: string): string => {
     .replace(/\s+/g, ' ') // Replaces multiple spaces with a single space.
     .trim() // Remove leading and trailing spaces.
 
-  return textContent
+  //decode special characters, eg : &amp; to &
+  const decodeEntities = (text: string) => {
+    const textArea = document.createElement('textarea')
+    textArea.innerHTML = text
+    return textArea.value
+  }
+
+  return decodeEntities(textContent)
 }

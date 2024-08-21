@@ -1,7 +1,7 @@
 import { IExtraOption } from '@/types/interfaces'
 
 export const NoAssignee = {
-  id: null,
+  id: '01',
   name: 'No assignee',
   avatarImageUrl: '',
   iconImageUrl: '',

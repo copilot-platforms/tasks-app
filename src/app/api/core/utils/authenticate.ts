@@ -6,6 +6,17 @@ import { TokenSchema } from '@/types/common'
 import APIError from '@api/core/exceptions/api'
 import httpStatus from 'http-status'
 
+export const authenticateWithToken = async (token: string, customApiKey?: string) => {
+  const copilotClient = new CopilotAPI(token, customApiKey)
+  const payload = TokenSchema.safeParse(await copilotClient.getTokenPayload())
+
+  if (!payload.success) {
+    throw new APIError(httpStatus.UNAUTHORIZED, 'Failed to authenticate token')
+  }
+
+  return new User(token, payload.data)
+}
+
 /**
  * Token parser and authentication util
  *
@@ -22,14 +33,7 @@ const authenticate = async (req: NextRequest) => {
   }
 
   // Parse token payload from valid token
-  const copilotClient = new CopilotAPI(tokenParsed.data)
-  const payload = TokenSchema.safeParse(await copilotClient.getTokenPayload())
-
-  if (!payload.success) {
-    throw new APIError(httpStatus.UNAUTHORIZED, 'Failed to authenticate token')
-  }
-
-  return new User(tokenParsed.data, payload.data)
+  return await authenticateWithToken(tokenParsed.data)
 }
 
 export default authenticate
