@@ -141,14 +141,23 @@ class WebhookService extends BaseService {
     if (prevCompanyId === newCompanyId || !prevCompanyId) return
 
     // Only delete prev notifications if client had a valid company before
-    const prevCompany = await this.copilot.getCompany(prevCompanyId)
-    const newCompany = await this.copilot.getCompany(newCompanyId)
+    let prevCompany, newCompany
+    try {
+      prevCompany = await this.copilot.getCompany(prevCompanyId)
+    } catch (e: unknown) {
+      prevCompany = null
+    }
+    try {
+      newCompany = await this.copilot.getCompany(newCompanyId)
+    } catch (e: unknown) {
+      newCompany = null
+    }
 
-    if (prevCompany.name === '' && newCompany.name !== '') {
+    if (!prevCompany?.name && newCompany?.name) {
       await this.handleCompanyAssignment(clientId)
-    } else if (newCompany.name === '' && prevCompany.name !== '') {
+    } else if (!newCompany?.name && prevCompany?.name) {
       await this.handleCompanyUnassignment(clientId, prevCompanyId)
-    } else if (prevCompany.name !== '' && newCompany.name !== '') {
+    } else if (prevCompany?.name && newCompany?.name) {
       await this.handleCompanyUnassignment(clientId, prevCompanyId)
       await this.handleCompanyAssignment(clientId)
     } else {
