@@ -78,9 +78,6 @@ export default async function TaskDetailPage({
   return (
     <ClientSideStateUpdate token={token} tokenPayload={tokenPayload}>
       <RealTime>
-        <Suspense fallback={null}>
-          <TasksFetcher token={token} />
-        </Suspense>
         <EscapeHandler />
         <Stack direction="row" sx={{ height: '100vh' }}>
           <ToggleController>
