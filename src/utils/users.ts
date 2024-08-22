@@ -58,7 +58,7 @@ export const setDebouncedFilteredAssignees = (
   const newTimeoutId = setTimeout(async () => {
     setLoading(true)
 
-    const newAssignees = await getAssigneeList(z.string().parse(token), newInputValue, 10000, '0')
+    const newAssignees = await getAssigneeList(z.string().parse(token), newInputValue, 10000, '0', filterOptions)
 
     setAssigneeState(addTypeToAssignee(newAssignees))
     setLoading(false)

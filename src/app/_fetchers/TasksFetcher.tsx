@@ -20,5 +20,5 @@ const getAllTasks = async (token: string): Promise<TaskResponse[]> => {
 export const TasksFetcher = async ({ token }: Props) => {
   const tasks = await getAllTasks(token)
 
-  return <ClientSideStateUpdate tasks={tasks} />
+  return <ClientSideStateUpdate tasks={tasks}>{null}</ClientSideStateUpdate>
 }

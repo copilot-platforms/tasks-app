@@ -42,7 +42,8 @@ export const TaskEditor = ({
 }: Prop) => {
   const [updateTitle, setUpdateTitle] = useState('')
   const [updateDetail, setUpdateDetail] = useState('')
-  const { showConfirmDeleteModal, task } = useSelector(selectTaskDetails)
+  const { showConfirmDeleteModal } = useSelector(selectTaskDetails)
+  const { tasks } = useSelector(selectTaskBoard)
   const [isUserTyping, setIsUserTyping] = useState(false)
 
   // const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -60,13 +61,14 @@ export const TaskEditor = ({
   // }
 
   useEffect(() => {
-    if (task) {
-      if (!isUserTyping) {
-        setUpdateTitle(task?.title || '')
-        setUpdateDetail(task?.body ?? '')
+    if (!isUserTyping) {
+      const currentTask = tasks.find((el) => el.id === task_id)
+      if (currentTask) {
+        setUpdateTitle(currentTask.title || '')
+        setUpdateDetail(currentTask.body ?? '')
       }
     }
-  }, [task, task_id, isUserTyping])
+  }, [tasks, task_id, isUserTyping])
 
   const _titleUpdateDebounced = async (title: string) => updateTaskTitle(title)
 
@@ -97,7 +99,8 @@ export const TaskEditor = ({
   const handleTitleBlur = () => {
     if (updateTitle.trim() == '') {
       setTimeout(() => {
-        setUpdateTitle(task?.title ?? '')
+        const currentTask = tasks.find((el) => el.id === task_id)
+        setUpdateTitle(currentTask?.title ?? '')
       }, 300)
     }
   }

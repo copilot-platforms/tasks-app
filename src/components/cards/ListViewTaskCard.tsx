@@ -35,7 +35,8 @@ export const ListViewTaskCard = ({
   useEffect(() => {
     if (assignee.length > 0) {
       const currentAssignee = assignee.find((el) => el.id === task.assigneeId)
-      setCurrentAssignee(currentAssignee)
+      //@ts-expect-error  "type" property has mismatching types in between NoAssignee and IAssigneeCombined
+      setCurrentAssignee(currentAssignee ?? NoAssignee)
     }
   }, [assignee])
 
