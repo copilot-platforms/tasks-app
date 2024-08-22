@@ -11,7 +11,7 @@ export const DetailStateUpdate = async ({ isRedirect, token, tokenPayload, child
   }
 
   // If flow has been redirected from notifications CTA button directly,
-  // we must context for tasks, workflowStates and viewSettings
+  // we must first get context for tasks, workflowStates and viewSettings
   const [workflowStates, tasks, viewSettings] = await Promise.all([
     getAllWorkflowStates(token),
     getAllTasks(token),
