@@ -58,7 +58,7 @@ export default async function TaskDetailPage({
   searchParams,
 }: {
   params: { task_id: string; task_name: string; user_type: UserType }
-  searchParams: { token: string; isRedirect?: 'true' }
+  searchParams: { token: string; isRedirect?: boolean }
 }) {
   const { token } = searchParams
   const { task_id } = params

@@ -3,7 +3,7 @@ import { getAllTasks, getAllWorkflowStates, getViewSettings } from '@/app/page'
 import { Token } from '@/types/common'
 
 interface DetailStateUpdateProps {
-  isRedirect?: 'true'
+  isRedirect?: boolean
   token: string
   tokenPayload: Token | null
   children: React.ReactNode

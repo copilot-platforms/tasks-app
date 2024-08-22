@@ -6,7 +6,7 @@ import { UserType } from '@/types/interfaces'
 export const redirectIfTaskCta = (searchParams: Record<string, string>) => {
   const taskId = z.string().safeParse(searchParams.taskId)
   if (taskId.data) {
-    redirect(`${apiUrl}/detail/${taskId.data}/iu?token=${z.string().parse(searchParams.token)}&isRedirect=true`)
+    redirect(`${apiUrl}/detail/${taskId.data}/iu?token=${z.string().parse(searchParams.token)}&isRedirect`)
   }
 }
 
@@ -16,7 +16,7 @@ export const RESOURCE_NOT_FOUND_REDIRECT_PATHS = {
 }
 
 export const redirectIfResourceNotFound = <R>(
-  searchParams: Record<string, string>,
+  searchParams: Record<string, string | boolean>,
   resource: R,
   isInternalUser: boolean,
 ): void => {
