@@ -19,7 +19,7 @@ import { redirectIfTaskCta } from '@/utils/redirect'
 import { Suspense } from 'react'
 import { AssigneeFetcher } from './_fetchers/AssigneeFetcher'
 
-async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
+export async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
     next: { tags: ['getAllWorkflowStates'] },
   })
@@ -29,7 +29,7 @@ async function getAllWorkflowStates(token: string): Promise<WorkflowStateRespons
   return data.workflowStates
 }
 
-async function getAllTasks(token: string): Promise<TaskResponse[]> {
+export async function getAllTasks(token: string): Promise<TaskResponse[]> {
   const res = await fetch(`${apiUrl}/api/tasks?token=${token}`, {
     next: { tags: ['getTasks'] },
   })
@@ -39,13 +39,13 @@ async function getAllTasks(token: string): Promise<TaskResponse[]> {
   return data.tasks
 }
 
-async function getTokenPayload(token: string): Promise<Token> {
+export async function getTokenPayload(token: string): Promise<Token> {
   const copilotClient = new CopilotAPI(token)
   const payload = TokenSchema.parse(await copilotClient.getTokenPayload())
   return payload as Token
 }
 
-async function getViewSettings(token: string): Promise<CreateViewSettingsDTO> {
+export async function getViewSettings(token: string): Promise<CreateViewSettingsDTO> {
   const res = await fetch(`${apiUrl}/api/view-settings?token=${token}`, {
     next: { tags: ['getViewSettings'] },
   })
