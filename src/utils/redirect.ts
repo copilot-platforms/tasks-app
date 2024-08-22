@@ -16,7 +16,7 @@ export const RESOURCE_NOT_FOUND_REDIRECT_PATHS = {
 }
 
 export const redirectIfResourceNotFound = <R>(
-  searchParams: Record<string, string | boolean>,
+  searchParams: Record<string, string>,
   resource: R,
   isInternalUser: boolean,
 ): void => {

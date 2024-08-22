@@ -58,7 +58,7 @@ export default async function TaskDetailPage({
   searchParams,
 }: {
   params: { task_id: string; task_name: string; user_type: UserType }
-  searchParams: { token: string; isRedirect?: boolean }
+  searchParams: { token: string; isRedirect?: string }
 }) {
   const { token } = searchParams
   const { task_id } = params
@@ -73,7 +73,7 @@ export default async function TaskDetailPage({
   redirectIfResourceNotFound(searchParams, task, !!tokenPayload.internalUserId)
 
   return (
-    <DetailStateUpdate isRedirect={searchParams.isRedirect} token={token} tokenPayload={tokenPayload}>
+    <DetailStateUpdate isRedirect={!!searchParams.isRedirect} token={token} tokenPayload={tokenPayload}>
       <RealTime>
         <EscapeHandler />
         <Stack direction="row" sx={{ height: '100vh' }}>
