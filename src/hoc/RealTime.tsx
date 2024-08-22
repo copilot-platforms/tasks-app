@@ -5,12 +5,11 @@ import { selectTaskBoard, setTasks } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
+import { usePathname } from 'next/navigation'
 import { ReactNode, useEffect } from 'react'
 import { useSelector } from 'react-redux'
-import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
-import { usePathname } from 'next/navigation'
-import { selectTaskDetails, setTask } from '@/redux/features/taskDetailsSlice'
 import { useRouter } from 'next/navigation'
+import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 
 interface RealTimeTaskResponse extends TaskResponse {
   deletedAt: string
@@ -19,11 +18,10 @@ interface RealTimeTaskResponse extends TaskResponse {
 export const RealTime = ({ children }: { children: ReactNode }) => {
   const { tasks, token } = useSelector(selectTaskBoard)
   const { tokenPayload } = useSelector(selectAuthDetails)
-  const { task } = useSelector(selectTaskDetails)
-  const path = usePathname()
+  const pathname = usePathname()
   const router = useRouter()
 
-  const handleTaskRealTimeUpdatesInRoot = (payload: RealtimePostgresChangesPayload<RealTimeTaskResponse>) => {
+  const handleTaskRealTimeUpdates = (payload: RealtimePostgresChangesPayload<RealTimeTaskResponse>) => {
     if (payload.eventType === 'INSERT') {
       //check if the new task in this event belongs to the same workspaceId
       if (payload.new.workspaceId === tokenPayload?.workspaceId) {
@@ -34,9 +32,19 @@ export const RealTime = ({ children }: { children: ReactNode }) => {
       const updatedTask = payload.new
       //check if the new task in this event belongs to the same workspaceId
       if (payload.new.workspaceId === tokenPayload?.workspaceId) {
+        //if the task is deleted
         if (updatedTask.deletedAt) {
           const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
           store.dispatch(setTasks(newTaskArr))
+          //if a user is in the details page when the task is deleted then we want the user to get redirected to '/' route
+          if (pathname.includes('detail')) {
+            if (pathname.includes('cu')) {
+              router.push(`/client?token=${token}`)
+            } else {
+              router.push(`/?token=${token}`)
+            }
+          }
+          //if the task is updated
         } else {
           const newTaskArr = [...tasks.filter((task) => task.id !== updatedTask.id), updatedTask]
           store.dispatch(setTasks(newTaskArr))
@@ -44,48 +52,21 @@ export const RealTime = ({ children }: { children: ReactNode }) => {
       }
     }
   }
-  const handleTaskRealTimeUpdatesDetails = (payload: RealtimePostgresChangesPayload<RealTimeTaskResponse>) => {
-    const updatedTask = payload.new as RealTimeTaskResponse
-    if (updatedTask.deletedAt) {
-      if (path.includes('/iu')) {
-        router.push(`/?token=${token}`)
-      } else {
-        router.push(`/client?token=${token}`)
-      }
-    } else {
-      store.dispatch(setTask(updatedTask))
-    }
-  }
 
   useEffect(() => {
-    if (path.includes('/detail') && task) {
-      const channel = supabase
-        .channel('realtime tasks details')
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'Tasks',
-            filter: `id=eq.${task.id}`,
-          },
-          handleTaskRealTimeUpdatesDetails,
-        )
-        .subscribe()
-      return () => {
-        supabase.removeChannel(channel)
-      }
-    } else {
-      const channel = supabase
-        .channel('realtime tasks')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'Tasks' }, handleTaskRealTimeUpdatesInRoot)
-        .subscribe()
+    const channel = supabase
+      .channel('realtime tasks')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'Tasks', filter: `workspaceId=eq.${tokenPayload?.workspaceId}` },
+        handleTaskRealTimeUpdates,
+      )
+      .subscribe()
 
-      return () => {
-        supabase.removeChannel(channel)
-      }
+    return () => {
+      supabase.removeChannel(channel)
     }
-  }, [supabase, tasks, path, task])
+  }, [supabase, tasks])
 
   return children
 }

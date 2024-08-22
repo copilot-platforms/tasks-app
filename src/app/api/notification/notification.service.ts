@@ -25,7 +25,25 @@ export class NotificationService extends BaseService {
         deliveryTargets: { inProduct, email },
       }
 
-      return await copilot.createNotification(notificationDetails)
+      const notification = await copilot.createNotification(notificationDetails)
+      if (
+        [
+          NotificationTaskActions.Completed,
+          NotificationTaskActions.CompletedByIU,
+          NotificationTaskActions.CompletedForCompanyByIU,
+          NotificationTaskActions.CompletedByCompanyMember,
+        ].includes(action)
+      ) {
+        // Notification recipient is IU in this case
+        await this.db.internalUserNotification.create({
+          data: {
+            internalUserId: recipientId,
+            notificationId: notification.id,
+            taskId: task.id,
+          },
+        })
+      }
+      return notification
     } catch (error) {
       console.error(`Failed to send notification for action: ${action}`, error)
     }
@@ -89,6 +107,24 @@ export class NotificationService extends BaseService {
     })
   }
 
+  deleteInternalUserNotificationForTask = async (taskId: string) => {
+    const copilot = new CopilotAPI(this.user.token)
+    const notifications = await this.db.internalUserNotification.findMany({ where: { taskId } })
+    const markAsReadPromises = []
+    const bottleneck = new Bottleneck({ minTime: 250, maxConcurrent: 2 })
+    for (let notification of notifications) {
+      markAsReadPromises.push(
+        // Mark IU notification as read
+        bottleneck.schedule(() => {
+          return copilot.deleteNotification(notification.notificationId)
+        }),
+      )
+    }
+    console.info(`Deleting all notifications triggerd by task ${taskId}`)
+    await Promise.all(markAsReadPromises)
+    await this.db.internalUserNotification.deleteMany({ where: { taskId } })
+  }
+
   /**
    * Marks a client notification in Copilot Notifications service as read
    * @param id Notification ID for object as exists in Copilot
@@ -140,31 +176,14 @@ export class NotificationService extends BaseService {
     // )
   }
 
-  async readAllUserNotifications(userId: string, userType: AssigneeType) {
-    const copilot = new CopilotAPI(this.user.token)
-
-    if (userType === AssigneeType.internalUser) {
-      return
-    }
-    if (userType === AssigneeType.client) {
-      return await this.markAllAsReadForClients([userId])
-    }
-    if (userType === AssigneeType.company) {
-      // In this case, we need to find out all the clients inside this deleted company, then pass that array to markAllAsReadForClients
-      const clients = await copilot.getCompanyClients(userId)
-      return await this.markAllAsReadForClients(clients.map((client) => client.id))
-    }
-
-    throw new APIError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to parse assignee')
-  }
-
-  async markAllAsReadForClients(clientIds: string[]) {
-    const copilot = new CopilotAPI(this.user.token)
+  async markAllAsReadForClients(copilot: CopilotAPI, tasks: Task[], clientIds: string[]) {
     const notifications = await this.db.clientNotification.findMany({
       where: {
+        taskId: { in: tasks.map((task) => task.id) },
         clientId: { in: clientIds },
       },
     })
+
     // Get an array of notification ids for Copilot API
     const notificationPromises = []
     const bottleneck = new Bottleneck({ minTime: 250, maxConcurrent: 4 })

@@ -277,7 +277,10 @@ export class TasksService extends BaseService {
     const labelMappingService = new LabelMappingService(this.user)
     await labelMappingService.deleteLabel(task?.label)
 
-    return await this.db.task.delete({ where: { id } })
+    await this.db.task.delete({ where: { id } })
+    const notificationService = new NotificationService(this.user)
+    await notificationService.deleteInternalUserNotificationForTask(id)
+    await this.db.internalUserNotification.deleteMany({ where: { taskId: id } })
   }
 
   async getIncompleteTasksForCompany(assigneeId: string): Promise<(Task & { workflowState: WorkflowState })[]> {
@@ -295,7 +298,7 @@ export class TasksService extends BaseService {
     })
     if (!tasks.length) {
       // If assignee doesn't have an associated task at all, skip logic
-      return
+      return []
     }
     const labels = tasks.map((task) => task.label)
 
@@ -458,6 +461,8 @@ export class TasksService extends BaseService {
     prevTask: Task & { workflowState: WorkflowState },
     updatedTask: Task & { workflowState: WorkflowState },
   ) {
+    if (prevTask.workflowStateId === updatedTask.workflowStateId) return
+
     const notificationService = new NotificationService(this.user)
 
     // --- Handle previous assignee notification "Mark as read" if it is updated

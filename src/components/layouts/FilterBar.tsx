@@ -218,6 +218,7 @@ export const FilterBar = ({
                       setFilteredAssignee,
                       z.string().parse(token),
                       newInputValue,
+                      filterOptions.type,
                     )
                   }}
                   filterOption={(x: unknown) => x}
@@ -337,7 +338,7 @@ export const FilterBar = ({
                   handleFilterOptionsChange(FilterOptions.KEYWORD, keyword)
                 }}
                 onClear={() => {
-                  handleFilterOptionsChange(FilterOptions.KEYWORD, 'keyword')
+                  handleFilterOptionsChange(FilterOptions.KEYWORD, '')
                 }}
               />
 
