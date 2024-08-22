@@ -14,8 +14,6 @@ import {
   StyledTiptapDescriptionWrapper,
   StyledTypography,
 } from '@/app/detail/ui/styledComponent'
-import Link from 'next/link'
-import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import {
   clientUpdateTask,
   deleteAttachment,
@@ -37,7 +35,7 @@ import { Suspense } from 'react'
 import { WorkflowStateFetcher } from '@/app/_fetchers/WorkflowStateFetcher'
 import { AssigneeFetcher } from '@/app/_fetchers/AssigneeFetcher'
 import { CustomLink } from '@/hoc/CustomLink'
-import { TasksFetcher } from '@/app/_fetchers/TasksFetcher'
+import { DetailStateUpdate } from '@/app/detail/[task_id]/[user_type]/DetailStateUpdate'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
@@ -60,14 +58,13 @@ export default async function TaskDetailPage({
   searchParams,
 }: {
   params: { task_id: string; task_name: string; user_type: UserType }
-  searchParams: { token: string }
+  searchParams: { token: string; isRedirect?: 'true' }
 }) {
   const { token } = searchParams
   const { task_id } = params
   const copilotClient = new CopilotAPI(token)
 
   const [task, tokenPayload] = await Promise.all([getOneTask(token, task_id), copilotClient.getTokenPayload()])
-
   // Basic validation
   if (!tokenPayload) {
     throw new Error('Token cannot be found')
@@ -76,7 +73,12 @@ export default async function TaskDetailPage({
   redirectIfResourceNotFound(searchParams, task, !!tokenPayload.internalUserId)
 
   return (
-    <ClientSideStateUpdate token={token} tokenPayload={tokenPayload}>
+    <DetailStateUpdate
+      isRedirect={searchParams.isRedirect}
+      searchParams={searchParams}
+      token={token}
+      tokenPayload={tokenPayload}
+    >
       <RealTime>
         <EscapeHandler />
         <Stack direction="row" sx={{ height: '100vh' }}>
@@ -219,6 +221,6 @@ export default async function TaskDetailPage({
           </Box>
         </Stack>
       </RealTime>
-    </ClientSideStateUpdate>
+    </DetailStateUpdate>
   )
 }
