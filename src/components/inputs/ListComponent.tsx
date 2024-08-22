@@ -23,8 +23,18 @@ const ListComponentInternal = forwardRef<Scrollbars, ListComponentProps>((props,
           }}
         />
       )}
-      autoHeight
-      autoHeightMax={xs ? '175px' : '291px'}
+      renderView={(viewProps) => (
+        <div
+          style={{
+            position: 'relative',
+            maxHeight: '291px',
+            marginBottom: '-25px',
+            inset: '0px',
+            overflow: 'scroll',
+            marginRight: '-20px',
+          }}
+        />
+      )}
       autoHide
       autoHideTimeout={500}
       autoHideDuration={500}
