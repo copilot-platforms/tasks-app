@@ -140,31 +140,14 @@ export class NotificationService extends BaseService {
     // )
   }
 
-  async readAllUserNotifications(userId: string, userType: AssigneeType) {
-    const copilot = new CopilotAPI(this.user.token)
-
-    if (userType === AssigneeType.internalUser) {
-      return
-    }
-    if (userType === AssigneeType.client) {
-      return await this.markAllAsReadForClients([userId])
-    }
-    if (userType === AssigneeType.company) {
-      // In this case, we need to find out all the clients inside this deleted company, then pass that array to markAllAsReadForClients
-      const clients = await copilot.getCompanyClients(userId)
-      return await this.markAllAsReadForClients(clients.map((client) => client.id))
-    }
-
-    throw new APIError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to parse assignee')
-  }
-
-  async markAllAsReadForClients(clientIds: string[]) {
-    const copilot = new CopilotAPI(this.user.token)
+  async markAllAsReadForClients(copilot: CopilotAPI, tasks: Task[], clientIds: string[]) {
     const notifications = await this.db.clientNotification.findMany({
       where: {
+        taskId: { in: tasks.map((task) => task.id) },
         clientId: { in: clientIds },
       },
     })
+
     // Get an array of notification ids for Copilot API
     const notificationPromises = []
     const bottleneck = new Bottleneck({ minTime: 250, maxConcurrent: 4 })

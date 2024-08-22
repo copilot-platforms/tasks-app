@@ -31,12 +31,14 @@ const StyledText = styled(Typography)(({ theme }) => ({
 }))
 
 export const Sidebar = ({
+  task_id,
   updateWorkflowState,
   updateAssignee,
   updateTask,
   disabled,
   workflowDisabled,
 }: {
+  task_id: string
   selectedWorkflowState: WorkflowStateResponse
   selectedAssigneeId: string | undefined
   updateWorkflowState: (workflowState: WorkflowStateResponse) => void
@@ -45,18 +47,20 @@ export const Sidebar = ({
   disabled: boolean
   workflowDisabled?: false
 }) => {
-  const { token, workflowStates, assignee } = useSelector(selectTaskBoard)
-  const { showSidebar, task } = useSelector(selectTaskDetails)
+  const { tasks, token, workflowStates, assignee } = useSelector(selectTaskBoard)
+  const { showSidebar } = useSelector(selectTaskDetails)
   const [filteredAssignees, setFilteredAssignees] = useState(assignee)
   const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
   const [loading, setLoading] = useState(false)
   const [dueDate, setDueDate] = useState<Date | string | undefined>()
 
   const { renderingItem: _statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
+    // item: selectedWorkflowState,
     item: null,
     type: SelectorType.STATUS_SELECTOR,
   })
   const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
+    // item: selectedAssigneeId ? assignee.find((el) => el.id === selectedAssigneeId) : NoAssignee,
     item: null,
     type: SelectorType.ASSIGNEE_SELECTOR,
   })
@@ -65,17 +69,18 @@ export const Sidebar = ({
   const assigneeValue = _assigneeValue as IAssigneeCombined //typecasting
 
   useEffect(() => {
-    if (task && assignee && workflowStates) {
-      const currentWorkflowState = workflowStates?.find((el) => el?.id === task?.workflowStateId)
-      const currentAssigneeId = task?.assigneeId
-      const currentAssignee = currentAssigneeId ? assignee?.find((el) => el?.id === currentAssigneeId) : NoAssignee
+    if (tasks && workflowStates) {
+      const currentTask = tasks.find((el) => el.id === task_id)
+      const currentWorkflowState = workflowStates.find((el) => el?.id === currentTask?.workflowStateId)
+      const currentAssigneeId = currentTask?.assigneeId
       updateStatusValue(currentWorkflowState)
-      updateAssigneeValue(currentAssignee)
-      setDueDate(task?.dueDate)
+      updateAssigneeValue(currentAssigneeId ? assignee.find((el) => el.id === currentAssigneeId) : NoAssignee)
+      setDueDate(currentTask?.dueDate)
     }
-  }, [task, assignee, workflowStates])
+  }, [tasks, workflowStates])
 
   const matches = useMediaQuery('(max-width:600px)')
+  if (!tasks) return null
 
   return (
     <Box
