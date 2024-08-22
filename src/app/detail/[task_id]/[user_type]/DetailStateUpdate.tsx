@@ -1,5 +1,13 @@
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import { getAllTasks, getAllWorkflowStates, getViewSettings } from '@/app/page'
+import { Token } from '@/types/common'
+
+interface DetailStateUpdateProps {
+  isRedirect?: 'true'
+  token: string
+  tokenPayload: Token | null
+  children: React.ReactNode
+}
 
 export const DetailStateUpdate = async ({ isRedirect, token, tokenPayload, children }: any) => {
   if (!isRedirect) {
