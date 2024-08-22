@@ -9,7 +9,7 @@ interface DetailStateUpdateProps {
   children: React.ReactNode
 }
 
-export const DetailStateUpdate = async ({ isRedirect, token, tokenPayload, children }: any) => {
+export const DetailStateUpdate = async ({ isRedirect, token, tokenPayload, children }: DetailStateUpdateProps) => {
   if (!isRedirect) {
     return (
       <ClientSideStateUpdate token={token} tokenPayload={tokenPayload}>
