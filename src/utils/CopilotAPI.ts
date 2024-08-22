@@ -138,4 +138,8 @@ export class CopilotAPI {
   async markNotificationAsRead(id: string): Promise<void> {
     await this.copilot.markNotificationRead({ id })
   }
+
+  async deleteNotification(id: string): Promise<void> {
+    await this.copilot.deleteNotification({ id })
+  }
 }

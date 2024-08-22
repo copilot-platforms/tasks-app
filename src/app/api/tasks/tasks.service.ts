@@ -277,7 +277,10 @@ export class TasksService extends BaseService {
     const labelMappingService = new LabelMappingService(this.user)
     await labelMappingService.deleteLabel(task?.label)
 
-    return await this.db.task.delete({ where: { id } })
+    await this.db.task.delete({ where: { id } })
+    const notificationService = new NotificationService(this.user)
+    await notificationService.deleteInternalUserNotificationForTask(id)
+    await this.db.internalUserNotification.deleteMany({ where: { taskId: id } })
   }
 
   async getIncompleteTasksForCompany(assigneeId: string): Promise<(Task & { workflowState: WorkflowState })[]> {
