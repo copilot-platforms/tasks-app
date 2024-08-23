@@ -46,6 +46,7 @@ export async function getTokenPayload(token: string): Promise<Token> {
 }
 
 export async function getViewSettings(token: string): Promise<CreateViewSettingsDTO> {
+  console.log('\x1b[32m%s\x1b[0m', 'This is a green message')
   const res = await fetch(`${apiUrl}/api/view-settings?token=${token}`, {
     next: { tags: ['getViewSettings'] },
   })
