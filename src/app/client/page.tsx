@@ -13,7 +13,6 @@ import { Token, TokenSchema } from '@/types/common'
 import { Suspense } from 'react'
 import { AssigneeFetcher } from '../_fetchers/AssigneeFetcher'
 import { z } from 'zod'
-import ClientError from '@/components/clientError'
 import { SilentError } from '@/components/templates/SilentError'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
