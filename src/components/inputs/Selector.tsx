@@ -333,15 +333,18 @@ const AssigneeSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTM
       sx={(theme) => ({
         '&.MuiAutocomplete-option': {
           minHeight: { xs: '32px' },
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
         },
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-        whiteSpace: 'nowrap',
-        '&.MuiAutocomplete-option[aria-selected="true"].Mui-focused': {
-          bgcolor: theme.color.gray[150],
+        '&.MuiAutocomplete-option[aria-selected="true"]': {
+          bgcolor: theme.color.base.white,
         },
         '&.MuiAutocomplete-option.Mui-focused': {
-          bgcolor: theme.color.gray[150],
+          bgcolor: theme.color.background.bgHover,
+        },
+        '&.MuiAutocomplete-option:hover': {
+          bgcolor: theme.color.background.bgHover,
         },
       })}
     >

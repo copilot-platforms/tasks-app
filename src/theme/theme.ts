@@ -77,6 +77,7 @@ export const theme = createTheme({
     background: {
       bgCard: '#DFE1E4',
       bgCallout: '#F8F9FB',
+      bgHover: '#F1F3F8',
     },
     error: '#CC0000',
     muiError: '#D32F2F',
