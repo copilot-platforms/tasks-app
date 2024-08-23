@@ -7,7 +7,6 @@ import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { apiUrl } from '@/config'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import { TaskResponse } from '@/types/dto/tasks.dto'
-import ClientError from '@/components/clientError'
 import { Token, TokenSchema } from '@/types/common'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
@@ -18,6 +17,7 @@ import { RealTime } from '@/hoc/RealTime'
 import { redirectIfTaskCta } from '@/utils/redirect'
 import { Suspense } from 'react'
 import { AssigneeFetcher } from './_fetchers/AssigneeFetcher'
+import { SilentError } from '@/components/templates/SilentError'
 
 export async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -59,7 +59,7 @@ export default async function Main({ searchParams }: { searchParams: { token: st
 
   const parsedToken = z.string().safeParse(searchParams.token)
   if (!parsedToken.success) {
-    return <ClientError message={'Please provide a Valid Token'} />
+    return <SilentError message="Please provide a Valid Token" />
   }
 
   redirectIfTaskCta(searchParams)

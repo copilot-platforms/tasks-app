@@ -10,11 +10,10 @@ import { completeTask } from '@/app/client/actions'
 import { RealTime } from '@/hoc/RealTime'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { Token, TokenSchema } from '@/types/common'
-import { sortTaskByDescendingOrder } from '@/utils/sortTask'
 import { Suspense } from 'react'
 import { AssigneeFetcher } from '../_fetchers/AssigneeFetcher'
 import { z } from 'zod'
-import ClientError from '@/components/clientError'
+import { SilentError } from '@/components/templates/SilentError'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -44,7 +43,7 @@ async function getTokenPayload(token: string): Promise<Token> {
 export default async function ClientPage({ searchParams }: { searchParams: { token: string } }) {
   const token = searchParams.token
   if (!z.string().safeParse(token).success) {
-    return <ClientError message={'Please provide a Valid Token'} />
+    return <SilentError message="Please provide a Valid Token" />
   }
 
   const [workflowStates, tasks, tokenPayload] = await Promise.all([
