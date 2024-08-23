@@ -198,6 +198,7 @@ export default function Selector({
             if (newValue) {
               getSelectedValue(newValue)
               setAnchorEl(null)
+              setInputStatusValue('')
             }
           }}
           ListboxComponent={ListComponent}
