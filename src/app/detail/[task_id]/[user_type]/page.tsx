@@ -37,6 +37,7 @@ import { AssigneeFetcher } from '@/app/_fetchers/AssigneeFetcher'
 import { CustomLink } from '@/hoc/CustomLink'
 import { DetailStateUpdate } from '@/app/detail/[task_id]/[user_type]/DetailStateUpdate'
 import { SilentError } from '@/components/templates/SilentError'
+import { z } from 'zod'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
@@ -63,12 +64,16 @@ export default async function TaskDetailPage({
 }) {
   const { token } = searchParams
   const { task_id } = params
+
+  if (z.string().safeParse(token).error) {
+    return <SilentError message="Please provide a Valid Token" />
+  }
+
   const copilotClient = new CopilotAPI(token)
 
   const [task, tokenPayload] = await Promise.all([getOneTask(token, task_id), copilotClient.getTokenPayload()])
-  // Basic validation
   if (!tokenPayload) {
-    return <SilentError message="Please provide a Valid Token" />
+    throw new Error('Please provide a Valid Token')
   }
 
   redirectIfResourceNotFound(searchParams, task, !!tokenPayload.internalUserId)
