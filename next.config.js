@@ -6,8 +6,8 @@ const nextConfig = {
   experimental: {
     staleTimes: {
       dynamic: 0,
-      static: 0
-    }
+      static: 0,
+    },
   },
   webpack(config) {
     config.module.rules.push({
