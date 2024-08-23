@@ -5,7 +5,7 @@
 }
 
 .tapwrite-details-page {
-  height: calc(100vh - 50vh);
+  height: 45vh;
   overflow-y: auto;
 }
 
@@ -15,18 +15,18 @@ a {
 
 @media (min-width: 1150px) {
   .tapwrite-details-page {
-    height: calc(100vh - 30vh);
+    height: 70vh;
   }
 }
 
 @media (min-width: 800px) {
   .tapwrite-details-page {
-    height: calc(100vh - 35vh);
+    height: 60vh;
   }
 }
 
 @media (min-width: 450px) {
   .tapwrite-details-page {
-    height: calc(100vh - 40vh);
+    height: 50vh;
   }
 }
