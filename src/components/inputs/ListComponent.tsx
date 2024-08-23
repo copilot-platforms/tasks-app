@@ -25,17 +25,22 @@ const ListComponentInternal = forwardRef<Scrollbars, ListComponentProps>((props,
       )}
       renderView={(viewProps) => (
         <div
+          {...viewProps}
           style={{
+            ...viewProps.style,
             position: 'relative',
-            maxHeight: '291px',
+            maxHeight: xs ? '175px' : '291px',
             marginBottom: '-25px',
             inset: '0px',
             overflow: 'scroll',
             marginRight: '-20px',
+            paddingBottom: '15px',
           }}
         />
       )}
       autoHide
+      autoHeight
+      autoHeightMax={xs ? '172px' : '291px'}
       autoHideTimeout={500}
       autoHideDuration={500}
       hideTracksWhenNotNeeded
