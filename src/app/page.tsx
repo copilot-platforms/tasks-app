@@ -18,6 +18,7 @@ import { RealTime } from '@/hoc/RealTime'
 import { redirectIfTaskCta } from '@/utils/redirect'
 import { Suspense } from 'react'
 import { AssigneeFetcher } from './_fetchers/AssigneeFetcher'
+import { SilentError } from '@/components/templates/SilentError'
 
 export async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -59,7 +60,7 @@ export default async function Main({ searchParams }: { searchParams: { token: st
 
   const parsedToken = z.string().safeParse(searchParams.token)
   if (!parsedToken.success) {
-    return <ClientError message={'Please provide a Valid Token'} />
+    return <SilentError message="Please provide a Valid Token" />
   }
 
   redirectIfTaskCta(searchParams)
