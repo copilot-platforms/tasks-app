@@ -75,6 +75,7 @@ export declare module '@mui/material/styles' {
       background: {
         bgCard: string
         bgCallout: string
+        bgHover: string
       }
       error: string
       muiError: string
@@ -154,6 +155,7 @@ export declare module '@mui/material/styles' {
       background: {
         bgCard: React.CSSProperties['color']
         bgCallout: React.CSSProperties['color']
+        bgHover: React.CSSProperties['color']
       }
       error: React.CSSProperties['color']
       muiError: React.CSSProperties['color']

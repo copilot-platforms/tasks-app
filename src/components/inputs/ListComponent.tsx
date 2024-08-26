@@ -30,11 +30,9 @@ const ListComponentInternal = forwardRef<Scrollbars, ListComponentProps>((props,
             ...viewProps.style,
             position: 'relative',
             maxHeight: xs ? '175px' : '291px',
-            marginBottom: '-25px',
             inset: '0px',
-            overflow: 'scroll',
-            marginRight: '-20px',
-            paddingBottom: '15px',
+            overflow: 'auto',
+            paddingBottom: xs ? '12px' : '7px',
           }}
         />
       )}
