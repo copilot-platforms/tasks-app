@@ -60,7 +60,7 @@ export const CustomLink = ({
 
   return (
     <Link
-      href={`${pathname}?token=${token}`}
+      href={`${pathname}?token=${token}&rand=${Math.random().toString(36).substring(7)}`}
       style={style}
       prefetch={shouldPrefetch}
       onMouseEnter={handleMouseEnter}
