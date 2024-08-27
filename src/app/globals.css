@@ -4,9 +4,8 @@
   box-sizing: border-box;
 }
 
-.tapwrite-details-page {
-  height: 60vh;
-  overflow-y: auto;
+.tapwrite-details-editor {
+  min-height: 65vh;
 }
 
 a {
@@ -14,13 +13,13 @@ a {
 }
 
 @media (max-width: 600px) {
-  .tapwrite-details-page {
-    height: 45vh;
+  .tapwrite-details-editor {
+    min-height: 45vh;
   }
 }
 
 @media (max-width: 800px) {
-  .tapwrite-details-page {
-    height: 55vh;
+  .tapwrite-details-editor {
+    min-height: 60vh;
   }
 }

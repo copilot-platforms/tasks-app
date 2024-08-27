@@ -150,7 +150,7 @@ export const TaskEditor = ({
         }}
       />
 
-      <Box mt="12px">
+      <Box mt="12px" sx={{ height: '100%' }}>
         <Tapwrite
           uploadFn={async (file, tiptapEditorUtils) => {
             const newBlob = await upload(file.name, file, {
@@ -162,7 +162,7 @@ export const TaskEditor = ({
           content={updateDetail}
           getContent={handleDetailChange}
           readonly={userType === UserType.CLIENT_USER}
-          editorClass="tapwrite-details-page"
+          editorClass="tapwrite-details-editor"
           placeholder="Add description..."
         />
       </Box>
