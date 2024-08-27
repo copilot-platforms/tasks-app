@@ -5,7 +5,7 @@
 }
 
 .tapwrite-details-page {
-  height: 45vh;
+  height: 60vh;
   overflow-y: auto;
 }
 
@@ -13,20 +13,14 @@ a {
   text-decoration: none;
 }
 
-@media (min-width: 1150px) {
+@media (max-width: 600px) {
   .tapwrite-details-page {
-    height: 70vh;
+    height: 45vh;
   }
 }
 
-@media (min-width: 800px) {
+@media (max-width: 800px) {
   .tapwrite-details-page {
-    height: 60vh;
-  }
-}
-
-@media (min-width: 450px) {
-  .tapwrite-details-page {
-    height: 50vh;
+    height: 55vh;
   }
 }
