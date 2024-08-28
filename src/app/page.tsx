@@ -50,6 +50,7 @@ export async function getViewSettings(token: string): Promise<CreateViewSettings
     next: { tags: ['getViewSettings'] },
   })
   const data = await res.json()
+  console.log('data', data)
 
   return data
 }
