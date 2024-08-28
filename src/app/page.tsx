@@ -71,6 +71,8 @@ export default async function Main({ searchParams }: { searchParams: { token: st
     getTokenPayload(token),
   ])
 
+  console.info(`app/page.tsx | Serving user ${token} with payload`, tokenPayload)
+
   return (
     <ClientSideStateUpdate
       workflowStates={workflowStates}

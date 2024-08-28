@@ -63,7 +63,7 @@ export default async function TaskDetailPage({
   searchParams: { token: string; isRedirect?: string }
 }) {
   const { token } = searchParams
-  const { task_id } = params
+  const { task_id, user_type } = params
 
   if (z.string().safeParse(token).error) {
     return <SilentError message="Please provide a Valid Token" />
@@ -75,6 +75,8 @@ export default async function TaskDetailPage({
   if (!tokenPayload) {
     throw new Error('Please provide a Valid Token')
   }
+
+  console.info(`app/detail/${task_id}/${user_type}/page.tsx | Serving user ${token} with payload`, tokenPayload)
 
   redirectIfResourceNotFound(searchParams, task, !!tokenPayload.internalUserId)
 
