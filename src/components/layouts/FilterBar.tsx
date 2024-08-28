@@ -253,7 +253,7 @@ export const FilterBar = ({
               handleModeChange={(mode) => {
                 store.dispatch(setViewSettings({ viewMode: mode, filterOptions: filterOptions }))
                 updateViewModeSetting({ viewMode: mode, filterOptions: filterOptions })
-                store.dispatch(setViewSettingsTemp({ viewMode: mode, filterOptions: filterOptions }))
+                store.dispatch(setViewSettingsTemp({ viewMode: mode, filterOptions: viewModeFilterOptions }))
               }}
             />
           </Stack>
@@ -359,7 +359,7 @@ export const FilterBar = ({
                 handleModeChange={(mode) => {
                   store.dispatch(setViewSettings({ viewMode: mode, filterOptions: filterOptions }))
                   updateViewModeSetting({ viewMode: mode, filterOptions: filterOptions })
-                  store.dispatch(setViewSettingsTemp({ viewMode: mode, filterOptions: filterOptions }))
+                  store.dispatch(setViewSettingsTemp({ viewMode: mode, filterOptions: viewModeFilterOptions }))
                 }}
               />
             </Stack>
