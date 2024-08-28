@@ -23,7 +23,7 @@ import { CustomLink } from '@/hoc/CustomLink'
 import { sortTaskByDescendingOrder } from '@/utils/sortTask'
 
 export const TaskBoard = () => {
-  const { workflowStates, tasks, token, filteredTasks, view, filterOptions } = useSelector(selectTaskBoard)
+  const { workflowStates, tasks, token, filteredTasks, view, viewSettingsTemp, filterOptions } = useSelector(selectTaskBoard)
 
   const onDropItem = useCallback(
     (payload: { taskId: string; targetWorkflowStateId: string }) => {
@@ -61,6 +61,7 @@ export const TaskBoard = () => {
   if (tasks && tasks.length === 0) {
     return <DashboardEmptyState userType={UserType.INTERNAL_USER} />
   }
+  const viewBoardSettings = viewSettingsTemp ? viewSettingsTemp.viewMode : view
   return (
     <>
       <Header showCreateTaskButton={true} />
@@ -69,7 +70,7 @@ export const TaskBoard = () => {
           await updateViewModeSettings(z.string().parse(token), payload)
         }}
       />
-      {view === View.BOARD_VIEW && (
+      {viewBoardSettings === View.BOARD_VIEW && (
         <Box sx={{ padding: '20px 20px' }}>
           <Stack
             columnGap={6}
@@ -110,7 +111,7 @@ export const TaskBoard = () => {
         </Box>
       )}
 
-      {view === View.LIST_VIEW && (
+      {viewBoardSettings === View.LIST_VIEW && (
         <Stack
           sx={{
             flexDirection: 'column',

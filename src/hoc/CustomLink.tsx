@@ -9,12 +9,10 @@ export const CustomLink = ({
   children,
   href,
   style,
-  revalidate = false,
 }: {
   children: ReactNode
   href: string | UrlObject
   style?: CSSProperties
-  revalidate?: boolean
 }) => {
   type UrlDetails = {
     pathname?: string
@@ -60,11 +58,9 @@ export const CustomLink = ({
     }
   }, [])
 
-  const revalidateKey = Math.random().toString(36).substring(7)
-
   return (
     <Link
-      href={revalidate ? `${pathname}?token=${token}&revalidateKey=${revalidateKey}` : `${pathname}?token=${token}`}
+      href={`${pathname}?token=${token}`}
       style={style}
       prefetch={shouldPrefetch}
       onMouseEnter={handleMouseEnter}

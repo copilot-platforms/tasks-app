@@ -46,7 +46,7 @@ export const ClientSideStateUpdate = ({
   templates?: ITemplate[]
   assigneeSuggestions?: IAssigneeSuggestions[]
 }) => {
-  const { tasks: tasksInStore } = useSelector(selectTaskBoard)
+  const { tasks: tasksInStore, viewSettingsTemp } = useSelector(selectTaskBoard)
   useEffect(() => {
     if (workflowStates) {
       store.dispatch(setWorkflowStates(workflowStates))
@@ -66,11 +66,12 @@ export const ClientSideStateUpdate = ({
 
     if (viewSettings) {
       store.dispatch(setViewSettings(viewSettings))
-      viewSettings.filterOptions?.type == FilterOptionsKeywords.CLIENTS
+      const view = viewSettingsTemp ? viewSettingsTemp.filterOptions : viewSettings.filterOptions
+      view?.type == FilterOptionsKeywords.CLIENTS
         ? store.dispatch(setFilteredAssgineeList({ filteredType: FilterByOptions.CLIENT }))
-        : viewSettings.filterOptions?.type == FilterOptionsKeywords.TEAM
+        : view?.type == FilterOptionsKeywords.TEAM
           ? store.dispatch(setFilteredAssgineeList({ filteredType: FilterByOptions.IUS }))
-          : viewSettings.filterOptions?.type == ''
+          : view.type == ''
             ? store.dispatch(setFilteredAssgineeList({ filteredType: FilterByOptions.NOFILTER }))
             : store.dispatch(setFilteredAssgineeList({ filteredType: FilterByOptions.NOFILTER }))
     }

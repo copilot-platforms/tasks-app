@@ -15,6 +15,7 @@ interface IInitialState {
   filteredTasks: TaskResponse[]
   filterOptions: IFilterOptions
   filteredAssigneeList: IAssigneeCombined[]
+  viewSettingsTemp: CreateViewSettingsDTO | undefined
 }
 
 const initialState: IInitialState = {
@@ -30,6 +31,7 @@ const initialState: IInitialState = {
     [FilterOptions.TYPE]: '',
   },
   filteredAssigneeList: [],
+  viewSettingsTemp: undefined,
 }
 
 const taskBoardSlice = createSlice({
@@ -68,6 +70,9 @@ const taskBoardSlice = createSlice({
       state.view = action.payload.viewMode
       state.filterOptions = action.payload.filterOptions
     },
+    setViewSettingsTemp: (state, action: { payload: CreateViewSettingsDTO }) => {
+      state.viewSettingsTemp = action.payload
+    },
     setFilterOptions: (state, action: { payload: { optionType: FilterOptions; newValue: string | null } }) => {
       state.filterOptions = {
         ...state.filterOptions,
@@ -104,6 +109,7 @@ export const {
   setViewSettings,
   setFilterOptions,
   setFilteredAssgineeList,
+  setViewSettingsTemp,
 } = taskBoardSlice.actions
 
 export default taskBoardSlice.reducer

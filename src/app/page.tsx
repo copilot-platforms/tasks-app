@@ -50,7 +50,6 @@ export async function getViewSettings(token: string): Promise<CreateViewSettings
     next: { tags: ['getViewSettings'] },
   })
   const data = await res.json()
-  console.log('data', data)
 
   return data
 }
@@ -81,7 +80,7 @@ export default async function Main({ searchParams }: { searchParams: { token: st
       tokenPayload={tokenPayload}
     >
       <Suspense fallback={null}>
-        <AssigneeFetcher token={token} />
+        <AssigneeFetcher token={token} viewSettings={viewSettings} />
       </Suspense>
       <RealTime>
         <DndWrapper>
