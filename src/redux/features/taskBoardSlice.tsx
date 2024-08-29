@@ -4,7 +4,8 @@ import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { AssigneeType, FilterByOptions, FilterOptions, IAssigneeCombined, IFilterOptions, View } from '@/types/interfaces'
 import { ViewMode } from '@prisma/client'
-import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
+import { CreateViewSettingsDTO, FilterOptionsType } from '@/types/dto/viewSettings.dto'
+import { sortTaskByDescendingOrder } from '@/utils/sortTask'
 
 interface IInitialState {
   workflowStates: WorkflowStateResponse[]
@@ -15,6 +16,7 @@ interface IInitialState {
   filteredTasks: TaskResponse[]
   filterOptions: IFilterOptions
   filteredAssigneeList: IAssigneeCombined[]
+  viewSettingsTemp: CreateViewSettingsDTO | undefined
 }
 
 const initialState: IInitialState = {
@@ -30,6 +32,7 @@ const initialState: IInitialState = {
     [FilterOptions.TYPE]: '',
   },
   filteredAssigneeList: [],
+  viewSettingsTemp: undefined,
 }
 
 const taskBoardSlice = createSlice({
@@ -65,8 +68,12 @@ const taskBoardSlice = createSlice({
       state.filteredAssigneeList = action.payload
     },
     setViewSettings: (state, action: { payload: CreateViewSettingsDTO }) => {
-      state.view = action.payload.viewMode
-      state.filterOptions = action.payload.filterOptions
+      const { viewMode, filterOptions } = action.payload
+      state.view = viewMode
+      taskBoardSlice.caseReducers.updateFilterOption(state, { payload: { filterOptions } })
+    },
+    setViewSettingsTemp: (state, action: { payload: CreateViewSettingsDTO }) => {
+      state.viewSettingsTemp = action.payload
     },
     setFilterOptions: (state, action: { payload: { optionType: FilterOptions; newValue: string | null } }) => {
       state.filterOptions = {
@@ -88,6 +95,16 @@ const taskBoardSlice = createSlice({
         state.filteredAssigneeList = state.assignee
       }
     },
+    updateFilterOption: (state, action: { payload: { filterOptions: FilterOptionsType } }) => {
+      const { filterOptions } = action.payload
+      if (filterOptions.assignee) {
+        const assigneeCheck = state.assignee.find((assignee) => assignee.id == filterOptions.assignee)
+        if (!assigneeCheck) {
+          filterOptions.assignee = ''
+        }
+      }
+      state.filterOptions = action.payload.filterOptions
+    }, //updates filters according to viewSettings
   },
 })
 
@@ -104,6 +121,7 @@ export const {
   setViewSettings,
   setFilterOptions,
   setFilteredAssgineeList,
+  setViewSettingsTemp,
 } = taskBoardSlice.actions
 
 export default taskBoardSlice.reducer

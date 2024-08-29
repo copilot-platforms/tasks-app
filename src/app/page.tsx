@@ -7,7 +7,6 @@ import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { apiUrl } from '@/config'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import { TaskResponse } from '@/types/dto/tasks.dto'
-import ClientError from '@/components/clientError'
 import { Token, TokenSchema } from '@/types/common'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
@@ -18,8 +17,9 @@ import { RealTime } from '@/hoc/RealTime'
 import { redirectIfTaskCta } from '@/utils/redirect'
 import { Suspense } from 'react'
 import { AssigneeFetcher } from './_fetchers/AssigneeFetcher'
+import { SilentError } from '@/components/templates/SilentError'
 
-async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
+export async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
     next: { tags: ['getAllWorkflowStates'] },
   })
@@ -29,7 +29,7 @@ async function getAllWorkflowStates(token: string): Promise<WorkflowStateRespons
   return data.workflowStates
 }
 
-async function getAllTasks(token: string): Promise<TaskResponse[]> {
+export async function getAllTasks(token: string): Promise<TaskResponse[]> {
   const res = await fetch(`${apiUrl}/api/tasks?token=${token}`, {
     next: { tags: ['getTasks'] },
   })
@@ -39,13 +39,13 @@ async function getAllTasks(token: string): Promise<TaskResponse[]> {
   return data.tasks
 }
 
-async function getTokenPayload(token: string): Promise<Token> {
+export async function getTokenPayload(token: string): Promise<Token> {
   const copilotClient = new CopilotAPI(token)
   const payload = TokenSchema.parse(await copilotClient.getTokenPayload())
   return payload as Token
 }
 
-async function getViewSettings(token: string): Promise<CreateViewSettingsDTO> {
+export async function getViewSettings(token: string): Promise<CreateViewSettingsDTO> {
   const res = await fetch(`${apiUrl}/api/view-settings?token=${token}`, {
     next: { tags: ['getViewSettings'] },
   })
@@ -59,7 +59,7 @@ export default async function Main({ searchParams }: { searchParams: { token: st
 
   const parsedToken = z.string().safeParse(searchParams.token)
   if (!parsedToken.success) {
-    return <ClientError message={'Please provide a Valid Token'} />
+    return <SilentError message="Please provide a Valid Token" />
   }
 
   redirectIfTaskCta(searchParams)
@@ -71,6 +71,8 @@ export default async function Main({ searchParams }: { searchParams: { token: st
     getTokenPayload(token),
   ])
 
+  console.info(`app/page.tsx | Serving user ${token} with payload`, tokenPayload)
+
   return (
     <ClientSideStateUpdate
       workflowStates={workflowStates}
@@ -80,7 +82,7 @@ export default async function Main({ searchParams }: { searchParams: { token: st
       tokenPayload={tokenPayload}
     >
       <Suspense fallback={null}>
-        <AssigneeFetcher token={token} />
+        <AssigneeFetcher token={token} viewSettings={viewSettings} />
       </Suspense>
       <RealTime>
         <DndWrapper>

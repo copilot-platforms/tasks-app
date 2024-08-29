@@ -14,8 +14,6 @@ import {
   StyledTiptapDescriptionWrapper,
   StyledTypography,
 } from '@/app/detail/ui/styledComponent'
-import Link from 'next/link'
-import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import {
   clientUpdateTask,
   deleteAttachment,
@@ -37,7 +35,9 @@ import { Suspense } from 'react'
 import { WorkflowStateFetcher } from '@/app/_fetchers/WorkflowStateFetcher'
 import { AssigneeFetcher } from '@/app/_fetchers/AssigneeFetcher'
 import { CustomLink } from '@/hoc/CustomLink'
-import { TasksFetcher } from '@/app/_fetchers/TasksFetcher'
+import { DetailStateUpdate } from '@/app/detail/[task_id]/[user_type]/DetailStateUpdate'
+import { SilentError } from '@/components/templates/SilentError'
+import { z } from 'zod'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
@@ -60,23 +60,28 @@ export default async function TaskDetailPage({
   searchParams,
 }: {
   params: { task_id: string; task_name: string; user_type: UserType }
-  searchParams: { token: string }
+  searchParams: { token: string; isRedirect?: string }
 }) {
   const { token } = searchParams
-  const { task_id } = params
+  const { task_id, user_type } = params
+
+  if (z.string().safeParse(token).error) {
+    return <SilentError message="Please provide a Valid Token" />
+  }
+
   const copilotClient = new CopilotAPI(token)
 
   const [task, tokenPayload] = await Promise.all([getOneTask(token, task_id), copilotClient.getTokenPayload()])
-
-  // Basic validation
   if (!tokenPayload) {
-    throw new Error('Token cannot be found')
+    throw new Error('Please provide a Valid Token')
   }
+
+  console.info(`app/detail/${task_id}/${user_type}/page.tsx | Serving user ${token} with payload`, tokenPayload)
 
   redirectIfResourceNotFound(searchParams, task, !!tokenPayload.internalUserId)
 
   return (
-    <ClientSideStateUpdate token={token} tokenPayload={tokenPayload}>
+    <DetailStateUpdate isRedirect={!!searchParams.isRedirect} token={token} tokenPayload={tokenPayload}>
       <RealTime>
         <EscapeHandler />
         <Stack direction="row" sx={{ height: '100vh' }}>
@@ -219,6 +224,6 @@ export default async function TaskDetailPage({
           </Box>
         </Stack>
       </RealTime>
-    </ClientSideStateUpdate>
+    </DetailStateUpdate>
   )
 }
