@@ -80,7 +80,12 @@ export const TaskBoard = () => {
           >
             {workflowStates.map((list, index) => (
               <DragDropHandler key={list.id} accept={'taskCard'} index={index} id={list.id} onDropItem={onDropItem}>
-                <TaskColumn key={list.id} columnName={list.name} taskCount={taskCountForWorkflowStateId(list.id)}>
+                <TaskColumn
+                  key={list.id}
+                  workflowStateId={list.id}
+                  columnName={list.name}
+                  taskCount={taskCountForWorkflowStateId(list.id)}
+                >
                   <CustomScrollbar style={{ padding: '4px' }}>
                     <Stack direction="column" rowGap="6px" sx={{ overflowX: 'auto' }}>
                       {sortTaskByDescendingOrder(filterTaskWithWorkflowStateId(list.id)).map((task, index) => {
