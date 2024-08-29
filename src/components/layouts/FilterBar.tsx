@@ -46,9 +46,10 @@ export const FilterBar = ({
 
   const handleFilterOptionsChange = async (optionType: FilterOptions, newValue: string | null) => {
     store.dispatch(setFilterOptions({ optionType, newValue }))
-    const filterFunction = filterOptionsToAssigneeMap[newValue as string] || filterOptionsToAssigneeMap.default
-    optionType === FilterOptions.TYPE && setFilteredAssignee(filterFunction(assignee))
-
+    if (optionType === FilterOptions.TYPE) {
+      const filterFunction = filterOptionsToAssigneeMap[newValue as string] || filterOptionsToAssigneeMap.default
+      setFilteredAssignee(filterFunction(assignee))
+    }
     //FilteredAssignee is also updated in the component's state and used in Selector's autocomplete to mitigate the time taken to update the store and fetch values to the Selector's autocomplete.
     const updatedFilterOptions = viewSettingsTemp
       ? (store.getState().taskBoard.viewSettingsTemp?.filterOptions as IFilterOptions)
