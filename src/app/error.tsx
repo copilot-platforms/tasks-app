@@ -8,6 +8,7 @@ import React from 'react'
 const ClientErrorBoundary = ({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) => {
   const errorMessage =
     error.message === 'Please provide a Valid Token' ? error.message : isProd ? 'Something went wrong' : error.message
+
   return (
     <Box
       sx={{
