@@ -9,4 +9,5 @@ export const filterTypeToButtonIndexMap: Record<string, number> = {
 export const filterOptionsMap: Record<string, FilterByOptions> = {
   [FilterOptionsKeywords.CLIENTS]: FilterByOptions.CLIENT,
   [FilterOptionsKeywords.TEAM]: FilterByOptions.IUS,
+  default: FilterByOptions.NOFILTER,
 }

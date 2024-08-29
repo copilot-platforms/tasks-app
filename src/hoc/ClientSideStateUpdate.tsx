@@ -68,11 +68,7 @@ export const ClientSideStateUpdate = ({
     if (viewSettings) {
       store.dispatch(setViewSettings(viewSettings))
       const view = viewSettingsTemp ? viewSettingsTemp.filterOptions : viewSettings.filterOptions
-      if (view && view.type in filterOptionsMap) {
-        store.dispatch(setFilteredAssgineeList({ filteredType: filterOptionsMap[view.type] }))
-      } else {
-        store.dispatch(setFilteredAssgineeList({ filteredType: FilterByOptions.NOFILTER }))
-      }
+      store.dispatch(setFilteredAssgineeList({ filteredType: filterOptionsMap[view?.type] || filterOptionsMap.default }))
     }
     if (tokenPayload) {
       store.dispatch(setTokenPayload(tokenPayload))
