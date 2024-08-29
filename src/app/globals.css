@@ -12,14 +12,14 @@ a {
   text-decoration: none;
 }
 
-@media (max-width: 600px) {
-  .tapwrite-details-editor {
-    min-height: 45vh;
-  }
-}
-
 @media (max-width: 800px) {
   .tapwrite-details-editor {
     min-height: 60vh;
+  }
+}
+
+@media (max-width: 600px) {
+  .tapwrite-details-editor {
+    min-height: 45vh;
   }
 }
