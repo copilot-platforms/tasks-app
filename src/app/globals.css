@@ -23,3 +23,9 @@ a {
     min-height: 45vh;
   }
 }
+
+@media (max-width: 380px) {
+  .tapwrite-details-editor {
+    min-height: 40vh;
+  }
+}

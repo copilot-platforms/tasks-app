@@ -79,7 +79,7 @@ export const Sidebar = ({
     }
   }, [tasks, workflowStates])
 
-  const matches = useMediaQuery('(max-width:700px)')
+  const matches = useMediaQuery('(max-width:600px)')
   if (!tasks) return null
 
   return (
@@ -215,7 +215,7 @@ export const Sidebar = ({
 }
 
 export const SidebarSkeleton = () => {
-  const matches = useMediaQuery('(max-width:700px)')
+  const matches = useMediaQuery('(max-width:600px)')
 
   return (
     <Box
