@@ -26,7 +26,7 @@ import { setDebouncedFilteredAssignees } from '@/utils/users'
 import { MiniLoader } from '@/components/atoms/MiniLoader'
 import { getAssigneeName } from '@/utils/getAssigneeName'
 import { checkAssignee } from '@/utils/assignee'
-import { filterTypeToButtonIndexMap } from '@/types/objectMaps'
+import { filterOptionsToAssigneeMap, filterTypeToButtonIndexMap } from '@/types/objectMaps'
 
 export const FilterBar = ({
   updateViewModeSetting,
@@ -46,16 +46,10 @@ export const FilterBar = ({
 
   const handleFilterOptionsChange = async (optionType: FilterOptions, newValue: string | null) => {
     store.dispatch(setFilterOptions({ optionType, newValue }))
-    optionType === FilterOptions.TYPE &&
-      (newValue == FilterOptionsKeywords.CLIENTS
-        ? setFilteredAssignee(
-            assignee.filter((el) => el.type == FilterByOptions.CLIENT || el.type == FilterByOptions.COMPANY),
-          )
-        : newValue == FilterOptionsKeywords.TEAM
-          ? setFilteredAssignee(assignee.filter((el) => el.type == FilterByOptions.IUS))
-          : newValue == ''
-            ? setFilteredAssignee(assignee)
-            : setFilteredAssignee(assignee)) //FilteredAssignee is also updated in the component's state and used in Selector's autocomplete to mitigate the time taken to update the store and fetch values to the Selector's autocomplete.
+    const filterFunction = filterOptionsToAssigneeMap[newValue as string] || filterOptionsToAssigneeMap.default
+    optionType === FilterOptions.TYPE && setFilteredAssignee(filterFunction(assignee))
+
+    //FilteredAssignee is also updated in the component's state and used in Selector's autocomplete to mitigate the time taken to update the store and fetch values to the Selector's autocomplete.
     const updatedFilterOptions = viewSettingsTemp
       ? (store.getState().taskBoard.viewSettingsTemp?.filterOptions as IFilterOptions)
       : store.getState().taskBoard.filterOptions
