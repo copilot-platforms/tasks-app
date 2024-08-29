@@ -1,7 +1,12 @@
 'use client'
 
-import { clearCreateTaskFields, selectCreateTask, setShowModal } from '@/redux/features/createTaskSlice'
-import { appendTask, selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import {
+  clearCreateTaskFields,
+  selectCreateTask,
+  setShowModal,
+  setActiveWorkflowStateId,
+} from '@/redux/features/createTaskSlice'
+import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
 import { bulkRemoveAttachments } from '@/utils/bulkRemoveAttachments'
 import { Modal } from '@mui/material'
@@ -12,6 +17,7 @@ import { CreateTaskRequestSchema } from '@/types/dto/tasks.dto'
 import { NewTaskForm } from './NewTaskForm'
 import { FilterOptions, ISignedUrlUpload } from '@/types/interfaces'
 import dayjs from 'dayjs'
+import { useCallback } from 'react'
 
 export const ModalNewTaskForm = ({
   getSignedUrlUpload,
@@ -24,17 +30,15 @@ export const ModalNewTaskForm = ({
   const { title, description, workflowStateId, assigneeId, assigneeType, attachments, dueDate, showModal } =
     useSelector(selectCreateTask)
 
+  const handleModalClose = useCallback(async () => {
+    store.dispatch(setShowModal())
+    store.dispatch(clearCreateTaskFields({ isFilterOn: !!filterOptions[FilterOptions.ASSIGNEE] }))
+    store.dispatch(setActiveWorkflowStateId(null))
+    await bulkRemoveAttachments(attachments)
+  }, [attachments, filterOptions])
+
   return (
-    <Modal
-      open={showModal}
-      onClose={async () => {
-        store.dispatch(setShowModal())
-        store.dispatch(clearCreateTaskFields({ isFilterOn: !!filterOptions[FilterOptions.ASSIGNEE] }))
-        await bulkRemoveAttachments(attachments)
-      }}
-      aria-labelledby="create-task-modal"
-      aria-describedby="add-new-task"
-    >
+    <Modal open={showModal} onClose={handleModalClose} aria-labelledby="create-task-modal" aria-describedby="add-new-task">
       <NewTaskForm
         handleCreate={async () => {
           if (title && assigneeId && assigneeType) {
@@ -61,6 +65,7 @@ export const ModalNewTaskForm = ({
             await handleCreateMultipleAttachments(toUploadAttachments)
           }
         }}
+        handleClose={handleModalClose}
         getSignedUrlUpload={getSignedUrlUpload}
       />
     </Modal>
