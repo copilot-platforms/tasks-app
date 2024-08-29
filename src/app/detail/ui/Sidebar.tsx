@@ -88,7 +88,7 @@ export const Sidebar = ({
         borderLeft: (theme) => `1px solid ${theme.color.borders.border2}`,
         height: '100vh',
         display: showSidebar ? 'block' : 'none',
-        width: matches && showSidebar ? '100vw' : '19.1vw',
+        width: matches && showSidebar ? '100vw' : '366px',
       }}
     >
       <Stack direction="row" justifyContent="space-between" alignItems="center">
@@ -223,7 +223,7 @@ export const SidebarSkeleton = () => {
         borderLeft: (theme) => `1px solid ${theme.color.borders.border2}`,
         height: '100vh',
         display: 'block',
-        width: matches ? '100vw' : '25vw',
+        width: matches ? '100vw' : '366px',
       }}
     >
       <Stack direction="row" justifyContent="space-between" alignItems="center">
