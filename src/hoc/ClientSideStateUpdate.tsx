@@ -17,6 +17,7 @@ import {
   IAssigneeCombined,
   ITemplate,
 } from '@/types/interfaces'
+import { filterOptionsMap } from '@/types/objectMaps'
 import { ReactNode, useEffect } from 'react'
 import { useSelector } from 'react-redux'
 
@@ -67,13 +68,11 @@ export const ClientSideStateUpdate = ({
     if (viewSettings) {
       store.dispatch(setViewSettings(viewSettings))
       const view = viewSettingsTemp ? viewSettingsTemp.filterOptions : viewSettings.filterOptions
-      view?.type == FilterOptionsKeywords.CLIENTS
-        ? store.dispatch(setFilteredAssgineeList({ filteredType: FilterByOptions.CLIENT }))
-        : view?.type == FilterOptionsKeywords.TEAM
-          ? store.dispatch(setFilteredAssgineeList({ filteredType: FilterByOptions.IUS }))
-          : view.type == ''
-            ? store.dispatch(setFilteredAssgineeList({ filteredType: FilterByOptions.NOFILTER }))
-            : store.dispatch(setFilteredAssgineeList({ filteredType: FilterByOptions.NOFILTER }))
+      if (view && view.type in filterOptionsMap) {
+        store.dispatch(setFilteredAssgineeList({ filteredType: filterOptionsMap[view.type] }))
+      } else {
+        store.dispatch(setFilteredAssgineeList({ filteredType: FilterByOptions.NOFILTER }))
+      }
     }
     if (tokenPayload) {
       store.dispatch(setTokenPayload(tokenPayload))

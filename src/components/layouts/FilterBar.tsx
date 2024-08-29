@@ -26,6 +26,7 @@ import { setDebouncedFilteredAssignees } from '@/utils/users'
 import { MiniLoader } from '@/components/atoms/MiniLoader'
 import { getAssigneeName } from '@/utils/getAssigneeName'
 import { checkAssignee } from '@/utils/assignee'
+import { filterTypeToButtonIndexMap } from '@/types/objectMaps'
 
 export const FilterBar = ({
   updateViewModeSetting,
@@ -74,14 +75,7 @@ export const FilterBar = ({
     })
   }
 
-  const ButtonIndex =
-    viewModeFilterOptions.type == FilterOptionsKeywords.CLIENTS
-      ? 2
-      : viewModeFilterOptions.type == FilterOptionsKeywords.TEAM
-        ? 1
-        : viewModeFilterOptions.type == ''
-          ? 3
-          : 0
+  const ButtonIndex = filterTypeToButtonIndexMap[viewModeFilterOptions.type] ?? 0
 
   const [noAssigneOptionFlag, setNoAssigneeOptionFlag] = useState<boolean>(true)
   const { tokenPayload } = useSelector(selectAuthDetails)
