@@ -7,7 +7,15 @@ import { IAssigneeCombined } from '@/types/interfaces'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { useEffect, useState } from 'react'
 
-export const useHandleSelectorComponent = ({ item, type }: { item: unknown; type: SelectorType }) => {
+export const useHandleSelectorComponent = ({
+  item,
+  type,
+  createTaskfieldUpdate = false,
+}: {
+  item: unknown
+  type: SelectorType
+  createTaskfieldUpdate?: boolean
+}) => {
   const [renderingItem, setRenderingItem] = useState<unknown>(item)
 
   const updateRenderingItem = (newValue: unknown) => {
@@ -21,7 +29,7 @@ export const useHandleSelectorComponent = ({ item, type }: { item: unknown; type
       store.dispatch(setCreateTemplateFields({ targetField: 'workflowStateId', value: (item as WorkflowStateResponse)?.id }))
     }
 
-    if (type === SelectorType.ASSIGNEE_SELECTOR && item) {
+    if (type === SelectorType.ASSIGNEE_SELECTOR && item && createTaskfieldUpdate) {
       store.dispatch(setCreateTaskFields({ targetField: 'assigneeId', value: (item as IAssigneeCombined)?.id }) ?? null)
       store.dispatch(
         setCreateTaskFields({ targetField: 'assigneeType', value: getAssigneeTypeCorrected(item as IAssigneeCombined) }),

@@ -76,17 +76,19 @@ export const FilterBar = ({
   const { tokenPayload } = useSelector(selectAuthDetails)
   const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
     item:
-      viewModeFilterOptions.assignee == 'No assignee'
+      viewModeFilterOptions.assignee === 'No assignee'
         ? NoAssigneeExtraOptions
         : filteredAssigneeList.find((item) => item.id == viewModeFilterOptions.assignee),
     type: SelectorType.ASSIGNEE_SELECTOR,
+    createTaskfieldUpdate: true,
   })
   useFilter(viewSettingsTemp ? viewSettingsTemp.filterOptions : filterOptions)
   const filterButtons = [
     {
       name: 'My tasks',
       onClick: () => {
-        handleFilterOptionsChange(FilterOptions.TYPE, IUTokenSchema.parse(tokenPayload)?.internalUserId)
+        const selfAssigneeId = IUTokenSchema.parse(tokenPayload)?.internalUserId
+        handleFilterOptionsChange(FilterOptions.TYPE, selfAssigneeId)
         updateAssigneeValue(null)
         filterOptions.assignee !== '' && handleFilterOptionsChange(FilterOptions.ASSIGNEE, '')
       },
