@@ -5,6 +5,7 @@ import { Box, Stack, Typography, styled } from '@mui/material'
 import { ReactNode } from 'react'
 import store from '@/redux/store'
 import { setActiveWorkflowStateId, setShowModal } from '@/redux/features/createTaskSlice'
+import { UserRole } from '@/app/api/core/types/user'
 
 const TaskColumnHeader = styled(Stack)({
   flexDirection: 'row',
@@ -21,17 +22,19 @@ const TaskColumnContainer = styled(Stack)({
 })
 
 interface Prop {
+  mode: UserRole
   workflowStateId: string
   children: ReactNode
   columnName: string
   taskCount: string
 }
 
-export const TaskColumn = ({ workflowStateId, children, columnName, taskCount }: Prop) => {
+export const TaskColumn = ({ mode, workflowStateId, children, columnName, taskCount }: Prop) => {
   const handleAddBtnClicked = () => {
     store.dispatch(setActiveWorkflowStateId(workflowStateId))
     store.dispatch(setShowModal())
   }
+
   return (
     <>
       <TaskColumnHeader>
@@ -43,10 +46,12 @@ export const TaskColumn = ({ workflowStateId, children, columnName, taskCount }:
             </Typography>
           </Stack>
 
-          {/* (22 - 16) / 2 */}
-          <Box sx={{ paddingRight: '13px', ':hover': { cursor: 'pointer' } }}>
-            <GrayAddIcon onClick={handleAddBtnClicked} />
-          </Box>
+          {/* ((22 - 16) / 2) + 10 */}
+          {mode === UserRole.IU && (
+            <Box sx={{ paddingRight: '13px', ':hover': { cursor: 'pointer' } }}>
+              <GrayAddIcon onClick={handleAddBtnClicked} />
+            </Box>
+          )}
         </Box>
       </TaskColumnHeader>
       <TaskColumnContainer>{children}</TaskColumnContainer>
