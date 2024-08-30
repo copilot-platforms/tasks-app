@@ -34,8 +34,9 @@ export const ModalNewTaskForm = ({
     store.dispatch(setShowModal())
     store.dispatch(clearCreateTaskFields({ isFilterOn: !!filterOptions[FilterOptions.ASSIGNEE] }))
     store.dispatch(setActiveWorkflowStateId(null))
-    await bulkRemoveAttachments(attachments)
-  }, [attachments, filterOptions])
+    // NOTE: Reimplement in M3
+    // await bulkRemoveAttachments(attachments)
+  }, [filterOptions])
 
   return (
     <Modal open={showModal} onClose={handleModalClose} aria-labelledby="create-task-modal" aria-describedby="add-new-task">

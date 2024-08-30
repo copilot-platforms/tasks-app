@@ -284,7 +284,11 @@ export const NewTaskForm = ({ handleCreate, handleClose, getSignedUrlUpload }: N
           </Stack>
         </Stack>
       </AppMargin>
-      <NewTaskFooter handleCreate={handleCreateWithAssignee} getSignedUrlUpload={getSignedUrlUpload} />
+      <NewTaskFooter
+        handleCreate={handleCreateWithAssignee}
+        handleClose={handleClose}
+        getSignedUrlUpload={getSignedUrlUpload}
+      />
     </NewTaskContainer>
   )
 }
@@ -349,13 +353,7 @@ const NewTaskFormInputs = () => {
   )
 }
 
-const NewTaskFooter = ({
-  handleCreate,
-  getSignedUrlUpload,
-}: {
-  handleCreate: () => void
-  getSignedUrlUpload: (fileName: string) => Promise<ISignedUrlUpload>
-}) => {
+const NewTaskFooter = ({ handleCreate, handleClose, getSignedUrlUpload }: NewTaskFormProps) => {
   const { attachments, title, assigneeId } = useSelector(selectCreateTask)
   const { filterOptions } = useSelector(selectTaskBoard)
 
@@ -379,11 +377,7 @@ const NewTaskFooter = ({
           <Box>{advancedFeatureFlag && <AttachmentInput handleFileSelect={handleFileSelect} />}</Box>
           <Stack direction="row" columnGap={4}>
             <SecondaryBtn
-              handleClick={async () => {
-                store.dispatch(setShowModal())
-                store.dispatch(clearCreateTaskFields({ isFilterOn: !!filterOptions[FilterOptions.ASSIGNEE] }))
-                await bulkRemoveAttachments(attachments)
-              }}
+              handleClick={handleClose}
               buttonContent={
                 <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[700] }}>
                   Cancel
