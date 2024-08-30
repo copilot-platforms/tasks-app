@@ -51,6 +51,9 @@ export default async function ClientPage({ searchParams }: { searchParams: { tok
     await getAllTasks(token),
     getTokenPayload(token),
   ])
+
+  console.info(`app/client/page.tsx | Serving user ${token} with payload`, tokenPayload)
+
   return (
     <>
       <ClientSideStateUpdate workflowStates={workflowStates} tasks={tasks} token={token} tokenPayload={tokenPayload}>

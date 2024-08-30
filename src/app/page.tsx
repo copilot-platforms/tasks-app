@@ -71,6 +71,8 @@ export default async function Main({ searchParams }: { searchParams: { token: st
     getTokenPayload(token),
   ])
 
+  console.info(`app/page.tsx | Serving user ${token} with payload`, tokenPayload)
+
   return (
     <ClientSideStateUpdate
       workflowStates={workflowStates}
@@ -80,7 +82,7 @@ export default async function Main({ searchParams }: { searchParams: { token: st
       tokenPayload={tokenPayload}
     >
       <Suspense fallback={null}>
-        <AssigneeFetcher token={token} />
+        <AssigneeFetcher token={token} viewSettings={viewSettings} />
       </Suspense>
       <RealTime>
         <DndWrapper>
