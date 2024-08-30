@@ -17,6 +17,7 @@ import {
   IAssigneeCombined,
   ITemplate,
 } from '@/types/interfaces'
+import { filterOptionsMap } from '@/types/objectMaps'
 import { ReactNode, useEffect } from 'react'
 import { useSelector } from 'react-redux'
 
@@ -46,7 +47,7 @@ export const ClientSideStateUpdate = ({
   templates?: ITemplate[]
   assigneeSuggestions?: IAssigneeSuggestions[]
 }) => {
-  const { tasks: tasksInStore } = useSelector(selectTaskBoard)
+  const { tasks: tasksInStore, viewSettingsTemp } = useSelector(selectTaskBoard)
   useEffect(() => {
     if (workflowStates) {
       store.dispatch(setWorkflowStates(workflowStates))
@@ -66,13 +67,8 @@ export const ClientSideStateUpdate = ({
 
     if (viewSettings) {
       store.dispatch(setViewSettings(viewSettings))
-      viewSettings.filterOptions?.type == FilterOptionsKeywords.CLIENTS
-        ? store.dispatch(setFilteredAssgineeList({ filteredType: FilterByOptions.CLIENT }))
-        : viewSettings.filterOptions?.type == FilterOptionsKeywords.TEAM
-          ? store.dispatch(setFilteredAssgineeList({ filteredType: FilterByOptions.IUS }))
-          : viewSettings.filterOptions?.type == ''
-            ? store.dispatch(setFilteredAssgineeList({ filteredType: FilterByOptions.NOFILTER }))
-            : store.dispatch(setFilteredAssgineeList({ filteredType: FilterByOptions.NOFILTER }))
+      const view = viewSettingsTemp ? viewSettingsTemp.filterOptions : viewSettings.filterOptions
+      store.dispatch(setFilteredAssgineeList({ filteredType: filterOptionsMap[view?.type] || filterOptionsMap.default }))
     }
     if (tokenPayload) {
       store.dispatch(setTokenPayload(tokenPayload))
