@@ -31,8 +31,6 @@ export class ViewSettingsService extends BaseService {
   async createOrUpdateViewSettings(data: CreateViewSettingsDTO) {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Create, Resource.ViewSetting)
-    console.log('data', data)
-    console.log('user', this.user)
     const userId = z.string().parse(this.user.internalUserId || this.user.clientId)
     const newViewSettingData = {
       ...data,
