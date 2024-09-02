@@ -47,9 +47,9 @@ export const ClientTaskBoard = ({ completeTask }: { completeTask: (taskId: strin
         return (
           <TaskRow
             key={list.id}
+            workflowStateId={list.id}
             columnName={list.name}
             taskCount={taskCountForWorkflowStateId(list.id)}
-            showConfigurableIcons={false}
           >
             {sortTaskByDescendingOrder(filterTaskWithWorkflowStateId(list.id)).map((task) => {
               return (
