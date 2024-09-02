@@ -1,6 +1,7 @@
 'use client'
 
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { View } from '@/types/interfaces'
 import { ViewMode } from '@prisma/client'
 import { ReactNode, useEffect, useRef } from 'react'
 import { useDrag, useDrop, DropTargetMonitor } from 'react-dnd'
@@ -73,7 +74,7 @@ export const DragDropHandler = ({
     isOver && canDrop
       ? {
           border: '0.5px solid #212B36',
-          borderRadius: '4px',
+          borderRadius: view === View.BOARD_VIEW ? '4px' : '0px',
         }
       : {}
 
@@ -84,7 +85,7 @@ export const DragDropHandler = ({
   }
 
   return (
-    <div ref={ref} style={{ opacity, ...dropHoverStyles, padding: droppable ? '8px' : '0px' }}>
+    <div ref={ref} style={{ opacity, ...dropHoverStyles, padding: droppable && view === View.BOARD_VIEW ? '8px' : '0px' }}>
       {children}
     </div>
   )

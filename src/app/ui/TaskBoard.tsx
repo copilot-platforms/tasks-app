@@ -21,6 +21,8 @@ import { FilterBar } from '@/components/layouts/FilterBar'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { CustomLink } from '@/hoc/CustomLink'
 import { sortTaskByDescendingOrder } from '@/utils/sortTask'
+import { CustomDragLayer } from '@/components/CustomDragLayer'
+import { ClientCardDragLayer } from '@/components/cards/ClientCardDragLayer'
 
 export const TaskBoard = () => {
   const { workflowStates, tasks, token, filteredTasks, view, filterOptions } = useSelector(selectTaskBoard)
@@ -65,7 +67,7 @@ export const TaskBoard = () => {
         }}
       />
       {view === View.BOARD_VIEW && (
-        <Box sx={{ padding: '20px 20px' }}>
+        <Box sx={{ padding: '12px 12px' }}>
           <Stack
             columnGap={6}
             sx={{
@@ -124,6 +126,8 @@ export const TaskBoard = () => {
           sx={{
             flexDirection: 'column',
             height: 'calc(100vh - 135px)',
+            width: '99.92%',
+            margin: '0 auto',
           }}
         >
           <CustomScrollbar style={{ width: '8px' }}>
@@ -171,6 +175,9 @@ export const TaskBoard = () => {
           </CustomScrollbar>
         </Stack>
       )}
+      <CustomDragLayer>
+        <ClientCardDragLayer />
+      </CustomDragLayer>
     </>
   )
 }
