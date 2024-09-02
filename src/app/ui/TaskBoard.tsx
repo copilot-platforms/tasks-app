@@ -140,10 +140,10 @@ export const TaskBoard = ({ mode = UserRole.IU }: TaskBoardProps) => {
             {workflowStates.map((list, index) => (
               <DragDropHandler key={list.id} accept={'taskCard'} index={index} id={list.id} onDropItem={onDropItem}>
                 <TaskRow
+                  workflowStateId={list.id}
                   key={list.id}
                   columnName={list.name}
                   taskCount={taskCountForWorkflowStateId(list.id)}
-                  showConfigurableIcons={false}
                   display={!!filterTaskWithWorkflowStateId(list.id).length}
                 >
                   {sortTaskByDescendingOrder(filterTaskWithWorkflowStateId(list.id)).map((task, index) => {
