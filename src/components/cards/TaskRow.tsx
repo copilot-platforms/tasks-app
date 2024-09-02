@@ -2,19 +2,16 @@
 
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { Typography, Box, Stack } from '@mui/material'
-import { ReactNode } from 'react'
 import { AddBtn } from '@/components/buttons/AddBtn'
 import { handleAddBtnClicked } from '@/app/ui/TaskBoard.helpers'
+import { TaskWorkflowStateProps } from '@/types/taskBoard'
+import { UserRole } from '@/app/api/core/types/user'
 
-interface Prop {
-  workflowStateId: string
-  children: ReactNode
-  columnName: string
-  taskCount: string
+interface TaskRowProps extends TaskWorkflowStateProps {
   display?: boolean
 }
 
-export const TaskRow = ({ workflowStateId, children, columnName, taskCount, display = true }: Prop) => {
+export const TaskRow = ({ workflowStateId, mode, children, columnName, taskCount, display = true }: TaskRowProps) => {
   return display ? (
     <Box>
       <Box
@@ -36,8 +33,9 @@ export const TaskRow = ({ workflowStateId, children, columnName, taskCount, disp
                 {taskCount}
               </Typography>
             </Stack>
-
-            <AddBtn handleClick={() => handleAddBtnClicked(workflowStateId)} sx={{ paddingRight: '3px' }} />
+            {mode === UserRole.IU && (
+              <AddBtn handleClick={() => handleAddBtnClicked(workflowStateId)} sx={{ paddingRight: '3px' }} />
+            )}
           </Stack>
         </AppMargin>
       </Box>

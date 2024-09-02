@@ -1,10 +1,10 @@
 'use client'
 
 import { Box, Stack, Typography, styled } from '@mui/material'
-import { ReactNode } from 'react'
 import { UserRole } from '@/app/api/core/types/user'
 import { handleAddBtnClicked } from '@/app/ui/TaskBoard.helpers'
 import { AddBtn } from '@/components/buttons/AddBtn'
+import { TaskWorkflowStateProps } from '@/types/taskBoard'
 
 const TaskColumnHeader = styled(Stack)({
   flexDirection: 'row',
@@ -20,15 +20,9 @@ const TaskColumnContainer = styled(Stack)({
   marginTop: '6px',
 })
 
-interface Prop {
-  mode: UserRole
-  workflowStateId: string
-  children: ReactNode
-  columnName: string
-  taskCount: string
-}
+interface TaskColumnProps extends TaskWorkflowStateProps {}
 
-export const TaskColumn = ({ workflowStateId, mode, children, columnName, taskCount }: Prop) => {
+export const TaskColumn = ({ workflowStateId, mode, children, columnName, taskCount }: TaskColumnProps) => {
   return (
     <>
       <TaskColumnHeader>
