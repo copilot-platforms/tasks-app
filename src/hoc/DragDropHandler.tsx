@@ -1,6 +1,7 @@
 'use client'
 
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { TaskResponse } from '@/types/dto/tasks.dto'
 import { View } from '@/types/interfaces'
 import { ViewMode } from '@prisma/client'
 import { ReactNode, useEffect, useRef } from 'react'
@@ -11,7 +12,8 @@ interface Prop {
   children: ReactNode
   accept: string
   index: number
-  id: string
+  id?: string //only pass for droppable
+  task?: TaskResponse //only pass for draggable
   moveCard?: (dragIndex: number, hoverIndex: number, sourceId: number, targetId: number) => void
   onDropItem?: (payload: { taskId: string; targetWorkflowStateId: string }) => void
   draggable?: boolean // Indicates if the item should be draggable
@@ -23,6 +25,7 @@ export const DragDropHandler = ({
   accept,
   index,
   id,
+  task,
   moveCard,
   onDropItem,
   draggable = false,
@@ -40,8 +43,9 @@ export const DragDropHandler = ({
     drop: (item: unknown, monitor) => {
       if (onDropItem) {
         onDropItem({
-          taskId: (item as { taskId: string }).taskId,
-          targetWorkflowStateId: id,
+          // taskId: (item as { taskId: string }).taskId,
+          taskId: (item as { task: TaskResponse }).task.id,
+          targetWorkflowStateId: id as string,
         })
       }
     },
@@ -51,7 +55,7 @@ export const DragDropHandler = ({
   const [{ isDragging }, drag, preview] = useDrag({
     type: accept,
     item: () => {
-      return { taskId: id }
+      return { task: task }
     },
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
@@ -76,7 +80,7 @@ export const DragDropHandler = ({
           border: '0.5px solid #212B36',
           borderRadius: view === View.BOARD_VIEW ? '4px' : '0px',
         }
-      : {}
+      : { border: '0.5px solid transparent' }
 
   if (draggable) {
     drag(drop(ref)) // If draggable, combine drag and drop refs

@@ -69,7 +69,7 @@ export const TaskBoard = () => {
       {view === View.BOARD_VIEW && (
         <Box sx={{ padding: '12px 12px' }}>
           <Stack
-            columnGap={6}
+            columnGap={2}
             sx={{
               flexDirection: 'row',
               overflowX: 'auto',
@@ -98,7 +98,7 @@ export const TaskBoard = () => {
                               key={task.id}
                               accept={'taskCard'}
                               index={index}
-                              id={task.id || ''}
+                              task={task}
                               draggable // Make TaskCard draggable
                             >
                               <Box key={task.id}>
@@ -154,7 +154,7 @@ export const TaskBoard = () => {
                           key={task.id}
                           accept={'taskCard'}
                           index={index}
-                          id={task.id || ''}
+                          task={task}
                           draggable // Make ListViewTaskCard draggable
                         >
                           <ListViewTaskCard

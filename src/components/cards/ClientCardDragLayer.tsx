@@ -4,6 +4,7 @@ import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { useSelector } from 'react-redux'
 import { XYCoord } from 'react-dnd'
 import { FC } from 'react'
+import { TaskResponse } from '@/types/dto/tasks.dto'
 
 const getItemStyles = (currentOffset: XYCoord | null, previewWidth: number) => {
   if (!currentOffset) {
@@ -27,23 +28,21 @@ const getItemStyles = (currentOffset: XYCoord | null, previewWidth: number) => {
 
 interface Prop {
   currentOffset?: XYCoord | null
-  item?: { taskId: string }
+  item?: { task: TaskResponse }
 }
 
 export const ClientCardDragLayer: FC<Prop> = (props) => {
   const { item, currentOffset } = props
 
-  const { view, tasks } = useSelector(selectTaskBoard)
+  const { view } = useSelector(selectTaskBoard)
 
-  const currentTask = tasks.find((el) => el.id === item?.taskId)
+  const currentTask = item?.task
 
   const previewWidth = 240 // Width of the CustomDragPreview
 
   if (view === ViewMode.board || !currentTask || !item || !currentOffset) {
     return null
   }
-
-  console.log('sdjflksdf', item, currentOffset)
 
   return (
     <Stack
