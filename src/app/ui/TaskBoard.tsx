@@ -140,6 +140,7 @@ export const TaskBoard = ({ mode = UserRole.IU }: TaskBoardProps) => {
             {workflowStates.map((list, index) => (
               <DragDropHandler key={list.id} accept={'taskCard'} index={index} id={list.id} onDropItem={onDropItem}>
                 <TaskRow
+                  mode={mode}
                   workflowStateId={list.id}
                   key={list.id}
                   columnName={list.name}
