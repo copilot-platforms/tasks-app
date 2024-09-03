@@ -3,18 +3,18 @@ import { setCreateTaskFields } from '@/redux/features/createTaskSlice'
 import { setCreateTemplateFields } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { IAssigneeCombined } from '@/types/interfaces'
+import { IAssigneeCombined, handleSelectorComponentModes } from '@/types/interfaces'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { useEffect, useState } from 'react'
 
 export const useHandleSelectorComponent = ({
   item,
   type,
-  createTaskfieldUpdate = false,
+  mode,
 }: {
   item: unknown
   type: SelectorType
-  createTaskfieldUpdate?: boolean
+  mode?: handleSelectorComponentModes
 }) => {
   const [renderingItem, setRenderingItem] = useState<unknown>(item)
 
@@ -28,7 +28,7 @@ export const useHandleSelectorComponent = ({
       store.dispatch(setCreateTemplateFields({ targetField: 'workflowStateId', value: (item as WorkflowStateResponse)?.id }))
     }
 
-    if (type === SelectorType.ASSIGNEE_SELECTOR && createTaskfieldUpdate) {
+    if ((mode === handleSelectorComponentModes.CreateTaskFieldUpdate, type === SelectorType.ASSIGNEE_SELECTOR)) {
       store.dispatch(setCreateTaskFields({ targetField: 'assigneeId', value: (item as IAssigneeCombined)?.id }) ?? null)
       store.dispatch(
         setCreateTaskFields({ targetField: 'assigneeType', value: getAssigneeTypeCorrected(item as IAssigneeCombined) }),
