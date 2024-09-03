@@ -4,13 +4,13 @@ import { Box, CircularProgress, IconButton, Stack } from '@mui/material'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { useEffect, useState } from 'react'
 import store from '@/redux/store'
-import { setFilterOptions, setViewSettings } from '@/redux/features/taskBoardSlice'
+import { setFilterOptions, setViewSettingsTemp, setViewSettings } from '@/redux/features/taskBoardSlice'
 import SearchBar from '@/components/searchBar'
 import Selector, { SelectorType } from '@/components/inputs/Selector'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { useSelector } from 'react-redux'
-import { FilterByOptions, FilterOptions, FilterOptionsKeywords, IAssigneeCombined } from '@/types/interfaces'
+import { FilterByOptions, FilterOptions, FilterOptionsKeywords, IAssigneeCombined, IFilterOptions } from '@/types/interfaces'
 import { CrossIcon, FilterByAsigneeIcon } from '@/icons'
 import { ViewModeSelector } from '../inputs/ViewModeSelector'
 import { FilterByAssigneeBtn } from '../buttons/FilterByAssigneeBtn'
@@ -26,6 +26,7 @@ import { setDebouncedFilteredAssignees } from '@/utils/users'
 import { MiniLoader } from '@/components/atoms/MiniLoader'
 import { getAssigneeName } from '@/utils/getAssigneeName'
 import { checkAssignee } from '@/utils/assignee'
+import { filterOptionsToAssigneeMap, filterTypeToButtonIndexMap } from '@/types/objectMaps'
 
 export const FilterBar = ({
   updateViewModeSetting,
@@ -33,9 +34,11 @@ export const FilterBar = ({
   updateViewModeSetting: (payload: CreateViewSettingsDTO) => void
 }) => {
   const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
-  const { view, filteredAssigneeList, filterOptions, assignee, token } = useSelector(selectTaskBoard)
+  const { view, filteredAssigneeList, filterOptions, assignee, token, viewSettingsTemp } = useSelector(selectTaskBoard)
   const [filteredAssignee, setFilteredAssignee] = useState(filteredAssigneeList)
   const [loading, setLoading] = useState(false)
+  const viewMode = viewSettingsTemp ? viewSettingsTemp.viewMode : view
+  const viewModeFilterOptions = viewSettingsTemp ? (viewSettingsTemp.filterOptions as IFilterOptions) : filterOptions //ViewSettingsTemp used to apply temp values of viewSettings in filterOptions and viewMode because clientSideUpdate applies outdated cached values to original view and filterOptions if navigated
 
   useEffect(() => {
     setFilteredAssignee(filteredAssigneeList)
@@ -43,17 +46,21 @@ export const FilterBar = ({
 
   const handleFilterOptionsChange = async (optionType: FilterOptions, newValue: string | null) => {
     store.dispatch(setFilterOptions({ optionType, newValue }))
-    optionType === FilterOptions.TYPE &&
-      (newValue == FilterOptionsKeywords.CLIENTS
-        ? setFilteredAssignee(
-            assignee.filter((el) => el.type == FilterByOptions.CLIENT || el.type == FilterByOptions.COMPANY),
-          )
-        : newValue == FilterOptionsKeywords.TEAM
-          ? setFilteredAssignee(assignee.filter((el) => el.type == FilterByOptions.IUS))
-          : newValue == ''
-            ? setFilteredAssignee(assignee)
-            : setFilteredAssignee(assignee)) //FilteredAssignee is also updated in the component's state and used in Selector's autocomplete to mitigate the time taken to update the store and fetch values to the Selector's autocomplete.
-    const updatedFilterOptions = store.getState().taskBoard.filterOptions
+    if (optionType === FilterOptions.TYPE) {
+      const filterFunction = filterOptionsToAssigneeMap[newValue as string] || filterOptionsToAssigneeMap.default
+      setFilteredAssignee(filterFunction(assignee))
+    }
+    //FilteredAssignee is also updated in the component's state and used in Selector's autocomplete to mitigate the time taken to update the store and fetch values to the Selector's autocomplete.
+    const updatedFilterOptions = viewSettingsTemp
+      ? (store.getState().taskBoard.viewSettingsTemp?.filterOptions as IFilterOptions)
+      : store.getState().taskBoard.filterOptions
+
+    store.dispatch(
+      setViewSettingsTemp({
+        viewMode: view,
+        filterOptions: { ...updatedFilterOptions, [optionType]: newValue },
+      }),
+    )
     updateViewModeSetting({
       viewMode: view,
       filterOptions: {
@@ -63,25 +70,18 @@ export const FilterBar = ({
     })
   }
 
-  const ButtonIndex =
-    filterOptions.type == FilterOptionsKeywords.CLIENTS
-      ? 2
-      : filterOptions.type == FilterOptionsKeywords.TEAM
-        ? 1
-        : filterOptions.type == ''
-          ? 3
-          : 0
+  const ButtonIndex = filterTypeToButtonIndexMap[viewModeFilterOptions.type] ?? 0
 
   const [noAssigneOptionFlag, setNoAssigneeOptionFlag] = useState<boolean>(true)
   const { tokenPayload } = useSelector(selectAuthDetails)
   const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
     item:
-      filterOptions.assignee == 'No assignee'
+      viewModeFilterOptions.assignee == 'No assignee'
         ? NoAssigneeExtraOptions
-        : filteredAssigneeList.find((item) => item.id == filterOptions.assignee),
+        : filteredAssigneeList.find((item) => item.id == viewModeFilterOptions.assignee),
     type: SelectorType.ASSIGNEE_SELECTOR,
   })
-  useFilter(filterOptions)
+  useFilter(viewSettingsTemp ? viewSettingsTemp.filterOptions : filterOptions)
   const filterButtons = [
     {
       name: 'My tasks',
@@ -228,7 +228,7 @@ export const FilterBar = ({
           </Stack>
           <Stack direction="row" alignItems="center" columnGap={3}>
             <SearchBar
-              value={filterOptions.keyword}
+              value={viewModeFilterOptions.keyword}
               getSearchKeyword={(keyword) => {
                 handleFilterOptionsChange(FilterOptions.KEYWORD, keyword)
               }}
@@ -238,10 +238,11 @@ export const FilterBar = ({
             />
 
             <ViewModeSelector
-              selectedMode={view}
+              selectedMode={viewMode}
               handleModeChange={(mode) => {
                 store.dispatch(setViewSettings({ viewMode: mode, filterOptions: filterOptions }))
                 updateViewModeSetting({ viewMode: mode, filterOptions: filterOptions })
+                store.dispatch(setViewSettingsTemp({ viewMode: mode, filterOptions: viewModeFilterOptions }))
               }}
             />
           </Stack>
@@ -333,7 +334,7 @@ export const FilterBar = ({
             </Box>
             <Stack direction={'row'} columnGap={2}>
               <SearchBar
-                value={filterOptions.keyword}
+                value={viewModeFilterOptions.keyword}
                 getSearchKeyword={(keyword) => {
                   handleFilterOptionsChange(FilterOptions.KEYWORD, keyword)
                 }}
@@ -343,10 +344,11 @@ export const FilterBar = ({
               />
 
               <ViewModeSelector
-                selectedMode={view}
+                selectedMode={viewMode}
                 handleModeChange={(mode) => {
                   store.dispatch(setViewSettings({ viewMode: mode, filterOptions: filterOptions }))
                   updateViewModeSetting({ viewMode: mode, filterOptions: filterOptions })
+                  store.dispatch(setViewSettingsTemp({ viewMode: mode, filterOptions: viewModeFilterOptions }))
                 }}
               />
             </Stack>

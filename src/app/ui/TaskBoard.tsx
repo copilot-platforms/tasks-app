@@ -25,7 +25,7 @@ import { CustomDragLayer } from '@/components/CustomDragLayer'
 import { CardDragLayer } from '@/components/cards/CardDragLayer'
 
 export const TaskBoard = () => {
-  const { workflowStates, tasks, token, filteredTasks, view, filterOptions } = useSelector(selectTaskBoard)
+  const { workflowStates, tasks, token, filteredTasks, view, viewSettingsTemp, filterOptions } = useSelector(selectTaskBoard)
 
   const onDropItem = useCallback(
     (payload: { taskId: string; targetWorkflowStateId: string }) => {
@@ -58,6 +58,7 @@ export const TaskBoard = () => {
     return <DashboardEmptyState userType={UserType.INTERNAL_USER} />
   }
 
+  const viewBoardSettings = viewSettingsTemp ? viewSettingsTemp.viewMode : view
   return (
     <>
       <Header showCreateTaskButton={true} />
@@ -66,7 +67,7 @@ export const TaskBoard = () => {
           await updateViewModeSettings(z.string().parse(token), payload)
         }}
       />
-      {view === View.BOARD_VIEW && (
+      {viewBoardSettings === View.BOARD_VIEW && (
         <Box sx={{ padding: '12px 12px' }}>
           <Stack
             columnGap={2}
@@ -121,7 +122,7 @@ export const TaskBoard = () => {
         </Box>
       )}
 
-      {view === View.LIST_VIEW && (
+      {viewBoardSettings === View.LIST_VIEW && (
         <Stack
           sx={{
             flexDirection: 'column',

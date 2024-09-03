@@ -1,0 +1,20 @@
+model InternalUserNotification {
+  id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+
+  /// InternalUser ID on Copilot for the assigned internal user
+  internalUserId String    @db.Uuid
+  /// Notification ID for triggered notification on Copilot
+  notificationId String    @db.Uuid
+  /// Related task
+  task           Task      @relation(fields: [taskId], references: [id])
+  taskId         String    @db.Uuid
+  /// Timestamps
+  createdAt      DateTime  @default(now())
+  deletedAt      DateTime?
+
+  @@unique([notificationId], name: "UQ_InternalUserNotifications_notificationId")
+  @@unique([internalUserId, taskId, deletedAt], name: "UQ_InternalUserNotifications_clientId_taskId_deletedAt")
+  @@index([notificationId], name: "IX_InternalUserNotifications_notificationId")
+  @@index([internalUserId, taskId, deletedAt], name: "IX_InternalUserNotifications_clientId_taskId_deletedAt")
+  @@map("InternalUserNotifications")
+}
