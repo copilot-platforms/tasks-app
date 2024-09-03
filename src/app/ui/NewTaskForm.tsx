@@ -19,7 +19,7 @@ import { useEffect, useState } from 'react'
 import { CreateTaskErrors, FilterOptions, IAssigneeCombined, ISignedUrlUpload, ITemplate } from '@/types/interfaces'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { useSelector } from 'react-redux'
-import { selectTaskBoard, setAssigneeList, setFilterOptions } from '@/redux/features/taskBoardSlice'
+import { selectTaskBoard, setAssigneeList } from '@/redux/features/taskBoardSlice'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { useRouter } from 'next/navigation'
@@ -39,28 +39,31 @@ import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { setDebouncedFilteredAssignees } from '@/utils/users'
 import { z } from 'zod'
 import { MiniLoader } from '@/components/atoms/MiniLoader'
-import { formatDate } from '@/utils/dateHelper'
 import { getAssigneeName } from '@/utils/assignee'
-import { Dispatch, SetStateAction } from 'react'
 
 const supabaseActions = new SupabaseActions()
 
-export const NewTaskForm = ({
-  handleCreate,
-  getSignedUrlUpload,
-}: {
+interface NewTaskFormProps {
   handleCreate: () => void
+  handleClose: () => void
   getSignedUrlUpload: (fileName: string) => Promise<ISignedUrlUpload>
-}) => {
-  const { errors } = useSelector(selectCreateTask)
+}
+
+export const NewTaskForm = ({ handleCreate, handleClose, getSignedUrlUpload }: NewTaskFormProps) => {
+  const { activeWorkflowStateId, errors } = useSelector(selectCreateTask)
   const { workflowStates, assignee, token, filterOptions } = useSelector(selectTaskBoard)
   const [filteredAssignees, setFilteredAssignees] = useState(assignee)
   const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
   const [loading, setLoading] = useState(false)
   const { templates } = useSelector(selectCreateTemplate)
 
+  const todoWorkflowState = workflowStates.find((el) => el.key === 'todo') || workflowStates[0]
+  const defaultWorkflowState = activeWorkflowStateId
+    ? workflowStates.find((state) => state.id === activeWorkflowStateId)
+    : todoWorkflowState
+
   const { renderingItem: _statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
-    item: workflowStates[0],
+    item: defaultWorkflowState,
     type: SelectorType.STATUS_SELECTOR,
   })
   const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
@@ -89,22 +92,17 @@ export const NewTaskForm = ({
   }
   const router = useRouter()
 
-  const todoWorkflowState = workflowStates.find((el) => el.key === 'todo') || workflowStates[0]
-
   useEffect(() => {
-    function handleCloseModal(e: KeyboardEvent) {
+    function handleEscPress(e: KeyboardEvent) {
       if (e.key === 'Escape') {
-        store.dispatch(setShowModal())
-        store.dispatch(clearCreateTaskFields({ isFilterOn: !!filterOptions[FilterOptions.ASSIGNEE] }))
+        handleClose()
       }
     }
-
-    document.addEventListener('keydown', handleCloseModal)
-
+    document.addEventListener('keydown', handleEscPress)
     return () => {
-      document.removeEventListener('keydown', handleCloseModal)
+      document.removeEventListener('keydown', handleEscPress)
     }
-  }, [])
+  }, [handleClose])
 
   return (
     <NewTaskContainer>
@@ -169,13 +167,7 @@ export const NewTaskForm = ({
                 />
               )}
             </Box>
-            <CloseIcon
-              style={{ cursor: 'pointer' }}
-              onClick={() => {
-                store.dispatch(setShowModal())
-                store.dispatch(clearCreateTaskFields({ isFilterOn: !!filterOptions[FilterOptions.ASSIGNEE] }))
-              }}
-            />
+            <CloseIcon style={{ cursor: 'pointer' }} onClick={handleClose} />
           </Stack>
         </AppMargin>
       </Stack>
@@ -292,7 +284,11 @@ export const NewTaskForm = ({
           </Stack>
         </Stack>
       </AppMargin>
-      <NewTaskFooter handleCreate={handleCreateWithAssignee} getSignedUrlUpload={getSignedUrlUpload} />
+      <NewTaskFooter
+        handleCreate={handleCreateWithAssignee}
+        handleClose={handleClose}
+        getSignedUrlUpload={getSignedUrlUpload}
+      />
     </NewTaskContainer>
   )
 }
@@ -357,13 +353,7 @@ const NewTaskFormInputs = () => {
   )
 }
 
-const NewTaskFooter = ({
-  handleCreate,
-  getSignedUrlUpload,
-}: {
-  handleCreate: () => void
-  getSignedUrlUpload: (fileName: string) => Promise<ISignedUrlUpload>
-}) => {
+const NewTaskFooter = ({ handleCreate, handleClose, getSignedUrlUpload }: NewTaskFormProps) => {
   const { attachments, title, assigneeId } = useSelector(selectCreateTask)
   const { filterOptions } = useSelector(selectTaskBoard)
 
@@ -387,11 +377,7 @@ const NewTaskFooter = ({
           <Box>{advancedFeatureFlag && <AttachmentInput handleFileSelect={handleFileSelect} />}</Box>
           <Stack direction="row" columnGap={4}>
             <SecondaryBtn
-              handleClick={async () => {
-                store.dispatch(setShowModal())
-                store.dispatch(clearCreateTaskFields({ isFilterOn: !!filterOptions[FilterOptions.ASSIGNEE] }))
-                await bulkRemoveAttachments(attachments)
-              }}
+              handleClick={handleClose}
               buttonContent={
                 <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[700] }}>
                   Cancel

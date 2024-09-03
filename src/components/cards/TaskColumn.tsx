@@ -1,7 +1,9 @@
 'use client'
 
-import { Stack, Typography, styled } from '@mui/material'
+import { Box, Stack, Typography, styled } from '@mui/material'
 import { ReactNode } from 'react'
+import { handleAddBtnClicked } from '@/app/ui/TaskBoard.helpers'
+import { AddBtn } from '@/components/buttons/AddBtn'
 
 const TaskColumnHeader = styled(Stack)({
   flexDirection: 'row',
@@ -18,21 +20,27 @@ const TaskColumnContainer = styled(Stack)({
 })
 
 interface Prop {
+  workflowStateId: string
   children: ReactNode
   columnName: string
   taskCount: string
 }
 
-export const TaskColumn = ({ children, columnName, taskCount }: Prop) => {
+export const TaskColumn = ({ workflowStateId, children, columnName, taskCount }: Prop) => {
   return (
     <>
       <TaskColumnHeader>
-        <Stack direction="row" alignItems="center" columnGap={2}>
-          <Typography variant="md">{columnName}</Typography>
-          <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[400], fontSize: '12px' }}>
-            {taskCount}
-          </Typography>
-        </Stack>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+          <Stack direction="row" alignItems="center" columnGap={2}>
+            <Typography variant="md">{columnName}</Typography>
+            <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[400], fontSize: '12px' }}>
+              {taskCount}
+            </Typography>
+          </Stack>
+
+          {/* (22 - 16) / 2 */}
+          <AddBtn handleClick={() => handleAddBtnClicked(workflowStateId)} sx={{ paddingRight: '13px' }} />
+        </Box>
       </TaskColumnHeader>
       <TaskColumnContainer>{children}</TaskColumnContainer>
     </>

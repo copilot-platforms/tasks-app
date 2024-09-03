@@ -12,6 +12,7 @@ interface IErrors {
 
 interface IInitialState {
   showModal: boolean
+  activeWorkflowStateId: string | null
   title: string
   description: string
   workflowStateId: string
@@ -24,6 +25,7 @@ interface IInitialState {
 
 const initialState: IInitialState = {
   showModal: false,
+  activeWorkflowStateId: null,
   title: '',
   workflowStateId: '',
   description: '',
@@ -43,6 +45,11 @@ const createTaskSlice = createSlice({
   reducers: {
     setShowModal: (state) => {
       state.showModal = !state.showModal
+    },
+
+    // Sets the default workflowStateId to be selected when opening task create modal
+    setActiveWorkflowStateId: (state, action: { payload: string | null }) => {
+      state.activeWorkflowStateId = action.payload
     },
 
     removeOneAttachment: (state, action: { payload: { attachment: CreateAttachmentRequest } }) => {
@@ -85,7 +92,13 @@ const createTaskSlice = createSlice({
 
 export const selectCreateTask = (state: RootState) => state.createTask
 
-export const { setShowModal, setCreateTaskFields, clearCreateTaskFields, removeOneAttachment, setErrors } =
-  createTaskSlice.actions
+export const {
+  setShowModal,
+  setActiveWorkflowStateId,
+  setCreateTaskFields,
+  clearCreateTaskFields,
+  removeOneAttachment,
+  setErrors,
+} = createTaskSlice.actions
 
 export default createTaskSlice.reducer
