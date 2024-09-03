@@ -21,7 +21,6 @@ class WebhookService extends BaseService {
 
   async parseWebhook(req: NextRequest): Promise<WebhookEvent> {
     const webhookEvent = WebhookSchema.safeParse(await req.json())
-    console.log('webhookEvent', webhookEvent)
     if (!webhookEvent.success) {
       throw new APIError(httpStatus.UNPROCESSABLE_ENTITY, 'Failed to parse webhook event', webhookEvent.error.issues)
     }

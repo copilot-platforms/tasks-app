@@ -23,7 +23,7 @@ async function runSqlScript() {
     for (const statement of statements) {
       await prisma.$executeRawUnsafe(statement)
     }
-    console.log('🔥 grant-privileges executed successfully 🔥')
+    console.info('🔥 grant-privileges executed successfully 🔥')
   } catch (error) {
     console.error('Error executing grant-privileges:', error)
   } finally {

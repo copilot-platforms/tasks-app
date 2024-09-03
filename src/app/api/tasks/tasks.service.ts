@@ -293,17 +293,14 @@ export class TasksService extends BaseService {
 
   async deleteAllAssigneeTasks(assigneeId: string, assigneeType: AssigneeType) {
     // Policies validation shouldn't be required here because token is from a webhook event
-    console.log('ass', assigneeId, assigneeType)
     const tasks = await this.db.task.findMany({
       where: { assigneeId, assigneeType, workspaceId: this.user.workspaceId },
     })
-    console.log('tl', tasks.length)
     if (!tasks.length) {
       // If assignee doesn't have an associated task at all, skip logic
       return []
     }
     const labels = tasks.map((task) => task.label)
-    console.log('labels', labels)
 
     await this.db.task.deleteMany({
       where: { assigneeId, assigneeType, workspaceId: this.user.workspaceId },
