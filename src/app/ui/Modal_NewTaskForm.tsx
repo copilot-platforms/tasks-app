@@ -17,7 +17,6 @@ import { CreateTaskRequestSchema } from '@/types/dto/tasks.dto'
 import { NewTaskForm } from './NewTaskForm'
 import { FilterOptions, ISignedUrlUpload } from '@/types/interfaces'
 import dayjs from 'dayjs'
-import { useCallback } from 'react'
 
 export const ModalNewTaskForm = ({
   getSignedUrlUpload,
@@ -30,13 +29,13 @@ export const ModalNewTaskForm = ({
   const { title, description, workflowStateId, assigneeId, assigneeType, attachments, dueDate, showModal } =
     useSelector(selectCreateTask)
 
-  const handleModalClose = useCallback(async () => {
+  const handleModalClose = async () => {
     store.dispatch(setShowModal())
     store.dispatch(clearCreateTaskFields({ isFilterOn: !!filterOptions[FilterOptions.ASSIGNEE] }))
     store.dispatch(setActiveWorkflowStateId(null))
     // NOTE: Reimplement in M3
     // await bulkRemoveAttachments(attachments)
-  }, [filterOptions])
+  }
 
   return (
     <Modal open={showModal} onClose={handleModalClose} aria-labelledby="create-task-modal" aria-describedby="add-new-task">
