@@ -122,8 +122,6 @@ class WebhookService extends BaseService {
   }
 
   async handleUserDeleted(assigneeId: string, assigneeType: AssigneeType) {
-    if (assigneeType === AssigneeType.company) return
-
     const tasksService = new TasksService(this.user)
     // Delete corresponding tasks
     console.info(`Deleting all tasks for ${assigneeType} ${assigneeId}`)
