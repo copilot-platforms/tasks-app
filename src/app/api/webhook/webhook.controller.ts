@@ -4,7 +4,9 @@ import WebhookService from '@api/webhook/webhook.service'
 import { ClientUpdatedEventDataSchema, HANDLEABLE_EVENT } from '@/types/webhook'
 
 export const handleWebhookEvent = async (req: NextRequest) => {
+  console.log('Recieved webhook request', await req.json())
   const user = await authenticate(req)
+  console.log('User is', user)
 
   const webhookService = new WebhookService(user)
   const webhookEvent = await webhookService.parseWebhook(req)
