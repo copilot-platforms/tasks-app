@@ -1,0 +1,17 @@
+model Comment {
+  id          String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  content     String
+  initiatorId String       @db.Uuid
+  parentId    String?      @db.Uuid
+  parent      Comment?     @relation("ChildComments", fields: [parentId], references: [id], onDelete: Cascade)
+  children    Comment[]    @relation("ChildComments")
+  taskId      String       @db.Uuid
+  task        Task         @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  workspaceId String       @db.VarChar(32)
+  attachments Attachment[]
+  createdAt   DateTime     @default(now()) @db.Timestamptz()
+  updatedAt   DateTime     @updatedAt @db.Timestamptz()
+  deletedAt   DateTime?    @db.Timestamptz()
+
+  @@map("Comments")
+}
