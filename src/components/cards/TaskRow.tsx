@@ -23,7 +23,7 @@ export const TaskRow = ({ workflowStateId, children, columnName, taskCount, disp
           borderBottom: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
         }}
       >
-        <AppMargin size={SizeofAppMargin.HEADER} py="6px">
+        <AppMargin size={SizeofAppMargin.HEADER} py="6px" sx={{ maxWidth: '100vw' }}>
           <Stack direction="row" justifyContent="space-between" alignItems="center">
             <Stack direction="row" columnGap={'8px'}>
               <Typography variant="md">{columnName}</Typography>

@@ -37,10 +37,8 @@ export const AppMargin = ({
       <Box
         sx={{
           ...sx,
-          maxWidth: '100vw',
           padding: { xs: `${py ? py : '12px'} 20px`, sm: `${py ? py : '19.5px'} 20px` },
         }}
-        className="app-margin-header"
       >
         {children}
       </Box>
