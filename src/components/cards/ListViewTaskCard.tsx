@@ -51,6 +51,7 @@ export const ListViewTaskCard = ({
     <Box
       className="task-list-card"
       sx={{
+        maxWidth: '100vw',
         userSelect: 'none',
         cursor: 'pointer',
         borderBottom: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
