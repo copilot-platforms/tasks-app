@@ -22,7 +22,7 @@ import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { CustomLink } from '@/hoc/CustomLink'
 import { sortTaskByDescendingOrder } from '@/utils/sortTask'
 import { CustomDragLayer } from '@/components/CustomDragLayer'
-import { ClientCardDragLayer } from '@/components/cards/ClientCardDragLayer'
+import { CardDragLayer } from '@/components/cards/CardDragLayer'
 
 export const TaskBoard = () => {
   const { workflowStates, tasks, token, filteredTasks, view, filterOptions } = useSelector(selectTaskBoard)
@@ -176,7 +176,7 @@ export const TaskBoard = () => {
         </Stack>
       )}
       <CustomDragLayer>
-        <ClientCardDragLayer />
+        <CardDragLayer />
       </CustomDragLayer>
     </>
   )

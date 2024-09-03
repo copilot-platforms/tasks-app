@@ -67,7 +67,7 @@ export const DragDropHandler = ({
   useEffect(() => {
     if (window) {
       //we only need custom drag preview in the list view
-      if (draggable && view === ViewMode.list) {
+      if (draggable) {
         preview(new Image()) // This sets an empty drag preview
       }
     }
