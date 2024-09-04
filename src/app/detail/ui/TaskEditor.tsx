@@ -14,6 +14,8 @@ import { Tapwrite } from 'tapwrite'
 import { useDebounce, useDebounceWithCancel } from '@/hooks/useDebounce'
 import { useRouter } from 'next/navigation'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { SupabaseActions } from '@/utils/SupabaseActions'
+import { generateRandomString } from '@/utils/generateRandomString'
 
 interface Prop {
   task_id: string
@@ -152,23 +154,26 @@ export const TaskEditor = ({
 
       <Box mt="12px" sx={{ height: '100%' }}>
         <Tapwrite
-          uploadFn={async (file, tiptapEditorUtils) => {
-            const newBlob = await upload(file.name, file, {
-              access: 'public',
-              handleUploadUrl: '/api/upload',
-            })
-            tiptapEditorUtils.setImage(newBlob.url as string)
-          }}
           content={updateDetail}
           getContent={handleDetailChange}
           readonly={userType === UserType.CLIENT_USER}
           editorClass="tapwrite-details-page"
           placeholder="Add description..."
+          handleEditorAttachments={async (file) => {
+            const supabaseActions = new SupabaseActions()
+            const signedUrl: ISignedUrlUpload = await getSignedUrlUpload(generateRandomString(file.name))
+            const filePayload = await supabaseActions.uploadAttachment(file, signedUrl, task_id)
+          }}
+          deleteEditorAttachments={async (id: string) => {
+            const supabaseActions = new SupabaseActions()
+            console.log(id)
+            const { data } = await supabaseActions.removeAttachment(id)
+          }}
         />
       </Box>
 
       {/* {advancedFeatureFlag && ( */}
-      {/*   <> */}
+      {/* <> */}
       {/*     <Stack direction="row" columnGap={3} rowGap={3} mt={3} flexWrap={'wrap'}> */}
       {/*       {attachment?.map((el, key) => { */}
       {/*         return ( */}
