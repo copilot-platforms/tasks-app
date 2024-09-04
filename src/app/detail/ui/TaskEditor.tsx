@@ -161,7 +161,7 @@ export const TaskEditor = ({
           placeholder="Add description..."
           handleEditorAttachments={async (file) => {
             const supabaseActions = new SupabaseActions()
-            const signedUrl: ISignedUrlUpload = await getSignedUrlUpload(generateRandomString(file.name))
+            const signedUrl: ISignedUrlUpload = await getSignedUrlUpload(file.name)
             await supabaseActions.uploadAttachment(file, signedUrl, task_id)
           }}
           deleteEditorAttachments={async (id: string) => {
