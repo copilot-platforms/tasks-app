@@ -46,33 +46,18 @@ export const DragDropHandler: React.FC<DragDropHandlerProps> = ({
     </Droppable>
   ) : draggable && draggableId && task ? (
     <Draggable draggableId={draggableId} index={index as number}>
-      {(provided, snapshot) =>
-        snapshot.isDragging && view === View.LIST_VIEW ? (
-          <div
-            ref={provided.innerRef}
-            {...provided.draggableProps}
-            {...provided.dragHandleProps}
-            style={{
-              opacity: snapshot.isDragging ? 0.5 : 1,
-              ...getStyle(provided.draggableProps.style, snapshot),
-              width: '100%',
-            }}
-          >
-            <CardDragLayer task={task} />
-          </div>
-        ) : (
-          <div
-            ref={provided.innerRef}
-            {...provided.draggableProps}
-            {...provided.dragHandleProps}
-            style={{
-              ...getStyle(provided.draggableProps.style, snapshot),
-            }}
-          >
-            {children}
-          </div>
-        )
-      }
+      {(provided, snapshot) => (
+        <div
+          ref={provided.innerRef}
+          {...provided.draggableProps}
+          {...provided.dragHandleProps}
+          style={{
+            ...getStyle(provided.draggableProps.style, snapshot),
+          }}
+        >
+          {snapshot.isDragging && view === View.LIST_VIEW ? <CardDragLayer task={task} /> : children}
+        </div>
+      )}
     </Draggable>
   ) : (
     <div>{children}</div>

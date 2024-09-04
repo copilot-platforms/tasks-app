@@ -7,7 +7,7 @@ import { FC } from 'react'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { TaskCard } from './TaskCard'
 
-const getItemStyles = (currentOffset: XYCoord | null, previewWidth: number, viewMode: ViewMode) => {
+const getItemStyles = (currentOffset: XYCoord | null, previewWidth: number) => {
   if (!currentOffset) {
     return {
       display: 'none',
@@ -16,7 +16,7 @@ const getItemStyles = (currentOffset: XYCoord | null, previewWidth: number, view
 
   const { x, y } = currentOffset
   // Adjust the preview position to center it under the cursor
-  const adjustedX = viewMode === ViewMode.list ? x - (previewWidth - 20) : x - previewWidth / 1.5 // Adjust based on desired offset from the right corner
+  const adjustedX = x - (previewWidth - 20)
   const adjustedY = y - 20 // Adjust the Y offset if needed
 
   const transform = `translate(${adjustedX}px, ${adjustedY}px)`

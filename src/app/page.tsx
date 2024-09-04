@@ -1,6 +1,5 @@
 export const fetchCache = 'force-no-store'
 
-import { DndWrapper } from '@/hoc/DndWrapper'
 import { TaskBoard } from './ui/TaskBoard'
 import { z } from 'zod'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
@@ -85,9 +84,7 @@ export default async function Main({ searchParams }: { searchParams: { token: st
         <AssigneeFetcher token={token} viewSettings={viewSettings} />
       </Suspense>
       <RealTime>
-        <DndWrapper>
-          <TaskBoard />
-        </DndWrapper>
+        <TaskBoard />
 
         <ModalNewTaskForm
           getSignedUrlUpload={async (fileName: string) => {
