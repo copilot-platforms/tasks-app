@@ -3,9 +3,12 @@
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 import { isProd } from '@/config'
 import { Box, Stack } from '@mui/material'
+import { useRouter } from 'next/navigation'
 import React from 'react'
 
 const ClientErrorBoundary = ({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) => {
+  const router = useRouter()
+  const hardReset = router.refresh()
   const errorMessage =
     error.message === 'Please provide a Valid Token' ? error.message : isProd ? 'Something went wrong' : error.message
   return (
@@ -28,7 +31,7 @@ const ClientErrorBoundary = ({ error, reset }: { error: Error & { digest?: strin
             justifyContent: 'center',
           }}
         >
-          <PrimaryBtn buttonText="Try again" handleClick={reset} />
+          <PrimaryBtn buttonText="Try again" handleClick={hardReset} />
         </Box>
       </Stack>
     </Box>
