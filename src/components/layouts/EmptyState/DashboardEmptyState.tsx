@@ -8,8 +8,11 @@ import store from '@/redux/store'
 import { UserType } from '@/types/interfaces'
 import { SxCenter } from '@/utils/mui'
 import { Box, Stack, Typography } from '@mui/material'
+import { usePathname } from 'next/navigation'
 
 const DashboardEmptyState = ({ userType }: { userType: UserType }) => {
+  const pathname = usePathname()
+  console.log(pathname.includes('client'))
   return (
     <>
       <AppMargin size={SizeofAppMargin.LARGE} py="20px">
@@ -44,7 +47,7 @@ const DashboardEmptyState = ({ userType }: { userType: UserType }) => {
                   : 'Tasks will show here once they’ve been assigned to you. '}
               </Typography>
             </Stack>
-            {userType == UserType.INTERNAL_USER && (
+            {userType === UserType.INTERNAL_USER && !!!pathname.includes('client') && (
               <Box>
                 <PrimaryBtn
                   startIcon={<AddIcon />}
