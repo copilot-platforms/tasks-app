@@ -85,7 +85,12 @@ export const TaskBoard = () => {
                 onDropItem={onDropItem}
                 droppable // Make TaskColumn droppable
               >
-                <TaskColumn key={list.id} columnName={list.name} taskCount={taskCountForWorkflowStateId(list.id)}>
+                <TaskColumn
+                  key={list.id}
+                  workflowStateId={list.id}
+                  columnName={list.name}
+                  taskCount={taskCountForWorkflowStateId(list.id)}
+                >
                   <CustomScrollbar style={{ padding: '4px' }}>
                     <Stack direction="column" rowGap="6px" sx={{ overflowX: 'auto' }}>
                       {sortTaskByDescendingOrder(filterTaskWithWorkflowStateId(list.id)).map((task, index) => {
@@ -142,10 +147,10 @@ export const TaskBoard = () => {
                 droppable // Make TaskRow droppable
               >
                 <TaskRow
+                  workflowStateId={list.id}
                   key={list.id}
                   columnName={list.name}
                   taskCount={taskCountForWorkflowStateId(list.id)}
-                  showConfigurableIcons={false}
                   display={!!filterTaskWithWorkflowStateId(list.id).length}
                 >
                   {sortTaskByDescendingOrder(filterTaskWithWorkflowStateId(list.id)).map((task, index) => {

@@ -1,19 +1,20 @@
 'use client'
 
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
-import { Add, MoreHoriz } from '@mui/icons-material'
-import { Typography, Box, Stack, IconButton } from '@mui/material'
+import { Typography, Box, Stack } from '@mui/material'
 import { ReactNode } from 'react'
+import { AddBtn } from '@/components/buttons/AddBtn'
+import { handleAddBtnClicked } from '@/app/ui/TaskBoard.helpers'
 
 interface Prop {
+  workflowStateId: string
   children: ReactNode
   columnName: string
   taskCount: string
-  showConfigurableIcons: boolean
   display?: boolean
 }
 
-export const TaskRow = ({ children, columnName, taskCount, showConfigurableIcons, display = true }: Prop) => {
+export const TaskRow = ({ workflowStateId, children, columnName, taskCount, display = true }: Prop) => {
   return display ? (
     <Box>
       <Box
@@ -22,7 +23,7 @@ export const TaskRow = ({ children, columnName, taskCount, showConfigurableIcons
           borderBottom: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
         }}
       >
-        <AppMargin size={SizeofAppMargin.HEADER} py="6px">
+        <AppMargin size={SizeofAppMargin.HEADER} py="6px" sx={{ maxWidth: '100vw' }}>
           <Stack direction="row" justifyContent="space-between" alignItems="center">
             <Stack direction="row" columnGap={'8px'}>
               <Typography variant="md">{columnName}</Typography>
@@ -36,26 +37,7 @@ export const TaskRow = ({ children, columnName, taskCount, showConfigurableIcons
               </Typography>
             </Stack>
 
-            {showConfigurableIcons && (
-              <Stack direction="row" alignItems="center">
-                <IconButton
-                  aria-label="menu"
-                  sx={{
-                    padding: '3px',
-                  }}
-                >
-                  <MoreHoriz fontSize="small" />
-                </IconButton>
-                <IconButton
-                  aria-label="add"
-                  sx={{
-                    padding: '3px',
-                  }}
-                >
-                  <Add fontSize="small" />
-                </IconButton>
-              </Stack>
-            )}
+            <AddBtn handleClick={() => handleAddBtnClicked(workflowStateId)} sx={{ paddingRight: '3px' }} />
           </Stack>
         </AppMargin>
       </Box>
