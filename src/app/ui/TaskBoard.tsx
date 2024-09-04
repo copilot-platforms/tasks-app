@@ -21,19 +21,28 @@ import { FilterBar } from '@/components/layouts/FilterBar'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { CustomLink } from '@/hoc/CustomLink'
 import { sortTaskByDescendingOrder } from '@/utils/sortTask'
+import { UserRole } from '@api/core/types/user'
+import { clientUpdateTask } from '@/app/detail/[task_id]/[user_type]/actions'
 
-export const TaskBoard = () => {
+interface TaskBoardProps {
+  mode?: UserRole
+}
+export const TaskBoard = ({ mode = UserRole.IU }: TaskBoardProps) => {
   const { workflowStates, tasks, token, filteredTasks, view, viewSettingsTemp, filterOptions } = useSelector(selectTaskBoard)
 
   const onDropItem = useCallback(
     (payload: { taskId: string; targetWorkflowStateId: string }) => {
       const { taskId, targetWorkflowStateId } = payload
       store.dispatch(updateWorkflowStateIdByTaskId({ taskId, targetWorkflowStateId }))
-      updateTask({
-        token: z.string().parse(token),
-        taskId,
-        payload: { workflowStateId: targetWorkflowStateId },
-      })
+      if (mode === UserRole.Client) {
+        clientUpdateTask(z.string().parse(token), taskId, targetWorkflowStateId)
+      } else {
+        updateTask({
+          token: z.string().parse(token),
+          taskId,
+          payload: { workflowStateId: targetWorkflowStateId },
+        })
+      }
     },
     [token],
   )
@@ -62,10 +71,13 @@ export const TaskBoard = () => {
     return <DashboardEmptyState userType={UserType.INTERNAL_USER} />
   }
   const viewBoardSettings = viewSettingsTemp ? viewSettingsTemp.viewMode : view
+  const getCardHref = (task: { id: string }) => `/detail/${task.id}/${mode === UserRole.IU ? 'iu' : 'cu'}`
+
   return (
     <>
-      <Header showCreateTaskButton={true} />
+      <Header showCreateTaskButton={mode === UserRole.IU} />
       <FilterBar
+        mode={mode}
         updateViewModeSetting={async (payload: CreateViewSettingsDTO) => {
           await updateViewModeSettings(z.string().parse(token), payload)
         }}
@@ -83,6 +95,7 @@ export const TaskBoard = () => {
               <DragDropHandler key={list.id} accept={'taskCard'} index={index} id={list.id} onDropItem={onDropItem}>
                 <TaskColumn
                   key={list.id}
+                  mode={mode}
                   workflowStateId={list.id}
                   columnName={list.name}
                   taskCount={taskCountForWorkflowStateId(list.id)}
@@ -93,14 +106,14 @@ export const TaskBoard = () => {
                         return (
                           <DragDropHandler key={task.id} accept={'taskCard'} index={index} id={task.id || ''} draggable>
                             <CustomLink
-                              href={{ pathname: `/detail/${task.id}/iu`, query: { token } }}
+                              href={{ pathname: getCardHref(task), query: { token } }}
                               style={{ width: 'fit-content' }}
                             >
                               <Box key={task.id}>
                                 <TaskCard
                                   task={task}
                                   key={task.id}
-                                  href={{ pathname: `/detail/${task.id}/iu`, query: { token } }}
+                                  href={{ pathname: getCardHref(task), query: { token } }}
                                 />
                               </Box>
                             </CustomLink>
@@ -127,6 +140,7 @@ export const TaskBoard = () => {
             {workflowStates.map((list, index) => (
               <DragDropHandler key={list.id} accept={'taskCard'} index={index} id={list.id} onDropItem={onDropItem}>
                 <TaskRow
+                  mode={mode}
                   workflowStateId={list.id}
                   key={list.id}
                   columnName={list.name}
@@ -136,11 +150,11 @@ export const TaskBoard = () => {
                   {sortTaskByDescendingOrder(filterTaskWithWorkflowStateId(list.id)).map((task, index) => {
                     return (
                       <DragDropHandler key={task.id} accept={'taskCard'} index={index} id={task.id || ''} draggable>
-                        <CustomLink href={{ pathname: `/detail/${task.id}/iu`, query: { token } }}>
+                        <CustomLink href={{ pathname: getCardHref(task), query: { token } }}>
                           <ListViewTaskCard
                             key={task.id}
                             task={task}
-                            href={{ pathname: `/detail/${task.id}/iu`, query: { token } }}
+                            href={{ pathname: getCardHref(task), query: { token } }}
                             updateTask={({ payload }) => {
                               updateTask({ token: z.string().parse(token), taskId: task.id, payload })
                             }}
