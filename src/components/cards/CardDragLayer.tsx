@@ -2,30 +2,9 @@ import { Box, Stack, Typography } from '@mui/material'
 import { ViewMode } from '@prisma/client'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { useSelector } from 'react-redux'
-import { XYCoord } from 'react-dnd'
 import { FC } from 'react'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { TaskCard } from './TaskCard'
-
-const getItemStyles = (currentOffset: XYCoord | null, previewWidth: number) => {
-  if (!currentOffset) {
-    return {
-      display: 'none',
-    }
-  }
-
-  const { x, y } = currentOffset
-  // Adjust the preview position to center it under the cursor
-  const adjustedX = x - (previewWidth - 20)
-  const adjustedY = y - 20 // Adjust the Y offset if needed
-
-  const transform = `translate(${adjustedX}px, ${adjustedY}px)`
-
-  return {
-    transform,
-    WebkitTransform: transform,
-  }
-}
 
 interface Prop {
   task: TaskResponse
