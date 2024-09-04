@@ -121,8 +121,6 @@ class WebhookService extends BaseService {
   }
 
   async handleUserDeleted(assigneeId: string, assigneeType: AssigneeType) {
-    if (assigneeType === AssigneeType.company) return
-
     const tasksService = new TasksService(this.user)
     // Delete corresponding tasks
     console.info(`Deleting all tasks for ${assigneeType} ${assigneeId}`)
@@ -175,6 +173,7 @@ class WebhookService extends BaseService {
 
   private async handleCompanyUnassignment(clientId: string, prevCompanyId: string) {
     const company = await this.copilot.getCompany(prevCompanyId)
+    console.log('prevCompany', company)
 
     // NOTE: If prev company was not a valid company, instead a randomly generated placeholder company,
     // prevCompany.name will be an empty string
@@ -202,6 +201,7 @@ class WebhookService extends BaseService {
       },
     })
     const notificationIds = prevCompanyNotifications.map((notification) => notification.id)
+    console.log('nl', notificationIds.length)
 
     // Delete all task notifications triggered for client for previous company
     const deletePromises = []
