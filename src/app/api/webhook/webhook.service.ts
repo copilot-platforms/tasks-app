@@ -189,9 +189,12 @@ class WebhookService extends BaseService {
         workflowState: {
           type: { not: StateType.completed },
         },
+        // Fetch both deleted and non-deleted tasks to prevent race-condition of company tasks being deleted first
+        deletedAt: undefined,
       },
     })
     const prevCompanyTaskIds = prevCompanyTasks.map((task) => task.id)
+    console.log('tas', prevCompanyTasks.length)
 
     // Find all triggered notifications for this client, on behalf of prev company
     const prevCompanyNotifications = await this.db.clientNotification.findMany({
