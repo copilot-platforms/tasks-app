@@ -12,7 +12,6 @@ import { usePathname } from 'next/navigation'
 
 const DashboardEmptyState = ({ userType }: { userType: UserType }) => {
   const pathname = usePathname()
-  console.log(pathname.includes('client'))
   return (
     <>
       <AppMargin size={SizeofAppMargin.LARGE} py="20px">
