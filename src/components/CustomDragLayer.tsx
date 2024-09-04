@@ -1,30 +1,49 @@
-import { useDragLayer, XYCoord } from 'react-dnd'
-import React, { cloneElement, ReactElement } from 'react'
+import React from 'react'
+import { DraggableProvided, DraggableStateSnapshot, DraggingStyle, NotDraggingStyle } from 'react-beautiful-dnd'
+import { CardDragLayer } from './cards/CardDragLayer'
 
-interface DragLayerProps {
-  currentOffset: XYCoord | null
-  item: unknown
+interface CustomDragLayerProps {
+  snapshot: DraggableStateSnapshot
+  provided: DraggableProvided
+  // style: NotDraggingStyle | DraggingStyle | undefined
+  style: any
+  children: React.ReactNode
 }
 
-export const CustomDragLayer = <T extends DragLayerProps>({
-  children,
-}: {
-  children: ReactElement<T> | ReactElement<T>[]
-}) => {
-  const { isDragging, item, currentOffset } = useDragLayer((monitor) => ({
-    item: monitor.getItem(),
-    // itemType: monitor.getItemType(),
-    currentOffset: monitor.getClientOffset(),
-    isDragging: monitor.isDragging(),
-  }))
-
-  if (!isDragging) {
-    return null
-  }
+export const CustomDragLayer: React.FC<CustomDragLayerProps> = ({ snapshot, provided, style, children }) => {
+  const isDragging = snapshot.isDragging
+  console.log('djflks', provided.draggableProps.style?.transition)
 
   return (
-    <div style={{ position: 'fixed', pointerEvents: 'none', zIndex: 100, left: 0, top: 0 }}>
-      {React.isValidElement(children) ? cloneElement(children, { currentOffset, item } as T) : children}
-    </div>
+    <>
+      <div
+        ref={provided.innerRef}
+        {...provided.draggableProps}
+        {...provided.dragHandleProps}
+        style={{
+          ...provided.draggableProps.style,
+          visibility: isDragging ? 'hidden' : 'visible',
+          ...style,
+        }}
+      >
+        {children}
+      </div>
+      {isDragging && (
+        <div
+          style={{
+            position: 'fixed',
+            top: snapshot.draggingOver ? 0 : 'unset',
+            left: snapshot.draggingOver ? 0 : 'unset',
+            pointerEvents: 'none',
+            zIndex: 1000,
+            transform: `translate(${snapshot.draggingOver ? provided.draggableProps.style?.transform : 0}px, ${
+              snapshot.draggingOver ? provided.draggableProps.style?.transform : 0
+            }px)`,
+          }}
+        >
+          <div style={{ padding: '8px', background: 'lightgrey', borderRadius: '4px' }}>{children}</div>
+        </div>
+      )}
+    </>
   )
 }

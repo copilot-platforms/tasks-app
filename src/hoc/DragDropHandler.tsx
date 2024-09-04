@@ -1,96 +1,94 @@
-'use client'
-
+import { CardDragLayer } from '@/components/cards/CardDragLayer'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { View } from '@/types/interfaces'
-import { ViewMode } from '@prisma/client'
-import { ReactNode, useEffect, useRef } from 'react'
-import { useDrag, useDrop, DropTargetMonitor } from 'react-dnd'
+import React, { useEffect, useState } from 'react'
+import { Draggable, DraggableStateSnapshot, DraggingStyle, Droppable, NotDraggingStyle } from 'react-beautiful-dnd'
 import { useSelector } from 'react-redux'
 
-interface Prop {
-  children: ReactNode
-  accept: string
-  index: number
-  id?: string //only pass for droppable
-  task?: TaskResponse //only pass for draggable
-  moveCard?: (dragIndex: number, hoverIndex: number, sourceId: number, targetId: number) => void
-  onDropItem?: (payload: { taskId: string; targetWorkflowStateId: string }) => void
-  draggable?: boolean // Indicates if the item should be draggable
-  droppable?: boolean // Indicates if the item should be droppable
+interface DragDropHandlerProps {
+  children: React.ReactNode
+  droppableId?: string
+  draggableId?: string
+  index?: number
+  draggable?: boolean
+  droppable?: boolean
+  task?: TaskResponse //only pass for draggable item to show the drag preview
 }
 
-export const DragDropHandler = ({
+export const DragDropHandler: React.FC<DragDropHandlerProps> = ({
   children,
-  accept,
+  droppableId,
+  draggableId,
   index,
-  id,
-  task,
-  moveCard,
-  onDropItem,
   draggable = false,
-  droppable = false, // New prop for droppable
-}: Prop) => {
+  droppable = false,
+  task,
+}) => {
   const { view } = useSelector(selectTaskBoard)
-  const ref = useRef<HTMLDivElement | null>(null)
 
-  const [{ isOver, canDrop }, drop] = useDrop({
-    accept: accept,
-    collect: (monitor: DropTargetMonitor) => ({
-      isOver: monitor.isOver(),
-      canDrop: monitor.canDrop(),
-    }),
-    drop: (item: unknown, monitor) => {
-      if (onDropItem) {
-        onDropItem({
-          // taskId: (item as { taskId: string }).taskId,
-          taskId: (item as { task: TaskResponse }).task.id,
-          targetWorkflowStateId: id as string,
-        })
+  return droppable && droppableId ? (
+    <Droppable droppableId={droppableId} type="TASK">
+      {(provided, snapshot) => (
+        <div
+          ref={provided.innerRef}
+          {...provided.droppableProps}
+          style={{
+            padding: 8,
+            border: snapshot.isDraggingOver ? '0.5px solid #212B36' : '0.5px solid transparent',
+            borderRadius: 4,
+          }}
+        >
+          {children}
+          {/* {provided.placeholder} */}
+        </div>
+      )}
+    </Droppable>
+  ) : draggable && draggableId && task ? (
+    <Draggable draggableId={draggableId} index={index as number}>
+      {(provided, snapshot) =>
+        snapshot.isDragging && view === View.LIST_VIEW ? (
+          <div
+            ref={provided.innerRef}
+            {...provided.draggableProps}
+            {...provided.dragHandleProps}
+            style={{
+              opacity: snapshot.isDragging ? 0.5 : 1,
+              ...getStyle(provided.draggableProps.style, snapshot),
+              width: '100%',
+            }}
+          >
+            <CardDragLayer task={task} />
+          </div>
+        ) : (
+          <div
+            ref={provided.innerRef}
+            {...provided.draggableProps}
+            {...provided.dragHandleProps}
+            style={{
+              ...getStyle(provided.draggableProps.style, snapshot),
+            }}
+          >
+            {children}
+          </div>
+        )
       }
-    },
-    canDrop: () => droppable, // Only allow dropping if the component is droppable
-  })
+    </Draggable>
+  ) : (
+    <div>{children}</div>
+  )
+}
 
-  const [{ isDragging }, drag, preview] = useDrag({
-    type: accept,
-    item: () => {
-      return { task: task }
-    },
-    collect: (monitor) => ({
-      isDragging: monitor.isDragging(),
-    }),
-    canDrag: () => draggable, // Only allow dragging if the component is draggable
-  })
-
-  // Set an empty image as the drag preview so that the default preview is not shown
-  useEffect(() => {
-    if (window) {
-      //we only need custom drag preview in the list view
-      if (draggable) {
-        preview(new Image()) // This sets an empty drag preview
-      }
-    }
-  }, [preview, draggable])
-
-  const opacity = isDragging ? 0.5 : 1
-  const dropHoverStyles =
-    isOver && canDrop
-      ? {
-          border: '0.5px solid #212B36',
-          borderRadius: view === View.BOARD_VIEW ? '4px' : '0px',
-        }
-      : { border: '0.5px solid transparent' }
-
-  if (draggable) {
-    drag(drop(ref)) // If draggable, combine drag and drop refs
-  } else if (droppable) {
-    drop(ref) // If only droppable, just use drop ref
+function getStyle(style: NotDraggingStyle | DraggingStyle | undefined, snapshot: DraggableStateSnapshot) {
+  if (!snapshot.isDragging) return {}
+  if (!snapshot.isDropAnimating) {
+    return style
   }
 
-  return (
-    <div ref={ref} style={{ opacity, ...dropHoverStyles, padding: droppable && view === View.BOARD_VIEW ? '8px' : '0px' }}>
-      {children}
-    </div>
-  )
+  return {
+    ...style,
+    // cannot be 0, but make it super tiny
+    // this style is used to disable auto reordering of list items
+    transitionDuration: `0.001s`,
+  }
 }

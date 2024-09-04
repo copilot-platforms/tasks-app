@@ -28,41 +28,15 @@ const getItemStyles = (currentOffset: XYCoord | null, previewWidth: number, view
 }
 
 interface Prop {
-  currentOffset?: XYCoord | null
-  item?: { task: TaskResponse }
+  task: TaskResponse
 }
 
 export const CardDragLayer: FC<Prop> = (props) => {
-  const { item, currentOffset } = props
+  const { view } = useSelector(selectTaskBoard)
 
-  const { view, token } = useSelector(selectTaskBoard)
-
-  const currentTask = item?.task
+  const currentTask = props.task
 
   const previewWidth = view === ViewMode.list ? 240 : 282 // Width of the CustomDragPreview
-
-  if (!currentTask || !item || !currentOffset) {
-    return null
-  }
-
-  if (view === ViewMode.board) {
-    return (
-      <Stack
-        sx={{
-          padding: '12px 20px',
-          width: `${previewWidth}px`,
-          transition: 'transform 0.1s ease',
-          ...getItemStyles(currentOffset, previewWidth, ViewMode.board),
-        }}
-      >
-        <TaskCard
-          task={currentTask}
-          key={currentTask.id}
-          href={{ pathname: `/detail/${currentTask.id}/iu`, query: { token } }}
-        />
-      </Stack>
-    )
-  }
 
   if (view === ViewMode.list) {
     return (
@@ -75,8 +49,7 @@ export const CardDragLayer: FC<Prop> = (props) => {
           border: '1px solid #EFF1F4',
           padding: '12px 20px',
           width: `${previewWidth}px`,
-          transition: 'transform 0.1s ease',
-          ...getItemStyles(currentOffset, previewWidth, ViewMode.list),
+          // transition: 'transform 0.1s ease',
         }}
       >
         <Typography
