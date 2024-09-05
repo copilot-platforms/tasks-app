@@ -324,13 +324,13 @@ const NewTaskFormInputs = () => {
       <Stack direction="column" rowGap={1} m="16px 0px">
         <Typography variant="md">Description</Typography>
         <Tapwrite
-          uploadFn={async (file, tiptapEditorUtils) => {
-            const newBlob = await upload(file.name, file, {
-              access: 'public',
-              handleUploadUrl: '/api/upload',
-            })
-            tiptapEditorUtils.setImage(newBlob.url as string)
-          }}
+          // uploadFn={async (file, tiptapEditorUtils) => {
+          //   const newBlob = await upload(file.name, file, {
+          //     access: 'public',
+          //     handleUploadUrl: '/api/upload',
+          //   })
+          //   tiptapEditorUtils.setImage(newBlob.url as string)
+          // }}
           content={description}
           getContent={(content) => store.dispatch(setCreateTaskFields({ targetField: 'description', value: content }))}
           placeholder="Add description..."
