@@ -1,15 +1,15 @@
 'use client'
 
+import { UserRole } from '@/app/api/core/types/user'
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { AddIcon, TasksListIcon } from '@/icons'
 import { setShowModal } from '@/redux/features/createTaskSlice'
 import store from '@/redux/store'
-import { UserType } from '@/types/interfaces'
 import { SxCenter } from '@/utils/mui'
 import { Box, Stack, Typography } from '@mui/material'
 
-const DashboardEmptyState = ({ userType }: { userType: UserType }) => {
+const DashboardEmptyState = ({ userType }: { userType: UserRole }) => {
   return (
     <>
       <AppMargin size={SizeofAppMargin.LARGE} py="20px">
@@ -36,15 +36,15 @@ const DashboardEmptyState = ({ userType }: { userType: UserType }) => {
               </Box>
 
               <Typography variant="2xl" lineHeight={'32px'}>
-                {userType == UserType.INTERNAL_USER ? " You don't have any tasks yet" : 'No tasks assigned'}
+                {userType == UserRole.IU ? " You don't have any tasks yet" : 'No tasks assigned'}
               </Typography>
               <Typography variant="bodyLg" sx={{ color: (theme) => theme.color.gray[500] }}>
-                {userType == UserType.INTERNAL_USER
+                {userType == UserRole.Client
                   ? 'Tasks will be shown here after they’re created. You can create a new task below.'
                   : 'Tasks will show here once they’ve been assigned to you. '}
               </Typography>
             </Stack>
-            {userType == UserType.INTERNAL_USER && (
+            {userType == UserRole.IU && (
               <Box>
                 <PrimaryBtn
                   startIcon={<AddIcon />}

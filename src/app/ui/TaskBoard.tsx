@@ -25,9 +25,9 @@ import { UserRole } from '@api/core/types/user'
 import { clientUpdateTask } from '@/app/detail/[task_id]/[user_type]/actions'
 
 interface TaskBoardProps {
-  mode?: UserRole
+  mode: UserRole
 }
-export const TaskBoard = ({ mode = UserRole.IU }: TaskBoardProps) => {
+export const TaskBoard = ({ mode }: TaskBoardProps) => {
   const { workflowStates, tasks, token, filteredTasks, view, viewSettingsTemp, filterOptions } = useSelector(selectTaskBoard)
 
   const onDropItem = useCallback(
@@ -68,7 +68,7 @@ export const TaskBoard = ({ mode = UserRole.IU }: TaskBoardProps) => {
   }
 
   if (tasks && tasks.length === 0) {
-    return <DashboardEmptyState userType={UserType.INTERNAL_USER} />
+    return <DashboardEmptyState userType={mode} />
   }
   const viewBoardSettings = viewSettingsTemp ? viewSettingsTemp.viewMode : view
   const getCardHref = (task: { id: string }) => `/detail/${task.id}/${mode === UserRole.IU ? 'iu' : 'cu'}`
