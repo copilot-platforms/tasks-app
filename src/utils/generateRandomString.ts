@@ -5,5 +5,5 @@ export function generateRandomString(name: string) {
   for (let i = 0; i < 10; i++) {
     result += characters.charAt(Math.floor(Math.random() * charactersLength))
   }
-  return name + '_' + result
+  return result + '_' + name
 }

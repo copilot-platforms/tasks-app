@@ -43,6 +43,11 @@ export class SupabaseActions extends SupabaseService {
     return filePayload
   }
 
+  async getPublicUrl(filePath: string) {
+    const { data } = this.supabase.storage.from(supabaseBucket).getPublicUrl(filePath)
+    return data.publicUrl
+  }
+
   async removeAttachment(filePath: string) {
     const { data, error } = await this.supabase.storage.from(supabaseBucket).remove([filePath])
     if (error) {
