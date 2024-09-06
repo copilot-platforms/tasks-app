@@ -9,18 +9,23 @@ import APIError from '@api/core/exceptions/api'
 import httpStatus from 'http-status'
 import Bottleneck from 'bottleneck'
 
+type NotificationCreateOpts = {
+  disableEmail?: boolean
+  customRecipientId?: string
+}
+
 export class NotificationService extends BaseService {
-  async create(action: NotificationTaskActions, task: Task, disable: { email: boolean } = { email: false }) {
+  async create(action: NotificationTaskActions, task: Task, opts: NotificationCreateOpts = { disableEmail: false }) {
     try {
       const copilot = new CopilotAPI(this.user.token)
 
       const { senderId, recipientId, actionUser, companyName } = await this.getNotificationParties(copilot, task, action)
 
       const inProduct = getInProductNotificationDetails(actionUser, task, companyName)[action]
-      const email = disable.email ? undefined : getEmailDetails(actionUser, task)[action]
+      const email = opts.disableEmail ? undefined : getEmailDetails(actionUser, task)[action]
       const notificationDetails = {
         senderId,
-        recipientId,
+        recipientId: opts.customRecipientId || recipientId,
         // If any of the given action is not present in details obj, that type of notification is not sent
         deliveryTargets: { inProduct, email },
       }
@@ -97,14 +102,12 @@ export class NotificationService extends BaseService {
   deleteInternalUserNotificationForTask = async (taskId: string) => {
     const copilot = new CopilotAPI(this.user.token)
     const notifications = await this.db.internalUserNotification.findMany({ where: { taskId } })
-    console.log('n', notifications)
     const markAsReadPromises = []
     const bottleneck = new Bottleneck({ minTime: 250, maxConcurrent: 2 })
     for (let notification of notifications) {
       markAsReadPromises.push(
         // Mark IU notification as read
         bottleneck.schedule(() => {
-          console.log('notification', notification)
           return copilot.deleteNotification(notification.notificationId)
         }),
       )

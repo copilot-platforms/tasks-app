@@ -173,7 +173,6 @@ class WebhookService extends BaseService {
 
   private async handleCompanyUnassignment(clientId: string, prevCompanyId: string) {
     const company = await this.copilot.getCompany(prevCompanyId)
-    console.log('prevCompany', company)
 
     // NOTE: If prev company was not a valid company, instead a randomly generated placeholder company,
     // prevCompany.name will be an empty string
@@ -194,7 +193,6 @@ class WebhookService extends BaseService {
       },
     })
     const prevCompanyTaskIds = prevCompanyTasks.map((task) => task.id)
-    console.log('tas', prevCompanyTasks.length)
 
     // Find all triggered notifications for this client, on behalf of prev company
     const prevCompanyNotifications = await this.db.clientNotification.findMany({
@@ -204,7 +202,6 @@ class WebhookService extends BaseService {
       },
     })
     const notificationIds = prevCompanyNotifications.map((notification) => notification.id)
-    console.log('nl', notificationIds.length)
 
     // Delete all task notifications triggered for client for previous company
     const deletePromises = []
