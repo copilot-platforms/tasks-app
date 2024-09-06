@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { ZodError, ZodIssue } from 'zod'
+import { ZodError, ZodFormattedError, ZodIssue } from 'zod'
 import { CopilotApiError } from '@/types/CopilotApiError'
 import APIError from '@api/core/exceptions/api'
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
@@ -31,23 +31,22 @@ export const withErrorHandler = (handler: RequestHandler): RequestHandler => {
     try {
       return await handler(req, params)
     } catch (error: unknown) {
+      // Format error in a readable way
       let formattedError = error
       if (error instanceof ZodError) {
-        formattedError = error.errors.map((issue) => {
-          return `Field: ${issue.path.join('.')} - ${issue.message}`
-        })
+        formattedError = error.format() as ZodFormattedError<unknown>
       }
       console.error(formattedError)
 
       // Default staus and message for JSON error response
       let status: number = httpStatus.BAD_REQUEST
-      let message: string | string[] = 'Something went wrong'
+      let message: string | ZodFormattedError<string> = 'Something went wrong'
       let errors: unknown[] | undefined = undefined
 
       // Build a proper response based on the type of Error encountered
       if (error instanceof ZodError) {
         status = httpStatus.UNPROCESSABLE_ENTITY
-        message = formattedError as string[] // formattedError value is overridden above
+        message = formattedError as ZodFormattedError<unknown>
       } else if (error instanceof CopilotApiError) {
         status = error.status || status
         message = error.body.message || message
