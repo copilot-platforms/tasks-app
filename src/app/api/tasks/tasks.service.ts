@@ -17,6 +17,7 @@ import { LabelMappingService } from '@api/label-mapping/label-mapping.service'
 import { z } from 'zod'
 import { ClientResponse, CompanyResponse, InternalUsers, NotificationCreatedResponseSchema } from '@/types/common'
 import { CopilotAPI } from '@/utils/CopilotAPI'
+import Bottleneck from 'bottleneck'
 
 type FilterByAssigneeId = {
   assigneeId: string
@@ -309,7 +310,8 @@ export class TasksService extends BaseService {
   }
 
   async clientUpdateTask(id: string, targetWorkflowStateId?: string | null) {
-    //Apply custom authorization here. Policy service is not used because this api is for client's Mark done function only. Only clients can use this.
+    // Apply custom authorization here. Policy service is not used because this api is for client's Mark done
+    // function only. Only clients can use this.
     if (this.user.role === UserRole.IU) {
       throw new APIError(httpStatus.UNAUTHORIZED, 'You are not authorized to perform this action')
     }
@@ -365,8 +367,9 @@ export class TasksService extends BaseService {
 
     // If task has been moved to completed from a non-complete state, remove all notification counts
     if (updatedWorkflowState?.type === StateType.completed && prevTask.workflowState.type !== StateType.completed) {
+      const copilot = new CopilotAPI(this.user.token)
       if (updatedTask.assigneeType === AssigneeType.company) {
-        const copilot = new CopilotAPI(this.user.token)
+        // Handle company task completed
         const { recipientIds } = await notificationService.getNotificationParties(
           copilot,
           updatedTask,
@@ -379,7 +382,24 @@ export class TasksService extends BaseService {
         )
         await notificationService.markAsReadForAllRecipients(updatedTask)
       } else {
-        await notificationService.create(NotificationTaskActions.Completed, updatedTask)
+        // Handle client task completed
+        const internalUsers = await copilot.getInternalUsers()
+        const client = await copilot.getClient(z.string().parse(updatedTask.assigneeId))
+        const relavantInternalUsers = internalUsers.data.filter((iu) => {
+          if (!iu.isClientAccessLimited) return true
+          const access = iu.companyAccessList
+          return access?.includes(client.companyId)
+        })
+        const notificationPromises = []
+        const bottleneck = new Bottleneck({ minTime: 250, maxConcurrent: 2 })
+        for (let iu of relavantInternalUsers) {
+          notificationPromises.push(
+            bottleneck.schedule(() =>
+              notificationService.create(NotificationTaskActions.Completed, updatedTask, undefined, iu.id),
+            ),
+          )
+        }
+        await Promise.all(notificationPromises)
         await notificationService.markClientNotificationAsRead(updatedTask)
       }
     }
