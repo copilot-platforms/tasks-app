@@ -26,23 +26,8 @@ export class NotificationService extends BaseService {
       }
 
       const notification = await copilot.createNotification(notificationDetails)
-      if (
-        [
-          NotificationTaskActions.Completed,
-          NotificationTaskActions.CompletedByIU,
-          NotificationTaskActions.CompletedForCompanyByIU,
-          NotificationTaskActions.CompletedByCompanyMember,
-        ].includes(action)
-      ) {
-        // Notification recipient is IU in this case
-        await this.db.internalUserNotification.create({
-          data: {
-            internalUserId: recipientId,
-            notificationId: notification.id,
-            taskId: task.id,
-          },
-        })
-      }
+      await this.createInternalUserNotifications(action, recipientId, notification.id, task.id)
+
       return notification
     } catch (error) {
       console.error(`Failed to send notification for action: ${action}`, error)
@@ -79,8 +64,9 @@ export class NotificationService extends BaseService {
             recipientId,
             deliveryTargets: { inProduct, email },
           }
-          notifications.push(await copilot.createNotification(notificationDetails))
-          console.log('action', action)
+          const notification = await copilot.createNotification(notificationDetails)
+          notifications.push(notification)
+          await this.createInternalUserNotifications(action, recipientId, notification.id, task.id)
         } catch (err: unknown) {
           console.error(`Failed to send notifications to ${recipientId}:`, err)
         }
@@ -271,5 +257,30 @@ export class NotificationService extends BaseService {
         : `${(actionTrigger as CopilotUser).givenName} ${(actionTrigger as CopilotUser).familyName}`
 
     return { senderId, recipientId, recipientIds, actionUser, companyName }
+  }
+
+  private async createInternalUserNotifications(
+    action: NotificationTaskActions,
+    internalUserId: string,
+    notificationId: string,
+    taskId: string,
+  ) {
+    if (
+      [
+        NotificationTaskActions.Completed,
+        NotificationTaskActions.CompletedByIU,
+        NotificationTaskActions.CompletedForCompanyByIU,
+        NotificationTaskActions.CompletedByCompanyMember,
+      ].includes(action)
+    ) {
+      // Notification recipient is IU in this case
+      await this.db.internalUserNotification.create({
+        data: {
+          internalUserId,
+          notificationId,
+          taskId,
+        },
+      })
+    }
   }
 }
