@@ -57,3 +57,15 @@ export const getSignedUrlUpload = async (req: NextRequest) => {
   const signedUrl = await attachmentsService.signUrlUpload(fileName)
   return NextResponse.json({ signedUrl })
 }
+
+export const getSignedUrlFile = async (req: NextRequest) => {
+  const filePath = req.nextUrl.searchParams.get('filePath')
+  if (!filePath) {
+    throw new APIError(httpStatus.BAD_REQUEST, 'filePath is required')
+  }
+  console.log('controlling')
+  const user = await authenticate(req)
+  const attachmentsService = new AttachmentsService(user)
+  const signedUrl = await attachmentsService.getSignedUrl(filePath)
+  return NextResponse.json({ signedUrl })
+}

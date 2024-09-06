@@ -72,4 +72,19 @@ export class AttachmentsService extends BaseService {
     }
     return data
   }
+
+  async getSignedUrl(filePath: string) {
+    console.log('hit')
+    const policyGate = new PoliciesService(this.user)
+    const supabase = new SupabaseService()
+    policyGate.authorize(UserAction.Create, Resource.Attachments)
+    const { data, error } = await supabase.supabase.storage.from(supabaseBucket).createSignedUrl(filePath, 60 * 60 * 24 * 24)
+    console.log(data)
+    if (error) {
+      console.log(error)
+      throw new APIError(httpStatus.BAD_REQUEST)
+    }
+
+    return data.signedUrl
+  }
 }

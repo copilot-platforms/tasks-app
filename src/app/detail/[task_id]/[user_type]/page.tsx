@@ -51,10 +51,16 @@ async function getOneTask(token: string, taskId: string): Promise<TaskResponse> 
 
 async function getSignedUrlUpload(token: string, fileName: string) {
   const res = await fetch(`${apiUrl}/api/attachments/upload?token=${token}&fileName=${fileName}`)
+
   const data = await res.json()
   return data.signedUrl
 }
 
+async function getSignedUrlFile(token: string, filePath: string) {
+  const res = await fetch(`${apiUrl}/api/attachments/sign-url?token=${token}&filePath=${filePath}`)
+  const data = await res.json()
+  return data.signedUrl
+}
 export default async function TaskDetailPage({
   params,
   searchParams,
@@ -142,6 +148,11 @@ export default async function TaskDetailPage({
                     getSignedUrlUpload={async (fileName: string) => {
                       'use server'
                       const data = await getSignedUrlUpload(token, fileName)
+                      return data
+                    }}
+                    getSignedUrlFile={async (filePath: string) => {
+                      'use server'
+                      const data = await getSignedUrlFile(token, filePath)
                       return data
                     }}
                     userType={params.user_type}

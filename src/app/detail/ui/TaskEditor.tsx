@@ -27,6 +27,7 @@ interface Prop {
   postAttachment: (postAttachmentPayload: CreateAttachmentRequest) => void
   deleteAttachment: (id: string) => void
   getSignedUrlUpload: (fileName: string) => Promise<ISignedUrlUpload>
+  getSignedUrlFile: (filePath: string) => Promise<string>
   userType: UserType
 }
 
@@ -40,6 +41,7 @@ export const TaskEditor = ({
   postAttachment,
   deleteAttachment,
   getSignedUrlUpload,
+  getSignedUrlFile,
   userType,
 }: Prop) => {
   const [updateTitle, setUpdateTitle] = useState('')
@@ -164,12 +166,24 @@ export const TaskEditor = ({
             const fileName = generateRandomString(file.name)
             const signedUrl: ISignedUrlUpload = await getSignedUrlUpload(fileName)
             const filePayload = await supabaseActions.uploadAttachment(file, signedUrl, task_id)
-            const url = await supabaseActions.getPublicUrl(filePayload?.filePath ?? '')
-            tiptapEditorUtils.setImage(url, fileName)
+            const url = await getSignedUrlFile(filePayload?.filePath ?? '')
+            if (url) {
+              supabaseActions.getFilePathFromUrl(url)
+              tiptapEditorUtils.setImage(url, fileName)
+            }
           }}
           deleteEditorAttachments={async (id: string) => {
             const supabaseActions = new SupabaseActions()
             await supabaseActions.removeAttachment(id)
+          }}
+          refreshUrl={async (url) => {
+            console.log(url)
+            const supabaseActions = new SupabaseActions()
+            const filePath = await supabaseActions.getFilePathFromUrl(url)
+            console.log(filePath)
+            const replacingUrl = filePath ? await getSignedUrlFile(filePath) : ''
+            console.log(replacingUrl)
+            return replacingUrl
           }}
         />
       </Box>
