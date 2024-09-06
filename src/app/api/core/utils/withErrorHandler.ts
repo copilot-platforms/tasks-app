@@ -30,18 +30,24 @@ export const withErrorHandler = (handler: RequestHandler): RequestHandler => {
     // Execute the handler wrapped in a try... catch block
     try {
       return await handler(req, params)
-    } catch (error) {
-      console.error(error)
+    } catch (error: unknown) {
+      let formattedError = error
+      if (error instanceof ZodError) {
+        formattedError = error.errors.map((issue) => {
+          return `Field: ${issue.path.join('.')} - ${issue.message}`
+        })
+      }
+      console.error(formattedError)
 
       // Default staus and message for JSON error response
       let status: number = httpStatus.BAD_REQUEST
-      let message: string | ZodIssue[] = 'Something went wrong'
+      let message: string | string[] = 'Something went wrong'
       let errors: unknown[] | undefined = undefined
 
       // Build a proper response based on the type of Error encountered
       if (error instanceof ZodError) {
         status = httpStatus.UNPROCESSABLE_ENTITY
-        message = error.issues
+        message = formattedError as string[] // formattedError value is overridden above
       } else if (error instanceof CopilotApiError) {
         status = error.status || status
         message = error.body.message || message
