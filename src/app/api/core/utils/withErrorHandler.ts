@@ -34,7 +34,7 @@ export const withErrorHandler = (handler: RequestHandler): RequestHandler => {
       // Format error in a readable way
       let formattedError = error
       if (error instanceof ZodError) {
-        formattedError = error.format() as ZodFormattedError<string, unknown>
+        formattedError = error.format() as ZodFormattedError<string>
       }
       console.error(formattedError)
 
@@ -46,7 +46,7 @@ export const withErrorHandler = (handler: RequestHandler): RequestHandler => {
       // Build a proper response based on the type of Error encountered
       if (error instanceof ZodError) {
         status = httpStatus.UNPROCESSABLE_ENTITY
-        message = formattedError as ZodFormattedError<string, unknown>
+        message = formattedError as ZodFormattedError<string>
       } else if (error instanceof CopilotApiError) {
         status = error.status || status
         message = error.body.message || message
