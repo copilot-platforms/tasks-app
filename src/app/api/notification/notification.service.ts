@@ -34,6 +34,7 @@ export class NotificationService extends BaseService {
           NotificationTaskActions.CompletedByCompanyMember,
         ].includes(action)
       ) {
+        console.log('!!here')
         // Notification recipient is IU in this case
         await this.db.internalUserNotification.create({
           data: {
