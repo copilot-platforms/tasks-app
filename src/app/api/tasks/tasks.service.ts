@@ -396,7 +396,7 @@ export class TasksService extends BaseService {
         for (let iu of relavantInternalUsers) {
           notificationPromises.push(
             bottleneck.schedule(() =>
-              notificationService.create(NotificationTaskActions.Completed, updatedTask, undefined, iu.id),
+              notificationService.create(NotificationTaskActions.Completed, updatedTask, { customRecipientId: iu.id }),
             ),
           )
         }
@@ -408,13 +408,11 @@ export class TasksService extends BaseService {
   }
 
   private async sendUserTaskNotification(task: Task, notificationService: NotificationService, isReassigned = false) {
+    //! In future when reassignment is supported, change this logic to support reassigned to client as well
     const notification = await notificationService.create(
-      //! In future when reassignment is supported, change this logic to support reassigned to client as well
       isReassigned ? NotificationTaskActions.ReassignedToIU : NotificationTaskActions.Assigned,
       task,
-      {
-        email: task.assigneeType === AssigneeType.internalUser,
-      },
+      { disableEmail: task.assigneeType === AssigneeType.internalUser },
     )
     // Create a new entry in ClientNotifications table so we can mark as read on
     // behalf of client later
@@ -528,7 +526,7 @@ export class TasksService extends BaseService {
             updatedTask.assigneeType === AssigneeType.company
               ? NotificationTaskActions.CompletedForCompanyByIU
               : NotificationTaskActions.CompletedByIU
-          await notificationService.create(action, updatedTask, { email: true })
+          await notificationService.create(action, updatedTask, { disableEmail: true })
         }
       }
 
