@@ -386,9 +386,10 @@ export class TasksService extends BaseService {
         const internalUsers = await copilot.getInternalUsers()
         const client = await copilot.getClient(z.string().parse(updatedTask.assigneeId))
         const relavantInternalUsers = internalUsers.data.filter((iu) => {
+          // Case I: IU has full access
           if (!iu.isClientAccessLimited) return true
-          const access = iu.companyAccessList
-          return access?.includes(client.companyId)
+          // Case II: IU has limited access in which case it must have a valid companyAccessList
+          return iu.companyAccessList?.includes(client.companyId)
         })
         const notificationPromises = []
         const bottleneck = new Bottleneck({ minTime: 250, maxConcurrent: 2 })
