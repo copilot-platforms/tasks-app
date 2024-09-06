@@ -110,12 +110,14 @@ export class NotificationService extends BaseService {
   deleteInternalUserNotificationForTask = async (taskId: string) => {
     const copilot = new CopilotAPI(this.user.token)
     const notifications = await this.db.internalUserNotification.findMany({ where: { taskId } })
+    console.log('n', notifications)
     const markAsReadPromises = []
     const bottleneck = new Bottleneck({ minTime: 250, maxConcurrent: 2 })
     for (let notification of notifications) {
       markAsReadPromises.push(
         // Mark IU notification as read
         bottleneck.schedule(() => {
+          console.log('notification', notification)
           return copilot.deleteNotification(notification.notificationId)
         }),
       )
