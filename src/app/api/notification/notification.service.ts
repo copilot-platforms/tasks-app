@@ -26,7 +26,6 @@ export class NotificationService extends BaseService {
       }
 
       const notification = await copilot.createNotification(notificationDetails)
-      console.log('action', action)
       if (
         [
           NotificationTaskActions.Completed,
@@ -81,6 +80,7 @@ export class NotificationService extends BaseService {
             deliveryTargets: { inProduct, email },
           }
           notifications.push(await copilot.createNotification(notificationDetails))
+          console.log('action', action)
         } catch (err: unknown) {
           console.error(`Failed to send notifications to ${recipientId}:`, err)
         }
