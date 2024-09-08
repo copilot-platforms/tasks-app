@@ -176,15 +176,15 @@ export const TaskEditor = ({
             const supabaseActions = new SupabaseActions()
             await supabaseActions.removeAttachment(id)
           }}
-          refreshUrl={async (url) => {
-            console.log(url)
-            const supabaseActions = new SupabaseActions()
-            const filePath = await supabaseActions.getFilePathFromUrl(url)
-            console.log(filePath)
-            const replacingUrl = filePath ? await getSignedUrlFile(filePath) : ''
-            console.log(replacingUrl)
-            return replacingUrl
-          }}
+          // refreshUrl={async (url) => {
+          //   console.log(url)
+          //   const supabaseActions = new SupabaseActions()
+          //   const filePath = await supabaseActions.getFilePathFromUrl(url)
+          //   console.log(filePath)
+          //   const replacingUrl = filePath ? await getSignedUrlFile(filePath) : ''
+          //   console.log(replacingUrl)
+          //   return replacingUrl
+          // }}
         />
       </Box>
 
