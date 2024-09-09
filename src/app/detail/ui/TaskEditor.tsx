@@ -162,6 +162,7 @@ export const TaskEditor = ({
           editorClass="tapwrite-details-page"
           placeholder="Add description..."
           uploadFn={async (file) => {
+            console.log('running upload')
             const supabaseActions = new SupabaseActions()
             const fileName = generateRandomString(file.name)
             const signedUrl: ISignedUrlUpload = await getSignedUrlUpload(fileName)
