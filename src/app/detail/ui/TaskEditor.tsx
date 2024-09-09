@@ -161,7 +161,7 @@ export const TaskEditor = ({
           readonly={userType === UserType.CLIENT_USER}
           editorClass="tapwrite-details-page"
           placeholder="Add description..."
-          uploadFn={async (file, tiptapEditorUtils) => {
+          uploadFn={async (file) => {
             const supabaseActions = new SupabaseActions()
             const fileName = generateRandomString(file.name)
             const signedUrl: ISignedUrlUpload = await getSignedUrlUpload(fileName)
@@ -169,8 +169,9 @@ export const TaskEditor = ({
             const url = await getSignedUrlFile(filePayload?.filePath ?? '')
             if (url) {
               supabaseActions.getFilePathFromUrl(url)
-              tiptapEditorUtils.setImage(url, fileName)
+              return url
             }
+            return ''
           }}
           deleteEditorAttachments={async (id: string) => {
             const supabaseActions = new SupabaseActions()
