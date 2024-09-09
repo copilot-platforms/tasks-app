@@ -77,8 +77,9 @@ export const DragDropHandler = ({
   const dropHoverStyles =
     isOver && canDrop
       ? {
-          border: '0.5px solid #212B36',
+          border: '0.5px solid #C9CBCD',
           borderRadius: view === View.BOARD_VIEW ? '4px' : '0px',
+          backgroundColor: '#F8F9FB',
         }
       : { border: '0.5px solid transparent' }
 
