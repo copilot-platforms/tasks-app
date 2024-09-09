@@ -166,12 +166,10 @@ export const TaskEditor = ({
             const fileName = generateRandomString(file.name)
             const signedUrl: ISignedUrlUpload = await getSignedUrlUpload(fileName)
             const filePayload = await supabaseActions.uploadAttachment(file, signedUrl, task_id)
+            console.log('check', filePayload)
             const url = await getSignedUrlFile(filePayload?.filePath ?? '')
-            if (url) {
-              supabaseActions.getFilePathFromUrl(url)
-              return url
-            }
-            return ''
+            console.log(url)
+            return url
           }}
           deleteEditorAttachments={async (id: string) => {
             const supabaseActions = new SupabaseActions()
