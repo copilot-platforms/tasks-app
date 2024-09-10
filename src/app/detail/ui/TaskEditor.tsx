@@ -118,7 +118,7 @@ export const TaskEditor = ({
     detailsUpdateDebounced(content)
     debouncedResetTypingFlag()
   }
-
+  console.log('description : ', updateDetail)
   return (
     <>
       <StyledTextField
