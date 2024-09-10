@@ -16,9 +16,11 @@ import { useRouter } from 'next/navigation'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { SupabaseActions } from '@/utils/SupabaseActions'
 import { generateRandomString } from '@/utils/generateRandomString'
+import { TaskResponse } from '@/types/dto/tasks.dto'
 
 interface Prop {
   task_id: string
+  task: TaskResponse
   // attachment: AttachmentResponseSchema[]
   isEditable: boolean
   updateTaskDetail: (detail: string) => void
@@ -33,6 +35,7 @@ interface Prop {
 
 export const TaskEditor = ({
   task_id,
+  task,
   // attachment,
   isEditable,
   updateTaskDetail,
@@ -66,7 +69,7 @@ export const TaskEditor = ({
 
   useEffect(() => {
     if (!isUserTyping) {
-      const currentTask = tasks.find((el) => el.id === task_id)
+      const currentTask = task
       if (currentTask) {
         setUpdateTitle(currentTask.title || '')
         setUpdateDetail(currentTask.body ?? '')
@@ -118,7 +121,7 @@ export const TaskEditor = ({
     detailsUpdateDebounced(content)
     debouncedResetTypingFlag()
   }
-  console.log('description : ', updateDetail)
+
   return (
     <>
       <StyledTextField
@@ -157,7 +160,7 @@ export const TaskEditor = ({
       <Box mt="12px" sx={{ height: '100%' }}>
         <Tapwrite
           content={updateDetail}
-          getContent={handleDetailChange}
+          getContent={updateTaskDetail}
           readonly={userType === UserType.CLIENT_USER}
           editorClass="tapwrite-details-page"
           placeholder="Add description..."
@@ -175,15 +178,6 @@ export const TaskEditor = ({
           deleteEditorAttachments={async (id: string) => {
             const supabaseActions = new SupabaseActions()
             await supabaseActions.removeAttachment(id)
-          }}
-          refreshUrl={async (url) => {
-            console.log('testing previous url', url)
-            const supabaseActions = new SupabaseActions()
-            const filePath = await supabaseActions.getFilePathFromUrl(url)
-            console.log(filePath)
-            const replacingUrl = filePath ? await getSignedUrlFile(filePath) : ''
-            console.log('replaced url', replacingUrl)
-            return replacingUrl
           }}
         />
       </Box>
