@@ -69,7 +69,7 @@ export const TaskEditor = ({
 
   useEffect(() => {
     if (!isUserTyping) {
-      const currentTask = task
+      const currentTask = tasks.find((el) => el.id === task_id)
       if (currentTask) {
         setUpdateTitle(currentTask.title || '')
         setUpdateDetail(currentTask.body ?? '')
@@ -160,7 +160,7 @@ export const TaskEditor = ({
       <Box mt="12px" sx={{ height: '100%' }}>
         <Tapwrite
           content={updateDetail}
-          getContent={updateTaskDetail}
+          getContent={handleDetailChange}
           readonly={userType === UserType.CLIENT_USER}
           editorClass="tapwrite-details-page"
           placeholder="Add description..."
@@ -170,9 +170,7 @@ export const TaskEditor = ({
             const fileName = generateRandomString(file.name)
             const signedUrl: ISignedUrlUpload = await getSignedUrlUpload(fileName)
             const filePayload = await supabaseActions.uploadAttachment(file, signedUrl, task_id)
-            console.log('check', filePayload)
             const url = await getSignedUrlFile(filePayload?.filePath ?? '')
-            console.log(url)
             return url
           }}
           deleteEditorAttachments={async (id: string) => {
