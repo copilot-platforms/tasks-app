@@ -541,7 +541,7 @@ export class TasksService extends BaseService {
 
   async getSignedUrl(filePath: string) {
     const supabase = new SupabaseService()
-    const { data, error } = await supabase.supabase.storage.from(supabaseBucket).createSignedUrl(filePath, 60) // only 60 seconds expiry time here for testing purposes
+    const { data, error } = await supabase.supabase.storage.from(supabaseBucket).createSignedUrl(filePath, 60 * 60)
     if (error) {
       console.log(error)
       throw new APIError(httpStatus.BAD_REQUEST)
