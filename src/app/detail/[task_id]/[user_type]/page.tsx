@@ -38,6 +38,7 @@ import { CustomLink } from '@/hoc/CustomLink'
 import { DetailStateUpdate } from '@/app/detail/[task_id]/[user_type]/DetailStateUpdate'
 import { SilentError } from '@/components/templates/SilentError'
 import { z } from 'zod'
+import { extractImageUrls } from '@/utils/imageReplacer'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
@@ -81,6 +82,26 @@ export default async function TaskDetailPage({
   if (!tokenPayload) {
     throw new Error('Please provide a Valid Token')
   }
+
+  const images = await extractImageUrls(task.body as string)
+
+  await Promise.all(
+    images.map(async (url) => {
+      return new Promise(async (resolve, reject) => {
+        try {
+          const response = await fetch(url)
+          if (response.ok) {
+            resolve(true)
+            console.log('fetched')
+          } else {
+            reject(`Failed to load image: ${url}`)
+          }
+        } catch (error) {
+          reject(`Error fetching image: ${url}, ${error}`)
+        }
+      })
+    }),
+  )
 
   console.info(`app/detail/${task_id}/${user_type}/page.tsx | Serving user ${token} with payload`, tokenPayload)
 

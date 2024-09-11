@@ -15,12 +15,12 @@ export async function replaceImageSrc(htmlString: string, getSignedUrl: (filePat
       const newUrl = await getSignedUrl(filePath)
       if (newUrl) {
         try {
+          console.log('try fetching', newUrl)
           await fetch(newUrl)
         } catch (err) {
           throw new APIError(404, 'Failed to prefectch image, image url not found')
         }
       }
-
       newUrl && replacements.push({ originalSrc, newUrl })
     }
   }
@@ -48,4 +48,18 @@ async function getFilePathFromUrl(url: string) {
     console.error('Invalid URL:', error)
     return null
   }
+}
+
+export async function extractImageUrls(htmlString: string): Promise<string[]> {
+  const imgTagRegex = /<img\s+[^>]*src="([^"]+)"[^>]*>/g
+  const imageUrls: string[] = []
+  let match
+
+  // Collect all image URLs
+  while ((match = imgTagRegex.exec(htmlString)) !== null) {
+    const imageUrl = match[1]
+    imageUrls.push(imageUrl)
+  }
+
+  return imageUrls
 }
