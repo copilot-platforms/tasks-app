@@ -1,4 +1,5 @@
-import { SupabaseActions } from './SupabaseActions'
+import APIError from '@/app/api/core/exceptions/api'
+import { SupabaseActions } from '@/utils/SupabaseActions'
 
 export async function replaceImageSrc(htmlString: string, getSignedUrl: (filePath: string) => Promise<string>) {
   const imgTagRegex = /<img\s+[^>]*src="([^"]+)"[^>]*>/g
@@ -12,6 +13,13 @@ export async function replaceImageSrc(htmlString: string, getSignedUrl: (filePat
     const filePath = await getFilePathFromUrl(originalSrc)
     if (filePath) {
       const newUrl = await getSignedUrl(filePath)
+      if (newUrl) {
+        try {
+          await fetch(newUrl)
+        } catch (err) {
+          throw new APIError(404, 'Failed to prefectch image, image url not found')
+        }
+      }
 
       newUrl && replacements.push({ originalSrc, newUrl })
     }
