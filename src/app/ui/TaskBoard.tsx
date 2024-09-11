@@ -21,6 +21,8 @@ import { FilterBar } from '@/components/layouts/FilterBar'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { CustomLink } from '@/hoc/CustomLink'
 import { sortTaskByDescendingOrder } from '@/utils/sortTask'
+import { CustomDragLayer } from '@/components/CustomDragLayer'
+import { CardDragLayer } from '@/components/cards/CardDragLayer'
 import { UserRole } from '@api/core/types/user'
 import { clientUpdateTask } from '@/app/detail/[task_id]/[user_type]/actions'
 
@@ -47,16 +49,10 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
     [token],
   )
 
-  /**
-   * This function is responsible for returning the tasks that matches the workflowStateId of the workflowState
-   */
   const filterTaskWithWorkflowStateId = (workflowStateId: string): TaskResponse[] => {
     return filteredTasks.filter((task) => task.workflowStateId === workflowStateId)
   }
 
-  /**
-   * This function is responsible for calculating the task count based on the workflowStateId
-   */
   const taskCountForWorkflowStateId = (workflowStateId: string): string => {
     const taskCount = tasks.filter((task) => task.workflowStateId === workflowStateId).length
     const filteredTaskCount = filteredTasks.filter((task) => task.workflowStateId === workflowStateId).length
@@ -70,6 +66,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
   if (tasks && tasks.length === 0) {
     return <DashboardEmptyState userType={mode} />
   }
+
   const viewBoardSettings = viewSettingsTemp ? viewSettingsTemp.viewMode : view
   const getCardHref = (task: { id: string }) => `/detail/${task.id}/${mode === UserRole.IU ? 'iu' : 'cu'}`
 
@@ -83,16 +80,23 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
         }}
       />
       {viewBoardSettings === View.BOARD_VIEW && (
-        <Box sx={{ padding: '20px 20px' }}>
+        <Box sx={{ padding: '12px 12px' }}>
           <Stack
-            columnGap={6}
+            columnGap={2}
             sx={{
               flexDirection: 'row',
               overflowX: 'auto',
             }}
           >
             {workflowStates.map((list, index) => (
-              <DragDropHandler key={list.id} accept={'taskCard'} index={index} id={list.id} onDropItem={onDropItem}>
+              <DragDropHandler
+                key={list.id}
+                accept={'taskCard'}
+                index={index}
+                id={list.id}
+                onDropItem={onDropItem}
+                droppable // Make TaskColumn droppable
+              >
                 <TaskColumn
                   key={list.id}
                   mode={mode}
@@ -104,10 +108,17 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
                     <Stack direction="column" rowGap="6px" sx={{ overflowX: 'auto' }}>
                       {sortTaskByDescendingOrder(filterTaskWithWorkflowStateId(list.id)).map((task, index) => {
                         return (
-                          <DragDropHandler key={task.id} accept={'taskCard'} index={index} id={task.id || ''} draggable>
-                            <CustomLink
-                              href={{ pathname: getCardHref(task), query: { token } }}
-                              style={{ width: 'fit-content' }}
+                          <CustomLink
+                            key={task.id}
+                            href={{ pathname: getCardHref(task), query: { token } }}
+                            style={{ width: 'fit-content' }}
+                          >
+                            <DragDropHandler
+                              key={task.id}
+                              accept={'taskCard'}
+                              index={index}
+                              task={task}
+                              draggable // Make TaskCard draggable
                             >
                               <Box key={task.id}>
                                 <TaskCard
@@ -116,8 +127,8 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
                                   href={{ pathname: getCardHref(task), query: { token } }}
                                 />
                               </Box>
-                            </CustomLink>
-                          </DragDropHandler>
+                            </DragDropHandler>
+                          </CustomLink>
                         )
                       })}
                     </Stack>
@@ -134,11 +145,20 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
           sx={{
             flexDirection: 'column',
             height: 'calc(100vh - 135px)',
+            width: '99.92%',
+            margin: '0 auto',
           }}
         >
           <CustomScrollbar style={{ width: '8px' }}>
             {workflowStates.map((list, index) => (
-              <DragDropHandler key={list.id} accept={'taskCard'} index={index} id={list.id} onDropItem={onDropItem}>
+              <DragDropHandler
+                key={list.id}
+                accept={'taskCard'}
+                index={index}
+                id={list.id}
+                onDropItem={onDropItem}
+                droppable // Make TaskRow droppable
+              >
                 <TaskRow
                   mode={mode}
                   workflowStateId={list.id}
@@ -149,8 +169,14 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
                 >
                   {sortTaskByDescendingOrder(filterTaskWithWorkflowStateId(list.id)).map((task, index) => {
                     return (
-                      <DragDropHandler key={task.id} accept={'taskCard'} index={index} id={task.id || ''} draggable>
-                        <CustomLink href={{ pathname: getCardHref(task), query: { token } }}>
+                      <CustomLink key={task.id} href={{ pathname: getCardHref(task), query: { token } }}>
+                        <DragDropHandler
+                          key={task.id}
+                          accept={'taskCard'}
+                          index={index}
+                          task={task}
+                          draggable // Make ListViewTaskCard draggable
+                        >
                           <ListViewTaskCard
                             key={task.id}
                             task={task}
@@ -159,8 +185,8 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
                               updateTask({ token: z.string().parse(token), taskId: task.id, payload })
                             }}
                           />
-                        </CustomLink>
-                      </DragDropHandler>
+                        </DragDropHandler>
+                      </CustomLink>
                     )
                   })}
                 </TaskRow>
@@ -169,6 +195,9 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
           </CustomScrollbar>
         </Stack>
       )}
+      <CustomDragLayer>
+        <CardDragLayer />
+      </CustomDragLayer>
     </>
   )
 }
