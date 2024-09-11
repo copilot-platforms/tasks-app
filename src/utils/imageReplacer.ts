@@ -15,7 +15,7 @@ export async function replaceImageSrc(htmlString: string, getSignedUrl: (filePat
       const newUrl = await getSignedUrl(filePath)
       if (newUrl) {
         try {
-          console.log('try fetching', newUrl)
+          console.log('try fetching', originalSrc, newUrl)
           await fetch(newUrl)
         } catch (err) {
           throw new APIError(404, 'Failed to prefectch image, image url not found')
