@@ -546,7 +546,8 @@ export class TasksService extends BaseService {
       console.log(error)
       throw new APIError(httpStatus.BAD_REQUEST)
     }
-
-    return data.signedUrl
+    const url = data.signedUrl
+    url && (await fetch(url))
+    return url
   } // used to replace urls for images in task body
 }
