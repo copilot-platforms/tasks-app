@@ -164,7 +164,7 @@ export class TasksService extends BaseService {
     if (!task) throw new APIError(httpStatus.NOT_FOUND, 'The requested task was not found')
 
     task.body = task.body && (await replaceImageSrc(task.body, this.getSignedUrl))
-
+    console.log('prefetching replacements')
     return task
   }
 
