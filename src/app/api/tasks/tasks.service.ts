@@ -547,14 +547,6 @@ export class TasksService extends BaseService {
       throw new APIError(httpStatus.BAD_REQUEST)
     }
     const url = data.signedUrl
-    const prefetchStartTime = Date.now()
-    url &&
-      (await fetch(url, {
-        headers: {
-          'Cache-Control': 'max-age=3600',
-        },
-      }))
-    console.log('Image prefetch time:', Date.now() - prefetchStartTime, 'ms')
     return url
   } // used to replace urls for images in task body
 }
