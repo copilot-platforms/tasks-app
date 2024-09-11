@@ -10,14 +10,7 @@ import Selector, { SelectorType } from '@/components/inputs/Selector'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { useSelector } from 'react-redux'
-import {
-  FilterByOptions,
-  FilterOptions,
-  FilterOptionsKeywords,
-  IAssigneeCombined,
-  IFilterOptions,
-  handleSelectorComponentModes,
-} from '@/types/interfaces'
+import { FilterByOptions, FilterOptions, FilterOptionsKeywords, IAssigneeCombined, IFilterOptions } from '@/types/interfaces'
 import { CrossIcon, FilterByAsigneeIcon } from '@/icons'
 import { ViewModeSelector } from '../inputs/ViewModeSelector'
 import { FilterByAssigneeBtn } from '../buttons/FilterByAssigneeBtn'
@@ -83,19 +76,17 @@ export const FilterBar = ({
   const { tokenPayload } = useSelector(selectAuthDetails)
   const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
     item:
-      viewModeFilterOptions.assignee === 'No assignee'
+      viewModeFilterOptions.assignee == 'No assignee'
         ? NoAssigneeExtraOptions
         : filteredAssigneeList.find((item) => item.id == viewModeFilterOptions.assignee),
     type: SelectorType.ASSIGNEE_SELECTOR,
-    mode: handleSelectorComponentModes.CreateTaskFieldUpdate,
   })
   useFilter(viewSettingsTemp ? viewSettingsTemp.filterOptions : filterOptions)
   const filterButtons = [
     {
       name: 'My tasks',
       onClick: () => {
-        const selfAssigneeId = IUTokenSchema.parse(tokenPayload).internalUserId
-        handleFilterOptionsChange(FilterOptions.TYPE, selfAssigneeId)
+        handleFilterOptionsChange(FilterOptions.TYPE, IUTokenSchema.parse(tokenPayload)?.internalUserId)
         updateAssigneeValue(null)
         filterOptions.assignee !== '' && handleFilterOptionsChange(FilterOptions.ASSIGNEE, '')
       },

@@ -18,10 +18,9 @@ import { z } from 'zod'
 import { ClientResponse, CompanyResponse, InternalUsers, NotificationCreatedResponseSchema } from '@/types/common'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { replaceImageSrc } from '@/utils/imageReplacer'
-import { SupabaseService } from '@api/core/services/supabase.service'
-
+import { SupabaseService } from '../core/services/supabase.service'
 import { supabaseBucket } from '@/config'
-import Bottleneck from 'bottleneck'
+import { AttachmentsService } from '../attachments/attachments.service'
 
 type FilterByAssigneeId = {
   assigneeId: string
@@ -316,8 +315,7 @@ export class TasksService extends BaseService {
   }
 
   async clientUpdateTask(id: string, targetWorkflowStateId?: string | null) {
-    // Apply custom authorization here. Policy service is not used because this api is for client's Mark done
-    // function only. Only clients can use this.
+    //Apply custom authorization here. Policy service is not used because this api is for client's Mark done function only. Only clients can use this.
     if (this.user.role === UserRole.IU) {
       throw new APIError(httpStatus.UNAUTHORIZED, 'You are not authorized to perform this action')
     }
@@ -373,9 +371,8 @@ export class TasksService extends BaseService {
 
     // If task has been moved to completed from a non-complete state, remove all notification counts
     if (updatedWorkflowState?.type === StateType.completed && prevTask.workflowState.type !== StateType.completed) {
-      const copilot = new CopilotAPI(this.user.token)
       if (updatedTask.assigneeType === AssigneeType.company) {
-        // Handle company task completed
+        const copilot = new CopilotAPI(this.user.token)
         const { recipientIds } = await notificationService.getNotificationParties(
           copilot,
           updatedTask,
@@ -388,25 +385,7 @@ export class TasksService extends BaseService {
         )
         await notificationService.markAsReadForAllRecipients(updatedTask)
       } else {
-        // Handle client task completed
-        const internalUsers = await copilot.getInternalUsers()
-        const client = await copilot.getClient(z.string().parse(updatedTask.assigneeId))
-        const relavantInternalUsers = internalUsers.data.filter((iu) => {
-          // Case I: IU has full access
-          if (!iu.isClientAccessLimited) return true
-          // Case II: IU has limited access in which case it must have a valid companyAccessList
-          return iu.companyAccessList?.includes(client.companyId)
-        })
-        const notificationPromises = []
-        const bottleneck = new Bottleneck({ minTime: 250, maxConcurrent: 2 })
-        for (let iu of relavantInternalUsers) {
-          notificationPromises.push(
-            bottleneck.schedule(() =>
-              notificationService.create(NotificationTaskActions.Completed, updatedTask, { customRecipientId: iu.id }),
-            ),
-          )
-        }
-        await Promise.all(notificationPromises)
+        await notificationService.create(NotificationTaskActions.Completed, updatedTask)
         await notificationService.markClientNotificationAsRead(updatedTask)
       }
     }
@@ -414,11 +393,13 @@ export class TasksService extends BaseService {
   }
 
   private async sendUserTaskNotification(task: Task, notificationService: NotificationService, isReassigned = false) {
-    //! In future when reassignment is supported, change this logic to support reassigned to client as well
     const notification = await notificationService.create(
+      //! In future when reassignment is supported, change this logic to support reassigned to client as well
       isReassigned ? NotificationTaskActions.ReassignedToIU : NotificationTaskActions.Assigned,
       task,
-      { disableEmail: task.assigneeType === AssigneeType.internalUser },
+      {
+        email: task.assigneeType === AssigneeType.internalUser,
+      },
     )
     // Create a new entry in ClientNotifications table so we can mark as read on
     // behalf of client later
@@ -532,7 +513,7 @@ export class TasksService extends BaseService {
             updatedTask.assigneeType === AssigneeType.company
               ? NotificationTaskActions.CompletedForCompanyByIU
               : NotificationTaskActions.CompletedByIU
-          await notificationService.create(action, updatedTask, { disableEmail: true })
+          await notificationService.create(action, updatedTask, { email: true })
         }
       }
 
