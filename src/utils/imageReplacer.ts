@@ -13,16 +13,16 @@ export async function replaceImageSrc(htmlString: string, getSignedUrl: (filePat
     const filePath = await getFilePathFromUrl(originalSrc)
     if (filePath) {
       const newUrl = await getSignedUrl(filePath)
-
+      if (newUrl) {
+        try {
+          console.log('try fetching', newUrl)
+          await fetch(newUrl)
+        } catch (err) {
+          throw new APIError(404, 'Failed to prefectch image, image url not found')
+        }
+      }
       newUrl && replacements.push({ originalSrc, newUrl })
     }
-  }
-
-  const fetchPromises = replacements.map(({ newUrl }) => fetch(newUrl))
-  try {
-    await Promise.all(fetchPromises)
-  } catch (err) {
-    console.error('Failed to prefetch images', err)
   }
 
   // Second pass: apply all replacements
