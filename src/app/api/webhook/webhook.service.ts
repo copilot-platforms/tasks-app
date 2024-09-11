@@ -121,8 +121,6 @@ class WebhookService extends BaseService {
   }
 
   async handleUserDeleted(assigneeId: string, assigneeType: AssigneeType) {
-    if (assigneeType === AssigneeType.company) return
-
     const tasksService = new TasksService(this.user)
     // Delete corresponding tasks
     console.info(`Deleting all tasks for ${assigneeType} ${assigneeId}`)
@@ -190,6 +188,8 @@ class WebhookService extends BaseService {
         workflowState: {
           type: { not: StateType.completed },
         },
+        // Fetch both deleted and non-deleted tasks to prevent race-condition of company tasks being deleted first
+        deletedAt: undefined,
       },
     })
     const prevCompanyTaskIds = prevCompanyTasks.map((task) => task.id)

@@ -22,34 +22,38 @@ export const RealTime = ({ children }: { children: ReactNode }) => {
   const router = useRouter()
 
   const handleTaskRealTimeUpdates = (payload: RealtimePostgresChangesPayload<RealTimeTaskResponse>) => {
-    if (payload.eventType === 'INSERT') {
-      //check if the new task in this event belongs to the same workspaceId
-      if (payload.new.workspaceId === tokenPayload?.workspaceId) {
-        store.dispatch(setTasks([...tasks, payload.new]))
-      }
-    }
-    if (payload.eventType === 'UPDATE') {
-      const updatedTask = payload.new
-      //check if the new task in this event belongs to the same workspaceId
-      if (payload.new.workspaceId === tokenPayload?.workspaceId) {
-        //if the task is deleted
-        if (updatedTask.deletedAt) {
-          const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
-          store.dispatch(setTasks(newTaskArr))
-          //if a user is in the details page when the task is deleted then we want the user to get redirected to '/' route
-          if (pathname.includes('detail')) {
-            if (pathname.includes('cu')) {
-              router.push(`/client?token=${token}`)
-            } else {
-              router.push(`/?token=${token}`)
-            }
-          }
-          //if the task is updated
-        } else {
-          const newTaskArr = [...tasks.filter((task) => task.id !== updatedTask.id), updatedTask]
-          store.dispatch(setTasks(newTaskArr))
+    try {
+      if (payload.eventType === 'INSERT') {
+        //check if the new task in this event belongs to the same workspaceId
+        if (payload.new.workspaceId === tokenPayload?.workspaceId) {
+          store.dispatch(setTasks([...tasks, payload.new]))
         }
       }
+      if (payload.eventType === 'UPDATE') {
+        const updatedTask = payload.new
+        //check if the new task in this event belongs to the same workspaceId
+        if (payload.new.workspaceId === tokenPayload?.workspaceId) {
+          //if the task is deleted
+          if (updatedTask.deletedAt) {
+            const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
+            store.dispatch(setTasks(newTaskArr))
+            //if a user is in the details page when the task is deleted then we want the user to get redirected to '/' route
+            if (pathname.includes('detail')) {
+              if (pathname.includes('cu')) {
+                router.push(`/client?token=${token}`)
+              } else {
+                router.push(`/?token=${token}`)
+              }
+            }
+            //if the task is updated
+          } else {
+            const newTaskArr = [...tasks.filter((task) => task.id !== updatedTask.id), updatedTask]
+            store.dispatch(setTasks(newTaskArr))
+          }
+        }
+      }
+    } catch (err: unknown) {
+      console.error('Error fetching realtime tasks:', err)
     }
   }
 
