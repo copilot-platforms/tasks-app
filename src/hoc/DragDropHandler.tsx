@@ -34,18 +34,17 @@ export const DragDropHandler = ({
   const { view } = useSelector(selectTaskBoard)
   const ref = useRef<HTMLDivElement | null>(null)
 
-  const [{ isOver, canDrop }, drop] = useDrop({
+  const [{ isOver, canDrop }, drop] = useDrop<{ task: TaskResponse }, unknown, { isOver: boolean; canDrop: boolean }>({
     accept: accept,
     collect: (monitor: DropTargetMonitor) => ({
       isOver: monitor.isOver(),
       canDrop: monitor.canDrop(),
     }),
-    drop: (item: unknown, monitor) => {
-      if (onDropItem) {
+    drop: (item, monitor) => {
+      if (onDropItem && id) {
         onDropItem({
-          // taskId: (item as { taskId: string }).taskId,
-          taskId: (item as { task: TaskResponse }).task.id,
-          targetWorkflowStateId: id as string,
+          taskId: item.task.id,
+          targetWorkflowStateId: id,
         })
       }
     },
