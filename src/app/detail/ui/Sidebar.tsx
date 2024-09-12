@@ -24,6 +24,8 @@ import { setDebouncedFilteredAssignees } from '@/utils/users'
 import { z } from 'zod'
 import { getAssigneeName, isAssigneeTextMatching } from '@/utils/assignee'
 import { DateStringSchema } from '@/types/date'
+import { useWindowWidth } from '@/hooks/useWindowWidth'
+import store from '@/redux/store'
 
 const StyledText = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[500],
@@ -79,7 +81,15 @@ export const Sidebar = ({
     }
   }, [tasks, workflowStates])
 
-  const matches = useMediaQuery('(max-width:600px)')
+  const windowWidth = useWindowWidth()
+  const isMobile = windowWidth < 600 && windowWidth !== 0
+
+  useEffect(() => {
+    if (isMobile) {
+      store.dispatch(setShowSidebar(false))
+    }
+  }, [isMobile])
+
   if (!tasks) return null
 
   return (
@@ -88,7 +98,7 @@ export const Sidebar = ({
         borderLeft: (theme) => `1px solid ${theme.color.borders.border2}`,
         height: '100vh',
         display: showSidebar ? 'block' : 'none',
-        width: matches && showSidebar ? '100vw' : '25vw',
+        width: isMobile && showSidebar ? '100vw' : '25vw',
       }}
     >
       <Stack direction="row" justifyContent="space-between" alignItems="center">
@@ -101,7 +111,7 @@ export const Sidebar = ({
           <Typography variant="sm">Properties</Typography>
           <Box
             sx={{
-              display: matches ? 'block' : 'none',
+              display: isMobile ? 'block' : 'none',
             }}
           >
             <ToggleButtonContainer />
@@ -215,15 +225,23 @@ export const Sidebar = ({
 }
 
 export const SidebarSkeleton = () => {
-  const matches = useMediaQuery('(max-width:600px)')
+  const { showSidebar } = useSelector(selectTaskDetails)
+  const windowWidth = useWindowWidth()
+  const isMobile = windowWidth < 600 && windowWidth !== 0
+
+  useEffect(() => {
+    if (isMobile) {
+      store.dispatch(setShowSidebar(false))
+    }
+  }, [isMobile])
 
   return (
     <Box
       sx={{
         borderLeft: (theme) => `1px solid ${theme.color.borders.border2}`,
         height: '100vh',
-        display: 'block',
-        width: matches ? '100vw' : '25vw',
+        display: showSidebar ? 'block' : 'none',
+        width: isMobile && showSidebar ? '100vw' : '25vw',
       }}
     >
       <Stack direction="row" justifyContent="space-between" alignItems="center">
@@ -236,7 +254,7 @@ export const SidebarSkeleton = () => {
           <Typography variant="sm">Properties</Typography>
           <Box
             sx={{
-              display: matches ? 'block' : 'none',
+              display: isMobile ? 'block' : 'none',
             }}
           >
             <ToggleButtonContainer />
