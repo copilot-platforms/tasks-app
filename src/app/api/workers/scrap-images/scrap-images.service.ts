@@ -26,8 +26,11 @@ export class ScrapImageService extends BaseService {
         where: { id: image.id },
       })
       if (task && (task.body as string).includes(image.filePath)) {
+        console.log('test : not deleting', image.filePath)
         continue
       }
+      console.log('test : deleting', image.filePath)
+
       await supabase.supabase.storage.from(supabaseBucket).remove([image.filePath])
     }
   }
