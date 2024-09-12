@@ -1,7 +1,7 @@
 {
   "crons": [
     {
-      "path": "/api/workers/scrap-images?token=0334ecb305121f44e837285c8f4f5c38cee688d234cdf1be29fb35625745c1d76bb8c3ee85037c2dd50522fd6900917217d2dca6ca0cb8c1f7bd34477c39e4fbedee53da5b66301d552f94efe728fe767faffb5b56495be64bcb6e98cf3f59c3d74bd50057168686ebee26889ebd8add",
+      "path": "/api/workers/scrap-images?token=6559770291f74c12191e5abcf0d06c4a42e0a239967f9edd85acdc2305f25f2ff69eb2cac76f8ca1627a657cada3964519764c4b90b0d96b5b809c1e5f661d81c28fe6f5bcf9be28b4c9907813e14b6875ec41826f93451d2602a00c62883ab04ff721eb6fbb9b056003246bcb67e91f",
       "schedule": "*/3 * * * *"
     }
   ]
