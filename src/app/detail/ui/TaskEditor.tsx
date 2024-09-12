@@ -17,8 +17,6 @@ import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { SupabaseActions } from '@/utils/SupabaseActions'
 import { generateRandomString } from '@/utils/generateRandomString'
 import { TaskResponse } from '@/types/dto/tasks.dto'
-import { ScrapImageRequest } from '@/types/common'
-import { getFilePathFromUrl } from '@/utils/imageReplacer'
 
 interface Prop {
   task_id: string
@@ -32,7 +30,6 @@ interface Prop {
   deleteAttachment: (id: string) => void
   getSignedUrlUpload: (fileName: string) => Promise<ISignedUrlUpload>
   getSignedUrlFile: (filePath: string) => Promise<string>
-  postScrapImage: (payload: ScrapImageRequest) => void
   userType: UserType
 }
 
@@ -48,7 +45,6 @@ export const TaskEditor = ({
   deleteAttachment,
   getSignedUrlUpload,
   getSignedUrlFile,
-  postScrapImage,
   userType,
 }: Prop) => {
   const [updateTitle, setUpdateTitle] = useState('')
@@ -177,15 +173,9 @@ export const TaskEditor = ({
             const url = await getSignedUrlFile(filePayload?.filePath ?? '')
             return url
           }}
-          deleteEditorAttachments={async (url: string) => {
-            const filePath = getFilePathFromUrl(url)
-            if (filePath) {
-              const payload: ScrapImageRequest = {
-                filePath: filePath,
-                taskId: task_id,
-              }
-              postScrapImage(payload)
-            }
+          deleteEditorAttachments={async (id: string) => {
+            const supabaseActions = new SupabaseActions()
+            await supabaseActions.removeAttachment(id)
           }}
         />
       </Box>

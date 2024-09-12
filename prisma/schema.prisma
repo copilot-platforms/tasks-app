@@ -58,7 +58,6 @@ model Task {
   attachments     Attachment[]
   activityLog     ActivityLog[]
   comments        Comment[]
-  scrapImages     ScrapImages[]
 
   assignedAt               DateTime?
   completedAt              DateTime?
@@ -212,18 +211,4 @@ model Label {
   deletedAt      DateTime? @db.Timestamptz()
 
   @@map("Labels")
-}
-
-model ScrapImages {
-  id          String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  filePath    String       @unique
-  taskId      String       @db.Uuid
-  task        Task         @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  createdAt   DateTime     @default(now()) @db.Timestamptz()
-  updatedAt   DateTime     @updatedAt @db.Timestamptz()
-  deletedAt   DateTime?    @db.Timestamptz()
-
-  @@index([createdAt])
-  @@map("ScrapImages")
-
 }

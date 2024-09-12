@@ -5,7 +5,6 @@ import { IdParams } from '@api/core/types/api'
 import httpStatus from 'http-status'
 import authenticate from '@api/core/utils/authenticate'
 import { unstable_noStore as noStore } from 'next/cache'
-import { ScrapImageRequestSchema } from '@/types/common'
 
 export const getTasks = async (req: NextRequest) => {
   noStore()
@@ -58,15 +57,4 @@ export const clientUpdateTask = async (req: NextRequest, { params: { id } }: IdP
   const tasksService = new TasksService(user)
   const updatedTask = await tasksService.clientUpdateTask(id, workflowStateId)
   return NextResponse.json({ updatedTask })
-}
-
-export const PostScrapImage = async (req: NextRequest) => {
-  const user = await authenticate(req)
-  const scrapImageService = new TasksService(user)
-  console.log('hit')
-  const data = ScrapImageRequestSchema.parse(await req.json())
-  console.log('hit')
-
-  const newScrapImage = await scrapImageService.createScrapImage(data)
-  return NextResponse.json({})
 }

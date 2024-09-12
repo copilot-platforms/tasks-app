@@ -1,7 +1,6 @@
 'use server'
 
 import { advancedFeatureFlag, apiUrl } from '@/config'
-import { ScrapImageRequest } from '@/types/common'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { CreateComment } from '@/types/dto/comment.dto'
 import { UpdateTaskRequest } from '@/types/dto/tasks.dto'
@@ -106,11 +105,4 @@ export const deleteComment = async (token: string, id: string) => {
     method: 'DELETE',
   })
   revalidateTag('getActivities')
-}
-
-export const postScrapImage = async (token: string, payload: ScrapImageRequest) => {
-  await fetch(`${apiUrl}/api/tasks/${payload.taskId}/scrap-image/?token=${token}`, {
-    method: 'POST',
-    body: JSON.stringify(payload),
-  })
 }

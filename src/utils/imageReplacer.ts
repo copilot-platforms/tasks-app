@@ -25,12 +25,19 @@ export async function replaceImageSrc(htmlString: string, getSignedUrl: (filePat
   return htmlString
 }
 
-export function getFilePathFromUrl(url: string) {
-  const parsedUrl = new URL(url)
-  const pathname = parsedUrl.pathname
-  const mediaIndex = pathname.indexOf('/media/')
-  if (mediaIndex !== -1) {
-    const filePath = pathname.substring(mediaIndex + '/media/'.length)
-    return filePath
+async function getFilePathFromUrl(url: string) {
+  try {
+    if (url) {
+      const parsedUrl = new URL(url)
+      const pathname = parsedUrl.pathname
+      const mediaIndex = pathname.indexOf('/media/')
+      if (mediaIndex !== -1) {
+        const filePath = pathname.substring(mediaIndex + '/media/'.length)
+        return filePath
+      }
+    }
+  } catch (error) {
+    console.error('Invalid URL:', error)
+    return null
   }
 }

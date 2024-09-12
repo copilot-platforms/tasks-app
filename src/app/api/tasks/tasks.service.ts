@@ -15,17 +15,12 @@ import { WorkflowStateUpdatedSchema } from '@api/activity-logs/schemas/WorkflowS
 import { NotificationService } from '@api/notification/notification.service'
 import { LabelMappingService } from '@api/label-mapping/label-mapping.service'
 import { z } from 'zod'
-import {
-  ClientResponse,
-  CompanyResponse,
-  InternalUsers,
-  NotificationCreatedResponseSchema,
-  ScrapImageRequest,
-} from '@/types/common'
+import { ClientResponse, CompanyResponse, InternalUsers, NotificationCreatedResponseSchema } from '@/types/common'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { replaceImageSrc } from '@/utils/imageReplacer'
 import { SupabaseService } from '../core/services/supabase.service'
 import { supabaseBucket } from '@/config'
+import { AttachmentsService } from '../attachments/attachments.service'
 
 type FilterByAssigneeId = {
   assigneeId: string
@@ -554,22 +549,4 @@ export class TasksService extends BaseService {
     const url = data.signedUrl
     return url
   } // used to replace urls for images in task body
-
-  async createScrapImage(data: ScrapImageRequest) {
-    const policyGate = new PoliciesService(this.user)
-    policyGate.authorize(UserAction.Update, Resource.Tasks)
-    console.log(data)
-    const existing = await this.db.scrapImages.findFirst({
-      where: {
-        filePath: data.filePath,
-      },
-    })
-    if (!existing) {
-      await this.db.scrapImages.create({
-        data: {
-          ...data,
-        },
-      })
-    }
-  }
 }
