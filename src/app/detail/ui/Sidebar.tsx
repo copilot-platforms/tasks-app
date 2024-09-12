@@ -262,19 +262,19 @@ export const SidebarSkeleton = () => {
         </StyledBox>
       </Stack>
       <AppMargin size={SizeofAppMargin.SMALL}>
-        <Stack direction="row" alignItems="center" m="20px 0px" columnGap="10px">
+        <Stack direction="row" alignItems="center" m="25px 0px" columnGap="10px">
           <StyledText variant="md" minWidth="80px">
             Status
           </StyledText>
           <Skeleton variant="rectangular" width={120} height={15} />
         </Stack>
-        <Stack direction="row" m="20px 0px" alignItems="center" columnGap="10px">
+        <Stack direction="row" m="30px 0px" alignItems="center" columnGap="10px">
           <StyledText variant="md" minWidth="80px">
             Assignee
           </StyledText>
           <Skeleton variant="rectangular" width={120} height={15} />
         </Stack>
-        <Stack direction="row" m="20px 0px" alignItems="center" columnGap="10px" minWidth="fit-content">
+        <Stack direction="row" m="31px 0px" alignItems="center" columnGap="10px" minWidth="fit-content">
           <StyledText variant="md" minWidth="80px">
             Due date
           </StyledText>
