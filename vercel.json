@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/workers/scrap-images?token=0334ecb305121f44e837285c8f4f5c38cee688d234cdf1be29fb35625745c1d76bb8c3ee85037c2dd50522fd6900917217d2dca6ca0cb8c1f7bd34477c39e4fbedee53da5b66301d552f94efe728fe767faffb5b56495be64bcb6e98cf3f59c3d74bd50057168686ebee26889ebd8add",
+      "schedule": "*/3 * * * *"
+    }
+  ]
+}
