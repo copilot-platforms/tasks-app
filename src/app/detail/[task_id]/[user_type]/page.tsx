@@ -57,6 +57,7 @@ async function getSignedUrlUpload(token: string, fileName: string) {
 }
 
 async function getSignedUrlFile(token: string, filePath: string) {
+  'use server'
   const res = await fetch(`${apiUrl}/api/attachments/sign-url?token=${token}&filePath=${filePath}`)
   const data = await res.json()
   return data.signedUrl
