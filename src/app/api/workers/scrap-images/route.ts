@@ -3,4 +3,4 @@ import { RemoveScrapImages } from '@/app/api/workers/scrap-images/scrap-images.c
 
 export const dynamic = 'force-dynamic'
 
-export const GET = withErrorHandler(RemoveScrapImages)
+export const GET = RemoveScrapImages
