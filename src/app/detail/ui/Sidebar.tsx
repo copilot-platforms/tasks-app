@@ -226,8 +226,9 @@ export const Sidebar = ({
 
 export const SidebarSkeleton = () => {
   const { showSidebar } = useSelector(selectTaskDetails)
-  const windowWidth = useWindowWidth()
-  const isMobile = windowWidth < 600 && windowWidth !== 0
+  const { isMobile } = useSelector(selectTaskBoard)
+  // const windowWidth = useWindowWidth()
+  // const isMobile = windowWidth < 600 && windowWidth !== 0
 
   useEffect(() => {
     if (isMobile) {
