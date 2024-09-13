@@ -63,10 +63,9 @@ export const clientUpdateTask = async (req: NextRequest, { params: { id } }: IdP
 export const PostScrapImage = async (req: NextRequest) => {
   const user = await authenticate(req)
   const scrapImageService = new TasksService(user)
-  console.log('hit')
-  const data = ScrapImageRequestSchema.parse(await req.json())
-  console.log('hit')
 
-  const newScrapImage = await scrapImageService.createScrapImage(data)
+  const data = ScrapImageRequestSchema.parse(await req.json())
+
+  await scrapImageService.createScrapImage(data)
   return NextResponse.json({})
 }

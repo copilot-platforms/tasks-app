@@ -1,18 +1,19 @@
 import { BaseService } from '@api/core/services/base.service'
 
-import { subWeeks, isBefore } from 'date-fns'
+import { subWeeks, isBefore, subMinutes } from 'date-fns'
 import { SupabaseService } from '@/app/api/core/services/supabase.service'
 import { supabaseBucket } from '@/config'
 
 export class ScrapImageService extends BaseService {
   async removeScrapImages() {
     const oneWeekAgo = subWeeks(new Date(), 1)
+    const threeMinutesAgo = subMinutes(new Date(), 3)
     const scrapImages = await this.db.scrapImages.findMany({
-      //   where: {
-      //     createdAt: {
-      //       lt: oneWeekAgo,
-      //     },
-      //   }, //removed this condition for testing purposes
+      where: {
+        createdAt: {
+          lt: threeMinutesAgo, //aplly oneWeekAgo. three minutes ago is used for testing
+        },
+      },
     })
     const supabase = new SupabaseService()
 
@@ -26,10 +27,8 @@ export class ScrapImageService extends BaseService {
         where: { id: image.id },
       })
       if (task && (task.body as string).includes(image.filePath)) {
-        console.log('test : not deleting', image.filePath)
         continue
       }
-      console.log('test : deleting', image.filePath)
 
       await supabase.supabase.storage.from(supabaseBucket).remove([image.filePath])
     }

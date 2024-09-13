@@ -10,12 +10,10 @@ export const RemoveScrapImages = async () => {
   const token = cronWorkerToken
   const tokenParsed = z.string().safeParse(token)
 
-  console.log('cron running', token)
   if (!tokenParsed.success || !tokenParsed.data) {
     throw new APIError(httpStatus.UNAUTHORIZED, 'Please provide a valid token')
   }
   const user = await authenticateWithToken(tokenParsed.data)
-  console.log('user authenticated', token)
 
   const scrapImageService = new ScrapImageService(user)
   await scrapImageService.removeScrapImages()
