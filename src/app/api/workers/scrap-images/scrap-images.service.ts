@@ -9,17 +9,16 @@ import DBClient from '@/lib/db'
 export class ScrapImageService {
   async removeScrapImages() {
     const oneWeekAgo = subWeeks(new Date(), 1)
-    console.log('service running on service')
 
     const threeMinutesAgo = subMinutes(new Date(), 3)
     const db: PrismaClient = DBClient.getInstance()
 
     const scrapImages = await db.scrapImages.findMany({
-      // where: {
-      //   createdAt: {
-      //     lt: threeMinutesAgo, //apply oneWeekAgo. three minutes ago is used for testing
-      //   },
-      // }, disabling where check for testing
+      where: {
+        createdAt: {
+          lt: threeMinutesAgo, //apply oneWeekAgo. three minutes ago is used for testing
+        },
+      },
     })
     const supabase = new SupabaseService()
 
@@ -37,7 +36,6 @@ export class ScrapImageService {
       }
 
       await supabase.supabase.storage.from(supabaseBucket).remove([image.filePath])
-      console.log('service completed on service')
     }
   }
 }
