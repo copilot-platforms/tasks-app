@@ -7,6 +7,8 @@ import { supabaseBucket } from '@/config'
 export class ScrapImageService extends BaseService {
   async removeScrapImages() {
     const oneWeekAgo = subWeeks(new Date(), 1)
+    console.log('service running on service')
+
     const threeMinutesAgo = subMinutes(new Date(), 3)
     const scrapImages = await this.db.scrapImages.findMany({
       where: {
@@ -31,6 +33,7 @@ export class ScrapImageService extends BaseService {
       }
 
       await supabase.supabase.storage.from(supabaseBucket).remove([image.filePath])
+      console.log('service completed on service')
     }
   }
 }

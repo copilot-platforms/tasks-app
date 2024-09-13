@@ -9,11 +9,12 @@ import httpStatus from 'http-status'
 export const RemoveScrapImages = async () => {
   const token = cronWorkerToken
   const tokenParsed = z.string().safeParse(token)
-
+  console.log('service running on controller')
   if (!tokenParsed.success || !tokenParsed.data) {
     throw new APIError(httpStatus.UNAUTHORIZED, 'Please provide a valid token')
   }
   const user = await authenticateWithToken(tokenParsed.data)
+  console.log('user authenticated')
 
   const scrapImageService = new ScrapImageService(user)
   await scrapImageService.removeScrapImages()
