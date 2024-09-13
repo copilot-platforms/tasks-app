@@ -548,7 +548,6 @@ export class TasksService extends BaseService {
     const supabase = new SupabaseService()
     const { data, error } = await supabase.supabase.storage.from(supabaseBucket).createSignedUrl(filePath, 60 * 60)
     if (error) {
-      console.log(error)
       throw new APIError(httpStatus.BAD_REQUEST)
     }
     const url = data.signedUrl
@@ -558,7 +557,6 @@ export class TasksService extends BaseService {
   async createScrapImage(data: ScrapImageRequest) {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Update, Resource.Tasks)
-    console.log(data)
     const existing = await this.db.scrapImages.findFirst({
       where: {
         filePath: data.filePath,
