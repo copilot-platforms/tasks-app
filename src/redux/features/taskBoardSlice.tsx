@@ -17,6 +17,7 @@ interface IInitialState {
   filterOptions: IFilterOptions
   filteredAssigneeList: IAssigneeCombined[]
   viewSettingsTemp: CreateViewSettingsDTO | undefined
+  isMobile: boolean | undefined
 }
 
 const initialState: IInitialState = {
@@ -33,6 +34,7 @@ const initialState: IInitialState = {
   },
   filteredAssigneeList: [],
   viewSettingsTemp: undefined,
+  isMobile: undefined,
 }
 
 const taskBoardSlice = createSlice({
@@ -105,6 +107,9 @@ const taskBoardSlice = createSlice({
       }
       state.filterOptions = action.payload.filterOptions
     }, //updates filters according to viewSettings
+    setIsMobile: (state, action: { payload: boolean }) => {
+      state.isMobile = action.payload
+    },
   },
 })
 
@@ -122,6 +127,7 @@ export const {
   setFilterOptions,
   setFilteredAssgineeList,
   setViewSettingsTemp,
+  setIsMobile,
 } = taskBoardSlice.actions
 
 export default taskBoardSlice.reducer

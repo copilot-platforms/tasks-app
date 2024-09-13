@@ -49,7 +49,7 @@ export const Sidebar = ({
   disabled: boolean
   workflowDisabled?: false
 }) => {
-  const { tasks, token, workflowStates, assignee } = useSelector(selectTaskBoard)
+  const { tasks, token, workflowStates, assignee, isMobile } = useSelector(selectTaskBoard)
   const { showSidebar } = useSelector(selectTaskDetails)
   const [filteredAssignees, setFilteredAssignees] = useState(assignee)
   const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
@@ -81,8 +81,8 @@ export const Sidebar = ({
     }
   }, [tasks, workflowStates])
 
-  const windowWidth = useWindowWidth()
-  const isMobile = windowWidth < 600 && windowWidth !== 0
+  // const windowWidth = useWindowWidth()
+  // const isMobile = windowWidth < 600 && windowWidth !== 0
 
   useEffect(() => {
     if (isMobile) {

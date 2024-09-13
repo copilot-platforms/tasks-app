@@ -9,6 +9,7 @@ import { ProviderWrapper } from '@/redux/ProviderWrapper'
 import './tapwrite.css'
 import { InterrupCmdK } from '@/hoc/Interrupt_CmdK'
 import { ProgressLoad } from '@/components/TopLoader'
+import { DetectMobile } from '@/hoc/DetectMobile'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -22,11 +23,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className={inter.className}>
         <ProgressLoad />
-        <InterrupCmdK>
-          <ProviderWrapper>
-            <ThemeRegistry options={{ key: 'mui' }}>{children}</ThemeRegistry>
-          </ProviderWrapper>
-        </InterrupCmdK>
+        <DetectMobile>
+          <InterrupCmdK>
+            <ProviderWrapper>
+              <ThemeRegistry options={{ key: 'mui' }}>{children}</ThemeRegistry>
+            </ProviderWrapper>
+          </InterrupCmdK>
+        </DetectMobile>
       </body>
     </html>
   )
