@@ -255,7 +255,7 @@ export const SidebarSkeleton = () => {
           <Typography variant="sm">Properties</Typography>
           <Box
             sx={{
-              display: showSidebar ? 'block' : 'none',
+              display: showSidebar ? (isMobile ? 'block' : 'none') : 'none',
             }}
           >
             <ToggleButtonContainer />
