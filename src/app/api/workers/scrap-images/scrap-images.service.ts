@@ -15,11 +15,11 @@ export class ScrapImageService {
     const db: PrismaClient = DBClient.getInstance()
 
     const scrapImages = await db.scrapImages.findMany({
-      where: {
-        createdAt: {
-          lt: threeMinutesAgo, //apply oneWeekAgo. three minutes ago is used for testing
-        },
-      },
+      // where: {
+      //   createdAt: {
+      //     lt: threeMinutesAgo, //apply oneWeekAgo. three minutes ago is used for testing
+      //   },
+      // }, disabling where check for testing
     })
     const supabase = new SupabaseService()
 
