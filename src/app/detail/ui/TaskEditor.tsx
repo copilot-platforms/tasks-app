@@ -17,6 +17,7 @@ import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { SupabaseActions } from '@/utils/SupabaseActions'
 import { generateRandomString } from '@/utils/generateRandomString'
 import { TaskResponse } from '@/types/dto/tasks.dto'
+import { getSignedUrlFile } from '@/app/detail/[task_id]/[user_type]/actions'
 
 interface Prop {
   task_id: string
@@ -29,7 +30,6 @@ interface Prop {
   postAttachment: (postAttachmentPayload: CreateAttachmentRequest) => void
   deleteAttachment: (id: string) => void
   getSignedUrlUpload: (fileName: string) => Promise<ISignedUrlUpload>
-  getSignedUrlFile: (filePath: string) => Promise<string>
   userType: UserType
 }
 
@@ -44,13 +44,12 @@ export const TaskEditor = ({
   postAttachment,
   deleteAttachment,
   getSignedUrlUpload,
-  getSignedUrlFile,
   userType,
 }: Prop) => {
   const [updateTitle, setUpdateTitle] = useState('')
   const [updateDetail, setUpdateDetail] = useState('')
   const { showConfirmDeleteModal } = useSelector(selectTaskDetails)
-  const { tasks } = useSelector(selectTaskBoard)
+  const { tasks, token } = useSelector(selectTaskBoard)
   const [isUserTyping, setIsUserTyping] = useState(false)
 
   // const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -169,7 +168,7 @@ export const TaskEditor = ({
             const fileName = generateRandomString(file.name)
             const signedUrl: ISignedUrlUpload = await getSignedUrlUpload(fileName)
             const filePayload = await supabaseActions.uploadAttachment(file, signedUrl, task_id)
-            const url = await getSignedUrlFile(filePayload?.filePath ?? '')
+            const url = await getSignedUrlFile(token ?? '', filePayload?.filePath ?? '')
             return url
           }}
           // deleteEditorAttachments={async (id: string) => {

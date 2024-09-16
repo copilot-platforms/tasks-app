@@ -3,4 +3,4 @@ export enum TruncateMaxNumber {
   CLIENT_TASK_DESCRIPTION = 256,
 }
 
-export const signedUrlTtl = 60 * 60
+export const signedUrlTtl = 3600

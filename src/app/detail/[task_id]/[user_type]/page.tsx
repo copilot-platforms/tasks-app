@@ -152,11 +152,6 @@ export default async function TaskDetailPage({
                       const data = await getSignedUrlUpload(token, fileName)
                       return data
                     }}
-                    getSignedUrlFile={async (filePath: string) => {
-                      'use server'
-                      const data = await getSignedUrlFile(token, filePath)
-                      return data
-                    }}
                     userType={params.user_type}
                   />
                 </AppMargin>
