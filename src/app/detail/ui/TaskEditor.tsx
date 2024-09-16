@@ -172,10 +172,10 @@ export const TaskEditor = ({
             const url = await getSignedUrlFile(filePayload?.filePath ?? '')
             return url
           }}
-          deleteEditorAttachments={async (id: string) => {
-            const supabaseActions = new SupabaseActions()
-            await supabaseActions.removeAttachment(id)
-          }}
+          // deleteEditorAttachments={async (id: string) => {
+          //   const supabaseActions = new SupabaseActions()
+          //   await supabaseActions.removeAttachment(id)
+          // }}
         />
       </Box>
 
