@@ -9,7 +9,7 @@ import {
 import { AttachmentsService } from '@api/attachments/attachments.service'
 import httpStatus from 'http-status'
 import { IdParams } from '@api/core/types/api'
-import APIError from '../core/exceptions/api'
+import APIError from '@/app/api/core/exceptions/api'
 import { unstable_noStore as noStore } from 'next/cache'
 
 export const createAttachment = async (req: NextRequest) => {
@@ -55,5 +55,16 @@ export const getSignedUrlUpload = async (req: NextRequest) => {
   const user = await authenticate(req)
   const attachmentsService = new AttachmentsService(user)
   const signedUrl = await attachmentsService.signUrlUpload(fileName)
+  return NextResponse.json({ signedUrl })
+}
+
+export const getSignedUrlFile = async (req: NextRequest) => {
+  const filePath = req.nextUrl.searchParams.get('filePath')
+  if (!filePath) {
+    throw new APIError(httpStatus.BAD_REQUEST, 'filePath is required')
+  }
+  const user = await authenticate(req)
+  const attachmentsService = new AttachmentsService(user)
+  const signedUrl = await attachmentsService.getSignedUrl(filePath)
   return NextResponse.json({ signedUrl })
 }

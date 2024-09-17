@@ -51,10 +51,17 @@ async function getOneTask(token: string, taskId: string): Promise<TaskResponse> 
 
 async function getSignedUrlUpload(token: string, fileName: string) {
   const res = await fetch(`${apiUrl}/api/attachments/upload?token=${token}&fileName=${fileName}`)
+
   const data = await res.json()
   return data.signedUrl
 }
 
+async function getSignedUrlFile(token: string, filePath: string) {
+  'use server'
+  const res = await fetch(`${apiUrl}/api/attachments/sign-url?token=${token}&filePath=${filePath}`)
+  const data = await res.json()
+  return data.signedUrl
+}
 export default async function TaskDetailPage({
   params,
   searchParams,
@@ -81,7 +88,7 @@ export default async function TaskDetailPage({
   redirectIfResourceNotFound(searchParams, task, !!tokenPayload.internalUserId)
 
   return (
-    <DetailStateUpdate isRedirect={!!searchParams.isRedirect} token={token} tokenPayload={tokenPayload}>
+    <DetailStateUpdate isRedirect={!!searchParams.isRedirect} token={token} tokenPayload={tokenPayload} task={task}>
       <RealTime>
         <EscapeHandler />
         <Stack direction="row" sx={{ height: '100vh' }}>
@@ -118,6 +125,7 @@ export default async function TaskDetailPage({
                   <TaskEditor
                     // attachment={attachments}
                     task_id={task_id}
+                    task={task}
                     isEditable={params.user_type === UserType.INTERNAL_USER}
                     updateTaskDetail={async (detail) => {
                       'use server'

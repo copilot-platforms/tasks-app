@@ -14,9 +14,14 @@ import { Tapwrite } from 'tapwrite'
 import { useDebounce, useDebounceWithCancel } from '@/hooks/useDebounce'
 import { useRouter } from 'next/navigation'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { SupabaseActions } from '@/utils/SupabaseActions'
+import { generateRandomString } from '@/utils/generateRandomString'
+import { TaskResponse } from '@/types/dto/tasks.dto'
+import { getSignedUrlFile } from '@/app/detail/[task_id]/[user_type]/actions'
 
 interface Prop {
   task_id: string
+  task: TaskResponse
   // attachment: AttachmentResponseSchema[]
   isEditable: boolean
   updateTaskDetail: (detail: string) => void
@@ -30,6 +35,7 @@ interface Prop {
 
 export const TaskEditor = ({
   task_id,
+  task,
   // attachment,
   isEditable,
   updateTaskDetail,
@@ -43,7 +49,7 @@ export const TaskEditor = ({
   const [updateTitle, setUpdateTitle] = useState('')
   const [updateDetail, setUpdateDetail] = useState('')
   const { showConfirmDeleteModal } = useSelector(selectTaskDetails)
-  const { tasks } = useSelector(selectTaskBoard)
+  const { tasks, token } = useSelector(selectTaskBoard)
   const [isUserTyping, setIsUserTyping] = useState(false)
 
   // const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -114,7 +120,6 @@ export const TaskEditor = ({
     detailsUpdateDebounced(content)
     debouncedResetTypingFlag()
   }
-
   return (
     <>
       <StyledTextField
@@ -152,23 +157,25 @@ export const TaskEditor = ({
 
       <Box mt="12px" sx={{ height: '100%' }}>
         <Tapwrite
-          uploadFn={async (file, tiptapEditorUtils) => {
-            const newBlob = await upload(file.name, file, {
-              access: 'public',
-              handleUploadUrl: '/api/upload',
-            })
-            tiptapEditorUtils.setImage(newBlob.url as string)
-          }}
           content={updateDetail}
           getContent={handleDetailChange}
           readonly={userType === UserType.CLIENT_USER}
           editorClass="tapwrite-details-page"
           placeholder="Add description..."
+          uploadFn={async (file) => {
+            const supabaseActions = new SupabaseActions()
+            const fileName = generateRandomString(file.name)
+
+            const signedUrl: ISignedUrlUpload = await getSignedUrlUpload(fileName)
+            const filePayload = await supabaseActions.uploadAttachment(file, signedUrl, task_id)
+            const url = await getSignedUrlFile(token ?? '', filePayload?.filePath ?? '')
+            return url
+          }}
         />
       </Box>
 
       {/* {advancedFeatureFlag && ( */}
-      {/*   <> */}
+      {/* <> */}
       {/*     <Stack direction="row" columnGap={3} rowGap={3} mt={3} flexWrap={'wrap'}> */}
       {/*       {attachment?.map((el, key) => { */}
       {/*         return ( */}

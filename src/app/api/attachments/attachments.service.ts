@@ -72,4 +72,12 @@ export class AttachmentsService extends BaseService {
     }
     return data
   }
+
+  async getSignedUrl(filePath: string) {
+    const policyGate = new PoliciesService(this.user)
+    const supabase = new SupabaseService()
+    policyGate.authorize(UserAction.Create, Resource.Attachments)
+    const { data } = await supabase.supabase.storage.from(supabaseBucket).createSignedUrl(filePath, 60) // only 60 seconds expiry time here for testing purposes
+    return data?.signedUrl
+  }
 }
