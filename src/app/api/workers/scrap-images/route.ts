@@ -3,4 +3,6 @@ import { RemoveScrapImages } from '@/app/api/workers/scrap-images/scrap-images.c
 
 export const dynamic = 'force-dynamic'
 
+export const maxDuration = 300
+
 export const GET = RemoveScrapImages
