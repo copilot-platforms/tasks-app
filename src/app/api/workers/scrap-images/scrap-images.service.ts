@@ -9,12 +9,11 @@ export class ScrapImageService {
   async removeScrapImages() {
     const oneWeekAgo = subWeeks(new Date(), 1)
 
-    const threeMinutesAgo = subMinutes(new Date(), 1)
     const db: PrismaClient = DBClient.getInstance()
     const scrapImages = await db.scrapImage.findMany({
       where: {
         updatedAt: {
-          lt: threeMinutesAgo, //apply oneWeekAgo. three minutes ago is used for testing
+          lt: oneWeekAgo, //apply oneWeekAgo. three minutes ago is used for testing
         },
       },
       // Putting a buffer of 0.5s for each deletion (which should be more than very enough), we take 600 records at a time

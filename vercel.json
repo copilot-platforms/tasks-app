@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/workers/scrap-images",
-      "schedule": "*/3 * * * *"
+      "schedule": "*0 0 */7 * *"
     }
   ]
 }
