@@ -43,25 +43,6 @@ export class SupabaseActions extends SupabaseService {
     return filePayload
   }
 
-  async getFilePathFromUrl(url: string) {
-    try {
-      if (url) {
-        const parsedUrl = new URL(url)
-        const pathname = parsedUrl.pathname
-        const mediaIndex = pathname.indexOf('/media/')
-        if (mediaIndex !== -1) {
-          const filePath = pathname.substring(mediaIndex + '/media/'.length)
-          return filePath
-        } else {
-          return null
-        }
-      }
-    } catch (error) {
-      console.error('Invalid URL:', error)
-      return null
-    }
-  }
-
   async removeAttachment(filePath: string) {
     const { data, error } = await this.supabase.storage.from(supabaseBucket).remove([filePath])
     if (error) {

@@ -108,6 +108,12 @@ export const deleteComment = async (token: string, id: string) => {
   revalidateTag('getActivities')
 }
 
+export const getSignedUrlFile = async (token: string, filePath: string) => {
+  const res = await fetch(`${apiUrl}/api/attachments/sign-url?token=${token}&filePath=${filePath}`)
+  const data = await res.json()
+  return data.signedUrl
+}
+
 export const postScrapImage = async (token: string, payload: ScrapImageRequest) => {
   await fetch(`${apiUrl}/api/tasks/${payload.taskId}/scrap-image/?token=${token}`, {
     method: 'POST',

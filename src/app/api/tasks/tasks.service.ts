@@ -23,9 +23,11 @@ import {
   ScrapImageRequest,
 } from '@/types/common'
 import { CopilotAPI } from '@/utils/CopilotAPI'
-import { replaceImageSrc } from '@/utils/imageReplacer'
+import { replaceImageSrc } from '@/utils/signedUrlReplacer'
 import { SupabaseService } from '../core/services/supabase.service'
 import { supabaseBucket } from '@/config'
+import { AttachmentsService } from '../attachments/attachments.service'
+import { signedUrlTtl } from '@/types/constants'
 
 type FilterByAssigneeId = {
   assigneeId: string
@@ -169,7 +171,6 @@ export class TasksService extends BaseService {
     if (!task) throw new APIError(httpStatus.NOT_FOUND, 'The requested task was not found')
 
     task.body = task.body && (await replaceImageSrc(task.body, this.getSignedUrl))
-
     return task
   }
 
@@ -546,11 +547,9 @@ export class TasksService extends BaseService {
 
   async getSignedUrl(filePath: string) {
     const supabase = new SupabaseService()
-    const { data, error } = await supabase.supabase.storage.from(supabaseBucket).createSignedUrl(filePath, 60 * 60)
-    if (error) {
-      throw new APIError(httpStatus.BAD_REQUEST)
-    }
-    const url = data.signedUrl
+    const { data } = await supabase.supabase.storage.from(supabaseBucket).createSignedUrl(filePath, signedUrlTtl)
+
+    const url = data?.signedUrl
     return url
   } // used to replace urls for images in task body
 
