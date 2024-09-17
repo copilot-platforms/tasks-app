@@ -1,0 +1,32 @@
+enum AssigneeType {
+  internalUser
+  client
+  company
+}
+
+model Task {
+  id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  label           String
+  workspaceId     String        @db.VarChar(32)
+  assigneeId      String?       @db.Uuid
+  assigneeType    AssigneeType?
+  title           String        @db.VarChar(255)
+  body            String?
+  createdById     String        @db.Uuid
+  workflowState   WorkflowState @relation(fields: [workflowStateId], references: [id], onDelete: Cascade)
+  workflowStateId String        @db.Uuid
+  attachments     Attachment[]
+  activityLog     ActivityLog[]
+  comments        Comment[]
+  scrapImages     ScrapImages[]
+
+  assignedAt               DateTime?
+  completedAt              DateTime?
+  dueDate                  String?                    @db.VarChar(10)
+  createdAt                DateTime                   @default(now())
+  deletedAt                DateTime?
+  ClientNotification       ClientNotification[]
+  InternalUserNotification InternalUserNotification[]
+
+  @@map("Tasks")
+}

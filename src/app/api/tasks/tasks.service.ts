@@ -81,6 +81,8 @@ export class TasksService extends BaseService {
     let tasks = await this.db.task.findMany({
       ...filters,
       orderBy: { createdAt: 'desc' },
+      // @ts-ignore TS support for this param is still shakey
+      relationLoadStrategy: 'join',
       include: {
         workflowState: { select: { name: true } },
       },
@@ -164,6 +166,8 @@ export class TasksService extends BaseService {
 
     const task = await this.db.task.findFirst({
       ...filters,
+      // @ts-ignore TS support for this param is still shakey
+      relationLoadStrategy: 'join',
       include: {
         workflowState: true,
       },
@@ -198,6 +202,8 @@ export class TasksService extends BaseService {
     const filters = this.buildReadFilters(id)
     const prevTask = await this.db.task.findFirst({
       ...filters,
+      // @ts-ignore TS support for this param is still shakey
+      relationLoadStrategy: 'join',
       include: { workflowState: true },
     })
     if (!prevTask) throw new APIError(httpStatus.NOT_FOUND, 'The requested task was not found')
@@ -272,7 +278,12 @@ export class TasksService extends BaseService {
     policyGate.authorize(UserAction.Delete, Resource.Tasks)
 
     // Try to delete existing client notification related to this task if exists
-    const task = await this.db.task.findFirst({ where: { id }, include: { workflowState: true } })
+    const task = await this.db.task.findFirst({
+      where: { id },
+      // @ts-ignore TS support for this param is still shakey
+      relationLoadStrategy: 'join',
+      include: { workflowState: true },
+    })
 
     if (!task) throw new APIError(httpStatus.NOT_FOUND, 'The requested task to delete was not found')
 
@@ -299,6 +310,8 @@ export class TasksService extends BaseService {
     // This works across workspaces
     return await this.db.task.findMany({
       where: { assigneeId, assigneeType: AssigneeType.company, workflowState: { type: { not: StateType.completed } } },
+      // @ts-ignore TS support for this param is still shakey
+      relationLoadStrategy: 'join',
       include: { workflowState: true },
     })
   }
@@ -330,6 +343,8 @@ export class TasksService extends BaseService {
     const filters = this.buildReadFilters(id)
     const prevTask = await this.db.task.findFirst({
       ...filters,
+      // @ts-ignore TS support for this param is still shakey
+      relationLoadStrategy: 'join',
       include: { workflowState: true },
     })
     if (!prevTask) throw new APIError(httpStatus.NOT_FOUND, 'The requested task was not found')
