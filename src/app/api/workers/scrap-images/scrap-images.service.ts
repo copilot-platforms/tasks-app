@@ -11,7 +11,6 @@ export class ScrapImageService {
 
     const threeMinutesAgo = subMinutes(new Date(), 3)
     const db: PrismaClient = DBClient.getInstance()
-
     const scrapImages = await db.scrapImage.findMany({
       where: {
         updatedAt: {
@@ -51,10 +50,12 @@ export class ScrapImageService {
         console.error('What just happened...', e)
       }
     }
-    const { error } = await supabase.supabase.storage.from(supabaseBucket).remove(scrapImagesToDeleteFromBucket)
-    if (error) {
-      console.error(error)
-      throw new APIError(404, 'unable to delete some date from supabase')
+    if (scrapImagesToDeleteFromBucket.length !== 0) {
+      const { error } = await supabase.supabase.storage.from(supabaseBucket).remove(scrapImagesToDeleteFromBucket)
+      if (error) {
+        console.error(error)
+        throw new APIError(404, 'unable to delete some date from supabase')
+      }
     }
     await db.scrapImage.deleteMany({ where: { id: { in: scrapImagesToDelete } } })
   }
