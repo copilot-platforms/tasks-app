@@ -571,15 +571,24 @@ export class TasksService extends BaseService {
   async createScrapImage(data: ScrapImageRequest) {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Update, Resource.Tasks)
-    const existing = await this.db.scrapImages.findFirst({
+    const existing = await this.db.scrapImage.findFirst({
       where: {
         filePath: data.filePath,
       },
     })
     if (!existing) {
-      await this.db.scrapImages.create({
+      await this.db.scrapImage.create({
         data: {
           ...data,
+        },
+      })
+    } else {
+      await this.db.scrapImage.update({
+        where: {
+          id: existing.id,
+        },
+        data: {
+          updatedAt: new Date(), //update the scrapImage if it exists in the table already
         },
       })
     }

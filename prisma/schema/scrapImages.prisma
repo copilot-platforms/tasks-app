@@ -1,4 +1,4 @@
-model ScrapImages {
+model ScrapImage {
   id          String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   filePath    String       @unique
   taskId      String       @db.Uuid
@@ -8,6 +8,7 @@ model ScrapImages {
   deletedAt   DateTime?    @db.Timestamptz()
 
   @@index([createdAt])
+  @@index([filePath])
   @@map("ScrapImages")
 
 }
