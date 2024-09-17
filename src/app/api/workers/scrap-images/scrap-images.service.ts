@@ -24,7 +24,7 @@ export class ScrapImageService {
     const supabase = new SupabaseService()
 
     const tasks = await db.task.findMany({
-      where: { id: { in: scrapImages.map((image: ScrapImage) => image.id) } },
+      where: { id: { in: scrapImages.map((image: ScrapImage) => image.taskId) } },
     })
     const scrapImagesToDelete = []
     const scrapImagesToDeleteFromBucket = []
@@ -33,6 +33,7 @@ export class ScrapImageService {
       try {
         // For each scrap image, check if the task still has the img url in its body
         const task = tasks.find((_task) => _task.id === image.taskId)
+
         if (!task) {
           console.error('Could not find task for scrap image', image)
           continue
@@ -57,6 +58,8 @@ export class ScrapImageService {
         throw new APIError(404, 'unable to delete some date from supabase')
       }
     }
-    await db.scrapImage.deleteMany({ where: { id: { in: scrapImagesToDelete } } })
+    if (scrapImagesToDelete.length !== 0) {
+      await db.scrapImage.deleteMany({ where: { id: { in: scrapImagesToDelete } } })
+    }
   }
 }
