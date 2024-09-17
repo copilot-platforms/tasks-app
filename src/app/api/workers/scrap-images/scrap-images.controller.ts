@@ -3,7 +3,7 @@ import { ScrapImageService } from '@/app/api/workers/scrap-images/scrap-images.s
 import { cronSecret } from '@/config'
 import APIError from '@/app/api/core/exceptions/api'
 
-export const RemoveScrapImages = async (request: NextRequest) => {
+export const removeScrapImages = async (request: NextRequest) => {
   const authHeader = request.headers.get('authorization')
   if (authHeader !== `Bearer ${cronSecret}`) {
     throw new APIError(401, 'Unauthorized')
