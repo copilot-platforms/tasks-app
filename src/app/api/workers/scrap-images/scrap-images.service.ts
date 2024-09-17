@@ -9,7 +9,7 @@ export class ScrapImageService {
   async removeScrapImages() {
     const oneWeekAgo = subWeeks(new Date(), 1)
 
-    const threeMinutesAgo = subMinutes(new Date(), 4)
+    const threeMinutesAgo = subMinutes(new Date(), 1)
     const db: PrismaClient = DBClient.getInstance()
     const scrapImages = await db.scrapImage.findMany({
       where: {
@@ -59,7 +59,11 @@ export class ScrapImageService {
       }
     }
     if (scrapImagesToDelete.length !== 0) {
-      await db.scrapImage.deleteMany({ where: { id: { in: scrapImagesToDelete } } })
+      const idsToDelete = scrapImagesToDelete.map((id) => `'${id}'`).join(', ')
+      await db.$executeRawUnsafe(`
+        DELETE FROM "ScrapImages"
+        WHERE "id" IN (${idsToDelete})
+      `)
     }
   }
 }
