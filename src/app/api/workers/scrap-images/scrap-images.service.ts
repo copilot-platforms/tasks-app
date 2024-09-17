@@ -9,7 +9,7 @@ export class ScrapImageService {
   async removeScrapImages() {
     const oneWeekAgo = subWeeks(new Date(), 1)
 
-    const threeMinutesAgo = subMinutes(new Date(), 3)
+    const threeMinutesAgo = subMinutes(new Date(), 4)
     const db: PrismaClient = DBClient.getInstance()
     const scrapImages = await db.scrapImage.findMany({
       where: {
