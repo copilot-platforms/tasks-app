@@ -19,6 +19,7 @@ import {
   deleteAttachment,
   deleteTask,
   postAttachment,
+  postScrapImage,
   updateAssignee,
   updateTaskDetail,
 } from '@/app/detail/[task_id]/[user_type]/actions'
@@ -38,6 +39,7 @@ import { CustomLink } from '@/hoc/CustomLink'
 import { DetailStateUpdate } from '@/app/detail/[task_id]/[user_type]/DetailStateUpdate'
 import { SilentError } from '@/components/templates/SilentError'
 import { z } from 'zod'
+import { ScrapImageRequest } from '@/types/common'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
@@ -150,6 +152,11 @@ export default async function TaskDetailPage({
                     getSignedUrlUpload={async (fileName: string) => {
                       'use server'
                       const data = await getSignedUrlUpload(token, fileName)
+                      return data
+                    }}
+                    postScrapImage={async (payload: ScrapImageRequest) => {
+                      'use server'
+                      const data = await postScrapImage(token, payload)
                       return data
                     }}
                     userType={params.user_type}
