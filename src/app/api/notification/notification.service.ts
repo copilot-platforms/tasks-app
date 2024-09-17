@@ -31,7 +31,7 @@ export class NotificationService extends BaseService {
       }
 
       const notification = await copilot.createNotification(notificationDetails)
-      await this.createInternalUserNotifications(action, recipientId, notification.id, task)
+      await this.createInternalUserNotifications(action, recipientId, task, notification.id)
 
       return notification
     } catch (error) {
@@ -71,7 +71,7 @@ export class NotificationService extends BaseService {
           }
           const notification = await copilot.createNotification(notificationDetails)
           notifications.push(notification)
-          await this.createInternalUserNotifications(action, recipientId, notification.id, task)
+          await this.createInternalUserNotifications(action, recipientId, task, notification.id)
         } catch (err: unknown) {
           console.error(`Failed to send notifications to ${recipientId}:`, err)
         }
@@ -265,8 +265,8 @@ export class NotificationService extends BaseService {
   private async createInternalUserNotifications(
     action: NotificationTaskActions,
     internalUserId: string,
-    notificationId: string,
     task: Task,
+    notificationId: string,
   ) {
     const isCompletedNotification = [
       NotificationTaskActions.Completed,
