@@ -120,7 +120,6 @@ export const TaskEditor = ({
     detailsUpdateDebounced(content)
     debouncedResetTypingFlag()
   }
-
   return (
     <>
       <StyledTextField
@@ -166,15 +165,12 @@ export const TaskEditor = ({
           uploadFn={async (file) => {
             const supabaseActions = new SupabaseActions()
             const fileName = generateRandomString(file.name)
+
             const signedUrl: ISignedUrlUpload = await getSignedUrlUpload(fileName)
             const filePayload = await supabaseActions.uploadAttachment(file, signedUrl, task_id)
             const url = await getSignedUrlFile(token ?? '', filePayload?.filePath ?? '')
             return url
           }}
-          // deleteEditorAttachments={async (id: string) => {
-          //   const supabaseActions = new SupabaseActions()
-          //   await supabaseActions.removeAttachment(id)
-          // }}
         />
       </Box>
 

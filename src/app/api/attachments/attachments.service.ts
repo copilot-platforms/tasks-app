@@ -77,13 +77,7 @@ export class AttachmentsService extends BaseService {
     const policyGate = new PoliciesService(this.user)
     const supabase = new SupabaseService()
     policyGate.authorize(UserAction.Create, Resource.Attachments)
-    const { data, error } = await supabase.supabase.storage.from(supabaseBucket).createSignedUrl(filePath, 60) // only 60 seconds expiry time here for testing purposes
-
-    if (error) {
-      console.log(error)
-      throw new APIError(httpStatus.BAD_REQUEST)
-    }
-
-    return data.signedUrl
+    const { data } = await supabase.supabase.storage.from(supabaseBucket).createSignedUrl(filePath, 60) // only 60 seconds expiry time here for testing purposes
+    return data?.signedUrl
   }
 }

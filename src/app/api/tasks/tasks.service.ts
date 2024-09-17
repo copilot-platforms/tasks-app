@@ -401,7 +401,7 @@ export class TasksService extends BaseService {
         email: task.assigneeType === AssigneeType.internalUser,
       },
     )
-    // Create a new entry in ClientNotifications table so we can mark as          console.log('running upload')read on
+    // Create a new entry in ClientNotifications table so we can mark as read on
     // behalf of client later
     if (!notification) {
       console.error('Notification failed to trigger for task:', task)
@@ -541,11 +541,9 @@ export class TasksService extends BaseService {
 
   async getSignedUrl(filePath: string) {
     const supabase = new SupabaseService()
-    const { data, error } = await supabase.supabase.storage.from(supabaseBucket).createSignedUrl(filePath, signedUrlTtl)
-    if (error) {
-      throw new APIError(httpStatus.BAD_REQUEST)
-    }
-    const url = data.signedUrl
+    const { data } = await supabase.supabase.storage.from(supabaseBucket).createSignedUrl(filePath, signedUrlTtl)
+
+    const url = data?.signedUrl
     return url
   } // used to replace urls for images in task body
 }

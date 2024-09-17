@@ -1,16 +1,13 @@
-import APIError from '@/app/api/core/exceptions/api'
-import { SupabaseActions } from '@/utils/SupabaseActions'
-
-export async function replaceImageSrc(htmlString: string, getSignedUrl: (filePath: string) => Promise<string>) {
-  const imgTagRegex = /<img\s+[^>]*src="([^"]+)"[^>]*>/g
-  const supabaseActions = new SupabaseActions()
+export async function replaceImageSrc(htmlString: string, getSignedUrl: (filePath: string) => Promise<string | undefined>) {
+  const imgTagRegex = /<img\s+[^>]*src="([^"]+)"[^>]*>/g //expression used to match all img tags in provided HTML string.
   const replacements: { originalSrc: string; newUrl: string }[] = []
   let match
 
   // First pass: collect all replacements
   while ((match = imgTagRegex.exec(htmlString)) !== null) {
-    const originalSrc = match[1]
+    const originalSrc = match[1] //matches the content of the first capture of regex, ie string inside the src attribute of the img tag.
     const filePath = await getFilePathFromUrl(originalSrc)
+    console.log(filePath)
     if (filePath) {
       const newUrl = await getSignedUrl(filePath)
       newUrl && replacements.push({ originalSrc, newUrl })
@@ -27,15 +24,10 @@ export async function replaceImageSrc(htmlString: string, getSignedUrl: (filePat
 
 async function getFilePathFromUrl(url: string) {
   try {
-    if (url) {
-      const parsedUrl = new URL(url)
-      const pathname = parsedUrl.pathname
-      const mediaIndex = pathname.indexOf('/media/')
-      if (mediaIndex !== -1) {
-        const filePath = pathname.substring(mediaIndex + '/media/'.length)
-        return filePath
-      }
-    }
+    const parsedUrl = new URL(url)
+    const pathname = parsedUrl.pathname
+    const filePath = pathname.split('/media/')[1]
+    return filePath
   } catch (error) {
     console.error('Invalid URL:', error)
     return null
