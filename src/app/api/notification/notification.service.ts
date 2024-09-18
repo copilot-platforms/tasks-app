@@ -31,7 +31,7 @@ export class NotificationService extends BaseService {
       }
 
       const notification = await copilot.createNotification(notificationDetails)
-      await this.createInternalUserNotifications(action, recipientId, notification.id, task.id)
+      await this.createInternalUserNotifications(action, recipientId, task, notification.id)
 
       return notification
     } catch (error) {
@@ -71,7 +71,7 @@ export class NotificationService extends BaseService {
           }
           const notification = await copilot.createNotification(notificationDetails)
           notifications.push(notification)
-          await this.createInternalUserNotifications(action, recipientId, notification.id, task.id)
+          await this.createInternalUserNotifications(action, recipientId, task, notification.id)
         } catch (err: unknown) {
           console.error(`Failed to send notifications to ${recipientId}:`, err)
         }
@@ -265,23 +265,26 @@ export class NotificationService extends BaseService {
   private async createInternalUserNotifications(
     action: NotificationTaskActions,
     internalUserId: string,
+    task: Task,
     notificationId: string,
-    taskId: string,
   ) {
-    if (
-      [
-        NotificationTaskActions.Completed,
-        NotificationTaskActions.CompletedByIU,
-        NotificationTaskActions.CompletedForCompanyByIU,
-        NotificationTaskActions.CompletedByCompanyMember,
-      ].includes(action)
-    ) {
-      // Notification recipient is IU in this case
+    const isCompletedNotification = [
+      NotificationTaskActions.Completed,
+      NotificationTaskActions.CompletedByIU,
+      NotificationTaskActions.CompletedForCompanyByIU,
+      NotificationTaskActions.CompletedByCompanyMember,
+    ].includes(action)
+    const isAssignedToIuNotification =
+      task.assigneeType === AssigneeType.internalUser &&
+      [NotificationTaskActions.Assigned, NotificationTaskActions.ReassignedToIU].includes(action)
+    // NOTE: Recipient is confirmed to be IU in both cases!
+
+    if (isCompletedNotification || isAssignedToIuNotification) {
       await this.db.internalUserNotification.create({
         data: {
           internalUserId,
           notificationId,
-          taskId,
+          taskId: task.id,
         },
       })
     }
