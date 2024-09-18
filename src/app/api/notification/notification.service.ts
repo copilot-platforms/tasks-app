@@ -100,6 +100,7 @@ export class NotificationService extends BaseService {
   }
 
   deleteInternalUserNotificationForTask = async (taskId: string) => {
+    console.info('deleting all IU notifications for task', taskId)
     const copilot = new CopilotAPI(this.user.token)
     const notifications = await this.db.internalUserNotification.findMany({ where: { taskId } })
     const markAsReadPromises = []
@@ -112,7 +113,7 @@ export class NotificationService extends BaseService {
         }),
       )
     }
-    console.info(`Deleting all notifications triggerd by task ${taskId}`)
+    console.info(`Deleting all notifications triggered by task ${taskId}`)
     await Promise.all(markAsReadPromises)
     await this.db.internalUserNotification.deleteMany({ where: { taskId } })
   }

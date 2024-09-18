@@ -292,7 +292,7 @@ export class TasksService extends BaseService {
     })
   }
 
-  async deleteAllAssigneeTasks(assigneeId: string, assigneeType: AssigneeType) {
+  async deleteAllAssigneeTasks(assigneeId: string, assigneeType: AssigneeType): Promise<Task[]> {
     // Policies validation shouldn't be required here because token is from a webhook event
     const tasks = await this.db.task.findMany({
       where: { assigneeId, assigneeType, workspaceId: this.user.workspaceId },
@@ -307,6 +307,8 @@ export class TasksService extends BaseService {
       where: { assigneeId, assigneeType, workspaceId: this.user.workspaceId },
     })
     await this.db.label.deleteMany({ where: { label: { in: labels } } })
+
+    return tasks
   }
 
   async clientUpdateTask(id: string, targetWorkflowStateId?: string | null) {
