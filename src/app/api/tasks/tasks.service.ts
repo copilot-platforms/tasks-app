@@ -306,7 +306,7 @@ export class TasksService extends BaseService {
     await this.db.task.deleteMany({
       where: { assigneeId, assigneeType, workspaceId: this.user.workspaceId },
     })
-    await this.db.label.deleteMany({ where: { label: { in: labels } } }) // Don't put this in a transaction
+    await this.db.label.deleteMany({ where: { label: { in: labels } } })
 
     return tasks
   }
