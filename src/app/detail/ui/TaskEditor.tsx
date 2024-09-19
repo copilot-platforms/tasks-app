@@ -78,7 +78,7 @@ export const TaskEditor = ({
         setUpdateDetail(currentTask.body ?? '')
       }
     }
-  }, [tasks, task_id, isUserTyping])
+  }, [tasks, task_id])
 
   const _titleUpdateDebounced = async (title: string) => updateTaskTitle(title)
 
@@ -124,6 +124,29 @@ export const TaskEditor = ({
     detailsUpdateDebounced(content)
     debouncedResetTypingFlag()
   }
+
+  const uploadImageHandler = async (file: File) => {
+    const supabaseActions = new SupabaseActions()
+    const fileName = generateRandomString(file.name)
+
+    const signedUrl: ISignedUrlUpload = await getSignedUrlUpload(fileName)
+    const filePayload = await supabaseActions.uploadAttachment(file, signedUrl, task_id)
+    const url = await getSignedUrlFile(token ?? '', filePayload?.filePath ?? '')
+
+    return url
+  }
+
+  const deleteEditorAttachmentsHandler = async (url: string) => {
+    const filePath = await getFilePathFromUrl(url)
+    if (filePath) {
+      const payload: ScrapImageRequest = {
+        filePath: filePath,
+        taskId: task_id,
+      }
+      postScrapImage(payload)
+    }
+  }
+
   return (
     <>
       <StyledTextField
@@ -166,25 +189,8 @@ export const TaskEditor = ({
           readonly={userType === UserType.CLIENT_USER}
           editorClass="tapwrite-details-page"
           placeholder="Add description..."
-          uploadFn={async (file) => {
-            const supabaseActions = new SupabaseActions()
-            const fileName = generateRandomString(file.name)
-
-            const signedUrl: ISignedUrlUpload = await getSignedUrlUpload(fileName)
-            const filePayload = await supabaseActions.uploadAttachment(file, signedUrl, task_id)
-            const url = await getSignedUrlFile(token ?? '', filePayload?.filePath ?? '')
-            return url
-          }}
-          deleteEditorAttachments={async (url: string) => {
-            const filePath = await getFilePathFromUrl(url)
-            if (filePath) {
-              const payload: ScrapImageRequest = {
-                filePath: filePath,
-                taskId: task_id,
-              }
-              postScrapImage(payload)
-            }
-          }}
+          uploadFn={uploadImageHandler}
+          deleteEditorAttachments={deleteEditorAttachmentsHandler}
         />
       </Box>
 

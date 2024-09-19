@@ -64,6 +64,7 @@ async function getSignedUrlFile(token: string, filePath: string) {
   const data = await res.json()
   return data.signedUrl
 }
+
 export default async function TaskDetailPage({
   params,
   searchParams,
@@ -88,6 +89,11 @@ export default async function TaskDetailPage({
   console.info(`app/detail/${task_id}/${user_type}/page.tsx | Serving user ${token} with payload`, tokenPayload)
 
   redirectIfResourceNotFound(searchParams, task, !!tokenPayload.internalUserId)
+
+  const postScrapImageHandler = async (payload: ScrapImageRequest) => {
+    'use server'
+    return await postScrapImage(token, payload)
+  }
 
   return (
     <DetailStateUpdate isRedirect={!!searchParams.isRedirect} token={token} tokenPayload={tokenPayload} task={task}>
@@ -154,11 +160,7 @@ export default async function TaskDetailPage({
                       const data = await getSignedUrlUpload(token, fileName)
                       return data
                     }}
-                    postScrapImage={async (payload: ScrapImageRequest) => {
-                      'use server'
-                      const data = await postScrapImage(token, payload)
-                      return data
-                    }}
+                    postScrapImage={postScrapImageHandler}
                     userType={params.user_type}
                   />
                 </AppMargin>
