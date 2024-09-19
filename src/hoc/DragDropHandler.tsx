@@ -53,9 +53,7 @@ export const DragDropHandler = ({
 
   const [{ isDragging }, drag, preview] = useDrag({
     type: accept,
-    item: () => {
-      return { task: task }
-    },
+    item: { task: task },
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
