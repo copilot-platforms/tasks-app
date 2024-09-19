@@ -53,9 +53,7 @@ export const DragDropHandler = ({
 
   const [{ isDragging }, drag, preview] = useDrag({
     type: accept,
-    item: () => {
-      return { task: task }
-    },
+    item: { task: task },
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
@@ -67,7 +65,9 @@ export const DragDropHandler = ({
     if (window) {
       //we only need custom drag preview in the list view
       if (draggable) {
-        preview(new Image()) // This sets an empty drag preview
+        const EMPTY_IMAGE = new Image(1, 1)
+        EMPTY_IMAGE.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==' //1x1 transparent GIF image encoded in Base64
+        preview(EMPTY_IMAGE) // This sets an empty drag preview
       }
     }
   }, [preview, draggable])
