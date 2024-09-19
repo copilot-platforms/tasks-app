@@ -10,6 +10,7 @@ import { CompanyResponse, CopilotListArgs, FilterableUser } from '@/types/common
 import { filterUsersByKeyword } from '@/utils/users'
 import { z } from 'zod'
 import { FilterOptionsKeywords } from '@/types/interfaces'
+import { orderByRecentCreatedAt } from '@/utils/ordering'
 
 class UsersService extends BaseService {
   private copilot: CopilotAPI
@@ -58,7 +59,12 @@ class UsersService extends BaseService {
         : clientsWithCompanyData
     )?.slice(0, limit)
 
-    return { internalUsers: ius.data, clients: accessibleClients, companies: filteredCompanies }
+    return {
+      // CopilotAPI doesn't currently support sorting data, so manually sort them before returning a response
+      internalUsers: orderByRecentCreatedAt(ius.data),
+      clients: orderByRecentCreatedAt(accessibleClients),
+      companies: orderByRecentCreatedAt(filteredCompanies),
+    }
   }
 
   /**
