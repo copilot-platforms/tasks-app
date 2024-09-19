@@ -18,6 +18,7 @@ model Task {
   attachments     Attachment[]
   activityLog     ActivityLog[]
   comments        Comment[]
+  scrapImages     ScrapImage[]
 
   assignedAt               DateTime?
   completedAt              DateTime?

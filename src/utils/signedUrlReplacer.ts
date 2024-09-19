@@ -7,7 +7,6 @@ export async function replaceImageSrc(htmlString: string, getSignedUrl: (filePat
   while ((match = imgTagRegex.exec(htmlString)) !== null) {
     const originalSrc = match[1] //matches the content of the first capture of regex, ie string inside the src attribute of the img tag.
     const filePath = await getFilePathFromUrl(originalSrc)
-    console.log(filePath)
     if (filePath) {
       const newUrl = await getSignedUrl(filePath)
       newUrl && replacements.push({ originalSrc, newUrl })
@@ -22,7 +21,7 @@ export async function replaceImageSrc(htmlString: string, getSignedUrl: (filePat
   return htmlString
 }
 
-async function getFilePathFromUrl(url: string) {
+export async function getFilePathFromUrl(url: string) {
   try {
     const parsedUrl = new URL(url)
     const pathname = parsedUrl.pathname

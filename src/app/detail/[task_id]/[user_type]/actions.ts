@@ -1,6 +1,7 @@
 'use server'
 
 import { advancedFeatureFlag, apiUrl } from '@/config'
+import { ScrapImageRequest } from '@/types/common'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { CreateComment } from '@/types/dto/comment.dto'
 import { UpdateTaskRequest } from '@/types/dto/tasks.dto'
@@ -111,4 +112,12 @@ export const getSignedUrlFile = async (token: string, filePath: string) => {
   const res = await fetch(`${apiUrl}/api/attachments/sign-url?token=${token}&filePath=${filePath}`)
   const data = await res.json()
   return data.signedUrl
+}
+
+export const postScrapImage = async (token: string, payload: ScrapImageRequest) => {
+  console.log('posting')
+  await fetch(`${apiUrl}/api/tasks/${payload.taskId}/scrap-image/?token=${token}`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
 }
