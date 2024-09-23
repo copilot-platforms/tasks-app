@@ -259,11 +259,11 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
       </Box>
       <Box sx={{ padding: '12px 20px', display: { sm: 'block', sd: 'none' } }}>
         <Stack direction="column" rowGap={'8px'}>
-          <FilterButtonGroup filterButtons={filterButtons} activeButtonIndex={ButtonIndex} />
+          {mode === UserRole.IU && <FilterButtonGroup filterButtons={filterButtons} activeButtonIndex={ButtonIndex} />}
 
           <Stack direction="row" justifyContent="space-between" alignItems="center">
             <Box>
-              {filterOptions[FilterOptions.TYPE] !== tokenPayload?.internalUserId && (
+              {filterOptions[FilterOptions.TYPE] !== tokenPayload?.internalUserId && mode === UserRole.IU && (
                 <Selector
                   getSelectedValue={(_newValue) => {
                     const newValue = _newValue as IAssigneeCombined
