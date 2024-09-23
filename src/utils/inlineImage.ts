@@ -2,11 +2,12 @@ import { SupabaseActions } from '@/utils/SupabaseActions'
 import React from 'react'
 import { generateRandomString } from '@/utils/generateRandomString'
 import { ISignedUrlUpload } from '@/types/interfaces'
-import { getSignedUrlUpload } from '@/app/actions'
+
 import { postScrapImage } from '@/app/detail/[task_id]/[user_type]/actions'
 import { ScrapImageRequest } from '@/types/common'
 import { getFilePathFromUrl } from '@/utils/signedUrlReplacer'
-import { getSignedUrlFile } from '@/app/page'
+
+import { getSignedUrlUpload, getSignedUrlFile } from '@/app/actions'
 
 export const uploadImageHandler = async (file: File, token: string, task_id: string | null): Promise<string> => {
   const supabaseActions = new SupabaseActions()

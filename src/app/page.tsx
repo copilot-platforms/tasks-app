@@ -11,7 +11,7 @@ import { Token, TokenSchema } from '@/types/common'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
-import { createMultipleAttachments } from '@/app/actions'
+import { createMultipleAttachments, getSignedUrlUpload } from '@/app/actions'
 import { ModalNewTaskForm } from './ui/Modal_NewTaskForm'
 import { RealTime } from '@/hoc/RealTime'
 import { redirectIfTaskCta } from '@/utils/redirect'
@@ -55,19 +55,6 @@ export async function getViewSettings(token: string): Promise<CreateViewSettings
   return data
 }
 
-export async function getSignedUrlUpload(token: string, fileName: string) {
-  const res = await fetch(`${apiUrl}/api/attachments/upload?token=${token}&fileName=${fileName}`)
-
-  const data = await res.json()
-  return data.signedUrl
-}
-
-export const getSignedUrlFile = async (token: string, filePath: string) => {
-  const res = await fetch(`${apiUrl}/api/attachments/sign-url?token=${token}&filePath=${filePath}`)
-  const data = await res.json()
-  return data.signedUrl
-}
-
 export default async function Main({ searchParams }: { searchParams: { token: string; taskId?: string } }) {
   const token = searchParams.token
 
@@ -105,9 +92,11 @@ export default async function Main({ searchParams }: { searchParams: { token: st
 
         <ModalNewTaskForm
           getSignedUrlUpload={async (fileName: string) => {
+            'use server'
             return await getSignedUrlUpload(token, fileName)
           }}
           handleCreateMultipleAttachments={async (attachments: CreateAttachmentRequest[]) => {
+            'use server'
             await createMultipleAttachments(token, attachments)
           }}
         />

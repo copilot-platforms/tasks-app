@@ -19,7 +19,6 @@ import { generateRandomString } from '@/utils/generateRandomString'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { ScrapImageRequest } from '@/types/common'
 
-import { getSignedUrlUpload } from '@/app/actions'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
 
 interface Prop {
