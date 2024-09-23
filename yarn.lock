@@ -7237,10 +7237,10 @@ tapable@^2.2.0:
   resolved "https://registry.yarnpkg.com/tapable/-/tapable-2.2.1.tgz#1967a73ef4060a82f12ab96af86d52fdb76eeca0"
   integrity sha512-GNzQvQTOIP6RyTfE2Qxb8ZVlNmw0n88vp1szwWRimP02mnTsx3Wtn5qRdqY9w2XduFNUgvOwhNnQsjwCp+kqaQ==
 
-tapwrite@^1.1.4:
-  version "1.1.4"
-  resolved "https://registry.yarnpkg.com/tapwrite/-/tapwrite-1.1.4.tgz#59cf0010dbe310fb44e1361e1c23b47fcf97884c"
-  integrity sha512-6MGOh00gvITXB8JPrGBDXPaEYdeWxoo2BDY5tL7KqH7Rg9qcram0J86/w0+Fwj/xCc9FY2ACkR5+7J83hQJ+1A==
+tapwrite@^1.1.8:
+  version "1.1.8"
+  resolved "https://registry.yarnpkg.com/tapwrite/-/tapwrite-1.1.8.tgz#6acc70faa3cf48564833863dd4c9a20855dae315"
+  integrity sha512-O3HXmjbFM+dDsfn8Bt2juaXA+eb2MuFoahhCl6wuiz1cNC3dtiILOOwFi3pHdhlAsicmP0pVROCPjGq7UxULxQ==
   dependencies:
     tippy.js "^6.3.7"
 

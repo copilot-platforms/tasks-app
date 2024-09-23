@@ -13,6 +13,7 @@ import {
   StyledKeyboardIcon,
   StyledTiptapDescriptionWrapper,
   StyledTypography,
+  TaskDetailsContainer,
 } from '@/app/detail/ui/styledComponent'
 import {
   clientUpdateTask,
@@ -128,8 +129,8 @@ export default async function TaskDetailPage({
               </AppMargin>
             </StyledBox>
             <CustomScrollbar style={{ width: '8px' }}>
-              <StyledTiptapDescriptionWrapper>
-                <AppMargin size={SizeofAppMargin.LARGE} py="30px">
+              <TaskDetailsContainer>
+                <StyledTiptapDescriptionWrapper>
                   <TaskEditor
                     // attachment={attachments}
                     task_id={task_id}
@@ -163,53 +164,53 @@ export default async function TaskDetailPage({
                     postScrapImage={postScrapImageHandler}
                     userType={params.user_type}
                   />
-                </AppMargin>
-              </StyledTiptapDescriptionWrapper>
-              {/* {advancedFeatureFlag && ( */}
-              {/*   <AppMargin size={SizeofAppMargin.LARGE} py="18.5px"> */}
-              {/*     <Stack direction="column" alignItems="left" p="10px 5px" rowGap={5}> */}
-              {/*       <Typography variant="xl">Activity</Typography> */}
-              {/*       <Stack direction="column" alignItems="left" p="10px 5px" rowGap={4}> */}
-              {/*         {activities?.map((item: LogResponse, index: number) => { */}
-              {/*           return ( */}
-              {/*             <Box */}
-              {/*               sx={{ */}
-              {/*                 height: 'auto', */}
-              {/*                 display: 'block', */}
-              {/*               }} */}
-              {/*               key={item.id} */}
-              {/*             > */}
-              {/*               {item.type == ActivityType.COMMENT_ADDED ? ( */}
-              {/*                 <Comments */}
-              {/*                   comment={item} */}
-              {/*                   createComment={async (postCommentPayload: CreateComment) => { */}
-              {/*                     'use server' */}
-              {/*                     await postComment(token, postCommentPayload) */}
-              {/*                   }} */}
-              {/*                   deleteComment={async (id: string) => { */}
-              {/*                     'use server' */}
-              {/*                     await deleteComment(token, id) */}
-              {/*                   }} */}
-              {/*                   task_id={task_id} */}
-              {/*                 /> */}
-              {/*               ) : ( */}
-              {/*                 <ActivityLog log={item} /> */}
-              {/*               )} */}
-              {/*             </Box> */}
-              {/*           ) */}
-              {/*         })} */}
+                </StyledTiptapDescriptionWrapper>
+                {/* {advancedFeatureFlag && ( */}
+                {/*   <AppMargin size={SizeofAppMargin.LARGE} py="18.5px"> */}
+                {/*     <Stack direction="column" alignItems="left" p="10px 5px" rowGap={5}> */}
+                {/*       <Typography variant="xl">Activity</Typography> */}
+                {/*       <Stack direction="column" alignItems="left" p="10px 5px" rowGap={4}> */}
+                {/*         {activities?.map((item: LogResponse, index: number) => { */}
+                {/*           return ( */}
+                {/*             <Box */}
+                {/*               sx={{ */}
+                {/*                 height: 'auto', */}
+                {/*                 display: 'block', */}
+                {/*               }} */}
+                {/*               key={item.id} */}
+                {/*             > */}
+                {/*               {item.type == ActivityType.COMMENT_ADDED ? ( */}
+                {/*                 <Comments */}
+                {/*                   comment={item} */}
+                {/*                   createComment={async (postCommentPayload: CreateComment) => { */}
+                {/*                     'use server' */}
+                {/*                     await postComment(token, postCommentPayload) */}
+                {/*                   }} */}
+                {/*                   deleteComment={async (id: string) => { */}
+                {/*                     'use server' */}
+                {/*                     await deleteComment(token, id) */}
+                {/*                   }} */}
+                {/*                   task_id={task_id} */}
+                {/*                 /> */}
+                {/*               ) : ( */}
+                {/*                 <ActivityLog log={item} /> */}
+                {/*               )} */}
+                {/*             </Box> */}
+                {/*           ) */}
+                {/*         })} */}
 
-              {/*         <CommentInput */}
-              {/*           createComment={async (postCommentPayload: CreateComment) => { */}
-              {/*             'use server' */}
-              {/*             await postComment(token, postCommentPayload) */}
-              {/*           }} */}
-              {/*           task_id={task_id} */}
-              {/*         /> */}
-              {/*       </Stack> */}
-              {/*     </Stack> */}
-              {/*   </AppMargin> */}
-              {/* )} */}
+                {/*         <CommentInput */}
+                {/*           createComment={async (postCommentPayload: CreateComment) => { */}
+                {/*             'use server' */}
+                {/*             await postComment(token, postCommentPayload) */}
+                {/*           }} */}
+                {/*           task_id={task_id} */}
+                {/*         /> */}
+                {/*       </Stack> */}
+                {/*     </Stack> */}
+                {/*   </AppMargin> */}
+                {/* )} */}
+              </TaskDetailsContainer>
             </CustomScrollbar>
           </ToggleController>
           <Box>
