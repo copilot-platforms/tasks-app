@@ -40,6 +40,7 @@ import { setDebouncedFilteredAssignees } from '@/utils/users'
 import { z } from 'zod'
 import { MiniLoader } from '@/components/atoms/MiniLoader'
 import { getAssigneeName } from '@/utils/assignee'
+import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
 
 const supabaseActions = new SupabaseActions()
 
@@ -296,6 +297,10 @@ export const NewTaskForm = ({ handleCreate, handleClose, getSignedUrlUpload }: N
 const NewTaskFormInputs = () => {
   const { title, description, attachments } = useSelector(selectCreateTask)
   const { errors } = useSelector(selectCreateTask)
+  const { token } = useSelector(selectTaskBoard)
+
+  const handleDetailChange = (content: string) =>
+    store.dispatch(setCreateTaskFields({ targetField: 'description', value: content }))
 
   return (
     <>
@@ -321,9 +326,11 @@ const NewTaskFormInputs = () => {
         <Typography variant="md">Description</Typography>
         <Tapwrite
           content={description}
-          getContent={(content) => store.dispatch(setCreateTaskFields({ targetField: 'description', value: content }))}
+          getContent={handleDetailChange}
           placeholder="Add description..."
           editorClass="tapwrite-task-description"
+          uploadFn={(file) => uploadImageHandler(file, token ?? '')}
+          deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '')}
         />
       </Stack>
       <Stack direction="row" columnGap={2} m="16px 0px">

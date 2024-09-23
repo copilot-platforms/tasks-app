@@ -20,6 +20,8 @@ import { TaskResponse } from '@/types/dto/tasks.dto'
 import { ScrapImageRequest } from '@/types/common'
 import { getSignedUrlFile } from '@/app/detail/[task_id]/[user_type]/actions'
 import { getFilePathFromUrl } from '@/utils/signedUrlReplacer'
+import { getSignedUrlUpload } from '@/app/actions'
+import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
 
 interface Prop {
   task_id: string
@@ -31,7 +33,6 @@ interface Prop {
   deleteTask: () => void
   postAttachment: (postAttachmentPayload: CreateAttachmentRequest) => void
   deleteAttachment: (id: string) => void
-  getSignedUrlUpload: (fileName: string) => Promise<ISignedUrlUpload>
   postScrapImage: (payload: ScrapImageRequest) => void
   userType: UserType
 }
@@ -46,7 +47,6 @@ export const TaskEditor = ({
   deleteTask,
   postAttachment,
   deleteAttachment,
-  getSignedUrlUpload,
   postScrapImage,
   userType,
 }: Prop) => {
@@ -125,28 +125,6 @@ export const TaskEditor = ({
     debouncedResetTypingFlag()
   }
 
-  const uploadImageHandler = async (file: File) => {
-    const supabaseActions = new SupabaseActions()
-    const fileName = generateRandomString(file.name)
-
-    const signedUrl: ISignedUrlUpload = await getSignedUrlUpload(fileName)
-    const filePayload = await supabaseActions.uploadAttachment(file, signedUrl, task_id)
-    const url = await getSignedUrlFile(token ?? '', filePayload?.filePath ?? '')
-
-    return url
-  }
-
-  const deleteEditorAttachmentsHandler = async (url: string) => {
-    const filePath = await getFilePathFromUrl(url)
-    if (filePath) {
-      const payload: ScrapImageRequest = {
-        filePath: filePath,
-        taskId: task_id,
-      }
-      postScrapImage(payload)
-    }
-  }
-
   return (
     <>
       <StyledTextField
@@ -189,8 +167,8 @@ export const TaskEditor = ({
           readonly={userType === UserType.CLIENT_USER}
           editorClass="tapwrite-details-page"
           placeholder="Add description..."
-          uploadFn={uploadImageHandler}
-          deleteEditorAttachments={deleteEditorAttachmentsHandler}
+          uploadFn={(file) => uploadImageHandler(file, token ?? '', task_id)}
+          deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', task_id)}
         />
       </Box>
 

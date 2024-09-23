@@ -23,7 +23,7 @@ import {
   ScrapImageRequest,
 } from '@/types/common'
 import { CopilotAPI } from '@/utils/CopilotAPI'
-import { replaceImageSrc } from '@/utils/signedUrlReplacer'
+import { replaceImageSrc, updateTaskIdOfScrapImagesAfterCreation } from '@/utils/signedUrlReplacer'
 import { SupabaseService } from '../core/services/supabase.service'
 import { supabaseBucket } from '@/config'
 import { AttachmentsService } from '../attachments/attachments.service'
@@ -150,6 +150,7 @@ export class TasksService extends BaseService {
           dueData: newTask.dueDate,
         }),
       )
+      newTask.body && (await updateTaskIdOfScrapImagesAfterCreation(this.db, newTask.body, newTask.id))
     }
 
     await this.sendTaskCreateNotifications(newTask)

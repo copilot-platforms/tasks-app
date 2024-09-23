@@ -121,3 +121,10 @@ export const postScrapImage = async (token: string, payload: ScrapImageRequest) 
     body: JSON.stringify(payload),
   })
 }
+
+async function getSignedUrlUpload(token: string, fileName: string) {
+  const res = await fetch(`${apiUrl}/api/attachments/upload?token=${token}&fileName=${fileName}`)
+
+  const data = await res.json()
+  return data.signedUrl
+}
