@@ -23,7 +23,7 @@ import {
   ScrapImageRequest,
 } from '@/types/common'
 import { CopilotAPI } from '@/utils/CopilotAPI'
-import { replaceImageSrc, updateTaskIdOfScrapImagesAfterCreation } from '@/utils/signedUrlReplacer'
+import { getFilePathFromUrl, replaceImageSrc } from '@/utils/signedUrlReplacer'
 import { SupabaseService } from '../core/services/supabase.service'
 import { supabaseBucket } from '@/config'
 import { AttachmentsService } from '../attachments/attachments.service'
@@ -150,7 +150,7 @@ export class TasksService extends BaseService {
           dueData: newTask.dueDate,
         }),
       )
-      newTask.body && (await updateTaskIdOfScrapImagesAfterCreation(this.db, newTask.body, newTask.id))
+      newTask.body && (await this.updateTaskIdOfScrapImagesAfterCreation(newTask.body, newTask.id))
     }
 
     await this.sendTaskCreateNotifications(newTask)
@@ -593,5 +593,29 @@ export class TasksService extends BaseService {
         },
       })
     }
+  }
+
+  async updateTaskIdOfScrapImagesAfterCreation(htmlString: string, task_id: string) {
+    const imgTagRegex = /<img\s+[^>]*src="([^"]+)"[^>]*>/g //expression used to match all img tags in provided HTML string.
+    let match
+    const filePaths: string[] = []
+    while ((match = imgTagRegex.exec(htmlString)) !== null) {
+      const originalSrc = match[1]
+      const filePath = await getFilePathFromUrl(originalSrc)
+      if (filePath) {
+        filePaths.push(filePath)
+      }
+    }
+
+    await this.db.scrapImage.updateMany({
+      where: {
+        filePath: {
+          in: filePaths,
+        },
+      },
+      data: {
+        taskId: task_id,
+      },
+    })
   }
 }

@@ -25,7 +25,7 @@ export class ScrapImageService {
     const tasks = await db.task.findMany({
       where: {
         id: {
-          in: scrapImages.map((image: ScrapImage) => image.taskId).filter((taskId): taskId is string => taskId !== null),
+          in: scrapImages.map((image: ScrapImage) => image.taskId).filter((taskId): taskId is string => !taskId),
         },
       },
     })

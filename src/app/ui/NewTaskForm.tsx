@@ -329,8 +329,8 @@ const NewTaskFormInputs = () => {
           getContent={handleDetailChange}
           placeholder="Add description..."
           editorClass="tapwrite-task-description"
-          uploadFn={(file) => uploadImageHandler(file, token ?? '')}
-          deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '')}
+          uploadFn={(file) => uploadImageHandler(file, token ?? '', null)}
+          deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', null)}
         />
       </Stack>
       <Stack direction="row" columnGap={2} m="16px 0px">

@@ -35,31 +35,3 @@ export async function getFilePathFromUrl(url: string) {
     return null
   }
 }
-
-export async function updateTaskIdOfScrapImagesAfterCreation(
-  db: PrismaClient<Prisma.PrismaClientOptions, never, DefaultArgs>,
-  htmlString: string,
-  task_id: string,
-) {
-  const imgTagRegex = /<img\s+[^>]*src="([^"]+)"[^>]*>/g //expression used to match all img tags in provided HTML string.
-  let match
-  const filePaths: string[] = []
-  while ((match = imgTagRegex.exec(htmlString)) !== null) {
-    const originalSrc = match[1]
-    const filePath = await getFilePathFromUrl(originalSrc)
-    if (filePath) {
-      filePaths.push(filePath)
-    }
-  }
-
-  await db.scrapImage.updateMany({
-    where: {
-      filePath: {
-        in: filePaths,
-      },
-    },
-    data: {
-      taskId: task_id,
-    },
-  })
-}
