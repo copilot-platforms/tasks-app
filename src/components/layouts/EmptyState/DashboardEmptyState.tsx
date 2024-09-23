@@ -39,7 +39,7 @@ const DashboardEmptyState = ({ userType }: { userType: UserRole }) => {
                 {userType == UserRole.IU ? " You don't have any tasks yet" : 'No tasks assigned'}
               </Typography>
               <Typography variant="bodyLg" sx={{ color: (theme) => theme.color.gray[500] }}>
-                {userType == UserRole.Client
+                {userType == UserRole.IU
                   ? 'Tasks will be shown here after they’re created. You can create a new task below.'
                   : 'Tasks will show here once they’ve been assigned to you. '}
               </Typography>
