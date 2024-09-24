@@ -52,13 +52,6 @@ async function getOneTask(token: string, taskId: string): Promise<TaskResponse> 
   return data.task
 }
 
-async function getSignedUrlUpload(token: string, fileName: string) {
-  const res = await fetch(`${apiUrl}/api/attachments/upload?token=${token}&fileName=${fileName}`)
-
-  const data = await res.json()
-  return data.signedUrl
-}
-
 async function getSignedUrlFile(token: string, filePath: string) {
   'use server'
   const res = await fetch(`${apiUrl}/api/attachments/sign-url?token=${token}&filePath=${filePath}`)
@@ -90,11 +83,6 @@ export default async function TaskDetailPage({
   console.info(`app/detail/${task_id}/${user_type}/page.tsx | Serving user ${token} with payload`, tokenPayload)
 
   redirectIfResourceNotFound(searchParams, task, !!tokenPayload.internalUserId)
-
-  const postScrapImageHandler = async (payload: ScrapImageRequest) => {
-    'use server'
-    return await postScrapImage(token, payload)
-  }
 
   return (
     <DetailStateUpdate isRedirect={!!searchParams.isRedirect} token={token} tokenPayload={tokenPayload} task={task}>
@@ -156,12 +144,6 @@ export default async function TaskDetailPage({
                       'use server'
                       await deleteAttachment(token, id)
                     }}
-                    getSignedUrlUpload={async (fileName: string) => {
-                      'use server'
-                      const data = await getSignedUrlUpload(token, fileName)
-                      return data
-                    }}
-                    postScrapImage={postScrapImageHandler}
                     userType={params.user_type}
                   />
                 </StyledTiptapDescriptionWrapper>

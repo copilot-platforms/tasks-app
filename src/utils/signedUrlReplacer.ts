@@ -1,3 +1,6 @@
+import { Prisma, PrismaClient, StateType, WorkflowState } from '@prisma/client'
+import { DefaultArgs } from '@prisma/client/runtime/library'
+
 export async function replaceImageSrc(htmlString: string, getSignedUrl: (filePath: string) => Promise<string | undefined>) {
   const imgTagRegex = /<img\s+[^>]*src="([^"]+)"[^>]*>/g //expression used to match all img tags in provided HTML string.
   const replacements: { originalSrc: string; newUrl: string }[] = []

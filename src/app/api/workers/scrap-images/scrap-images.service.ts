@@ -23,7 +23,11 @@ export class ScrapImageService {
     const supabase = new SupabaseService()
 
     const tasks = await db.task.findMany({
-      where: { id: { in: scrapImages.map((image: ScrapImage) => image.taskId) } },
+      where: {
+        id: {
+          in: scrapImages.map((image: ScrapImage) => image.taskId).filter((taskId): taskId is string => !taskId),
+        },
+      },
     })
     const scrapImagesToDelete = []
     const scrapImagesToDeleteFromBucket = []
@@ -35,6 +39,8 @@ export class ScrapImageService {
 
         if (!task) {
           console.error('Could not find task for scrap image', image)
+          scrapImagesToDelete.push(image.id)
+          scrapImagesToDeleteFromBucket.push(image.filePath)
           continue
         }
         // If image is in task body
