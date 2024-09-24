@@ -31,7 +31,6 @@ interface Prop {
   deleteTask: () => void
   postAttachment: (postAttachmentPayload: CreateAttachmentRequest) => void
   deleteAttachment: (id: string) => void
-  postScrapImage: (payload: ScrapImageRequest) => void
   userType: UserType
 }
 
@@ -45,7 +44,6 @@ export const TaskEditor = ({
   deleteTask,
   postAttachment,
   deleteAttachment,
-  postScrapImage,
   userType,
 }: Prop) => {
   const [updateTitle, setUpdateTitle] = useState('')

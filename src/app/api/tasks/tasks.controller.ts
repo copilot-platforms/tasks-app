@@ -59,13 +59,3 @@ export const clientUpdateTask = async (req: NextRequest, { params: { id } }: IdP
   const updatedTask = await tasksService.clientUpdateTask(id, workflowStateId)
   return NextResponse.json({ updatedTask })
 }
-
-export const PostScrapImage = async (req: NextRequest) => {
-  const user = await authenticate(req)
-  const scrapImageService = new TasksService(user)
-
-  const data = ScrapImageRequestSchema.parse(await req.json())
-
-  await scrapImageService.createScrapImage(data)
-  return NextResponse.json({})
-}

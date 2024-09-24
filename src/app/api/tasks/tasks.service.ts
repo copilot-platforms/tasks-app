@@ -28,6 +28,7 @@ import { SupabaseService } from '../core/services/supabase.service'
 import { supabaseBucket } from '@/config'
 import { AttachmentsService } from '../attachments/attachments.service'
 import { signedUrlTtl } from '@/types/constants'
+import { ScrapImageService } from '@/app/api/scrap-images/scrap-images.service'
 
 type FilterByAssigneeId = {
   assigneeId: string
@@ -138,6 +139,7 @@ export class TasksService extends BaseService {
     if (newTask) {
       // @todo move this logic to any pub/sub service like event bus
       const activityLogger = new ActivityLogger({ taskId: newTask.id, user: this.user })
+      const scrapImageService = new ScrapImageService(this.user)
       await activityLogger.log(
         ActivityType.TASK_CREATED,
         TaskCreatedSchema.parse({
@@ -150,7 +152,7 @@ export class TasksService extends BaseService {
           dueData: newTask.dueDate,
         }),
       )
-      newTask.body && (await this.updateTaskIdOfScrapImagesAfterCreation(newTask.body, newTask.id))
+      newTask.body && (await scrapImageService.updateTaskIdOfScrapImagesAfterCreation(newTask.body, newTask.id))
     }
 
     await this.sendTaskCreateNotifications(newTask)
@@ -568,54 +570,4 @@ export class TasksService extends BaseService {
     const url = data?.signedUrl
     return url
   } // used to replace urls for images in task body
-
-  async createScrapImage(data: ScrapImageRequest) {
-    const policyGate = new PoliciesService(this.user)
-    policyGate.authorize(UserAction.Update, Resource.Tasks)
-    const existing = await this.db.scrapImage.findFirst({
-      where: {
-        filePath: data.filePath,
-      },
-    })
-    if (!existing) {
-      await this.db.scrapImage.create({
-        data: {
-          ...data,
-        },
-      })
-    } else {
-      await this.db.scrapImage.update({
-        where: {
-          id: existing.id,
-        },
-        data: {
-          updatedAt: new Date(), //update the scrapImage if it exists in the table already
-        },
-      })
-    }
-  }
-
-  async updateTaskIdOfScrapImagesAfterCreation(htmlString: string, task_id: string) {
-    const imgTagRegex = /<img\s+[^>]*src="([^"]+)"[^>]*>/g //expression used to match all img tags in provided HTML string.
-    let match
-    const filePaths: string[] = []
-    while ((match = imgTagRegex.exec(htmlString)) !== null) {
-      const originalSrc = match[1]
-      const filePath = await getFilePathFromUrl(originalSrc)
-      if (filePath) {
-        filePaths.push(filePath)
-      }
-    }
-
-    await this.db.scrapImage.updateMany({
-      where: {
-        filePath: {
-          in: filePaths,
-        },
-      },
-      data: {
-        taskId: task_id,
-      },
-    })
-  }
 }

@@ -109,8 +109,7 @@ export const deleteComment = async (token: string, id: string) => {
 }
 
 export const postScrapImage = async (token: string, payload: ScrapImageRequest) => {
-  console.log('posting')
-  await fetch(`${apiUrl}/api/tasks/${payload.taskId}/scrap-image/?token=${token}`, {
+  await fetch(`${apiUrl}/api/scrap-images/?token=${token}`, {
     method: 'POST',
     body: JSON.stringify(payload),
   })

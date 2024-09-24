@@ -83,11 +83,6 @@ export default async function TaskDetailPage({
 
   redirectIfResourceNotFound(searchParams, task, !!tokenPayload.internalUserId)
 
-  const postScrapImageHandler = async (payload: ScrapImageRequest) => {
-    'use server'
-    return await postScrapImage(token, payload)
-  }
-
   return (
     <DetailStateUpdate isRedirect={!!searchParams.isRedirect} token={token} tokenPayload={tokenPayload} task={task}>
       <RealTime>
@@ -148,7 +143,6 @@ export default async function TaskDetailPage({
                       'use server'
                       await deleteAttachment(token, id)
                     }}
-                    postScrapImage={postScrapImageHandler}
                     userType={params.user_type}
                   />
                 </AppMargin>
