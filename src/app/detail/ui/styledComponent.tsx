@@ -95,6 +95,7 @@ export const TaskDetailsContainer = styled(Box)(() => ({
   alignItems: 'center',
   width: '100%',
   margin: '0 auto',
-  padding: '30px 36px',
+  padding: '20px 30px 20px 17px',
   display: 'flex',
+  flexDirection: 'column',
 }))
