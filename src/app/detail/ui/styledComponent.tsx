@@ -90,11 +90,11 @@ export const CommentCardContainer = styled(Stack)(({ theme }) => ({
 }))
 
 export const TaskDetailsContainer = styled(Box)(() => ({
-  maxWidth: '600px',
+  maxWidth: '672px',
   justifyContent: 'center',
   alignItems: 'center',
   width: '100%',
   margin: '0 auto',
-  padding: '0px',
+  padding: '30px 36px',
   display: 'flex',
 }))
