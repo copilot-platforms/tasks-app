@@ -129,7 +129,11 @@ export default async function TaskDetailPage({
               </AppMargin>
             </StyledBox>
             <CustomScrollbar style={{ width: '8px' }}>
-              <TaskDetailsContainer>
+              <TaskDetailsContainer
+                sx={{
+                  padding: { xs: '20px 33px 20px 20px', sm: '30px 33px 30px 20px' },
+                }}
+              >
                 <StyledTiptapDescriptionWrapper>
                   <TaskEditor
                     // attachment={attachments}
