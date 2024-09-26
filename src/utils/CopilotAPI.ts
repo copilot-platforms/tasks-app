@@ -175,44 +175,29 @@ export class CopilotAPI {
     await this.copilot.deleteNotification({ id })
   }
 
+  private wrapWithRetry<Args extends unknown[], R>(fn: (...args: Args) => Promise<R>): (...args: Args) => Promise<R> {
+    return (...args: Args): Promise<R> => withRetry(fn.bind(this), args)
+  }
+
   // Methods wrapped with retry
-  getTokenPayload = async (...args: unknown[]) => await withRetry(this._getTokenPayload.bind(this), args)
-
-  me = async (...args: unknown[]) => await withRetry(this._me.bind(this), args)
-
-  getWorkspace = async (...args: unknown[]) => await withRetry(this._getWorkspace.bind(this), args)
-
-  getClientTokenPayload = async (...args: unknown[]) => await withRetry(this._getClientTokenPayload.bind(this), args)
-
-  getIUTokenPayload = async (...args: unknown[]) => await withRetry(this._getIUTokenPayload.bind(this), args)
-
-  createClient = async (...args: unknown[]) => await withRetry(this._createClient.bind(this), args)
-
-  getClient = async (...args: unknown[]) => await withRetry(this._getClient.bind(this), args)
-
-  getClients = async (...args: unknown[]) => await withRetry(this._getClients.bind(this), args)
-
-  updateClient = async (...args: unknown[]) => await withRetry(this._updateClient.bind(this), args)
-
-  deleteClient = async (...args: unknown[]) => await withRetry(this._deleteClient.bind(this), args)
-
-  createCompany = async (...args: unknown[]) => await withRetry(this._createCompany.bind(this), args)
-
-  getCompany = async (...args: unknown[]) => await withRetry(this._getCompany.bind(this), args)
-
-  getCompanies = async (...args: unknown[]) => await withRetry(this._getCompanies.bind(this), args)
-
-  getCompanyClients = async (...args: unknown[]) => await withRetry(this._getCompanyClients.bind(this), args)
-
-  getCustomFields = async (...args: unknown[]) => await withRetry(this._getCustomFields.bind(this), args)
-
-  getInternalUsers = async (...args: unknown[]) => await withRetry(this._getInternalUsers.bind(this), args)
-
-  getInternalUser = async (...args: unknown[]) => await withRetry(this._getInternalUser.bind(this), args)
-
-  createNotification = async (...args: unknown[]) => await withRetry(this._createNotification.bind(this), args)
-
-  markNotificationAsRead = async (...args: unknown[]) => await withRetry(this._markNotificationAsRead.bind(this), args)
-
-  deleteNotification = async (...args: unknown[]) => await withRetry(this._deleteNotification.bind(this), args)
+  getTokenPayload = this.wrapWithRetry(this._getTokenPayload)
+  me = this.wrapWithRetry(this._me)
+  getWorkspace = this.wrapWithRetry(this._getWorkspace)
+  getClientTokenPayload = this.wrapWithRetry(this._getClientTokenPayload)
+  getIUTokenPayload = this.wrapWithRetry(this._getIUTokenPayload)
+  createClient = this.wrapWithRetry(this._createClient)
+  getClient = this.wrapWithRetry(this._getClient)
+  getClients = this.wrapWithRetry(this._getClients)
+  updateClient = this.wrapWithRetry(this._updateClient)
+  deleteClient = this.wrapWithRetry(this._deleteClient)
+  createCompany = this.wrapWithRetry(this._createCompany)
+  getCompany = this.wrapWithRetry(this._getCompany)
+  getCompanies = this.wrapWithRetry(this._getCompanies)
+  getCompanyClients = this.wrapWithRetry(this._getCompanyClients)
+  getCustomFields = this.wrapWithRetry(this._getCustomFields)
+  getInternalUsers = this.wrapWithRetry(this._getInternalUsers)
+  getInternalUser = this.wrapWithRetry(this._getInternalUser)
+  createNotification = this.wrapWithRetry(this._createNotification)
+  markNotificationAsRead = this.wrapWithRetry(this._markNotificationAsRead)
+  deleteNotification = this.wrapWithRetry(this._deleteNotification)
 }
