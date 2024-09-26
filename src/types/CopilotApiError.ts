@@ -3,7 +3,7 @@ export interface StatusableError extends Error {
   status: number
 }
 
-export interface MessageableError extends Error {
+export interface MessagableError extends Error {
   body?: {
     message: string
   }
