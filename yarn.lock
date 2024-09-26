@@ -6512,6 +6512,11 @@ raf@^3.1.0:
   dependencies:
     performance-now "^2.1.0"
 
+re-resizable@^6.10.0:
+  version "6.10.0"
+  resolved "https://registry.yarnpkg.com/re-resizable/-/re-resizable-6.10.0.tgz#d684a096ab438f1a93f59ad3a580a206b0ce31ee"
+  integrity sha512-hysSK0xmA5nz24HBVztlk4yCqCLCvS32E6ZpWxVKop9x3tqCa4yAj1++facrmkOf62JsJHjmjABdKxXofYioCw==
+
 react-custom-scrollbars@^4.2.1:
   version "4.2.1"
   resolved "https://registry.yarnpkg.com/react-custom-scrollbars/-/react-custom-scrollbars-4.2.1.tgz#830fd9502927e97e8a78c2086813899b2a8b66db"
@@ -7237,11 +7242,12 @@ tapable@^2.2.0:
   resolved "https://registry.yarnpkg.com/tapable/-/tapable-2.2.1.tgz#1967a73ef4060a82f12ab96af86d52fdb76eeca0"
   integrity sha512-GNzQvQTOIP6RyTfE2Qxb8ZVlNmw0n88vp1szwWRimP02mnTsx3Wtn5qRdqY9w2XduFNUgvOwhNnQsjwCp+kqaQ==
 
-tapwrite@^1.1.14:
-  version "1.1.14"
-  resolved "https://registry.yarnpkg.com/tapwrite/-/tapwrite-1.1.14.tgz#7532f607d6799253a1e7f9810767b40be877e7db"
-  integrity sha512-ZfvDHYAFi+yneCd1vEavCpakJcMTjtwGCvg9fyO+PmOuiGfuGLz5ci2TAmh/zlp9gXcdr1HzAbH8Do4DVwPinw==
+tapwrite@^1.1.17:
+  version "1.1.17"
+  resolved "https://registry.yarnpkg.com/tapwrite/-/tapwrite-1.1.17.tgz#aadce0a22cda6102ac514ea156a6bfc7e52f74a6"
+  integrity sha512-2FFhEUs2YYjMurPE2XDItbLJ7S7OBRTSwyRfhvKewgnrGfEX0ibtaYaiy4YfjhD3G4VtuAaFrZJ6VHANCH7S6w==
   dependencies:
+    re-resizable "^6.10.0"
     tippy.js "^6.3.7"
 
 test-exclude@^6.0.0:

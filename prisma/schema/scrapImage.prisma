@@ -1,8 +1,8 @@
 model ScrapImage {
   id          String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   filePath    String       @unique
-  taskId      String       @db.Uuid
-  task        Task         @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  taskId      String?       @db.Uuid
+  task        Task?         @relation(fields: [taskId], references: [id], onDelete: Cascade)
   createdAt   DateTime     @default(now()) @db.Timestamptz()
   updatedAt   DateTime     @updatedAt @db.Timestamptz()
   deletedAt   DateTime?    @db.Timestamptz()
