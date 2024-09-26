@@ -5,7 +5,7 @@ export const withRetry = async <T>(fn: (...args: any[]) => Promise<T>, args: any
     retries: 3,
     minTimeout: 500,
     maxTimeout: 500,
-    factor: 1, // No exponential delays for now
+    factor: 2, // Exponential factor for timeout delay. Tweak this if issues still persist
 
     onFailedAttempt: (error: FailedAttemptError) => {
       console.error(
