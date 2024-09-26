@@ -3,6 +3,8 @@ import pRetry, { FailedAttemptError } from 'p-retry'
 import * as Sentry from '@sentry/nextjs'
 
 export const withRetry = async <T>(fn: (...args: any[]) => Promise<T>, args: any[]): Promise<T> => {
+  let isEventProcessorRegisterd = false
+
   return await pRetry(
     async () => {
       try {
@@ -10,6 +12,9 @@ export const withRetry = async <T>(fn: (...args: any[]) => Promise<T>, args: any
       } catch (error) {
         // Hopefully now sentry doesn't report retry errors as well. We have enough triage issues as it is
         Sentry.withScope((scope) => {
+          if (isEventProcessorRegisterd) return
+
+          isEventProcessorRegisterd = true
           scope.addEventProcessor((event) => {
             if (event.level === 'error' && event.message && event.message.includes('An error occurred during retry')) {
               return null // Discard the event as it occured during retry
