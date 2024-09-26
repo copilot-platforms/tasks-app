@@ -16,8 +16,6 @@ export const withRetry = async <T>(fn: (...args: any[]) => Promise<T>, args: any
             }
             return event
           })
-          // Log the error without triggering Sentry
-          console.error('An error occurred during retry, but it will be retried:', error)
         })
         // Rethrow the error so pRetry can rety
         throw error
