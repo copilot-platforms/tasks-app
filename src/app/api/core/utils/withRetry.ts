@@ -1,7 +1,7 @@
 import pRetry, { FailedAttemptError } from 'p-retry'
 
-export const withRetry = <T>(fn: (...args: any[]) => Promise<T>, args: any[]): Promise<T> => {
-  return pRetry(() => fn(...args), {
+export const withRetry = async <T>(fn: (...args: any[]) => Promise<T>, args: any[]): Promise<T> => {
+  return await pRetry(async () => await fn(...args), {
     retries: 3,
     minTimeout: 500,
     maxTimeout: 500,
@@ -9,7 +9,7 @@ export const withRetry = <T>(fn: (...args: any[]) => Promise<T>, args: any[]): P
 
     onFailedAttempt: (error: FailedAttemptError) => {
       console.error(
-        `CopilotAPI#withRetry - Attempt ${error.attemptNumber} failed. There are ${error.retriesLeft} retries left. Error:`,
+        `CopilotAPI#withRetry | Attempt ${error.attemptNumber} failed. There are ${error.retriesLeft} retries left. Error:`,
         error,
       )
     },
