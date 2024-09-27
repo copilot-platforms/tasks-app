@@ -29,7 +29,6 @@ export const RealTime = ({ children, task }: { children: ReactNode; task?: TaskR
       }
     }
     if (payload.eventType === 'UPDATE') {
-      console.log(payload)
       const updatedTask = payload.new
       //check if the new task in this event belongs to the same workspaceId
       if (payload.new.workspaceId === tokenPayload?.workspaceId) {
@@ -47,7 +46,6 @@ export const RealTime = ({ children, task }: { children: ReactNode; task?: TaskR
           }
           //if the task is updated
         } else {
-          console.log('realtime updatedTask', updatedTask)
           const newTaskArr = [...tasks.filter((task) => task.id !== updatedTask.id), updatedTask]
           store.dispatch(setTasks(newTaskArr))
         }
