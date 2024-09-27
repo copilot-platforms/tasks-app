@@ -15,7 +15,7 @@ interface RealTimeTaskResponse extends TaskResponse {
   deletedAt: string
 }
 
-export const RealTime = ({ children }: { children: ReactNode }) => {
+export const RealTime = ({ children, task }: { children: ReactNode; task?: TaskResponse }) => {
   const { tasks, token } = useSelector(selectTaskBoard)
   const { tokenPayload } = useSelector(selectAuthDetails)
   const pathname = usePathname()
@@ -29,6 +29,7 @@ export const RealTime = ({ children }: { children: ReactNode }) => {
       }
     }
     if (payload.eventType === 'UPDATE') {
+      console.log(payload)
       const updatedTask = payload.new
       //check if the new task in this event belongs to the same workspaceId
       if (payload.new.workspaceId === tokenPayload?.workspaceId) {

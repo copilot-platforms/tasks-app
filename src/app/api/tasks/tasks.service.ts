@@ -224,6 +224,7 @@ export class TasksService extends BaseService {
       where: { id },
       data: {
         ...data,
+
         assigneeId: data.assigneeId === '' ? null : data.assigneeId,
         label,
         ...(await getTaskTimestamps('update', this.user, data, prevTask)),
