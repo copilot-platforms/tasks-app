@@ -15,7 +15,7 @@ interface RealTimeTaskResponse extends TaskResponse {
   deletedAt: string
 }
 
-export const RealTime = ({ children }: { children: ReactNode }) => {
+export const RealTime = ({ children, task }: { children: ReactNode; task?: TaskResponse }) => {
   const { tasks, token } = useSelector(selectTaskBoard)
   const { tokenPayload } = useSelector(selectAuthDetails)
   const pathname = usePathname()

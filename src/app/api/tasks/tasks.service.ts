@@ -176,9 +176,14 @@ export class TasksService extends BaseService {
       },
     })
     if (!task) throw new APIError(httpStatus.NOT_FOUND, 'The requested task was not found')
+    const updatedTask = await this.db.task.update({
+      where: { id: task.id },
+      data: {
+        body: task.body && (await replaceImageSrc(task.body, this.getSignedUrl)),
+      },
+    })
 
-    task.body = task.body && (await replaceImageSrc(task.body, this.getSignedUrl))
-    return task
+    return updatedTask
   }
 
   async getTaskAssignee(task: Task): Promise<InternalUsers | ClientResponse | CompanyResponse | undefined> {

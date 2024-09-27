@@ -41,10 +41,11 @@ import { DetailStateUpdate } from '@/app/detail/[task_id]/[user_type]/DetailStat
 import { SilentError } from '@/components/templates/SilentError'
 import { z } from 'zod'
 import { ScrapImageRequest } from '@/types/common'
+import { signedUrlTtl } from '@/types/constants'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
-    next: { tags: ['getOneTask'] },
+    next: { tags: ['getOneTask'], revalidate: signedUrlTtl },
   })
 
   const data = await res.json()
