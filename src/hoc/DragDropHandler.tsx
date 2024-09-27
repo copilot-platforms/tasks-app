@@ -80,7 +80,7 @@ export const DragDropHandler = ({
           borderRadius: view === View.BOARD_VIEW ? '4px' : '0px',
           backgroundColor: '#F8F9FB',
         }
-      : { border: '0.5px solid transparent' }
+      : { border: view === View.BOARD_VIEW ? '0.5px solid transparent' : 'none' }
 
   if (draggable) {
     drag(drop(ref)) // If draggable, combine drag and drop refs
