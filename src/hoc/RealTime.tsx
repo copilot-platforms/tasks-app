@@ -46,6 +46,7 @@ export const RealTime = ({ children }: { children: ReactNode }) => {
           }
           //if the task is updated
         } else {
+          console.log('realtime updatedTask', updatedTask)
           const newTaskArr = [...tasks.filter((task) => task.id !== updatedTask.id), updatedTask]
           store.dispatch(setTasks(newTaskArr))
         }
