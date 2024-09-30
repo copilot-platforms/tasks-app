@@ -1,7 +1,5 @@
-import { CrossIcon } from '@/icons'
-import store from '@/redux/store'
-import { FilterOptions, IAssigneeCombined } from '@/types/interfaces'
-import { Avatar, IconButton, Stack, Typography } from '@mui/material'
+import { IAssigneeCombined } from '@/types/interfaces'
+import { Stack, Typography } from '@mui/material'
 import { CopilotAvatar } from '../atoms/CopilotAvatar'
 import { getAssigneeName } from '@/utils/assignee'
 
