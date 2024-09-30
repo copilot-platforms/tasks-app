@@ -16,6 +16,7 @@ import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { FilterOptions, FilterOptionsKeywords, IAssigneeCombined, IFilterOptions } from '@/types/interfaces'
 import { filterOptionsToAssigneeMap, filterTypeToButtonIndexMap } from '@/types/objectMaps'
 import { checkAssignee } from '@/utils/assignee'
+import { stopPendingFetch } from '@/utils/fetchSideEffects'
 import { NoAssigneeExtraOptions } from '@/utils/noAssignee'
 import { setDebouncedFilteredAssignees } from '@/utils/users'
 import { Box, IconButton, Stack } from '@mui/material'
@@ -33,6 +34,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
   const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
   const { view, filteredAssigneeList, filterOptions, assignee, token, viewSettingsTemp } = useSelector(selectTaskBoard)
   const [filteredAssignee, setFilteredAssignee] = useState(filteredAssigneeList)
+  const [initialAssignees, setInitialAssignees] = useState(filteredAssignee)
 
   const [loading, setLoading] = useState(false)
   const viewMode = viewSettingsTemp ? viewSettingsTemp.viewMode : view
@@ -46,7 +48,9 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
     store.dispatch(setFilterOptions({ optionType, newValue }))
     if (optionType === FilterOptions.TYPE) {
       const filterFunction = filterOptionsToAssigneeMap[newValue as string] || filterOptionsToAssigneeMap.default
-      setFilteredAssignee(filterFunction(assignee))
+      const newAssignees = filterFunction(assignee)
+      setFilteredAssignee(newAssignees)
+      setInitialAssignees(newAssignees)
     }
     //FilteredAssignee is also updated in the component's state and used in Selector's autocomplete to mitigate the time taken to update the store and fetch values to the Selector's autocomplete.
     const updatedFilterOptions = viewSettingsTemp
@@ -124,6 +128,9 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
   ]
 
   const assigneeValue = _assigneeValue as IAssigneeCombined
+
+  const stopPendingAssigneeFetch = () => stopPendingFetch(activeDebounceTimeoutId, setLoading)
+
   return (
     <Box
       sx={{
@@ -153,6 +160,9 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
                         const newValue = _newValue as IAssigneeCombined
                         updateAssigneeValue(newValue)
                         handleFilterOptionsChange(FilterOptions.ASSIGNEE, newValue?.id as string)
+                        // Once an option has been selected, reset the filteredAssignee array
+                        // Don't set to redux state assignee list but to initialAssignees, since this contains data for initial "type" filter
+                        setFilteredAssignee(initialAssignees)
                       }}
                       startIcon={<FilterByAsigneeIcon />}
                       endIcon={
@@ -206,6 +216,8 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
                       buttonContent={<FilterByAssigneeBtn assigneeValue={assigneeValue} />}
                       padding="2px 10px 2px 10px"
                       handleInputChange={async (newInputValue: string) => {
+                        setFilteredAssignee(initialAssignees)
+                        stopPendingAssigneeFetch()
                         if (!newInputValue) {
                           return
                         }
@@ -314,6 +326,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
                   buttonContent={<FilterByAssigneeBtn assigneeValue={assigneeValue} />}
                   padding="2px 10px 2px 10px"
                   handleInputChange={async (newInputValue: string) => {
+                    stopPendingAssigneeFetch()
                     if (!newInputValue) {
                       return
                     }
