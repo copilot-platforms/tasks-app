@@ -13,7 +13,6 @@ const TaskColumnHeader = styled(Stack)({
 const TaskColumnContainer = styled(Stack)({
   width: '292px',
   margin: '0 auto',
-  height: 'calc(100vh - 195px)',
   marginTop: '6px',
 })
 
@@ -34,7 +33,13 @@ export const TaskColumn = ({ children, columnName, taskCount }: Prop) => {
           </Typography>
         </Stack>
       </TaskColumnHeader>
-      <TaskColumnContainer>{children}</TaskColumnContainer>
+      <TaskColumnContainer
+        sx={{
+          height: { xs: 'calc(100vh - 230px)', md: 'calc(100vh - 195px)' },
+        }}
+      >
+        {children}
+      </TaskColumnContainer>
     </>
   )
 }
