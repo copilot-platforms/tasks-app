@@ -19,6 +19,8 @@ import { ClientResponse, CompanyResponse, InternalUsers, NotificationCreatedResp
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import Bottleneck from 'bottleneck'
 
+export type TaskWithWorkflowState = Task & { workflowState: WorkflowState }
+
 type FilterByAssigneeId = {
   assigneeId: string
   assigneeType: AssigneeType
@@ -284,7 +286,7 @@ export class TasksService extends BaseService {
     await this.db.internalUserNotification.deleteMany({ where: { taskId: id } })
   }
 
-  async getIncompleteTasksForCompany(assigneeId: string): Promise<(Task & { workflowState: WorkflowState })[]> {
+  async getIncompleteTasksForCompany(assigneeId: string): Promise<TaskWithWorkflowState[]> {
     // This works across workspaces
     return await this.db.task.findMany({
       where: { assigneeId, assigneeType: AssigneeType.company, workflowState: { type: { not: StateType.completed } } },
@@ -461,7 +463,7 @@ export class TasksService extends BaseService {
     }
   }
 
-  async sendTaskCreateNotifications(task: Task & { workflowState: WorkflowState }, isReassigned = false) {
+  async sendTaskCreateNotifications(task: TaskWithWorkflowState, isReassigned = false) {
     // If task is unassigned, there's nobody to send notifications to
     if (!task.assigneeId) return
 
@@ -478,10 +480,7 @@ export class TasksService extends BaseService {
     await sendTaskNotifications(task, notificationService, isReassigned)
   }
 
-  private async sendTaskUpdateNotifications(
-    prevTask: Task & { workflowState: WorkflowState },
-    updatedTask: Task & { workflowState: WorkflowState },
-  ) {
+  private async sendTaskUpdateNotifications(prevTask: TaskWithWorkflowState, updatedTask: TaskWithWorkflowState) {
     if (prevTask.workflowStateId === updatedTask.workflowStateId) return
 
     const notificationService = new NotificationService(this.user)
