@@ -74,7 +74,7 @@ export const TaskEditor = ({
         setUpdateDetail(currentTask.body ?? '')
       }
     }
-  }, [tasks, task_id, isUserTyping])
+  }, [tasks, task_id])
 
   const _titleUpdateDebounced = async (title: string) => updateTaskTitle(title)
 
@@ -156,7 +156,7 @@ export const TaskEditor = ({
         }}
       />
 
-      <Box mt="12px" sx={{ height: '100%' }}>
+      <Box mt="12px" sx={{ height: '100%', width: '100%' }}>
         <Tapwrite
           content={updateDetail}
           getContent={handleDetailChange}
