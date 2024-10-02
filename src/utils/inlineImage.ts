@@ -11,12 +11,14 @@ import { getSignedUrlUpload, getSignedUrlFile } from '@/app/actions'
 
 export const uploadImageHandler = async (file: File, token: string, task_id: string | null): Promise<string> => {
   const supabaseActions = new SupabaseActions()
+
   const fileName = generateRandomString(file.name)
-
   const signedUrl: ISignedUrlUpload = await getSignedUrlUpload(token, fileName)
-  const filePayload = await supabaseActions.uploadAttachment(file, signedUrl, task_id)
+  const { filePayload, error } = await supabaseActions.uploadAttachment(file, signedUrl, task_id)
   const url = await getSignedUrlFile(token ?? '', filePayload?.filePath ?? '')
-
+  if (error) {
+    console.error('error uploading file :', error)
+  }
   return url
 }
 

@@ -29,7 +29,7 @@ export class SupabaseActions extends SupabaseService {
       .from(supabaseBucket)
       .uploadToSignedUrl(signedUrl.path, signedUrl.token, file)
     if (error) {
-      throw new APIError(httpStatus.BAD_REQUEST, error.message)
+      throw new APIError(httpStatus.BAD_REQUEST, 'could not upload file to supabase', error.message)
     }
     if (data) {
       filePayload = {
@@ -40,7 +40,7 @@ export class SupabaseActions extends SupabaseService {
         filePath: data.path,
       }
     }
-    return filePayload
+    return { filePayload, error }
   }
 
   async removeAttachment(filePath: string) {
