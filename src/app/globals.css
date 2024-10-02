@@ -1,10 +1,12 @@
 :root {
   --top-offset: 235px;
+  --top-offset-list-view: 160px;
 }
 
 @media (min-width: 735px) {
   :root {
     --top-offset: 195px;
+    --top-offset-list-view: 135px;
   }
 }
 

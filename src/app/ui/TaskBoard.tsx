@@ -115,7 +115,7 @@ export const TaskBoard = () => {
         <Stack
           sx={{
             flexDirection: 'column',
-            height: 'calc(100vh - 135px)',
+            height: 'calc(100vh - var(--top-offset-list-view))',
           }}
         >
           <CustomScrollbar style={{ width: '8px' }}>
