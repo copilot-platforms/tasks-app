@@ -1,7 +1,12 @@
 :root {
-  --top-offset-md: 195px;
-  --top-offset-xs: 235px;
-} 
+  --top-offset: 235px;
+}
+
+@media (min-width: 735px) {
+  :root {
+    --top-offset: 195px;
+  }
+}
 
 * {
   padding: 0;
