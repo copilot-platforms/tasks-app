@@ -35,7 +35,7 @@ export const TaskColumn = ({ children, columnName, taskCount }: Prop) => {
       </TaskColumnHeader>
       <TaskColumnContainer
         sx={{
-          height: { xs: 'calc(100vh - 230px)', md: 'calc(100vh - 195px)' },
+          height: { xs: 'calc(100vh - var(--top-offset-xs))', md: 'calc(100vh - var(--top-offset-md))' },
         }}
       >
         {children}
