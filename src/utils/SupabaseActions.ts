@@ -29,7 +29,7 @@ export class SupabaseActions extends SupabaseService {
       .from(supabaseBucket)
       .uploadToSignedUrl(signedUrl.path, signedUrl.token, file)
     if (error) {
-      throw new APIError(httpStatus.BAD_REQUEST, 'could not upload file to supabase', error.message)
+      console.error('unable to upload the file')
     }
     if (data) {
       filePayload = {
