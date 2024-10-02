@@ -13,8 +13,8 @@ const TaskColumnHeader = styled(Stack)({
 const TaskColumnContainer = styled(Stack)({
   width: '292px',
   margin: '0 auto',
-  height: 'calc(100vh - 195px)',
   marginTop: '6px',
+  height: 'calc(100vh - var(--top-offset))',
 })
 
 interface Prop {
