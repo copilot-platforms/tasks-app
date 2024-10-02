@@ -29,6 +29,7 @@ import { supabaseBucket } from '@/config'
 import { AttachmentsService } from '../attachments/attachments.service'
 import { signedUrlTtl } from '@/types/constants'
 import { ScrapImageService } from '@/app/api/scrap-images/scrap-images.service'
+import Bottleneck from 'bottleneck'
 
 type FilterByAssigneeId = {
   assigneeId: string
@@ -500,6 +501,15 @@ export class TasksService extends BaseService {
 
     const notificationService = new NotificationService(this.user)
 
+    /*
+     * Cases:
+     * 1. Assignee ID is changed for incomplete task -> Mark as read for previous recipients and trigger new notifications for new assignee
+     * 2. Assignee ID is changed for completed task -> Do nothing
+     * 3. Task was changed from incomplete to complete state -> delete all notifications for all users
+     * 4. Task was changed from complete to incomplete state -> recreate those notifications
+     */
+
+    // Case 1
     // --- Handle previous assignee notification "Mark as read" if it is updated
     if (prevTask.assigneeId != updatedTask.assigneeId && updatedTask.workflowState.type !== StateType.completed) {
       // If task is reassigned from a client, mark prev client notification as read
@@ -525,36 +535,32 @@ export class TasksService extends BaseService {
       }
     }
 
-    // --- Handle task moved to completed logic
-    // If task was previous in another state, and is moved to a 'completed' type WorkflowState by IU
+    // Case 3
+    // --- If task was previously in another state, and is moved to a 'completed' type WorkflowState by IU
     if (
       prevTask?.workflowState?.type !== StateType.completed &&
       updatedTask?.workflowState?.type === StateType.completed &&
       updatedTask.assigneeId
     ) {
-      if (updatedTask.createdById !== updatedTask.assigneeId) {
-        // Make sure company task is not marked as complete by IU
-        if (
-          (updatedTask.assigneeType === AssigneeType.company || updatedTask.assigneeType === AssigneeType.internalUser) &&
-          updatedTask.createdById !== this.user.internalUserId
-        ) {
-          const action =
-            updatedTask.assigneeType === AssigneeType.company
-              ? NotificationTaskActions.CompletedForCompanyByIU
-              : NotificationTaskActions.CompletedByIU
-          await notificationService.create(action, updatedTask, { email: true })
-        }
-      }
-
-      if (updatedTask.assigneeType === AssigneeType.client) {
+      if (updatedTask.assigneeType === AssigneeType.internalUser && updatedTask.assigneeId !== this.user.internalUserId) {
+        await notificationService.create(NotificationTaskActions.CompletedByIU, updatedTask, { email: true })
+        // TODO: Clean code and handle notification center notification deletions here instead
+      } else if (updatedTask.assigneeType === AssigneeType.company) {
+        // Don't do this in parallel since this can cause rate-limits, each of them has their own bottlenecks for avoiding ratelimits
+        await notificationService.create(NotificationTaskActions.CompletedForCompanyByIU, updatedTask, { email: true })
+        await notificationService.markAsReadForAllRecipients(updatedTask)
+      } else if (updatedTask.assigneeType === AssigneeType.client) {
         try {
           await notificationService.markClientNotificationAsRead(updatedTask)
+          return
         } catch (e: unknown) {
           console.error(`Failed to find ClientNotification for task ${updatedTask.id}`, e)
         }
       }
     }
 
+    // Case 4
+    // --- Handle task moved from completed to incomplete IU logic
     if (
       prevTask.workflowState?.type === StateType.completed &&
       updatedTask.workflowState?.type !== StateType.completed &&
@@ -563,9 +569,6 @@ export class TasksService extends BaseService {
       // If IU decides to move a task back to an incomplete state, trigger client / company notifications
       await this.sendTaskCreateNotifications(updatedTask)
     }
-
-    // --- Handle task moved to complete
-    await notificationService.markAsReadForAllRecipients(updatedTask)
   }
 
   async getSignedUrl(filePath: string) {
