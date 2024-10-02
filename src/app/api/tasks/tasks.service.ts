@@ -15,21 +15,13 @@ import { WorkflowStateUpdatedSchema } from '@api/activity-logs/schemas/WorkflowS
 import { NotificationService } from '@api/notification/notification.service'
 import { LabelMappingService } from '@api/label-mapping/label-mapping.service'
 import { z } from 'zod'
-import {
-  ClientResponse,
-  CompanyResponse,
-  InternalUsers,
-  NotificationCreatedResponseSchema,
-  ScrapImageRequest,
-} from '@/types/common'
+import { ClientResponse, CompanyResponse, InternalUsers, NotificationCreatedResponseSchema } from '@/types/common'
 import { CopilotAPI } from '@/utils/CopilotAPI'
-import { getFilePathFromUrl, replaceImageSrc } from '@/utils/signedUrlReplacer'
+import { replaceImageSrc } from '@/utils/signedUrlReplacer'
 import { SupabaseService } from '../core/services/supabase.service'
 import { supabaseBucket } from '@/config'
-import { AttachmentsService } from '../attachments/attachments.service'
 import { signedUrlTtl } from '@/types/constants'
 import { ScrapImageService } from '@/app/api/scrap-images/scrap-images.service'
-import Bottleneck from 'bottleneck'
 
 type FilterByAssigneeId = {
   assigneeId: string
