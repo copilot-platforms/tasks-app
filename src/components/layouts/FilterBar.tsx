@@ -1,43 +1,33 @@
-'use client'
-
-import { Box, CircularProgress, IconButton, Stack } from '@mui/material'
-import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
-import { useEffect, useState } from 'react'
-import store from '@/redux/store'
-import { setFilterOptions, setViewSettingsTemp, setViewSettings } from '@/redux/features/taskBoardSlice'
-import SearchBar from '@/components/searchBar'
-import Selector, { SelectorType } from '@/components/inputs/Selector'
-import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
-import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
-import { useSelector } from 'react-redux'
-import {
-  FilterByOptions,
-  FilterOptions,
-  FilterOptionsKeywords,
-  IAssigneeCombined,
-  IFilterOptions,
-  View,
-} from '@/types/interfaces'
-import { CrossIcon, FilterByAsigneeIcon } from '@/icons'
-import { ViewModeSelector } from '../inputs/ViewModeSelector'
-import { FilterByAssigneeBtn } from '../buttons/FilterByAssigneeBtn'
-import FilterButtonGroup from '@/components/buttonsGroup/FilterButtonsGroup'
-import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
-import { useFilter } from '@/hooks/useFilter'
-import { IUTokenSchema } from '@/types/common'
-import { NoAssigneeExtraOptions } from '@/utils/noAssignee'
-import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
-import { z } from 'zod'
-import { setDebouncedFilteredAssignees } from '@/utils/users'
-import { MiniLoader } from '@/components/atoms/MiniLoader'
-import { checkAssignee } from '@/utils/assignee'
-import { filterOptionsToAssigneeMap, filterTypeToButtonIndexMap } from '@/types/objectMaps'
 import { UserRole } from '@/app/api/core/types/user'
+import { MiniLoader } from '@/components/atoms/MiniLoader'
+import { FilterByAssigneeBtn } from '@/components/buttons/FilterByAssigneeBtn'
+import FilterButtonGroup from '@/components/buttonsGroup/FilterButtonsGroup'
+import Selector, { SelectorType } from '@/components/inputs/Selector'
+import { ViewModeSelector } from '@/components/inputs/ViewModeSelector'
+import SearchBar from '@/components/searchBar'
+import { useFilter } from '@/hooks/useFilter'
+import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
+import { CrossIcon, FilterByAsigneeIcon } from '@/icons'
+import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
+import { selectTaskBoard, setFilterOptions, setViewSettings, setViewSettingsTemp } from '@/redux/features/taskBoardSlice'
+import store from '@/redux/store'
+import { IUTokenSchema } from '@/types/common'
+import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
+import { FilterOptions, FilterOptionsKeywords, IAssigneeCombined, IFilterOptions } from '@/types/interfaces'
+import { filterOptionsToAssigneeMap, filterTypeToButtonIndexMap } from '@/types/objectMaps'
+import { checkAssignee } from '@/utils/assignee'
+import { NoAssigneeExtraOptions } from '@/utils/noAssignee'
+import { setDebouncedFilteredAssignees } from '@/utils/users'
+import { Box, IconButton, Stack } from '@mui/material'
+import { useEffect, useState } from 'react'
+import { useSelector } from 'react-redux'
+import { z } from 'zod'
 
 interface FilterBarProps {
   mode: UserRole
   updateViewModeSetting: (payload: CreateViewSettingsDTO) => void
 }
+
 export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
   const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
   const { view, filteredAssigneeList, filterOptions, assignee, token, viewSettingsTemp } = useSelector(selectTaskBoard)
