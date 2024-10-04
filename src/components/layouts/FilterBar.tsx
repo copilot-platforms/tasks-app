@@ -49,9 +49,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
   }, [initialAssignees, latestFetchResults, filteredAssignee])
 
   useEffect(() => {
-    if (loading) {
-      setFilteredAssignee(latestFetchResults)
-    }
+    loading && setFilteredAssignee(latestFetchResults)
   }, [latestFetchResults, loading])
 
   const handleSelectInputChange = async (newInputValue: string) => {
@@ -64,13 +62,16 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
         newInputValue,
         filterOptions.type,
       )
+      // Lets an effect handle the latest fetch update instead based on loading state
       setLatestFetchResults(newAssignees)
       setLoading(false)
-    } else {
-      setLoading(false)
-      setFilteredAssignee(initialAssignees)
       return
     }
+
+    // If the selector is clicked away from, set loading state to false right away
+    setLoading(false)
+    // Reset selector to have initial assignee list. DO NOT use filteredAssignee as it can cause inconsistencies after filteroption is changed
+    setFilteredAssignee(initialAssignees)
   }
 
   const handleFilterOptionsChange = async (optionType: FilterOptions, newValue: string | null) => {
