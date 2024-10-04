@@ -43,6 +43,27 @@ export const filterUsersByKeyword = (users: FilterableUser[], keyword: string): 
   return uniqueUsers
 }
 
+export const getDebouncedFilteredAssignees = (
+  activeDebounceTimeoutId: NodeJS.Timeout | null,
+  setActiveDebounceTimeoutId: Dispatch<SetStateAction<NodeJS.Timeout | null>>,
+  token: string,
+  newInputValue: string,
+  filterOptions?: string,
+): Promise<IAssigneeCombined[]> => {
+  if (activeDebounceTimeoutId) {
+    clearTimeout(activeDebounceTimeoutId)
+  }
+
+  return new Promise((resolve) => {
+    const newTimeoutId = setTimeout(async () => {
+      const newAssignees = await getAssigneeList(z.string().parse(token), newInputValue, 10000, '0', filterOptions)
+      const updatedAssignees = addTypeToAssignee(newAssignees)
+      resolve(updatedAssignees) // Resolve promise with result
+    }, 200)
+
+    setActiveDebounceTimeoutId(newTimeoutId)
+  })
+}
 export const setDebouncedFilteredAssignees = (
   activeDebounceTimeoutId: NodeJS.Timeout | null,
   setActiveDebounceTimeoutId: Dispatch<SetStateAction<NodeJS.Timeout | null>>,

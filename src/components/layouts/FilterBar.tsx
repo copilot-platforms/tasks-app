@@ -17,7 +17,7 @@ import { FilterOptions, FilterOptionsKeywords, IAssigneeCombined, IFilterOptions
 import { filterOptionsToAssigneeMap, filterTypeToButtonIndexMap } from '@/types/objectMaps'
 import { checkAssignee } from '@/utils/assignee'
 import { NoAssigneeExtraOptions } from '@/utils/noAssignee'
-import { setDebouncedFilteredAssignees } from '@/utils/users'
+import { getDebouncedFilteredAssignees, setDebouncedFilteredAssignees } from '@/utils/users'
 import { Box, IconButton, Stack } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
@@ -44,6 +44,10 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
   useEffect(() => {
     initialAssignees.length === 0 && setInitialAssignees(filteredAssignee)
   }, [initialAssignees.length, filteredAssignee])
+
+  useEffect(() => {
+    console.log('aaa load', loading)
+  }, [loading])
 
   const handleFilterOptionsChange = async (optionType: FilterOptions, newValue: string | null) => {
     store.dispatch(setFilterOptions({ optionType, newValue }))
@@ -210,20 +214,23 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
                       buttonContent={<FilterByAssigneeBtn assigneeValue={assigneeValue} />}
                       padding="2px 10px 2px 10px"
                       handleInputChange={async (newInputValue: string) => {
-                        if (!newInputValue) {
+                        if (newInputValue) {
+                          setLoading(true)
+                          const newAssignees = await getDebouncedFilteredAssignees(
+                            activeDebounceTimeoutId,
+                            setActiveDebounceTimeoutId,
+                            z.string().parse(token),
+                            newInputValue,
+                            filterOptions.type,
+                          )
+                          console.log('aaa handling fetch', loading)
+                          loading && setFilteredAssignee(newAssignees)
+                          setLoading(false)
+                        } else {
+                          setLoading(false)
                           setFilteredAssignee(initialAssignees)
                           return
                         }
-
-                        setDebouncedFilteredAssignees(
-                          activeDebounceTimeoutId,
-                          setActiveDebounceTimeoutId,
-                          setLoading,
-                          setFilteredAssignee,
-                          z.string().parse(token),
-                          newInputValue,
-                          filterOptions.type,
-                        )
                       }}
                       filterOption={(x: unknown) => x}
                     />
