@@ -33,6 +33,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
   const { view, filteredAssigneeList, filterOptions, assignee, token, viewSettingsTemp } = useSelector(selectTaskBoard)
   const [filteredAssignee, setFilteredAssignee] = useState(filteredAssigneeList)
   const [loading, setLoading] = useState(false)
+  const [initialAssignees, setInitialAssignees] = useState(filteredAssignee)
   const viewMode = viewSettingsTemp ? viewSettingsTemp.viewMode : view
   const viewModeFilterOptions = viewSettingsTemp ? (viewSettingsTemp.filterOptions as IFilterOptions) : filterOptions //ViewSettingsTemp used to apply temp values of viewSettings in filterOptions and viewMode because clientSideUpdate applies outdated cached values to original view and filterOptions if navigated
 
@@ -40,11 +41,17 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
     setFilteredAssignee(filteredAssigneeList)
   }, [filteredAssigneeList]) //to prevent filteredAssignee not updating when filteredAssigneeList changes when fetching assignee is delayed
 
+  useEffect(() => {
+    initialAssignees.length === 0 && setInitialAssignees(filteredAssignee)
+  }, [initialAssignees.length, filteredAssignee])
+
   const handleFilterOptionsChange = async (optionType: FilterOptions, newValue: string | null) => {
     store.dispatch(setFilterOptions({ optionType, newValue }))
     if (optionType === FilterOptions.TYPE) {
       const filterFunction = filterOptionsToAssigneeMap[newValue as string] || filterOptionsToAssigneeMap.default
-      setFilteredAssignee(filterFunction(assignee))
+      const newAssignees = filterFunction(assignee)
+      setFilteredAssignee(newAssignees)
+      setInitialAssignees(newAssignees)
     }
     //FilteredAssignee is also updated in the component's state and used in Selector's autocomplete to mitigate the time taken to update the store and fetch values to the Selector's autocomplete.
     const updatedFilterOptions = viewSettingsTemp
@@ -204,7 +211,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
                       padding="2px 10px 2px 10px"
                       handleInputChange={async (newInputValue: string) => {
                         if (!newInputValue) {
-                          setFilteredAssignee(filteredAssigneeList)
+                          setFilteredAssignee(initialAssignees)
                           return
                         }
 
@@ -313,7 +320,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
                   padding="2px 10px 2px 10px"
                   handleInputChange={async (newInputValue: string) => {
                     if (!newInputValue) {
-                      setFilteredAssignee(filteredAssigneeList)
+                      setFilteredAssignee(initialAssignees)
                       return
                     }
 
