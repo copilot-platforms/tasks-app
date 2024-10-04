@@ -34,6 +34,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
   const [filteredAssignee, setFilteredAssignee] = useState(filteredAssigneeList)
   const [loading, setLoading] = useState(false)
   const [initialAssignees, setInitialAssignees] = useState(filteredAssignee)
+  const [latestFetchResults, setLatestFetchResults] = useState(filteredAssignee)
   const viewMode = viewSettingsTemp ? viewSettingsTemp.viewMode : view
   const viewModeFilterOptions = viewSettingsTemp ? (viewSettingsTemp.filterOptions as IFilterOptions) : filterOptions //ViewSettingsTemp used to apply temp values of viewSettings in filterOptions and viewMode because clientSideUpdate applies outdated cached values to original view and filterOptions if navigated
 
@@ -42,12 +43,35 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
   }, [filteredAssigneeList]) //to prevent filteredAssignee not updating when filteredAssigneeList changes when fetching assignee is delayed
 
   useEffect(() => {
+    // Base these initial values off of first fetch of filteredAssignee
     initialAssignees.length === 0 && setInitialAssignees(filteredAssignee)
-  }, [initialAssignees.length, filteredAssignee])
+    latestFetchResults.length === 0 && setLatestFetchResults(filteredAssignee)
+  }, [initialAssignees, latestFetchResults, filteredAssignee])
 
   useEffect(() => {
-    console.log('aaa load', loading)
-  }, [loading])
+    if (loading) {
+      setFilteredAssignee(latestFetchResults)
+    }
+  }, [latestFetchResults, loading])
+
+  const handleSelectInputChange = async (newInputValue: string) => {
+    if (newInputValue) {
+      setLoading(true)
+      const newAssignees = await getDebouncedFilteredAssignees(
+        activeDebounceTimeoutId,
+        setActiveDebounceTimeoutId,
+        z.string().parse(token),
+        newInputValue,
+        filterOptions.type,
+      )
+      setLatestFetchResults(newAssignees)
+      setLoading(false)
+    } else {
+      setLoading(false)
+      setFilteredAssignee(initialAssignees)
+      return
+    }
+  }
 
   const handleFilterOptionsChange = async (optionType: FilterOptions, newValue: string | null) => {
     store.dispatch(setFilterOptions({ optionType, newValue }))
@@ -213,25 +237,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
                       }}
                       buttonContent={<FilterByAssigneeBtn assigneeValue={assigneeValue} />}
                       padding="2px 10px 2px 10px"
-                      handleInputChange={async (newInputValue: string) => {
-                        if (newInputValue) {
-                          setLoading(true)
-                          const newAssignees = await getDebouncedFilteredAssignees(
-                            activeDebounceTimeoutId,
-                            setActiveDebounceTimeoutId,
-                            z.string().parse(token),
-                            newInputValue,
-                            filterOptions.type,
-                          )
-                          console.log('aaa handling fetch', loading)
-                          loading && setFilteredAssignee(newAssignees)
-                          setLoading(false)
-                        } else {
-                          setLoading(false)
-                          setFilteredAssignee(initialAssignees)
-                          return
-                        }
-                      }}
+                      handleInputChange={handleSelectInputChange}
                       filterOption={(x: unknown) => x}
                     />
                   </Box>

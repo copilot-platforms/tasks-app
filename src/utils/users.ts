@@ -58,6 +58,7 @@ export const getDebouncedFilteredAssignees = (
     const newTimeoutId = setTimeout(async () => {
       const newAssignees = await getAssigneeList(z.string().parse(token), newInputValue, 10000, '0', filterOptions)
       const updatedAssignees = addTypeToAssignee(newAssignees)
+
       resolve(updatedAssignees) // Resolve promise with result
     }, 200)
 
