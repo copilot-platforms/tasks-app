@@ -68,7 +68,7 @@ export const useFilter = (filterOptions: IFilterOptions) => {
       console.log('sss filteredTasks', filteredTasks)
     }
     console.log('final first task', tasks[0])
-    store.dispatch(setFilteredTasks(sortTaskByDescendingOrder(filteredTasks)))
+    store.dispatch(setFilteredTasks(filteredTasks))
   }
 
   useEffect(() => {
