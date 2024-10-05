@@ -53,7 +53,9 @@ function filterByType(filteredTasks: TaskResponse[], filterValue: string) {
 }
 
 export const useFilter = (filterOptions: IFilterOptions) => {
+  console.log('useFilter triggered')
   const { tasks } = useSelector(selectTaskBoard)
+  console.log('initial first task', tasks[0])
 
   function applyFilter(tasks: TaskResponse[], filterOptions: IFilterOptions) {
     let filteredTasks = [...tasks]
@@ -64,6 +66,7 @@ export const useFilter = (filterOptions: IFilterOptions) => {
       filteredTasks = filterFn(filteredTasks, filterValue)
       console.log('sss filteredTasks', filteredTasks)
     }
+    console.log('final first task', tasks[0])
     store.dispatch(setFilteredTasks(filteredTasks))
   }
 
