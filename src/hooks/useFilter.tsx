@@ -2,6 +2,7 @@ import { selectTaskBoard, setFilteredTasks, setTasks } from '@/redux/features/ta
 import store from '@/redux/store'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { AssigneeType, FilterOptions, FilterOptionsKeywords, IFilterOptions } from '@/types/interfaces'
+import { sortTaskByDescendingOrder } from '@/utils/sortTask'
 import { Task } from '@prisma/client'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
@@ -67,7 +68,7 @@ export const useFilter = (filterOptions: IFilterOptions) => {
       console.log('sss filteredTasks', filteredTasks)
     }
     console.log('final first task', tasks[0])
-    store.dispatch(setFilteredTasks(filteredTasks))
+    store.dispatch(setFilteredTasks(sortTaskByDescendingOrder(filteredTasks)))
   }
 
   useEffect(() => {
