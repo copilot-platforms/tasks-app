@@ -22,6 +22,7 @@ export const RealTime = ({ children, task }: { children: ReactNode; task?: TaskR
   const router = useRouter()
 
   const handleTaskRealTimeUpdates = (payload: RealtimePostgresChangesPayload<RealTimeTaskResponse>) => {
+    console.log('payload', payload)
     if (payload.eventType === 'INSERT') {
       //check if the new task in this event belongs to the same workspaceId
       if (payload.new.workspaceId === tokenPayload?.workspaceId) {

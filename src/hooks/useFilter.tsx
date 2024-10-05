@@ -13,6 +13,10 @@ const FilterFunctions = {
 }
 
 function filterByAssignee(filteredTasks: TaskResponse[], filterValue: string | null) {
+  console.log(
+    'sss fbA',
+    filteredTasks.map((task) => task.title),
+  )
   const assigneeId = filterValue
   filteredTasks =
     assigneeId === 'No assignee'
@@ -21,6 +25,10 @@ function filterByAssignee(filteredTasks: TaskResponse[], filterValue: string | n
   return filteredTasks as TaskResponse[]
 }
 function filterByKeyword(filteredTasks: TaskResponse[], filterValue: string) {
+  console.log(
+    'sss fbK',
+    filteredTasks.map((task) => task.title),
+  )
   const keyword = (filterValue as string).toLowerCase()
   filteredTasks = filteredTasks.filter(
     (task) => task.title?.toLowerCase().includes(keyword) || task.body?.toLowerCase().includes(keyword),
@@ -28,6 +36,10 @@ function filterByKeyword(filteredTasks: TaskResponse[], filterValue: string) {
   return filteredTasks as TaskResponse[]
 }
 function filterByType(filteredTasks: TaskResponse[], filterValue: string) {
+  console.log(
+    'sss fbT',
+    filteredTasks.map((task) => task.title),
+  )
   const assigneeType = filterValue
   filteredTasks = assigneeType.includes('all')
     ? filteredTasks
@@ -46,9 +58,11 @@ export const useFilter = (filterOptions: IFilterOptions) => {
   function applyFilter(tasks: TaskResponse[], filterOptions: IFilterOptions) {
     let filteredTasks = [...tasks]
     for (const [filterType, filterValue] of Object.entries(filterOptions)) {
+      console.log('sss filter', filterType, filterValue)
       if (!filterValue) continue
       const filterFn = FilterFunctions[filterType as FilterOptions]
       filteredTasks = filterFn(filteredTasks, filterValue)
+      console.log('sss filteredTasks', filteredTasks)
     }
     store.dispatch(setFilteredTasks(filteredTasks))
   }
