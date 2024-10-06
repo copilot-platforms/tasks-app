@@ -17,7 +17,7 @@ import {
   IAssigneeCombined,
   IFilterOptions,
   View,
-  handleSelectorComponentModes,
+  HandleSelectorComponentModes,
 } from '@/types/interfaces'
 import { CrossIcon, FilterByAsigneeIcon } from '@/icons'
 import { ViewModeSelector } from '../inputs/ViewModeSelector'
@@ -87,7 +87,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
         ? NoAssigneeExtraOptions
         : filteredAssigneeList.find((item) => item.id == viewModeFilterOptions.assignee),
     type: SelectorType.ASSIGNEE_SELECTOR,
-    mode: handleSelectorComponentModes.CreateTaskFieldUpdate,
+    mode: HandleSelectorComponentModes.CreateTaskFieldUpdate,
   })
   useFilter(viewSettingsTemp ? viewSettingsTemp.filterOptions : filterOptions)
   const filterButtons = [
