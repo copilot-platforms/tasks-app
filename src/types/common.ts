@@ -71,6 +71,7 @@ export const ClientResponseSchema = z.object({
   avatarImageUrl: z.string().nullable(),
   customFields: z.record(z.string(), z.union([z.string(), z.array(z.string())]).nullable()).nullish(),
   fallbackColor: z.string().nullish(),
+  createdAt: z.string().datetime(),
 })
 export type ClientResponse = z.infer<typeof ClientResponseSchema>
 
@@ -85,6 +86,7 @@ export const CompanyResponseSchema = z.object({
   iconImageUrl: z.string().nullable(),
   fallbackColor: z.string().nullish(),
   isPlaceholder: z.boolean(),
+  createdAt: z.string().datetime(),
 })
 export type CompanyResponse = z.infer<typeof CompanyResponseSchema>
 
@@ -143,6 +145,7 @@ export const InternalUsersSchema = z.object({
   isClientAccessLimited: z.boolean(),
   companyAccessList: z.array(z.string()).nullable(),
   fallbackColor: z.string().nullish(),
+  createdAt: z.string().datetime(),
 })
 export type InternalUsers = z.infer<typeof InternalUsersSchema>
 
