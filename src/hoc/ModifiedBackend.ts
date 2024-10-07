@@ -23,11 +23,12 @@ const createModifiedBackend = (Backend: BackendFactory, manager?: any, context?:
   ]
 
   listeners.forEach((name) => {
-    const original = ((instance as any)[name](instance as any)[name] = (e: DragEvent | TouchEvent, ...extraArgs: any[]) => {
+    const original = (instance as any)[name]
+    ;(instance as any)[name] = (e: DragEvent | TouchEvent, ...extraArgs: any[]) => {
       if (!shouldIgnoreTarget(e.target)) {
         original(e, ...extraArgs)
       }
-    })
+    }
   })
 
   return instance
