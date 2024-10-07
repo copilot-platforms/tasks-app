@@ -7300,6 +7300,7 @@ tapwrite@^1.1.44:
   version "1.1.44"
   resolved "https://registry.yarnpkg.com/tapwrite/-/tapwrite-1.1.44.tgz#84805cc9cbf368bff0b51a310a1781717387f779"
   integrity sha512-iFuFPH3d/xV/gmCfZFnsbEL3Emng4T9iHAAYoA1njDkQMTorlzmRxt/Hwe5Y2+n981fZ8g50dBWaMzs4RNSLCA==
+
   dependencies:
     re-resizable "^6.10.0"
     tippy.js "^6.3.7"

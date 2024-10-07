@@ -58,6 +58,11 @@ export enum FilterOptionsKeywords {
   TEAM = 'ius',
 }
 
+export enum HandleSelectorComponentModes {
+  CreateTaskFieldUpdate,
+  //add more modes here if we are to extend useHandleSelectorComponent with more features.
+}
+
 export type IFilterOptions = {
   [key in FilterOptions]: string
 }
