@@ -364,6 +364,9 @@ const NewTaskFooter = ({ handleCreate, handleClose, getSignedUrlUpload }: NewTas
       const file = files[0]
       const signedUrl: ISignedUrlUpload = await getSignedUrlUpload(generateRandomString(file.name))
       const { filePayload, error } = await supabaseActions.uploadAttachment(file, signedUrl, '')
+      if (error) {
+        console.error('Failed to upload image') //handle error through chip here in the future
+      }
       if (filePayload) {
         store.dispatch(setCreateTaskFields({ targetField: 'attachments', value: [...attachments, filePayload] }))
       }
