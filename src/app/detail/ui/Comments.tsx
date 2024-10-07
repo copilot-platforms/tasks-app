@@ -2,10 +2,9 @@ import { Avatar, Stack } from '@mui/material'
 import { VerticalLine } from './styledComponent'
 import { CommentCard } from '@/components/cards/CommentCard'
 import { CreateComment } from '@/types/dto/comment.dto'
-import { LogResponse } from '@/app/api/activity-logs/schemas/LogResponseSchema'
 
 interface Prop {
-  comment: LogResponse
+  comment: any // TODO: fix with new implementation
   createComment: (postCommentPayload: CreateComment) => void
   deleteComment: (id: string) => void
   task_id: string

@@ -4,9 +4,7 @@ import { PoliciesService } from '@api/core/services/policies.service'
 import { UserAction } from '@api/core/types/user'
 import { Resource } from '@api/core/types/api'
 import { CopilotAPI } from '@/utils/CopilotAPI'
-import { ActivityLogger } from '@api/activity-logs/services/activity-logger.service'
 import { ActivityType } from '@prisma/client'
-import { CommentAddedSchema } from '@api/activity-logs/schemas/CommentAddedSchema'
 import { NotificationService } from '@api/notification/notification.service'
 import { NotificationTaskActions } from '@api/core/types/tasks'
 import APIError from '@api/core/exceptions/api'
@@ -33,17 +31,6 @@ export class CommentService extends BaseService {
         initiatorId: userInfo.id,
       },
     })
-
-    const activityLogger = new ActivityLogger({ taskId: data.taskId, user: this.user })
-    await activityLogger.log(
-      ActivityType.COMMENT_ADDED,
-      CommentAddedSchema.parse({
-        id: comment.id,
-        content: comment.content,
-        initiatorId: userInfo.id,
-        parentId: comment.parentId,
-      }),
-    )
 
     if (comment) {
       const task = await this.db.task.findFirst({

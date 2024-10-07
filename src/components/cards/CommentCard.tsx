@@ -11,13 +11,12 @@ import { MenuBox } from '@/components/inputs/MenuBox'
 import { useSelector } from 'react-redux'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 
-import { LogResponse } from '@/app/api/activity-logs/schemas/LogResponseSchema'
-import { commentAddedResponseSchema } from '@/app/api/activity-logs/schemas/CommentAddedSchema'
 import { CreateComment } from '@/types/dto/comment.dto'
 import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
 import { getMentionsList } from '@/utils/getMentionList'
 import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 import { Tapwrite } from 'tapwrite'
+import { z } from 'zod'
 
 const CustomDivider = styled(Box)(({ theme }) => ({
   height: '1px',
@@ -29,11 +28,9 @@ const CustomDivider = styled(Box)(({ theme }) => ({
 
 export const CommentCard = ({
   comment,
-  createComment,
-  deleteComment,
   task_id,
 }: {
-  comment: LogResponse
+  comment: any // TODO: fix with new implementation
   createComment: (postCommentPayload: CreateComment) => void
   deleteComment: (id: string) => void
   task_id: string
@@ -50,11 +47,11 @@ export const CommentCard = ({
     const replyPayload: CreateComment = {
       content: detail,
       taskId: task_id,
-      parentId: commentAddedResponseSchema.parse(comment.details).id,
+      parentId: z.any().parse(comment.details).id, // TODO: fix with new implementation
       mentions: getMentionsList(detail),
     }
     if (detail) {
-      createComment(replyPayload)
+      // createComment(replyPayload)
       setDetail('')
     }
   }
@@ -97,15 +94,14 @@ export const CommentCard = ({
             </Stack>
           )}
         </Stack>
-
         <Tapwrite
           content={comment.details.content as string}
           getContent={() => {}}
           readonly
           editorClass="tapwrite-comment"
         />
-
-        {commentAddedResponseSchema.parse(comment.details)?.replies?.map((item: any) => {
+        {comment.details?.replies?.map((item: any) => {
+          // TODO: fix with new response schema
           return (
             <Stack direction="column" rowGap={3} key={item.id}>
               <CustomDivider />
@@ -125,8 +121,8 @@ export const CommentCard = ({
             </Stack>
           )
         })}
-
-        {commentAddedResponseSchema.parse(comment.details).replies?.length > 0 || showReply ? (
+        {/* fix with new schema */}
+        {comment.details.replies?.length > 0 || showReply ? (
           <>
             <CustomDivider />
             <Stack direction="row" columnGap={1} alignItems="flex-start">
@@ -162,8 +158,8 @@ export const CommentCard = ({
         <ConfirmDeleteUI
           handleCancel={() => setShowConfirmDeleteModal(false)}
           handleDelete={() => {
-            deleteComment(commentAddedResponseSchema.parse(comment.details).id)
-            setShowConfirmDeleteModal(false)
+            // deleteComment(commentAddedResponseSchema.parse(comment.details).id)
+            // setShowConfirmDeleteModal(false)
           }}
           body="comment"
         />
