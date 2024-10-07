@@ -15,10 +15,9 @@ model ActivityLog {
   userId      String       @db.Uuid
   userRole    AssigneeType
   createdAt   DateTime     @default(now()) @db.Timestamptz()
-  updatedAt   DateTime     @updatedAt @ignore @db.Timestamptz()
+  deletedAt   DateTime?
 
-  @@index([createdAt])
+  /// taskId index to freqently access a list of activity logs for a given task
   @@index([taskId], name: "IX_ActivityLogs_taskId")
-  @@index([userId], name: "IX_ActivityLogs_userId")
   @@map("ActivityLogs")
 }
