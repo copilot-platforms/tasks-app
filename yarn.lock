@@ -7247,10 +7247,10 @@ tapable@^2.2.0:
   resolved "https://registry.yarnpkg.com/tapable/-/tapable-2.2.1.tgz#1967a73ef4060a82f12ab96af86d52fdb76eeca0"
   integrity sha512-GNzQvQTOIP6RyTfE2Qxb8ZVlNmw0n88vp1szwWRimP02mnTsx3Wtn5qRdqY9w2XduFNUgvOwhNnQsjwCp+kqaQ==
 
-tapwrite@^1.1.39:
-  version "1.1.39"
-  resolved "https://registry.yarnpkg.com/tapwrite/-/tapwrite-1.1.39.tgz#4d0866b2cb770767b880c9b5070950ccd02a6d6a"
-  integrity sha512-pJtVecsM7/78abmZt1DdrE1NSTT7jg+6h/cQDvcWvdCqftP9YWTOT+ciuzkh0oTj1Txh+Fad1TH2jDky7MpGKg==
+tapwrite@^1.1.43:
+  version "1.1.44"
+  resolved "https://registry.yarnpkg.com/tapwrite/-/tapwrite-1.1.44.tgz#84805cc9cbf368bff0b51a310a1781717387f779"
+  integrity sha512-iFuFPH3d/xV/gmCfZFnsbEL3Emng4T9iHAAYoA1njDkQMTorlzmRxt/Hwe5Y2+n981fZ8g50dBWaMzs4RNSLCA==
   dependencies:
     re-resizable "^6.10.0"
     tippy.js "^6.3.7"
