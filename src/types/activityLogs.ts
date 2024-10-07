@@ -1,3 +1,4 @@
+import { ActivityType } from '@prisma/client'
 import { z } from 'zod'
 
 export const TaskCreatedDetailsSchema = z.object({
@@ -5,5 +6,11 @@ export const TaskCreatedDetailsSchema = z.object({
 })
 export type TaskCreatedDetails = z.infer<typeof TaskCreatedDetailsSchema>
 
-// Eventually add more details types here
-export type ValidActivityDetails = TaskCreatedDetails
+export const DetailsSchemaMap: Partial<Record<ActivityType, any>> = {
+  [ActivityType.TASK_CREATED]: TaskCreatedDetailsSchema,
+}
+type DetailsSchemaMapType = typeof DetailsSchemaMap
+
+export type ValidActivityDetails = {
+  [K in keyof DetailsSchemaMapType]: z.infer<DetailsSchemaMapType[K]>
+}

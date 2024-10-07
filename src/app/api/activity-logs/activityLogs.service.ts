@@ -1,7 +1,10 @@
-import { TaskCreatedDetails, TaskCreatedDetailsSchema, ValidActivityDetails } from '@/types/activityLogs'
+import { DetailsSchemaMap, ValidActivityDetails } from '@/types/activityLogs'
 import User from '@api/core/models/User.model'
 import { BaseService } from '@api/core/services/base.service'
-import { ActivityLog, ActivityType, AssigneeType, Task } from '@prisma/client'
+import { PoliciesService } from '@api/core/services/policies.service'
+import { Resource } from '@api/core/types/api'
+import { UserAction } from '@api/core/types/user'
+import { ActivityLog, ActivityType, Task } from '@prisma/client'
 import { z } from 'zod'
 
 /**
@@ -13,10 +16,6 @@ export class ActivityLogsService extends BaseService {
     private task: Task,
   ) {
     super(user)
-  }
-
-  private detailsSchema: Partial<Record<ActivityType, z.ZodObject<any>>> = {
-    [ActivityType.TASK_CREATED]: TaskCreatedDetailsSchema,
   }
 
   private async insertActivityLog(activityType: ActivityType, details: ValidActivityDetails) {
@@ -33,13 +32,13 @@ export class ActivityLogsService extends BaseService {
   }
 
   async log(activityType: ActivityType, details: unknown): Promise<void | ActivityLog> {
-    const schema = this.detailsSchema[activityType]
-    if (!schema) {
+    const DetailsSchema = DetailsSchemaMap[activityType]
+    if (!DetailsSchema) {
       console.error('Unsupported activity log type')
       return
     }
 
-    const parsedDetails = schema.parse(details)
+    const parsedDetails = DetailsSchema.safeParse(details)
     if (parsedDetails.error) {
       // Log an error instead of crashing the endpoint
       console.error(
@@ -57,6 +56,9 @@ export class ActivityLogsService extends BaseService {
   }
 
   async getAllLogs() {
+    const policyGate = new PoliciesService(this.user)
+    policyGate.authorize(UserAction.Read, Resource.ActivityLogs)
+
     return this.db.activityLog.findMany({
       where: {
         workspaceId: this.user.workspaceId,

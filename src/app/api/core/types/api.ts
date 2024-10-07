@@ -10,6 +10,7 @@ export enum Resource {
   Attachments = 'Attachments',
   Comment = 'Comments',
   ScrapImages = 'ScrapImages',
+  ActivityLogs = 'ActivityLogs',
 }
 
 /**

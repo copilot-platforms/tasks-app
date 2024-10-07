@@ -128,16 +128,16 @@ export class TasksService extends BaseService {
     })
 
     if (newTask) {
-      // @todo move this logic to any pub/sub service like event bus
       const scrapImageService = new ScrapImageService(this.user)
-      newTask.body && (await scrapImageService.updateTaskIdOfScrapImagesAfterCreation(newTask.body, newTask.id))
-
-      // Add activity log
       const activityLogger = new ActivityLogsService(this.user, newTask)
-      await activityLogger.log(ActivityType.TASK_CREATED, { dateTime: newTask.createdAt })
+
+      await Promise.all([
+        newTask.body && scrapImageService.updateTaskIdOfScrapImagesAfterCreation(newTask.body, newTask.id),
+        activityLogger.log(ActivityType.TASK_CREATED, { dateTime: newTask.createdAt.toISOString() }),
+        this.sendTaskCreateNotifications(newTask),
+      ])
     }
 
-    await this.sendTaskCreateNotifications(newTask)
     return newTask
   }
 
