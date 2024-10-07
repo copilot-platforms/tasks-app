@@ -146,7 +146,6 @@ export class CopilotAPI {
   }
 
   async _getInternalUsers(args: CopilotListArgs = {}): Promise<InternalUsersResponse> {
-    console.log('token', this?.token)
     console.info('CopilotAPI#getInternalUsers | token =', this.token)
     return InternalUsersResponseSchema.parse(await this.copilot.listInternalUsers(args))
   }
