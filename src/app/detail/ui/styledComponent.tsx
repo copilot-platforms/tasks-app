@@ -3,8 +3,6 @@
 import { EmojiIcon, ReplyIcon } from '@/icons'
 import { KeyboardArrowRight } from '@mui/icons-material'
 import { Box, Stack, Typography, styled } from '@mui/material'
-import Link from 'next/link'
-import { Tapwrite } from 'tapwrite'
 
 export const StyledTypography = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[500],
@@ -12,8 +10,9 @@ export const StyledTypography = styled(Typography)(({ theme }) => ({
 }))
 
 export const BoldTypography = styled(Typography)(({ theme }) => ({
-  color: theme.color.gray[700],
+  color: theme.color.gray[600],
   fontSize: theme.typography.md.fontSize,
+  fontWeight: 500,
 }))
 
 export const AvatarTypography = styled(Typography)(({ theme }) => ({
@@ -25,6 +24,7 @@ export const TypographyContainer = styled(Stack)(({ theme }) => ({
   display: 'flex',
   flexWrap: 'wrap',
   alignItems: 'center',
+  lineHeight: '22px',
 }))
 
 export const StyledKeyboardIcon = styled(KeyboardArrowRight)(({ theme }) => ({

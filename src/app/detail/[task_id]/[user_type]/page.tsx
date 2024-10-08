@@ -164,16 +164,6 @@ export default async function TaskDetailPage({
                     userType={params.user_type}
                   />
                 </StyledTiptapDescriptionWrapper>
-                <AppMargin size={SizeofAppMargin.LARGE} py="18.5px">
-                  <Stack direction="column" alignItems="left" p="10px 5px" rowGap={5}>
-                    <Typography variant="xl">Activity</Typography>
-                    <Stack direction="column" alignItems="left" p="10px 5px" rowGap={4}>
-                      {activities.map((activity) => (
-                        <ActivityLog key={activity.id} log={activity} />
-                      ))}
-                    </Stack>
-                  </Stack>
-                </AppMargin>
                 {/* {advancedFeatureFlag && ( */}
                 {/*   <AppMargin size={SizeofAppMargin.LARGE} py="18.5px"> */}
                 {/*     <Stack direction="column" alignItems="left" p="10px 5px" rowGap={5}> */}
@@ -207,7 +197,6 @@ export default async function TaskDetailPage({
                 {/*             </Box> */}
                 {/*           ) */}
                 {/*         })} */}
-
                 {/*         <CommentInput */}
                 {/*           createComment={async (postCommentPayload: CreateComment) => { */}
                 {/*             'use server' */}
@@ -219,6 +208,24 @@ export default async function TaskDetailPage({
                 {/*     </Stack> */}
                 {/*   </AppMargin> */}
                 {/* )} */}
+                <Box
+                  className="activity-logs"
+                  sx={{ width: '100%', display: 'flex', flexDirection: 'column', marginTop: '16px' }}
+                >
+                  <Typography variant="lg">Activity</Typography>
+                  <Stack
+                    sx={{
+                      direction: 'column',
+                      alignItems: 'left',
+                      pt: '16px',
+                      rowGap: { xs: '11px', sm: '22px' },
+                    }}
+                  >
+                    {activities.map((activity) => (
+                      <ActivityLog key={activity.id} log={activity} />
+                    ))}
+                  </Stack>
+                </Box>
               </TaskDetailsContainer>
             </CustomScrollbar>
           </ToggleController>
