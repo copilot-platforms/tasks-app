@@ -42,6 +42,10 @@ import { SilentError } from '@/components/templates/SilentError'
 import { z } from 'zod'
 import { ScrapImageRequest } from '@/types/common'
 import { signedUrlTtl } from '@/types/constants'
+import { getActivityLogsForTask } from '@/app/api/activity-logs/activityLogs.controller'
+import { ActivityLogsResponseSchema, ActivityLogsResponse } from '@/types/dto/activity.dto'
+import { ActivityLogsService } from '@/app/api/activity-logs/activityLogs.service'
+import { ActivityLog } from '../../ui/ActivityLog'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
@@ -60,6 +64,13 @@ async function getSignedUrlFile(token: string, filePath: string) {
   return data.signedUrl
 }
 
+const getActivityLogs = async (token: string, taskId: string) => {
+  'use server'
+  const res = await fetch(`${apiUrl}/api/tasks/${taskId}/activity-logs?token=${token}`)
+  const parsedRes = ActivityLogsResponseSchema.parse(await res.json())
+  return parsedRes.data
+}
+
 export default async function TaskDetailPage({
   params,
   searchParams,
@@ -69,6 +80,7 @@ export default async function TaskDetailPage({
 }) {
   const { token } = searchParams
   const { task_id, user_type } = params
+  const activities = await getActivityLogs(token, task_id)
 
   if (z.string().safeParse(token).error) {
     return <SilentError message="Please provide a Valid Token" />
@@ -152,6 +164,16 @@ export default async function TaskDetailPage({
                     userType={params.user_type}
                   />
                 </StyledTiptapDescriptionWrapper>
+                <AppMargin size={SizeofAppMargin.LARGE} py="18.5px">
+                  <Stack direction="column" alignItems="left" p="10px 5px" rowGap={5}>
+                    <Typography variant="xl">Activity</Typography>
+                    <Stack direction="column" alignItems="left" p="10px 5px" rowGap={4}>
+                      {activities.map((activity) => (
+                        <ActivityLog key={activity.id} log={activity} />
+                      ))}
+                    </Stack>
+                  </Stack>
+                </AppMargin>
                 {/* {advancedFeatureFlag && ( */}
                 {/*   <AppMargin size={SizeofAppMargin.LARGE} py="18.5px"> */}
                 {/*     <Stack direction="column" alignItems="left" p="10px 5px" rowGap={5}> */}
