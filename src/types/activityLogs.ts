@@ -8,6 +8,7 @@ export const TaskCreatedDetailsSchema = z.object({
   dateTime: z.string().datetime(),
 })
 export type TaskCreatedDetails = z.infer<typeof TaskCreatedDetailsSchema>
+export type ValidActivityDetails = TaskCreatedDetails // Add more here
 
 export const DetailsSchemaMap: Partial<Record<ActivityType, any>> = {
   [ActivityType.TASK_CREATED]: TaskCreatedDetailsSchema,
@@ -31,6 +32,7 @@ export const ActivityLogSchema = z.object({
   //   }
   // })
   userId: z.string().uuid(),
-  userType: z.nativeEnum(UserRole),
+  userRole: z.nativeEnum(UserRole),
   createdAt: z.string().datetime(),
 })
+export type ActivityLog = z.infer<typeof ActivityLogSchema>

@@ -26,7 +26,7 @@ export class ActivityLogsService extends BaseService {
         type: activityType,
         details,
         userId: z.string().parse(this.user.internalUserId || this.user.clientId),
-        userType: this.user.role,
+        userRole: this.user.role,
       },
     })
   }

@@ -13,7 +13,7 @@ model ActivityLog {
   type        ActivityType
   details     Json         @db.JsonB
   userId      String       @db.Uuid
-  userType    AssigneeType
+  userRole    AssigneeType
   createdAt   DateTime     @default(now()) @db.Timestamptz()
   deletedAt   DateTime?
 

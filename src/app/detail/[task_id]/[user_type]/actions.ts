@@ -61,7 +61,6 @@ export const updateAssignee = async (
   })
   //revalidation on update assignee is disabled for now since we don't have activity log enabled
   //this revalidation can be rethought and may not be needed to prevent unexpected flickering
-  oiwjefoijwef
   if (advancedFeatureFlag) {
     revalidateTag('getActivities')
   }
