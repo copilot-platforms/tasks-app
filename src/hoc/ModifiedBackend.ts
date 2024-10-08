@@ -3,7 +3,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend'
 import { TouchBackend } from 'react-dnd-touch-backend'
 
 const shouldIgnoreTarget = (target: any) => {
-  return target.closest('.ProseMirror') !== null
+  return target.closest('.tiptap') !== null
 }
 
 const createModifiedBackend = (Backend: BackendFactory, manager?: any, context?: any) => {
