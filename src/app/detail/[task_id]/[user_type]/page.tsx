@@ -1,13 +1,19 @@
 export const fetchCache = 'force-no-store'
 
-import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
-import { TaskEditor } from '@/app/detail/ui/TaskEditor'
-import { Box, Stack, Typography } from '@mui/material'
+import { AssigneeFetcher } from '@/app/_fetchers/AssigneeFetcher'
+import { WorkflowStateFetcher } from '@/app/_fetchers/WorkflowStateFetcher'
+import {
+  clientUpdateTask,
+  deleteAttachment,
+  deleteTask,
+  postAttachment,
+  updateAssignee,
+  updateTaskDetail,
+  updateWorkflowStateIdOfTask,
+} from '@/app/detail/[task_id]/[user_type]/actions'
+import { DetailStateUpdate } from '@/app/detail/[task_id]/[user_type]/DetailStateUpdate'
+import { MenuBoxContainer } from '@/app/detail/ui/MenuBoxContainer'
 import { Sidebar, SidebarSkeleton } from '@/app/detail/ui/Sidebar'
-import { UserType } from '@/types/interfaces'
-import { apiUrl } from '@/config'
-import { TaskResponse } from '@/types/dto/tasks.dto'
-import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
 import {
   StyledBox,
   StyledKeyboardIcon,
@@ -15,37 +21,27 @@ import {
   StyledTypography,
   TaskDetailsContainer,
 } from '@/app/detail/ui/styledComponent'
-import {
-  clientUpdateTask,
-  deleteAttachment,
-  deleteTask,
-  postAttachment,
-  postScrapImage,
-  updateAssignee,
-  updateTaskDetail,
-} from '@/app/detail/[task_id]/[user_type]/actions'
-import { updateWorkflowStateIdOfTask } from '@/app/detail/[task_id]/[user_type]/actions'
-import { MenuBoxContainer } from '@/app/detail/ui/MenuBoxContainer'
+import { TaskEditor } from '@/app/detail/ui/TaskEditor'
 import { ToggleButtonContainer } from '@/app/detail/ui/ToggleButtonContainer'
 import { ToggleController } from '@/app/detail/ui/ToggleController'
+import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
+import { SilentError } from '@/components/templates/SilentError'
+import { apiUrl } from '@/config'
+import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
+import { CustomLink } from '@/hoc/CustomLink'
+import { CustomScrollbar } from '@/hoc/CustomScrollbar'
+import { RealTime } from '@/hoc/RealTime'
+import { signedUrlTtl } from '@/types/constants'
+import { ActivityLogsResponseSchema } from '@/types/dto/activity.dto'
+import { TaskResponse } from '@/types/dto/tasks.dto'
+import { UserType } from '@/types/interfaces'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import EscapeHandler from '@/utils/escapeHandler'
-import { RealTime } from '@/hoc/RealTime'
-import { CustomScrollbar } from '@/hoc/CustomScrollbar'
 import { redirectIfResourceNotFound } from '@/utils/redirect'
+import { Box, Stack, Typography } from '@mui/material'
 import { Suspense } from 'react'
-import { WorkflowStateFetcher } from '@/app/_fetchers/WorkflowStateFetcher'
-import { AssigneeFetcher } from '@/app/_fetchers/AssigneeFetcher'
-import { CustomLink } from '@/hoc/CustomLink'
-import { DetailStateUpdate } from '@/app/detail/[task_id]/[user_type]/DetailStateUpdate'
-import { SilentError } from '@/components/templates/SilentError'
 import { z } from 'zod'
-import { ScrapImageRequest } from '@/types/common'
-import { signedUrlTtl } from '@/types/constants'
-import { getActivityLogsForTask } from '@/app/api/activity-logs/activityLogs.controller'
-import { ActivityLogsResponseSchema, ActivityLogsResponse } from '@/types/dto/activity.dto'
-import { ActivityLogsService } from '@/app/api/activity-logs/activityLogs.service'
-import { ActivityLog } from '../../ui/ActivityLog'
+import { Activities } from './Activities'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
@@ -80,7 +76,6 @@ export default async function TaskDetailPage({
 }) {
   const { token } = searchParams
   const { task_id, user_type } = params
-  const activities = await getActivityLogs(token, task_id)
 
   if (z.string().safeParse(token).error) {
     return <SilentError message="Please provide a Valid Token" />
@@ -208,24 +203,10 @@ export default async function TaskDetailPage({
                 {/*     </Stack> */}
                 {/*   </AppMargin> */}
                 {/* )} */}
-                <Box
-                  className="activity-logs"
-                  sx={{ width: '100%', display: 'flex', flexDirection: 'column', marginTop: '16px' }}
-                >
-                  <Typography variant="lg">Activity</Typography>
-                  <Stack
-                    sx={{
-                      direction: 'column',
-                      alignItems: 'left',
-                      pt: '16px',
-                      rowGap: { xs: '11px', sm: '22px' },
-                    }}
-                  >
-                    {activities.map((activity) => (
-                      <ActivityLog key={activity.id} log={activity} />
-                    ))}
-                  </Stack>
-                </Box>
+
+                <Suspense fallback={<></>}>
+                  <Activities token={token} taskId={task_id} />
+                </Suspense>
               </TaskDetailsContainer>
             </CustomScrollbar>
           </ToggleController>

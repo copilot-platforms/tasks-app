@@ -2,6 +2,10 @@ import { z } from 'zod'
 import { UserSchema } from './common'
 import { UpdateTaskRequestSchema } from './dto/tasks.dto'
 
+export interface PropsWithToken {
+  token: string
+}
+
 export enum TargetMethod {
   EDIT = 'edit',
   POST = 'post',
