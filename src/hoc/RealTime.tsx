@@ -33,7 +33,7 @@ export const RealTime = ({ children, task }: { children: ReactNode; task?: TaskR
     }
     if (payload.eventType === 'UPDATE') {
       const updatedTask = payload.new
-      const { old, new: updatedRow } = payload
+      const oldTask = tasks.find((task) => task.id == updatedTask.id)
 
       if (payload.new.workspaceId === tokenPayload?.workspaceId) {
         //check if the new task in this event belongs to the same workspaceId
@@ -51,12 +51,12 @@ export const RealTime = ({ children, task }: { children: ReactNode; task?: TaskR
           }
           //if the task is updated
         } else {
-          if (old.body && updatedRow.body) {
-            const oldImgSrcs = extractImgSrcs(old.body)
-            const newImgSrcs = extractImgSrcs(updatedRow.body)
-
+          if (oldTask && oldTask.body && updatedTask.body) {
+            const oldImgSrcs = extractImgSrcs(oldTask.body)
+            const newImgSrcs = extractImgSrcs(updatedTask.body)
+            console.log(oldTask, updatedTask)
             if (oldImgSrcs.length > 0 && newImgSrcs.length > 0) {
-              updatedTask.body = replaceImgSrcs(updatedRow.body, newImgSrcs, oldImgSrcs)
+              updatedTask.body = replaceImgSrcs(updatedTask.body, newImgSrcs, oldImgSrcs)
             }
           }
 
