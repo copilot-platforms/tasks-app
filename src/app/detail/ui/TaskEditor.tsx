@@ -71,6 +71,7 @@ export const TaskEditor = ({
       const currentTask = tasks.find((el) => el.id === task_id)
       if (currentTask) {
         setUpdateTitle(currentTask.title || '')
+        console.log(currentTask.body)
         setUpdateDetail(currentTask.body ?? '')
       }
     }
@@ -115,6 +116,7 @@ export const TaskEditor = ({
     if (content === updateDetail) {
       return
     }
+
     setUpdateDetail(content)
     setIsUserTyping(true)
     detailsUpdateDebounced(content)
@@ -163,7 +165,12 @@ export const TaskEditor = ({
           readonly={userType === UserType.CLIENT_USER}
           editorClass="tapwrite-details-page"
           placeholder="Add description..."
-          uploadFn={(file) => uploadImageHandler(file, token ?? '', task_id)}
+          uploadFn={async (file) => {
+            setIsUserTyping(true)
+            const url = await uploadImageHandler(file, token ?? '', task_id)
+            setIsUserTyping(false)
+            return url
+          }}
           deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', task_id)}
         />
       </Box>
