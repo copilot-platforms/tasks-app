@@ -50,7 +50,6 @@ export const replaceImgSrcs = (body: string, newSrcs: string[], oldSrcs: string[
     if (filePath) {
       const match = oldSrcs.find((oldSrc) => oldSrc.includes(filePath))
       if (match) {
-        console.log('replacing', newSrc, match)
         updatedBody = updatedBody.replace(newSrc, match)
       }
     }

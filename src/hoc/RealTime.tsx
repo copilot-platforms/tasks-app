@@ -54,7 +54,7 @@ export const RealTime = ({ children, task }: { children: ReactNode; task?: TaskR
           if (oldTask && oldTask.body && updatedTask.body) {
             const oldImgSrcs = extractImgSrcs(oldTask.body)
             const newImgSrcs = extractImgSrcs(updatedTask.body)
-            console.log(oldTask, updatedTask)
+
             if (oldImgSrcs.length > 0 && newImgSrcs.length > 0) {
               updatedTask.body = replaceImgSrcs(updatedTask.body, newImgSrcs, oldImgSrcs)
             }
