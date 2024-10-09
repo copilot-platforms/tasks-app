@@ -10,8 +10,9 @@ import { ReactNode, useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { useRouter } from 'next/navigation'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
+import { updateTaskOnSignedUrlChange } from '@/utils/updateTaskOnSignedUrlChange'
 
-interface RealTimeTaskResponse extends TaskResponse {
+export interface RealTimeTaskResponse extends TaskResponse {
   deletedAt: string
 }
 
@@ -32,8 +33,15 @@ export const RealTime = ({ children, task }: { children: ReactNode; task?: TaskR
     }
     if (payload.eventType === 'UPDATE') {
       const updatedTask = payload.new
-      //check if the new task in this event belongs to the same workspaceId
+      const previousTask = tasks.find((task) => task.id === updatedTask.id)
+
+      if (previousTask && previousTask.body && updatedTask.body) {
+        if (!updateTaskOnSignedUrlChange(updatedTask.body, previousTask.body)) {
+          return //dont handle realTime changes when only signedUrl of images of the taskBody is being changed
+        }
+      }
       if (payload.new.workspaceId === tokenPayload?.workspaceId) {
+        //check if the new task in this event belongs to the same workspaceId
         //if the task is deleted
         if (updatedTask.deletedAt) {
           const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
