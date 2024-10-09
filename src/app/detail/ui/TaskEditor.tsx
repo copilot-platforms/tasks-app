@@ -71,7 +71,7 @@ export const TaskEditor = ({
       const currentTask = tasks.find((el) => el.id === task_id)
       if (currentTask) {
         setUpdateTitle(currentTask.title || '')
-        console.log(currentTask.body)
+
         setUpdateDetail(currentTask.body ?? '')
       }
     }

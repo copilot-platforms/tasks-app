@@ -10,9 +10,9 @@ import { ReactNode, useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { useRouter } from 'next/navigation'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
-import { updateTaskOnSignedUrlChange } from '@/utils/updateTaskOnSignedUrlChange'
 
-export interface RealTimeTaskResponse extends TaskResponse {
+import { extractImgSrcs, replaceImgSrcs } from '@/utils/signedUrlReplacer'
+interface RealTimeTaskResponse extends TaskResponse {
   deletedAt: string
 }
 
@@ -33,13 +33,8 @@ export const RealTime = ({ children, task }: { children: ReactNode; task?: TaskR
     }
     if (payload.eventType === 'UPDATE') {
       const updatedTask = payload.new
-      const previousTask = tasks.find((task) => task.id === updatedTask.id)
+      const { old, new: updatedRow } = payload
 
-      if (previousTask && previousTask.body && updatedTask.body) {
-        if (!updateTaskOnSignedUrlChange(updatedTask.body, previousTask.body)) {
-          return //dont handle realTime changes when only signedUrl of images of the taskBody is being changed
-        }
-      }
       if (payload.new.workspaceId === tokenPayload?.workspaceId) {
         //check if the new task in this event belongs to the same workspaceId
         //if the task is deleted
@@ -56,6 +51,15 @@ export const RealTime = ({ children, task }: { children: ReactNode; task?: TaskR
           }
           //if the task is updated
         } else {
+          if (old.body && updatedRow.body) {
+            const oldImgSrcs = extractImgSrcs(old.body)
+            const newImgSrcs = extractImgSrcs(updatedRow.body)
+
+            if (oldImgSrcs.length > 0 && newImgSrcs.length > 0) {
+              updatedTask.body = replaceImgSrcs(updatedRow.body, newImgSrcs, oldImgSrcs)
+            }
+          }
+
           const newTaskArr = [...tasks.filter((task) => task.id !== updatedTask.id), updatedTask]
           store.dispatch(setTasks(newTaskArr))
         }
