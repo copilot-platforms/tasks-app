@@ -11,6 +11,7 @@ import {
   updateTaskDetail,
   updateWorkflowStateIdOfTask,
 } from '@/app/detail/[task_id]/[user_type]/actions'
+import { Activities } from '@/app/detail/[task_id]/[user_type]/Activities'
 import { DetailStateUpdate } from '@/app/detail/[task_id]/[user_type]/DetailStateUpdate'
 import { MenuBoxContainer } from '@/app/detail/ui/MenuBoxContainer'
 import { Sidebar, SidebarSkeleton } from '@/app/detail/ui/Sidebar'
@@ -32,7 +33,6 @@ import { CustomLink } from '@/hoc/CustomLink'
 import { CustomScrollbar } from '@/hoc/CustomScrollbar'
 import { RealTime } from '@/hoc/RealTime'
 import { signedUrlTtl } from '@/types/constants'
-import { ActivityLogsResponseSchema } from '@/types/dto/activity.dto'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { UserType } from '@/types/interfaces'
 import { CopilotAPI } from '@/utils/CopilotAPI'
@@ -41,7 +41,6 @@ import { redirectIfResourceNotFound } from '@/utils/redirect'
 import { Box, Stack, Typography } from '@mui/material'
 import { Suspense } from 'react'
 import { z } from 'zod'
-import { Activities } from './Activities'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
@@ -58,13 +57,6 @@ async function getSignedUrlFile(token: string, filePath: string) {
   const res = await fetch(`${apiUrl}/api/attachments/sign-url?token=${token}&filePath=${filePath}`)
   const data = await res.json()
   return data.signedUrl
-}
-
-const getActivityLogs = async (token: string, taskId: string) => {
-  'use server'
-  const res = await fetch(`${apiUrl}/api/tasks/${taskId}/activity-logs?token=${token}`)
-  const parsedRes = ActivityLogsResponseSchema.parse(await res.json())
-  return parsedRes.data
 }
 
 export default async function TaskDetailPage({
