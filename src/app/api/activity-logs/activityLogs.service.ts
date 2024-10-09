@@ -8,7 +8,7 @@ import { ActivityLog, ActivityType, Task } from '@prisma/client'
 import { z } from 'zod'
 
 /**
- * Service to quickly add an activity log to a task for a supported ActivityType
+ * Service to quickly add / retrieve activity logs related to a task
  */
 export class ActivityLogsService extends BaseService {
   constructor(
