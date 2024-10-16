@@ -1,9 +1,10 @@
 'use client'
 
+import { LogResponse } from '@/app/api/activity-logs/schemas/LogResponseSchema'
 import { setTokenPayload } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard, setAssigneeList, setFilteredAssgineeList, setViewSettings } from '@/redux/features/taskBoardSlice'
 import { setTasks, setToken, setWorkflowStates } from '@/redux/features/taskBoardSlice'
-import { setAssigneeSuggestion } from '@/redux/features/taskDetailsSlice'
+import { setActivities, setAssigneeSuggestion } from '@/redux/features/taskDetailsSlice'
 import { setTemplates } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
 import { Token } from '@/types/common'
@@ -37,6 +38,7 @@ export const ClientSideStateUpdate = ({
   templates,
   assigneeSuggestions,
   task,
+  activities,
 }: {
   children: ReactNode
   workflowStates?: WorkflowStateResponse[]
@@ -48,6 +50,7 @@ export const ClientSideStateUpdate = ({
   templates?: ITemplate[]
   assigneeSuggestions?: IAssigneeSuggestions[]
   task?: TaskResponse
+  activities?: LogResponse[]
 }) => {
   const { tasks: tasksInStore, viewSettingsTemp } = useSelector(selectTaskBoard)
   useEffect(() => {
@@ -87,6 +90,10 @@ export const ClientSideStateUpdate = ({
       const updatedTasks = tasksInStore.map((t) => (t.id === task.id ? task : t))
       store.dispatch(setTasks(updatedTasks))
     } //for updating a task in store with respect to task response from db in task details page
+
+    if (activities) {
+      store.dispatch(setActivities(activities))
+    }
   }, [workflowStates, tasks, token, assignee, viewSettings, tokenPayload, templates, assigneeSuggestions, task])
 
   return children

@@ -41,9 +41,7 @@ export const updateWorkflowStateIdOfTask = async (token: string, taskId: string,
   })
   //revalidation on update assignee is disabled for now since we don't have activity log enabled
   //this revalidation can be rethought and may not be needed to prevent unexpected flickering
-  if (advancedFeatureFlag) {
-    revalidateTag('getActivities')
-  }
+  revalidateTag('getActivities')
 }
 
 export const updateAssignee = async (
@@ -61,9 +59,7 @@ export const updateAssignee = async (
   })
   //revalidation on update assignee is disabled for now since we don't have activity log enabled
   //this revalidation can be rethought and may not be needed to prevent unexpected flickering
-  if (advancedFeatureFlag) {
-    revalidateTag('getActivities')
-  }
+  revalidateTag('getActivities')
 }
 
 export const clientUpdateTask = async (token: string, taskId: string, targetWorkflowStateId: string) => {
