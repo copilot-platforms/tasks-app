@@ -29,7 +29,7 @@ export const useHandleSelectorComponent = ({
       store.dispatch(setCreateTemplateFields({ targetField: 'workflowStateId', value: (item as WorkflowStateResponse)?.id }))
     }
 
-    if (mode === HandleSelectorComponentModes.CreateTaskFieldUpdate && type === SelectorType.ASSIGNEE_SELECTOR && item) {
+    if (mode === HandleSelectorComponentModes.CreateTaskFieldUpdate && type === SelectorType.ASSIGNEE_SELECTOR) {
       store.dispatch(setCreateTaskFields({ targetField: 'assigneeId', value: (item as IAssigneeCombined)?.id }) ?? null)
       store.dispatch(
         setCreateTaskFields({ targetField: 'assigneeType', value: getAssigneeTypeCorrected(item as IAssigneeCombined) }),
