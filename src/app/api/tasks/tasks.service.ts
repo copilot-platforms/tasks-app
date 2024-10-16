@@ -470,6 +470,7 @@ export class TasksService extends BaseService {
 
   async sendTaskCreateNotifications(task: Task & { workflowState: WorkflowState }, isReassigned = false) {
     // If task is unassigned, there's nobody to send notifications to
+    console.log('debug:', task, isReassigned)
     if (!task.assigneeId) return
 
     // If task is assigned to the same person that created it, no need to notify yourself
