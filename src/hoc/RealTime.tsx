@@ -54,7 +54,8 @@ export const RealTime = ({ children, task }: { children: ReactNode; task?: TaskR
           if (oldTask && oldTask.body && updatedTask.body) {
             const oldImgSrcs = extractImgSrcs(oldTask.body)
             const newImgSrcs = extractImgSrcs(updatedTask.body)
-
+            // Need to extract new image Srcs and replace it with old ones, because since we are creating a new url of images on each task details navigation,
+            // a second user navigating the task details will generate a new src and replace it in the database which causes the previous user to load the src again(because its new)
             if (oldImgSrcs.length > 0 && newImgSrcs.length > 0) {
               updatedTask.body = replaceImgSrcs(updatedTask.body, newImgSrcs, oldImgSrcs)
             }
