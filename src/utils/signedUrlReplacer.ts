@@ -24,7 +24,7 @@ export async function replaceImageSrc(htmlString: string, getSignedUrl: (filePat
   return htmlString
 }
 
-export async function getFilePathFromUrl(url: string) {
+export function getFilePathFromUrl(url: string) {
   try {
     const parsedUrl = new URL(url)
     const pathname = parsedUrl.pathname
@@ -34,4 +34,25 @@ export async function getFilePathFromUrl(url: string) {
     console.error('Invalid URL:', error)
     return null
   }
+}
+
+export const extractImgSrcs = (body: string) => {
+  const parser = new DOMParser()
+  const doc = parser.parseFromString(body, 'text/html')
+  const imgs = Array.from(doc.querySelectorAll('img'))
+  return imgs.map((img) => img.src) // Return an array of srcs
+}
+
+export const replaceImgSrcs = (body: string, newSrcs: string[], oldSrcs: string[]) => {
+  let updatedBody = body
+  newSrcs.forEach((newSrc, index) => {
+    const filePath = getFilePathFromUrl(newSrc)
+    if (filePath) {
+      const match = oldSrcs.find((oldSrc) => oldSrc.includes(filePath))
+      if (match) {
+        updatedBody = updatedBody.replace(newSrc, match)
+      }
+    }
+  })
+  return updatedBody
 }
