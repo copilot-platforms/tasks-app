@@ -18,6 +18,7 @@ import { redirectIfTaskCta } from '@/utils/redirect'
 import { Suspense } from 'react'
 import { AssigneeFetcher } from './_fetchers/AssigneeFetcher'
 import { SilentError } from '@/components/templates/SilentError'
+import { UserRole } from './api/core/types/user'
 
 export async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -86,7 +87,7 @@ export default async function Main({ searchParams }: { searchParams: { token: st
       </Suspense>
       <RealTime>
         <DndWrapper>
-          <TaskBoard />
+          <TaskBoard mode={UserRole.IU} />
         </DndWrapper>
 
         <ModalNewTaskForm

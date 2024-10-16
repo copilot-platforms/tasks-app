@@ -98,7 +98,7 @@ export const Sidebar = ({
         borderLeft: (theme) => `1px solid ${theme.color.borders.border2}`,
         height: '100vh',
         display: showSidebar ? 'block' : 'none',
-        width: showSidebar ? (isMobile ? '100vw' : '25vw') : '25vw',
+        width: isMobile && showSidebar ? '100vw' : '25vw',
       }}
     >
       <Stack direction="row" justifyContent="space-between" alignItems="center">
@@ -111,7 +111,7 @@ export const Sidebar = ({
           <Typography variant="sm">Properties</Typography>
           <Box
             sx={{
-              display: showSidebar ? (isMobile ? 'block' : 'none') : 'none',
+              display: isMobile ? 'block' : 'none',
             }}
           >
             <ToggleButtonContainer />
@@ -241,7 +241,7 @@ export const SidebarSkeleton = () => {
         borderLeft: (theme) => `1px solid ${theme.color.borders.border2}`,
         height: '100vh',
         display: showSidebar ? 'block' : 'none',
-        width: showSidebar ? (isMobile ? '100vw' : '25vw') : '25vw',
+        width: isMobile && showSidebar ? '100vw' : '25vw',
       }}
     >
       <Stack direction="row" justifyContent="space-between" alignItems="center">
@@ -254,7 +254,7 @@ export const SidebarSkeleton = () => {
           <Typography variant="sm">Properties</Typography>
           <Box
             sx={{
-              display: showSidebar ? (isMobile ? 'block' : 'none') : 'none',
+              display: isMobile ? 'block' : 'none',
             }}
           >
             <ToggleButtonContainer />

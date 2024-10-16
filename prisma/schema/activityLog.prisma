@@ -1,0 +1,24 @@
+enum ActivityType {
+  TASK_CREATED
+  TASK_ASSIGNED
+  WORKFLOW_STATE_UPDATED
+  COMMENT_ADDED
+}
+
+model ActivityLog {
+  id          String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  taskId      String       @db.Uuid
+  task        Task         @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  workspaceId String       @db.VarChar(32)
+  type        ActivityType
+  details     Json         @db.JsonB
+  userId      String       @db.Uuid
+  userRole    AssigneeType
+  createdAt   DateTime     @default(now()) @db.Timestamptz()
+  updatedAt   DateTime     @updatedAt @ignore @db.Timestamptz()
+
+  @@index([createdAt])
+  @@index([taskId], name: "IX_ActivityLogs_taskId")
+  @@index([userId], name: "IX_ActivityLogs_userId")
+  @@map("ActivityLogs")
+}

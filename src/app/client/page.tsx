@@ -5,15 +5,17 @@ import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { UserType } from '@/types/interfaces'
-import { ClientTaskBoard } from './ui/ClientTaskBoard'
-import { completeTask } from '@/app/client/actions'
 import { RealTime } from '@/hoc/RealTime'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { Token, TokenSchema } from '@/types/common'
 import { Suspense } from 'react'
-import { AssigneeFetcher } from '../_fetchers/AssigneeFetcher'
+import { AssigneeFetcher } from '@/app/_fetchers/AssigneeFetcher'
 import { z } from 'zod'
 import { SilentError } from '@/components/templates/SilentError'
+import { TaskBoard } from '@/app/ui/TaskBoard'
+import { DndWrapper } from '@/hoc/DndWrapper'
+import { UserRole } from '@api/core/types/user'
+import { getViewSettings } from '@/app/page'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -46,9 +48,10 @@ export default async function ClientPage({ searchParams }: { searchParams: { tok
     return <SilentError message="Please provide a Valid Token" />
   }
 
-  const [workflowStates, tasks, tokenPayload] = await Promise.all([
+  const [workflowStates, tasks, viewSettings, tokenPayload] = await Promise.all([
     await getAllWorkflowStates(token),
     await getAllTasks(token),
+    getViewSettings(token),
     getTokenPayload(token),
   ])
 
@@ -56,17 +59,20 @@ export default async function ClientPage({ searchParams }: { searchParams: { tok
 
   return (
     <>
-      <ClientSideStateUpdate workflowStates={workflowStates} tasks={tasks} token={token} tokenPayload={tokenPayload}>
+      <ClientSideStateUpdate
+        workflowStates={workflowStates}
+        tasks={tasks}
+        token={token}
+        tokenPayload={tokenPayload}
+        viewSettings={viewSettings}
+      >
         <Suspense fallback={null}>
           <AssigneeFetcher token={token} userType={UserType.CLIENT_USER} />
         </Suspense>
         <RealTime>
-          <ClientTaskBoard
-            completeTask={async (taskId) => {
-              'use server'
-              completeTask({ token, taskId })
-            }}
-          />
+          <DndWrapper>
+            <TaskBoard mode={UserRole.Client} />
+          </DndWrapper>
         </RealTime>
       </ClientSideStateUpdate>
     </>

@@ -9,7 +9,6 @@ import { useSelector } from 'react-redux'
 import { DueDateLayout } from '@/components/layouts/DueDateLayout'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { UrlObject } from 'url'
-import { CustomLink } from '@/hoc/CustomLink'
 import { useEffect, useState } from 'react'
 
 const TaskCardContainer = styled(Stack)(({ theme }) => ({
