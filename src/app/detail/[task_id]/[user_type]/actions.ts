@@ -41,7 +41,7 @@ export const updateWorkflowStateIdOfTask = async (token: string, taskId: string,
   })
   //revalidation on update assignee is disabled for now since we don't have activity log enabled
   //this revalidation can be rethought and may not be needed to prevent unexpected flickering
-  revalidateTag('getActivities')
+  // revalidateTag('getActivities')
 }
 
 export const updateAssignee = async (
@@ -59,7 +59,7 @@ export const updateAssignee = async (
   })
   //revalidation on update assignee is disabled for now since we don't have activity log enabled
   //this revalidation can be rethought and may not be needed to prevent unexpected flickering
-  revalidateTag('getActivities')
+  // revalidateTag('getActivities')
 }
 
 export const clientUpdateTask = async (token: string, taskId: string, targetWorkflowStateId: string) => {
@@ -94,14 +94,14 @@ export const postComment = async (token: string, payload: CreateComment) => {
     method: 'POST',
     body: JSON.stringify(payload),
   })
-  revalidateTag('getActivities')
+  // revalidateTag('getActivities')
 }
 
 export const deleteComment = async (token: string, id: string) => {
   await fetch(`${apiUrl}/api/comment/${id}?token=${token}`, {
     method: 'DELETE',
   })
-  revalidateTag('getActivities')
+  // revalidateTag('getActivities')
 }
 
 export const postScrapImage = async (token: string, payload: ScrapImageRequest) => {
