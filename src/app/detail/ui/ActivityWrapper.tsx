@@ -15,6 +15,7 @@ export const ActivityWrapper = ({ token, task_id }: { token: string; task_id: st
   const { data: activities, isLoading } = useSWR(`/api/tasks/${task_id}/activity-logs/?token=${token}`, fetcher, {
     refreshInterval: 1000,
   })
+  console.log('activities', activities)
 
   return (
     <Box width="100%">
