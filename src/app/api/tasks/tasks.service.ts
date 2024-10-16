@@ -128,6 +128,7 @@ export class TasksService extends BaseService {
       },
       include: { workflowState: true },
     })
+    console.log('qqq new task', newTask)
 
     if (newTask) {
       // @todo move this logic to any pub/sub service like event bus
@@ -147,8 +148,10 @@ export class TasksService extends BaseService {
       )
       newTask.body && (await scrapImageService.updateTaskIdOfScrapImagesAfterCreation(newTask.body, newTask.id))
     }
+    console.log('qqq activity and scrap')
 
     await this.sendTaskCreateNotifications(newTask)
+    console.log('qqq create task notifications')
     return newTask
   }
 
