@@ -1,4 +1,4 @@
-import { Avatar, Box, Button, Popper, Stack, Typography } from '@mui/material'
+import { Box, Button, Popper, Stack, Typography } from '@mui/material'
 import { StyledAutocomplete } from '@/components/inputs/Autocomplete'
 import { statusIcons } from '@/utils/iconMatcher'
 import { useFocusableInput } from '@/hooks/useFocusableInput'
@@ -7,7 +7,6 @@ import { StyledTextField } from './TextField'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { IAssigneeCombined, IExtraOption, ITemplate, UserTypesName } from '@/types/interfaces'
 import { TruncateMaxNumber } from '@/types/constants'
-
 import { truncateText } from '@/utils/truncateText'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { getAssigneeName } from '@/utils/assignee'
@@ -28,6 +27,8 @@ interface Prop {
   selectorType: SelectorType
   options: unknown[]
   buttonContent: ReactNode
+  inputStatusValue: string
+  setInputStatusValue: React.Dispatch<React.SetStateAction<string>>
   disabled?: boolean
   placeholder?: string
   extraOption?: IExtraOption
@@ -57,6 +58,8 @@ export default function Selector({
   buttonContent,
   disabled,
   placeholder = 'Change status...',
+  inputStatusValue,
+  setInputStatusValue,
   extraOption,
   extraOptionRenderer,
   disableOutline,
@@ -81,8 +84,6 @@ export default function Selector({
 
   const open = Boolean(anchorEl)
   const id = open ? 'autocomplete-popper' : ''
-
-  const [inputStatusValue, setInputStatusValue] = useState('')
 
   const setSelectorRef = useFocusableInput(open)
 
