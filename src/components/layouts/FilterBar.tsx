@@ -1,7 +1,6 @@
 'use client'
 
-import { Box, CircularProgress, IconButton, Stack } from '@mui/material'
-import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
+import { Box, IconButton, Stack } from '@mui/material'
 import { useEffect, useState } from 'react'
 import store from '@/redux/store'
 import { setFilterOptions, setViewSettingsTemp, setViewSettings } from '@/redux/features/taskBoardSlice'
@@ -11,12 +10,10 @@ import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { useSelector } from 'react-redux'
 import {
-  FilterByOptions,
   FilterOptions,
   FilterOptionsKeywords,
   IAssigneeCombined,
   IFilterOptions,
-  View,
   HandleSelectorComponentModes,
 } from '@/types/interfaces'
 import { CrossIcon, FilterByAsigneeIcon } from '@/icons'
@@ -47,16 +44,42 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
   const viewMode = viewSettingsTemp ? viewSettingsTemp.viewMode : view
   const viewModeFilterOptions = viewSettingsTemp ? (viewSettingsTemp.filterOptions as IFilterOptions) : filterOptions //ViewSettingsTemp used to apply temp values of viewSettings in filterOptions and viewMode because clientSideUpdate applies outdated cached values to original view and filterOptions if navigated
 
+  // Stores the initial assignee list for a particular filter type
+  const [initialAssignees, setInitialAssignees] = useState(filteredAssignee)
+  const [inputStatusValue, setInputStatusValue] = useState('')
+
   useEffect(() => {
     setFilteredAssignee(filteredAssigneeList)
   }, [filteredAssigneeList]) //to prevent filteredAssignee not updating when filteredAssigneeList changes when fetching assignee is delayed
+
+  useEffect(() => {
+    // Base these initial values off of first fetch of filteredAssignee
+    initialAssignees.length === 0 && setInitialAssignees(filteredAssignee)
+  }, [initialAssignees, filteredAssignee])
+
+  useEffect(() => {
+    // When focus is taken away from selector, make sure that assignee search results are replaced
+    if (filteredAssignee.length && initialAssignees.length && !inputStatusValue) {
+      setFilteredAssignee(initialAssignees)
+    }
+  }, [filteredAssignee, initialAssignees, inputStatusValue])
+
+  useEffect(() => {
+    if (!inputStatusValue) {
+      loading && setLoading(false)
+    }
+    console.log('qqq input status value', inputStatusValue)
+  }, [inputStatusValue])
 
   const handleFilterOptionsChange = async (optionType: FilterOptions, newValue: string | null) => {
     store.dispatch(setFilterOptions({ optionType, newValue }))
     if (optionType === FilterOptions.TYPE) {
       const filterFunction = filterOptionsToAssigneeMap[newValue as string] || filterOptionsToAssigneeMap.default
       setFilteredAssignee(filterFunction(assignee))
+      const newAssignees = filterFunction(assignee)
+      setInitialAssignees(newAssignees)
     }
+
     //FilteredAssignee is also updated in the component's state and used in Selector's autocomplete to mitigate the time taken to update the store and fetch values to the Selector's autocomplete.
     const updatedFilterOptions = viewSettingsTemp
       ? (store.getState().taskBoard.viewSettingsTemp?.filterOptions as IFilterOptions)
@@ -134,6 +157,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
   ]
 
   const assigneeValue = _assigneeValue as IAssigneeCombined
+
   return (
     <Box
       sx={{
@@ -159,6 +183,8 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
                     }}
                   >
                     <Selector
+                      inputStatusValue={inputStatusValue}
+                      setInputStatusValue={setInputStatusValue}
                       getSelectedValue={(_newValue) => {
                         const newValue = _newValue as IAssigneeCombined
                         updateAssigneeValue(newValue)
@@ -216,8 +242,9 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
                       buttonContent={<FilterByAssigneeBtn assigneeValue={assigneeValue} />}
                       padding="2px 10px 2px 10px"
                       handleInputChange={async (newInputValue: string) => {
+                        console.log('qqq', newInputValue)
                         if (!newInputValue) {
-                          setFilteredAssignee(filteredAssigneeList)
+                          setFilteredAssignee(initialAssignees)
                           return
                         }
 
@@ -268,6 +295,8 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
             <Box>
               {filterOptions[FilterOptions.TYPE] !== tokenPayload?.internalUserId && mode === UserRole.IU && (
                 <Selector
+                  inputStatusValue={inputStatusValue}
+                  setInputStatusValue={setInputStatusValue}
                   getSelectedValue={(_newValue) => {
                     const newValue = _newValue as IAssigneeCombined
                     updateAssigneeValue(newValue)
@@ -326,7 +355,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
                   padding="2px 10px 2px 10px"
                   handleInputChange={async (newInputValue: string) => {
                     if (!newInputValue) {
-                      setFilteredAssignee(filteredAssigneeList)
+                      setFilteredAssignee(initialAssignees)
                       return
                     }
 
