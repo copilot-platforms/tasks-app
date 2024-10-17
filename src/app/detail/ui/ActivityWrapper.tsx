@@ -3,7 +3,7 @@
 import { LogResponse } from '@/app/api/activity-logs/schemas/LogResponseSchema'
 import { Box, Skeleton, Stack, Typography } from '@mui/material'
 import { Comments } from './Comments'
-import { ActivityLog } from './ActivityLog'
+import { ActivityLog } from '@/app/detail/ui/ActivityLog'
 import { CommentInput } from '@/components/inputs/CommentInput'
 import { ActivityType } from '@prisma/client'
 import { postComment, deleteComment } from '../[task_id]/[user_type]/actions'

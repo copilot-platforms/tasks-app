@@ -40,7 +40,7 @@ import { DetailStateUpdate } from '@/app/detail/[task_id]/[user_type]/DetailStat
 import { SilentError } from '@/components/templates/SilentError'
 import { z } from 'zod'
 import { signedUrlTtl } from '@/types/constants'
-import { ActivityWrapper } from '../../ui/ActivityWrapper'
+import { ActivityWrapper } from '@/app/detail/ui/ActivityWrapper'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
