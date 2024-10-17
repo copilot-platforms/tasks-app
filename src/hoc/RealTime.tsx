@@ -84,6 +84,11 @@ export const RealTime = ({ children, task }: { children: ReactNode; task?: TaskR
   }
 
   useEffect(() => {
+    if (!userId || !userRole) {
+      // Don't try to open a connection with `undefined` parameters
+      return
+    }
+
     const channel = supabase
       .channel('realtime tasks')
       .on(
