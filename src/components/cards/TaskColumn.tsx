@@ -11,13 +11,15 @@ const TaskColumnHeader = styled(Stack)({
   justifyContent: 'space-between',
   alignItems: 'center',
   paddingBottom: '8px',
+  width: '304px',
 })
 
 const TaskColumnContainer = styled(Stack)({
-  width: '292px',
-  margin: '0 auto',
+  width: '306px',
   height: 'calc(100vh - 195px)',
   marginTop: '6px',
+  justifyContent: 'space-between',
+  alignItems: 'center',
 })
 
 interface TaskColumnProps extends TaskWorkflowStateProps {}
@@ -35,9 +37,7 @@ export const TaskColumn = ({ workflowStateId, mode, children, columnName, taskCo
           </Stack>
 
           {/* ((22 - 16) / 2) + 10 */}
-          {mode === UserRole.IU && (
-            <AddBtn handleClick={() => handleAddBtnClicked(workflowStateId)} sx={{ paddingRight: '13px' }} />
-          )}
+          {mode === UserRole.IU && <AddBtn handleClick={() => handleAddBtnClicked(workflowStateId)} />}
           {/* (22 - 16) / 2 */}
         </Box>
       </TaskColumnHeader>
