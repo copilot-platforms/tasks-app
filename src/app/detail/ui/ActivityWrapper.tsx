@@ -33,7 +33,8 @@ export const ActivityWrapper = ({ token, task_id }: { token: string; task_id: st
                 <Box
                   sx={{
                     height: 'auto',
-                    display: 'block',
+                    //added for M3 purpose only. This check can be removed later to render all ActivityType
+                    display: item.type === ActivityType.TASK_CREATED ? 'block' : 'none',
                   }}
                   key={item.id}
                 >
@@ -49,7 +50,7 @@ export const ActivityWrapper = ({ token, task_id }: { token: string; task_id: st
                       task_id={task_id}
                     />
                   ) : (
-                    <ActivityLog log={item} />
+                    item.type === ActivityType.TASK_CREATED && <ActivityLog log={item} />
                   )}
                 </Box>
               )
