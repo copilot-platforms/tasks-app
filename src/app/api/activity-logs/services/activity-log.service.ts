@@ -62,7 +62,7 @@ export class ActivityLogService extends BaseService {
     const comments = await commentService.getCommentsByIds(commentIds)
     const allReplies = await commentService.getReplies(commentIds)
 
-    const t = LogResponseSchemaArrayType.parse(
+    return LogResponseSchemaArrayType.parse(
       parsedActivityLogs.map((activityLog) => {
         return {
           ...activityLog,
@@ -83,8 +83,6 @@ export class ActivityLogService extends BaseService {
         }
       }),
     )
-    console.log('activities', t)
-    return t
   }
 
   formatActivityLogDetails<ActivityLog extends keyof typeof SchemaByActivityType>(
