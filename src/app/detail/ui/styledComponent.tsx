@@ -86,7 +86,6 @@ export const CommentCardContainer = styled(Stack)(({ theme }) => ({
   background: theme.color.base.white,
   padding: '10px',
   width: '100%',
-  backgroundColor: `${theme.color.base.white}`,
 }))
 
 export const TaskDetailsContainer = styled(Box)(({ theme }) => ({

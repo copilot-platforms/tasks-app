@@ -35,7 +35,11 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
   return (
     <Stack direction="row" columnGap={3} alignItems="flex-start">
       <Avatar alt="user" src={''} sx={{ width: '25px', height: '25px' }} />
-      <CommentCardContainer>
+      <CommentCardContainer
+        sx={{
+          backgroundColor: (theme) => `${theme.color.base.white}`,
+        }}
+      >
         <Tapwrite
           content={detail}
           getContent={setDetail}
@@ -53,7 +57,7 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
           }}
         >
           <IconButton
-            onClick={handleSubmit}
+            onClick={() => handleSubmit()}
             disabled={!detail}
             sx={{ backgroundColor: '#000', borderRadius: '4px', '&:hover': { bgcolor: '#000' } }}
           >

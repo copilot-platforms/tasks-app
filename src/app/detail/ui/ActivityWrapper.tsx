@@ -27,14 +27,15 @@ export const ActivityWrapper = ({ token, task_id }: { token: string; task_id: st
             <Skeleton variant="rectangular" width={'100%'} height={15} />
           </Stack>
         ) : (
-          <Stack direction="column" alignItems="left" p="10px 5px" rowGap={4}>
-            {activities?.data.map((item: LogResponse, index: number) => {
+          <Stack direction="column" alignItems="left" p="0px 5px" rowGap={4}>
+            {activities?.data?.map((item: LogResponse, index: number) => {
               return (
                 <Box
                   sx={{
                     height: 'auto',
                     //added for M3 purpose only. This check can be removed later to render all ActivityType
-                    display: item.type === ActivityType.TASK_CREATED ? 'block' : 'none',
+                    display:
+                      item.type === ActivityType.TASK_CREATED || item.type === ActivityType.COMMENT_ADDED ? 'block' : 'none',
                   }}
                   key={item.id}
                 >
