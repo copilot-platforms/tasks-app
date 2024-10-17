@@ -68,7 +68,6 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
     if (!inputStatusValue) {
       loading && setLoading(false)
     }
-    console.log('qqq input status value', inputStatusValue)
   }, [inputStatusValue])
 
   const handleFilterOptionsChange = async (optionType: FilterOptions, newValue: string | null) => {
@@ -242,7 +241,6 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
                       buttonContent={<FilterByAssigneeBtn assigneeValue={assigneeValue} />}
                       padding="2px 10px 2px 10px"
                       handleInputChange={async (newInputValue: string) => {
-                        console.log('qqq', newInputValue)
                         if (!newInputValue) {
                           setFilteredAssignee(initialAssignees)
                           return
