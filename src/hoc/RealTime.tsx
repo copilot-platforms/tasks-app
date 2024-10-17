@@ -90,7 +90,17 @@ export const RealTime = ({ children, task }: { children: ReactNode; task?: TaskR
         'postgres_changes',
         // Because of the way supabase realtime is architected for postgres_changes, it can only apply one filter at a time.
         // Ref: https://github.com/supabase/realtime-js/issues/97
-        { event: '*', schema: 'public', table: 'Tasks', filter: `assigneeId=eq.${userId}` },
+        {
+          event: '*',
+          schema: 'public',
+          table: 'Tasks',
+          filter:
+            userRole === AssigneeType.internalUser
+              ? `workspaceId=eq.${tokenPayload?.workspaceId}`
+              : // The reason we are explicitly using an assigneeId filter for clients is so they are not streamed
+                // tasks they don't have access to in the first place.
+                `assigneeId=eq.${userId}`,
+        },
         handleTaskRealTimeUpdates,
       )
       .subscribe()
