@@ -1,6 +1,6 @@
 'use client'
 
-import { Avatar, Box, InputAdornment, Stack } from '@mui/material'
+import { Avatar, Box, IconButton, InputAdornment, Stack } from '@mui/material'
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 
 import { useState } from 'react'
@@ -10,6 +10,8 @@ import { useSelector } from 'react-redux'
 import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 import { getMentionsList } from '@/utils/getMentionList'
 import { Tapwrite } from 'tapwrite'
+import { ArrowUpIcon } from '@/icons'
+import { ArrowUpward } from '@mui/icons-material'
 
 interface Prop {
   createComment: (postCommentPayload: CreateComment) => void
@@ -50,7 +52,13 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
             paddingBottom: '10px',
           }}
         >
-          <PrimaryBtn buttonText="Comment" handleClick={handleSubmit} disabled={!detail} />
+          <IconButton
+            onClick={handleSubmit}
+            disabled={!detail}
+            sx={{ backgroundColor: '#000', borderRadius: '4px', '&:hover': { bgcolor: '#000' } }}
+          >
+            <ArrowUpward sx={{ color: '#ffffff' }} />
+          </IconButton>
         </InputAdornment>
       </CommentCardContainer>
     </Stack>

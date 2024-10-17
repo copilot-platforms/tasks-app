@@ -51,8 +51,8 @@ export const getInProductNotificationDetails = (
       ctaParams,
     },
     [NotificationTaskActions.Commented]: {
-      title: 'New comment on task',
-      body: `A new comment was left by ${actionUser} on a task where you are set as the assignee. To see details about the task, navigate to the Tasks App below.`,
+      title: 'A comment was added',
+      body: `${actionUser} left a comment on the task ${task?.title}.`,
       ctaParams,
     },
     [NotificationTaskActions.Mentioned]: {
@@ -95,11 +95,12 @@ export const getEmailDetails = (
     //   body: `A new task was completed by ${actionUser}. You are receiving this notification because you have access to the client.`,
     // },
     [NotificationTaskActions.Commented]: {
-      subject: 'New comment on task',
-      header: 'New comment on task',
-      body: `A new comment was left by ${actionUser} on a task where you are set as the assignee. To see details about the task, navigate to the Tasks App below.`,
+      subject: 'A comment was added',
+      header: 'A comment was added',
+      body: `${actionUser} left a comment on the task ${task?.title}. To view the comment, open the task below.`,
       title: 'View task',
     },
+
     [NotificationTaskActions.Mentioned]: {
       subject: 'You were mentioned in a task comment',
       header: 'You were mentioned in a task comment',

@@ -72,13 +72,13 @@ export const CommentCard = ({
 
           {isHovered && (
             <Stack direction="row" columnGap={2} sx={{ height: '10px' }}>
-              <StyledReplyIcon
-                onClick={(event: React.MouseEvent<HTMLElement>) => {
-                  event.stopPropagation()
+              {/* <StyledReplyIcon */}
+              {/*   onClick={(event: React.MouseEvent<HTMLElement>) => { */}
+              {/*     event.stopPropagation() */}
 
-                  setShowReply(!showReply)
-                }}
-              />
+              {/*     setShowReply(!showReply) */}
+              {/*   }} */}
+              {/* /> */}
               {canEdit && (
                 <MenuBox
                   menuContent={
