@@ -93,6 +93,8 @@ export const NewTaskForm = ({ handleCreate, handleClose, getSignedUrlUpload }: N
   // use temp state pattern so that we don't fall into an infinite loop of assigneeValue set -> trigger -> set
   const [tempAssignee, setTempAssignee] = useState<IAssigneeCombined | null>(assigneeValue)
 
+  const [inputStatusValue, setInputStatusValue] = useState('')
+
   const handleCreateWithAssignee = () => {
     if (!!tempAssignee?.id && !assignee.find((assignee) => assignee.id === tempAssignee.id)) {
       store.dispatch(setAssigneeList([...assignee, tempAssignee]))
@@ -125,6 +127,8 @@ export const NewTaskForm = ({ handleCreate, handleClose, getSignedUrlUpload }: N
             <Box>
               {advancedFeatureFlag && (
                 <Selector
+                  inputStatusValue={inputStatusValue}
+                  setInputStatusValue={setInputStatusValue}
                   getSelectedValue={(_newValue) => {
                     const newValue = _newValue as ITemplate
                     updateTemplateValue(newValue)
@@ -197,6 +201,8 @@ export const NewTaskForm = ({ handleCreate, handleClose, getSignedUrlUpload }: N
           </Box>
           <Stack alignSelf="flex-start">
             <Selector
+              inputStatusValue={inputStatusValue}
+              setInputStatusValue={setInputStatusValue}
               placeholder="Set assignee"
               getSelectedValue={(_newValue) => {
                 store.dispatch(setErrors({ key: CreateTaskErrors.ASSIGNEE, value: false }))
