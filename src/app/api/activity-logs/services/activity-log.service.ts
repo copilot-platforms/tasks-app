@@ -83,7 +83,7 @@ export class ActivityLogService extends BaseService {
         }
       }),
     )
-    console.log('activities', t)
+
     return t
   }
 

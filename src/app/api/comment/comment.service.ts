@@ -5,12 +5,13 @@ import { UserAction } from '@api/core/types/user'
 import { Resource } from '@api/core/types/api'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { ActivityLogger } from '@api/activity-logs/services/activity-logger.service'
-import { ActivityType } from '@prisma/client'
+import { ActivityType, AssigneeType, Task } from '@prisma/client'
 import { CommentAddedSchema } from '@api/activity-logs/schemas/CommentAddedSchema'
 import { NotificationService } from '@api/notification/notification.service'
 import { NotificationTaskActions } from '@api/core/types/tasks'
 import APIError from '@api/core/exceptions/api'
 import httpStatus from 'http-status'
+import { NotificationCreatedResponseSchema } from '@/types/common'
 
 export class CommentService extends BaseService {
   async create(data: CreateComment) {
@@ -55,17 +56,91 @@ export class CommentService extends BaseService {
       if (!task) {
         throw new APIError(httpStatus.NOT_FOUND, `Notification not created because task not found with id: ${data.taskId}`)
       }
-
       const notificationService = new NotificationService(this.user)
-      if (task.assigneeId) {
-        await notificationService.create(NotificationTaskActions.Commented, task)
-      }
+      await this.sendCommentCreateNotifications(task, userInfo.id)
       if (data.mentions) {
         await notificationService.createBulkNotification(NotificationTaskActions.Mentioned, task, data.mentions)
       }
     }
 
     return comment
+  }
+
+  async sendCommentCreateNotifications(task: Task, createdBy: string) {
+    // If task is unassigned, there's nobody to send notifications to
+    if (!task.assigneeId) return
+
+    // If new task having the comment is assigned to someone (IU / Client / Company), send proper notification + email to them
+    const notificationService = new NotificationService(this.user)
+
+    // If comment is added by the same person that is assigned to the task, no need to notify
+    if (task.assigneeId === createdBy) {
+      if (task.assigneeType === AssigneeType.company) {
+        await this.sendCompanyCommentNotifications(task, notificationService, createdBy)
+      }
+      return
+    }
+
+    const sendTaskNotifications =
+      task.assigneeType === AssigneeType.company ? this.sendCompanyCommentNotifications : this.sendUserCommentNotification
+    await sendTaskNotifications(task, notificationService)
+  }
+
+  private sendCompanyCommentNotifications = async (
+    task: Task,
+    notificationService: NotificationService,
+    createdBy?: string,
+  ) => {
+    const copilot = new CopilotAPI(this.user.token)
+    const { recipientIds } = await notificationService.getNotificationParties(
+      copilot,
+      task,
+      NotificationTaskActions.AssignedToCompany,
+    )
+    // Remove createdBy from recipientIds if someone from the company has created the comment
+    const filteredRecipientIds = createdBy ? recipientIds.filter((id: string) => id !== createdBy) : recipientIds
+    const notifications = await notificationService.createBulkNotification(
+      NotificationTaskActions.Commented,
+      task,
+      filteredRecipientIds,
+      { email: true },
+    )
+
+    // This is a hacky way to bulk create ClientNotifications for all company members.
+    if (notifications) {
+      const notificationPromises = []
+      for (let i = 0; i < notifications.length; i++) {
+        // Basically we are treating an individual company member as a client recipient for a notification
+        // For each loop we are considering a separate task where that particular member is the assignee
+        notificationPromises.push(
+          notificationService.addToClientNotifications(
+            { ...task, assigneeId: filteredRecipientIds[0], assigneeType: AssigneeType.client },
+            notifications[i],
+          ),
+        )
+      }
+      await Promise.all(notificationPromises)
+    }
+  }
+
+  private async sendUserCommentNotification(task: Task, notificationService: NotificationService) {
+    const notification = await notificationService.create(
+      //! In future when reassignment is supported, change this logic to support reassigned to client as well
+      NotificationTaskActions.Commented,
+      task,
+      {
+        email: task.assigneeType === AssigneeType.internalUser,
+      },
+    )
+    // Create a new entry in ClientNotifications table so we can mark as read on
+    // behalf of client later
+
+    if (!notification) {
+      console.error('Notification failed to trigger for task:', task)
+    }
+    if (task.assigneeType === AssigneeType.client) {
+      await notificationService.addToClientNotifications(task, NotificationCreatedResponseSchema.parse(notification))
+    }
   }
 
   async delete(id: string) {
