@@ -69,7 +69,7 @@ export const CommentCard = ({
         backgroundColor: (theme) => `${theme.color.gray[100]}`,
       }}
     >
-      <Stack direction="column" rowGap={3}>
+      <Stack direction="column" rowGap={'3px'}>
         <Stack direction="row" justifyContent={'space-between'} alignItems="center">
           <Stack direction="row" columnGap={3}>
             {assignee.find((el) => el.id === comment.initiator.id) ? (

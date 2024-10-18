@@ -58,7 +58,11 @@ export const ActivityLog = ({ log }: Prop) => {
       <Avatar
         src={log?.initiator?.avatarImageUrl || 'user'}
         alt={log?.initiator?.givenName}
-        sx={{ width: '25px', height: '25px' }}
+        sx={{
+          width: '25px',
+          height: '25px',
+          border: (theme) => `1.1px solid ${theme.color.gray[200]}`,
+        }}
       />
       <TypographyContainer direction="row" columnGap={1}>
         {assignee.find((el) => el.id === log?.initiator?.id) ? (
