@@ -31,6 +31,7 @@ export const ListViewTaskCard = ({
   const { assignee } = useSelector(selectTaskBoard)
 
   const [currentAssignee, setCurrentAssignee] = useState<IAssigneeCombined | undefined>(undefined)
+  const [inputStatusValue, setInputStatusValue] = useState('')
 
   useEffect(() => {
     if (assignee.length > 0) {
@@ -51,6 +52,7 @@ export const ListViewTaskCard = ({
     <Box
       className="task-list-card"
       sx={{
+        maxWidth: '100vw',
         userSelect: 'none',
         cursor: 'pointer',
         borderBottom: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
@@ -104,6 +106,8 @@ export const ListViewTaskCard = ({
 
             {currentAssignee ? (
               <Selector
+                inputStatusValue={inputStatusValue}
+                setInputStatusValue={setInputStatusValue}
                 placeholder="Change assignee"
                 disableOutline
                 disabled

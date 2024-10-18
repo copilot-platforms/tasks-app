@@ -23,13 +23,13 @@ export class SupabaseActions extends SupabaseService {
     }
   }
 
-  async uploadAttachment(file: File, signedUrl: ISignedUrlUpload, task_id?: string) {
+  async uploadAttachment(file: File, signedUrl: ISignedUrlUpload, task_id: string | null) {
     let filePayload
     const { data, error } = await this.supabase.storage
       .from(supabaseBucket)
       .uploadToSignedUrl(signedUrl.path, signedUrl.token, file)
     if (error) {
-      throw new APIError(httpStatus.BAD_REQUEST, error.message)
+      console.error('unable to upload the file')
     }
     if (data) {
       filePayload = {
@@ -40,7 +40,7 @@ export class SupabaseActions extends SupabaseService {
         filePath: data.path,
       }
     }
-    return filePayload
+    return { filePayload, error }
   }
 
   async removeAttachment(filePath: string) {

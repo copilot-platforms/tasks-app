@@ -97,7 +97,7 @@ const taskBoardSlice = createSlice({
     },
     updateFilterOption: (state, action: { payload: { filterOptions: FilterOptionsType } }) => {
       const { filterOptions } = action.payload
-      if (filterOptions.assignee) {
+      if (filterOptions?.assignee) {
         const assigneeCheck = state.assignee.find((assignee) => assignee.id == filterOptions.assignee)
         if (!assigneeCheck) {
           filterOptions.assignee = ''

@@ -22,11 +22,11 @@ import {
   IAssigneeCombined,
   ISignedUrlUpload,
   ITemplate,
-  handleSelectorComponentModes,
+  HandleSelectorComponentModes,
 } from '@/types/interfaces'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { useSelector } from 'react-redux'
-import { selectTaskBoard, setAssigneeList, setFilterOptions } from '@/redux/features/taskBoardSlice'
+import { selectTaskBoard, setAssigneeList } from '@/redux/features/taskBoardSlice'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { useRouter } from 'next/navigation'
@@ -46,38 +46,41 @@ import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { setDebouncedFilteredAssignees } from '@/utils/users'
 import { z } from 'zod'
 import { MiniLoader } from '@/components/atoms/MiniLoader'
-import { formatDate } from '@/utils/dateHelper'
 import { getAssigneeName } from '@/utils/assignee'
-import { Dispatch, SetStateAction } from 'react'
+import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
 
 const supabaseActions = new SupabaseActions()
 
-export const NewTaskForm = ({
-  handleCreate,
-  getSignedUrlUpload,
-}: {
+interface NewTaskFormProps {
   handleCreate: () => void
+  handleClose: () => void
   getSignedUrlUpload: (fileName: string) => Promise<ISignedUrlUpload>
-}) => {
-  const { errors } = useSelector(selectCreateTask)
+}
+
+export const NewTaskForm = ({ handleCreate, handleClose, getSignedUrlUpload }: NewTaskFormProps) => {
+  const { activeWorkflowStateId, errors } = useSelector(selectCreateTask)
   const { workflowStates, assignee, token, filterOptions } = useSelector(selectTaskBoard)
   const [filteredAssignees, setFilteredAssignees] = useState(assignee)
   const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
   const [loading, setLoading] = useState(false)
   const { templates } = useSelector(selectCreateTemplate)
 
+  const todoWorkflowState = workflowStates.find((el) => el.key === 'todo') || workflowStates[0]
+  const defaultWorkflowState = activeWorkflowStateId
+    ? workflowStates.find((state) => state.id === activeWorkflowStateId)
+    : todoWorkflowState
+
   const { renderingItem: _statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
-    item: workflowStates[0],
+    item: defaultWorkflowState,
     type: SelectorType.STATUS_SELECTOR,
   })
-
   const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
     item:
       filteredAssignees.find(
         (item) => item.id == filterOptions[FilterOptions.ASSIGNEE] || item.id == filterOptions[FilterOptions.TYPE],
       ) ?? null,
     type: SelectorType.ASSIGNEE_SELECTOR,
-    mode: handleSelectorComponentModes.CreateTaskFieldUpdate,
+    mode: HandleSelectorComponentModes.CreateTaskFieldUpdate,
   })
   const { renderingItem: _templateValue, updateRenderingItem: updateTemplateValue } = useHandleSelectorComponent({
     item: undefined, //initially we don't want any value to be selected
@@ -90,6 +93,8 @@ export const NewTaskForm = ({
   // use temp state pattern so that we don't fall into an infinite loop of assigneeValue set -> trigger -> set
   const [tempAssignee, setTempAssignee] = useState<IAssigneeCombined | null>(assigneeValue)
 
+  const [inputStatusValue, setInputStatusValue] = useState('')
+
   const handleCreateWithAssignee = () => {
     if (!!tempAssignee?.id && !assignee.find((assignee) => assignee.id === tempAssignee.id)) {
       store.dispatch(setAssigneeList([...assignee, tempAssignee]))
@@ -98,22 +103,17 @@ export const NewTaskForm = ({
   }
   const router = useRouter()
 
-  const todoWorkflowState = workflowStates.find((el) => el.key === 'todo') || workflowStates[0]
-
   useEffect(() => {
-    function handleCloseModal(e: KeyboardEvent) {
+    function handleEscPress(e: KeyboardEvent) {
       if (e.key === 'Escape') {
-        store.dispatch(setShowModal())
-        store.dispatch(clearCreateTaskFields({ isFilterOn: !!filterOptions[FilterOptions.ASSIGNEE] }))
+        handleClose()
       }
     }
-
-    document.addEventListener('keydown', handleCloseModal)
-
+    document.addEventListener('keydown', handleEscPress)
     return () => {
-      document.removeEventListener('keydown', handleCloseModal)
+      document.removeEventListener('keydown', handleEscPress)
     }
-  }, [])
+  }, [handleClose])
 
   return (
     <NewTaskContainer>
@@ -127,6 +127,8 @@ export const NewTaskForm = ({
             <Box>
               {advancedFeatureFlag && (
                 <Selector
+                  inputStatusValue={inputStatusValue}
+                  setInputStatusValue={setInputStatusValue}
                   getSelectedValue={(_newValue) => {
                     const newValue = _newValue as ITemplate
                     updateTemplateValue(newValue)
@@ -178,13 +180,7 @@ export const NewTaskForm = ({
                 />
               )}
             </Box>
-            <CloseIcon
-              style={{ cursor: 'pointer' }}
-              onClick={() => {
-                store.dispatch(setShowModal())
-                store.dispatch(clearCreateTaskFields({ isFilterOn: !!filterOptions[FilterOptions.ASSIGNEE] }))
-              }}
-            />
+            <CloseIcon style={{ cursor: 'pointer' }} onClick={handleClose} />
           </Stack>
         </AppMargin>
       </Stack>
@@ -205,6 +201,8 @@ export const NewTaskForm = ({
           </Box>
           <Stack alignSelf="flex-start">
             <Selector
+              inputStatusValue={inputStatusValue}
+              setInputStatusValue={setInputStatusValue}
               placeholder="Set assignee"
               getSelectedValue={(_newValue) => {
                 store.dispatch(setErrors({ key: CreateTaskErrors.ASSIGNEE, value: false }))
@@ -301,7 +299,11 @@ export const NewTaskForm = ({
           </Stack>
         </Stack>
       </AppMargin>
-      <NewTaskFooter handleCreate={handleCreateWithAssignee} getSignedUrlUpload={getSignedUrlUpload} />
+      <NewTaskFooter
+        handleCreate={handleCreateWithAssignee}
+        handleClose={handleClose}
+        getSignedUrlUpload={getSignedUrlUpload}
+      />
     </NewTaskContainer>
   )
 }
@@ -309,6 +311,10 @@ export const NewTaskForm = ({
 const NewTaskFormInputs = () => {
   const { title, description, attachments } = useSelector(selectCreateTask)
   const { errors } = useSelector(selectCreateTask)
+  const { token } = useSelector(selectTaskBoard)
+
+  const handleDetailChange = (content: string) =>
+    store.dispatch(setCreateTaskFields({ targetField: 'description', value: content }))
 
   return (
     <>
@@ -333,17 +339,12 @@ const NewTaskFormInputs = () => {
       <Stack direction="column" rowGap={1} m="16px 0px">
         <Typography variant="md">Description</Typography>
         <Tapwrite
-          uploadFn={async (file, tiptapEditorUtils) => {
-            const newBlob = await upload(file.name, file, {
-              access: 'public',
-              handleUploadUrl: '/api/upload',
-            })
-            tiptapEditorUtils.setImage(newBlob.url as string)
-          }}
           content={description}
-          getContent={(content) => store.dispatch(setCreateTaskFields({ targetField: 'description', value: content }))}
+          getContent={handleDetailChange}
           placeholder="Add description..."
           editorClass="tapwrite-task-description"
+          uploadFn={(file) => uploadImageHandler(file, token ?? '', null)}
+          deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', null)}
         />
       </Stack>
       <Stack direction="row" columnGap={2} m="16px 0px">
@@ -366,13 +367,7 @@ const NewTaskFormInputs = () => {
   )
 }
 
-const NewTaskFooter = ({
-  handleCreate,
-  getSignedUrlUpload,
-}: {
-  handleCreate: () => void
-  getSignedUrlUpload: (fileName: string) => Promise<ISignedUrlUpload>
-}) => {
+const NewTaskFooter = ({ handleCreate, handleClose, getSignedUrlUpload }: NewTaskFormProps) => {
   const { attachments, title, assigneeId } = useSelector(selectCreateTask)
   const { filterOptions } = useSelector(selectTaskBoard)
 
@@ -382,7 +377,10 @@ const NewTaskFooter = ({
     if (files && files.length > 0) {
       const file = files[0]
       const signedUrl: ISignedUrlUpload = await getSignedUrlUpload(generateRandomString(file.name))
-      const filePayload = await supabaseActions.uploadAttachment(file, signedUrl, '')
+      const { filePayload, error } = await supabaseActions.uploadAttachment(file, signedUrl, '')
+      if (error) {
+        console.error('Failed to upload image') //handle error through chip here in the future
+      }
       if (filePayload) {
         store.dispatch(setCreateTaskFields({ targetField: 'attachments', value: [...attachments, filePayload] }))
       }
@@ -396,11 +394,7 @@ const NewTaskFooter = ({
           <Box>{advancedFeatureFlag && <AttachmentInput handleFileSelect={handleFileSelect} />}</Box>
           <Stack direction="row" columnGap={4}>
             <SecondaryBtn
-              handleClick={async () => {
-                store.dispatch(setShowModal())
-                store.dispatch(clearCreateTaskFields({ isFilterOn: !!filterOptions[FilterOptions.ASSIGNEE] }))
-                await bulkRemoveAttachments(attachments)
-              }}
+              handleClick={handleClose}
               buttonContent={
                 <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[700] }}>
                   Cancel

@@ -1,0 +1,22 @@
+enum StateType {
+  backlog
+  unstarted
+  started
+  completed
+  cancelled
+}
+
+model WorkflowState {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  workspaceId String    @db.VarChar(32)
+  type        StateType
+  name        String    @db.VarChar(255)
+  key         String    @db.VarChar(255)
+  color       String?   @db.VarChar(32)
+  tasks       Task[]
+  deletedAt   DateTime?
+
+  @@unique([workspaceId, key], name: "UQ_WorkflowStates_workspaceId_key")
+  @@index([workspaceId, key], name: "IX_WorkflowStates_workspaceId_key")
+  @@map("WorkflowStates")
+}

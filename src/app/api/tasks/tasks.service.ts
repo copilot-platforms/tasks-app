@@ -17,7 +17,11 @@ import { LabelMappingService } from '@api/label-mapping/label-mapping.service'
 import { z } from 'zod'
 import { ClientResponse, CompanyResponse, InternalUsers, NotificationCreatedResponseSchema } from '@/types/common'
 import { CopilotAPI } from '@/utils/CopilotAPI'
-import Bottleneck from 'bottleneck'
+import { replaceImageSrc } from '@/utils/signedUrlReplacer'
+import { SupabaseService } from '../core/services/supabase.service'
+import { supabaseBucket } from '@/config'
+import { signedUrlTtl } from '@/types/constants'
+import { ScrapImageService } from '@/app/api/scrap-images/scrap-images.service'
 
 type FilterByAssigneeId = {
   assigneeId: string
@@ -71,6 +75,8 @@ export class TasksService extends BaseService {
     let tasks = await this.db.task.findMany({
       ...filters,
       orderBy: { createdAt: 'desc' },
+      // @ts-ignore TS support for this param is still shakey
+      relationLoadStrategy: 'join',
       include: {
         workflowState: { select: { name: true } },
       },
@@ -126,6 +132,7 @@ export class TasksService extends BaseService {
     if (newTask) {
       // @todo move this logic to any pub/sub service like event bus
       const activityLogger = new ActivityLogger({ taskId: newTask.id, user: this.user })
+      const scrapImageService = new ScrapImageService(this.user)
       await activityLogger.log(
         ActivityType.TASK_CREATED,
         TaskCreatedSchema.parse({
@@ -138,6 +145,7 @@ export class TasksService extends BaseService {
           dueData: newTask.dueDate,
         }),
       )
+      newTask.body && (await scrapImageService.updateTaskIdOfScrapImagesAfterCreation(newTask.body, newTask.id))
     }
 
     await this.sendTaskCreateNotifications(newTask)
@@ -154,13 +162,21 @@ export class TasksService extends BaseService {
 
     const task = await this.db.task.findFirst({
       ...filters,
+      // @ts-ignore TS support for this param is still shakey
+      relationLoadStrategy: 'join',
       include: {
         workflowState: true,
       },
     })
     if (!task) throw new APIError(httpStatus.NOT_FOUND, 'The requested task was not found')
+    const updatedTask = await this.db.task.update({
+      where: { id: task.id },
+      data: {
+        body: task.body && (await replaceImageSrc(task.body, this.getSignedUrl)),
+      },
+    })
 
-    return task
+    return updatedTask
   }
 
   async getTaskAssignee(task: Task): Promise<InternalUsers | ClientResponse | CompanyResponse | undefined> {
@@ -187,6 +203,8 @@ export class TasksService extends BaseService {
     const filters = this.buildReadFilters(id)
     const prevTask = await this.db.task.findFirst({
       ...filters,
+      // @ts-ignore TS support for this param is still shakey
+      relationLoadStrategy: 'join',
       include: { workflowState: true },
     })
     if (!prevTask) throw new APIError(httpStatus.NOT_FOUND, 'The requested task was not found')
@@ -261,7 +279,12 @@ export class TasksService extends BaseService {
     policyGate.authorize(UserAction.Delete, Resource.Tasks)
 
     // Try to delete existing client notification related to this task if exists
-    const task = await this.db.task.findFirst({ where: { id }, include: { workflowState: true } })
+    const task = await this.db.task.findFirst({
+      where: { id },
+      // @ts-ignore TS support for this param is still shakey
+      relationLoadStrategy: 'join',
+      include: { workflowState: true },
+    })
 
     if (!task) throw new APIError(httpStatus.NOT_FOUND, 'The requested task to delete was not found')
 
@@ -288,11 +311,13 @@ export class TasksService extends BaseService {
     // This works across workspaces
     return await this.db.task.findMany({
       where: { assigneeId, assigneeType: AssigneeType.company, workflowState: { type: { not: StateType.completed } } },
+      // @ts-ignore TS support for this param is still shakey
+      relationLoadStrategy: 'join',
       include: { workflowState: true },
     })
   }
 
-  async deleteAllAssigneeTasks(assigneeId: string, assigneeType: AssigneeType): Promise<Task[]> {
+  async deleteAllAssigneeTasks(assigneeId: string, assigneeType: AssigneeType) {
     // Policies validation shouldn't be required here because token is from a webhook event
     const tasks = await this.db.task.findMany({
       where: { assigneeId, assigneeType, workspaceId: this.user.workspaceId },
@@ -307,13 +332,10 @@ export class TasksService extends BaseService {
       where: { assigneeId, assigneeType, workspaceId: this.user.workspaceId },
     })
     await this.db.label.deleteMany({ where: { label: { in: labels } } })
-
-    return tasks
   }
 
   async clientUpdateTask(id: string, targetWorkflowStateId?: string | null) {
-    // Apply custom authorization here. Policy service is not used because this api is for client's Mark done
-    // function only. Only clients can use this.
+    //Apply custom authorization here. Policy service is not used because this api is for client's Mark done function only. Only clients can use this.
     if (this.user.role === UserRole.IU) {
       throw new APIError(httpStatus.UNAUTHORIZED, 'You are not authorized to perform this action')
     }
@@ -322,6 +344,8 @@ export class TasksService extends BaseService {
     const filters = this.buildReadFilters(id)
     const prevTask = await this.db.task.findFirst({
       ...filters,
+      // @ts-ignore TS support for this param is still shakey
+      relationLoadStrategy: 'join',
       include: { workflowState: true },
     })
     if (!prevTask) throw new APIError(httpStatus.NOT_FOUND, 'The requested task was not found')
@@ -369,9 +393,8 @@ export class TasksService extends BaseService {
 
     // If task has been moved to completed from a non-complete state, remove all notification counts
     if (updatedWorkflowState?.type === StateType.completed && prevTask.workflowState.type !== StateType.completed) {
-      const copilot = new CopilotAPI(this.user.token)
       if (updatedTask.assigneeType === AssigneeType.company) {
-        // Handle company task completed
+        const copilot = new CopilotAPI(this.user.token)
         const { recipientIds } = await notificationService.getNotificationParties(
           copilot,
           updatedTask,
@@ -384,25 +407,7 @@ export class TasksService extends BaseService {
         )
         await notificationService.markAsReadForAllRecipients(updatedTask)
       } else {
-        // Handle client task completed
-        const internalUsers = await copilot.getInternalUsers()
-        const client = await copilot.getClient(z.string().parse(updatedTask.assigneeId))
-        const relavantInternalUsers = internalUsers.data.filter((iu) => {
-          // Case I: IU has full access
-          if (!iu.isClientAccessLimited) return true
-          // Case II: IU has limited access in which case it must have a valid companyAccessList
-          return iu.companyAccessList?.includes(client.companyId)
-        })
-        const notificationPromises = []
-        const bottleneck = new Bottleneck({ minTime: 250, maxConcurrent: 2 })
-        for (let iu of relavantInternalUsers) {
-          notificationPromises.push(
-            bottleneck.schedule(() =>
-              notificationService.create(NotificationTaskActions.Completed, updatedTask, { customRecipientId: iu.id }),
-            ),
-          )
-        }
-        await Promise.all(notificationPromises)
+        await notificationService.create(NotificationTaskActions.Completed, updatedTask)
         await notificationService.markClientNotificationAsRead(updatedTask)
       }
     }
@@ -410,11 +415,13 @@ export class TasksService extends BaseService {
   }
 
   private async sendUserTaskNotification(task: Task, notificationService: NotificationService, isReassigned = false) {
-    //! In future when reassignment is supported, change this logic to support reassigned to client as well
     const notification = await notificationService.create(
+      //! In future when reassignment is supported, change this logic to support reassigned to client as well
       isReassigned ? NotificationTaskActions.ReassignedToIU : NotificationTaskActions.Assigned,
       task,
-      { disableEmail: task.assigneeType === AssigneeType.internalUser },
+      {
+        email: task.assigneeType === AssigneeType.internalUser,
+      },
     )
     // Create a new entry in ClientNotifications table so we can mark as read on
     // behalf of client later
@@ -486,6 +493,15 @@ export class TasksService extends BaseService {
 
     const notificationService = new NotificationService(this.user)
 
+    /*
+     * Cases:
+     * 1. Assignee ID is changed for incomplete task -> Mark as read for previous recipients and trigger new notifications for new assignee
+     * 2. Assignee ID is changed for completed task -> Do nothing
+     * 3. Task was changed from incomplete to complete state -> delete all notifications for all users
+     * 4. Task was changed from complete to incomplete state -> recreate those notifications
+     */
+
+    // Case 1
     // --- Handle previous assignee notification "Mark as read" if it is updated
     if (prevTask.assigneeId != updatedTask.assigneeId && updatedTask.workflowState.type !== StateType.completed) {
       // If task is reassigned from a client, mark prev client notification as read
@@ -511,36 +527,32 @@ export class TasksService extends BaseService {
       }
     }
 
-    // --- Handle task moved to completed logic
-    // If task was previous in another state, and is moved to a 'completed' type WorkflowState by IU
+    // Case 3
+    // --- If task was previously in another state, and is moved to a 'completed' type WorkflowState by IU
     if (
       prevTask?.workflowState?.type !== StateType.completed &&
       updatedTask?.workflowState?.type === StateType.completed &&
       updatedTask.assigneeId
     ) {
-      if (updatedTask.createdById !== updatedTask.assigneeId) {
-        // Make sure company task is not marked as complete by IU
-        if (
-          (updatedTask.assigneeType === AssigneeType.company || updatedTask.assigneeType === AssigneeType.internalUser) &&
-          updatedTask.createdById !== this.user.internalUserId
-        ) {
-          const action =
-            updatedTask.assigneeType === AssigneeType.company
-              ? NotificationTaskActions.CompletedForCompanyByIU
-              : NotificationTaskActions.CompletedByIU
-          await notificationService.create(action, updatedTask, { disableEmail: true })
-        }
-      }
-
-      if (updatedTask.assigneeType === AssigneeType.client) {
+      if (updatedTask.assigneeType === AssigneeType.internalUser && updatedTask.assigneeId !== this.user.internalUserId) {
+        await notificationService.create(NotificationTaskActions.CompletedByIU, updatedTask, { email: true })
+        // TODO: Clean code and handle notification center notification deletions here instead
+      } else if (updatedTask.assigneeType === AssigneeType.company) {
+        // Don't do this in parallel since this can cause rate-limits, each of them has their own bottlenecks for avoiding ratelimits
+        await notificationService.create(NotificationTaskActions.CompletedForCompanyByIU, updatedTask, { email: true })
+        await notificationService.markAsReadForAllRecipients(updatedTask)
+      } else if (updatedTask.assigneeType === AssigneeType.client) {
         try {
           await notificationService.markClientNotificationAsRead(updatedTask)
+          return
         } catch (e: unknown) {
           console.error(`Failed to find ClientNotification for task ${updatedTask.id}`, e)
         }
       }
     }
 
+    // Case 4
+    // --- Handle task moved from completed to incomplete IU logic
     if (
       prevTask.workflowState?.type === StateType.completed &&
       updatedTask.workflowState?.type !== StateType.completed &&
@@ -549,8 +561,13 @@ export class TasksService extends BaseService {
       // If IU decides to move a task back to an incomplete state, trigger client / company notifications
       await this.sendTaskCreateNotifications(updatedTask)
     }
-
-    // --- Handle task moved to complete
-    await notificationService.markAsReadForAllRecipients(updatedTask)
   }
+
+  async getSignedUrl(filePath: string) {
+    const supabase = new SupabaseService()
+    const { data } = await supabase.supabase.storage.from(supabaseBucket).createSignedUrl(filePath, signedUrlTtl)
+
+    const url = data?.signedUrl
+    return url
+  } // used to replace urls for images in task body
 }

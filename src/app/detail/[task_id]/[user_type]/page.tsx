@@ -13,12 +13,14 @@ import {
   StyledKeyboardIcon,
   StyledTiptapDescriptionWrapper,
   StyledTypography,
+  TaskDetailsContainer,
 } from '@/app/detail/ui/styledComponent'
 import {
   clientUpdateTask,
   deleteAttachment,
   deleteTask,
   postAttachment,
+  postScrapImage,
   updateAssignee,
   updateTaskDetail,
 } from '@/app/detail/[task_id]/[user_type]/actions'
@@ -38,10 +40,12 @@ import { CustomLink } from '@/hoc/CustomLink'
 import { DetailStateUpdate } from '@/app/detail/[task_id]/[user_type]/DetailStateUpdate'
 import { SilentError } from '@/components/templates/SilentError'
 import { z } from 'zod'
+import { ScrapImageRequest } from '@/types/common'
+import { signedUrlTtl } from '@/types/constants'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
-    next: { tags: ['getOneTask'] },
+    next: { tags: ['getOneTask'], revalidate: signedUrlTtl },
   })
 
   const data = await res.json()
@@ -49,8 +53,9 @@ async function getOneTask(token: string, taskId: string): Promise<TaskResponse> 
   return data.task
 }
 
-async function getSignedUrlUpload(token: string, fileName: string) {
-  const res = await fetch(`${apiUrl}/api/attachments/upload?token=${token}&fileName=${fileName}`)
+async function getSignedUrlFile(token: string, filePath: string) {
+  'use server'
+  const res = await fetch(`${apiUrl}/api/attachments/sign-url?token=${token}&filePath=${filePath}`)
   const data = await res.json()
   return data.signedUrl
 }
@@ -81,7 +86,7 @@ export default async function TaskDetailPage({
   redirectIfResourceNotFound(searchParams, task, !!tokenPayload.internalUserId)
 
   return (
-    <DetailStateUpdate isRedirect={!!searchParams.isRedirect} token={token} tokenPayload={tokenPayload}>
+    <DetailStateUpdate isRedirect={!!searchParams.isRedirect} token={token} tokenPayload={tokenPayload} task={task}>
       <RealTime>
         <EscapeHandler />
         <Stack direction="row" sx={{ height: '100vh' }}>
@@ -113,11 +118,16 @@ export default async function TaskDetailPage({
               </AppMargin>
             </StyledBox>
             <CustomScrollbar style={{ width: '8px' }}>
-              <StyledTiptapDescriptionWrapper>
-                <AppMargin size={SizeofAppMargin.LARGE} py="30px">
+              <TaskDetailsContainer
+                sx={{
+                  padding: { xs: '20px 33px 20px 20px', sm: '30px 33px 30px 20px' },
+                }}
+              >
+                <StyledTiptapDescriptionWrapper>
                   <TaskEditor
                     // attachment={attachments}
                     task_id={task_id}
+                    task={task}
                     isEditable={params.user_type === UserType.INTERNAL_USER}
                     updateTaskDetail={async (detail) => {
                       'use server'
@@ -139,60 +149,55 @@ export default async function TaskDetailPage({
                       'use server'
                       await deleteAttachment(token, id)
                     }}
-                    getSignedUrlUpload={async (fileName: string) => {
-                      'use server'
-                      const data = await getSignedUrlUpload(token, fileName)
-                      return data
-                    }}
                     userType={params.user_type}
                   />
-                </AppMargin>
-              </StyledTiptapDescriptionWrapper>
-              {/* {advancedFeatureFlag && ( */}
-              {/*   <AppMargin size={SizeofAppMargin.LARGE} py="18.5px"> */}
-              {/*     <Stack direction="column" alignItems="left" p="10px 5px" rowGap={5}> */}
-              {/*       <Typography variant="xl">Activity</Typography> */}
-              {/*       <Stack direction="column" alignItems="left" p="10px 5px" rowGap={4}> */}
-              {/*         {activities?.map((item: LogResponse, index: number) => { */}
-              {/*           return ( */}
-              {/*             <Box */}
-              {/*               sx={{ */}
-              {/*                 height: 'auto', */}
-              {/*                 display: 'block', */}
-              {/*               }} */}
-              {/*               key={item.id} */}
-              {/*             > */}
-              {/*               {item.type == ActivityType.COMMENT_ADDED ? ( */}
-              {/*                 <Comments */}
-              {/*                   comment={item} */}
-              {/*                   createComment={async (postCommentPayload: CreateComment) => { */}
-              {/*                     'use server' */}
-              {/*                     await postComment(token, postCommentPayload) */}
-              {/*                   }} */}
-              {/*                   deleteComment={async (id: string) => { */}
-              {/*                     'use server' */}
-              {/*                     await deleteComment(token, id) */}
-              {/*                   }} */}
-              {/*                   task_id={task_id} */}
-              {/*                 /> */}
-              {/*               ) : ( */}
-              {/*                 <ActivityLog log={item} /> */}
-              {/*               )} */}
-              {/*             </Box> */}
-              {/*           ) */}
-              {/*         })} */}
+                </StyledTiptapDescriptionWrapper>
+                {/* {advancedFeatureFlag && ( */}
+                {/*   <AppMargin size={SizeofAppMargin.LARGE} py="18.5px"> */}
+                {/*     <Stack direction="column" alignItems="left" p="10px 5px" rowGap={5}> */}
+                {/*       <Typography variant="xl">Activity</Typography> */}
+                {/*       <Stack direction="column" alignItems="left" p="10px 5px" rowGap={4}> */}
+                {/*         {activities?.map((item: LogResponse, index: number) => { */}
+                {/*           return ( */}
+                {/*             <Box */}
+                {/*               sx={{ */}
+                {/*                 height: 'auto', */}
+                {/*                 display: 'block', */}
+                {/*               }} */}
+                {/*               key={item.id} */}
+                {/*             > */}
+                {/*               {item.type == ActivityType.COMMENT_ADDED ? ( */}
+                {/*                 <Comments */}
+                {/*                   comment={item} */}
+                {/*                   createComment={async (postCommentPayload: CreateComment) => { */}
+                {/*                     'use server' */}
+                {/*                     await postComment(token, postCommentPayload) */}
+                {/*                   }} */}
+                {/*                   deleteComment={async (id: string) => { */}
+                {/*                     'use server' */}
+                {/*                     await deleteComment(token, id) */}
+                {/*                   }} */}
+                {/*                   task_id={task_id} */}
+                {/*                 /> */}
+                {/*               ) : ( */}
+                {/*                 <ActivityLog log={item} /> */}
+                {/*               )} */}
+                {/*             </Box> */}
+                {/*           ) */}
+                {/*         })} */}
 
-              {/*         <CommentInput */}
-              {/*           createComment={async (postCommentPayload: CreateComment) => { */}
-              {/*             'use server' */}
-              {/*             await postComment(token, postCommentPayload) */}
-              {/*           }} */}
-              {/*           task_id={task_id} */}
-              {/*         /> */}
-              {/*       </Stack> */}
-              {/*     </Stack> */}
-              {/*   </AppMargin> */}
-              {/* )} */}
+                {/*         <CommentInput */}
+                {/*           createComment={async (postCommentPayload: CreateComment) => { */}
+                {/*             'use server' */}
+                {/*             await postComment(token, postCommentPayload) */}
+                {/*           }} */}
+                {/*           task_id={task_id} */}
+                {/*         /> */}
+                {/*       </Stack> */}
+                {/*     </Stack> */}
+                {/*   </AppMargin> */}
+                {/* )} */}
+              </TaskDetailsContainer>
             </CustomScrollbar>
           </ToggleController>
           <Box>
