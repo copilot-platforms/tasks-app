@@ -96,6 +96,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
                 id={list.id}
                 onDropItem={onDropItem}
                 droppable // Make TaskColumn droppable
+                padding={'8px 12px'}
               >
                 <TaskColumn
                   key={list.id}
