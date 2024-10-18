@@ -11,7 +11,7 @@ import { CreateComment } from '@/types/dto/comment.dto'
 import { fetcher } from '@/utils/fetcher'
 import useSWR from 'swr'
 import { useSearchParams } from 'next/navigation'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 export const ActivityWrapper = ({ token, task_id }: { token: string; task_id: string }) => {
   const { data: activities, isLoading } = useSWR(`/api/tasks/${task_id}/activity-logs/?token=${token}`, fetcher, {
@@ -24,7 +24,7 @@ export const ActivityWrapper = ({ token, task_id }: { token: string; task_id: st
   const commentId = searchParams.get('commentId')
 
   useEffect(() => {
-    if (activities && commentId) {
+    if (isFirstPageLoad && activities && commentId) {
       // Find the element with the matching id and scroll to it
       const commentElement = document.getElementById(commentId)
       if (commentElement) {
