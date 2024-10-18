@@ -1,10 +1,12 @@
-import { Avatar, Box, Stack } from '@mui/material'
+import { Avatar, Box, Stack, Typography } from '@mui/material'
 import { BoldTypography, StyledTypography, TypographyContainer, VerticalLine } from '@/app/detail/ui/styledComponent'
 import { getTimeDifference } from '@/utils/getTimeDifference'
 import { LogResponse } from '@/app/api/activity-logs/schemas/LogResponseSchema'
 import { TaskAssignedResponse, TaskAssignedResponseSchema } from '@/app/api/activity-logs/schemas/TaskAssignedSchema'
 import { WorkflowStateUpdatedSchema } from '@/app/api/activity-logs/schemas/WorkflowStateUpdatedSchema'
 import { ActivityType } from '@prisma/client'
+import { useSelector } from 'react-redux'
+import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 
 interface Prop {
   log: LogResponse
@@ -48,18 +50,30 @@ export const ActivityLog = ({ log }: Prop) => {
     [ActivityType.COMMENT_ADDED]: () => null,
   }
 
+  const { assignee } = useSelector(selectTaskBoard)
+
   return (
     <Stack direction="row" columnGap={4} position="relative">
       <VerticalLine />
       <Avatar
         src={log?.initiator?.avatarImageUrl || 'user'}
         alt={log?.initiator?.givenName}
-        sx={{ width: '25px', height: '25px' }}
+        sx={{
+          width: '25px',
+          height: '25px',
+          border: (theme) => `1.1px solid ${theme.color.gray[200]}`,
+        }}
       />
       <TypographyContainer direction="row" columnGap={1}>
-        <BoldTypography>
-          {log.initiator.givenName} {log.initiator.familyName}
-        </BoldTypography>
+        {assignee.find((el) => el.id === log?.initiator?.id) ? (
+          <BoldTypography>
+            {log.initiator.givenName} {log.initiator.familyName}
+          </BoldTypography>
+        ) : (
+          <Typography variant="md" sx={{ fontStyle: 'italic' }}>
+            Deleted User
+          </Typography>
+        )}
         {activityDescription[log.type as ActivityType](...logEntities)}
         <StyledTypography> {getTimeDifference(log.createdAt)}</StyledTypography>
       </TypographyContainer>
