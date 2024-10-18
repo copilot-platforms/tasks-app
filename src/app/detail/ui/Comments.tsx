@@ -13,7 +13,7 @@ interface Prop {
 
 export const Comments = ({ comment, createComment, deleteComment, task_id }: Prop) => {
   return (
-    <Stack direction="row" columnGap={2} position="relative">
+    <Stack id={comment.id} direction="row" columnGap={2} position="relative">
       <VerticalLine />
       <Avatar
         alt={comment?.initiator?.givenName}
