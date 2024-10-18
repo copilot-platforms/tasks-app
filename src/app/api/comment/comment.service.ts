@@ -5,7 +5,7 @@ import { UserAction } from '@api/core/types/user'
 import { Resource } from '@api/core/types/api'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { ActivityLogger } from '@api/activity-logs/services/activity-logger.service'
-import { ActivityType, AssigneeType, Task } from '@prisma/client'
+import { ActivityType, AssigneeType, Comment, Task } from '@prisma/client'
 import { CommentAddedSchema } from '@api/activity-logs/schemas/CommentAddedSchema'
 import { NotificationService } from '@api/notification/notification.service'
 import { NotificationTaskActions } from '@api/core/types/tasks'
@@ -56,17 +56,21 @@ export class CommentService extends BaseService {
       if (!task) {
         throw new APIError(httpStatus.NOT_FOUND, `Notification not created because task not found with id: ${data.taskId}`)
       }
+
+      // Send comment notifications
       const notificationService = new NotificationService(this.user)
-      await this.sendCommentCreateNotifications(task, userInfo.id)
+      await this.sendCommentCreateNotifications(task, userInfo.id, comment)
       if (data.mentions) {
-        await notificationService.createBulkNotification(NotificationTaskActions.Mentioned, task, data.mentions)
+        await notificationService.createBulkNotification(NotificationTaskActions.Mentioned, task, data.mentions, {
+          commentId: comment.id,
+        })
       }
     }
 
     return comment
   }
 
-  async sendCommentCreateNotifications(task: Task, createdBy: string) {
+  async sendCommentCreateNotifications(task: Task, createdBy: string, comment: Comment) {
     // If task is unassigned, there's nobody to send notifications to
     if (!task.assigneeId) return
 
@@ -76,19 +80,20 @@ export class CommentService extends BaseService {
     // If comment is added by the same person that is assigned to the task, no need to notify
     if (task.assigneeId === createdBy) {
       if (task.assigneeType === AssigneeType.company) {
-        await this.sendCompanyCommentNotifications(task, notificationService, createdBy)
+        await this.sendCompanyCommentNotifications(task, notificationService, comment, createdBy)
       }
       return
     }
 
     const sendTaskNotifications =
       task.assigneeType === AssigneeType.company ? this.sendCompanyCommentNotifications : this.sendUserCommentNotification
-    await sendTaskNotifications(task, notificationService)
+    await sendTaskNotifications(task, notificationService, comment)
   }
 
   private sendCompanyCommentNotifications = async (
     task: Task,
     notificationService: NotificationService,
+    comment: Comment,
     createdBy?: string,
   ) => {
     const copilot = new CopilotAPI(this.user.token)
@@ -103,7 +108,7 @@ export class CommentService extends BaseService {
       NotificationTaskActions.Commented,
       task,
       filteredRecipientIds,
-      { email: true },
+      { email: true, commentId: comment.id },
     )
 
     // This is a hacky way to bulk create ClientNotifications for all company members.
@@ -123,13 +128,14 @@ export class CommentService extends BaseService {
     }
   }
 
-  private async sendUserCommentNotification(task: Task, notificationService: NotificationService) {
+  private async sendUserCommentNotification(task: Task, notificationService: NotificationService, comment: Comment) {
     const notification = await notificationService.create(
       //! In future when reassignment is supported, change this logic to support reassigned to client as well
       NotificationTaskActions.Commented,
       task,
       {
-        email: task.assigneeType === AssigneeType.internalUser,
+        disableEmail: task.assigneeType === AssigneeType.internalUser,
+        commentId: comment.id,
       },
     )
     // Create a new entry in ClientNotifications table so we can mark as read on
