@@ -54,21 +54,15 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
 
   useEffect(() => {
     // Base these initial values off of first fetch of filteredAssignee
-    initialAssignees.length === 0 && setInitialAssignees(filteredAssignee)
-  }, [initialAssignees, filteredAssignee])
-
-  useEffect(() => {
+    if (!initialAssignees.length) {
+      setInitialAssignees(filteredAssignee)
+    }
     // When focus is taken away from selector, make sure that assignee search results are replaced
     if (filteredAssignee.length && initialAssignees.length && !inputStatusValue) {
+      loading && setLoading(false)
       setFilteredAssignee(initialAssignees)
     }
-  }, [filteredAssignee, initialAssignees, inputStatusValue])
-
-  useEffect(() => {
-    if (!inputStatusValue) {
-      loading && setLoading(false)
-    }
-  }, [inputStatusValue])
+  }, [initialAssignees, filteredAssignee, inputStatusValue])
 
   const handleFilterOptionsChange = async (optionType: FilterOptions, newValue: string | null) => {
     store.dispatch(setFilterOptions({ optionType, newValue }))
