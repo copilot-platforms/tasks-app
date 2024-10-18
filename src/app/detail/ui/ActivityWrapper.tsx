@@ -10,11 +10,29 @@ import { postComment, deleteComment } from '../[task_id]/[user_type]/actions'
 import { CreateComment } from '@/types/dto/comment.dto'
 import { fetcher } from '@/utils/fetcher'
 import useSWR from 'swr'
+import { useSearchParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 export const ActivityWrapper = ({ token, task_id }: { token: string; task_id: string }) => {
   const { data: activities, isLoading } = useSWR(`/api/tasks/${task_id}/activity-logs/?token=${token}`, fetcher, {
     refreshInterval: 1000,
   })
+
+  const [isFirstPageLoad, setIsFirstPageLoad] = useState(true)
+
+  const searchParams = useSearchParams()
+  const commentId = searchParams.get('commentId')
+
+  useEffect(() => {
+    if (isFirstPageLoad && activities && commentId) {
+      // Find the element with the matching id and scroll to it
+      const commentElement = document.getElementById(commentId)
+      if (commentElement) {
+        commentElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+      setIsFirstPageLoad(true)
+    }
+  }, [commentId, activities])
 
   return (
     <Box width="100%">

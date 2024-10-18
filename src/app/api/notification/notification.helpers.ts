@@ -4,16 +4,26 @@ import { Task } from '@prisma/client'
 /**
  * Helper function that sets the in-product notification title and body for a given notification trigger
  * @param {string} actionUser - The user's name that triggered this action.
- * @param {string} [taskName] - The optional task name for which the mention is triggered.
+ * @param {Task} [task] - The task for which the mention is triggered.
+ * @param {{companyName?: string, commentId?: string}} [opts] - Opts for optional notification fields
  * @returns {Object} An object with notification actions as keys and their corresponding title and body as values.
  * @returns {Object.<NotificationTaskActions, {title: string, body: string}>} - The notification details.
  */
 export const getInProductNotificationDetails = (
   actionUser: string,
   task?: Task,
-  companyName?: string,
+  opts?: {
+    companyName?: string
+    commentId?: string
+  },
 ): { [key in NotificationTaskActions]: { title: string; body: string; ctaParams?: Record<string, unknown> } } => {
-  const ctaParams = { taskId: task?.id }
+  const ctaParams =
+    task || opts?.commentId
+      ? {
+          ...(task && { taskId: task.id }),
+          ...(opts?.commentId && { commentId: opts?.commentId }),
+        }
+      : undefined
 
   return {
     [NotificationTaskActions.Assigned]: {
@@ -32,12 +42,12 @@ export const getInProductNotificationDetails = (
     },
     [NotificationTaskActions.CompletedByCompanyMember]: {
       title: 'Task was completed',
-      body: `The task ‘${task?.title}’ was completed by ${actionUser} for ${companyName}. You are receiving this notification because you have access to the client.`,
+      body: `The task ‘${task?.title}’ was completed by ${actionUser} for ${opts?.companyName}. You are receiving this notification because you have access to the client.`,
       ctaParams,
     },
     [NotificationTaskActions.CompletedForCompanyByIU]: {
       title: 'Task was completed',
-      body: `The task ‘${task?.title}’ was completed by ${actionUser} for ${companyName}.`,
+      body: `The task ‘${task?.title}’ was completed by ${actionUser} for ${opts?.companyName}.`,
       ctaParams,
     },
     [NotificationTaskActions.Completed]: {
@@ -51,8 +61,8 @@ export const getInProductNotificationDetails = (
       ctaParams,
     },
     [NotificationTaskActions.Commented]: {
-      title: 'New comment on task',
-      body: `A new comment was left by ${actionUser} on a task where you are set as the assignee. To see details about the task, navigate to the Tasks App below.`,
+      title: 'A comment was added',
+      body: `${actionUser} left a comment on the task ${task?.title}.`,
       ctaParams,
     },
     [NotificationTaskActions.Mentioned]: {
@@ -66,26 +76,47 @@ export const getInProductNotificationDetails = (
 /**
  * Helper function that sets the notification email details for a given notification trigger.
  * @param {string} actionUser - The user's name that triggered this action.
- * @param {string} [taskName] - The optional task name for which the mention is triggered.
+ * @param {Task} [task] - The task for which the mention is triggered.
+ * @param {{commentId?: string}} [opts] - Opts for optional notification fields
  * @returns {object} - The email notification details.
- * @todo Right now its the same as in-product details, change this after finalizing email details.
  */
 export const getEmailDetails = (
   actionUser: string,
   task?: Task,
-): Partial<{ [key in NotificationTaskActions]: { title: string; subject: string; header: string; body: string } }> => {
+  opts?: {
+    commentId?: string
+  },
+): Partial<{
+  [key in NotificationTaskActions]: {
+    title: string
+    subject: string
+    header: string
+    body: string
+    ctaParams?: Record<string, string>
+  }
+}> => {
+  const ctaParams =
+    task || opts?.commentId
+      ? {
+          ...(task && { taskId: task.id }),
+          ...(opts?.commentId && { commentId: opts?.commentId }),
+        }
+      : undefined
+
   return {
     [NotificationTaskActions.Assigned]: {
       subject: 'A task was assigned to you',
       header: 'A task was assigned to you',
       body: `The task ‘${task?.title}’ was assigned to you by ${actionUser}. To see details about the task open it below. `,
       title: 'View task',
+      ctaParams,
     },
     [NotificationTaskActions.AssignedToCompany]: {
       subject: 'Task was assigned to your company',
       header: 'Task was assigned to your company',
       body: `A new task was assigned to your company by ${actionUser}. To see details about the task, navigate to the Tasks App below.`,
       title: 'View task',
+      ctaParams,
     },
     //! Currently disable all IU email notifications
     // [NotificationTaskActions.Completed]: {
@@ -95,16 +126,18 @@ export const getEmailDetails = (
     //   body: `A new task was completed by ${actionUser}. You are receiving this notification because you have access to the client.`,
     // },
     [NotificationTaskActions.Commented]: {
-      subject: 'New comment on task',
-      header: 'New comment on task',
-      body: `A new comment was left by ${actionUser} on a task where you are set as the assignee. To see details about the task, navigate to the Tasks App below.`,
-      title: 'View task',
+      subject: 'A comment was added',
+      header: 'A comment was added',
+      body: `${actionUser} left a comment on the task ${task?.title}. To view the comment, open the task below.`,
+      title: 'View Comment',
+      ctaParams,
     },
     [NotificationTaskActions.Mentioned]: {
       subject: 'You were mentioned in a task comment',
       header: 'You were mentioned in a task comment',
       body: `You were mentioned in a comment on task ${task?.title} by ${actionUser}. To see details about the task, navigate to the Tasks App below. `,
       title: 'View task',
+      ctaParams,
     },
   }
 }

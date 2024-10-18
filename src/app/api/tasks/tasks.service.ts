@@ -420,7 +420,7 @@ export class TasksService extends BaseService {
       isReassigned ? NotificationTaskActions.ReassignedToIU : NotificationTaskActions.Assigned,
       task,
       {
-        email: task.assigneeType === AssigneeType.internalUser,
+        disableEmail: task.assigneeType === AssigneeType.internalUser,
       },
     )
     // Create a new entry in ClientNotifications table so we can mark as read on
@@ -535,11 +535,13 @@ export class TasksService extends BaseService {
       updatedTask.assigneeId
     ) {
       if (updatedTask.assigneeType === AssigneeType.internalUser && updatedTask.assigneeId !== this.user.internalUserId) {
-        await notificationService.create(NotificationTaskActions.CompletedByIU, updatedTask, { email: true })
+        await notificationService.create(NotificationTaskActions.CompletedByIU, updatedTask, { disableEmail: true })
         // TODO: Clean code and handle notification center notification deletions here instead
       } else if (updatedTask.assigneeType === AssigneeType.company) {
         // Don't do this in parallel since this can cause rate-limits, each of them has their own bottlenecks for avoiding ratelimits
-        await notificationService.create(NotificationTaskActions.CompletedForCompanyByIU, updatedTask, { email: true })
+        await notificationService.create(NotificationTaskActions.CompletedForCompanyByIU, updatedTask, {
+          disableEmail: true,
+        })
         await notificationService.markAsReadForAllRecipients(updatedTask)
       } else if (updatedTask.assigneeType === AssigneeType.client) {
         try {
