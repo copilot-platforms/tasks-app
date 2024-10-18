@@ -18,7 +18,12 @@ export const Comments = ({ comment, createComment, deleteComment, task_id }: Pro
       <Avatar
         alt={comment?.initiator?.givenName}
         src={comment?.initiator?.avatarImageUrl || 'user'}
-        sx={{ width: '25px', height: '25px', marginTop: '5px' }}
+        sx={{
+          width: '25px',
+          height: '25px',
+          marginTop: '5px',
+          border: (theme) => `1.1px solid ${theme.color.gray[200]}`,
+        }}
       />
       <CommentCard comment={comment} createComment={createComment} deleteComment={deleteComment} task_id={task_id} />
     </Stack>
