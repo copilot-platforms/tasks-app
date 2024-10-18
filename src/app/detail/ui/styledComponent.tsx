@@ -12,8 +12,9 @@ export const StyledTypography = styled(Typography)(({ theme }) => ({
 }))
 
 export const BoldTypography = styled(Typography)(({ theme }) => ({
-  color: theme.color.gray[700],
+  color: theme.color.gray[600],
   fontSize: theme.typography.md.fontSize,
+  lineHeight: '22px',
 }))
 
 export const AvatarTypography = styled(Typography)(({ theme }) => ({
@@ -86,7 +87,7 @@ export const CommentCardContainer = styled(Stack)(({ theme }) => ({
   border: `1px solid ${theme.color.borders.border}`,
   borderRadius: theme.spacing(theme.shape.radius100),
   background: theme.color.base.white,
-  padding: '10px',
+  padding: '8px',
   width: '100%',
 }))
 

@@ -32,7 +32,12 @@ export const ActivityLog = ({ log }: Prop) => {
         : []
 
   const activityDescription: { [key in ActivityType]: (...args: string[]) => React.ReactNode } = {
-    [ActivityType.TASK_CREATED]: () => <StyledTypography> created task. </StyledTypography>,
+    [ActivityType.TASK_CREATED]: () => (
+      <StyledTypography>
+        {' '}
+        created task <span>&#x2022;</span>{' '}
+      </StyledTypography>
+    ),
     [ActivityType.TASK_ASSIGNED]: (to: string) => (
       <>
         <StyledTypography> assigned task to </StyledTypography>
