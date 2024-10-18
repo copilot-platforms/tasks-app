@@ -128,7 +128,6 @@ export class TasksService extends BaseService {
       },
       include: { workflowState: true },
     })
-    console.log('qqq new task', newTask)
 
     if (newTask) {
       // @todo move this logic to any pub/sub service like event bus
@@ -148,10 +147,8 @@ export class TasksService extends BaseService {
       )
       newTask.body && (await scrapImageService.updateTaskIdOfScrapImagesAfterCreation(newTask.body, newTask.id))
     }
-    console.log('qqq activity and scrap')
 
     await this.sendTaskCreateNotifications(newTask)
-    console.log('qqq create task notifications')
     return newTask
   }
 
@@ -473,7 +470,6 @@ export class TasksService extends BaseService {
 
   async sendTaskCreateNotifications(task: Task & { workflowState: WorkflowState }, isReassigned = false) {
     // If task is unassigned, there's nobody to send notifications to
-    console.log('debug:', task, isReassigned)
     if (!task.assigneeId) return
 
     // If task is assigned to the same person that created it, no need to notify yourself

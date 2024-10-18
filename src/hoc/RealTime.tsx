@@ -1,5 +1,6 @@
 'use client'
 
+import { UserRole } from '@/app/api/core/types/user'
 import { supabase } from '@/lib/supabase'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard, setTasks } from '@/redux/features/taskBoardSlice'
@@ -35,12 +36,15 @@ export const RealTime = ({ children, task }: { children: ReactNode; task?: TaskR
 
   const handleTaskRealTimeUpdates = (payload: RealtimePostgresChangesPayload<RealTimeTaskResponse>) => {
     if (payload.eventType === 'INSERT') {
+      // For both user types, filter out just tasks belonging to workspace.
+      let canUserAccessTask = payload.new.workspaceId === tokenPayload?.workspaceId
+      // Additionally, if user is a client, it can only access tasks assigned to that client or the client's company
+      if (userRole === AssigneeType.client) {
+        canUserAccessTask = canUserAccessTask && [userId, tokenPayload?.companyId].includes(payload.new.assigneeId)
+      }
+
       //check if the new task in this event belongs to the same workspaceId
-      if (
-        payload.new.workspaceId === tokenPayload?.workspaceId &&
-        payload.new.assigneeId === userId &&
-        payload.new.assigneeType === userRole
-      ) {
+      if (canUserAccessTask) {
         store.dispatch(setTasks([...tasks, { ...payload.new, createdAt: new Date(payload.new.createdAt + 'Z') }]))
         // NOTE: we append a Z here to make JS understand this raw timestamp (in format YYYY-MM-DD:HH:MM:SS.MS) is in UTC timezone
         // New payloads listened on the 'INSERT' action in realtime doesn't contain this tz info so the order can mess up
@@ -104,7 +108,7 @@ export const RealTime = ({ children, task }: { children: ReactNode; task?: TaskR
               ? `workspaceId=eq.${tokenPayload?.workspaceId}`
               : // The reason we are explicitly using an assigneeId filter for clients is so they are not streamed
                 // tasks they don't have access to in the first place.
-                `assigneeId=eq.${userId}`,
+                `assigneeId=in.(${userId}, ${tokenPayload.companyId})`,
         },
         handleTaskRealTimeUpdates,
       )
