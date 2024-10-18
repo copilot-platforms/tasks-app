@@ -19,7 +19,7 @@ export const ActivityWrapper = ({ token, task_id }: { token: string; task_id: st
   return (
     <Box width="100%">
       <Stack direction="column" alignItems="left" p="10px 5px" rowGap={5}>
-        <Typography variant="xl">Activity</Typography>
+        <Typography variant="lg">Activity</Typography>
         {isLoading ? (
           <Stack direction="column" rowGap={5}>
             <Skeleton variant="rectangular" width={'100%'} height={15} />
