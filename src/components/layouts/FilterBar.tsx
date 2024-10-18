@@ -17,6 +17,7 @@ import {
   IAssigneeCombined,
   IFilterOptions,
   View,
+  HandleSelectorComponentModes,
 } from '@/types/interfaces'
 import { CrossIcon, FilterByAsigneeIcon } from '@/icons'
 import { ViewModeSelector } from '../inputs/ViewModeSelector'
@@ -86,13 +87,15 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
         ? NoAssigneeExtraOptions
         : filteredAssigneeList.find((item) => item.id == viewModeFilterOptions.assignee),
     type: SelectorType.ASSIGNEE_SELECTOR,
+    mode: HandleSelectorComponentModes.CreateTaskFieldUpdate,
   })
   useFilter(viewSettingsTemp ? viewSettingsTemp.filterOptions : filterOptions)
   const filterButtons = [
     {
       name: 'My tasks',
       onClick: () => {
-        handleFilterOptionsChange(FilterOptions.TYPE, IUTokenSchema.parse(tokenPayload)?.internalUserId)
+        const selfAssigneeId = IUTokenSchema.parse(tokenPayload).internalUserId
+        handleFilterOptionsChange(FilterOptions.TYPE, selfAssigneeId)
         updateAssigneeValue(null)
         filterOptions.assignee !== '' && handleFilterOptionsChange(FilterOptions.ASSIGNEE, '')
       },

@@ -16,7 +16,14 @@ import {
 import store from '@/redux/store'
 import { Box, Stack, Typography, styled } from '@mui/material'
 import { useEffect, useState } from 'react'
-import { CreateTaskErrors, FilterOptions, IAssigneeCombined, ISignedUrlUpload, ITemplate } from '@/types/interfaces'
+import {
+  CreateTaskErrors,
+  FilterOptions,
+  IAssigneeCombined,
+  ISignedUrlUpload,
+  ITemplate,
+  HandleSelectorComponentModes,
+} from '@/types/interfaces'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { useSelector } from 'react-redux'
 import { selectTaskBoard, setAssigneeList } from '@/redux/features/taskBoardSlice'
@@ -73,6 +80,7 @@ export const NewTaskForm = ({ handleCreate, handleClose, getSignedUrlUpload }: N
         (item) => item.id == filterOptions[FilterOptions.ASSIGNEE] || item.id == filterOptions[FilterOptions.TYPE],
       ) ?? null,
     type: SelectorType.ASSIGNEE_SELECTOR,
+    mode: HandleSelectorComponentModes.CreateTaskFieldUpdate,
   })
   const { renderingItem: _templateValue, updateRenderingItem: updateTemplateValue } = useHandleSelectorComponent({
     item: undefined, //initially we don't want any value to be selected
