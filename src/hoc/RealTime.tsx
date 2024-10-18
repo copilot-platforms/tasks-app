@@ -1,17 +1,18 @@
 'use client'
 
+import { UserRole } from '@/app/api/core/types/user'
 import { supabase } from '@/lib/supabase'
+import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard, setTasks } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
 import { TaskResponse } from '@/types/dto/tasks.dto'
+import { extractImgSrcs, replaceImgSrcs } from '@/utils/signedUrlReplacer'
+import { AssigneeType } from '@prisma/client'
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { ReactNode, useEffect } from 'react'
 import { useSelector } from 'react-redux'
-import { useRouter } from 'next/navigation'
-import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 
-import { extractImgSrcs, replaceImgSrcs } from '@/utils/signedUrlReplacer'
 interface RealTimeTaskResponse extends TaskResponse {
   deletedAt: string
 }
@@ -22,10 +23,28 @@ export const RealTime = ({ children, task }: { children: ReactNode; task?: TaskR
   const pathname = usePathname()
   const router = useRouter()
 
+  const userId = tokenPayload?.internalUserId || tokenPayload?.clientId
+  const userRole = tokenPayload?.internalUserId
+    ? AssigneeType.internalUser
+    : tokenPayload?.clientId
+      ? AssigneeType.client
+      : undefined
+
+  if (!userId || !userRole) {
+    console.error(`Failed to authenticate a realtime connection for id ${userId} with role ${userRole}`)
+  }
+
   const handleTaskRealTimeUpdates = (payload: RealtimePostgresChangesPayload<RealTimeTaskResponse>) => {
     if (payload.eventType === 'INSERT') {
+      // For both user types, filter out just tasks belonging to workspace.
+      let canUserAccessTask = payload.new.workspaceId === tokenPayload?.workspaceId
+      // Additionally, if user is a client, it can only access tasks assigned to that client or the client's company
+      if (userRole === AssigneeType.client) {
+        canUserAccessTask = canUserAccessTask && [userId, tokenPayload?.companyId].includes(payload.new.assigneeId)
+      }
+
       //check if the new task in this event belongs to the same workspaceId
-      if (payload.new.workspaceId === tokenPayload?.workspaceId) {
+      if (canUserAccessTask) {
         store.dispatch(setTasks([...tasks, { ...payload.new, createdAt: new Date(payload.new.createdAt + 'Z') }]))
         // NOTE: we append a Z here to make JS understand this raw timestamp (in format YYYY-MM-DD:HH:MM:SS.MS) is in UTC timezone
         // New payloads listened on the 'INSERT' action in realtime doesn't contain this tz info so the order can mess up
@@ -69,11 +88,28 @@ export const RealTime = ({ children, task }: { children: ReactNode; task?: TaskR
   }
 
   useEffect(() => {
+    if (!userId || !userRole) {
+      // Don't try to open a connection with `undefined` parameters
+      return
+    }
+
     const channel = supabase
       .channel('realtime tasks')
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'Tasks', filter: `workspaceId=eq.${tokenPayload?.workspaceId}` },
+        // Because of the way supabase realtime is architected for postgres_changes, it can only apply one filter at a time.
+        // Ref: https://github.com/supabase/realtime-js/issues/97
+        {
+          event: '*',
+          schema: 'public',
+          table: 'Tasks',
+          filter:
+            userRole === AssigneeType.internalUser
+              ? `workspaceId=eq.${tokenPayload?.workspaceId}`
+              : // The reason we are explicitly using an assigneeId filter for clients is so they are not streamed
+                // tasks they don't have access to in the first place.
+                `assigneeId=in.(${userId}, ${tokenPayload.companyId})`,
+        },
         handleTaskRealTimeUpdates,
       )
       .subscribe()
