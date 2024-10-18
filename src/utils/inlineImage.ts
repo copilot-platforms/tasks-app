@@ -26,7 +26,7 @@ export const uploadImageHandler = async (file: File, token: string, task_id: str
       }
 
       if (error) {
-        throw new Error('File upload failed')
+        console.error(`Error at retry ${retries}`, error)
       }
     } catch (error) {
       console.error(`Attempt failed: ${3 - retries + 1}, error:`, error)
