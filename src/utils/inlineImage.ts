@@ -11,18 +11,31 @@ import { getSignedUrlUpload, getSignedUrlFile } from '@/app/actions'
 
 export const uploadImageHandler = async (file: File, token: string, task_id: string | null): Promise<string | undefined> => {
   const supabaseActions = new SupabaseActions()
-
   const fileName = generateRandomString(file.name)
-  const signedUrl: ISignedUrlUpload = await getSignedUrlUpload(token, fileName)
-  const { filePayload, error } = await supabaseActions.uploadAttachment(file, signedUrl, task_id)
-  if (filePayload) {
-    const url = await getSignedUrlFile(token ?? '', filePayload?.filePath ?? '')
-    return url
-  }
 
-  if (error) {
-    console.error('error uploading file :', error)
-    return Promise.reject(new Error('File upload failed'))
+  let retries = 3
+
+  while (retries > 0) {
+    try {
+      const signedUrl: ISignedUrlUpload = await getSignedUrlUpload(token, fileName)
+      const { filePayload, error } = await supabaseActions.uploadAttachment(file, signedUrl, task_id)
+
+      if (filePayload) {
+        const url = await getSignedUrlFile(token ?? '', filePayload?.filePath ?? '')
+        return url
+      }
+
+      if (error) {
+        throw new Error('File upload failed')
+      }
+    } catch (error) {
+      console.error(`Attempt failed: ${3 - retries + 1}, error:`, error)
+      retries -= 1
+
+      if (retries === 0) {
+        return Promise.reject(new Error('File upload failed after 3 attempts'))
+      }
+    }
   }
 }
 
