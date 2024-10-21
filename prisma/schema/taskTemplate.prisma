@@ -1,0 +1,14 @@
+model TaskTemplate {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  workspaceId  String    @db.VarChar(32)
+  templateName String    @db.VarChar(255)
+  title        String    @db.VarChar(255)
+  body         String?
+  createdById  String    @db.Uuid
+  createdAt    DateTime  @default(now())
+  deletedAt    DateTime?
+
+  @@unique([workspaceId, templateName], name: "UQ_TaskTemplates_workspaceId_templateName")
+  @@index([workspaceId, templateName], name: "IX_TaskTemplates_workspaceId_templateName")
+  @@map("TaskTemplates")
+}

@@ -5,6 +5,7 @@ import { IdParams } from '@api/core/types/api'
 import httpStatus from 'http-status'
 import authenticate from '@api/core/utils/authenticate'
 import { unstable_noStore as noStore } from 'next/cache'
+import { ScrapImageRequestSchema } from '@/types/common'
 
 export const getTasks = async (req: NextRequest) => {
   noStore()

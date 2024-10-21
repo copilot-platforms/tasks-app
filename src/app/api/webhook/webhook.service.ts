@@ -54,7 +54,6 @@ class WebhookService extends BaseService {
   }
 
   async handleClientCreated(assigneeId: string) {
-    console.info('WebhookService#handleClientCreated :: Handling client created for:', assigneeId)
     // First fetch all the current non-complete tasks for client's company, if exists
     const client = await this.copilot.getClient(assigneeId)
     let company
@@ -122,23 +121,12 @@ class WebhookService extends BaseService {
   }
 
   async handleUserDeleted(assigneeId: string, assigneeType: AssigneeType) {
-    console.info(`WebhookService#handleUserDeleted:: Handling ${assigneeType} deleted with id ${assigneeId}`)
+    if (assigneeType === AssigneeType.company) return
+
     const tasksService = new TasksService(this.user)
     // Delete corresponding tasks
-    const tasks = await tasksService.deleteAllAssigneeTasks(assigneeId, assigneeType)
-    console.info(`Deleting all ${tasks.length} tasks for ${assigneeType} ${assigneeId}`)
-
-    // Now delete all notifications from IU notifications center related to all tasks for this client / company
-    const notificationsService = new NotificationService(this.user)
-    const deleteIuNotificationPromises: Promise<void>[] = []
-    // This bottleneck needs to be very restrictive so as to not trigger ratelimit
-    const bottleneck = new Bottleneck({ minTime: 1000, maxConcurrent: 1 })
-    for (const task of tasks) {
-      deleteIuNotificationPromises.push(
-        bottleneck.schedule(() => notificationsService.deleteInternalUserNotificationForTask(task.id)),
-      )
-    }
-    await Promise.all(deleteIuNotificationPromises)
+    console.info(`Deleting all tasks for ${assigneeType} ${assigneeId}`)
+    await tasksService.deleteAllAssigneeTasks(assigneeId, assigneeType)
 
     // So how do we delete corresponding notifications, you ask? Good question.
     // Copilot calls multiple `client.updated` when unassigning clients companies after `company.deleted` is called.
@@ -146,7 +134,6 @@ class WebhookService extends BaseService {
   }
 
   async handleClientUpdated(data: ClientUpdatedEventData) {
-    console.info('WebhookService#handleClientUpdated:: Handling client updated with data', data)
     const {
       id: clientId,
       companyId: newCompanyId,
@@ -203,8 +190,6 @@ class WebhookService extends BaseService {
         workflowState: {
           type: { not: StateType.completed },
         },
-        // Fetch both deleted and non-deleted tasks to prevent race-condition of company tasks being deleted first
-        deletedAt: undefined,
       },
     })
     const prevCompanyTaskIds = prevCompanyTasks.map((task) => task.id)

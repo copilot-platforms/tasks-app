@@ -1,18 +1,20 @@
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import { getAllTasks, getAllWorkflowStates, getViewSettings } from '@/app/page'
 import { Token } from '@/types/common'
+import { TaskResponse } from '@/types/dto/tasks.dto'
 
 interface DetailStateUpdateProps {
   isRedirect?: boolean
   token: string
   tokenPayload: Token | null
+  task: TaskResponse
   children: React.ReactNode
 }
 
-export const DetailStateUpdate = async ({ isRedirect, token, tokenPayload, children }: DetailStateUpdateProps) => {
+export const DetailStateUpdate = async ({ isRedirect, token, tokenPayload, task, children }: DetailStateUpdateProps) => {
   if (!isRedirect) {
     return (
-      <ClientSideStateUpdate token={token} tokenPayload={tokenPayload}>
+      <ClientSideStateUpdate token={token} tokenPayload={tokenPayload} task={task}>
         {children}
       </ClientSideStateUpdate>
     )

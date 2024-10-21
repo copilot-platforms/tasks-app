@@ -14,9 +14,16 @@ import { Tapwrite } from 'tapwrite'
 import { useDebounce, useDebounceWithCancel } from '@/hooks/useDebounce'
 import { useRouter } from 'next/navigation'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { SupabaseActions } from '@/utils/SupabaseActions'
+import { generateRandomString } from '@/utils/generateRandomString'
+import { TaskResponse } from '@/types/dto/tasks.dto'
+import { ScrapImageRequest } from '@/types/common'
+
+import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
 
 interface Prop {
   task_id: string
+  task: TaskResponse
   // attachment: AttachmentResponseSchema[]
   isEditable: boolean
   updateTaskDetail: (detail: string) => void
@@ -24,12 +31,12 @@ interface Prop {
   deleteTask: () => void
   postAttachment: (postAttachmentPayload: CreateAttachmentRequest) => void
   deleteAttachment: (id: string) => void
-  getSignedUrlUpload: (fileName: string) => Promise<ISignedUrlUpload>
   userType: UserType
 }
 
 export const TaskEditor = ({
   task_id,
+  task,
   // attachment,
   isEditable,
   updateTaskDetail,
@@ -37,13 +44,12 @@ export const TaskEditor = ({
   deleteTask,
   postAttachment,
   deleteAttachment,
-  getSignedUrlUpload,
   userType,
 }: Prop) => {
   const [updateTitle, setUpdateTitle] = useState('')
   const [updateDetail, setUpdateDetail] = useState('')
   const { showConfirmDeleteModal } = useSelector(selectTaskDetails)
-  const { tasks } = useSelector(selectTaskBoard)
+  const { tasks, token } = useSelector(selectTaskBoard)
   const [isUserTyping, setIsUserTyping] = useState(false)
 
   // const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -65,6 +71,7 @@ export const TaskEditor = ({
       const currentTask = tasks.find((el) => el.id === task_id)
       if (currentTask) {
         setUpdateTitle(currentTask.title || '')
+
         setUpdateDetail(currentTask.body ?? '')
       }
     }
@@ -109,6 +116,7 @@ export const TaskEditor = ({
     if (content === updateDetail) {
       return
     }
+
     setUpdateDetail(content)
     setIsUserTyping(true)
     detailsUpdateDebounced(content)
@@ -150,25 +158,20 @@ export const TaskEditor = ({
         }}
       />
 
-      <Box mt="12px" sx={{ height: '100%' }}>
+      <Box mt="12px" sx={{ height: '100%', width: '100%' }}>
         <Tapwrite
-          uploadFn={async (file, tiptapEditorUtils) => {
-            const newBlob = await upload(file.name, file, {
-              access: 'public',
-              handleUploadUrl: '/api/upload',
-            })
-            tiptapEditorUtils.setImage(newBlob.url as string)
-          }}
           content={updateDetail}
           getContent={handleDetailChange}
           readonly={userType === UserType.CLIENT_USER}
           editorClass="tapwrite-details-page"
           placeholder="Add description..."
+          uploadFn={(file) => uploadImageHandler(file, token ?? '', task_id)}
+          deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', task_id)}
         />
       </Box>
 
       {/* {advancedFeatureFlag && ( */}
-      {/*   <> */}
+      {/* <> */}
       {/*     <Stack direction="row" columnGap={3} rowGap={3} mt={3} flexWrap={'wrap'}> */}
       {/*       {attachment?.map((el, key) => { */}
       {/*         return ( */}

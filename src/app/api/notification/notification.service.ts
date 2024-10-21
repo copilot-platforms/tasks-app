@@ -9,30 +9,40 @@ import APIError from '@api/core/exceptions/api'
 import httpStatus from 'http-status'
 import Bottleneck from 'bottleneck'
 
-type NotificationCreateOpts = {
-  disableEmail?: boolean
-  customRecipientId?: string
-}
-
 export class NotificationService extends BaseService {
-  async create(action: NotificationTaskActions, task: Task, opts: NotificationCreateOpts = { disableEmail: false }) {
+  async create(action: NotificationTaskActions, task: Task, disable: { email: boolean } = { email: false }) {
     try {
       const copilot = new CopilotAPI(this.user.token)
 
       const { senderId, recipientId, actionUser, companyName } = await this.getNotificationParties(copilot, task, action)
 
       const inProduct = getInProductNotificationDetails(actionUser, task, companyName)[action]
-      const email = opts.disableEmail ? undefined : getEmailDetails(actionUser, task)[action]
+      const email = disable.email ? undefined : getEmailDetails(actionUser, task)[action]
       const notificationDetails = {
         senderId,
-        recipientId: opts.customRecipientId || recipientId,
+        recipientId,
         // If any of the given action is not present in details obj, that type of notification is not sent
         deliveryTargets: { inProduct, email },
       }
 
       const notification = await copilot.createNotification(notificationDetails)
-      await this.createInternalUserNotifications(action, recipientId, task, notification.id)
-
+      if (
+        [
+          NotificationTaskActions.Completed,
+          NotificationTaskActions.CompletedByIU,
+          NotificationTaskActions.CompletedForCompanyByIU,
+          NotificationTaskActions.CompletedByCompanyMember,
+        ].includes(action)
+      ) {
+        // Notification recipient is IU in this case
+        await this.db.internalUserNotification.create({
+          data: {
+            internalUserId: recipientId,
+            notificationId: notification.id,
+            taskId: task.id,
+          },
+        })
+      }
       return notification
     } catch (error) {
       console.error(`Failed to send notification for action: ${action}`, error)
@@ -69,9 +79,7 @@ export class NotificationService extends BaseService {
             recipientId,
             deliveryTargets: { inProduct, email },
           }
-          const notification = await copilot.createNotification(notificationDetails)
-          notifications.push(notification)
-          await this.createInternalUserNotifications(action, recipientId, task, notification.id)
+          notifications.push(await copilot.createNotification(notificationDetails))
         } catch (err: unknown) {
           console.error(`Failed to send notifications to ${recipientId}:`, err)
         }
@@ -100,7 +108,6 @@ export class NotificationService extends BaseService {
   }
 
   deleteInternalUserNotificationForTask = async (taskId: string) => {
-    console.info('deleting all IU notifications for task', taskId)
     const copilot = new CopilotAPI(this.user.token)
     const notifications = await this.db.internalUserNotification.findMany({ where: { taskId } })
     const markAsReadPromises = []
@@ -113,7 +120,7 @@ export class NotificationService extends BaseService {
         }),
       )
     }
-    console.info(`Deleting all notifications triggered by task ${taskId}`)
+    console.info(`Deleting all notifications triggerd by task ${taskId}`)
     await Promise.all(markAsReadPromises)
     await this.db.internalUserNotification.deleteMany({ where: { taskId } })
   }
@@ -261,33 +268,5 @@ export class NotificationService extends BaseService {
         : `${(actionTrigger as CopilotUser).givenName} ${(actionTrigger as CopilotUser).familyName}`
 
     return { senderId, recipientId, recipientIds, actionUser, companyName }
-  }
-
-  private async createInternalUserNotifications(
-    action: NotificationTaskActions,
-    internalUserId: string,
-    task: Task,
-    notificationId: string,
-  ) {
-    const isCompletedNotification = [
-      NotificationTaskActions.Completed,
-      NotificationTaskActions.CompletedByIU,
-      NotificationTaskActions.CompletedForCompanyByIU,
-      NotificationTaskActions.CompletedByCompanyMember,
-    ].includes(action)
-    const isAssignedToIuNotification =
-      task.assigneeType === AssigneeType.internalUser &&
-      [NotificationTaskActions.Assigned, NotificationTaskActions.ReassignedToIU].includes(action)
-    // NOTE: Recipient is confirmed to be IU in both cases!
-
-    if (isCompletedNotification || isAssignedToIuNotification) {
-      await this.db.internalUserNotification.create({
-        data: {
-          internalUserId,
-          notificationId,
-          taskId: task.id,
-        },
-      })
-    }
   }
 }

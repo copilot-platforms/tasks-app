@@ -46,15 +46,22 @@ export const updateViewModeSettings = async (token: string, payload: CreateViewS
   })
 }
 
-export const getSignedUrlUpload = async (token: string, fileName: string) => {
-  const res = await fetch(`${apiUrl}/api/attachments/upload?token=${token}&fileName=${fileName}`)
-  const data = await res.json()
-  return data.signedUrl
-}
-
 export const createMultipleAttachments = async (token: string, attachments: CreateAttachmentRequest[]) => {
   await fetch(`${apiUrl}/api/attachments/bulk?token=${token}`, {
     method: 'POST',
     body: JSON.stringify(attachments),
   })
+}
+
+export async function getSignedUrlUpload(token: string, fileName: string) {
+  const res = await fetch(`${apiUrl}/api/attachments/upload?token=${token}&fileName=${fileName}`)
+
+  const data = await res.json()
+  return data.signedUrl
+}
+
+export const getSignedUrlFile = async (token: string, filePath: string) => {
+  const res = await fetch(`${apiUrl}/api/attachments/sign-url?token=${token}&filePath=${filePath}`)
+  const data = await res.json()
+  return data.signedUrl
 }

@@ -1,5 +1,5 @@
 import { TypographyVariant, TypographyVariantsOptions } from '@mui/material'
-import React, { CSSProperties } from 'react'
+import React from 'react'
 
 export declare module '@mui/material/styles' {
   interface Theme {
