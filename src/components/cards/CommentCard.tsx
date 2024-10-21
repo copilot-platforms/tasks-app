@@ -120,7 +120,7 @@ export const CommentCard = ({
           editorClass="tapwrite-comment"
         />
 
-        {(comment as any)?.replies?.map((item: any) => {
+        {(comment as any).details?.replies?.map((item: any) => {
           return (
             <Stack direction="column" rowGap={3} key={item.id}>
               <CustomDivider />
@@ -177,7 +177,7 @@ export const CommentCard = ({
         <ConfirmDeleteUI
           handleCancel={() => setShowConfirmDeleteModal(false)}
           handleDelete={() => {
-            deleteComment((comment as any).id)
+            deleteComment((comment as LogResponse).details.id as string)
             setShowConfirmDeleteModal(false)
           }}
           body="comment"

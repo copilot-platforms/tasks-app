@@ -68,6 +68,7 @@ export const ActivityWrapper = ({ token, task_id }: { token: string; task_id: st
   }, [commentId, activities, isFirstPageLoad])
 
   const handleCreateComment = async (postCommentPayload: CreateComment) => {
+    console.log('post payload', postCommentPayload)
     const tempComment: TempCommentType = {
       type: ActivityType.COMMENT_ADDED,
       id: generateRandomString('temp-comment'),
@@ -96,6 +97,7 @@ export const ActivityWrapper = ({ token, task_id }: { token: string; task_id: st
 
   const handleDeleteComment = async (id: string) => {
     // Optimistically remove the comment from the activity list
+    console.log('here it is', id)
     setActivities((prev) => prev.filter((el) => el.id !== id))
 
     try {
