@@ -177,6 +177,7 @@ export const CommentCard = ({
         <ConfirmDeleteUI
           handleCancel={() => setShowConfirmDeleteModal(false)}
           handleDelete={() => {
+            console.log('comment id for delete', (comment as LogResponse).details.id)
             deleteComment((comment as LogResponse).details.id as string)
             setShowConfirmDeleteModal(false)
           }}

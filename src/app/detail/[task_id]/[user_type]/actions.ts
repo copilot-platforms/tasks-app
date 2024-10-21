@@ -98,6 +98,7 @@ export const postComment = async (token: string, payload: CreateComment) => {
 }
 
 export const deleteComment = async (token: string, id: string) => {
+  console.log('im running')
   await fetch(`${apiUrl}/api/comment/${id}?token=${token}`, {
     method: 'DELETE',
   })

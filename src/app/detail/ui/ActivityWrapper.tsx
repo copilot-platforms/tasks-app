@@ -35,7 +35,7 @@ export type TempCommentType = {
 
 export const ActivityWrapper = ({ token, task_id }: { token: string; task_id: string }) => {
   const { data, isLoading } = useSWR(`/api/tasks/${task_id}/activity-logs/?token=${token}`, fetcher, {
-    refreshInterval: 10000,
+    refreshInterval: 5000,
   })
   const { tokenPayload } = useSelector(selectAuthDetails)
   const { assignee } = useSelector(selectTaskBoard)
@@ -95,13 +95,13 @@ export const ActivityWrapper = ({ token, task_id }: { token: string; task_id: st
     }
   }
 
-  const handleDeleteComment = async (id: string) => {
+  const handleDeleteComment = async (commentId: string, logId: string) => {
     // Optimistically remove the comment from the activity list
-    console.log('here it is', id)
-    setActivities((prev) => prev.filter((el) => el.id !== id))
+    console.log('comment id', commentId, 'Log id', logId)
+    setActivities((prev) => prev.filter((el) => el.id !== logId))
 
     try {
-      await deleteComment(token, id)
+      await deleteComment(token, commentId)
     } catch (error) {
       console.error('Failed to delete comment:', error)
       // Optionally, re-add the comment to the list if deletion fails
@@ -133,7 +133,7 @@ export const ActivityWrapper = ({ token, task_id }: { token: string; task_id: st
                   <Comments
                     comment={item}
                     createComment={handleCreateComment}
-                    deleteComment={() => handleDeleteComment(item.id)}
+                    deleteComment={(commentId) => handleDeleteComment(commentId, item.id)}
                     task_id={task_id}
                   />
                 ) : (
