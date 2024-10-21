@@ -19,6 +19,7 @@ import { getMentionsList } from '@/utils/getMentionList'
 import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 import { Tapwrite } from 'tapwrite'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { TempCommentType } from '@/app/detail/ui/ActivityWrapper'
 
 const CustomDivider = styled(Box)(({ theme }) => ({
   height: '1px',
@@ -34,7 +35,7 @@ export const CommentCard = ({
   deleteComment,
   task_id,
 }: {
-  comment: LogResponse
+  comment: LogResponse | TempCommentType
   createComment: (postCommentPayload: CreateComment) => void
   deleteComment: (id: string) => void
   task_id: string
@@ -119,7 +120,7 @@ export const CommentCard = ({
           editorClass="tapwrite-comment"
         />
 
-        {commentAddedResponseSchema.parse(comment.details)?.replies?.map((item: any) => {
+        {(comment as any)?.replies?.map((item: any) => {
           return (
             <Stack direction="column" rowGap={3} key={item.id}>
               <CustomDivider />
@@ -140,7 +141,7 @@ export const CommentCard = ({
           )
         })}
 
-        {commentAddedResponseSchema.parse(comment.details).replies?.length > 0 || showReply ? (
+        {(comment as any).details.replies?.length > 0 || showReply ? (
           <>
             <CustomDivider />
             <Stack direction="row" columnGap={1} alignItems="flex-start">
@@ -176,7 +177,7 @@ export const CommentCard = ({
         <ConfirmDeleteUI
           handleCancel={() => setShowConfirmDeleteModal(false)}
           handleDelete={() => {
-            deleteComment(commentAddedResponseSchema.parse(comment.details).id)
+            deleteComment((comment as any).id)
             setShowConfirmDeleteModal(false)
           }}
           body="comment"

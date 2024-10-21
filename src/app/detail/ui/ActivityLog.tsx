@@ -7,9 +7,10 @@ import { WorkflowStateUpdatedSchema } from '@/app/api/activity-logs/schemas/Work
 import { ActivityType } from '@prisma/client'
 import { useSelector } from 'react-redux'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { TempCommentType } from './ActivityWrapper'
 
 interface Prop {
-  log: LogResponse
+  log: LogResponse | TempCommentType
 }
 
 const getAssignedToName = (details: TaskAssignedResponse) => {

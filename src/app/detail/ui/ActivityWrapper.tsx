@@ -12,11 +12,45 @@ import { fetcher } from '@/utils/fetcher'
 import useSWR from 'swr'
 import { useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { useSelector } from 'react-redux'
+import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
+import { generateRandomString } from '@/utils/generateRandomString'
+import { z } from 'zod'
+
+export type TempCommentType = {
+  id: string
+  type: ActivityType // Assuming you only handle comments
+  initiator: {
+    id?: string // User details may be incomplete in temp comments
+    givenName?: string
+    familyName?: string
+    avatarImageUrl?: string
+  }
+  details: {
+    content: string
+  }
+  createdAt: number
+}
 
 export const ActivityWrapper = ({ token, task_id }: { token: string; task_id: string }) => {
-  const { data: activities, isLoading } = useSWR(`/api/tasks/${task_id}/activity-logs/?token=${token}`, fetcher, {
-    refreshInterval: 1000,
+  const { data, isLoading } = useSWR(`/api/tasks/${task_id}/activity-logs/?token=${token}`, fetcher, {
+    refreshInterval: 10000,
   })
+  const { tokenPayload } = useSelector(selectAuthDetails)
+  const { assignee } = useSelector(selectTaskBoard)
+  const currentUserId = tokenPayload?.clientId ?? tokenPayload?.internalUserId
+  const currentUserDetails = assignee.find((el) => el.id === currentUserId)
+
+  // The activities state can hold both LogResponse and TempCommentType
+  const [activities, setActivities] = useState<(LogResponse | TempCommentType)[]>([])
+
+  // Sync state with fetched data only if the data changes
+  useEffect(() => {
+    if (data) {
+      setActivities(data.data)
+    }
+  }, [data])
 
   const [isFirstPageLoad, setIsFirstPageLoad] = useState(true)
 
@@ -25,14 +59,52 @@ export const ActivityWrapper = ({ token, task_id }: { token: string; task_id: st
 
   useEffect(() => {
     if (isFirstPageLoad && activities && commentId) {
-      // Find the element with the matching id and scroll to it
       const commentElement = document.getElementById(commentId)
       if (commentElement) {
         commentElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
       }
-      setIsFirstPageLoad(true)
+      setIsFirstPageLoad(false) // Mark it false after first page load
     }
-  }, [commentId, activities])
+  }, [commentId, activities, isFirstPageLoad])
+
+  const handleCreateComment = async (postCommentPayload: CreateComment) => {
+    const tempComment: TempCommentType = {
+      type: ActivityType.COMMENT_ADDED,
+      id: generateRandomString('temp-comment'),
+      initiator: {
+        id: z.string().parse(currentUserDetails?.id),
+        givenName: z.string().parse(currentUserDetails?.givenName),
+        familyName: z.string().parse(currentUserDetails?.familyName),
+        avatarImageUrl: z.string().parse(currentUserDetails?.avatarImageUrl),
+      },
+      details: {
+        content: postCommentPayload.content,
+      },
+      createdAt: Date.now(),
+    }
+
+    // Optimistically add the comment to the activity list
+    setActivities((prev) => [...prev, tempComment])
+
+    try {
+      await postComment(token, postCommentPayload)
+    } catch (error) {
+      console.error('Failed to post comment:', error)
+      // Optionally, remove temp comment if posting fails
+    }
+  }
+
+  const handleDeleteComment = async (id: string) => {
+    // Optimistically remove the comment from the activity list
+    setActivities((prev) => prev.filter((el) => el.id !== id))
+
+    try {
+      await deleteComment(token, id)
+    } catch (error) {
+      console.error('Failed to delete comment:', error)
+      // Optionally, re-add the comment to the list if deletion fails
+    }
+  }
 
   return (
     <Box width="100%">
@@ -46,41 +118,29 @@ export const ActivityWrapper = ({ token, task_id }: { token: string; task_id: st
           </Stack>
         ) : (
           <Stack direction="column" alignItems="left" p="0px 5px" rowGap={4}>
-            {activities?.data?.map((item: LogResponse, index: number) => {
-              return (
-                <Box
-                  sx={{
-                    height: 'auto',
-                    //added for M3 purpose only. This check can be removed later to render all ActivityType
-                    display:
-                      item.type === ActivityType.TASK_CREATED || item.type === ActivityType.COMMENT_ADDED ? 'block' : 'none',
-                  }}
-                  key={item.id}
-                >
-                  {item.type == ActivityType.COMMENT_ADDED ? (
-                    <Comments
-                      comment={item}
-                      createComment={async (postCommentPayload: CreateComment) => {
-                        await postComment(token, postCommentPayload)
-                      }}
-                      deleteComment={async (id: string) => {
-                        await deleteComment(token, id)
-                      }}
-                      task_id={task_id}
-                    />
-                  ) : (
-                    item.type === ActivityType.TASK_CREATED && <ActivityLog log={item} />
-                  )}
-                </Box>
-              )
-            })}
+            {activities?.map((item) => (
+              <Box
+                key={item.id}
+                sx={{
+                  height: 'auto',
+                  display:
+                    item.type === ActivityType.TASK_CREATED || item.type === ActivityType.COMMENT_ADDED ? 'block' : 'none',
+                }}
+              >
+                {item.type === ActivityType.COMMENT_ADDED ? (
+                  <Comments
+                    comment={item}
+                    createComment={handleCreateComment}
+                    deleteComment={() => handleDeleteComment(item.id)}
+                    task_id={task_id}
+                  />
+                ) : (
+                  item.type === ActivityType.TASK_CREATED && <ActivityLog log={item} />
+                )}
+              </Box>
+            ))}
 
-            <CommentInput
-              createComment={async (postCommentPayload: CreateComment) => {
-                await postComment(token, postCommentPayload)
-              }}
-              task_id={task_id}
-            />
+            <CommentInput createComment={handleCreateComment} task_id={task_id} />
           </Stack>
         )}
       </Stack>
