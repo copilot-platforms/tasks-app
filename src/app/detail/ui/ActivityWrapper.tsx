@@ -30,7 +30,7 @@ export type TempCommentType = {
   details: {
     content: string
   }
-  createdAt: number
+  createdAt: string
 }
 
 export const ActivityWrapper = ({ token, task_id }: { token: string; task_id: string }) => {
@@ -80,7 +80,7 @@ export const ActivityWrapper = ({ token, task_id }: { token: string; task_id: st
       details: {
         content: postCommentPayload.content,
       },
-      createdAt: Date.now(),
+      createdAt: new Date().toISOString(), // Convert to ISO 8601 string format
     }
 
     // Optimistically add the comment to the activity list
