@@ -119,7 +119,20 @@ export const Sidebar = ({
         </StyledBox>
       </Stack>
       <AppMargin size={SizeofAppMargin.SMALL}>
-        <Stack direction="row" alignItems="center" m="20px 0px" columnGap="10px">
+        <Stack
+          direction="row"
+          alignItems="center"
+          m="16px 0px"
+          columnGap="10px"
+          sx={{
+            ':hover': {
+              bgcolor: (theme) => theme.color.background.bgCallout,
+            },
+            padding: '4px',
+            borderRadius: '4px',
+            width: 'fit-content',
+          }}
+        >
           <StyledText variant="md" minWidth="80px">
             Status
           </StyledText>
@@ -135,7 +148,20 @@ export const Sidebar = ({
             responsiveNoHide
           />
         </Stack>
-        <Stack direction="row" m="20px 0px" alignItems="center" columnGap="10px">
+        <Stack
+          direction="row"
+          m="16px 0px"
+          alignItems="center"
+          columnGap="10px"
+          sx={{
+            ':hover': {
+              bgcolor: (theme) => theme.color.background.bgCallout,
+            },
+            padding: '4px',
+            borderRadius: '4px',
+            width: 'fit-content',
+          }}
+        >
           <StyledText variant="md" minWidth="80px">
             Assignee
           </StyledText>
@@ -204,7 +230,21 @@ export const Sidebar = ({
             responsiveNoHide
           />
         </Stack>
-        <Stack direction="row" m="20px 0px" alignItems="center" columnGap="10px" minWidth="fit-content">
+        <Stack
+          direction="row"
+          m="16px 0px"
+          alignItems="center"
+          columnGap="10px"
+          minWidth="fit-content"
+          sx={{
+            ':hover': {
+              bgcolor: (theme) => theme.color.background.bgCallout,
+            },
+            padding: '4px',
+            borderRadius: '4px',
+            width: 'fit-content',
+          }}
+        >
           <StyledText variant="md" minWidth="80px">
             Due date
           </StyledText>
