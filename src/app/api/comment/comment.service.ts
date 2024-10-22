@@ -29,7 +29,11 @@ export class CommentService extends BaseService {
     await handleComment(task, comment, notificationService)
   }
 
-  private async handleUserCommentNotifications(task: Task, comment: Comment, notificationService: NotificationService) {
+  private handleUserCommentNotifications = async (
+    task: Task,
+    comment: Comment,
+    notificationService: NotificationService,
+  ) => {
     // If comment has been created by the same person it's assigned to, don't send notifications
     if (comment.initiatorId === task.assigneeId) return
 
@@ -43,7 +47,11 @@ export class CommentService extends BaseService {
     }
   }
 
-  private async handleCompanyCommentNotifications(task: Task, comment: Comment, notificationService: NotificationService) {
+  private handleCompanyCommentNotifications = async (
+    task: Task,
+    comment: Comment,
+    notificationService: NotificationService,
+  ) => {
     const copilot = new CopilotAPI(this.user.token)
     const { recipientIds } = await notificationService.getNotificationParties(
       copilot,
