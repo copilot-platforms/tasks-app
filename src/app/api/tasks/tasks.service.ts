@@ -534,7 +534,12 @@ export class TasksService extends BaseService {
       updatedTask?.workflowState?.type === StateType.completed &&
       updatedTask.assigneeId
     ) {
-      if (updatedTask.assigneeType === AssigneeType.internalUser && updatedTask.assigneeId !== this.user.internalUserId) {
+      // Don't send task notifications if the IU created the task themselves
+      if (updatedTask.createdById === this.user.internalUserId) {
+        return
+      }
+
+      if (updatedTask.assigneeType === AssigneeType.internalUser) {
         await notificationService.create(NotificationTaskActions.CompletedByIU, updatedTask, { email: true })
         // TODO: Clean code and handle notification center notification deletions here instead
       } else if (updatedTask.assigneeType === AssigneeType.company) {
