@@ -13,9 +13,8 @@ export class NotificationService extends BaseService {
   async create(
     action: NotificationTaskActions,
     task: Task,
-    opts: { disableEmail: boolean; disableInProduct: boolean; commentId?: string } = {
+    opts: { disableEmail: boolean; disableInProduct?: boolean; commentId?: string } = {
       disableEmail: false,
-      disableInProduct: false,
     },
   ) {
     try {
