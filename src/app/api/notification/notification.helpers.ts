@@ -62,12 +62,12 @@ export const getInProductNotificationDetails = (
     },
     [NotificationTaskActions.Commented]: {
       title: 'A comment was added',
-      body: `${actionUser} left a comment on the task ${task?.title}.`,
+      body: `${actionUser} left a comment on the task ‘${task?.title}’.`,
       ctaParams,
     },
     [NotificationTaskActions.Mentioned]: {
       title: 'You were mentioned in a task comment',
-      body: `You were mentioned in a comment on task ${task?.title} by ${actionUser}. To see details about the task, navigate to the Tasks App below. `,
+      body: `You were mentioned in a comment on task ‘${task?.title}’ by ${actionUser}. To see details about the task, navigate to the Tasks App below. `,
       ctaParams,
     },
   }
@@ -128,14 +128,14 @@ export const getEmailDetails = (
     [NotificationTaskActions.Commented]: {
       subject: 'A comment was added',
       header: 'A comment was added',
-      body: `${actionUser} left a comment on the task ${task?.title}. To view the comment, open the task below.`,
+      body: `${actionUser} left a comment on the task ‘${task?.title}’. To view the comment, open the task below.`,
       title: 'View Comment',
       ctaParams,
     },
     [NotificationTaskActions.Mentioned]: {
       subject: 'You were mentioned in a task comment',
       header: 'You were mentioned in a task comment',
-      body: `You were mentioned in a comment on task ${task?.title} by ${actionUser}. To see details about the task, navigate to the Tasks App below. `,
+      body: `You were mentioned in a comment on task ‘${task?.title}’ by ${actionUser}. To see details about the task, navigate to the Tasks App below. `,
       title: 'View task',
       ctaParams,
     },
