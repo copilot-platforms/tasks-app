@@ -124,7 +124,7 @@ export const CommentCard = ({
                     <Avatar
                       alt={item?.initiator?.givenName}
                       src={item?.initiator?.avatarImageUrl || 'user'}
-                      sx={{ width: '20px', height: '20px' }}
+                      sx={{ width: '20px', height: '20px', fontSize: '14px' }}
                     />
                     <BoldTypography>
                       {item.initiator?.givenName} {item.initiator?.familyName}
