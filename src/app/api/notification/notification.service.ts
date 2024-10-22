@@ -13,17 +13,21 @@ export class NotificationService extends BaseService {
   async create(
     action: NotificationTaskActions,
     task: Task,
-    opts: { disableEmail: boolean; commentId?: string } = { disableEmail: false },
+    opts: { disableEmail: boolean; disableInProduct: boolean; commentId?: string } = {
+      disableEmail: false,
+      disableInProduct: false,
+    },
   ) {
     try {
       const copilot = new CopilotAPI(this.user.token)
 
       const { senderId, recipientId, actionUser, companyName } = await this.getNotificationParties(copilot, task, action)
 
-      const inProduct = getInProductNotificationDetails(actionUser, task, { companyName, commentId: opts?.commentId })[
-        action
-      ]
+      const inProduct = opts.disableInProduct
+        ? undefined
+        : getInProductNotificationDetails(actionUser, task, { companyName, commentId: opts?.commentId })[action]
       const email = opts.disableEmail ? undefined : getEmailDetails(actionUser, task, { commentId: opts?.commentId })[action]
+
       const notificationDetails = {
         senderId,
         recipientId,
@@ -59,7 +63,7 @@ export class NotificationService extends BaseService {
     action: NotificationTaskActions,
     task: Task,
     recipientIds: string[],
-    opts?: { email?: boolean; commentId?: string },
+    opts?: { email?: boolean; disableInProduct?: boolean; commentId?: string },
   ) {
     try {
       const copilot = new CopilotAPI(this.user.token)
@@ -74,10 +78,12 @@ export class NotificationService extends BaseService {
         task?.assigneeId && task?.assigneeType === AssigneeType.company
           ? await copilot.getCompany(task?.assigneeId)
           : undefined
-      const inProduct = getInProductNotificationDetails(actionUserName, task, {
-        companyName: company?.name,
-        commentId: opts?.commentId,
-      })[action]
+      const inProduct = opts?.disableInProduct
+        ? undefined
+        : getInProductNotificationDetails(actionUserName, task, {
+            companyName: company?.name,
+            commentId: opts?.commentId,
+          })[action]
       const email = opts?.email ? getEmailDetails(actionUserName, task, { commentId: opts?.commentId })[action] : undefined
 
       const notifications = []
