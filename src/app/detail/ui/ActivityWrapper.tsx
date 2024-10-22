@@ -10,7 +10,7 @@ import { postComment, deleteComment } from '../[task_id]/[user_type]/actions'
 import { CreateComment } from '@/types/dto/comment.dto'
 import { fetcher } from '@/utils/fetcher'
 import useSWR from 'swr'
-import { useEffect, useState } from 'react'
+import { useDeferredValue, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
@@ -33,22 +33,13 @@ export type TempCommentType = {
 }
 
 export const ActivityWrapper = ({ token, task_id }: { token: string; task_id: string }) => {
-  const { data, isLoading } = useSWR(`/api/tasks/${task_id}/activity-logs/?token=${token}`, fetcher, {
+  const { data: activities, isLoading } = useSWR(`/api/tasks/${task_id}/activity-logs/?token=${token}`, fetcher, {
     refreshInterval: 10_000,
   })
   const { tokenPayload } = useSelector(selectAuthDetails)
   const { assignee } = useSelector(selectTaskBoard)
   const currentUserId = tokenPayload?.clientId ?? tokenPayload?.internalUserId
   const currentUserDetails = assignee.find((el) => el.id === currentUserId)
-
-  // Sync state with fetched data only if the data changes
-  const [activities, setActivities] = useState<(LogResponse | TempCommentType)[]>([])
-
-  useEffect(() => {
-    if (data) {
-      setActivities(data.data)
-    }
-  }, [data])
 
   const handleCreateComment = async (postCommentPayload: CreateComment) => {
     const tempComment: TempCommentType = {
@@ -67,26 +58,34 @@ export const ActivityWrapper = ({ token, task_id }: { token: string; task_id: st
     }
 
     // Optimistically update the SWR cache
+    const cacheKey = `/api/tasks/${task_id}/activity-logs/?token=${token}`
+
+    // Optimistic UI update
     mutate(
-      `/api/tasks/${task_id}/activity-logs/?token=${token}`,
-      async (currentData: { data: (LogResponse | TempCommentType)[] } | undefined) => {
+      cacheKey,
+      (currentData: { data: (LogResponse | TempCommentType)[] } | undefined) => {
         if (!currentData) {
-          return { data: [tempComment] } // If there's no current data, start with the temp comment
+          return { data: [tempComment] } // Start with the temp comment
         }
         return {
           data: [...currentData.data, tempComment],
         }
       },
-      false,
+      false, // Do not revalidate immediately
     )
 
     try {
+      // Send the comment to the server
       await postComment(token, postCommentPayload)
-      mutate(`/api/tasks/${task_id}/activity-logs/?token=${token}`) // Revalidate cache after success
+
+      // After the comment is successfully posted, revalidate
+      mutate(cacheKey)
     } catch (error) {
       console.error('Failed to post comment:', error)
+
       // Optionally revert the optimistic update if the request fails
-      mutate(`/api/tasks/${task_id}/activity-logs/?token=${token}`)
+      // You may want to use a more graceful error handling approach here
+      mutate(cacheKey) // Revalidate to restore previous state
     }
   }
 
@@ -127,9 +126,9 @@ export const ActivityWrapper = ({ token, task_id }: { token: string; task_id: st
           </Stack>
         ) : (
           <Stack direction="column" alignItems="left" p="0px 5px" rowGap={4}>
-            {activities?.map((item) => (
+            {activities.data?.map((item: LogResponse, index: number) => (
               <Box
-                key={item.id}
+                key={index}
                 sx={{
                   height: 'auto',
                   display:
