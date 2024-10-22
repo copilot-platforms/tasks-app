@@ -72,7 +72,7 @@ export const CommentCard = ({
     >
       <Stack direction="column" rowGap={'3px'}>
         <Stack direction="row" justifyContent={'space-between'} alignItems="center">
-          <Stack direction="row" columnGap={3}>
+          <Stack direction="row" columnGap={3} alignItems="center">
             {assignee.find((el) => el.id === comment.initiator.id) ? (
               <BoldTypography>
                 {comment.initiator.givenName} {comment.initiator.familyName}
@@ -82,7 +82,8 @@ export const CommentCard = ({
                 Deleted User
               </Typography>
             )}
-            <StyledTypography> {getTimeDifference(comment.createdAt)}</StyledTypography>
+            <span>&#x2022;</span>
+            <StyledTypography sx={{ mt: '2.5px' }}> {getTimeDifference(comment.createdAt)}</StyledTypography>
           </Stack>
 
           {isHovered && (
