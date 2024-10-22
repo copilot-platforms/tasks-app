@@ -84,7 +84,6 @@ export const ActivityWrapper = ({ token, task_id }: { token: string; task_id: st
       console.error('Failed to post comment:', error)
 
       // Optionally revert the optimistic update if the request fails
-      // You may want to use a more graceful error handling approach here
       mutate(cacheKey) // Revalidate to restore previous state
     }
   }
