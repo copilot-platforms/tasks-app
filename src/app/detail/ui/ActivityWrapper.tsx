@@ -10,13 +10,12 @@ import { postComment, deleteComment } from '../[task_id]/[user_type]/actions'
 import { CreateComment } from '@/types/dto/comment.dto'
 import { fetcher } from '@/utils/fetcher'
 import useSWR from 'swr'
-import { useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { generateRandomString } from '@/utils/generateRandomString'
-import { z } from 'zod'
+import { mutate } from 'swr'
 
 export type TempCommentType = {
   id: string
@@ -35,76 +34,84 @@ export type TempCommentType = {
 
 export const ActivityWrapper = ({ token, task_id }: { token: string; task_id: string }) => {
   const { data, isLoading } = useSWR(`/api/tasks/${task_id}/activity-logs/?token=${token}`, fetcher, {
-    refreshInterval: 5000,
+    refreshInterval: 10_000,
   })
   const { tokenPayload } = useSelector(selectAuthDetails)
   const { assignee } = useSelector(selectTaskBoard)
   const currentUserId = tokenPayload?.clientId ?? tokenPayload?.internalUserId
   const currentUserDetails = assignee.find((el) => el.id === currentUserId)
 
-  // The activities state can hold both LogResponse and TempCommentType
+  // Sync state with fetched data only if the data changes
   const [activities, setActivities] = useState<(LogResponse | TempCommentType)[]>([])
 
-  // Sync state with fetched data only if the data changes
   useEffect(() => {
     if (data) {
       setActivities(data.data)
     }
   }, [data])
 
-  const [isFirstPageLoad, setIsFirstPageLoad] = useState(true)
-
-  const searchParams = useSearchParams()
-  const commentId = searchParams.get('commentId')
-
-  useEffect(() => {
-    if (isFirstPageLoad && activities && commentId) {
-      const commentElement = document.getElementById(commentId)
-      if (commentElement) {
-        commentElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
-      }
-      setIsFirstPageLoad(false) // Mark it false after first page load
-    }
-  }, [commentId, activities, isFirstPageLoad])
-
   const handleCreateComment = async (postCommentPayload: CreateComment) => {
-    console.log('post payload', postCommentPayload)
     const tempComment: TempCommentType = {
       type: ActivityType.COMMENT_ADDED,
       id: generateRandomString('temp-comment'),
       initiator: {
-        id: z.string().parse(currentUserDetails?.id),
-        givenName: z.string().parse(currentUserDetails?.givenName),
-        familyName: z.string().parse(currentUserDetails?.familyName),
-        avatarImageUrl: z.string().parse(currentUserDetails?.avatarImageUrl),
+        id: currentUserDetails?.id,
+        givenName: currentUserDetails?.givenName,
+        familyName: currentUserDetails?.familyName,
+        avatarImageUrl: currentUserDetails?.avatarImageUrl,
       },
       details: {
         content: postCommentPayload.content,
       },
-      createdAt: new Date().toISOString(), // Convert to ISO 8601 string format
+      createdAt: new Date().toISOString(),
     }
 
-    // Optimistically add the comment to the activity list
-    setActivities((prev) => [...prev, tempComment])
+    // Optimistically update the SWR cache
+    mutate(
+      `/api/tasks/${task_id}/activity-logs/?token=${token}`,
+      async (currentData: { data: (LogResponse | TempCommentType)[] } | undefined) => {
+        if (!currentData) {
+          return { data: [tempComment] } // If there's no current data, start with the temp comment
+        }
+        return {
+          data: [...currentData.data, tempComment],
+        }
+      },
+      false,
+    )
 
     try {
       await postComment(token, postCommentPayload)
+      mutate(`/api/tasks/${task_id}/activity-logs/?token=${token}`) // Revalidate cache after success
     } catch (error) {
       console.error('Failed to post comment:', error)
-      // Optionally, remove temp comment if posting fails
+      // Optionally revert the optimistic update if the request fails
+      mutate(`/api/tasks/${task_id}/activity-logs/?token=${token}`)
     }
   }
 
   const handleDeleteComment = async (commentId: string, logId: string) => {
-    // Optimistically remove the comment from the activity list
-    console.log('comment id', commentId, 'Log id', logId)
-    setActivities((prev) => prev.filter((el) => el.id !== logId))
+    // Optimistically remove the comment from the SWR cache
+    mutate(
+      `/api/tasks/${task_id}/activity-logs/?token=${token}`,
+      async (currentData: { data: (LogResponse | TempCommentType)[] } | undefined) => {
+        if (!currentData) {
+          return { data: [] } // No data to filter if it's undefined
+        }
+        return {
+          data: currentData.data.filter((el) => el.id !== logId),
+        }
+      },
+      false,
+    )
 
     try {
       await deleteComment(token, commentId)
+      mutate(`/api/tasks/${task_id}/activity-logs/?token=${token}`) // Revalidate cache after success
     } catch (error) {
       console.error('Failed to delete comment:', error)
-      // Optionally, re-add the comment to the list if deletion fails
+      // Optionally revert the optimistic update if the request fails
+      mutate(`/api/tasks/${task_id}/activity-logs/?token=${token}`)
     }
   }
 
