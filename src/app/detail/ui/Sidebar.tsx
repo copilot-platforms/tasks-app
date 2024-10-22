@@ -119,145 +119,138 @@ export const Sidebar = ({
         </StyledBox>
       </Stack>
       <AppMargin size={SizeofAppMargin.SMALL}>
-        <Stack
-          direction="row"
-          alignItems="center"
-          m="16px 0px"
-          columnGap="10px"
-          sx={{
-            ':hover': {
-              bgcolor: (theme) => theme.color.background.bgCallout,
-            },
-            padding: '4px',
-            borderRadius: '4px',
-            width: 'fit-content',
-          }}
-        >
+        <Stack direction="row" alignItems="center" m="16px 0px" columnGap="10px">
           <StyledText variant="md" minWidth="80px">
             Status
           </StyledText>
-          <WorkflowStateSelector
-            option={workflowStates}
-            value={statusValue}
-            getValue={(value) => {
-              updateStatusValue(value)
-              updateWorkflowState(value)
+          <Box
+            sx={{
+              ':hover': {
+                bgcolor: (theme) => theme.color.background.bgCallout,
+              },
+              padding: '4px',
+              borderRadius: '4px',
+              width: 'fit-content',
             }}
-            disabled={workflowDisabled}
-            disableOutline
-            responsiveNoHide
-          />
+          >
+            <WorkflowStateSelector
+              option={workflowStates}
+              value={statusValue}
+              getValue={(value) => {
+                updateStatusValue(value)
+                updateWorkflowState(value)
+              }}
+              disabled={workflowDisabled}
+              disableOutline
+              responsiveNoHide
+            />
+          </Box>
         </Stack>
-        <Stack
-          direction="row"
-          m="16px 0px"
-          alignItems="center"
-          columnGap="10px"
-          sx={{
-            ':hover': {
-              bgcolor: (theme) => theme.color.background.bgCallout,
-            },
-            padding: '4px',
-            borderRadius: '4px',
-            width: 'fit-content',
-          }}
-        >
+        <Stack direction="row" m="16px 0px" alignItems="center" columnGap="10px">
           <StyledText variant="md" minWidth="80px">
             Assignee
           </StyledText>
-          <Selector
-            buttonWidth="100%"
-            placeholder="Change assignee"
-            getSelectedValue={(newValue) => {
-              const assignee = newValue as IAssigneeCombined
-              updateAssigneeValue(assignee)
-              const assigneeType = getAssigneeTypeCorrected(assignee)
-              updateAssignee(assigneeType, assignee?.id)
+          <Box
+            sx={{
+              ':hover': {
+                bgcolor: (theme) => theme.color.background.bgCallout,
+              },
+              padding: '4px',
+              borderRadius: '4px',
+              width: 'fit-content',
             }}
-            startIcon={
-              (assigneeValue as IAssigneeCombined)?.name == 'No assignee' ? (
-                <AssigneePlaceholder />
-              ) : (
-                <CopilotAvatar currentAssignee={assigneeValue} />
-              )
-            }
-            options={loading ? [] : filteredAssignees}
-            value={assigneeValue?.name == 'No assignee' ? null : assigneeValue}
-            selectorType={SelectorType.ASSIGNEE_SELECTOR}
-            //****Disabling re-assignment completely for now***
-            // extraOption={NoAssigneeExtraOptions}
-            // extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
-            //   return (
-            //     <>
-            //       <ExtraOptionRendererAssignee
-            //         props={props}
-            //         onClick={(e) => {
-            //           updateAssigneeValue({ id: '', name: 'No assignee' })
-            //           setAnchorEl(anchorEl ? null : e.currentTarget)
-            //           updateAssignee(null, null)
-            //         }}
-            //       />
-            //       {loading && <MiniLoader />}
-            //     </>
-            //   )
-            // }}
-            buttonContent={
-              <Typography variant="md" lineHeight="22px" sx={{ color: (theme) => theme.color.gray[600] }}>
-                {(assigneeValue as IAssigneeCombined)?.name == 'No assignee'
-                  ? 'Unassigned'
-                  : getAssigneeName(assigneeValue, 'Unassigned')}
-              </Typography>
-            }
-            handleInputChange={async (newInputValue: string) => {
-              if (!newInputValue || isAssigneeTextMatching(newInputValue, assigneeValue)) {
-                setFilteredAssignees(assignee)
-                return
+          >
+            <Selector
+              buttonWidth="100%"
+              placeholder="Change assignee"
+              getSelectedValue={(newValue) => {
+                const assignee = newValue as IAssigneeCombined
+                updateAssigneeValue(assignee)
+                const assigneeType = getAssigneeTypeCorrected(assignee)
+                updateAssignee(assigneeType, assignee?.id)
+              }}
+              startIcon={
+                (assigneeValue as IAssigneeCombined)?.name == 'No assignee' ? (
+                  <AssigneePlaceholder />
+                ) : (
+                  <CopilotAvatar currentAssignee={assigneeValue} />
+                )
               }
+              options={loading ? [] : filteredAssignees}
+              value={assigneeValue?.name == 'No assignee' ? null : assigneeValue}
+              selectorType={SelectorType.ASSIGNEE_SELECTOR}
+              //****Disabling re-assignment completely for now***
+              // extraOption={NoAssigneeExtraOptions}
+              // extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
+              //   return (
+              //     <>
+              //       <ExtraOptionRendererAssignee
+              //         props={props}
+              //         onClick={(e) => {
+              //           updateAssigneeValue({ id: '', name: 'No assignee' })
+              //           setAnchorEl(anchorEl ? null : e.currentTarget)
+              //           updateAssignee(null, null)
+              //         }}
+              //       />
+              //       {loading && <MiniLoader />}
+              //     </>
+              //   )
+              // }}
+              buttonContent={
+                <Typography variant="md" lineHeight="22px" sx={{ color: (theme) => theme.color.gray[600] }}>
+                  {(assigneeValue as IAssigneeCombined)?.name == 'No assignee'
+                    ? 'Unassigned'
+                    : getAssigneeName(assigneeValue, 'Unassigned')}
+                </Typography>
+              }
+              handleInputChange={async (newInputValue: string) => {
+                if (!newInputValue || isAssigneeTextMatching(newInputValue, assigneeValue)) {
+                  setFilteredAssignees(assignee)
+                  return
+                }
 
-              setDebouncedFilteredAssignees(
-                activeDebounceTimeoutId,
-                setActiveDebounceTimeoutId,
-                setLoading,
-                setFilteredAssignees,
-                z.string().parse(token),
-                newInputValue,
-              )
-            }}
-            filterOption={(x: unknown) => x}
-            // disabled={disabled}
-            disabled={true} //for now, disable re-assignment completely
-            disableOutline
-            responsiveNoHide
-          />
+                setDebouncedFilteredAssignees(
+                  activeDebounceTimeoutId,
+                  setActiveDebounceTimeoutId,
+                  setLoading,
+                  setFilteredAssignees,
+                  z.string().parse(token),
+                  newInputValue,
+                )
+              }}
+              filterOption={(x: unknown) => x}
+              // disabled={disabled}
+              disabled={true} //for now, disable re-assignment completely
+              disableOutline
+              responsiveNoHide
+            />
+          </Box>
         </Stack>
-        <Stack
-          direction="row"
-          m="16px 0px"
-          alignItems="center"
-          columnGap="10px"
-          minWidth="fit-content"
-          sx={{
-            ':hover': {
-              bgcolor: (theme) => theme.color.background.bgCallout,
-            },
-            padding: '4px',
-            borderRadius: '4px',
-            width: 'fit-content',
-          }}
-        >
+        <Stack direction="row" m="16px 0px" alignItems="center" columnGap="10px" minWidth="fit-content">
           <StyledText variant="md" minWidth="80px">
             Due date
           </StyledText>
-          <DatePickerComponent
-            getDate={(date) => {
-              const isoDate = DateStringSchema.parse(formatDate(date))
-              updateTask({
-                dueDate: isoDate,
-              })
+          <Box
+            sx={{
+              ':hover': {
+                bgcolor: (theme) => theme.color.background.bgCallout,
+              },
+              padding: '4px',
+              borderRadius: '4px',
+              width: 'fit-content',
             }}
-            dateValue={dueDate ? createDateFromFormattedDateString(z.string().parse(dueDate)) : undefined}
-            disabled={disabled}
-          />
+          >
+            <DatePickerComponent
+              getDate={(date) => {
+                const isoDate = DateStringSchema.parse(formatDate(date))
+                updateTask({
+                  dueDate: isoDate,
+                })
+              }}
+              dateValue={dueDate ? createDateFromFormattedDateString(z.string().parse(dueDate)) : undefined}
+              disabled={disabled}
+            />
+          </Box>
         </Stack>
       </AppMargin>
     </Box>
