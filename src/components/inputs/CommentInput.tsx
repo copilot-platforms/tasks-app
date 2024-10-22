@@ -68,6 +68,7 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
           border: (theme) => `1.1px solid ${theme.color.gray[200]}`,
           borderRadius: '9999px',
           marginTop: '5px',
+          fontSize: '13px',
         }}
       />
       <CommentCardContainer
