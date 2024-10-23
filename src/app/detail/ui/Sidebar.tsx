@@ -26,6 +26,7 @@ import { getAssigneeName, isAssigneeTextMatching } from '@/utils/assignee'
 import { DateStringSchema } from '@/types/date'
 import { useWindowWidth } from '@/hooks/useWindowWidth'
 import store from '@/redux/store'
+import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 
 const StyledText = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[500],
@@ -154,7 +155,7 @@ export const Sidebar = ({
           <Box
             sx={{
               ':hover': {
-                bgcolor: (theme) => theme.color.background.bgCallout,
+                // bgcolor: (theme) => theme.color.background.bgCallout,
               },
               padding: '4px',
               borderRadius: '4px',
@@ -236,7 +237,7 @@ export const Sidebar = ({
           <Box
             sx={{
               ':hover': {
-                bgcolor: (theme) => theme.color.background.bgCallout,
+                bgcolor: (theme) => (!!disabled ? '' : theme.color.background.bgCallout),
               },
               padding: '4px',
               borderRadius: '4px',
