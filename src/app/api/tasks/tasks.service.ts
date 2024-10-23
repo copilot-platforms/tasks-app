@@ -540,7 +540,7 @@ export class TasksService extends BaseService {
       }
 
       if (updatedTask.assigneeType === AssigneeType.internalUser) {
-        await notificationService.create(NotificationTaskActions.CompletedByIU, updatedTask, { email: true })
+        await notificationService.create(NotificationTaskActions.CompletedByIU, updatedTask, { disableEmail: true })
         // TODO: Clean code and handle notification center notification deletions here instead
       } else if (updatedTask.assigneeType === AssigneeType.company) {
         // Don't do this in parallel since this can cause rate-limits, each of them has their own bottlenecks for avoiding ratelimits
