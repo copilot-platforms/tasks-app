@@ -22,7 +22,7 @@ const TaskCardContainer = styled(Stack)(({ theme }) => ({
     background: theme.color.gray[150],
   },
   cursor: 'pointer',
-  width: '282px',
+  width: '304px',
 }))
 
 interface TaskCardProps {

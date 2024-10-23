@@ -55,6 +55,7 @@ export const Sidebar = ({
   const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
   const [loading, setLoading] = useState(false)
   const [dueDate, setDueDate] = useState<Date | string | undefined>()
+  const [inputStatusValue, setInputStatusValue] = useState('')
 
   const { renderingItem: _statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
     // item: selectedWorkflowState,
@@ -140,6 +141,8 @@ export const Sidebar = ({
             Assignee
           </StyledText>
           <Selector
+            inputStatusValue={inputStatusValue}
+            setInputStatusValue={setInputStatusValue}
             buttonWidth="100%"
             placeholder="Change assignee"
             getSelectedValue={(newValue) => {
