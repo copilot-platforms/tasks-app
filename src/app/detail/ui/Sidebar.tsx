@@ -154,7 +154,7 @@ export const Sidebar = ({
           <Box
             sx={{
               ':hover': {
-                bgcolor: (theme) => theme.color.background.bgCallout,
+                // bgcolor: (theme) => theme.color.background.bgCallout,
               },
               padding: '4px',
               borderRadius: '4px',
@@ -236,7 +236,7 @@ export const Sidebar = ({
           <Box
             sx={{
               ':hover': {
-                bgcolor: (theme) => theme.color.background.bgCallout,
+                bgcolor: (theme) => (!!disabled ? '' : theme.color.background.bgCallout),
               },
               padding: '4px',
               borderRadius: '4px',

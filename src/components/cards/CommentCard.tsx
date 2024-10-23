@@ -69,9 +69,9 @@ export const CommentCard = ({
         backgroundColor: (theme) => `${theme.color.gray[100]}`,
       }}
     >
-      <Stack direction="column" rowGap={'3px'}>
+      <Stack direction="column" rowGap={'2px'}>
         <Stack direction="row" justifyContent={'space-between'} alignItems="center">
-          <Stack direction="row" columnGap={3}>
+          <Stack direction="row" columnGap={3} alignItems="center">
             {assignee.find((el) => el.id === comment.initiator.id) ? (
               <BoldTypography>
                 {comment.initiator.givenName} {comment.initiator.familyName}
@@ -81,18 +81,12 @@ export const CommentCard = ({
                 Deleted User
               </Typography>
             )}
-            <StyledTypography> {getTimeDifference(comment.createdAt)}</StyledTypography>
+            <span>&#x2022;</span>
+            <StyledTypography sx={{ mt: '2.5px' }}> {getTimeDifference(comment.createdAt)}</StyledTypography>
           </Stack>
 
           {isHovered && (
-            <Stack direction="row" columnGap={2} sx={{ height: '10px' }}>
-              {/* <StyledReplyIcon */}
-              {/*   onClick={(event: React.MouseEvent<HTMLElement>) => { */}
-              {/*     event.stopPropagation() */}
-
-              {/*     setShowReply(!showReply) */}
-              {/*   }} */}
-              {/* /> */}
+            <Stack direction="row" columnGap={2} sx={{ height: '10px' }} alignItems="center">
               {canEdit && (
                 <MenuBox
                   menuContent={
@@ -113,34 +107,41 @@ export const CommentCard = ({
         </Stack>
 
         <Tapwrite
-          content={comment.details.content as string}
+          content={(comment.details as { content: string }).content}
           getContent={() => {}}
           readonly
           editorClass="tapwrite-comment"
         />
 
-        {commentAddedResponseSchema.parse(comment.details)?.replies?.map((item: any) => {
-          return (
-            <Stack direction="column" rowGap={3} key={item.id}>
-              <CustomDivider />
-              <Stack direction="row" columnGap={2} alignItems={'center'}>
-                <Avatar
-                  alt={comment?.initiator?.givenName}
-                  src={comment?.initiator?.avatarImageUrl || 'user'}
-                  sx={{ width: '20px', height: '20px' }}
+        {Array.isArray((comment as LogResponse).details?.replies) &&
+          ((comment as LogResponse).details.replies as LogResponse[]).map((item: LogResponse) => {
+            return (
+              <Stack direction="column" rowGap={3} key={item.id}>
+                <CustomDivider />
+                <Stack direction="row" columnGap={2} alignItems={'center'}>
+                  <Avatar
+                    alt={item?.initiator?.givenName}
+                    src={item?.initiator?.avatarImageUrl || 'user'}
+                    sx={{ width: '20px', height: '20px', fontSize: '14px' }}
+                  />
+                  <BoldTypography>
+                    {item.initiator?.givenName} {item.initiator?.familyName}
+                  </BoldTypography>
+                  <StyledTypography> {getTimeDifference(item.createdAt)}</StyledTypography>
+                </Stack>
+                <Tapwrite
+                  content={item.details?.content as string}
+                  getContent={() => {}}
+                  readonly
+                  editorClass="tapwrite-comment"
                 />
-                <BoldTypography>
-                  {' '}
-                  {item.initiator?.givenName} {item.initiator?.familyName}
-                </BoldTypography>
-                <StyledTypography> {getTimeDifference(item.createdAt)}</StyledTypography>
               </Stack>
-              <Tapwrite content={item.content} getContent={() => {}} readonly editorClass="tapwrite-comment" />
-            </Stack>
-          )
-        })}
+            )
+          })}
 
-        {commentAddedResponseSchema.parse(comment.details).replies?.length > 0 || showReply ? (
+        {(Array.isArray((comment as LogResponse).details?.replies) &&
+          ((comment as LogResponse).details.replies as LogResponse[]).length > 0) ||
+        showReply ? (
           <>
             <CustomDivider />
             <Stack direction="row" columnGap={1} alignItems="flex-start">
@@ -176,7 +177,7 @@ export const CommentCard = ({
         <ConfirmDeleteUI
           handleCancel={() => setShowConfirmDeleteModal(false)}
           handleDelete={() => {
-            deleteComment(commentAddedResponseSchema.parse(comment.details).id)
+            deleteComment((comment as LogResponse).details.id as string)
             setShowConfirmDeleteModal(false)
           }}
           body="comment"
