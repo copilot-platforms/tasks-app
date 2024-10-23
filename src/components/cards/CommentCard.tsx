@@ -69,7 +69,7 @@ export const CommentCard = ({
         backgroundColor: (theme) => `${theme.color.gray[100]}`,
       }}
     >
-      <Stack direction="column" rowGap={'3px'}>
+      <Stack direction="column" rowGap={'2px'}>
         <Stack direction="row" justifyContent={'space-between'} alignItems="center">
           <Stack direction="row" columnGap={3} alignItems="center">
             {assignee.find((el) => el.id === comment.initiator.id) ? (
@@ -86,7 +86,7 @@ export const CommentCard = ({
           </Stack>
 
           {isHovered && (
-            <Stack direction="row" columnGap={2} sx={{ height: '10px' }}>
+            <Stack direction="row" columnGap={2} sx={{ height: '10px' }} alignItems="center">
               {canEdit && (
                 <MenuBox
                   menuContent={
