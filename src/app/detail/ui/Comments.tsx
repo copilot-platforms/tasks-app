@@ -3,10 +3,9 @@ import { VerticalLine } from './styledComponent'
 import { CommentCard } from '@/components/cards/CommentCard'
 import { CreateComment } from '@/types/dto/comment.dto'
 import { LogResponse } from '@/app/api/activity-logs/schemas/LogResponseSchema'
-import { TempCommentType } from './ActivityWrapper'
 
 interface Prop {
-  comment: LogResponse | TempCommentType
+  comment: LogResponse
   createComment: (postCommentPayload: CreateComment) => void
   deleteComment: (id: string) => void
   task_id: string

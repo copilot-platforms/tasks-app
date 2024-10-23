@@ -19,7 +19,6 @@ import { getMentionsList } from '@/utils/getMentionList'
 import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 import { Tapwrite } from 'tapwrite'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
-import { TempCommentType } from '@/app/detail/ui/ActivityWrapper'
 
 const CustomDivider = styled(Box)(({ theme }) => ({
   height: '1px',
@@ -35,7 +34,7 @@ export const CommentCard = ({
   deleteComment,
   task_id,
 }: {
-  comment: LogResponse | TempCommentType
+  comment: LogResponse
   createComment: (postCommentPayload: CreateComment) => void
   deleteComment: (id: string) => void
   task_id: string
@@ -115,32 +114,30 @@ export const CommentCard = ({
         />
 
         {Array.isArray((comment as LogResponse).details?.replies) &&
-          ((comment as LogResponse).details.replies as (LogResponse | TempCommentType)[]).map(
-            (item: LogResponse | TempCommentType) => {
-              return (
-                <Stack direction="column" rowGap={3} key={item.id}>
-                  <CustomDivider />
-                  <Stack direction="row" columnGap={2} alignItems={'center'}>
-                    <Avatar
-                      alt={item?.initiator?.givenName}
-                      src={item?.initiator?.avatarImageUrl || 'user'}
-                      sx={{ width: '20px', height: '20px', fontSize: '14px' }}
-                    />
-                    <BoldTypography>
-                      {item.initiator?.givenName} {item.initiator?.familyName}
-                    </BoldTypography>
-                    <StyledTypography> {getTimeDifference(item.createdAt)}</StyledTypography>
-                  </Stack>
-                  <Tapwrite
-                    content={item.details?.content as string}
-                    getContent={() => {}}
-                    readonly
-                    editorClass="tapwrite-comment"
+          ((comment as LogResponse).details.replies as LogResponse[]).map((item: LogResponse) => {
+            return (
+              <Stack direction="column" rowGap={3} key={item.id}>
+                <CustomDivider />
+                <Stack direction="row" columnGap={2} alignItems={'center'}>
+                  <Avatar
+                    alt={item?.initiator?.givenName}
+                    src={item?.initiator?.avatarImageUrl || 'user'}
+                    sx={{ width: '20px', height: '20px', fontSize: '14px' }}
                   />
+                  <BoldTypography>
+                    {item.initiator?.givenName} {item.initiator?.familyName}
+                  </BoldTypography>
+                  <StyledTypography> {getTimeDifference(item.createdAt)}</StyledTypography>
                 </Stack>
-              )
-            },
-          )}
+                <Tapwrite
+                  content={item.details?.content as string}
+                  getContent={() => {}}
+                  readonly
+                  editorClass="tapwrite-comment"
+                />
+              </Stack>
+            )
+          })}
 
         {(Array.isArray((comment as LogResponse).details?.replies) &&
           ((comment as LogResponse).details.replies as LogResponse[]).length > 0) ||
