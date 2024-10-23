@@ -12,89 +12,45 @@ import { NotificationTaskActions } from '@api/core/types/tasks'
 import APIError from '@api/core/exceptions/api'
 import httpStatus from 'http-status'
 import { NotificationCreatedResponseSchema } from '@/types/common'
+import { z } from 'zod'
 
 export class CommentService extends BaseService {
-  async create(data: CreateComment) {
-    const policyGate = new PoliciesService(this.user)
-    policyGate.authorize(UserAction.Create, Resource.Comment)
-
-    const copilotUtils = new CopilotAPI(this.user.token)
-    const userInfo = await copilotUtils.me()
-
-    if (!userInfo) {
-      throw new APIError(httpStatus.NOT_FOUND, `User not found for token ${this.user.token}`)
-    }
-
-    const comment = await this.db.comment.create({
-      data: {
-        content: data.content,
-        taskId: data.taskId,
-        parentId: data.parentId,
-        workspaceId: this.user.workspaceId,
-        initiatorId: userInfo.id,
-      },
-    })
-
-    const activityLogger = new ActivityLogger({ taskId: data.taskId, user: this.user })
-    await activityLogger.log(
-      ActivityType.COMMENT_ADDED,
-      CommentAddedSchema.parse({
-        id: comment.id,
-        content: comment.content,
-        initiatorId: userInfo.id,
-        parentId: comment.parentId,
-      }),
-    )
-
-    if (comment) {
-      const task = await this.db.task.findFirst({
-        where: {
-          id: data.taskId,
-        },
-      })
-
-      if (!task) {
-        throw new APIError(httpStatus.NOT_FOUND, `Notification not created because task not found with id: ${data.taskId}`)
-      }
-
-      // Send comment notifications
-      const notificationService = new NotificationService(this.user)
-      await this.sendCommentCreateNotifications(task, userInfo.id, comment)
-      if (data.mentions) {
-        await notificationService.createBulkNotification(NotificationTaskActions.Mentioned, task, data.mentions, {
-          commentId: comment.id,
-        })
-      }
-    }
-
-    return comment
-  }
-
-  async sendCommentCreateNotifications(task: Task, createdBy: string, comment: Comment) {
+  private async sendCommentCreatedNotifications(task: Task, comment: Comment) {
     // If task is unassigned, there's nobody to send notifications to
-    if (!task.assigneeId) return
+    if (!task.assigneeId || !task.assigneeType) return
 
-    // If new task having the comment is assigned to someone (IU / Client / Company), send proper notification + email to them
     const notificationService = new NotificationService(this.user)
-
-    // If comment is added by the same person that is assigned to the task, no need to notify
-    if (task.assigneeId === createdBy) {
-      if (task.assigneeType === AssigneeType.company) {
-        await this.sendCompanyCommentNotifications(task, notificationService, comment, createdBy)
-      }
-      return
+    const handleCommentMap = {
+      [AssigneeType.internalUser]: this.handleUserCommentNotifications,
+      [AssigneeType.client]: this.handleUserCommentNotifications,
+      [AssigneeType.company]: this.handleCompanyCommentNotifications,
     }
-
-    const sendTaskNotifications =
-      task.assigneeType === AssigneeType.company ? this.sendCompanyCommentNotifications : this.sendUserCommentNotification
-    await sendTaskNotifications(task, notificationService, comment)
+    const handleComment = handleCommentMap[task.assigneeType]
+    await handleComment(task, comment, notificationService)
   }
 
-  private sendCompanyCommentNotifications = async (
+  private handleUserCommentNotifications = async (
     task: Task,
-    notificationService: NotificationService,
     comment: Comment,
-    createdBy?: string,
+    notificationService: NotificationService,
+  ) => {
+    // If comment has been created by the same person it's assigned to, don't send notifications
+    if (comment.initiatorId === task.assigneeId) return
+
+    const notification = await notificationService.create(NotificationTaskActions.Commented, task, {
+      disableEmail: task.assigneeType === AssigneeType.internalUser,
+      disableInProduct: task.assigneeType === AssigneeType.client,
+      commentId: comment.id,
+    })
+    if (!notification) {
+      console.error('Notification failed to trigger for task:', task)
+    }
+  }
+
+  private handleCompanyCommentNotifications = async (
+    task: Task,
+    comment: Comment,
+    notificationService: NotificationService,
   ) => {
     const copilot = new CopilotAPI(this.user.token)
     const { recipientIds } = await notificationService.getNotificationParties(
@@ -102,51 +58,58 @@ export class CommentService extends BaseService {
       task,
       NotificationTaskActions.AssignedToCompany,
     )
-    // Remove createdBy from recipientIds if someone from the company has created the comment
-    const filteredRecipientIds = createdBy ? recipientIds.filter((id: string) => id !== createdBy) : recipientIds
-    const notifications = await notificationService.createBulkNotification(
-      NotificationTaskActions.Commented,
-      task,
-      filteredRecipientIds,
-      { email: true, commentId: comment.id },
-    )
-
-    // This is a hacky way to bulk create ClientNotifications for all company members.
-    if (notifications) {
-      const notificationPromises = []
-      for (let i = 0; i < notifications.length; i++) {
-        // Basically we are treating an individual company member as a client recipient for a notification
-        // For each loop we are considering a separate task where that particular member is the assignee
-        notificationPromises.push(
-          notificationService.addToClientNotifications(
-            { ...task, assigneeId: filteredRecipientIds[0], assigneeType: AssigneeType.client },
-            notifications[i],
-          ),
-        )
-      }
-      await Promise.all(notificationPromises)
-    }
+    const filteredRecipientIds = recipientIds.filter((id: string) => id !== comment.initiatorId)
+    await notificationService.createBulkNotification(NotificationTaskActions.Commented, task, filteredRecipientIds, {
+      email: true,
+      disableInProduct: true,
+      commentId: comment.id,
+    })
   }
 
-  private async sendUserCommentNotification(task: Task, notificationService: NotificationService, comment: Comment) {
-    const notification = await notificationService.create(
-      //! In future when reassignment is supported, change this logic to support reassigned to client as well
-      NotificationTaskActions.Commented,
-      task,
-      {
-        disableEmail: task.assigneeType === AssigneeType.internalUser,
-        commentId: comment.id,
-      },
-    )
-    // Create a new entry in ClientNotifications table so we can mark as read on
-    // behalf of client later
+  async create(data: CreateComment) {
+    const policyGate = new PoliciesService(this.user)
+    policyGate.authorize(UserAction.Create, Resource.Comment)
 
-    if (!notification) {
-      console.error('Notification failed to trigger for task:', task)
-    }
-    if (task.assigneeType === AssigneeType.client) {
-      await notificationService.addToClientNotifications(task, NotificationCreatedResponseSchema.parse(notification))
-    }
+    const initiatorId = z.string().parse(this.user.internalUserId || this.user.clientId)
+
+    const task = await this.db.task.findFirst({
+      where: {
+        id: data.taskId,
+      },
+    })
+    if (!task) throw new APIError(httpStatus.NOT_FOUND, `Could not find task with id ${data.taskId}`)
+
+    const comment = await this.db.comment.create({
+      data: {
+        content: data.content,
+        taskId: data.taskId,
+        parentId: data.parentId,
+        workspaceId: this.user.workspaceId,
+        initiatorId,
+      },
+    })
+
+    const activityLogger = new ActivityLogger({ taskId: data.taskId, user: this.user })
+
+    await Promise.all([
+      activityLogger.log(
+        ActivityType.COMMENT_ADDED,
+        CommentAddedSchema.parse({
+          id: comment.id,
+          content: comment.content,
+          initiatorId,
+          parentId: comment.parentId,
+        }),
+      ),
+      this.sendCommentCreatedNotifications(task, comment),
+    ])
+    // if (data.mentions) {
+    //   await notificationService.createBulkNotification(NotificationTaskActions.Mentioned, task, data.mentions, {
+    //     commentId: comment.id,
+    //   })
+    // }
+
+    return comment
   }
 
   async delete(id: string) {
