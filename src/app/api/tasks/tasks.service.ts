@@ -399,8 +399,8 @@ export class TasksService extends BaseService {
 
     // Case 3 & 4 | If task has been moved to completed from a non-complete state, remove all notification counts
     if (updatedWorkflowState?.type === StateType.completed && prevTask.workflowState.type !== StateType.completed) {
+      const copilot = new CopilotAPI(this.user.token)
       if (updatedTask.assigneeType === AssigneeType.company) {
-        const copilot = new CopilotAPI(this.user.token)
         const { recipientIds } = await notificationService.getNotificationParties(
           copilot,
           updatedTask,
@@ -413,7 +413,13 @@ export class TasksService extends BaseService {
         )
         await notificationService.markAsReadForAllRecipients(updatedTask)
       } else {
-        await notificationService.create(NotificationTaskActions.Completed, updatedTask)
+        // Get every IU with access to company first
+        const { recipientIds } = await notificationService.getNotificationParties(
+          copilot,
+          updatedTask,
+          NotificationTaskActions.CompletedByCompanyMember,
+        )
+        await notificationService.createBulkNotification(NotificationTaskActions.Completed, updatedTask, recipientIds)
         await notificationService.markClientNotificationAsRead(updatedTask)
       }
     }
