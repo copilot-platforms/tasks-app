@@ -71,6 +71,7 @@ export const TaskEditor = ({
       const currentTask = tasks.find((el) => el.id === task_id)
       if (currentTask) {
         setUpdateTitle(currentTask.title || '')
+
         setUpdateDetail(currentTask.body ?? '')
       }
     }
@@ -115,6 +116,7 @@ export const TaskEditor = ({
     if (content === updateDetail) {
       return
     }
+
     setUpdateDetail(content)
     setIsUserTyping(true)
     detailsUpdateDebounced(content)
