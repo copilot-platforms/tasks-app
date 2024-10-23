@@ -74,7 +74,7 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
       <CommentCardContainer
         sx={{
           backgroundColor: (theme) => `${theme.color.base.white}`,
-          wordBreak: 'break-all',
+          wordBreak: 'break-word',
         }}
       >
         <Tapwrite
