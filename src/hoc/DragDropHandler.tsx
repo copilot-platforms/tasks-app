@@ -18,6 +18,7 @@ interface Prop {
   onDropItem?: (payload: { taskId: string; targetWorkflowStateId: string }) => void
   draggable?: boolean // Indicates if the item should be draggable
   droppable?: boolean // Indicates if the item should be droppable
+  padding?: string
 }
 
 export const DragDropHandler = ({
@@ -30,6 +31,7 @@ export const DragDropHandler = ({
   onDropItem,
   draggable = false,
   droppable = false, // New prop for droppable
+  padding = '12px',
 }: Prop) => {
   const { view } = useSelector(selectTaskBoard)
   const ref = useRef<HTMLDivElement | null>(null)
@@ -89,7 +91,7 @@ export const DragDropHandler = ({
   }
 
   return (
-    <div ref={ref} style={{ opacity, ...dropHoverStyles, padding: droppable && view === View.BOARD_VIEW ? '8px' : '0px' }}>
+    <div ref={ref} style={{ opacity, ...dropHoverStyles, padding: droppable && view === View.BOARD_VIEW ? padding : '0px' }}>
       {children}
     </div>
   )
