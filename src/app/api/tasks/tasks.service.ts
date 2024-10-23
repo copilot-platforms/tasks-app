@@ -379,9 +379,15 @@ export class TasksService extends BaseService {
     // --------------------------
     // --- Notifications Logic
     // --------------------------
+
+    // Cases:
+    // 1. Task has been moved back to a non-complete state from completed for client task
+    // 2. Task has been moved back to a non-complete state from completed for company task
+    // 3. Task has been moved to complete state for client task
+    // 4. Task has been moved to complete state for company task
     const notificationService = new NotificationService(this.user)
 
-    // If task has been moved back to another non-completed state from Completed
+    // Case 1 & 2 | If task has been moved back to another non-completed state from Completed
     if (
       updatedWorkflowState &&
       updatedWorkflowState.type !== StateType.completed &&
@@ -391,7 +397,7 @@ export class TasksService extends BaseService {
       await this.sendTaskCreateNotifications({ ...updatedTask, workflowState: updatedWorkflowState })
     }
 
-    // If task has been moved to completed from a non-complete state, remove all notification counts
+    // Case 3 & 4 | If task has been moved to completed from a non-complete state, remove all notification counts
     if (updatedWorkflowState?.type === StateType.completed && prevTask.workflowState.type !== StateType.completed) {
       if (updatedTask.assigneeType === AssigneeType.company) {
         const copilot = new CopilotAPI(this.user.token)
