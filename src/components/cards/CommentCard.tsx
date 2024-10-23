@@ -86,7 +86,7 @@ export const CommentCard = ({
           </Stack>
 
           {isHovered && (
-            <Stack direction="row" columnGap={2} sx={{ height: '10px' }}>
+            <Stack direction="row" columnGap={2} sx={{ height: '10px' }} alignItems="center">
               {canEdit && (
                 <MenuBox
                   menuContent={
