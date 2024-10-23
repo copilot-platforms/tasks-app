@@ -529,6 +529,7 @@ export class TasksService extends BaseService {
 
     // Case 3
     // --- If task was previously in another state, and is moved to a 'completed' type WorkflowState by IU
+    let shouldCreateNotification = true
     if (
       prevTask?.workflowState?.type !== StateType.completed &&
       updatedTask?.workflowState?.type === StateType.completed &&
@@ -536,17 +537,21 @@ export class TasksService extends BaseService {
     ) {
       // Don't send task notifications if the IU created the task themselves
       if (updatedTask.createdById === this.user.internalUserId) {
-        return
+        shouldCreateNotification = false
       }
 
       if (updatedTask.assigneeType === AssigneeType.internalUser) {
-        await notificationService.create(NotificationTaskActions.CompletedByIU, updatedTask, { email: true })
+        shouldCreateNotification &&
+          (await notificationService.create(NotificationTaskActions.CompletedByIU, updatedTask, { email: true }))
         // TODO: Clean code and handle notification center notification deletions here instead
       } else if (updatedTask.assigneeType === AssigneeType.company) {
         // Don't do this in parallel since this can cause rate-limits, each of them has their own bottlenecks for avoiding ratelimits
-        await notificationService.create(NotificationTaskActions.CompletedForCompanyByIU, updatedTask, { email: true })
+        shouldCreateNotification &&
+          (await notificationService.create(NotificationTaskActions.CompletedForCompanyByIU, updatedTask, { email: true }))
         await notificationService.markAsReadForAllRecipients(updatedTask)
       } else if (updatedTask.assigneeType === AssigneeType.client) {
+        shouldCreateNotification &&
+          (await notificationService.create(NotificationTaskActions.CompletedByIU, updatedTask, { email: true }))
         try {
           await notificationService.markClientNotificationAsRead(updatedTask)
           return
