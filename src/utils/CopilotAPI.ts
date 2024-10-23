@@ -164,9 +164,10 @@ export class CopilotAPI {
     )
   }
 
-  async _markNotificationAsRead(id: string): Promise<void> {
+  async _markNotificationAsRead(id: string): Promise<string> {
     console.info('CopilotAPI#markNotificationAsRead | token =', this.token)
     await this.copilot.markNotificationRead({ id })
+    return id
   }
 
   async _deleteNotification(id: string): Promise<void> {
