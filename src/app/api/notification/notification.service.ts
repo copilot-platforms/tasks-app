@@ -268,6 +268,41 @@ export class NotificationService extends BaseService {
         recipientId = task.createdById
         actionTrigger = await copilot.getInternalUser(senderId)
         break
+      case NotificationTaskActions.CommentToCU:
+        if (task.assigneeType === AssigneeType.client && task.assigneeId) {
+          // the client is the assignee, they are part of the task
+          recipientIds = [task.assigneeId]
+        } else if (task.assigneeType === AssigneeType.company && task.assigneeId) {
+          // this task is assigned to the company so all clients in company
+          // should be considered as the recipients of the comment
+          recipientIds = (await copilot.getCompanyClients(z.string().parse(task.assigneeId))).map((client) => client.id)
+        }
+      case NotificationTaskActions.CommentToIU:
+        // all internal users are potential parties in notifications for comments
+        const getIUResponse = await copilot.getInternalUsers()
+        if (task.assigneeType === AssigneeType.internalUser) {
+          // when the assignee is an IU, we know that the all other IUs are involved
+          // in notification
+          recipientIds = getIUResponse.data.map((iu) => iu.id)
+        } else {
+          // when the assignee is not an IU, now we need to determine if IU has
+          // access to the assignee of the task and filter the list of recipients
+          let companyIdAssociatedWithTask = task.assigneeId
+          if (task.assigneeType === AssigneeType.client) {
+            // if the task is assigned to a company then we have the companyId to check for access
+            if (task.assigneeId) {
+              const taskClient = await copilot.getClient(task.assigneeId)
+              companyIdAssociatedWithTask = taskClient.companyId
+            }
+          }
+          recipientIds = getIUResponse.data
+            .filter((iu) =>
+              iu.isClientAccessLimited
+                ? iu.companyAccessList?.includes(z.string().parse(companyIdAssociatedWithTask))
+                : true,
+            )
+            .map((iu) => iu.id)
+        }
       default:
         const userInfo = await copilot.me()
         senderId = z.string().parse(userInfo?.id)
