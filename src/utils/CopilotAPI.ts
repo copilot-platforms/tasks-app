@@ -209,6 +209,21 @@ export class CopilotAPI {
     await Promise.all(deletePromises)
   }
 
+  async getNotifications(
+    recipientId: string,
+    opts: { limit: number; includeRead: boolean } = { limit: 100, includeRead: false },
+  ) {
+    // return await this.copilot.listNotifications({ recipientId })
+    const resp = await fetch(
+      `https://api.copilot.com/v1/notifications?recipientId=${recipientId}&includeRead=${opts.includeRead}&limit=${opts.limit}`,
+      {
+        headers: { 'X-API-KEY': `${apiKey}`, accept: 'application/json' },
+      },
+    )
+    const data = await resp.json()
+    return data
+  }
+
   private wrapWithRetry<Args extends unknown[], R>(fn: (...args: Args) => Promise<R>): (...args: Args) => Promise<R> {
     return (...args: Args): Promise<R> => withRetry(fn.bind(this), args)
   }
