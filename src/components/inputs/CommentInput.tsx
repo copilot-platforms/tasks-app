@@ -84,9 +84,6 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
           placeholder="Leave a comment..."
           suggestions={assigneeSuggestions}
           editorClass="tapwrite-comment-input"
-          uploadFn={() => {
-            return Promise.resolve('')
-          }}
         />
         <InputAdornment
           position="end"
