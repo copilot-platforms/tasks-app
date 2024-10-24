@@ -7,10 +7,11 @@ import { CreateComment } from '@/types/dto/comment.dto'
 import { useSelector } from 'react-redux'
 import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 import { getMentionsList } from '@/utils/getMentionList'
-import { Tapwrite } from 'tapwrite'
+// import { Tapwrite } from 'tapwrite'
 import { ArrowUpward } from '@mui/icons-material'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { Tapwrite as Tipwrite } from 'tippytappy'
 
 interface Prop {
   createComment: (postCommentPayload: CreateComment) => void
@@ -77,7 +78,7 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
           wordBreak: 'break-word',
         }}
       >
-        <Tapwrite
+        <Tipwrite
           content={detail}
           getContent={setDetail}
           placeholder="Leave a comment..."
