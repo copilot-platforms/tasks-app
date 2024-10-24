@@ -320,15 +320,18 @@ export class NotificationService extends BaseService {
         break
     }
 
-    const excludeActions = [
-      NotificationTaskActions.CompletedForCompanyByIU,
-      NotificationTaskActions.CommentToCU,
-      NotificationTaskActions.CommentToIU,
-    ]
-    let actionUser =
-      task.assigneeType === AssigneeType.company && !excludeActions.includes(action)
-        ? (actionTrigger as CompanyResponse).name
-        : `${(actionTrigger as CopilotUser).givenName} ${(actionTrigger as CopilotUser).familyName}`
+    let actionUser = ''
+    if (actionTrigger) {
+      const excludeActions = [
+        NotificationTaskActions.CompletedForCompanyByIU,
+        NotificationTaskActions.CommentToCU,
+        NotificationTaskActions.CommentToIU,
+      ]
+      actionUser =
+        task.assigneeType === AssigneeType.company && !excludeActions.includes(action)
+          ? (actionTrigger as CompanyResponse).name
+          : `${(actionTrigger as CopilotUser).givenName} ${(actionTrigger as CopilotUser).familyName}`
+    }
 
     console.info('set recipient Ids', recipientIds)
     return { senderId, recipientId, recipientIds, actionUser, companyName }
