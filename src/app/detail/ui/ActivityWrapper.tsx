@@ -25,9 +25,9 @@ export const ActivityWrapper = ({ token, task_id }: { token: string; task_id: st
   const { assignee } = useSelector(selectTaskBoard)
   const { mutate } = useSWRConfig()
   const currentUserId = tokenPayload?.clientId ?? tokenPayload?.internalUserId
-  const currentUserDetails = z
+  const { data: currentUserDetails } = z
     .union([InternalUsersSchema, ClientResponseSchema])
-    .parse(assignee.find((el) => el.id === currentUserId))
+    .safeParse(assignee.find((el) => el.id === currentUserId))
 
   const cacheKey = `/api/tasks/${task_id}/activity-logs/?token=${token}`
 
