@@ -125,7 +125,6 @@ class WebhookService extends BaseService {
     // Delete corresponding tasks
     console.info(`Deleting all tasks for ${assigneeType} ${assigneeId}`)
     const tasks = await tasksService.deleteAllAssigneeTasks(assigneeId, assigneeType)
-    if (tasks.length) return
 
     // Now delete any and all associated notifications triggered on behalf of company tasks for clients.
     // i.e. decrement client task count in CU portal
