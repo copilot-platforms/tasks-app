@@ -87,7 +87,7 @@ export default async function TaskDetailPage({
 
   return (
     <DetailStateUpdate isRedirect={!!searchParams.isRedirect} token={token} tokenPayload={tokenPayload} task={task}>
-      <RealTime>
+      <RealTime tokenPayload={tokenPayload}>
         <EscapeHandler />
         <Stack direction="row" sx={{ height: '100vh' }}>
           <ToggleController>
