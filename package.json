@@ -27,7 +27,8 @@
     "postinstall": "prisma generate",
     "test": "jest",
     "loadtest": "tsx ./src/cmd/load-testing",
-    "loadtest:delete-clients": "tsx ./src/cmd/load-testing/deleteClients.ts"
+    "loadtest:delete-clients": "tsx ./src/cmd/load-testing/deleteClients.ts",
+    "fill-activity-logs": "tsx ./src/cmd/fill-activity-logs"
   },
   "dependencies": {
     "@emotion/react": "^11.11.3",
