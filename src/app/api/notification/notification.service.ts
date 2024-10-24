@@ -275,7 +275,11 @@ export class NotificationService extends BaseService {
         } else if (task.assigneeType === AssigneeType.company && task.assigneeId) {
           // this task is assigned to the company so all clients in company
           // should be considered as the recipients of the comment
-          recipientIds = (await copilot.getCompanyClients(z.string().parse(task.assigneeId))).map((client) => client.id)
+          console.info('fetching clients for company:', task.assigneeId)
+          const clientsInCompany = await copilot.getCompanyClients(task.assigneeId)
+          const clientIds = clientsInCompany.map((client) => client.id)
+          console.info('fetched client Ids', clientIds)
+          recipientIds = clientIds
         }
       case NotificationTaskActions.CommentToIU:
         // all internal users are potential parties in notifications for comments
