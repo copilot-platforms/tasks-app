@@ -32,7 +32,12 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
       taskId: task_id,
       mentions: getMentionsList(detail),
     }
-    if (!detail) return
+    console.log('detail', detail)
+    const isEmptyInput = detail.replaceAll('<p>', '').replaceAll('</p>', '').replaceAll('<br>', '') === ''
+    if (isEmptyInput) {
+      setDetail('')
+      return
+    }
 
     createComment(commentPayload)
     setDetail('')
