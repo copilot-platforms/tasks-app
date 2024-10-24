@@ -7256,10 +7256,10 @@ tippy.js@^6.3.7:
   dependencies:
     "@popperjs/core" "^2.9.0"
 
-tippytappy@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/tippytappy/-/tippytappy-1.0.0.tgz#2475282afc758808755e8743b8255ba536ac0b42"
-  integrity sha512-g0iqhl8lN1OKQYTXW9krqtvDbgquEFlJma0fY+l7c5NP1UL6bWGA7bwdvCWFn8AbjfgsywnG22a8/EqTNg9EXw==
+tippytappy@^1.0.3:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/tippytappy/-/tippytappy-1.0.3.tgz#4e6672070ac37ce1a50b7f7f7729f0f1374fec5f"
+  integrity sha512-9xfESTj/+QbcQgqmL3fMdmQP2kHPymxUZtjCnrp6p1gL85VvV33PVyroHIbM4YBUVtd+9WzW0aqOJRs5rJQY0w==
   dependencies:
     re-resizable "^6.10.0"
     tippy.js "^6.3.7"
