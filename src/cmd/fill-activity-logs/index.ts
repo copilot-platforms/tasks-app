@@ -12,6 +12,7 @@ const run = async () => {
   })
   if (!tasks.length) {
     console.info('All clear captain!')
+    return
   }
   console.warn(`⚠️ ${tasks.length} tasks don't have a Task Created log yet!`)
   const data = []
