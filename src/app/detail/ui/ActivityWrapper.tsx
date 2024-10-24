@@ -1,5 +1,6 @@
 'use client'
 
+import { useMemo } from 'react'
 import { LogResponse } from '@/app/api/activity-logs/schemas/LogResponseSchema'
 import { Box, Skeleton, Stack, Typography } from '@mui/material'
 import { Comments } from './Comments'
@@ -15,19 +16,31 @@ import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { generateRandomString } from '@/utils/generateRandomString'
 import { z } from 'zod'
-import { ClientResponseSchema, InternalUsersSchema } from '@/types/common'
+import { ClientResponseSchema, InternalUsersSchema, Token } from '@/types/common'
 
-export const ActivityWrapper = ({ token, task_id }: { token: string; task_id: string }) => {
+export const ActivityWrapper = ({
+  token,
+  task_id,
+  tokenPayload,
+}: {
+  token: string
+  task_id: string
+  tokenPayload: Token
+}) => {
   const { data: activities, isLoading } = useSWR(`/api/tasks/${task_id}/activity-logs/?token=${token}`, fetcher, {
     refreshInterval: 10_000,
   })
-  const { tokenPayload } = useSelector(selectAuthDetails)
   const { assignee } = useSelector(selectTaskBoard)
   const { mutate } = useSWRConfig()
-  const currentUserId = tokenPayload?.clientId ?? tokenPayload?.internalUserId
-  const { data: currentUserDetails } = z
-    .union([InternalUsersSchema, ClientResponseSchema])
-    .safeParse(assignee.find((el) => el.id === currentUserId))
+  const currentUserId = tokenPayload.clientId ?? tokenPayload.internalUserId
+
+  const currentUserDetails = useMemo(() => {
+    const currentAssignee = assignee.find((el) => el.id === currentUserId)
+    if (!currentAssignee) {
+      return
+    }
+    return z.union([InternalUsersSchema, ClientResponseSchema]).parse(assignee.find((el) => el.id === currentUserId))
+  }, [assignee, currentUserId])
 
   const cacheKey = `/api/tasks/${task_id}/activity-logs/?token=${token}`
 

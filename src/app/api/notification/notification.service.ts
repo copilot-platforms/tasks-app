@@ -215,10 +215,10 @@ export class NotificationService extends BaseService {
    * based on the NotificationTaskActions.
    */
   async getNotificationParties(copilot: CopilotAPI, task: Task, action: NotificationTaskActions) {
-    let senderId: string
+    let senderId: string = ''
     let recipientId: string = ''
     let recipientIds: string[] = []
-    let actionTrigger: CopilotUser | CompanyResponse
+    let actionTrigger: CopilotUser | CompanyResponse | null = null
     let companyName: string | undefined
 
     const getAssignedTo = async (): Promise<CopilotUser | CompanyResponse> => {
@@ -268,6 +268,50 @@ export class NotificationService extends BaseService {
         recipientId = task.createdById
         actionTrigger = await copilot.getInternalUser(senderId)
         break
+      case NotificationTaskActions.CommentToCU:
+        if (task.assigneeType === AssigneeType.client && task.assigneeId) {
+          // the client is the assignee, they are part of the task
+          recipientIds = [task.assigneeId]
+        } else if (task.assigneeType === AssigneeType.company && task.assigneeId) {
+          // this task is assigned to the company so all clients in company
+          // should be considered as the recipients of the comment
+          console.info('fetching clients for company:', task.assigneeId)
+          const clientsInCompany = await copilot.getCompanyClients(task.assigneeId)
+          const clientIds = clientsInCompany.map((client) => client.id)
+          console.info('fetched client Ids', clientIds)
+          recipientIds = clientIds
+        }
+
+        // this break is needed otherwise we will fallthrough to the IU case.
+        // This is honestly unhinged JS behavior, I would not expect the
+        // next case to run if the switch did not match it
+        break
+      case NotificationTaskActions.CommentToIU:
+        // all internal users are potential parties in notifications for comments
+        const getIUResponse = await copilot.getInternalUsers()
+        if (task.assigneeType === AssigneeType.internalUser) {
+          // when the assignee is an IU, we know that the all other IUs are involved
+          // in notification
+          recipientIds = getIUResponse.data.map((iu) => iu.id)
+        } else {
+          // when the assignee is not an IU, now we need to determine if IU has
+          // access to the assignee of the task and filter the list of recipients
+          let companyIdAssociatedWithTask = task.assigneeId
+          if (task.assigneeType === AssigneeType.client) {
+            // if the task is assigned to a company then we have the companyId to check for access
+            if (task.assigneeId) {
+              const taskClient = await copilot.getClient(task.assigneeId)
+              companyIdAssociatedWithTask = taskClient.companyId
+            }
+          }
+          recipientIds = getIUResponse.data
+            .filter((iu) =>
+              iu.isClientAccessLimited
+                ? iu.companyAccessList?.includes(z.string().parse(companyIdAssociatedWithTask))
+                : true,
+            )
+            .map((iu) => iu.id)
+        }
       default:
         const userInfo = await copilot.me()
         senderId = z.string().parse(userInfo?.id)
@@ -276,11 +320,20 @@ export class NotificationService extends BaseService {
         break
     }
 
-    let actionUser =
-      task.assigneeType === AssigneeType.company && action !== NotificationTaskActions.CompletedForCompanyByIU
-        ? (actionTrigger as CompanyResponse).name
-        : `${(actionTrigger as CopilotUser).givenName} ${(actionTrigger as CopilotUser).familyName}`
+    let actionUser = ''
+    if (actionTrigger) {
+      const excludeActions = [
+        NotificationTaskActions.CompletedForCompanyByIU,
+        NotificationTaskActions.CommentToCU,
+        NotificationTaskActions.CommentToIU,
+      ]
+      actionUser =
+        task.assigneeType === AssigneeType.company && !excludeActions.includes(action)
+          ? (actionTrigger as CompanyResponse).name
+          : `${(actionTrigger as CopilotUser).givenName} ${(actionTrigger as CopilotUser).familyName}`
+    }
 
+    console.info('set recipient Ids', recipientIds)
     return { senderId, recipientId, recipientIds, actionUser, companyName }
   }
 }
