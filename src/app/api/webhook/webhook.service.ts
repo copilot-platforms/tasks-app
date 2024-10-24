@@ -94,7 +94,7 @@ class WebhookService extends BaseService {
       if (existingNotification) continue
 
       const actionUserName = `${actionUser.givenName} ${actionUser.familyName}`
-      const inProduct = getInProductNotificationDetails(actionUserName, task, company.name)[
+      const inProduct = getInProductNotificationDetails(actionUserName, task, { companyName: company.name })[
         NotificationTaskActions.AssignedToCompany
       ]
       const notificationDetails = {

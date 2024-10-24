@@ -51,6 +51,7 @@ export const TaskEditor = ({
   const { showConfirmDeleteModal } = useSelector(selectTaskDetails)
   const { tasks, token } = useSelector(selectTaskBoard)
   const [isUserTyping, setIsUserTyping] = useState(false)
+  const [activeUploads, setActiveUploads] = useState(0)
 
   // const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
   //   event.preventDefault()
@@ -67,7 +68,7 @@ export const TaskEditor = ({
   // }
 
   useEffect(() => {
-    if (!isUserTyping) {
+    if (!isUserTyping && activeUploads === 0) {
       const currentTask = tasks.find((el) => el.id === task_id)
       if (currentTask) {
         setUpdateTitle(currentTask.title || '')
@@ -75,7 +76,7 @@ export const TaskEditor = ({
         setUpdateDetail(currentTask.body ?? '')
       }
     }
-  }, [tasks, task_id, isUserTyping])
+  }, [tasks, task_id, isUserTyping, activeUploads])
 
   const _titleUpdateDebounced = async (title: string) => updateTaskTitle(title)
 
@@ -165,7 +166,12 @@ export const TaskEditor = ({
           readonly={userType === UserType.CLIENT_USER}
           editorClass="tapwrite-details-page"
           placeholder="Add description..."
-          uploadFn={(file) => uploadImageHandler(file, token ?? '', task_id)}
+          uploadFn={async (file) => {
+            setActiveUploads((prev) => prev + 1)
+            const t = await uploadImageHandler(file, token ?? '', task_id)
+            setActiveUploads((prev) => prev - 1)
+            return t
+          }}
           deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', task_id)}
         />
       </Box>
