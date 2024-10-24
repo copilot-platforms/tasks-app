@@ -23,6 +23,7 @@ export const Comments = ({ comment, createComment, deleteComment, task_id }: Pro
           height: '25px',
           marginTop: '5px',
           border: (theme) => `1.1px solid ${theme.color.gray[200]}`,
+          fontSize: '13px',
         }}
       />
       <CommentCard comment={comment} createComment={createComment} deleteComment={deleteComment} task_id={task_id} />

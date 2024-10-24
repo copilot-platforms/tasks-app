@@ -87,7 +87,7 @@ export default async function TaskDetailPage({
 
   return (
     <DetailStateUpdate isRedirect={!!searchParams.isRedirect} token={token} tokenPayload={tokenPayload} task={task}>
-      <RealTime>
+      <RealTime tokenPayload={tokenPayload}>
         <EscapeHandler />
         <Stack direction="row" sx={{ height: '100vh' }}>
           <ToggleController>
@@ -100,7 +100,7 @@ export default async function TaskDetailPage({
                     >
                       <SecondaryBtn
                         buttonContent={
-                          <StyledTypography variant="sm" lineHeight={'21px'}>
+                          <StyledTypography variant="sm" lineHeight={'21px'} sx={{ fontSize: '13px' }}>
                             Tasks
                           </StyledTypography>
                         }
@@ -108,7 +108,15 @@ export default async function TaskDetailPage({
                       />
                     </CustomLink>
                     <StyledKeyboardIcon />
-                    <Typography variant="sm">{task?.label}</Typography>
+                    <Typography
+                      variant="sm"
+                      sx={{
+                        marginTop: '3px',
+                        fontSize: '13px',
+                      }}
+                    >
+                      {task?.label}
+                    </Typography>
                   </Stack>
                   <Stack direction="row" alignItems="center" columnGap="8px">
                     {params.user_type === UserType.INTERNAL_USER && <MenuBoxContainer />}

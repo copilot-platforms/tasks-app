@@ -379,9 +379,15 @@ export class TasksService extends BaseService {
     // --------------------------
     // --- Notifications Logic
     // --------------------------
+
+    // Cases:
+    // 1. Task has been moved back to a non-complete state from completed for client task
+    // 2. Task has been moved back to a non-complete state from completed for company task
+    // 3. Task has been moved to complete state for client task
+    // 4. Task has been moved to complete state for company task
     const notificationService = new NotificationService(this.user)
 
-    // If task has been moved back to another non-completed state from Completed
+    // Case 1 & 2 | If task has been moved back to another non-completed state from Completed
     if (
       updatedWorkflowState &&
       updatedWorkflowState.type !== StateType.completed &&
@@ -391,10 +397,10 @@ export class TasksService extends BaseService {
       await this.sendTaskCreateNotifications({ ...updatedTask, workflowState: updatedWorkflowState })
     }
 
-    // If task has been moved to completed from a non-complete state, remove all notification counts
+    // Case 3 & 4 | If task has been moved to completed from a non-complete state, remove all notification counts
     if (updatedWorkflowState?.type === StateType.completed && prevTask.workflowState.type !== StateType.completed) {
+      const copilot = new CopilotAPI(this.user.token)
       if (updatedTask.assigneeType === AssigneeType.company) {
-        const copilot = new CopilotAPI(this.user.token)
         const { recipientIds } = await notificationService.getNotificationParties(
           copilot,
           updatedTask,
@@ -407,7 +413,13 @@ export class TasksService extends BaseService {
         )
         await notificationService.markAsReadForAllRecipients(updatedTask)
       } else {
-        await notificationService.create(NotificationTaskActions.Completed, updatedTask)
+        // Get every IU with access to company first
+        const { recipientIds } = await notificationService.getNotificationParties(
+          copilot,
+          updatedTask,
+          NotificationTaskActions.CompletedByCompanyMember,
+        )
+        await notificationService.createBulkNotification(NotificationTaskActions.Completed, updatedTask, recipientIds)
         await notificationService.markClientNotificationAsRead(updatedTask)
       }
     }
@@ -529,6 +541,7 @@ export class TasksService extends BaseService {
 
     // Case 3
     // --- If task was previously in another state, and is moved to a 'completed' type WorkflowState by IU
+    let shouldCreateNotification = true
     if (
       prevTask?.workflowState?.type !== StateType.completed &&
       updatedTask?.workflowState?.type === StateType.completed &&
@@ -536,19 +549,23 @@ export class TasksService extends BaseService {
     ) {
       // Don't send task notifications if the IU created the task themselves
       if (updatedTask.createdById === this.user.internalUserId) {
-        return
+        shouldCreateNotification = false
       }
 
       if (updatedTask.assigneeType === AssigneeType.internalUser) {
-        await notificationService.create(NotificationTaskActions.CompletedByIU, updatedTask, { email: true })
+        shouldCreateNotification &&
+          (await notificationService.create(NotificationTaskActions.CompletedByIU, updatedTask, { disableEmail: true }))
         // TODO: Clean code and handle notification center notification deletions here instead
       } else if (updatedTask.assigneeType === AssigneeType.company) {
         // Don't do this in parallel since this can cause rate-limits, each of them has their own bottlenecks for avoiding ratelimits
-        await notificationService.create(NotificationTaskActions.CompletedForCompanyByIU, updatedTask, {
-          disableEmail: true,
-        })
+        shouldCreateNotification &&
+          (await notificationService.create(NotificationTaskActions.CompletedForCompanyByIU, updatedTask, {
+            disableEmail: true,
+          }))
         await notificationService.markAsReadForAllRecipients(updatedTask)
       } else if (updatedTask.assigneeType === AssigneeType.client) {
+        shouldCreateNotification &&
+          (await notificationService.create(NotificationTaskActions.CompletedByIU, updatedTask, { disableEmail: true }))
         try {
           await notificationService.markClientNotificationAsRead(updatedTask)
           return

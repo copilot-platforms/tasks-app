@@ -67,6 +67,7 @@ export const ActivityLog = ({ log }: Prop) => {
           width: '25px',
           height: '25px',
           border: (theme) => `1.1px solid ${theme.color.gray[200]}`,
+          fontSize: '13px',
         }}
       />
       <TypographyContainer direction="row" columnGap={1}>
