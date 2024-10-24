@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { ClientUpdatedEventDataSchema, HANDLEABLE_EVENT } from '@/types/webhook'
 import authenticate from '@api/core/utils/authenticate'
 import WebhookService from '@api/webhook/webhook.service'
-import { ClientUpdatedEventDataSchema, HANDLEABLE_EVENT } from '@/types/webhook'
+import { NextRequest, NextResponse } from 'next/server'
 
 export const handleWebhookEvent = async (req: NextRequest) => {
   const user = await authenticate(req)
