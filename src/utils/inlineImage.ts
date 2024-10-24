@@ -27,7 +27,7 @@ export const uploadImageHandler = async (file: File, token: string, task_id: str
 }
 
 export const deleteEditorAttachmentsHandler = async (url: string, token: string, task_id: string | null) => {
-  const filePath = await getFilePathFromUrl(url)
+  const filePath = getFilePathFromUrl(url)
   if (filePath) {
     const payload: ScrapImageRequest = {
       filePath: filePath,
