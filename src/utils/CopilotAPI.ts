@@ -31,6 +31,7 @@ import {
   WorkspaceResponse,
   WorkspaceResponseSchema,
 } from '@/types/common'
+import Bottleneck from 'bottleneck'
 import type { CopilotAPI as SDK } from 'copilot-node-sdk'
 import { copilotApi } from 'copilot-node-sdk'
 
@@ -169,9 +170,43 @@ export class CopilotAPI {
     await this.copilot.markNotificationRead({ id })
   }
 
+  async _bulkMarkNotificationsAsRead(notificationIds: string[]): Promise<void> {
+    console.info('CopilotAPI#markNotificationAsRead | token =', this.token)
+    const markAsReadPromises = []
+    const bottleneck = new Bottleneck({ minTime: 250, maxConcurrent: 2 })
+
+    for (let notification of notificationIds) {
+      markAsReadPromises.push(
+        bottleneck
+          .schedule(() => {
+            return this.markNotificationAsRead(notification)
+          })
+          .catch((err: unknown) => console.error(`Failed to delete notification with id ${notification}`, err)),
+      )
+    }
+
+    await Promise.all(markAsReadPromises)
+  }
+
   async _deleteNotification(id: string): Promise<void> {
     console.info('CopilotAPI#deleteNotification | token =', this.token)
     await this.copilot.deleteNotification({ id })
+  }
+
+  async _bulkDeleteNotifications(notificationIds: string[]): Promise<void> {
+    console.info('CopilotAPI#deleteNotification | token =', this.token)
+    const deletePromises = []
+    const bottleneck = new Bottleneck({ minTime: 250, maxConcurrent: 2 })
+    for (let notification of notificationIds) {
+      deletePromises.push(
+        bottleneck
+          .schedule(() => {
+            return this.deleteNotification(notification)
+          })
+          .catch((err: unknown) => console.error(`Failed to delete notification with id ${notification}`, err)),
+      )
+    }
+    await Promise.all(deletePromises)
   }
 
   private wrapWithRetry<Args extends unknown[], R>(fn: (...args: Args) => Promise<R>): (...args: Args) => Promise<R> {
@@ -198,5 +233,7 @@ export class CopilotAPI {
   getInternalUser = this.wrapWithRetry(this._getInternalUser)
   createNotification = this.wrapWithRetry(this._createNotification)
   markNotificationAsRead = this.wrapWithRetry(this._markNotificationAsRead)
+  bulkMarkNotificationsAsRead = this.wrapWithRetry(this._bulkMarkNotificationsAsRead)
+  bulkDeleteNotifications = this.wrapWithRetry(this._bulkDeleteNotifications)
   deleteNotification = this.wrapWithRetry(this._deleteNotification)
 }
