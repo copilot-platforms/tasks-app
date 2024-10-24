@@ -10,7 +10,6 @@ import { getFilePathFromUrl } from '@/utils/signedUrlReplacer'
 import { getSignedUrlUpload, getSignedUrlFile } from '@/app/actions'
 
 export const uploadImageHandler = async (file: File, token: string, task_id: string | null): Promise<string | undefined> => {
-  console.log('file', file)
   const supabaseActions = new SupabaseActions()
 
   const fileName = generateRandomString(file.name)
