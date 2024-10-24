@@ -20,48 +20,32 @@ export class CommentService extends BaseService {
     if (!task.assigneeId || !task.assigneeType) return
 
     const notificationService = new NotificationService(this.user)
-    const handleCommentMap = {
-      [AssigneeType.internalUser]: this.handleUserCommentNotifications,
-      [AssigneeType.client]: this.handleUserCommentNotifications,
-      [AssigneeType.company]: this.handleCompanyCommentNotifications,
-    }
-    const handleComment = handleCommentMap[task.assigneeType]
-    await handleComment(task, comment, notificationService)
+    await this.handleCommentNotifications(task, comment, notificationService)
   }
 
-  private handleUserCommentNotifications = async (
-    task: Task,
-    comment: Comment,
-    notificationService: NotificationService,
-  ) => {
-    // If comment has been created by the same person it's assigned to, don't send notifications
-    if (comment.initiatorId === task.assigneeId) return
-
-    const notification = await notificationService.create(NotificationTaskActions.Commented, task, {
-      disableEmail: task.assigneeType === AssigneeType.internalUser,
-      disableInProduct: task.assigneeType === AssigneeType.client,
-      commentId: comment.id,
-    })
-    if (!notification) {
-      console.error('Notification failed to trigger for task:', task)
-    }
-  }
-
-  private handleCompanyCommentNotifications = async (
-    task: Task,
-    comment: Comment,
-    notificationService: NotificationService,
-  ) => {
+  private handleCommentNotifications = async (task: Task, comment: Comment, notificationService: NotificationService) => {
     const copilot = new CopilotAPI(this.user.token)
-    const { recipientIds } = await notificationService.getNotificationParties(
+    const { recipientIds: clientRecipientIds } = await notificationService.getNotificationParties(
       copilot,
       task,
-      NotificationTaskActions.AssignedToCompany,
+      NotificationTaskActions.CommentToCU,
     )
-    const filteredRecipientIds = recipientIds.filter((id: string) => id !== comment.initiatorId)
-    await notificationService.createBulkNotification(NotificationTaskActions.Commented, task, filteredRecipientIds, {
+    const { recipientIds: iuRecipientIds } = await notificationService.getNotificationParties(
+      copilot,
+      task,
+      NotificationTaskActions.CommentToIU,
+    )
+    const filteredCUIds = clientRecipientIds.filter((id: string) => id !== comment.initiatorId)
+    await notificationService.createBulkNotification(NotificationTaskActions.Commented, task, filteredCUIds, {
       email: true,
       disableInProduct: true,
+      commentId: comment.id,
+    })
+
+    const filteredIUIds = iuRecipientIds.filter((id: string) => id !== comment.initiatorId)
+    await notificationService.createBulkNotification(NotificationTaskActions.Commented, task, filteredIUIds, {
+      email: false,
+      disableInProduct: false,
       commentId: comment.id,
     })
   }
