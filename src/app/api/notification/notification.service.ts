@@ -320,8 +320,13 @@ export class NotificationService extends BaseService {
         break
     }
 
+    const excludeActions = [
+      NotificationTaskActions.CompletedForCompanyByIU,
+      NotificationTaskActions.CommentToCU,
+      NotificationTaskActions.CommentToIU,
+    ]
     let actionUser =
-      task.assigneeType === AssigneeType.company && action !== NotificationTaskActions.CompletedForCompanyByIU
+      task.assigneeType === AssigneeType.company && !excludeActions.includes(action)
         ? (actionTrigger as CompanyResponse).name
         : `${(actionTrigger as CopilotUser).givenName} ${(actionTrigger as CopilotUser).familyName}`
 
