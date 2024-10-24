@@ -32,10 +32,10 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
       taskId: task_id,
       mentions: getMentionsList(detail),
     }
-    if (detail) {
-      createComment(commentPayload)
-      setDetail('')
-    }
+    if (!detail) return
+
+    createComment(commentPayload)
+    setDetail('')
   }
 
   // useEffect to handle keydown event for Enter key
