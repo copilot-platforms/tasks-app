@@ -121,16 +121,32 @@ class WebhookService extends BaseService {
   }
 
   async handleUserDeleted(assigneeId: string, assigneeType: AssigneeType) {
-    if (assigneeType === AssigneeType.company) return
-
     const tasksService = new TasksService(this.user)
     // Delete corresponding tasks
     console.info(`Deleting all tasks for ${assigneeType} ${assigneeId}`)
-    await tasksService.deleteAllAssigneeTasks(assigneeId, assigneeType)
+    const tasks = await tasksService.deleteAllAssigneeTasks(assigneeId, assigneeType)
 
-    // So how do we delete corresponding notifications, you ask? Good question.
-    // Copilot calls multiple `client.updated` when unassigning clients companies after `company.deleted` is called.
-    // So handling deleting company task notifications should be done in `client.updated` company unassignment logic instead
+    // Now delete any and all associated notifications triggered on behalf of company tasks for clients.
+    // i.e. decrement client task count in CU portal
+    if (assigneeType === AssigneeType.company) {
+      const deletedTaskIds = tasks.map((task) => task.id)
+      await this.handleDeletingTaskNotifications(deletedTaskIds)
+    }
+  }
+
+  private async handleDeletingTaskNotifications(taskIds: string[]) {
+    const clientTaskNotifications = await this.db.clientNotification.findMany({
+      where: {
+        taskId: { in: taskIds },
+      },
+    })
+    console.log('c', clientTaskNotifications)
+
+    const clientNotificationIds = clientTaskNotifications.map((notification) => notification.notificationId)
+    if (clientNotificationIds.length) {
+      await this.copilot.bulkMarkNotificationsAsRead(clientNotificationIds)
+      await this.db.clientNotification.deleteMany({ where: { notificationId: { in: clientNotificationIds } } })
+    }
   }
 
   async handleClientUpdated(data: ClientUpdatedEventData) {
@@ -155,6 +171,7 @@ class WebhookService extends BaseService {
       newCompany = null
     }
 
+    // Cases for company change - assignment / unassignment / reassignment
     if (!prevCompany?.name && newCompany?.name) {
       await this.handleCompanyAssignment(clientId)
     } else if (!newCompany?.name && prevCompany?.name) {

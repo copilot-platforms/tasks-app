@@ -332,6 +332,7 @@ export class TasksService extends BaseService {
       where: { assigneeId, assigneeType, workspaceId: this.user.workspaceId },
     })
     await this.db.label.deleteMany({ where: { label: { in: labels } } })
+    return tasks
   }
 
   async clientUpdateTask(id: string, targetWorkflowStateId?: string | null) {
