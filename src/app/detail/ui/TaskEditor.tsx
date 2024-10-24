@@ -169,7 +169,6 @@ export const TaskEditor = ({
           uploadFn={async (file) => {
             setActiveUploads((prev) => prev + 1)
             return await uploadImageHandler(file, token ?? '', task_id)
-            setActiveUploads((prev) => prev - 1)
           }}
           deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', task_id)}
         />
