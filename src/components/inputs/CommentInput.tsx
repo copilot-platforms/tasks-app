@@ -26,20 +26,18 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
   const currentUserId = tokenPayload?.clientId ?? tokenPayload?.internalUserId
   const currentUserDetails = assignee.find((el) => el.id === currentUserId)
 
-  const handleSubmit = () => {
+  const handleSubmit = (opts: { isEnter: boolean } = { isEnter: false }) => {
+    const detailsText = detail.replaceAll('<p>', '').replaceAll('</p>', '').replaceAll(' ', '').replaceAll('<br>', '')
+    const isEmpty = detailsText === ''
+    if (isEmpty) return
+
+    // Tiptap / Hardbreak appends this at the end if you submit a comment using enter
+    const enterBreakEl = '<p></p>'
     const commentPayload: CreateComment = {
-      content: detail,
+      content: opts?.isEnter ? detail.slice(0, detail.length - enterBreakEl.length) : detail,
       taskId: task_id,
       mentions: getMentionsList(detail),
     }
-    console.log('detail', detail)
-    const detailsText = detail.replaceAll('<p>', '').replaceAll('</p>', '').replaceAll(' ', '').replaceAll('<br>', '')
-    const isEmpty = detailsText === ''
-    if (isEmpty) {
-      // @aatbip - handle new space on submit here
-      return
-    }
-
     createComment(commentPayload)
     setDetail('')
   }
@@ -49,7 +47,7 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Enter' && !event.shiftKey) {
         event.preventDefault() // Prevent new line in the editor
-        handleSubmit()
+        handleSubmit({ isEnter: true })
       }
       // If Shift + Enter is pressed, do not prevent default,
       // allowing Tapwrite to handle the new line.
@@ -100,7 +98,7 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
           }}
         >
           <IconButton
-            onClick={handleSubmit} // Call handleSubmit on button click
+            onClick={() => handleSubmit()} // Call handleSubmit on button click
             sx={{
               backgroundColor: '#000',
               borderRadius: '4px',
