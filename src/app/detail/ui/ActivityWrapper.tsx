@@ -27,7 +27,7 @@ export const ActivityWrapper = ({
   task_id: string
   tokenPayload: Token
 }) => {
-  const { data: activities, isLoading } = useSWR(`/api/tasks/${task_id}/activity-logs/?token=${token}`, fetcher, {
+  const { data: activities, isLoading } = useSWR(`/api/tasks/${task_id}/activity-logs?token=${token}`, fetcher, {
     refreshInterval: 10_000,
   })
   const { assignee } = useSelector(selectTaskBoard)
