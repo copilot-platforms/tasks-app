@@ -20,7 +20,6 @@ import {
   deleteAttachment,
   deleteTask,
   postAttachment,
-  postScrapImage,
   updateAssignee,
   updateTaskDetail,
 } from '@/app/detail/[task_id]/[user_type]/actions'
@@ -40,8 +39,8 @@ import { CustomLink } from '@/hoc/CustomLink'
 import { DetailStateUpdate } from '@/app/detail/[task_id]/[user_type]/DetailStateUpdate'
 import { SilentError } from '@/components/templates/SilentError'
 import { z } from 'zod'
-import { ScrapImageRequest } from '@/types/common'
 import { signedUrlTtl } from '@/types/constants'
+import { ActivityWrapper } from '@/app/detail/ui/ActivityWrapper'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
@@ -77,6 +76,7 @@ export default async function TaskDetailPage({
   const copilotClient = new CopilotAPI(token)
 
   const [task, tokenPayload] = await Promise.all([getOneTask(token, task_id), copilotClient.getTokenPayload()])
+
   if (!tokenPayload) {
     throw new Error('Please provide a Valid Token')
   }
@@ -87,7 +87,7 @@ export default async function TaskDetailPage({
 
   return (
     <DetailStateUpdate isRedirect={!!searchParams.isRedirect} token={token} tokenPayload={tokenPayload} task={task}>
-      <RealTime>
+      <RealTime tokenPayload={tokenPayload}>
         <EscapeHandler />
         <Stack direction="row" sx={{ height: '100vh' }}>
           <ToggleController>
@@ -100,7 +100,7 @@ export default async function TaskDetailPage({
                     >
                       <SecondaryBtn
                         buttonContent={
-                          <StyledTypography variant="sm" lineHeight={'21px'}>
+                          <StyledTypography variant="sm" lineHeight={'21px'} sx={{ fontSize: '13px' }}>
                             Tasks
                           </StyledTypography>
                         }
@@ -108,7 +108,15 @@ export default async function TaskDetailPage({
                       />
                     </CustomLink>
                     <StyledKeyboardIcon />
-                    <Typography variant="sm">{task?.label}</Typography>
+                    <Typography
+                      variant="sm"
+                      sx={{
+                        marginTop: '3px',
+                        fontSize: '13px',
+                      }}
+                    >
+                      {task?.label}
+                    </Typography>
                   </Stack>
                   <Stack direction="row" alignItems="center" columnGap="8px">
                     {params.user_type === UserType.INTERNAL_USER && <MenuBoxContainer />}
@@ -152,51 +160,8 @@ export default async function TaskDetailPage({
                     userType={params.user_type}
                   />
                 </StyledTiptapDescriptionWrapper>
-                {/* {advancedFeatureFlag && ( */}
-                {/*   <AppMargin size={SizeofAppMargin.LARGE} py="18.5px"> */}
-                {/*     <Stack direction="column" alignItems="left" p="10px 5px" rowGap={5}> */}
-                {/*       <Typography variant="xl">Activity</Typography> */}
-                {/*       <Stack direction="column" alignItems="left" p="10px 5px" rowGap={4}> */}
-                {/*         {activities?.map((item: LogResponse, index: number) => { */}
-                {/*           return ( */}
-                {/*             <Box */}
-                {/*               sx={{ */}
-                {/*                 height: 'auto', */}
-                {/*                 display: 'block', */}
-                {/*               }} */}
-                {/*               key={item.id} */}
-                {/*             > */}
-                {/*               {item.type == ActivityType.COMMENT_ADDED ? ( */}
-                {/*                 <Comments */}
-                {/*                   comment={item} */}
-                {/*                   createComment={async (postCommentPayload: CreateComment) => { */}
-                {/*                     'use server' */}
-                {/*                     await postComment(token, postCommentPayload) */}
-                {/*                   }} */}
-                {/*                   deleteComment={async (id: string) => { */}
-                {/*                     'use server' */}
-                {/*                     await deleteComment(token, id) */}
-                {/*                   }} */}
-                {/*                   task_id={task_id} */}
-                {/*                 /> */}
-                {/*               ) : ( */}
-                {/*                 <ActivityLog log={item} /> */}
-                {/*               )} */}
-                {/*             </Box> */}
-                {/*           ) */}
-                {/*         })} */}
 
-                {/*         <CommentInput */}
-                {/*           createComment={async (postCommentPayload: CreateComment) => { */}
-                {/*             'use server' */}
-                {/*             await postComment(token, postCommentPayload) */}
-                {/*           }} */}
-                {/*           task_id={task_id} */}
-                {/*         /> */}
-                {/*       </Stack> */}
-                {/*     </Stack> */}
-                {/*   </AppMargin> */}
-                {/* )} */}
+                <ActivityWrapper task_id={task_id} token={token} tokenPayload={tokenPayload} />
               </TaskDetailsContainer>
             </CustomScrollbar>
           </ToggleController>

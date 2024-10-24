@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard, setTasks } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
+import { Token } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { extractImgSrcs, replaceImgSrcs } from '@/utils/signedUrlReplacer'
 import { AssigneeType } from '@prisma/client'
@@ -17,9 +18,16 @@ interface RealTimeTaskResponse extends TaskResponse {
   deletedAt: string
 }
 
-export const RealTime = ({ children, task }: { children: ReactNode; task?: TaskResponse }) => {
+export const RealTime = ({
+  children,
+  task,
+  tokenPayload,
+}: {
+  children: ReactNode
+  task?: TaskResponse
+  tokenPayload: Token
+}) => {
   const { tasks, token } = useSelector(selectTaskBoard)
-  const { tokenPayload } = useSelector(selectAuthDetails)
   const pathname = usePathname()
   const router = useRouter()
 

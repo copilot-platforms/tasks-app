@@ -69,7 +69,7 @@ export default async function ClientPage({ searchParams }: { searchParams: { tok
         <Suspense fallback={null}>
           <AssigneeFetcher token={token} userType={UserType.CLIENT_USER} />
         </Suspense>
-        <RealTime>
+        <RealTime tokenPayload={tokenPayload}>
           <DndWrapper>
             <TaskBoard mode={UserRole.Client} />
           </DndWrapper>

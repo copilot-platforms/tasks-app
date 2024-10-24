@@ -2,7 +2,7 @@
 
 import { BoldTypography, CommentCardContainer, StyledReplyIcon, StyledTypography } from '@/app/detail/ui/styledComponent'
 import { getTimeDifference } from '@/utils/getTimeDifference'
-import { Avatar, Box, InputAdornment, Modal, Stack, styled } from '@mui/material'
+import { Avatar, Box, InputAdornment, Modal, Stack, styled, Typography } from '@mui/material'
 import { TrashIcon } from '@/icons'
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 import { useState } from 'react'
@@ -18,6 +18,8 @@ import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
 import { getMentionsList } from '@/utils/getMentionList'
 import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 import { Tapwrite } from 'tapwrite'
+import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { Tapwrite as Tipwrite } from 'tippytappy'
 
 const CustomDivider = styled(Box)(({ theme }) => ({
   height: '1px',
@@ -45,6 +47,7 @@ export const CommentCard = ({
   const { tokenPayload } = useSelector(selectAuthDetails)
   const canEdit = tokenPayload?.internalUserId == comment.initiator.id
   const { assigneeSuggestions } = useSelector(selectTaskDetails)
+  const { assignee } = useSelector(selectTaskBoard)
 
   const handleReplySubmission = () => {
     const replyPayload: CreateComment = {
@@ -60,25 +63,33 @@ export const CommentCard = ({
   }
 
   return (
-    <CommentCardContainer onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
-      <Stack direction="column" rowGap={3}>
+    <CommentCardContainer
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      sx={{
+        backgroundColor: (theme) => `${theme.color.gray[100]}`,
+      }}
+    >
+      <Stack direction="column" rowGap={'2px'}>
         <Stack direction="row" justifyContent={'space-between'} alignItems="center">
-          <Stack direction="row" columnGap={3}>
+          <Stack direction="row" columnGap={3} alignItems="center">
+            {assignee.find((el) => el.id === comment.initiator.id) ? (
+              <BoldTypography>
+                {comment.initiator.givenName} {comment.initiator.familyName}
+              </BoldTypography>
+            ) : (
+              <Typography variant="md" sx={{ fontStyle: 'italic' }}>
+                Deleted User
+              </Typography>
+            )}
             <BoldTypography>
-              {comment.initiator.givenName} {comment.initiator.familyName}
+              <span>&#x2022;</span>
             </BoldTypography>
-            <StyledTypography> {getTimeDifference(comment.createdAt)}</StyledTypography>
+            <StyledTypography sx={{ lineHeight: '22px' }}> {getTimeDifference(comment.createdAt)}</StyledTypography>
           </Stack>
 
           {isHovered && (
-            <Stack direction="row" columnGap={2} sx={{ height: '10px' }}>
-              <StyledReplyIcon
-                onClick={(event: React.MouseEvent<HTMLElement>) => {
-                  event.stopPropagation()
-
-                  setShowReply(!showReply)
-                }}
-              />
+            <Stack direction="row" columnGap={2} sx={{ height: '10px' }} alignItems="center">
               {canEdit && (
                 <MenuBox
                   menuContent={
@@ -98,35 +109,42 @@ export const CommentCard = ({
           )}
         </Stack>
 
-        <Tapwrite
-          content={comment.details.content as string}
+        <Tipwrite
+          content={(comment.details as { content: string }).content}
           getContent={() => {}}
           readonly
           editorClass="tapwrite-comment"
         />
 
-        {commentAddedResponseSchema.parse(comment.details)?.replies?.map((item: any) => {
-          return (
-            <Stack direction="column" rowGap={3} key={item.id}>
-              <CustomDivider />
-              <Stack direction="row" columnGap={2} alignItems={'center'}>
-                <Avatar
-                  alt={comment?.initiator?.givenName}
-                  src={comment?.initiator?.avatarImageUrl || 'user'}
-                  sx={{ width: '20px', height: '20px' }}
+        {Array.isArray((comment as LogResponse).details?.replies) &&
+          ((comment as LogResponse).details.replies as LogResponse[]).map((item: LogResponse) => {
+            return (
+              <Stack direction="column" rowGap={3} key={item.id}>
+                <CustomDivider />
+                <Stack direction="row" columnGap={2} alignItems={'center'}>
+                  <Avatar
+                    alt={item?.initiator?.givenName}
+                    src={item?.initiator?.avatarImageUrl || 'user'}
+                    sx={{ width: '20px', height: '20px', fontSize: '14px' }}
+                  />
+                  <BoldTypography>
+                    {item.initiator?.givenName} {item.initiator?.familyName}
+                  </BoldTypography>
+                  <StyledTypography> {getTimeDifference(item.createdAt)}</StyledTypography>
+                </Stack>
+                <Tapwrite
+                  content={item.details?.content as string}
+                  getContent={() => {}}
+                  readonly
+                  editorClass="tapwrite-comment"
                 />
-                <BoldTypography>
-                  {' '}
-                  {item.initiator?.givenName} {item.initiator?.familyName}
-                </BoldTypography>
-                <StyledTypography> {getTimeDifference(item.createdAt)}</StyledTypography>
               </Stack>
-              <Tapwrite content={item.content} getContent={() => {}} readonly editorClass="tapwrite-comment" />
-            </Stack>
-          )
-        })}
+            )
+          })}
 
-        {commentAddedResponseSchema.parse(comment.details).replies?.length > 0 || showReply ? (
+        {(Array.isArray((comment as LogResponse).details?.replies) &&
+          ((comment as LogResponse).details.replies as LogResponse[]).length > 0) ||
+        showReply ? (
           <>
             <CustomDivider />
             <Stack direction="row" columnGap={1} alignItems="flex-start">
@@ -162,7 +180,7 @@ export const CommentCard = ({
         <ConfirmDeleteUI
           handleCancel={() => setShowConfirmDeleteModal(false)}
           handleDelete={() => {
-            deleteComment(commentAddedResponseSchema.parse(comment.details).id)
+            deleteComment((comment as LogResponse).details.id as string)
             setShowConfirmDeleteModal(false)
           }}
           body="comment"
