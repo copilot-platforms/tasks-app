@@ -140,7 +140,6 @@ class WebhookService extends BaseService {
         taskId: { in: taskIds },
       },
     })
-    console.log('c', clientTaskNotifications)
 
     const clientNotificationIds = clientTaskNotifications.map((notification) => notification.notificationId)
     if (clientNotificationIds.length) {
