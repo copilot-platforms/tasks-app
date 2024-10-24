@@ -36,6 +36,7 @@ export class CommentService extends BaseService {
       NotificationTaskActions.CommentToIU,
     )
     const filteredCUIds = clientRecipientIds.filter((id: string) => id !== comment.initiatorId)
+    console.info('creating notifications for CUS', filteredCUIds)
     await notificationService.createBulkNotification(NotificationTaskActions.Commented, task, filteredCUIds, {
       email: true,
       disableInProduct: true,
@@ -43,6 +44,7 @@ export class CommentService extends BaseService {
     })
 
     const filteredIUIds = iuRecipientIds.filter((id: string) => id !== comment.initiatorId)
+    console.info('creating notifications for IUs', filteredIUIds)
     await notificationService.createBulkNotification(NotificationTaskActions.Commented, task, filteredIUIds, {
       email: false,
       disableInProduct: false,
