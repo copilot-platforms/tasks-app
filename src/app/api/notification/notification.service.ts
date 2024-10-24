@@ -215,10 +215,10 @@ export class NotificationService extends BaseService {
    * based on the NotificationTaskActions.
    */
   async getNotificationParties(copilot: CopilotAPI, task: Task, action: NotificationTaskActions) {
-    let senderId: string
+    let senderId: string = ''
     let recipientId: string = ''
     let recipientIds: string[] = []
-    let actionTrigger: CopilotUser | CompanyResponse
+    let actionTrigger: CopilotUser | CompanyResponse | null = null
     let companyName: string | undefined
 
     const getAssignedTo = async (): Promise<CopilotUser | CompanyResponse> => {
@@ -281,6 +281,11 @@ export class NotificationService extends BaseService {
           console.info('fetched client Ids', clientIds)
           recipientIds = clientIds
         }
+
+        // this break is needed otherwise we will fallthrough to the IU case.
+        // This is honestly unhinged JS behavior, I would not expect the
+        // next case to run if the switch did not match it
+        break
       case NotificationTaskActions.CommentToIU:
         // all internal users are potential parties in notifications for comments
         const getIUResponse = await copilot.getInternalUsers()
@@ -320,6 +325,7 @@ export class NotificationService extends BaseService {
         ? (actionTrigger as CompanyResponse).name
         : `${(actionTrigger as CopilotUser).givenName} ${(actionTrigger as CopilotUser).familyName}`
 
+    console.info('set recipient Ids', recipientIds)
     return { senderId, recipientId, recipientIds, actionUser, companyName }
   }
 }
