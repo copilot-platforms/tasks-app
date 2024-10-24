@@ -33,9 +33,10 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
       mentions: getMentionsList(detail),
     }
     console.log('detail', detail)
-    const isEmptyInput = detail.replaceAll('<p>', '').replaceAll('</p>', '').replaceAll('<br>', '') === ''
-    if (isEmptyInput) {
-      setDetail('')
+    const detailsText = detail.replaceAll('<p>', '').replaceAll('</p>', '').replaceAll(' ', '').replaceAll('<br>', '')
+    const isEmpty = detailsText === ''
+    if (isEmpty) {
+      // @aatbip - handle new space on submit here
       return
     }
 
