@@ -1,7 +1,5 @@
-import { SchemaByActivityType } from '@/app/api/activity-logs/const'
 import DBClient from '@/lib/db'
-import { ActivityLog, ActivityType, AssigneeType } from '@prisma/client'
-import { z } from 'zod'
+import { ActivityType, AssigneeType } from '@prisma/client'
 
 /**
  * cmd script to fill up 'created by X on Y' activity logs for tasks
