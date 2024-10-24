@@ -76,7 +76,7 @@ export const TaskEditor = ({
         setUpdateDetail(currentTask.body ?? '')
       }
     }
-  }, [tasks, task_id, isUserTyping])
+  }, [tasks, task_id, isUserTyping, activeUploads])
 
   const _titleUpdateDebounced = async (title: string) => updateTaskTitle(title)
 
@@ -168,7 +168,9 @@ export const TaskEditor = ({
           placeholder="Add description..."
           uploadFn={async (file) => {
             setActiveUploads((prev) => prev + 1)
-            return await uploadImageHandler(file, token ?? '', task_id)
+            const t = await uploadImageHandler(file, token ?? '', task_id)
+            setActiveUploads((prev) => prev - 1)
+            return t
           }}
           deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', task_id)}
         />
