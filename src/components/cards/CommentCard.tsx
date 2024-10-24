@@ -81,8 +81,10 @@ export const CommentCard = ({
                 Deleted User
               </Typography>
             )}
-            <span>&#x2022;</span>
-            <StyledTypography sx={{ mt: '2.5px' }}> {getTimeDifference(comment.createdAt)}</StyledTypography>
+            <BoldTypography>
+              <span>&#x2022;</span>
+            </BoldTypography>
+            <StyledTypography sx={{ lineHeight: '22px' }}> {getTimeDifference(comment.createdAt)}</StyledTypography>
           </Stack>
 
           {isHovered && (
