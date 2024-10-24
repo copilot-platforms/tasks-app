@@ -168,6 +168,16 @@ export const TaskEditor = ({
           uploadFn={async (file) => await uploadImageHandler(file, token ?? '', task_id)}
           deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', task_id)}
         />
+        sdfjlksdfjkl
+        <Tapwrite
+          content={updateDetail}
+          getContent={handleDetailChange}
+          readonly={userType === UserType.CLIENT_USER}
+          editorClass="tapwrite-details-page"
+          placeholder="Add description..."
+          uploadFn={async (file) => await uploadImageHandler(file, token ?? '', task_id)}
+          deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', task_id)}
+        />
       </Box>
 
       {/* {advancedFeatureFlag && ( */}
