@@ -166,20 +166,6 @@ export const TaskEditor = ({
           editorClass="tapwrite-details-page"
           placeholder="Add description..."
           uploadFn={async (file) => {
-            console.log('file', file)
-            return await uploadImageHandler(file, token ?? '', task_id)
-          }}
-          deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', task_id)}
-        />
-        sdfjlksdfjkl
-        <Tapwrite
-          content={updateDetail}
-          getContent={handleDetailChange}
-          readonly={userType === UserType.CLIENT_USER}
-          editorClass="tapwrite-details-page"
-          placeholder="Add description..."
-          uploadFn={async (file) => {
-            console.log('file', file)
             return await uploadImageHandler(file, token ?? '', task_id)
           }}
           deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', task_id)}
