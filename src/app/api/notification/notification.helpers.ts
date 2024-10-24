@@ -25,6 +25,12 @@ export const getInProductNotificationDetails = (
         }
       : undefined
 
+  const commentDetail = {
+    title: 'A comment was added',
+    body: `${actionUser} left a comment on the task ‘${task?.title}’.`,
+    ctaParams,
+  }
+
   return {
     [NotificationTaskActions.Assigned]: {
       title: 'Task was assigned to you',
@@ -60,11 +66,9 @@ export const getInProductNotificationDetails = (
       body: `The task ‘${task?.title}’ was completed by ${actionUser}.`,
       ctaParams,
     },
-    [NotificationTaskActions.Commented]: {
-      title: 'A comment was added',
-      body: `${actionUser} left a comment on the task ‘${task?.title}’.`,
-      ctaParams,
-    },
+    [NotificationTaskActions.Commented]: commentDetail,
+    [NotificationTaskActions.CommentToCU]: commentDetail,
+    [NotificationTaskActions.CommentToIU]: commentDetail,
     [NotificationTaskActions.Mentioned]: {
       title: 'You were mentioned in a task comment',
       body: `You were mentioned in a comment on task ‘${task?.title}’ by ${actionUser}. To see details about the task, navigate to the Tasks App below. `,
