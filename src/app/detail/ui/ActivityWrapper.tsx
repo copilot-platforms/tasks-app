@@ -42,7 +42,7 @@ export const ActivityWrapper = ({
     return z.union([InternalUsersSchema, ClientResponseSchema]).parse(assignee.find((el) => el.id === currentUserId))
   }, [assignee, currentUserId])
 
-  const cacheKey = `/api/tasks/${task_id}/activity-logs/?token=${token}`
+  const cacheKey = `/api/tasks/${task_id}/activity-logs?token=${token}`
 
   // Handle comment creation
   const handleCreateComment = async (postCommentPayload: CreateComment) => {
@@ -74,9 +74,8 @@ export const ActivityWrapper = ({
     }
 
     const optimisticData = activities ? [...activities.data, tempLog] : [tempLog]
-
     try {
-      await mutate(
+      mutate(
         cacheKey,
         async () => {
           // Post the actual comment to the server
