@@ -19,7 +19,6 @@ import { getMentionsList } from '@/utils/getMentionList'
 import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 import { Tapwrite } from 'tapwrite'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
-import { Tapwrite as Tipwrite } from 'tippytappy'
 
 const CustomDivider = styled(Box)(({ theme }) => ({
   height: '1px',
@@ -109,7 +108,7 @@ export const CommentCard = ({
           )}
         </Stack>
 
-        <Tipwrite
+        <Tapwrite
           content={(comment.details as { content: string }).content}
           getContent={() => {}}
           readonly
