@@ -26,15 +26,9 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
   const currentUserId = tokenPayload?.clientId ?? tokenPayload?.internalUserId
   const currentUserDetails = assignee.find((el) => el.id === currentUserId)
 
-  const handleSubmit = (opts: { isEnter: boolean } = { isEnter: false }) => {
-    const detailsText = detail.replaceAll('<p>', '').replaceAll('</p>', '').replaceAll(' ', '').replaceAll('<br>', '')
-    const isEmpty = detailsText === ''
-    if (isEmpty) return
-
-    // Tiptap / Hardbreak appends this at the end if you submit a comment using enter
-    const enterBreakEl = '<p></p>'
+  const handleSubmit = () => {
     const commentPayload: CreateComment = {
-      content: opts?.isEnter ? detail.slice(0, detail.length - enterBreakEl.length) : detail,
+      content: detail,
       taskId: task_id,
       mentions: getMentionsList(detail),
     }
@@ -47,7 +41,7 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Enter' && !event.shiftKey) {
         event.preventDefault() // Prevent new line in the editor
-        handleSubmit({ isEnter: true })
+        handleSubmit()
       }
       // If Shift + Enter is pressed, do not prevent default,
       // allowing Tapwrite to handle the new line.
