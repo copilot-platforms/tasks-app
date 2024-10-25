@@ -27,13 +27,15 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
   const currentUserDetails = assignee.find((el) => el.id === currentUserId)
 
   const handleSubmit = () => {
-    const commentPayload: CreateComment = {
-      content: detail,
-      taskId: task_id,
-      mentions: getMentionsList(detail),
+    if (detail) {
+      const commentPayload: CreateComment = {
+        content: detail,
+        taskId: task_id,
+        mentions: getMentionsList(detail),
+      }
+      createComment(commentPayload)
+      setDetail('')
     }
-    createComment(commentPayload)
-    setDetail('')
   }
 
   // useEffect to handle keydown event for Enter key
