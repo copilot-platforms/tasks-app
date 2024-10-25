@@ -26,15 +26,24 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
   const currentUserId = tokenPayload?.clientId ?? tokenPayload?.internalUserId
   const currentUserDetails = assignee.find((el) => el.id === currentUserId)
 
+  const isContentEmpty = (content: string) => {
+    // Regular expression to match only empty paragraphs, whitespace, or <br> tags
+    const emptyContentRegex = /^(<p>(\s|(<br\s*\/?>))*<\/p>)*$/
+    return emptyContentRegex.test(content)
+  }
+
   const handleSubmit = () => {
-    if (detail) {
+    // Check if `detail` is effectively empty
+    if (!isContentEmpty(detail)) {
       const commentPayload: CreateComment = {
         content: detail,
         taskId: task_id,
         mentions: getMentionsList(detail),
       }
       createComment(commentPayload)
-      setDetail('')
+      setDetail('') // Clear the input after creating comment
+    } else {
+      console.log('Comment cannot be empty.')
     }
   }
 
