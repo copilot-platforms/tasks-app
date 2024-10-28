@@ -1,8 +1,4 @@
 import { withErrorHandler } from '@api/core/utils/withErrorHandler'
-import { NextRequest, NextResponse } from 'next/server'
-import authenticate from '../../core/utils/authenticate'
+import { validateCount } from '@api/notification/validate-count/validateCount.controller'
 
-export const GET = withErrorHandler(async (req: NextRequest) => {
-  const user = await authenticate(req)
-  return NextResponse.json({})
-})
+export const GET = withErrorHandler(validateCount)
