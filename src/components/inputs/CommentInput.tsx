@@ -32,10 +32,17 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
   }
 
   const handleSubmit = () => {
+    // TODO: Fix this later
+    let content = detail
+    const END_P = '<p></p>'
+    const endChunk = content.slice(-7)
+    if (endChunk === END_P) {
+      content = content.slice(0, -7)
+    }
     // Check if `detail` is effectively empty
     if (!isContentEmpty(detail)) {
       const commentPayload: CreateComment = {
-        content: detail,
+        content,
         taskId: task_id,
         mentions: getMentionsList(detail),
       }
