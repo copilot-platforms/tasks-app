@@ -133,7 +133,7 @@ export const getEmailDetails = (
       subject: 'A comment was added',
       header: 'A comment was added',
       body: `${actionUser} left a comment on the task ‘${task?.title}’. To view the comment, open the task below.`,
-      title: 'View Comment',
+      title: 'View comment',
       ctaParams,
     },
     [NotificationTaskActions.Mentioned]: {
