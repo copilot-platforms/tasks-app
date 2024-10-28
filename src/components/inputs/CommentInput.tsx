@@ -32,7 +32,6 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
   }
 
   const handleSubmit = () => {
-    // TODO: Fix this later
     let content = detail
     const END_P = '<p></p>'
     const endChunk = content.slice(-7)
