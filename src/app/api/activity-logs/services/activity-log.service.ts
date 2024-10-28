@@ -6,7 +6,7 @@ import { DBActivityLogArraySchema, DBActivityLogDetails, SchemaByActivityType } 
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { CommentService } from '@api/comment/comment.service'
 import { ClientsResponse, CompaniesResponse, InternalUsersResponse } from '@/types/common'
-import { LogResponseSchemaArrayType } from '../schemas/LogResponseSchema'
+import { LogResponse, LogResponseSchema } from '../schemas/LogResponseSchema'
 import APIError from '@api/core/exceptions/api'
 import httpStatus from 'http-status'
 
@@ -62,27 +62,36 @@ export class ActivityLogService extends BaseService {
     const comments = await commentService.getCommentsByIds(commentIds)
     const allReplies = await commentService.getReplies(commentIds)
 
-    return LogResponseSchemaArrayType.parse(
-      parsedActivityLogs.map((activityLog) => {
-        return {
-          ...activityLog,
-          details: this.formatActivityLogDetails(
-            activityLog.type,
-            activityLog.userRole,
-            activityLog.details,
-            comments,
-            allReplies,
-            internalUsers,
-            clientUsers,
-            companies,
-          ),
-          createdAt: activityLog.createdAt.toISOString(),
-          initiator: {
-            ...copilotUsers.find((iu) => iu.id === activityLog.userId),
-          },
-        }
-      }),
-    )
+    const logResponseData = parsedActivityLogs.map((activityLog) => {
+      return {
+        ...activityLog,
+        details: this.formatActivityLogDetails(
+          activityLog.type,
+          activityLog.userRole,
+          activityLog.details,
+          comments,
+          allReplies,
+          internalUsers,
+          clientUsers,
+          companies,
+        ),
+        createdAt: activityLog.createdAt.toISOString(),
+        initiator: {
+          ...copilotUsers.find((iu) => iu.id === activityLog.userId),
+        },
+      }
+    })
+
+    const validLogResponseData: LogResponse[] = []
+    logResponseData.map((rd) => {
+      const parseResult = LogResponseSchema.safeParse(rd)
+      if (parseResult.success) {
+        validLogResponseData.push(parseResult.data)
+      } else {
+        console.warn('Invalid log entry skipped:', parseResult.error)
+      }
+    })
+    return validLogResponseData
   }
 
   formatActivityLogDetails<ActivityLog extends keyof typeof SchemaByActivityType>(

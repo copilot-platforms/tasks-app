@@ -46,7 +46,7 @@ export const DatePickerComponent = ({ getDate, dateValue, disabled, isButton = f
         onClick={handleClick}
         aria-describedby={id}
         sx={{
-          cursor: disabled ? 'auto' : 'pointer',
+          cursor: disabled ? 'auto' : 'default',
           padding: isButton ? '0px' : '4px 8px',
           borderRadius: '4px',
         }}

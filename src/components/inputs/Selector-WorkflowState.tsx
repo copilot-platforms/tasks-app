@@ -60,7 +60,7 @@ export const WorkflowStateSelector = ({
               sx={{
                 padding: '4px 8px',
                 justifyContent: { xs: 'end', sm: 'flex-start' },
-                cursor: disabled ? 'auto' : 'pointer',
+                cursor: disabled ? 'auto' : 'default',
                 borderRadius: '4px',
               }}
             >
