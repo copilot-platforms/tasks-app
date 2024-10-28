@@ -25,20 +25,25 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
   const currentUserId = tokenPayload?.clientId ?? tokenPayload?.internalUserId
   const currentUserDetails = assignee.find((el) => el.id === currentUserId)
 
-  const handleSubmit = (opts: { isEnter: boolean } = { isEnter: false }) => {
-    const detailsText = detail.replaceAll('<p>', '').replaceAll('</p>', '').replaceAll(' ', '').replaceAll('<br>', '')
-    const isEmpty = detailsText === ''
-    if (isEmpty) return
+  const isContentEmpty = (content: string) => {
+    // Regular expression to match only empty paragraphs, whitespace, or <br> tags
+    const emptyContentRegex = /^(<p>(\s|(<br\s*\/?>))*<\/p>)*$/
+    return emptyContentRegex.test(content)
+  }
 
-    // Tiptap / Hardbreak appends this at the end if you submit a comment using enter
-    const enterBreakEl = '<p></p>'
-    const commentPayload: CreateComment = {
-      content: opts?.isEnter ? detail.slice(0, detail.length - enterBreakEl.length) : detail,
-      taskId: task_id,
-      mentions: getMentionsList(detail),
+  const handleSubmit = () => {
+    // Check if `detail` is effectively empty
+    if (!isContentEmpty(detail)) {
+      const commentPayload: CreateComment = {
+        content: detail,
+        taskId: task_id,
+        mentions: getMentionsList(detail),
+      }
+      createComment(commentPayload)
+      setDetail('') // Clear the input after creating comment
+    } else {
+      console.log('Comment cannot be empty.')
     }
-    createComment(commentPayload)
-    setDetail('')
   }
 
   // useEffect to handle keydown event for Enter key
@@ -46,7 +51,7 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Enter' && !event.shiftKey) {
         event.preventDefault() // Prevent new line in the editor
-        handleSubmit({ isEnter: true })
+        handleSubmit()
       }
       // If Shift + Enter is pressed, do not prevent default,
       // allowing Tapwrite to handle the new line.
