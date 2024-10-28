@@ -44,50 +44,50 @@ export class ValidateCountService extends NotificationService {
     const orphanNotifications = appNotificationIds.filter((id) => !copilotNotificationIds.includes(id))
     if (orphanNotifications.length) {
       console.log('or', orphanNotifications)
-      await this.db.clientNotification.deleteMany({ where: { id: { in: zombieNotifications } } })
+      await this.db.clientNotification.deleteMany({ where: { notificationId: { in: orphanNotifications } } })
     }
-    return
 
-    // // --- Main issue: notifications not in copilot for existing tasks
-    // if (tasks.length > copilotNotificationIds.length) {
-    //   const tasksWithoutNotifications = tasks.filter((task) => !tasksWithNotifications.includes(task.id))
-    //   const createNotificationPromises = []
-    //   for (const task of tasksWithoutNotifications) {
-    //     createNotificationPromises.push(
-    //       bottleneck.schedule(() => {
-    //         console.info(`Creating missing notification for task ${task.id} - ${task.title}`)
-    //         return copilot.createNotification({
-    //           senderId: task.createdById,
-    //           recipientId,
-    //           deliveryTargets: {
-    //             inProduct: {
-    //               // doesn't matter what you add here since notification details cannot be viewed
-    //               title: task.id,
-    //             },
-    //           },
-    //         })
-    //       }),
-    //     )
-    //   }
-    //   const newNotifications = await Promise.all(createNotificationPromises)
-    //   const newClientNotificationData = []
-    //   for (const i in newNotifications) {
-    //     newClientNotificationData.push({
-    //       notificationId: newNotifications[i].id,
-    //       taskId: tasks[i].id,
-    //       clientId: recipientId,
-    //     })
-    //   }
-    //   await this.db.clientNotification.createMany({
-    //     data: newClientNotificationData,
-    //   })
-    // }
-    //
-    // // -- Handle copilotNotifications having notifications that appNotifications does not
-    // const extraCopilotNotifications = copilotNotificationIds.filter((id) => !appNotificationIds.includes(id))
-    // if (extraCopilotNotifications.length) {
-    //   console.log("There are notification in Copilot that aren't in db. Fixing...")
-    //   await this.bulkMarkAsRead(extraCopilotNotifications)
-    // }
+    // --- Main issue: notifications not in copilot for existing tasks
+    if (tasks.length !== copilotNotificationIds.length) {
+      const tasksWithNotifications = appNotifications.map((n) => n.taskId)
+      const tasksWithoutNotifications = tasks.filter((task) => !tasksWithNotifications.includes(task.id))
+      const createNotificationPromises = []
+      for (const task of tasksWithoutNotifications) {
+        createNotificationPromises.push(
+          bottleneck.schedule(() => {
+            console.info(`Creating missing notification for task ${task.id} - ${task.title}`)
+            return copilot.createNotification({
+              senderId: task.createdById,
+              recipientId,
+              deliveryTargets: {
+                inProduct: {
+                  // doesn't matter what you add here since notification details cannot be viewed
+                  title: task.id,
+                },
+              },
+            })
+          }),
+        )
+      }
+      const newNotifications = await Promise.all(createNotificationPromises)
+      const newClientNotificationData = []
+      for (const i in newNotifications) {
+        newClientNotificationData.push({
+          notificationId: newNotifications[i].id,
+          taskId: tasks[i].id,
+          clientId: recipientId,
+        })
+      }
+      await this.db.clientNotification.createMany({
+        data: newClientNotificationData,
+      })
+
+      // -- Handle copilotNotifications having notifications that appNotifications does not
+      const extraCopilotNotifications = copilotNotificationIds.filter((id) => !appNotificationIds.includes(id))
+      if (extraCopilotNotifications.length) {
+        console.log("There are notification in Copilot that aren't in db. Fixing...")
+        await this.bulkMarkAsRead(extraCopilotNotifications)
+      }
+    }
   }
 }
