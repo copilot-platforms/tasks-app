@@ -1,5 +1,5 @@
 import { withRetry } from '@/app/api/core/utils/withRetry'
-import { copilotAPIKey as apiKey } from '@/config'
+import { copilotAPIKey as apiKey, appId } from '@/config'
 import {
   ClientRequest,
   ClientResponse,
@@ -34,6 +34,7 @@ import {
 import Bottleneck from 'bottleneck'
 import type { CopilotAPI as SDK } from 'copilot-node-sdk'
 import { copilotApi } from 'copilot-node-sdk'
+import { z } from 'zod'
 
 export class CopilotAPI {
   copilot: SDK
@@ -43,6 +44,19 @@ export class CopilotAPI {
     customApiKey?: string,
   ) {
     this.copilot = copilotApi({ apiKey: customApiKey ?? apiKey, token })
+  }
+
+  private async manualFetch(route: string, query?: Record<string, string>) {
+    const url = new URL(`https://api.copilot.com/v1/${route}`)
+    if (query) {
+      for (const key of Object.keys(query)) {
+        url.searchParams.set(key, query[key])
+      }
+    }
+    const resp = await fetch(url, {
+      headers: { 'X-API-KEY': apiKey, accept: 'application/json' },
+    })
+    return await resp.json()
   }
 
   // NOTE: Any method prefixed with _ is a API method that doesn't implement retry & delay
@@ -209,19 +223,15 @@ export class CopilotAPI {
     await Promise.all(deletePromises)
   }
 
-  async getNotifications(
-    recipientId: string,
-    opts: { limit: number; includeRead: boolean } = { limit: 100, includeRead: false },
-  ) {
-    // return await this.copilot.listNotifications({ recipientId })
-    const resp = await fetch(
-      `https://api.copilot.com/v1/notifications?recipientId=${recipientId}&includeRead=${opts.includeRead}&limit=${opts.limit}`,
-      {
-        headers: { 'X-API-KEY': `${apiKey}`, accept: 'application/json' },
-      },
-    )
-    const data = await resp.json()
-    return data
+  async getNotifications(recipientId: string, opts: { limit?: number } = { limit: 100 }) {
+    const data = await this.manualFetch('notifications', {
+      recipientId,
+      limit: `${opts.limit}`,
+      includeRead: 'false',
+    })
+    const notifications = z.array(NotificationCreatedResponseSchema).parse(data.data)
+    // Return only all notifications triggered by tasks-app
+    return notifications.filter((notification) => notification.appId === z.string().parse(appId))
   }
 
   private wrapWithRetry<Args extends unknown[], R>(fn: (...args: Args) => Promise<R>): (...args: Args) => Promise<R> {
