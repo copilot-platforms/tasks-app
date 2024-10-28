@@ -578,12 +578,16 @@ export class TasksService extends BaseService {
 
     // Case 4
     // --- Handle task moved from completed to incomplete IU logic
+    const isAssignedIU =
+      updatedTask.assigneeType === AssigneeType.internalUser && updatedTask.assigneeId === this.user.internalUserId
     if (
       prevTask.workflowState?.type === StateType.completed &&
       updatedTask.workflowState?.type !== StateType.completed &&
-      updatedTask.assigneeId
+      updatedTask.assigneeId &&
+      !isAssignedIU
     ) {
       // If IU decides to move a task back to an incomplete state, trigger client / company notifications
+      // UNLESS they are moving back an IU task assigned to themselves
       await this.sendTaskCreateNotifications(updatedTask)
     }
   }
