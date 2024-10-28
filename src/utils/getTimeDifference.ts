@@ -3,4 +3,40 @@ import relativeTime from 'dayjs/plugin/relativeTime'
 
 dayjs.extend(relativeTime)
 
-export const getTimeDifference = (createdAt: string): string => dayjs().to(dayjs(createdAt)) //computes time difference to readable time difference between the current time and provided time. The dayjs extentention converts the difference to results like an hour ago, a day ago, 3 days ago and so on.
+export const getTimeDifference = (createdAt: string): string => {
+  const now = dayjs()
+  const targetTime = dayjs(createdAt)
+  const diffInSeconds = now.diff(targetTime, 'second')
+
+  if (diffInSeconds < 60) {
+    return `${diffInSeconds} second${diffInSeconds === 1 ? '' : 's'} ago`
+  }
+
+  const diffInMinutes = now.diff(targetTime, 'minute')
+  if (diffInMinutes < 60) {
+    return `${diffInMinutes} minute${diffInMinutes === 1 ? '' : 's'} ago`
+  }
+
+  const diffInHours = now.diff(targetTime, 'hour')
+  if (diffInHours < 24) {
+    return `${diffInHours} hour${diffInHours === 1 ? '' : 's'} ago`
+  }
+
+  const diffInDays = now.diff(targetTime, 'day')
+  if (diffInDays < 7) {
+    return `${diffInDays} day${diffInDays === 1 ? '' : 's'} ago`
+  }
+
+  const diffInWeeks = now.diff(targetTime, 'week')
+  if (diffInWeeks < 4) {
+    return `${diffInWeeks} week${diffInWeeks === 1 ? '' : 's'} ago`
+  }
+
+  const diffInMonths = now.diff(targetTime, 'month')
+  if (diffInMonths < 12) {
+    return `${diffInMonths} month${diffInMonths === 1 ? '' : 's'} ago`
+  }
+
+  const diffInYears = now.diff(targetTime, 'year')
+  return `${diffInYears} year${diffInYears === 1 ? '' : 's'} ago`
+}
