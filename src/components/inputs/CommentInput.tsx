@@ -92,6 +92,7 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
           placeholder="Leave a comment..."
           suggestions={assigneeSuggestions}
           editorClass="tapwrite-comment-input"
+          hardbreak
         />
         <InputAdornment
           position="end"
