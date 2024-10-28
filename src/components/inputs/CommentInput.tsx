@@ -7,11 +7,10 @@ import { CreateComment } from '@/types/dto/comment.dto'
 import { useSelector } from 'react-redux'
 import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 import { getMentionsList } from '@/utils/getMentionList'
-// import { Tapwrite } from 'tapwrite'
+import { Tapwrite } from 'tapwrite'
 import { ArrowUpward } from '@mui/icons-material'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
-import { Tapwrite as Tipwrite } from 'tippytappy'
 
 interface Prop {
   createComment: (postCommentPayload: CreateComment) => void
@@ -33,10 +32,16 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
   }
 
   const handleSubmit = () => {
+    let content = detail
+    const END_P = '<p></p>'
+    const endChunk = content.slice(-7)
+    if (endChunk === END_P) {
+      content = content.slice(0, -7)
+    }
     // Check if `detail` is effectively empty
     if (!isContentEmpty(detail)) {
       const commentPayload: CreateComment = {
-        content: detail,
+        content,
         taskId: task_id,
         mentions: getMentionsList(detail),
       }
@@ -87,13 +92,13 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
           wordBreak: 'break-word',
         }}
       >
-        <Tipwrite
+        <Tapwrite
           content={detail}
           getContent={setDetail}
           placeholder="Leave a comment..."
           suggestions={assigneeSuggestions}
           editorClass="tapwrite-comment-input"
-          disablePasteAndDnd
+          hardbreak
         />
         <InputAdornment
           position="end"
