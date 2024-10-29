@@ -9,10 +9,9 @@ import { SupabaseActions } from '@/utils/SupabaseActions'
 import { attachmentIcons } from '@/utils/iconMatcher'
 import { truncateText } from '@/utils/truncateText'
 import { Box, Stack, Typography } from '@mui/material'
-import { Attachment } from '@prisma/client'
 
 interface Prop {
-  file: AttachmentResponseSchema | CreateAttachmentRequest | Attachment
+  file: AttachmentResponseSchema | CreateAttachmentRequest
   deleteAttachment: (event: React.MouseEvent<HTMLDivElement>) => void
 }
 
@@ -28,14 +27,13 @@ export const AttachmentCard = ({ file, deleteAttachment }: Prop) => {
     >
       <Stack
         direction="row"
-        columnGap={'8px'}
+        columnGap={3}
         alignItems="center"
         sx={{
-          padding: '4px 8px ',
+          padding: '13px 8px 12px',
           border: (theme) => `1px solid ${theme.palette.divider}`,
-          borderRadius: '6px',
-          width: '100%',
-          height: '49px',
+          borderRadius: '5px',
+          width: '180px',
           overflow: 'hidden',
           textOverflow: 'ellipsis',
           whiteSpace: 'nowrap',
@@ -44,25 +42,20 @@ export const AttachmentCard = ({ file, deleteAttachment }: Prop) => {
             display: 'block',
           },
           '&:hover': {
-            outline: (theme) => `1px solid ${theme.color.gray[300]}`,
-          },
-          '&:focus': {
-            outline: (theme) => `1.5px solid ${theme.color.gray[600]}`,
+            border: (theme) => `2px solid ${theme.palette.divider}`,
           },
         }}
       >
         <Box>{attachmentIcons[fileType]}</Box>
-        <Stack direction="column" rowGap="0px">
+        <Stack direction="column" rowGap="7px">
           <Typography
-            variant="bodySm"
-            sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: '21px' }}
+            variant="sm"
+            sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100px' }}
             title={fileName}
           >
             {fileName}
           </Typography>
-          <Typography variant="bodySm" sx={{ fontSize: '12px', color: (theme) => theme.color.gray[500] }}>
-            {Math.floor(fileSize / 1024)} KB
-          </Typography>
+          <Typography variant="bodySm">{Math.floor(fileSize / 1024)} KB</Typography>
         </Stack>
         <Box
           sx={{

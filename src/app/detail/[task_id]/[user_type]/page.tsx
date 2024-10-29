@@ -41,8 +41,6 @@ import { SilentError } from '@/components/templates/SilentError'
 import { z } from 'zod'
 import { signedUrlTtl } from '@/types/constants'
 import { ActivityWrapper } from '@/app/detail/ui/ActivityWrapper'
-import { Attachment } from '@prisma/client'
-import { getSignedUrlUpload } from '@/app/actions'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
@@ -52,14 +50,6 @@ async function getOneTask(token: string, taskId: string): Promise<TaskResponse> 
   const data = await res.json()
 
   return data.task
-}
-
-async function getAttachments(token: string, taskId: string): Promise<Attachment[]> {
-  const res = await fetch(`${apiUrl}/api/attachments?token=${token}&taskId=${taskId}`)
-
-  const data = await res.json()
-
-  return data.attachments
 }
 
 async function getSignedUrlFile(token: string, filePath: string) {
@@ -85,11 +75,7 @@ export default async function TaskDetailPage({
 
   const copilotClient = new CopilotAPI(token)
 
-  const [task, tokenPayload, attachments] = await Promise.all([
-    getOneTask(token, task_id),
-    copilotClient.getTokenPayload(),
-    getAttachments(token, task_id),
-  ])
+  const [task, tokenPayload] = await Promise.all([getOneTask(token, task_id), copilotClient.getTokenPayload()])
 
   if (!tokenPayload) {
     throw new Error('Please provide a Valid Token')
@@ -147,7 +133,7 @@ export default async function TaskDetailPage({
               >
                 <StyledTiptapDescriptionWrapper>
                   <TaskEditor
-                    attachment={attachments}
+                    // attachment={attachments}
                     task_id={task_id}
                     task={task}
                     isEditable={params.user_type === UserType.INTERNAL_USER}
@@ -170,11 +156,6 @@ export default async function TaskDetailPage({
                     deleteAttachment={async (id: string) => {
                       'use server'
                       await deleteAttachment(token, id)
-                    }}
-                    getSignedUrlUpload={async (fileName: string) => {
-                      'use server'
-                      const data = await getSignedUrlUpload(token, fileName)
-                      return data
                     }}
                     userType={params.user_type}
                   />
