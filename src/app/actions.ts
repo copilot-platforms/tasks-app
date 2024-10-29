@@ -3,7 +3,7 @@ import { apiUrl } from '@/config'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
-import { revalidateTag } from 'next/cache'
+import { ISignedUrlUpload } from '@/types/interfaces'
 
 export const handleCreate = async (token: string, payload: CreateTaskRequest) => {
   try {
@@ -53,7 +53,7 @@ export const createMultipleAttachments = async (token: string, attachments: Crea
   })
 }
 
-export async function getSignedUrlUpload(token: string, fileName: string) {
+export async function getSignedUrlUpload(token: string, fileName: string): Promise<ISignedUrlUpload> {
   const res = await fetch(`${apiUrl}/api/attachments/upload?token=${token}&fileName=${fileName}`)
 
   const data = await res.json()

@@ -2,13 +2,13 @@
 
 import { StyledTextField } from '@/components/inputs/TextField'
 import { selectTaskDetails, setShowConfirmDeleteModal } from '@/redux/features/taskDetailsSlice'
-import { Box, Modal } from '@mui/material'
+import { Box, Modal, Stack } from '@mui/material'
 import { useEffect, useState, useCallback } from 'react'
 import { useSelector } from 'react-redux'
 import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
 import store from '@/redux/store'
 import { upload } from '@vercel/blob/client'
-import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
+import { AttachmentResponseSchema, CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { ISignedUrlUpload, UserType } from '@/types/interfaces'
 import { Tapwrite } from 'tapwrite'
 import { useDebounce, useDebounceWithCancel } from '@/hooks/useDebounce'
@@ -20,30 +20,35 @@ import { TaskResponse } from '@/types/dto/tasks.dto'
 import { ScrapImageRequest } from '@/types/common'
 
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
+import { AttachmentInput } from '@/components/inputs/AttachmentInput'
+import { AttachmentCard } from '@/components/cards/AttachmentCard'
+import { Attachment } from '@prisma/client'
 
 interface Prop {
   task_id: string
   task: TaskResponse
-  // attachment: AttachmentResponseSchema[]
+  attachment: Attachment[]
   isEditable: boolean
   updateTaskDetail: (detail: string) => void
   updateTaskTitle: (title: string) => void
   deleteTask: () => void
   postAttachment: (postAttachmentPayload: CreateAttachmentRequest) => void
   deleteAttachment: (id: string) => void
+  getSignedUrlUpload: (fileName: string) => Promise<ISignedUrlUpload>
   userType: UserType
 }
 
 export const TaskEditor = ({
   task_id,
   task,
-  // attachment,
+  attachment,
   isEditable,
   updateTaskDetail,
   updateTaskTitle,
   deleteTask,
   postAttachment,
   deleteAttachment,
+  getSignedUrlUpload,
   userType,
 }: Prop) => {
   const [updateTitle, setUpdateTitle] = useState('')
@@ -53,19 +58,19 @@ export const TaskEditor = ({
   const [isUserTyping, setIsUserTyping] = useState(false)
   const [activeUploads, setActiveUploads] = useState(0)
 
-  // const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
-  //   event.preventDefault()
-  //   const files = event.target.files
-  //   if (files && files.length > 0) {
-  //     const file = files[0]
-  //     const supabaseActions = new SupabaseActions()
-  //     const signedUrl: ISignedUrlUpload = await getSignedUrlUpload(generateRandomString(file.name))
-  //     const filePayload = await supabaseActions.uploadAttachment(file, signedUrl, task_id)
-  //     if (filePayload) {
-  //       postAttachment({ ...filePayload, taskId: filePayload.taskId })
-  //     }
-  //   }
-  // }
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    event.preventDefault()
+    const files = event.target.files
+    if (files && files.length > 0) {
+      const file = files[0]
+      const supabaseActions = new SupabaseActions()
+      const signedUrl: ISignedUrlUpload = await getSignedUrlUpload(generateRandomString(file.name))
+      const filePayload = await supabaseActions.uploadAttachment(file, signedUrl, task_id)
+      if (filePayload) {
+        postAttachment({ ...filePayload, taskId: filePayload.taskId })
+      }
+    }
+  }
 
   useEffect(() => {
     if (!isUserTyping && activeUploads === 0) {
@@ -176,33 +181,31 @@ export const TaskEditor = ({
         />
       </Box>
 
-      {/* {advancedFeatureFlag && ( */}
-      {/* <> */}
-      {/*     <Stack direction="row" columnGap={3} rowGap={3} mt={3} flexWrap={'wrap'}> */}
-      {/*       {attachment?.map((el, key) => { */}
-      {/*         return ( */}
-      {/*           <Box key={key}> */}
-      {/*             <AttachmentCard */}
-      {/*               file={el} */}
-      {/*               deleteAttachment={async (event: any) => { */}
-      {/*                 event.stopPropagation() */}
-      {/*                 const supabaseActions = new SupabaseActions() */}
-      {/*                 const { data } = await supabaseActions.removeAttachment(el.filePath) */}
-      {/*                 if (data && el.id) { */}
-      {/*                   deleteAttachment(el.id) */}
-      {/*                 } */}
-      {/*               }} */}
-      {/*             /> */}
-      {/*           </Box> */}
-      {/*         ) */}
-      {/*       })} */}
-      {/*     </Stack> */}
+      <>
+        <Stack direction="column" columnGap={3} rowGap={3} mt={3} flexWrap={'wrap'}>
+          {attachment?.map((el, key) => {
+            return (
+              <Box key={key}>
+                <AttachmentCard
+                  file={el}
+                  deleteAttachment={async (event: any) => {
+                    event.stopPropagation()
+                    const supabaseActions = new SupabaseActions()
+                    const { data } = await supabaseActions.removeAttachment(el.filePath)
+                    if (data && el.id) {
+                      deleteAttachment(el.id)
+                    }
+                  }}
+                />
+              </Box>
+            )
+          })}
+        </Stack>
 
-      {/*     <Stack direction="row" mt={3} justifyContent="flex-end"> */}
-      {/*       <AttachmentInput handleFileSelect={handleFileSelect} /> */}
-      {/*     </Stack> */}
-      {/*   </> */}
-      {/* )} */}
+        <Stack direction="row" mt={3} justifyContent="flex-end">
+          <AttachmentInput handleFileSelect={handleFileSelect} />
+        </Stack>
+      </>
 
       <Modal
         open={showConfirmDeleteModal}

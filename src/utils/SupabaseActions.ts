@@ -40,7 +40,7 @@ export class SupabaseActions extends SupabaseService {
         filePath: data.path,
       }
     }
-    return { filePayload, error }
+    return filePayload
   }
 
   async removeAttachment(filePath: string) {
