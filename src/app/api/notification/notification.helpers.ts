@@ -111,14 +111,14 @@ export const getEmailDetails = (
     [NotificationTaskActions.Assigned]: {
       subject: 'A task was assigned to you',
       header: 'A task was assigned to you',
-      body: `The task ‘${task?.title}’ was assigned to you by ${actionUser}. To see details about the task open it below. `,
+      body: `The task ‘${task?.title}’ was assigned to you by ${actionUser}. To see details about the task, open it below.`,
       title: 'View task',
       ctaParams,
     },
     [NotificationTaskActions.AssignedToCompany]: {
       subject: 'Task was assigned to your company',
       header: 'Task was assigned to your company',
-      body: `A new task was assigned to your company by ${actionUser}. To see details about the task, navigate to the Tasks App below.`,
+      body: `A new task was assigned to your company by ${actionUser}. To see details about the task, open it below.`,
       title: 'View task',
       ctaParams,
     },
@@ -133,7 +133,7 @@ export const getEmailDetails = (
       subject: 'A comment was added',
       header: 'A comment was added',
       body: `${actionUser} left a comment on the task ‘${task?.title}’. To view the comment, open the task below.`,
-      title: 'View Comment',
+      title: 'View comment',
       ctaParams,
     },
     [NotificationTaskActions.Mentioned]: {
