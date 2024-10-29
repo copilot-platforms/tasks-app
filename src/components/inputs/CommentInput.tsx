@@ -59,6 +59,10 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
         event.preventDefault() // Prevent new line in the editor
         handleSubmit()
       }
+      if (event.key === 'Enter' && event.ctrlKey) {
+        event.preventDefault()
+        handleSubmit() //Invoke submit if ctrl+enter is pressed at any time
+      }
       // If Shift + Enter is pressed, do not prevent default,
       // allowing Tapwrite to handle the new line.
     }
