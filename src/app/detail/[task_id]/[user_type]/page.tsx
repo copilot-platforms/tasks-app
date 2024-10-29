@@ -31,7 +31,6 @@ import { CopilotAPI } from '@/utils/CopilotAPI'
 import EscapeHandler from '@/utils/escapeHandler'
 import { RealTime } from '@/hoc/RealTime'
 import { CustomScrollbar } from '@/hoc/CustomScrollbar'
-import { redirectIfResourceNotFound } from '@/utils/redirect'
 import { Suspense } from 'react'
 import { WorkflowStateFetcher } from '@/app/_fetchers/WorkflowStateFetcher'
 import { AssigneeFetcher } from '@/app/_fetchers/AssigneeFetcher'
@@ -41,6 +40,8 @@ import { SilentError } from '@/components/templates/SilentError'
 import { z } from 'zod'
 import { signedUrlTtl } from '@/types/constants'
 import { ActivityWrapper } from '@/app/detail/ui/ActivityWrapper'
+import { DeletedTaskRedirectPage } from '@/components/layouts/DeletedTaskRedirectPage'
+import { UserRole } from '@/app/api/core/types/user'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
@@ -83,7 +84,9 @@ export default async function TaskDetailPage({
 
   console.info(`app/detail/${task_id}/${user_type}/page.tsx | Serving user ${token} with payload`, tokenPayload)
 
-  redirectIfResourceNotFound(searchParams, task, !!tokenPayload.internalUserId)
+  if (!!!task) {
+    return <DeletedTaskRedirectPage userType={tokenPayload.internalUserId ? UserRole.IU : UserRole.Client} />
+  }
 
   return (
     <DetailStateUpdate isRedirect={!!searchParams.isRedirect} token={token} tokenPayload={tokenPayload} task={task}>
