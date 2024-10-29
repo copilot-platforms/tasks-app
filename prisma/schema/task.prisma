@@ -23,6 +23,7 @@ model Task {
   assignedAt               DateTime?
   completedAt              DateTime?
   dueDate                  String?                    @db.VarChar(10)
+  lastActivityLogUpdated   DateTime?
   createdAt                DateTime                   @default(now())
   deletedAt                DateTime?
   ClientNotification       ClientNotification[]
