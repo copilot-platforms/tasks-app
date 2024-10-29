@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { LogResponse } from '@/app/api/activity-logs/schemas/LogResponseSchema'
 import { Box, Skeleton, Stack, Typography } from '@mui/material'
 import { Comments } from './Comments'
@@ -27,9 +27,14 @@ export const ActivityWrapper = ({
   task_id: string
   tokenPayload: Token
 }) => {
-  const { data: activities, isLoading } = useSWR(`/api/tasks/${task_id}/activity-logs?token=${token}`, fetcher, {
-    refreshInterval: 10_000,
-  })
+  const [logsUpdateCounter, setLogsUpdateCounter] = useState(0)
+  const { data: activities, isLoading } = useSWR(
+    [`/api/tasks/${task_id}/activity-logs?token=${token}`, logsUpdateCounter],
+    ([url]) => fetcher(url),
+    {
+      refreshInterval: 0,
+    },
+  )
   const { assignee } = useSelector(selectTaskBoard)
   const { mutate } = useSWRConfig()
   const currentUserId = tokenPayload.clientId ?? tokenPayload.internalUserId
