@@ -230,7 +230,9 @@ export class CopilotAPI {
     })
     const notifications = z.array(NotificationCreatedResponseSchema).parse(data.data)
     // Return only all notifications triggered by tasks-app
-    return notifications.filter((notification) => notification.appId === APP_ID)
+    return notifications.filter(
+      (notification) => notification.appId === z.string({ message: 'Missing AppID in environment' }).parse(APP_ID),
+    )
   }
 
   private wrapWithRetry<Args extends unknown[], R>(fn: (...args: Args) => Promise<R>): (...args: Args) => Promise<R> {

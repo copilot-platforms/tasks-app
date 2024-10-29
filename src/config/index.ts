@@ -14,4 +14,4 @@ export const supabaseProjectUrl = process.env.NEXT_PUBLIC_SUPABASE_PROJECT_URL |
 export const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
 export const supabaseBucket = process.env.NEXT_PUBLIC_SUPABASE_BUCKET || ''
 export const cronSecret = process.env.CRON_SECRET || ''
-export const APP_ID = z.string({ message: 'Missing AppID in environment' }).parse(process.env.COPILOT_APP_API_KEY)
+export const APP_ID = process.env.COPILOT_APP_API_KEY

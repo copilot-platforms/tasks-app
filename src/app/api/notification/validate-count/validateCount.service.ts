@@ -35,15 +35,10 @@ export class ValidateCountService extends NotificationService {
     const tasksService = new TasksService(this.user)
     const tasks = await tasksService.getAllTasks()
 
-    console.log('tasks', tasks.length)
     // Query all notifications triggered for a list of client/company tasks
     const appNotifications = await this.getAllForTasks<UserRole.Client>(tasks)
     const appNotificationIds = appNotifications.map((n) => n.notificationId)
 
-    console.log('app', appNotificationIds)
-    console.log('copilot', copilotNotificationIds)
-
-    console.log('a', getArrayDifference(appNotificationIds, copilotNotificationIds).length)
     if (getArrayDifference(appNotificationIds, copilotNotificationIds).length) {
       await this.removeOrphanNotificationsFromDb(appNotificationIds, copilotNotificationIds)
     }
@@ -53,7 +48,6 @@ export class ValidateCountService extends NotificationService {
     }
 
     // Do this after fixing everything else to avoid removing necessary notifications
-    console.log('b', getArrayDifference(copilotNotificationIds, appNotificationIds).length)
     if (getArrayDifference(copilotNotificationIds, appNotificationIds).length) {
       await this.removeOrphanNotificationsFromCopilot(appNotificationIds, copilotNotificationIds)
     }
@@ -90,9 +84,7 @@ export class ValidateCountService extends NotificationService {
   private async addMissingNotifications(tasks: Task[], clientId: string, appNotifications: ClientNotification[]) {
     // First create missing notifications in Copilot in-product
     const tasksWithNotifications = appNotifications.map((n: any) => n.taskId)
-    console.log('app2', appNotifications)
     const tasksWithoutNotifications = tasks.filter((task) => !tasksWithNotifications.includes(task.id))
-    console.log('without', tasksWithoutNotifications)
     const createNotificationPromises = []
     for (const task of tasksWithoutNotifications) {
       createNotificationPromises.push(
@@ -111,7 +103,6 @@ export class ValidateCountService extends NotificationService {
         }),
       )
     }
-    console.log('createNotificationPromises', createNotificationPromises)
     const newNotifications = await Promise.all(createNotificationPromises)
     // Now track those to ClientNotifications table
     const newClientNotificationData = []
