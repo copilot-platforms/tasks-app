@@ -1,5 +1,5 @@
 import { withRetry } from '@/app/api/core/utils/withRetry'
-import { copilotAPIKey as apiKey, appId } from '@/config'
+import { copilotAPIKey as apiKey, APP_ID } from '@/config'
 import {
   ClientRequest,
   ClientResponse,
@@ -227,11 +227,10 @@ export class CopilotAPI {
     const data = await this.manualFetch('notifications', {
       recipientId,
       limit: `${opts.limit}`,
-      includeRead: 'false',
     })
     const notifications = z.array(NotificationCreatedResponseSchema).parse(data.data)
     // Return only all notifications triggered by tasks-app
-    return notifications.filter((notification) => notification.appId === z.string().parse(appId))
+    return notifications.filter((notification) => notification.appId === APP_ID)
   }
 
   private wrapWithRetry<Args extends unknown[], R>(fn: (...args: Args) => Promise<R>): (...args: Args) => Promise<R> {
