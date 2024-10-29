@@ -161,7 +161,7 @@ export default async function TaskDetailPage({
                   />
                 </StyledTiptapDescriptionWrapper>
 
-                <ActivityWrapper task_id={task_id} token={token} tokenPayload={tokenPayload} />
+                <ActivityWrapper task={task} task_id={task_id} token={token} tokenPayload={tokenPayload} />
               </TaskDetailsContainer>
             </CustomScrollbar>
           </ToggleController>

@@ -1,33 +1,36 @@
 'use client'
 
-import { useMemo, useState } from 'react'
 import { LogResponse } from '@/app/api/activity-logs/schemas/LogResponseSchema'
-import { Box, Skeleton, Stack, Typography } from '@mui/material'
-import { Comments } from './Comments'
 import { ActivityLog } from '@/app/detail/ui/ActivityLog'
 import { CommentInput } from '@/components/inputs/CommentInput'
-import { ActivityType } from '@prisma/client'
-import { postComment, deleteComment } from '../[task_id]/[user_type]/actions'
-import { CreateComment } from '@/types/dto/comment.dto'
-import { fetcher } from '@/utils/fetcher'
-import useSWR, { useSWRConfig } from 'swr'
-import { useSelector } from 'react-redux'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
-import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
-import { generateRandomString } from '@/utils/generateRandomString'
-import { z } from 'zod'
 import { ClientResponseSchema, InternalUsersSchema, Token } from '@/types/common'
+import { CreateComment } from '@/types/dto/comment.dto'
+import { TaskResponse } from '@/types/dto/tasks.dto'
+import { fetcher } from '@/utils/fetcher'
+import { generateRandomString } from '@/utils/generateRandomString'
+import { Box, Skeleton, Stack, Typography } from '@mui/material'
+import { ActivityType } from '@prisma/client'
+import { useEffect, useMemo, useState } from 'react'
+import { useSelector } from 'react-redux'
+import useSWR, { useSWRConfig } from 'swr'
+import { z } from 'zod'
+import { deleteComment, postComment } from '../[task_id]/[user_type]/actions'
+import { Comments } from './Comments'
 
 export const ActivityWrapper = ({
   token,
   task_id,
+  task,
   tokenPayload,
 }: {
   token: string
   task_id: string
+  task: TaskResponse
   tokenPayload: Token
 }) => {
   const [logsUpdateCounter, setLogsUpdateCounter] = useState(0)
+  const [prevTask, setPrevTask] = useState(task)
   const { data: activities, isLoading } = useSWR(
     [`/api/tasks/${task_id}/activity-logs?token=${token}`, logsUpdateCounter],
     ([url]) => fetcher(url),
@@ -46,6 +49,13 @@ export const ActivityWrapper = ({
     }
     return z.union([InternalUsersSchema, ClientResponseSchema]).parse(assignee.find((el) => el.id === currentUserId))
   }, [assignee, currentUserId])
+
+  useEffect(() => {
+    if (prevTask.lastActivityLogUpdated !== task.lastActivityLogUpdated) {
+      setLogsUpdateCounter((prev) => prev++)
+    }
+    setPrevTask(task)
+  }, [task])
 
   const cacheKey = `/api/tasks/${task_id}/activity-logs?token=${token}`
 
