@@ -85,7 +85,7 @@ export default async function TaskDetailPage({
   console.info(`app/detail/${task_id}/${user_type}/page.tsx | Serving user ${token} with payload`, tokenPayload)
 
   if (!task) {
-    return <DeletedTaskRedirectPage userType={tokenPayload.internalUserId ? UserRole.IU : UserRole.Client} />
+    return <DeletedTaskRedirectPage userType={tokenPayload.internalUserId ? UserRole.IU : UserRole.Client} token={token} />
   }
 
   return (

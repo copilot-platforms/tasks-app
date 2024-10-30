@@ -4,16 +4,14 @@ import { UserRole } from '@/app/api/core/types/user'
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { TasksListIcon } from '@/icons'
-import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { SxCenter } from '@/utils/mui'
 import { Box, Stack, Typography } from '@mui/material'
 import { useRouter } from 'next/navigation'
-import { useSelector } from 'react-redux'
 import { z } from 'zod'
 
-export const DeletedTaskRedirectPage = ({ userType }: { userType: UserRole }) => {
+export const DeletedTaskRedirectPage = ({ userType, token }: { userType: UserRole; token: string }) => {
   const router = useRouter()
-  const { token } = useSelector(selectTaskBoard)
+
   return (
     <>
       <AppMargin size={SizeofAppMargin.LARGE} py="20px">
