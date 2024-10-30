@@ -120,7 +120,7 @@ export const ActivityWrapper = ({
 
   return (
     <Box width="100%">
-      <Stack direction="column" alignItems="left" p="12px 5px" rowGap={5}>
+      <Stack direction="column" alignItems="left" p="12px 0px" rowGap={5}>
         <Typography variant="lg">Activity</Typography>
         {isLoading ? (
           <Stack direction="column" rowGap={5}>
@@ -129,7 +129,7 @@ export const ActivityWrapper = ({
             <Skeleton variant="rectangular" width={'100%'} height={15} />
           </Stack>
         ) : (
-          <Stack direction="column" alignItems="left" p="0px 5px" rowGap={4}>
+          <Stack direction="column" alignItems="left" rowGap={4}>
             {activities?.data?.map((item: LogResponse, index: number) => (
               <Box
                 key={index}
