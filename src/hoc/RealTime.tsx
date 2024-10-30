@@ -21,10 +21,12 @@ interface RealTimeTaskResponse extends TaskResponse {
 export const RealTime = ({
   children,
   task,
+  filter,
   tokenPayload,
 }: {
   children: ReactNode
   task?: TaskResponse
+  filter?: string
   tokenPayload: Token
 }) => {
   const { tasks, token } = useSelector(selectTaskBoard)
@@ -112,7 +114,7 @@ export const RealTime = ({
           schema: 'public',
           table: 'Tasks',
           filter:
-            userRole === AssigneeType.internalUser
+            (filter ?? userRole === AssigneeType.internalUser)
               ? `workspaceId=eq.${tokenPayload?.workspaceId}`
               : // The reason we are explicitly using an assigneeId filter for clients is so they are not streamed
                 // tasks they don't have access to in the first place.

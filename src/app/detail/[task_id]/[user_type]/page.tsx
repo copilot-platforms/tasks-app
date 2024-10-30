@@ -87,7 +87,7 @@ export default async function TaskDetailPage({
 
   return (
     <DetailStateUpdate isRedirect={!!searchParams.isRedirect} token={token} tokenPayload={tokenPayload} task={task}>
-      <RealTime tokenPayload={tokenPayload}>
+      <RealTime filter={`id=${task_id}`} tokenPayload={tokenPayload}>
         <EscapeHandler />
         <Stack direction="row" sx={{ height: '100vh' }}>
           <ToggleController>
@@ -161,7 +161,7 @@ export default async function TaskDetailPage({
                   />
                 </StyledTiptapDescriptionWrapper>
 
-                <ActivityWrapper task={task} task_id={task_id} token={token} tokenPayload={tokenPayload} />
+                <ActivityWrapper task_id={task_id} token={token} tokenPayload={tokenPayload} />
               </TaskDetailsContainer>
             </CustomScrollbar>
           </ToggleController>
