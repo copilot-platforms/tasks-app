@@ -302,9 +302,10 @@ export class TasksService extends BaseService {
     await labelMappingService.deleteLabel(task?.label)
 
     await this.db.task.delete({ where: { id } })
-    const notificationService = new NotificationService(this.user)
-    await notificationService.deleteInternalUserNotificationForTask(id)
-    await this.db.internalUserNotification.deleteMany({ where: { taskId: id } })
+    // Logic to remove internal user notifications when a task is deleted / assignee is deleted
+    // ...In case requirements change later again
+    // const notificationService = new NotificationService(this.user)
+    // await notificationService.deleteInternalUserNotificationForTask(id)
   }
 
   async setNewLastActivityLogUpdated(taskId: string) {
