@@ -1,22 +1,22 @@
 'use client'
 
+import { useMemo } from 'react'
 import { LogResponse } from '@/app/api/activity-logs/schemas/LogResponseSchema'
-import { revalidate } from '@/app/api/notification/validate-count/validateCount.controller'
-import { deleteComment, postComment } from '@/app/detail/[task_id]/[user_type]/actions'
+import { Box, Skeleton, Stack, Typography } from '@mui/material'
+import { Comments } from './Comments'
 import { ActivityLog } from '@/app/detail/ui/ActivityLog'
-import { Comments } from '@/app/detail/ui/Comments'
 import { CommentInput } from '@/components/inputs/CommentInput'
-import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
-import { ClientResponseSchema, InternalUsersSchema, Token } from '@/types/common'
+import { ActivityType } from '@prisma/client'
+import { postComment, deleteComment } from '../[task_id]/[user_type]/actions'
 import { CreateComment } from '@/types/dto/comment.dto'
 import { fetcher } from '@/utils/fetcher'
-import { generateRandomString } from '@/utils/generateRandomString'
-import { Box, Skeleton, Stack, Typography } from '@mui/material'
-import { ActivityType } from '@prisma/client'
-import { useEffect, useMemo, useState } from 'react'
-import { useSelector } from 'react-redux'
 import useSWR, { useSWRConfig } from 'swr'
+import { useSelector } from 'react-redux'
+import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
+import { generateRandomString } from '@/utils/generateRandomString'
 import { z } from 'zod'
+import { ClientResponseSchema, InternalUsersSchema, Token } from '@/types/common'
 
 export const ActivityWrapper = ({
   token,
@@ -27,28 +27,11 @@ export const ActivityWrapper = ({
   task_id: string
   tokenPayload: Token
 }) => {
-  const [lastActivityLogUpdated, setLastActivityLogUpdated] = useState(1)
-  const { tasks } = useSelector(selectTaskBoard)
-  const task = tasks.find((task) => task.id === task_id)
-
-  const cacheKey = `/api/tasks/${task_id}/activity-logs?token=${token}`
-  const { mutate } = useSWRConfig()
-
-  const { data: activities, isLoading } = useSWR(
-    [`/api/tasks/${task_id}/activity-logs?token=${token}`, lastActivityLogUpdated],
-    ([url]) => fetcher(url),
-    {
-      refreshInterval: 0,
-    },
-  )
-
-  useEffect(() => {
-    mutate(cacheKey, {
-      revalidate: true,
-    })
-  }, [task?.lastActivityLogUpdated, cacheKey, mutate])
-
+  const { data: activities, isLoading } = useSWR(`/api/tasks/${task_id}/activity-logs?token=${token}`, fetcher, {
+    refreshInterval: 10_000,
+  })
   const { assignee } = useSelector(selectTaskBoard)
+  const { mutate } = useSWRConfig()
   const currentUserId = tokenPayload.clientId ?? tokenPayload.internalUserId
 
   const currentUserDetails = useMemo(() => {
@@ -59,12 +42,7 @@ export const ActivityWrapper = ({
     return z.union([InternalUsersSchema, ClientResponseSchema]).parse(assignee.find((el) => el.id === currentUserId))
   }, [assignee, currentUserId])
 
-  // useEffect(() => {
-  //   if (prevTask.lastActivityLogUpdated !== task.lastActivityLogUpdated) {
-  //     setLogsUpdateCounter((prev) => prev++)
-  //   }
-  //   setPrevTask(task)
-  // }, [task])
+  const cacheKey = `/api/tasks/${task_id}/activity-logs?token=${token}`
 
   // Handle comment creation
   const handleCreateComment = async (postCommentPayload: CreateComment) => {
