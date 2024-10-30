@@ -1,17 +1,12 @@
-'use client'
-
 import { UserRole } from '@/app/api/core/types/user'
-import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { TasksListIcon } from '@/icons'
 import { SxCenter } from '@/utils/mui'
-import { Box, Stack, Typography } from '@mui/material'
-import { useRouter } from 'next/navigation'
+import { Box, Button, Stack, Typography } from '@mui/material'
+import Link from 'next/link'
 import { z } from 'zod'
 
 export const DeletedTaskRedirectPage = ({ userType, token }: { userType: UserRole; token: string }) => {
-  const router = useRouter()
-
   return (
     <>
       <AppMargin size={SizeofAppMargin.LARGE} py="20px">
@@ -27,7 +22,7 @@ export const DeletedTaskRedirectPage = ({ userType, token }: { userType: UserRol
               <Box
                 sx={{
                   padding: '6px',
-                  background: (theme) => theme.color.gray[150],
+                  background: '#EFF1F4',
                   width: '40px',
                   borderRadius: '6px',
                   gap: '20px',
@@ -40,18 +35,28 @@ export const DeletedTaskRedirectPage = ({ userType, token }: { userType: UserRol
               <Typography variant="2xl" lineHeight={'32px'}>
                 No task to show
               </Typography>
-              <Typography variant="bodyLg" sx={{ color: (theme) => theme.color.gray[500] }}>
+              <Typography variant="bodyLg" sx={{ color: '#6B6F76' }}>
                 This task has been deleted. You can view your other tasks on the Tasks homepage.
               </Typography>
             </Stack>
-            <Box>
-              <PrimaryBtn
-                buttonText="New task"
-                handleClick={() => {
-                  router.push(`/${userType === UserRole.Client ? 'client' : ''}?token=${z.string().parse(token)}`)
+            <Link href={`/${userType === UserRole.Client ? 'client' : ''}?token=${z.string().parse(token)}`}>
+              <Button
+                variant="contained"
+                startIcon={null}
+                sx={{
+                  textTransform: 'none',
+                  bgcolor: '#212B36',
+                  boxShadow: 'none',
+                  '&:hover': { backgroundColor: '#212B36', boxShadow: 'none' },
+                  borderRadius: '4px',
+                  cursor: 'pointer',
                 }}
-              />
-            </Box>
+                disableRipple
+                disableTouchRipple
+              >
+                <Typography variant="sm">View tasks</Typography>
+              </Button>
+            </Link>
           </Stack>
         </Box>
       </AppMargin>
