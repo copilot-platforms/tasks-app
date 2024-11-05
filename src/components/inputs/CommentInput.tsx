@@ -1,16 +1,17 @@
 'use client'
 
-import { Avatar, Box, IconButton, InputAdornment, Stack } from '@mui/material'
-import { useState, useEffect } from 'react'
 import { CommentCardContainer } from '@/app/detail/ui/styledComponent'
-import { CreateComment } from '@/types/dto/comment.dto'
-import { useSelector } from 'react-redux'
-import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
-import { getMentionsList } from '@/utils/getMentionList'
-import { Tapwrite } from 'tapwrite'
-import { ArrowUpward } from '@mui/icons-material'
+import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
+import { CreateComment } from '@/types/dto/comment.dto'
+import { getMentionsList } from '@/utils/getMentionList'
+import { ArrowUpward } from '@mui/icons-material'
+import { IconButton, InputAdornment, Stack } from '@mui/material'
+import { useEffect, useState } from 'react'
+import { useSelector } from 'react-redux'
+import { Tapwrite } from 'tapwrite'
 
 interface Prop {
   createComment: (postCommentPayload: CreateComment) => void
@@ -78,16 +79,14 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
 
   return (
     <Stack direction="row" columnGap={2} alignItems="flex-start">
-      <Avatar
-        alt="user"
-        src={currentUserDetails?.avatarImageUrl}
+      <CopilotAvatar
+        width="24px"
+        height="24px"
+        fontSize="13px"
+        currentAssignee={currentUserDetails}
         sx={{
-          width: '25px',
-          height: '25px',
           border: (theme) => `1.1px solid ${theme.color.gray[200]}`,
-          borderRadius: '9999px',
           marginTop: '5px',
-          fontSize: '13px',
         }}
       />
       <CommentCardContainer
