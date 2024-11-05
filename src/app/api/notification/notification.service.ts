@@ -344,18 +344,11 @@ export class NotificationService extends BaseService {
           : `${(actionTrigger as CopilotUser).givenName} ${(actionTrigger as CopilotUser).familyName}`
     }
 
-    console.info('set recipient Ids', recipientIds)
     return { senderId, recipientId, recipientIds, actionUser, companyName }
   }
 
-  async getAllForTasks<T extends UserRole>(
-    tasks: Task[],
-  ): Promise<T extends UserRole.Client ? ClientNotification[] : InternalUserNotification[]> {
+  async getAllForTasks(tasks: Task[]): Promise<ClientNotification[]> {
     const taskIds = tasks.map((task) => task.id)
-
-    if (this.user.role === UserRole.Client) {
-      return (await this.db.clientNotification.findMany({ where: { taskId: { in: taskIds } } })) as any
-    }
-    return (await this.db.internalUserNotification.findMany({ where: { taskId: { in: taskIds } } })) as any
+    return await this.db.clientNotification.findMany({ where: { taskId: { in: taskIds } } })
   }
 }
