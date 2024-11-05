@@ -1,13 +1,15 @@
+import { CompanyResponse, CopilotUser, NotificationCreatedResponse } from '@/types/common'
+import { bottleneck } from '@/utils/bottleneck'
 import { CopilotAPI } from '@/utils/CopilotAPI'
-import { BaseService } from '@api/core/services/base.service'
-import { AssigneeType, ClientNotification, Task } from '@prisma/client'
-import { NotificationTaskActions } from '@api/core/types/tasks'
-import { z } from 'zod'
-import { CompanyResponse, CopilotUser, MeResponse, NotificationCreatedResponse } from '@/types/common'
-import { getEmailDetails, getInProductNotificationDetails } from '@api/notification/notification.helpers'
 import APIError from '@api/core/exceptions/api'
-import httpStatus from 'http-status'
+import { BaseService } from '@api/core/services/base.service'
+import { NotificationTaskActions } from '@api/core/types/tasks'
+import { UserRole } from '@api/core/types/user'
+import { getEmailDetails, getInProductNotificationDetails } from '@api/notification/notification.helpers'
+import { AssigneeType, ClientNotification, InternalUserNotification, Task } from '@prisma/client'
 import Bottleneck from 'bottleneck'
+import httpStatus from 'http-status'
+import { z } from 'zod'
 
 export class NotificationService extends BaseService {
   async create(
@@ -209,6 +211,15 @@ export class NotificationService extends BaseService {
     await this.db.clientNotification.deleteMany({ where: { id: { in: notifications.map((obj) => obj.id) } } })
   }
 
+  async bulkMarkAsRead(notificationIds: string[]): Promise<void> {
+    const copilot = new CopilotAPI(this.user.token)
+    const markAsReadPromises = []
+    for (const id of notificationIds) {
+      markAsReadPromises.push(bottleneck.schedule(() => copilot.markNotificationAsRead(id)))
+    }
+    await Promise.all(markAsReadPromises)
+  }
+
   /**
    * Get the concerned sender and receiver for a notification based on the action that triggered it. There are various actions
    * defined by NotificationTaskActions. This method returns the senderId, receiverId, and actionUser (user that is creating the notification action)
@@ -333,7 +344,11 @@ export class NotificationService extends BaseService {
           : `${(actionTrigger as CopilotUser).givenName} ${(actionTrigger as CopilotUser).familyName}`
     }
 
-    console.info('set recipient Ids', recipientIds)
     return { senderId, recipientId, recipientIds, actionUser, companyName }
+  }
+
+  async getAllForTasks(tasks: Task[]): Promise<ClientNotification[]> {
+    const taskIds = tasks.map((task) => task.id)
+    return await this.db.clientNotification.findMany({ where: { taskId: { in: taskIds } } })
   }
 }

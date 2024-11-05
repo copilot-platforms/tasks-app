@@ -14,13 +14,3 @@ export const RESOURCE_NOT_FOUND_REDIRECT_PATHS = {
   [UserType.INTERNAL_USER]: '/',
   [UserType.CLIENT_USER]: '/client',
 }
-
-export const redirectIfResourceNotFound = <R>(
-  searchParams: Record<string, string>,
-  resource: R,
-  isInternalUser: boolean,
-): void => {
-  if (!resource) {
-    redirect(`${apiUrl}/${!isInternalUser ? 'client' : ''}?token=${z.string().parse(searchParams.token)}`)
-  }
-}

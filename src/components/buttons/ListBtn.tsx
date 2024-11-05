@@ -22,6 +22,7 @@ export const ListBtn = ({
         borderRadius: '4px',
         width: '138px',
         cursor: 'pointer',
+        background: (theme) => theme.color.gray[100],
       }}
       onClick={handleClick}
     >

@@ -1,22 +1,21 @@
 'use client'
 
-import { useMemo } from 'react'
 import { LogResponse } from '@/app/api/activity-logs/schemas/LogResponseSchema'
-import { Box, Skeleton, Stack, Typography } from '@mui/material'
-import { Comments } from './Comments'
+import { deleteComment, postComment } from '@/app/detail/[task_id]/[user_type]/actions'
 import { ActivityLog } from '@/app/detail/ui/ActivityLog'
+import { Comments } from '@/app/detail/ui/Comments'
 import { CommentInput } from '@/components/inputs/CommentInput'
-import { ActivityType } from '@prisma/client'
-import { postComment, deleteComment } from '../[task_id]/[user_type]/actions'
+import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { ClientResponseSchema, InternalUsersSchema, Token } from '@/types/common'
 import { CreateComment } from '@/types/dto/comment.dto'
 import { fetcher } from '@/utils/fetcher'
-import useSWR, { useSWRConfig } from 'swr'
-import { useSelector } from 'react-redux'
-import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
-import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { generateRandomString } from '@/utils/generateRandomString'
+import { Box, Skeleton, Stack, Typography } from '@mui/material'
+import { ActivityType } from '@prisma/client'
+import { useEffect, useMemo, useState } from 'react'
+import { useSelector } from 'react-redux'
+import useSWR, { useSWRConfig } from 'swr'
 import { z } from 'zod'
-import { ClientResponseSchema, InternalUsersSchema, Token } from '@/types/common'
 
 export const ActivityWrapper = ({
   token,
@@ -27,11 +26,28 @@ export const ActivityWrapper = ({
   task_id: string
   tokenPayload: Token
 }) => {
+  const { tasks } = useSelector(selectTaskBoard)
+  const task = tasks.find((task) => task.id === task_id)
+  const [lastUpdated, setLastUpdated] = useState(task?.lastActivityLogUpdated)
+
+  const cacheKey = `/api/tasks/${task_id}/activity-logs?token=${token}`
+
   const { data: activities, isLoading } = useSWR(`/api/tasks/${task_id}/activity-logs?token=${token}`, fetcher, {
-    refreshInterval: 10_000,
+    refreshInterval: 0,
   })
   const { assignee } = useSelector(selectTaskBoard)
   const { mutate } = useSWRConfig()
+
+  useEffect(() => {
+    const refetchActivityLog = async () => {
+      await mutate(cacheKey)
+      setLastUpdated(task?.lastActivityLogUpdated)
+    }
+    if (lastUpdated !== task?.lastActivityLogUpdated) {
+      refetchActivityLog()
+    }
+  }, [task?.lastActivityLogUpdated])
+
   const currentUserId = tokenPayload.clientId ?? tokenPayload.internalUserId
 
   const currentUserDetails = useMemo(() => {
@@ -41,8 +57,6 @@ export const ActivityWrapper = ({
     }
     return z.union([InternalUsersSchema, ClientResponseSchema]).parse(assignee.find((el) => el.id === currentUserId))
   }, [assignee, currentUserId])
-
-  const cacheKey = `/api/tasks/${task_id}/activity-logs?token=${token}`
 
   // Handle comment creation
   const handleCreateComment = async (postCommentPayload: CreateComment) => {
@@ -120,7 +134,7 @@ export const ActivityWrapper = ({
 
   return (
     <Box width="100%">
-      <Stack direction="column" alignItems="left" p="12px 5px" rowGap={5}>
+      <Stack direction="column" alignItems="left" p="12px 0px" rowGap={5}>
         <Typography variant="lg">Activity</Typography>
         {isLoading ? (
           <Stack direction="column" rowGap={5}>
@@ -129,7 +143,7 @@ export const ActivityWrapper = ({
             <Skeleton variant="rectangular" width={'100%'} height={15} />
           </Stack>
         ) : (
-          <Stack direction="column" alignItems="left" p="0px 5px" rowGap={4}>
+          <Stack direction="column" alignItems="left" rowGap={4}>
             {activities?.data?.map((item: LogResponse, index: number) => (
               <Box
                 key={index}
