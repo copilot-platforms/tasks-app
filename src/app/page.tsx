@@ -26,7 +26,6 @@ export async function getAllWorkflowStates(token: string): Promise<WorkflowState
   })
 
   const data = await res.json()
-
   return data.workflowStates
 }
 
