@@ -1,27 +1,27 @@
-import { CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
-import { BaseService } from '@api/core/services/base.service'
-import { Resource } from '@api/core/types/api'
-import { PoliciesService } from '@api/core/services/policies.service'
-import { ActivityType, StateType, AssigneeType, Task, WorkflowState } from '@prisma/client'
-import { UserAction, UserRole } from '@api/core/types/user'
-import { NotificationTaskActions } from '@api/core/types/tasks'
-import { getTaskTimestamps } from '@api/tasks/tasks.helpers'
-import APIError from '@api/core/exceptions/api'
-import httpStatus from 'http-status'
-import { ActivityLogger } from '@api/activity-logs/services/activity-logger.service'
-import { TaskCreatedSchema } from '@api/activity-logs/schemas/TaskCreatedSchema'
-import { TaskAssignedSchema } from '@api/activity-logs/schemas/TaskAssignedSchema'
-import { WorkflowStateUpdatedSchema } from '@api/activity-logs/schemas/WorkflowStateUpdatedSchema'
-import { NotificationService } from '@api/notification/notification.service'
-import { LabelMappingService } from '@api/label-mapping/label-mapping.service'
-import { z } from 'zod'
+import { ScrapImageService } from '@/app/api/scrap-images/scrap-images.service'
+import { supabaseBucket } from '@/config'
 import { ClientResponse, CompanyResponse, InternalUsers, NotificationCreatedResponseSchema } from '@/types/common'
+import { signedUrlTtl } from '@/types/constants'
+import { CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { replaceImageSrc } from '@/utils/signedUrlReplacer'
-import { SupabaseService } from '../core/services/supabase.service'
-import { supabaseBucket } from '@/config'
-import { signedUrlTtl } from '@/types/constants'
-import { ScrapImageService } from '@/app/api/scrap-images/scrap-images.service'
+import { TaskAssignedSchema } from '@api/activity-logs/schemas/TaskAssignedSchema'
+import { TaskCreatedSchema } from '@api/activity-logs/schemas/TaskCreatedSchema'
+import { WorkflowStateUpdatedSchema } from '@api/activity-logs/schemas/WorkflowStateUpdatedSchema'
+import { ActivityLogger } from '@api/activity-logs/services/activity-logger.service'
+import APIError from '@api/core/exceptions/api'
+import { BaseService } from '@api/core/services/base.service'
+import { PoliciesService } from '@api/core/services/policies.service'
+import { SupabaseService } from '@api/core/services/supabase.service'
+import { Resource } from '@api/core/types/api'
+import { NotificationTaskActions } from '@api/core/types/tasks'
+import { UserAction, UserRole } from '@api/core/types/user'
+import { LabelMappingService } from '@api/label-mapping/label-mapping.service'
+import { NotificationService } from '@api/notification/notification.service'
+import { getTaskTimestamps } from '@api/tasks/tasks.helpers'
+import { ActivityType, AssigneeType, StateType, Task, WorkflowState } from '@prisma/client'
+import httpStatus from 'http-status'
+import { z } from 'zod'
 
 type FilterByAssigneeId = {
   assigneeId: string
@@ -302,9 +302,17 @@ export class TasksService extends BaseService {
     await labelMappingService.deleteLabel(task?.label)
 
     await this.db.task.delete({ where: { id } })
-    const notificationService = new NotificationService(this.user)
-    await notificationService.deleteInternalUserNotificationForTask(id)
-    await this.db.internalUserNotification.deleteMany({ where: { taskId: id } })
+    // Logic to remove internal user notifications when a task is deleted / assignee is deleted
+    // ...In case requirements change later again
+    // const notificationService = new NotificationService(this.user)
+    // await notificationService.deleteInternalUserNotificationForTask(id)
+  }
+
+  async setNewLastActivityLogUpdated(taskId: string) {
+    await this.db.task.update({
+      where: { id: taskId },
+      data: { lastActivityLogUpdated: new Date() },
+    })
   }
 
   async getIncompleteTasksForCompany(assigneeId: string): Promise<(Task & { workflowState: WorkflowState })[]> {

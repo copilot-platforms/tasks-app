@@ -19,6 +19,7 @@ interface Prop {
 
 export const CommentInput = ({ createComment, task_id }: Prop) => {
   const [detail, setDetail] = useState('')
+  const [isListOrMenuActive, setIsListOrMenuActive] = useState(false)
   const { assigneeSuggestions } = useSelector(selectTaskDetails)
   const { tokenPayload } = useSelector(selectAuthDetails)
   const { assignee } = useSelector(selectTaskBoard)
@@ -51,13 +52,16 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
       console.log('Comment cannot be empty.')
     }
   }
-
   // useEffect to handle keydown event for Enter key
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Enter' && !event.shiftKey) {
+      if (event.key === 'Enter' && !event.shiftKey && !isListOrMenuActive) {
         event.preventDefault() // Prevent new line in the editor
         handleSubmit()
+      }
+      if (event.key === 'Enter' && event.ctrlKey) {
+        event.preventDefault()
+        handleSubmit() //Invoke submit if ctrl+enter is pressed at any time
       }
       // If Shift + Enter is pressed, do not prevent default,
       // allowing Tapwrite to handle the new line.
@@ -70,7 +74,7 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
     return () => {
       window.removeEventListener('keydown', handleKeyDown)
     }
-  }, [detail]) // Depend on detail to ensure the latest state is captured
+  }, [detail, isListOrMenuActive]) // Depend on detail to ensure the latest state is captured
 
   return (
     <Stack direction="row" columnGap={2} alignItems="flex-start">
@@ -99,6 +103,10 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
           suggestions={assigneeSuggestions}
           editorClass="tapwrite-comment-input"
           hardbreak
+          onActiveStatusChange={(prop) => {
+            const { isListActive, isFloatingMenuActive } = prop
+            setIsListOrMenuActive(isListActive || isFloatingMenuActive)
+          }}
         />
         <InputAdornment
           position="end"

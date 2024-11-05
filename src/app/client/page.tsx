@@ -16,7 +16,7 @@ import { TaskBoard } from '@/app/ui/TaskBoard'
 import { DndWrapper } from '@/hoc/DndWrapper'
 import { UserRole } from '@api/core/types/user'
 import { getViewSettings } from '@/app/page'
-import { ValidateCountFetch } from '../_fetchers/ValidateCountFetcher'
+import { ValidateNotificationCountFetcher } from '../_fetchers/ValidateNotificationCountFetcher'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -61,7 +61,7 @@ export default async function ClientPage({ searchParams }: { searchParams: { tok
   return (
     <>
       <Suspense>
-        <ValidateCountFetch token={token} />
+        <ValidateNotificationCountFetcher token={token} />
       </Suspense>
       <ClientSideStateUpdate
         workflowStates={workflowStates}
