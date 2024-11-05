@@ -355,8 +355,7 @@ export class NotificationService extends BaseService {
 
     if (this.user.role === UserRole.Client) {
       return (await this.db.clientNotification.findMany({ where: { taskId: { in: taskIds } } })) as any
-    } else {
-      return (await this.db.internalUserNotification.findMany({ where: { taskId: { in: taskIds } } })) as any
     }
+    return (await this.db.internalUserNotification.findMany({ where: { taskId: { in: taskIds } } })) as any
   }
 }
