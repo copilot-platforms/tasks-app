@@ -26,7 +26,7 @@ export const getInProductNotificationDetails = (
       : undefined
 
   const commentDetail = {
-    title: 'A comment was added',
+    title: 'Comment was added',
     body: `${actionUser} left a comment on the task ‘${task?.title}’.`,
     ctaParams,
   }
@@ -130,8 +130,8 @@ export const getEmailDetails = (
     //   body: `A new task was completed by ${actionUser}. You are receiving this notification because you have access to the client.`,
     // },
     [NotificationTaskActions.Commented]: {
-      subject: 'A comment was added',
-      header: 'A comment was added',
+      subject: 'Comment was added',
+      header: 'Comment was added',
       body: `${actionUser} left a comment on the task ‘${task?.title}’. To view the comment, open the task below.`,
       title: 'View Comment',
       ctaParams,
