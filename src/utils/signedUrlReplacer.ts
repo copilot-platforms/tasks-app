@@ -2,12 +2,13 @@ import { Prisma, PrismaClient, StateType, WorkflowState } from '@prisma/client'
 import { DefaultArgs } from '@prisma/client/runtime/library'
 
 export async function replaceImageSrc(htmlString: string, getSignedUrl: (filePath: string) => Promise<string | undefined>) {
-  const imgTagRegex = /<img\s+[^>]*src="([^"]+)"[^>]*>/g //expression used to match all img tags in provided HTML string.
+  const imgTagRegex = /<img\s+[^>]*src="([^"]+)"[^>]*>/g
+  const attachmentTagRegex = /data-type="attachment"\s+[^>]*src="([^"]+)"[^>]*>/g //expression used to match all img tags in provided HTML string.
   const replacements: { originalSrc: string; newUrl: string }[] = []
   let match
 
   // First pass: collect all replacements
-  while ((match = imgTagRegex.exec(htmlString)) !== null) {
+  while ((match = imgTagRegex.exec(htmlString)) !== null || (match = attachmentTagRegex.exec(htmlString)) !== null) {
     const originalSrc = match[1] //matches the content of the first capture of regex, ie string inside the src attribute of the img tag.
     const filePath = await getFilePathFromUrl(originalSrc)
     if (filePath) {

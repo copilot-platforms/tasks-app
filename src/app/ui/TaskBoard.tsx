@@ -25,7 +25,6 @@ import { CustomDragLayer } from '@/components/CustomDragLayer'
 import { CardDragLayer } from '@/components/cards/CardDragLayer'
 import { UserRole } from '@api/core/types/user'
 import { clientUpdateTask } from '@/app/detail/[task_id]/[user_type]/actions'
-import AttachmentLayout, { AttachmentStates } from '@/components/AttachmentLayout'
 
 interface TaskBoardProps {
   mode: UserRole
@@ -80,7 +79,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
           await updateViewModeSettings(z.string().parse(token), payload)
         }}
       />
-      <AttachmentLayout attachmentState={AttachmentStates.focus} />
+
       {viewBoardSettings === View.BOARD_VIEW && (
         <Box sx={{ padding: '12px 12px' }}>
           <Stack
