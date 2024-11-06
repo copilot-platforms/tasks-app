@@ -5,8 +5,7 @@ import { attachmentIcons } from '@/utils/iconMatcher'
 import { Box, Skeleton, Stack, Typography } from '@mui/material'
 import React from 'react'
 import { IconBtn } from './buttons/IconBtn'
-import { SupabaseActions } from '@/utils/SupabaseActions'
-import { getFilePathFromUrl } from '@/utils/signedUrlReplacer'
+import { useDownloadFile } from '@/hooks/useDownload'
 
 const AttachmentLayout = ({
   selected,
@@ -23,13 +22,8 @@ const AttachmentLayout = ({
   fileType: string
   isUploading: boolean
 }) => {
-  const handleDownload = () => {
-    const filePath = getFilePathFromUrl(src)
-    if (filePath) {
-      const supabaseActions = new SupabaseActions()
-      supabaseActions.downloadAttachment(filePath, fileName)
-    }
-  }
+  const { handleDownload, isDownloading } = useDownloadFile()
+
   if (isUploading) {
     return (
       <Box
@@ -120,7 +114,13 @@ const AttachmentLayout = ({
             transition: 'opacity 0.2s ease',
           }}
         >
-          <IconBtn buttonBackground="#ffffff" handleClick={handleDownload} icon={<DownloadBtn />} />
+          <IconBtn
+            buttonBackground="#ffffff"
+            handleClick={() => {
+              handleDownload(src, fileName)
+            }}
+            icon={<DownloadBtn />}
+          />
         </Box>
       </Stack>
     </Box>
