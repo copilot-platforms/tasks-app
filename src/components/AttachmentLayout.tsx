@@ -30,7 +30,6 @@ const AttachmentLayout = ({
       supabaseActions.downloadAttachment(filePath, fileName)
     }
   }
-
   if (isUploading) {
     return (
       <Box
@@ -74,7 +73,7 @@ const AttachmentLayout = ({
         marginTop: '8px',
         marginBottom: '8px',
         maxWidth: '100%',
-        border: (theme) => `1px solid ${theme.color.gray[selected ? 600 : 150]})`,
+        border: (theme) => `1px solid ${theme.color.gray[selected ? 600 : 150]}`,
         borderRadius: '4px',
         background: '#fff',
         boxShadow: '0px 0px 24px 0px rgba(0, 0, 0, 0.07)',
@@ -95,6 +94,10 @@ const AttachmentLayout = ({
               lineHeight="21px"
               sx={{
                 color: (theme) => theme.color.gray[600],
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                width: { xs: '270px', sm: '400px', md: '500px' },
               }}
             >
               {fileName}
