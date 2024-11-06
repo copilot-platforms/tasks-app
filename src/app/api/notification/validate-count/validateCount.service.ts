@@ -36,7 +36,7 @@ export class ValidateCountService extends NotificationService {
     const tasks = await tasksService.getAllTasks()
 
     // Query all notifications triggered for a list of client/company tasks
-    const appNotifications = await this.getAllForTasks<UserRole.Client>(tasks)
+    const appNotifications = await this.getAllForTasks(tasks)
     const appNotificationIds = appNotifications.map((n) => n.notificationId)
 
     if (getArrayDifference(appNotificationIds, copilotNotificationIds).length) {
