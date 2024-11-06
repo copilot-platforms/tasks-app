@@ -23,11 +23,10 @@ const AttachmentLayout = ({
   fileType: string
   isUploading: boolean
 }) => {
-  console.log(isUploading)
-  const supabaseActions = new SupabaseActions()
   const handleDownload = () => {
     const filePath = getFilePathFromUrl(src)
     if (filePath) {
+      const supabaseActions = new SupabaseActions()
       supabaseActions.downloadAttachment(filePath, fileName)
     }
   }
@@ -75,12 +74,12 @@ const AttachmentLayout = ({
         marginTop: '8px',
         marginBottom: '8px',
         maxWidth: '100%',
-        border: (theme) => (selected ? `1px solid ${theme.color.gray[600]}` : `1px solid ${theme.color.gray[150]}`),
+        border: (theme) => `1px solid ${theme.color.gray[selected ? 600 : 150]})`,
         borderRadius: '4px',
         background: '#fff',
         boxShadow: '0px 0px 24px 0px rgba(0, 0, 0, 0.07)',
         '&:hover': {
-          border: (theme) => (selected ? `1px solid ${theme.color.gray[600]}` : `1px solid ${theme.color.gray[300]}`),
+          border: (theme) => `1px solid ${theme.color.gray[selected ? 600 : 300]}`,
           '& .download-btn': {
             opacity: 1,
           },
