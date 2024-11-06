@@ -47,6 +47,7 @@ import { z } from 'zod'
 import { MiniLoader } from '@/components/atoms/MiniLoader'
 import { getAssigneeName } from '@/utils/assignee'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
+import AttachmentLayout from '@/components/AttachmentLayout'
 
 const supabaseActions = new SupabaseActions()
 
@@ -344,6 +345,7 @@ const NewTaskFormInputs = () => {
           editorClass="tapwrite-task-description"
           uploadFn={(file) => uploadImageHandler(file, token ?? '', null)}
           deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', null)}
+          attachmentLayout={(props) => <AttachmentLayout {...props} />}
         />
       </Stack>
     </>
