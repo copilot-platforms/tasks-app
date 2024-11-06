@@ -87,7 +87,7 @@ const AttachmentLayout = ({
     >
       <Stack justifyContent={'space-between'} direction="row" alignItems="center">
         <Stack direction="row" columnGap="5.5px" alignItems="center">
-          {attachmentIcons[fileType]}
+          {attachmentIcons[fileType] || attachmentIcons['default']}
           <Stack direction="column">
             <Typography
               variant="bodySm"
