@@ -175,6 +175,7 @@ export const TaskEditor = ({
           }}
           deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', task_id)}
           attachmentLayout={(props) => <AttachmentLayout {...props} />}
+          addAttachmentButton
         />
       </Box>
 
