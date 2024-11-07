@@ -20,6 +20,7 @@ import { TaskResponse } from '@/types/dto/tasks.dto'
 import { ScrapImageRequest } from '@/types/common'
 
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
+import AttachmentLayout from '@/components/AttachmentLayout'
 
 interface Prop {
   task_id: string
@@ -173,6 +174,7 @@ export const TaskEditor = ({
             return t
           }}
           deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', task_id)}
+          attachmentLayout={AttachmentLayout}
         />
       </Box>
 
