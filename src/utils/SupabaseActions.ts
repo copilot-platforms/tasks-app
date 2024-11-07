@@ -14,13 +14,16 @@ export class SupabaseActions extends SupabaseService {
     return data
   }
 
-  async uploadAttachment(file: File, signedUrl: ISignedUrlUpload, task_id: string | null) {
+  async uploadAttachment(file: File, signedUrl: ISignedUrlUpload, workspaceId: string, task_id: string | null) {
     let filePayload
+    const filePath = `/${workspaceId}${task_id ? `/${task_id}` : ''}`
+
     const { data, error } = await this.supabase.storage
-      .from(supabaseBucket)
+      .from(`${supabaseBucket}/${filePath}`)
       .uploadToSignedUrl(signedUrl.path, signedUrl.token, file)
+
     if (error) {
-      console.error('unable to upload the file')
+      console.error('unable to upload the file', error)
     }
     if (data) {
       filePayload = {
@@ -31,6 +34,7 @@ export class SupabaseActions extends SupabaseService {
         filePath: data.path,
       }
     }
+
     return { filePayload, error }
   }
 
@@ -40,5 +44,12 @@ export class SupabaseActions extends SupabaseService {
       throw new APIError(httpStatus.BAD_REQUEST, error.message)
     }
     return { data }
+  }
+
+  async moveAttachment(oldPath: string, newPath: string) {
+    const { data, error } = await this.supabase.storage.from(supabaseBucket).move(oldPath, newPath)
+    if (error) {
+      throw new APIError(httpStatus.BAD_REQUEST, error.message)
+    }
   }
 }

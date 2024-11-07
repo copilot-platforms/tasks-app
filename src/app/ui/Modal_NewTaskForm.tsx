@@ -8,7 +8,6 @@ import {
 } from '@/redux/features/createTaskSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
-import { bulkRemoveAttachments } from '@/utils/bulkRemoveAttachments'
 import { Modal } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { handleCreate } from '../actions'
@@ -19,10 +18,8 @@ import { FilterOptions, ISignedUrlUpload } from '@/types/interfaces'
 import dayjs from 'dayjs'
 
 export const ModalNewTaskForm = ({
-  getSignedUrlUpload,
   handleCreateMultipleAttachments,
 }: {
-  getSignedUrlUpload: (fileName: string) => Promise<ISignedUrlUpload>
   handleCreateMultipleAttachments: (attachments: CreateAttachmentRequest[]) => Promise<void>
 }) => {
   const { token, filterOptions } = useSelector(selectTaskBoard)
@@ -66,7 +63,6 @@ export const ModalNewTaskForm = ({
           }
         }}
         handleClose={handleModalClose}
-        getSignedUrlUpload={getSignedUrlUpload}
       />
     </Modal>
   )

@@ -46,18 +46,18 @@ import { setDebouncedFilteredAssignees } from '@/utils/users'
 import { z } from 'zod'
 import { MiniLoader } from '@/components/atoms/MiniLoader'
 import { getAssigneeName } from '@/utils/assignee'
-import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
+import { deleteEditorAttachmentsHandler, uploadAttachmentHandler } from '@/utils/inlineAttachment'
 import AttachmentLayout from '@/components/AttachmentLayout'
+import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 
 const supabaseActions = new SupabaseActions()
 
 interface NewTaskFormProps {
   handleCreate: () => void
   handleClose: () => void
-  getSignedUrlUpload: (fileName: string) => Promise<ISignedUrlUpload>
 }
 
-export const NewTaskForm = ({ handleCreate, handleClose, getSignedUrlUpload }: NewTaskFormProps) => {
+export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => {
   const { activeWorkflowStateId, errors } = useSelector(selectCreateTask)
   const { workflowStates, assignee, token, filterOptions } = useSelector(selectTaskBoard)
   const [filteredAssignees, setFilteredAssignees] = useState(assignee)
@@ -299,11 +299,7 @@ export const NewTaskForm = ({ handleCreate, handleClose, getSignedUrlUpload }: N
           </Stack>
         </Stack>
       </AppMargin>
-      <NewTaskFooter
-        handleCreate={handleCreateWithAssignee}
-        handleClose={handleClose}
-        getSignedUrlUpload={getSignedUrlUpload}
-      />
+      <NewTaskFooter handleCreate={handleCreateWithAssignee} handleClose={handleClose} />
     </NewTaskContainer>
   )
 }
@@ -312,6 +308,7 @@ const NewTaskFormInputs = () => {
   const { title, description, attachments } = useSelector(selectCreateTask)
   const { errors } = useSelector(selectCreateTask)
   const { token } = useSelector(selectTaskBoard)
+  const { tokenPayload } = useSelector(selectAuthDetails)
 
   const handleDetailChange = (content: string) =>
     store.dispatch(setCreateTaskFields({ targetField: 'description', value: content }))
@@ -343,7 +340,7 @@ const NewTaskFormInputs = () => {
           getContent={handleDetailChange}
           placeholder="Add description..."
           editorClass="tapwrite-task-description"
-          uploadFn={(file) => uploadImageHandler(file, token ?? '', null)}
+          uploadFn={(file) => uploadAttachmentHandler(file, token ?? '', tokenPayload?.workspaceId ?? '', null)}
           deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', null)}
           attachmentLayout={(props) => <AttachmentLayout {...props} />}
         />
@@ -352,31 +349,14 @@ const NewTaskFormInputs = () => {
   )
 }
 
-const NewTaskFooter = ({ handleCreate, handleClose, getSignedUrlUpload }: NewTaskFormProps) => {
+const NewTaskFooter = ({ handleCreate, handleClose }: NewTaskFormProps) => {
   const { attachments, title, assigneeId } = useSelector(selectCreateTask)
   const { filterOptions } = useSelector(selectTaskBoard)
-
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    event.preventDefault()
-    const files = event.target.files
-    if (files && files.length > 0) {
-      const file = files[0]
-      const signedUrl: ISignedUrlUpload = await getSignedUrlUpload(generateRandomString(file.name))
-      const { filePayload, error } = await supabaseActions.uploadAttachment(file, signedUrl, '')
-      if (error) {
-        console.error('Failed to upload image') //handle error through chip here in the future
-      }
-      if (filePayload) {
-        store.dispatch(setCreateTaskFields({ targetField: 'attachments', value: [...attachments, filePayload] }))
-      }
-    }
-  }
 
   return (
     <Box sx={{ borderTop: (theme) => `1px solid ${theme.color.borders.border2}` }}>
       <AppMargin size={SizeofAppMargin.MEDIUM} py="21px">
         <Stack direction="row" justifyContent="space-between" alignItems="center">
-          <Box>{advancedFeatureFlag && <AttachmentInput handleFileSelect={handleFileSelect} />}</Box>
           <Stack direction="row" columnGap={4}>
             <SecondaryBtn
               handleClick={handleClose}

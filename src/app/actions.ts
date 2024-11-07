@@ -53,8 +53,8 @@ export const createMultipleAttachments = async (token: string, attachments: Crea
   })
 }
 
-export async function getSignedUrlUpload(token: string, fileName: string) {
-  const res = await fetch(`${apiUrl}/api/attachments/upload?token=${token}&fileName=${fileName}`)
+export async function getSignedUrlUpload(token: string, filePath: string, fileName: string) {
+  const res = await fetch(`${apiUrl}/api/attachments/upload?token=${token}&fileName=${fileName}&filePath=${filePath}`)
 
   const data = await res.json()
   return data.signedUrl

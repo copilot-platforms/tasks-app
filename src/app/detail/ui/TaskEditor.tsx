@@ -19,7 +19,7 @@ import { generateRandomString } from '@/utils/generateRandomString'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { ScrapImageRequest } from '@/types/common'
 
-import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
+import { deleteEditorAttachmentsHandler, uploadAttachmentHandler } from '@/utils/inlineAttachment'
 import AttachmentLayout from '@/components/AttachmentLayout'
 
 interface Prop {
@@ -169,7 +169,7 @@ export const TaskEditor = ({
           placeholder="Add description..."
           uploadFn={async (file) => {
             setActiveUploads((prev) => prev + 1)
-            const t = await uploadImageHandler(file, token ?? '', task_id)
+            const t = await uploadAttachmentHandler(file, token ?? '', task.workspaceId, task_id)
             setActiveUploads((prev) => prev - 1)
             return t
           }}

@@ -1,6 +1,3 @@
-import { Prisma, PrismaClient, StateType, WorkflowState } from '@prisma/client'
-import { DefaultArgs } from '@prisma/client/runtime/library'
-
 export async function replaceImageSrc(htmlString: string, getSignedUrl: (filePath: string) => Promise<string | undefined>) {
   const imgTagRegex = /<img\s+[^>]*src="([^"]+)"[^>]*>/g //expression used to match all img tags in provided HTML string.
   const replacements: { originalSrc: string; newUrl: string }[] = []
@@ -35,6 +32,16 @@ export function getFilePathFromUrl(url: string) {
     return null
   }
 }
+
+export function getAbsoluteFileName(filePath: string): string | null {
+  try {
+    const parts = filePath.split('/')
+    return parts.pop() || null
+  } catch (error) {
+    console.error('Invalid filepath:', error)
+    return null
+  }
+} //utility function to extract fileName from the whole filePath
 
 export const extractImgSrcs = (body: string) => {
   const parser = new DOMParser()

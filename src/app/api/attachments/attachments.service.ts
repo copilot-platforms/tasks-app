@@ -8,6 +8,7 @@ import { supabaseBucket } from '@/config'
 import APIError from '@api/core/exceptions/api'
 import httpStatus from 'http-status'
 import { SupabaseService } from '@api/core/services/supabase.service'
+import { signedUrlTtl } from '@/types/constants'
 
 export class AttachmentsService extends BaseService {
   async getAttachments(taskId: string) {
@@ -62,11 +63,11 @@ export class AttachmentsService extends BaseService {
     return deletedAttachment
   }
 
-  async signUrlUpload(fileName: string) {
+  async signUrlUpload(filePath: string, fileName: string) {
     const policyGate = new PoliciesService(this.user)
     const supabase = new SupabaseService()
     policyGate.authorize(UserAction.Create, Resource.Attachments)
-    const { data, error } = await supabase.supabase.storage.from(supabaseBucket).createSignedUploadUrl(fileName)
+    const { data, error } = await supabase.supabase.storage.from(supabaseBucket + filePath).createSignedUploadUrl(fileName)
     if (error) {
       throw new APIError(httpStatus.BAD_REQUEST)
     }
@@ -77,7 +78,8 @@ export class AttachmentsService extends BaseService {
     const policyGate = new PoliciesService(this.user)
     const supabase = new SupabaseService()
     policyGate.authorize(UserAction.Create, Resource.Attachments)
-    const { data } = await supabase.supabase.storage.from(supabaseBucket).createSignedUrl(filePath, 60) // only 60 seconds expiry time here for testing purposes
+
+    const { data } = await supabase.supabase.storage.from(supabaseBucket).createSignedUrl(filePath, signedUrlTtl)
     return data?.signedUrl
   }
 }

@@ -9,14 +9,20 @@ import { getFilePathFromUrl } from '@/utils/signedUrlReplacer'
 
 import { getSignedUrlUpload, getSignedUrlFile } from '@/app/actions'
 
-export const uploadImageHandler = async (file: File, token: string, task_id: string | null): Promise<string | undefined> => {
+export const uploadAttachmentHandler = async (
+  file: File,
+  token: string,
+  workspaceId: string,
+  task_id: string | null,
+): Promise<string | undefined> => {
   const supabaseActions = new SupabaseActions()
-
+  const filePath = `/${workspaceId}${task_id ? `/${task_id}` : ''}`
   const fileName = generateRandomString(file.name)
-  const signedUrl: ISignedUrlUpload = await getSignedUrlUpload(token, fileName)
-  const { filePayload, error } = await supabaseActions.uploadAttachment(file, signedUrl, task_id)
+  const signedUrl: ISignedUrlUpload = await getSignedUrlUpload(token, filePath, fileName)
+  const { filePayload, error } = await supabaseActions.uploadAttachment(file, signedUrl, workspaceId, task_id)
+
   if (filePayload) {
-    const url = await getSignedUrlFile(token ?? '', filePayload?.filePath ?? '')
+    const url = await getSignedUrlFile(token ?? '', `${filePath}/${filePayload.filePath}`)
     return url
   }
 

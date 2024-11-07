@@ -9,19 +9,20 @@ export class ScrapImageService extends BaseService {
   async createScrapImage(data: ScrapImageRequest) {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Update, Resource.Tasks)
-    const existing = await this.db.scrapImage.findFirst({
+    const existing = await this.db.scrapAttachment.findFirst({
       where: {
         filePath: data.filePath,
       },
     })
     if (!existing) {
-      await this.db.scrapImage.create({
+      await this.db.scrapAttachment.create({
         data: {
           ...data,
+          workspaceId: this.user.workspaceId,
         },
       })
     } else {
-      await this.db.scrapImage.update({
+      await this.db.scrapAttachment.update({
         where: {
           id: existing.id,
         },
@@ -30,29 +31,5 @@ export class ScrapImageService extends BaseService {
         },
       })
     }
-  }
-
-  async updateTaskIdOfScrapImagesAfterCreation(htmlString: string, task_id: string) {
-    const imgTagRegex = /<img\s+[^>]*src="([^"]+)"[^>]*>/g //expression used to match all img tags in provided HTML string.
-    let match
-    const filePaths: string[] = []
-    while ((match = imgTagRegex.exec(htmlString)) !== null) {
-      const originalSrc = match[1]
-      const filePath = await getFilePathFromUrl(originalSrc)
-      if (filePath) {
-        filePaths.push(filePath)
-      }
-    }
-
-    await this.db.scrapImage.updateMany({
-      where: {
-        filePath: {
-          in: filePaths,
-        },
-      },
-      data: {
-        taskId: task_id,
-      },
-    })
   }
 }
