@@ -29,8 +29,8 @@ const AttachmentLayout = ({
       <Box
         sx={{
           padding: '4px 8px',
-          marginTop: '8px',
-          marginBottom: '8px',
+          marginTop: '4px !important',
+          marginBottom: '4px',
           maxWidth: '100%',
           border: (theme) => (selected ? `1px solid ${theme.color.gray[600]}` : `1px solid ${theme.color.gray[150]}`),
           borderRadius: '4px',
@@ -64,8 +64,8 @@ const AttachmentLayout = ({
     <Box
       sx={{
         padding: '4px 8px',
-        marginTop: '8px',
-        marginBottom: '8px',
+        marginTop: '4px !important',
+        marginBottom: '4px',
         maxWidth: '100%',
         border: (theme) => `1px solid ${theme.color.gray[selected ? 600 : 150]}`,
         borderRadius: '4px',
@@ -87,10 +87,11 @@ const AttachmentLayout = ({
               variant="bodySm"
               lineHeight="21px"
               sx={{
-                color: (theme) => theme.color.gray[600],
+                color: (theme) => `${theme.color.gray[600]} !important`,
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
+                lineHeight: '21px',
                 width: { xs: '270px', sm: '400px', md: '500px' },
               }}
             >
