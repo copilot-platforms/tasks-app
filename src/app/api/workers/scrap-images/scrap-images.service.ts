@@ -1,7 +1,7 @@
 import { subWeeks, isBefore, subMinutes } from 'date-fns'
 import { SupabaseService } from '@/app/api/core/services/supabase.service'
 import { supabaseBucket } from '@/config'
-import { PrismaClient, ScrapImage } from '@prisma/client'
+import { PrismaClient, ScrapAttachment } from '@prisma/client'
 import DBClient from '@/lib/db'
 import APIError from '@/app/api/core/exceptions/api'
 
@@ -10,7 +10,7 @@ export class ScrapImageService {
     const oneWeekAgo = subWeeks(new Date(), 1)
 
     const db: PrismaClient = DBClient.getInstance()
-    const scrapImages = await db.scrapImage.findMany({
+    const scrapImages = await db.scrapAttachment.findMany({
       where: {
         updatedAt: {
           lt: oneWeekAgo, //apply oneWeekAgo. three minutes ago is used for testing
@@ -25,7 +25,7 @@ export class ScrapImageService {
     const tasks = await db.task.findMany({
       where: {
         id: {
-          in: scrapImages.map((image: ScrapImage) => image.taskId).filter((taskId): taskId is string => !taskId),
+          in: scrapImages.map((image: ScrapAttachment) => image.taskId).filter((taskId): taskId is string => !taskId),
         },
       },
     })
