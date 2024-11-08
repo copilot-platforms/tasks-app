@@ -19,6 +19,10 @@ interface AttachmentLayoutProps {
 const AttachmentLayout: React.FC<AttachmentLayoutProps> = ({ selected, src, fileName, fileSize, fileType, isUploading }) => {
   const { handleDownload, isDownloading } = useDownloadFile()
 
+  const onDownloadClick = () => {
+    handleDownload(src, fileName)
+  }
+
   const containerStyles: SxProps<Theme> = {
     padding: '4px 8px',
     marginTop: '4px !important',
@@ -84,7 +88,7 @@ const AttachmentLayout: React.FC<AttachmentLayoutProps> = ({ selected, src, file
           </Stack>
         </Stack>
         <Box className="download-btn" sx={downloadBtnStyles}>
-          <IconBtn buttonBackground="#ffffff" handleClick={() => handleDownload(src, fileName)} icon={<DownloadBtn />} />
+          <IconBtn buttonBackground="#ffffff" handleClick={onDownloadClick} icon={<DownloadBtn />} />
         </Box>
       </Stack>
     )
