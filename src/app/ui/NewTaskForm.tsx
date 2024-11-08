@@ -345,7 +345,7 @@ const NewTaskFormInputs = () => {
           editorClass="tapwrite-task-description"
           uploadFn={(file) => uploadImageHandler(file, token ?? '', null)}
           deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', null)}
-          attachmentLayout={(props) => <AttachmentLayout {...props} />}
+          attachmentLayout={AttachmentLayout}
         />
       </Stack>
     </>

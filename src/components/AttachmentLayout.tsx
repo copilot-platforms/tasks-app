@@ -2,43 +2,43 @@
 
 import { DownloadBtn, PdfIcon } from '@/icons'
 import { attachmentIcons } from '@/utils/iconMatcher'
-import { Box, Skeleton, Stack, Typography } from '@mui/material'
+import { Box, Skeleton, Stack, Typography, SxProps, Theme } from '@mui/material'
 import React from 'react'
 import { IconBtn } from './buttons/IconBtn'
 import { useDownloadFile } from '@/hooks/useDownload'
 
-const AttachmentLayout = ({
-  selected,
-  src,
-  fileName,
-  fileSize,
-  fileType,
-  isUploading,
-}: {
+interface AttachmentLayoutProps {
   selected: boolean
   src: string
   fileName: string
   fileSize: string
   fileType: string
   isUploading: boolean
-}) => {
+}
+
+const AttachmentLayout: React.FC<AttachmentLayoutProps> = ({ selected, src, fileName, fileSize, fileType, isUploading }) => {
   const { handleDownload, isDownloading } = useDownloadFile()
 
-  if (isUploading) {
-    return (
-      <Box
-        sx={{
-          padding: '4px 8px',
-          marginTop: '8px',
-          marginBottom: '8px',
-          maxWidth: '100%',
-          border: (theme) => (selected ? `1px solid ${theme.color.gray[600]}` : `1px solid ${theme.color.gray[150]}`),
-          borderRadius: '4px',
-          background: '#fff',
-          boxShadow: '0px 0px 24px 0px rgba(0, 0, 0, 0.07)',
-        }}
-      >
-        <Stack justifyContent={'space-between'} direction="row" alignItems="center">
+  const containerStyles: SxProps<Theme> = {
+    padding: '4px 8px',
+    marginTop: '4px !important',
+    marginBottom: '4px',
+    maxWidth: '100%',
+    borderRadius: '4px',
+    background: '#fff',
+    boxShadow: '0px 0px 24px 0px rgba(0, 0, 0, 0.07)',
+    border: (theme) => `1px solid ${theme.color.gray[selected ? 600 : 150]}`,
+  }
+
+  const downloadBtnStyles: SxProps<Theme> = {
+    opacity: 0,
+    transition: 'opacity 0.2s ease',
+  }
+
+  const renderContent = () => {
+    if (isUploading) {
+      return (
+        <Stack justifyContent="space-between" direction="row" alignItems="center">
           <Stack direction="row" columnGap="5.5px" alignItems="center">
             <Skeleton variant="rectangular" width={24} height={24} />
             <Stack direction="column">
@@ -46,40 +46,15 @@ const AttachmentLayout = ({
               <Skeleton variant="text" width={80} height={16} />
             </Stack>
           </Stack>
-          <Box
-            className="download-btn"
-            sx={{
-              opacity: 0,
-              transition: 'opacity 0.2s ease',
-            }}
-          >
-            {/* Skeleton for the download button */}
+          <Box className="download-btn" sx={downloadBtnStyles}>
             <Skeleton variant="circular" width={24} height={24} />
           </Box>
         </Stack>
-      </Box>
-    )
-  }
-  return (
-    <Box
-      sx={{
-        padding: '4px 8px',
-        marginTop: '8px',
-        marginBottom: '8px',
-        maxWidth: '100%',
-        border: (theme) => `1px solid ${theme.color.gray[selected ? 600 : 150]}`,
-        borderRadius: '4px',
-        background: '#fff',
-        boxShadow: '0px 0px 24px 0px rgba(0, 0, 0, 0.07)',
-        '&:hover': {
-          border: (theme) => `1px solid ${theme.color.gray[selected ? 600 : 300]}`,
-          '& .download-btn': {
-            opacity: 1,
-          },
-        },
-      }}
-    >
-      <Stack justifyContent={'space-between'} direction="row" alignItems="center">
+      )
+    }
+
+    return (
+      <Stack justifyContent="space-between" direction="row" alignItems="center">
         <Stack direction="row" columnGap="5.5px" alignItems="center">
           {attachmentIcons[fileType] || attachmentIcons['default']}
           <Stack direction="column">
@@ -87,10 +62,11 @@ const AttachmentLayout = ({
               variant="bodySm"
               lineHeight="21px"
               sx={{
-                color: (theme) => theme.color.gray[600],
+                color: (theme) => `${theme.color.gray[600]} !important`,
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
+                lineHeight: '21px',
                 width: { xs: '270px', sm: '400px', md: '500px' },
               }}
             >
@@ -107,22 +83,26 @@ const AttachmentLayout = ({
             </Typography>
           </Stack>
         </Stack>
-        <Box
-          className="download-btn"
-          sx={{
-            opacity: 0,
-            transition: 'opacity 0.2s ease',
-          }}
-        >
-          <IconBtn
-            buttonBackground="#ffffff"
-            handleClick={() => {
-              handleDownload(src, fileName)
-            }}
-            icon={<DownloadBtn />}
-          />
+        <Box className="download-btn" sx={downloadBtnStyles}>
+          <IconBtn buttonBackground="#ffffff" handleClick={() => handleDownload(src, fileName)} icon={<DownloadBtn />} />
         </Box>
       </Stack>
+    )
+  }
+
+  return (
+    <Box
+      sx={{
+        ...containerStyles,
+        '&:hover': {
+          border: (theme) => `1px solid ${theme.color.gray[selected ? 600 : 300]}`,
+          '& .download-btn': {
+            opacity: 1,
+          },
+        },
+      }}
+    >
+      {renderContent()}
     </Box>
   )
 }
