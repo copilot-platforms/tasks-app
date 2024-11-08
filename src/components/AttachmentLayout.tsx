@@ -31,11 +31,28 @@ const AttachmentLayout: React.FC<AttachmentLayoutProps> = ({ selected, src, file
     borderRadius: '4px',
     background: '#fff',
     boxShadow: '0px 0px 24px 0px rgba(0, 0, 0, 0.07)',
-    border: (theme) => `1px solid ${theme.color.gray[selected ? 600 : 150]}`,
+
+    '@media (max-width: 600px)': {
+      '&:active': {
+        border: (theme) => `1px solid ${theme.color.gray[600]}`,
+      },
+    },
+
+    '@media (min-width: 600px)': {
+      '&:hover': {
+        border: (theme) => `1px solid ${theme.color.gray[selected ? 600 : 300]}`,
+        '& .download-btn': {
+          opacity: 1,
+        },
+      },
+    },
   }
 
   const downloadBtnStyles: SxProps<Theme> = {
-    opacity: 0,
+    opacity: {
+      xs: 1,
+      sm: 0,
+    },
     transition: 'opacity 0.2s ease',
   }
 
@@ -58,20 +75,19 @@ const AttachmentLayout: React.FC<AttachmentLayoutProps> = ({ selected, src, file
     }
 
     return (
-      <Stack justifyContent="space-between" direction="row" alignItems="center">
-        <Stack direction="row" columnGap="5.5px" alignItems="center">
+      <Stack justifyContent="space-between" direction="row" alignItems="center" sx={{ width: '100%' }}>
+        <Stack direction="row" columnGap="5.5px" alignItems="center" sx={{ flex: 1, overflow: 'hidden', minWidth: 0 }}>
           {attachmentIcons[fileType] || attachmentIcons['default']}
-          <Stack direction="column">
+          <Stack direction="column" sx={{ flex: 1, minWidth: 0 }}>
             <Typography
               variant="bodySm"
-              lineHeight="21px"
               sx={{
                 color: (theme) => `${theme.color.gray[600]} !important`,
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 lineHeight: '21px',
-                width: { xs: '270px', sm: '400px', md: '500px' },
+                width: { xs: '250px', sd: '400px', md: '500px' },
               }}
             >
               {fileName}
@@ -87,7 +103,14 @@ const AttachmentLayout: React.FC<AttachmentLayoutProps> = ({ selected, src, file
             </Typography>
           </Stack>
         </Stack>
-        <Box className="download-btn" sx={downloadBtnStyles}>
+        <Box
+          className="download-btn"
+          sx={{
+            ...downloadBtnStyles,
+            flexShrink: 0,
+            marginLeft: '8px',
+          }}
+        >
           <IconBtn buttonBackground="#ffffff" handleClick={onDownloadClick} icon={<DownloadBtn />} />
         </Box>
       </Stack>
