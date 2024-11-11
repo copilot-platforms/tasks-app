@@ -7,6 +7,8 @@ import { WorkflowStateUpdatedSchema } from '@/app/api/activity-logs/schemas/Work
 import { ActivityType } from '@prisma/client'
 import { useSelector } from 'react-redux'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
+import { IAssigneeCombined } from '@/types/interfaces'
 
 interface Prop {
   log: LogResponse
@@ -60,16 +62,26 @@ export const ActivityLog = ({ log }: Prop) => {
   return (
     <Stack direction="row" columnGap={4} position="relative">
       <VerticalLine />
-      <Avatar
-        src={log?.initiator?.avatarImageUrl || 'user'}
-        alt={log?.initiator?.givenName}
+      <CopilotAvatar
+        width="24px"
+        height="24px"
+        fontSize="13px"
+        currentAssignee={log?.initiator as unknown as IAssigneeCombined}
         sx={{
-          width: '25px',
-          height: '25px',
           border: (theme) => `1.1px solid ${theme.color.gray[200]}`,
-          fontSize: '13px',
         }}
       />
+
+      {/* <Avatar */}
+      {/*   src={log?.initiator?.avatarImageUrl || 'user'} */}
+      {/*   alt={log?.initiator?.givenName} */}
+      {/*   sx={{ */}
+      {/*     width: '25px', */}
+      {/*     height: '25px', */}
+      {/*     border: (theme) => `1.1px solid ${theme.color.gray[200]}`, */}
+      {/*     fontSize: '13px', */}
+      {/*   }} */}
+      {/* /> */}
       <TypographyContainer direction="row" columnGap={1}>
         {assignee.find((el) => el.id === log?.initiator?.id) ? (
           <BoldTypography>

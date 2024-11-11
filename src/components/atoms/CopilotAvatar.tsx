@@ -3,6 +3,7 @@ import { copilotTheme } from '@/theme/copilot'
 import { IAssigneeCombined } from '@/types/interfaces'
 import { getAssigneeName } from '@/utils/assignee'
 import { Avatar, SxProps } from '@mui/material'
+import { Theme } from '@mui/material/styles/createTheme'
 
 interface CopilotAvatarProps {
   currentAssignee?: IAssigneeCombined
@@ -11,6 +12,7 @@ interface CopilotAvatarProps {
   height?: string
   isSmall?: boolean
   fontSize?: string
+  sx?: SxProps<any>
 }
 
 export const CopilotAvatar = ({
@@ -20,8 +22,10 @@ export const CopilotAvatar = ({
   height = '20px',
   isSmall = false,
   fontSize = '14px',
+  sx,
 }: CopilotAvatarProps) => {
   const avatarSx: SxProps = {
+    ...sx,
     width,
     height,
     alignItems: 'center',

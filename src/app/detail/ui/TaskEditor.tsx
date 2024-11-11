@@ -165,7 +165,7 @@ export const TaskEditor = ({
           content={updateDetail}
           getContent={handleDetailChange}
           readonly={userType === UserType.CLIENT_USER}
-          editorClass="tapwrite-details-page"
+          editorClass=""
           placeholder="Add description..."
           uploadFn={async (file) => {
             setActiveUploads((prev) => prev + 1)

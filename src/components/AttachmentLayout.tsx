@@ -27,7 +27,7 @@ const AttachmentLayout: React.FC<AttachmentLayoutProps> = ({ selected, src, file
     maxWidth: '99%',
     borderRadius: '4px',
     margin: '8px auto 8px auto',
-    padding: '4px 8px',
+    padding: { sm: '4px 8px', md: '4px 12px 4px 8px' },
     border: (theme) => `1px solid ${theme.color.gray[150]}`,
     background: '#fff',
     boxShadow: '0px 3px 4px 0px rgba(16, 17, 19, 0.06), 0px 4px 11px 0px rgba(20, 21, 24, 0.18)',
