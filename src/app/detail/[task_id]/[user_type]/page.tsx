@@ -38,10 +38,10 @@ import { CustomLink } from '@/hoc/CustomLink'
 import { DetailStateUpdate } from '@/app/detail/[task_id]/[user_type]/DetailStateUpdate'
 import { SilentError } from '@/components/templates/SilentError'
 import { z } from 'zod'
-import { signedUrlTtl } from '@/types/constants'
 import { ActivityWrapper } from '@/app/detail/ui/ActivityWrapper'
 import { DeletedTaskRedirectPage } from '@/components/layouts/DeletedTaskRedirectPage'
 import { UserRole } from '@/app/api/core/types/user'
+import { signedUrlTtl } from '@/constants/attachments'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
