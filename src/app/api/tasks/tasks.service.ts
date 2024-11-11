@@ -1,10 +1,11 @@
 import { ScrapImageService } from '@/app/api/scrap-images/scrap-images.service'
 import { supabaseBucket } from '@/config'
+import { signedUrlTtl } from '@/constants/attachments'
 import { ClientResponse, CompanyResponse, InternalUsers, NotificationCreatedResponseSchema } from '@/types/common'
-import { signedUrlTtl } from '@/types/constants'
 import { CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { CopilotAPI } from '@/utils/CopilotAPI'
-import { replaceImageSrc } from '@/utils/signedUrlReplacer'
+import { getFilePathFromUrl, replaceImageSrc } from '@/utils/signedUrlReplacer'
+import { SupabaseActions } from '@/utils/SupabaseActions'
 import { TaskAssignedSchema } from '@api/activity-logs/schemas/TaskAssignedSchema'
 import { TaskCreatedSchema } from '@api/activity-logs/schemas/TaskCreatedSchema'
 import { WorkflowStateUpdatedSchema } from '@api/activity-logs/schemas/WorkflowStateUpdatedSchema'
@@ -145,7 +146,7 @@ export class TasksService extends BaseService {
           dueData: newTask.dueDate,
         }),
       )
-      newTask.body && (await scrapImageService.updateTaskIdOfScrapImagesAfterCreation(newTask.body, newTask.id))
+      newTask.body && (await this.updateTaskIdOfAttachmentsAfterCreation(newTask.body, newTask.id))
     }
 
     await this.sendTaskCreateNotifications(newTask)
@@ -306,6 +307,42 @@ export class TasksService extends BaseService {
     // ...In case requirements change later again
     // const notificationService = new NotificationService(this.user)
     // await notificationService.deleteInternalUserNotificationForTask(id)
+  }
+
+  private async updateTaskIdOfAttachmentsAfterCreation(htmlString: string, task_id: string) {
+    const imgTagRegex = /<img\s+[^>]*src="([^"]+)"[^>]*>/g //expression used to match all img srcs in provided HTML string.
+    const attachmentTagRegex = /<\s*[a-zA-Z]+\s+[^>]*data-type="attachment"[^>]*src="([^"]+)"[^>]*>/g //expression used to match all attachment srcs in provided HTML string.
+    let match
+    const filePaths: string[] = []
+    const copyAttachmentPromises: Promise<void>[] = []
+    while ((match = imgTagRegex.exec(htmlString)) !== null || (match = attachmentTagRegex.exec(htmlString)) !== null) {
+      const originalSrc = match[1]
+      const filePath = getFilePathFromUrl(originalSrc)
+      const fileName = filePath?.split('/').pop()
+      if (!fileName) {
+        console.error('Could not extract filename from filepath')
+        return
+      }
+
+      if (filePath) {
+        const newFilePath = `${this.user.workspaceId}/${task_id}/${fileName}`
+        const supabaseActions = new SupabaseActions()
+        copyAttachmentPromises.push(supabaseActions.moveAttachment(filePath, newFilePath))
+        filePaths.push(filePath)
+      }
+    }
+    await Promise.all(copyAttachmentPromises)
+
+    await this.db.scrapImage.updateMany({
+      where: {
+        filePath: {
+          in: filePaths,
+        },
+      },
+      data: {
+        taskId: task_id,
+      },
+    })
   }
 
   async setNewLastActivityLogUpdated(taskId: string) {
