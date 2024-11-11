@@ -24,10 +24,9 @@ const AttachmentLayout: React.FC<AttachmentLayoutProps> = ({ selected, src, file
   }
 
   const containerStyles: SxProps<Theme> = {
-    maxWidth: '100%',
+    maxWidth: '99%',
     borderRadius: '4px',
-    marginTop: '8px !important',
-    marginBottom: '8px !important',
+    margin: '8px auto !important',
     padding: { sm: '4px 8px', md: '4px 12px 4px 8px' },
     border: (theme) => `1px solid ${theme.color.gray[150]}`,
     background: '#fff',
