@@ -24,13 +24,14 @@ const AttachmentLayout: React.FC<AttachmentLayoutProps> = ({ selected, src, file
   }
 
   const containerStyles: SxProps<Theme> = {
-    padding: { sm: '4px 8px', md: '4px 12px 4px 8px' },
+    padding: { xs: '4px 8px', md: '4px 12px 4px 8px' },
     marginTop: '4px !important',
     marginBottom: '4px',
     maxWidth: '100%',
     borderRadius: '4px',
     background: '#fff',
     boxShadow: '0px 0px 24px 0px rgba(0, 0, 0, 0.07)',
+    border: (theme) => `1px solid ${theme.color.gray[selected ? 600 : 150]}`,
 
     '@media (max-width: 600px)': {
       '&:active': {
