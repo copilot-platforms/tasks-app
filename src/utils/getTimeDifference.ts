@@ -9,7 +9,7 @@ export const getTimeDifference = (createdAt: string): string => {
   const diffInSeconds = now.diff(targetTime, 'second')
 
   if (diffInSeconds < 60) {
-    return `${diffInSeconds} second${diffInSeconds === 1 ? '' : 's'} ago`
+    return `Just now`
   }
 
   const diffInMinutes = now.diff(targetTime, 'minute')

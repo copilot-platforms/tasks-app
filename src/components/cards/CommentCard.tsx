@@ -2,7 +2,9 @@
 
 import { commentAddedResponseSchema } from '@/app/api/activity-logs/schemas/CommentAddedSchema'
 import { LogResponse } from '@/app/api/activity-logs/schemas/LogResponseSchema'
-import { BoldTypography, CommentCardContainer, StyledTypography } from '@/app/detail/ui/styledComponent'
+import { BoldTypography, CommentCardContainer, StyledReplyIcon, StyledTypography } from '@/app/detail/ui/styledComponent'
+import { getTimeDifference } from '@/utils/getTimeDifference'
+import { useEffect, useState } from 'react'
 import { ListBtn } from '@/components/buttons/ListBtn'
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 import { MenuBox } from '@/components/inputs/MenuBox'
@@ -14,10 +16,8 @@ import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 import { CreateComment } from '@/types/dto/comment.dto'
 import { getMentionsList } from '@/utils/getMentionList'
-import { getTimeDifference } from '@/utils/getTimeDifference'
 
 import { Avatar, Box, InputAdornment, Modal, Stack, styled, Typography } from '@mui/material'
-import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
 
@@ -43,6 +43,8 @@ export const CommentCard = ({
   const [showReply, setShowReply] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
   const [detail, setDetail] = useState('')
+  const [timeAgo, setTimeAgo] = useState(getTimeDifference(comment.createdAt))
+
   const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState(false)
   const { tokenPayload } = useSelector(selectAuthDetails)
   const canEdit = tokenPayload?.internalUserId == comment.initiator.id
@@ -64,6 +66,12 @@ export const CommentCard = ({
       setDetail('')
     }
   }
+
+  useEffect(() => {
+    const updateTimeAgo = () => setTimeAgo(getTimeDifference(comment.createdAt))
+    const intervalId = setInterval(updateTimeAgo, 60 * 1000)
+    return () => clearInterval(intervalId)
+  }, [comment.createdAt])
 
   return (
     <CommentCardContainer
@@ -88,7 +96,7 @@ export const CommentCard = ({
             <BoldTypography>
               <span>&#x2022;</span>
             </BoldTypography>
-            <StyledTypography sx={{ lineHeight: '22px' }}> {getTimeDifference(comment.createdAt)}</StyledTypography>
+            <StyledTypography sx={{ lineHeight: '22px' }}> {timeAgo}</StyledTypography>
           </Stack>
 
           {(isHovered || isMobile) && (
