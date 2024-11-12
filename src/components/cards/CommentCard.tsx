@@ -1,24 +1,25 @@
 'use client'
 
-import { BoldTypography, CommentCardContainer, StyledReplyIcon, StyledTypography } from '@/app/detail/ui/styledComponent'
-import { getTimeDifference } from '@/utils/getTimeDifference'
-import { Avatar, Box, InputAdornment, Modal, Stack, styled, Typography } from '@mui/material'
-import { TrashIcon } from '@/icons'
-import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
-import { useState } from 'react'
-import { ListBtn } from '@/components/buttons/ListBtn'
-import { MenuBox } from '@/components/inputs/MenuBox'
-import { useSelector } from 'react-redux'
-import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
-
-import { LogResponse } from '@/app/api/activity-logs/schemas/LogResponseSchema'
 import { commentAddedResponseSchema } from '@/app/api/activity-logs/schemas/CommentAddedSchema'
-import { CreateComment } from '@/types/dto/comment.dto'
+import { LogResponse } from '@/app/api/activity-logs/schemas/LogResponseSchema'
+import { BoldTypography, CommentCardContainer, StyledTypography } from '@/app/detail/ui/styledComponent'
+import { ListBtn } from '@/components/buttons/ListBtn'
+import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
+import { MenuBox } from '@/components/inputs/MenuBox'
 import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
-import { getMentionsList } from '@/utils/getMentionList'
-import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
-import { Tapwrite } from 'tapwrite'
+import { useWindowWidth } from '@/hooks/useWindowWidth'
+import { TrashIcon } from '@/icons'
+import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
+import { CreateComment } from '@/types/dto/comment.dto'
+import { getMentionsList } from '@/utils/getMentionList'
+import { getTimeDifference } from '@/utils/getTimeDifference'
+
+import { Avatar, Box, InputAdornment, Modal, Stack, styled, Typography } from '@mui/material'
+import { useState } from 'react'
+import { useSelector } from 'react-redux'
+import { Tapwrite } from 'tapwrite'
 
 const CustomDivider = styled(Box)(({ theme }) => ({
   height: '1px',
@@ -47,6 +48,9 @@ export const CommentCard = ({
   const canEdit = tokenPayload?.internalUserId == comment.initiator.id
   const { assigneeSuggestions } = useSelector(selectTaskDetails)
   const { assignee } = useSelector(selectTaskBoard)
+
+  const windowWidth = useWindowWidth()
+  const isMobile = windowWidth < 600 && windowWidth !== 0
 
   const handleReplySubmission = () => {
     const replyPayload: CreateComment = {
@@ -87,7 +91,7 @@ export const CommentCard = ({
             <StyledTypography sx={{ lineHeight: '22px' }}> {getTimeDifference(comment.createdAt)}</StyledTypography>
           </Stack>
 
-          {isHovered && (
+          {(isHovered || isMobile) && (
             <Stack direction="row" columnGap={2} sx={{ height: '10px' }} alignItems="center">
               {canEdit && (
                 <MenuBox
