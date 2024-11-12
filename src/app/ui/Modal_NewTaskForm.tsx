@@ -29,8 +29,8 @@ export const ModalNewTaskForm = ({
   const { title, description, workflowStateId, assigneeId, assigneeType, attachments, dueDate, showModal } =
     useSelector(selectCreateTask)
 
-  const handleModalClose = async ({ triggeredFrom }: { triggeredFrom: 'MOUSE' | 'KEYBOARD' }) => {
-    if (triggeredFrom === 'KEYBOARD' && document.querySelector('.tippy-box')) {
+  const handleModalClose = async (isKeyboard: boolean = false) => {
+    if (isKeyboard && document.querySelector('.tippy-box')) {
       return
     }
     store.dispatch(setShowModal())
@@ -43,7 +43,7 @@ export const ModalNewTaskForm = ({
   return (
     <Modal
       open={showModal}
-      onClose={() => handleModalClose({ triggeredFrom: 'KEYBOARD' })}
+      onClose={() => handleModalClose(true)}
       aria-labelledby="create-task-modal"
       aria-describedby="add-new-task"
     >
@@ -73,7 +73,7 @@ export const ModalNewTaskForm = ({
             await handleCreateMultipleAttachments(toUploadAttachments)
           }
         }}
-        handleClose={() => handleModalClose({ triggeredFrom: 'MOUSE' })}
+        handleClose={() => handleModalClose()}
         getSignedUrlUpload={getSignedUrlUpload}
       />
     </Modal>

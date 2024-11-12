@@ -54,7 +54,7 @@ const supabaseActions = new SupabaseActions()
 
 interface NewTaskFormProps {
   handleCreate: () => void
-  handleClose: ({ triggeredFrom }: { triggeredFrom: 'MOUSE' | 'KEYBOARD' }) => void
+  handleClose: (isKeyboard?: boolean) => void
   getSignedUrlUpload: (fileName: string) => Promise<ISignedUrlUpload>
 }
 
@@ -107,7 +107,7 @@ export const NewTaskForm = ({ handleCreate, handleClose, getSignedUrlUpload }: N
   useEffect(() => {
     function handleEscPress(e: KeyboardEvent) {
       if (e.key === 'Escape') {
-        handleClose({ triggeredFrom: 'MOUSE' })
+        handleClose()
       }
     }
     document.addEventListener('keydown', handleEscPress)
@@ -181,7 +181,7 @@ export const NewTaskForm = ({ handleCreate, handleClose, getSignedUrlUpload }: N
                 />
               )}
             </Box>
-            <CloseIcon style={{ cursor: 'pointer' }} onClick={() => handleClose({ triggeredFrom: 'MOUSE' })} />
+            <CloseIcon style={{ cursor: 'pointer' }} onClick={() => handleClose()} />
           </Stack>
         </AppMargin>
       </Stack>
@@ -381,7 +381,7 @@ const NewTaskFooter = ({ handleCreate, handleClose, getSignedUrlUpload }: NewTas
           <Box>{advancedFeatureFlag && <AttachmentInput handleFileSelect={handleFileSelect} />}</Box>
           <Stack direction="row" columnGap={4}>
             <SecondaryBtn
-              handleClick={() => handleClose({ triggeredFrom: 'MOUSE' })}
+              handleClick={() => handleClose()}
               buttonContent={
                 <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[700] }}>
                   Cancel
