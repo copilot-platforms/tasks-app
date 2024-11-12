@@ -30,12 +30,12 @@ export const ModalNewTaskForm = ({
     useSelector(selectCreateTask)
 
   const handleModalClose = async ({ triggeredFrom }: { triggeredFrom: 'MOUSE' | 'KEYBOARD' }) => {
-    const hasSlashCommandMenu = document.querySelector('.tippy-box') !== null
-    if (!(triggeredFrom === 'KEYBOARD' && hasSlashCommandMenu)) {
-      store.dispatch(setShowModal())
-      store.dispatch(clearCreateTaskFields({ isFilterOn: !!filterOptions[FilterOptions.ASSIGNEE] }))
-      store.dispatch(setActiveWorkflowStateId(null))
+    if (triggeredFrom === 'KEYBOARD' && document.querySelector('.tippy-box')) {
+      return
     }
+    store.dispatch(setShowModal())
+    store.dispatch(clearCreateTaskFields({ isFilterOn: !!filterOptions[FilterOptions.ASSIGNEE] }))
+    store.dispatch(setActiveWorkflowStateId(null))
     // NOTE: Reimplement in M3
     // await bulkRemoveAttachments(attachments)
   }
