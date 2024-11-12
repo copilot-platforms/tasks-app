@@ -20,6 +20,8 @@ import { TaskResponse } from '@/types/dto/tasks.dto'
 import { ScrapImageRequest } from '@/types/common'
 
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
+import AttachmentLayout from '@/components/AttachmentLayout'
+import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
 
 interface Prop {
   task_id: string
@@ -164,7 +166,7 @@ export const TaskEditor = ({
           content={updateDetail}
           getContent={handleDetailChange}
           readonly={userType === UserType.CLIENT_USER}
-          editorClass="tapwrite-details-page"
+          editorClass=""
           placeholder="Add description..."
           uploadFn={async (file) => {
             setActiveUploads((prev) => prev + 1)
@@ -173,6 +175,9 @@ export const TaskEditor = ({
             return t
           }}
           deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', task_id)}
+          attachmentLayout={AttachmentLayout}
+          addAttachmentButton
+          maxUploadLimit={MAX_UPLOAD_LIMIT}
         />
       </Box>
 

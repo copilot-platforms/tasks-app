@@ -36,7 +36,6 @@ import { upload } from '@vercel/blob/client'
 import { AttachmentInput } from '@/components/inputs/AttachmentInput'
 import { SupabaseActions } from '@/utils/SupabaseActions'
 import { generateRandomString } from '@/utils/generateRandomString'
-import { AttachmentCard } from '@/components/cards/AttachmentCard'
 import { bulkRemoveAttachments } from '@/utils/bulkRemoveAttachments'
 import { advancedFeatureFlag } from '@/config'
 import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
@@ -48,6 +47,8 @@ import { z } from 'zod'
 import { MiniLoader } from '@/components/atoms/MiniLoader'
 import { getAssigneeName } from '@/utils/assignee'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
+import AttachmentLayout from '@/components/AttachmentLayout'
+import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
 
 const supabaseActions = new SupabaseActions()
 
@@ -345,23 +346,9 @@ const NewTaskFormInputs = () => {
           editorClass="tapwrite-task-description"
           uploadFn={(file) => uploadImageHandler(file, token ?? '', null)}
           deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', null)}
+          attachmentLayout={AttachmentLayout}
+          maxUploadLimit={MAX_UPLOAD_LIMIT}
         />
-      </Stack>
-      <Stack direction="row" columnGap={2} m="16px 0px">
-        {attachments?.map((el, key) => {
-          return (
-            <Box key={el.filePath}>
-              <AttachmentCard
-                file={el}
-                deleteAttachment={async (event: React.MouseEvent<HTMLDivElement>) => {
-                  event.stopPropagation()
-                  const { data } = await supabaseActions.removeAttachment(el.filePath)
-                  store.dispatch(removeOneAttachment({ attachment: el }))
-                }}
-              />
-            </Box>
-          )
-        })}
       </Stack>
     </>
   )

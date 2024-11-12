@@ -19,6 +19,7 @@ import { z } from 'zod'
 import { AssigneeFetcher } from './_fetchers/AssigneeFetcher'
 import { ModalNewTaskForm } from './ui/Modal_NewTaskForm'
 import { TaskBoard } from './ui/TaskBoard'
+import AttachmentLayout from '@/components/AttachmentLayout'
 
 export async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -26,7 +27,6 @@ export async function getAllWorkflowStates(token: string): Promise<WorkflowState
   })
 
   const data = await res.json()
-
   return data.workflowStates
 }
 

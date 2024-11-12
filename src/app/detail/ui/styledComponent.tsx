@@ -39,8 +39,6 @@ export const StyledBox = styled(Box)(({ theme }) => ({
 export const StyledTiptapDescriptionWrapper = styled(Box)(({ theme }) => ({
   borderBottom: `1px solid ${theme.color.borders.borderDisabled}`,
   width: '100%',
-  //the min height is set here to avoid flickering issue of the activity log which loads before Tapwrite
-  minHeight: '20vh',
   '.tiptap *': {
     color: theme.color.gray[500],
   },
