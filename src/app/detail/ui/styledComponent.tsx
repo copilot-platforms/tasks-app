@@ -87,10 +87,6 @@ export const CommentCardContainer = styled(Stack)(({ theme }) => ({
   background: theme.color.base.white,
   padding: '8px',
   width: '100%',
-  //remove gap from the parent div of the Tapwrite component
-  '& > div:first-of-type': {
-    gap: '0px !important',
-  },
 }))
 
 export const TaskDetailsContainer = styled(Box)(({ theme }) => ({
