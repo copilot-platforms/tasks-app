@@ -21,6 +21,7 @@ import { ScrapImageRequest } from '@/types/common'
 
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
 import AttachmentLayout from '@/components/AttachmentLayout'
+import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
 
 interface Prop {
   task_id: string
@@ -176,6 +177,7 @@ export const TaskEditor = ({
           deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', task_id)}
           attachmentLayout={AttachmentLayout}
           addAttachmentButton
+          maxUploadLimit={MAX_UPLOAD_LIMIT}
         />
       </Box>
 

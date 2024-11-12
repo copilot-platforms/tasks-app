@@ -48,6 +48,7 @@ import { MiniLoader } from '@/components/atoms/MiniLoader'
 import { getAssigneeName } from '@/utils/assignee'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
 import AttachmentLayout from '@/components/AttachmentLayout'
+import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
 
 const supabaseActions = new SupabaseActions()
 
@@ -346,6 +347,7 @@ const NewTaskFormInputs = () => {
           uploadFn={(file) => uploadImageHandler(file, token ?? '', null)}
           deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', null)}
           attachmentLayout={AttachmentLayout}
+          maxUploadLimit={MAX_UPLOAD_LIMIT}
         />
       </Stack>
     </>
