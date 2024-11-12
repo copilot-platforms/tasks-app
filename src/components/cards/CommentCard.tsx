@@ -5,7 +5,7 @@ import { getTimeDifference } from '@/utils/getTimeDifference'
 import { Avatar, Box, InputAdornment, Modal, Stack, styled, Typography } from '@mui/material'
 import { TrashIcon } from '@/icons'
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ListBtn } from '@/components/buttons/ListBtn'
 import { MenuBox } from '@/components/inputs/MenuBox'
 import { useSelector } from 'react-redux'
@@ -42,6 +42,8 @@ export const CommentCard = ({
   const [showReply, setShowReply] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
   const [detail, setDetail] = useState('')
+  const [timeAgo, setTimeAgo] = useState(getTimeDifference(comment.createdAt))
+
   const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState(false)
   const { tokenPayload } = useSelector(selectAuthDetails)
   const canEdit = tokenPayload?.internalUserId == comment.initiator.id
@@ -60,6 +62,12 @@ export const CommentCard = ({
       setDetail('')
     }
   }
+
+  useEffect(() => {
+    const updateTimeAgo = () => setTimeAgo(getTimeDifference(comment.createdAt))
+    const intervalId = setInterval(updateTimeAgo, 60 * 1000)
+    return () => clearInterval(intervalId)
+  }, [comment.createdAt])
 
   return (
     <CommentCardContainer
@@ -84,7 +92,7 @@ export const CommentCard = ({
             <BoldTypography>
               <span>&#x2022;</span>
             </BoldTypography>
-            <StyledTypography sx={{ lineHeight: '22px' }}> {getTimeDifference(comment.createdAt)}</StyledTypography>
+            <StyledTypography sx={{ lineHeight: '22px' }}> {timeAgo}</StyledTypography>
           </Stack>
 
           {isHovered && (
