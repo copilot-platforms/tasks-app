@@ -29,16 +29,24 @@ export const ModalNewTaskForm = ({
   const { title, description, workflowStateId, assigneeId, assigneeType, attachments, dueDate, showModal } =
     useSelector(selectCreateTask)
 
-  const handleModalClose = async () => {
-    store.dispatch(setShowModal())
-    store.dispatch(clearCreateTaskFields({ isFilterOn: !!filterOptions[FilterOptions.ASSIGNEE] }))
-    store.dispatch(setActiveWorkflowStateId(null))
+  const handleModalClose = async ({ triggeredFrom }: { triggeredFrom: 'MOUSE' | 'KEYBOARD' }) => {
+    const hasSlashCommandMenu = document.querySelector('.tippy-box') !== null
+    if (!(triggeredFrom === 'KEYBOARD' && hasSlashCommandMenu)) {
+      store.dispatch(setShowModal())
+      store.dispatch(clearCreateTaskFields({ isFilterOn: !!filterOptions[FilterOptions.ASSIGNEE] }))
+      store.dispatch(setActiveWorkflowStateId(null))
+    }
     // NOTE: Reimplement in M3
     // await bulkRemoveAttachments(attachments)
   }
 
   return (
-    <Modal open={showModal} onClose={handleModalClose} aria-labelledby="create-task-modal" aria-describedby="add-new-task">
+    <Modal
+      open={showModal}
+      onClose={() => handleModalClose({ triggeredFrom: 'KEYBOARD' })}
+      aria-labelledby="create-task-modal"
+      aria-describedby="add-new-task"
+    >
       <NewTaskForm
         handleCreate={async () => {
           if (title && assigneeId && assigneeType) {
@@ -65,7 +73,7 @@ export const ModalNewTaskForm = ({
             await handleCreateMultipleAttachments(toUploadAttachments)
           }
         }}
-        handleClose={handleModalClose}
+        handleClose={() => handleModalClose({ triggeredFrom: 'MOUSE' })}
         getSignedUrlUpload={getSignedUrlUpload}
       />
     </Modal>
