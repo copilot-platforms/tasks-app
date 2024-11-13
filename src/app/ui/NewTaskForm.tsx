@@ -39,6 +39,7 @@ import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
 import { z } from 'zod'
+import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
 
 const supabaseActions = new SupabaseActions()
 
@@ -338,6 +339,7 @@ const NewTaskFormInputs = () => {
           uploadFn={uploadFn}
           deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', null)}
           attachmentLayout={AttachmentLayout}
+          maxUploadLimit={MAX_UPLOAD_LIMIT}
         />
       </Stack>
     </>

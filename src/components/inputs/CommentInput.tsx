@@ -106,6 +106,13 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
             const { isListActive, isFloatingMenuActive } = prop
             setIsListOrMenuActive(isListActive || isFloatingMenuActive)
           }}
+          parentContainerStyle={{
+            width: '100%',
+            height: '100%',
+            maxWidth: '600px',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
         />
         <InputAdornment
           position="end"
