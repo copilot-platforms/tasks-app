@@ -1,4 +1,3 @@
-import AttachmentLayout from '@/components/AttachmentLayout'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { MiniLoader } from '@/components/atoms/MiniLoader'
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
@@ -39,6 +38,8 @@ import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
 import { z } from 'zod'
+import AttachmentLayout from '@/components/AttachmentLayout'
+import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
 
 const supabaseActions = new SupabaseActions()
 
@@ -338,6 +339,7 @@ const NewTaskFormInputs = () => {
           uploadFn={uploadFn}
           deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', null)}
           attachmentLayout={AttachmentLayout}
+          maxUploadLimit={MAX_UPLOAD_LIMIT}
         />
       </Stack>
     </>
