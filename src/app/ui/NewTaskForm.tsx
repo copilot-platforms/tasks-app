@@ -54,7 +54,7 @@ const supabaseActions = new SupabaseActions()
 
 interface NewTaskFormProps {
   handleCreate: () => void
-  handleClose: () => void
+  handleClose: (isKeyboard?: boolean) => void
   getSignedUrlUpload: (fileName: string) => Promise<ISignedUrlUpload>
 }
 
@@ -181,7 +181,7 @@ export const NewTaskForm = ({ handleCreate, handleClose, getSignedUrlUpload }: N
                 />
               )}
             </Box>
-            <CloseIcon style={{ cursor: 'pointer' }} onClick={handleClose} />
+            <CloseIcon style={{ cursor: 'pointer' }} onClick={() => handleClose()} />
           </Stack>
         </AppMargin>
       </Stack>
@@ -381,7 +381,7 @@ const NewTaskFooter = ({ handleCreate, handleClose, getSignedUrlUpload }: NewTas
           <Box>{advancedFeatureFlag && <AttachmentInput handleFileSelect={handleFileSelect} />}</Box>
           <Stack direction="row" columnGap={4}>
             <SecondaryBtn
-              handleClick={handleClose}
+              handleClick={() => handleClose()}
               buttonContent={
                 <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[700] }}>
                   Cancel

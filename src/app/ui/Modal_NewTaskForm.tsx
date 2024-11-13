@@ -29,7 +29,10 @@ export const ModalNewTaskForm = ({
   const { title, description, workflowStateId, assigneeId, assigneeType, attachments, dueDate, showModal } =
     useSelector(selectCreateTask)
 
-  const handleModalClose = async () => {
+  const handleModalClose = async (isKeyboard: boolean = false) => {
+    if (isKeyboard && document.querySelector('.tippy-box')) {
+      return
+    }
     store.dispatch(setShowModal())
     store.dispatch(clearCreateTaskFields({ isFilterOn: !!filterOptions[FilterOptions.ASSIGNEE] }))
     store.dispatch(setActiveWorkflowStateId(null))
@@ -38,7 +41,12 @@ export const ModalNewTaskForm = ({
   }
 
   return (
-    <Modal open={showModal} onClose={handleModalClose} aria-labelledby="create-task-modal" aria-describedby="add-new-task">
+    <Modal
+      open={showModal}
+      onClose={() => handleModalClose(true)}
+      aria-labelledby="create-task-modal"
+      aria-describedby="add-new-task"
+    >
       <NewTaskForm
         handleCreate={async () => {
           if (title && assigneeId && assigneeType) {
@@ -65,7 +73,7 @@ export const ModalNewTaskForm = ({
             await handleCreateMultipleAttachments(toUploadAttachments)
           }
         }}
-        handleClose={handleModalClose}
+        handleClose={() => handleModalClose()}
         getSignedUrlUpload={getSignedUrlUpload}
       />
     </Modal>
