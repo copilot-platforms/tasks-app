@@ -165,7 +165,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
                 />
               )}
             </Box>
-            <CloseIcon style={{ cursor: 'pointer' }} onClick={handleClose} />
+            <CloseIcon style={{ cursor: 'pointer' }} onClick={() => handleClose()} />
           </Stack>
         </AppMargin>
       </Stack>
@@ -349,7 +349,7 @@ const NewTaskFooter = ({ handleCreate, handleClose }: NewTaskFormProps) => {
         <Stack direction="row" justifyContent="flex-end" alignItems="center">
           <Stack direction="row" columnGap={4}>
             <SecondaryBtn
-              handleClick={handleClose}
+              handleClick={() => handleClose()}
               buttonContent={
                 <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[700] }}>
                   Cancel
