@@ -2,7 +2,6 @@ import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { MiniLoader } from '@/components/atoms/MiniLoader'
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
-import { AttachmentInput } from '@/components/inputs/AttachmentInput'
 import { DatePickerComponent } from '@/components/inputs/DatePickerComponent'
 import Selector, { SelectorType } from '@/components/inputs/Selector'
 import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
@@ -22,12 +21,9 @@ import {
   FilterOptions,
   HandleSelectorComponentModes,
   IAssigneeCombined,
-  ISignedUrlUpload,
   ITemplate,
 } from '@/types/interfaces'
-import { SupabaseActions } from '@/utils/SupabaseActions'
 import { getAssigneeName } from '@/utils/assignee'
-import { generateRandomString } from '@/utils/generateRandomString'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
 import { NoAssigneeExtraOptions } from '@/utils/noAssignee'
@@ -40,8 +36,6 @@ import { Tapwrite } from 'tapwrite'
 import { z } from 'zod'
 import AttachmentLayout from '@/components/AttachmentLayout'
 import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
-
-const supabaseActions = new SupabaseActions()
 
 interface NewTaskFormProps {
   handleCreate: () => void
