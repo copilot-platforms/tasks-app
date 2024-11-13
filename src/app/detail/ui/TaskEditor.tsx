@@ -1,26 +1,21 @@
 'use client'
 
 import { StyledTextField } from '@/components/inputs/TextField'
-import { selectTaskDetails, setShowConfirmDeleteModal } from '@/redux/features/taskDetailsSlice'
-import { Box, Modal } from '@mui/material'
-import { useEffect, useState, useCallback } from 'react'
-import { useSelector } from 'react-redux'
 import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
-import store from '@/redux/store'
-import { upload } from '@vercel/blob/client'
-import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
-import { ISignedUrlUpload, UserType } from '@/types/interfaces'
-import { Tapwrite } from 'tapwrite'
 import { useDebounce, useDebounceWithCancel } from '@/hooks/useDebounce'
-import { useRouter } from 'next/navigation'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
-import { SupabaseActions } from '@/utils/SupabaseActions'
-import { generateRandomString } from '@/utils/generateRandomString'
+import { selectTaskDetails, setShowConfirmDeleteModal } from '@/redux/features/taskDetailsSlice'
+import store from '@/redux/store'
+import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { TaskResponse } from '@/types/dto/tasks.dto'
-import { ScrapImageRequest } from '@/types/common'
+import { UserType } from '@/types/interfaces'
+import { Box, Modal } from '@mui/material'
+import { useCallback, useEffect, useState } from 'react'
+import { useSelector } from 'react-redux'
+import { Tapwrite } from 'tapwrite'
 
-import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
 import AttachmentLayout from '@/components/AttachmentLayout'
+import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
 import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
 
 interface Prop {
@@ -126,6 +121,15 @@ export const TaskEditor = ({
     debouncedResetTypingFlag()
   }
 
+  const uploadFn = token
+    ? async (file: File) => {
+        setActiveUploads((prev) => prev + 1)
+        const fileUrl = await uploadImageHandler(file, token ?? '', task.workspaceId, task_id)
+        setActiveUploads((prev) => prev - 1)
+        return fileUrl
+      }
+    : undefined
+
   return (
     <>
       <StyledTextField
@@ -168,12 +172,7 @@ export const TaskEditor = ({
           readonly={userType === UserType.CLIENT_USER}
           editorClass=""
           placeholder="Add description..."
-          uploadFn={async (file) => {
-            setActiveUploads((prev) => prev + 1)
-            const t = await uploadImageHandler(file, token ?? '', task_id)
-            setActiveUploads((prev) => prev - 1)
-            return t
-          }}
+          uploadFn={uploadFn}
           deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', task_id)}
           attachmentLayout={AttachmentLayout}
           addAttachmentButton

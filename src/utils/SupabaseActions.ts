@@ -41,4 +41,11 @@ export class SupabaseActions extends SupabaseService {
     }
     return { data }
   }
+
+  async moveAttachment(oldPath: string, newPath: string) {
+    const { error } = await this.supabase.storage.from(supabaseBucket).move(oldPath, newPath)
+    if (error) {
+      throw new APIError(httpStatus.BAD_REQUEST, error.message)
+    }
+  }
 }

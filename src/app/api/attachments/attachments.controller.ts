@@ -49,12 +49,14 @@ export const deleteAttachment = async (req: NextRequest, { params: { id } }: IdP
 
 export const getSignedUrlUpload = async (req: NextRequest) => {
   const fileName = req.nextUrl.searchParams.get('fileName')
-  if (!fileName) {
-    throw new APIError(httpStatus.BAD_REQUEST, 'fileName is required')
-  }
+  if (!fileName) throw new APIError(httpStatus.BAD_REQUEST, 'fileName is required')
+
+  const filePath = req.nextUrl.searchParams.get('filePath')
+  if (!filePath) throw new APIError(httpStatus.BAD_REQUEST, 'filePath is required')
+
   const user = await authenticate(req)
   const attachmentsService = new AttachmentsService(user)
-  const signedUrl = await attachmentsService.signUrlUpload(fileName)
+  const signedUrl = await attachmentsService.signUrlUpload(fileName, filePath)
   return NextResponse.json({ signedUrl })
 }
 
