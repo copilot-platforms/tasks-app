@@ -42,6 +42,7 @@ import { signedUrlTtl } from '@/types/constants'
 import { ActivityWrapper } from '@/app/detail/ui/ActivityWrapper'
 import { DeletedTaskRedirectPage } from '@/components/layouts/DeletedTaskRedirectPage'
 import { UserRole } from '@/app/api/core/types/user'
+import { ArchiveBtn } from '@/components/buttons/ArchiveBtn'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
@@ -122,8 +123,11 @@ export default async function TaskDetailPage({
                     </Typography>
                   </Stack>
                   <Stack direction="row" alignItems="center" columnGap="8px">
-                    {params.user_type === UserType.INTERNAL_USER && <MenuBoxContainer />}
-                    <ToggleButtonContainer />
+                    <ArchiveBtn state="Archive" />
+                    <Stack direction="row" alignItems="center" columnGap="8px">
+                      {params.user_type === UserType.INTERNAL_USER && <MenuBoxContainer />}
+                      <ToggleButtonContainer />
+                    </Stack>
                   </Stack>
                 </Stack>
               </AppMargin>
