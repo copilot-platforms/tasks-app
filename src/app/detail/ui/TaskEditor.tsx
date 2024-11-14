@@ -50,8 +50,6 @@ export const TaskEditor = ({
   const [isUserTyping, setIsUserTyping] = useState(false)
   const [activeUploads, setActiveUploads] = useState(0)
 
-  useEffect(() => console.log('aaa TaskEditor updateDetail', updateDetail), [updateDetail])
-
   // const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
   //   event.preventDefault()
   //   const files = event.target.files
