@@ -88,6 +88,8 @@ export const RealTime = ({
               updatedTask.body = replaceImgSrcs(updatedTask.body, newImgSrcs, oldImgSrcs)
             }
           }
+          console.log('aaa oldTask', oldTask)
+          console.log('aaa updatedTask', updatedTask)
 
           const newTaskArr = [...tasks.filter((task) => task.id !== updatedTask.id), updatedTask]
           store.dispatch(setTasks(newTaskArr))
