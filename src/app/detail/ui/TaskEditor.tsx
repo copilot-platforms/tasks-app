@@ -75,6 +75,10 @@ export const TaskEditor = ({
     }
   }, [tasks, task_id, isUserTyping, activeUploads])
 
+  useEffect(() => {
+    console.log('aaa TaskEditor updateDetail', updateDetail)
+  }, [updateDetail])
+
   const _titleUpdateDebounced = async (title: string) => updateTaskTitle(title)
 
   const [titleUpdateDebounced, cancelTitleUpdateDebounced] = useDebounceWithCancel(_titleUpdateDebounced)
@@ -111,6 +115,7 @@ export const TaskEditor = ({
   }
 
   const handleDetailChange = (content: string) => {
+    console.log('aaa TaskEditor')
     if (content === updateDetail) {
       return
     }

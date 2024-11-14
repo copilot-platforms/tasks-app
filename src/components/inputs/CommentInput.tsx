@@ -27,6 +27,10 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
   const currentUserId = tokenPayload?.clientId ?? tokenPayload?.internalUserId
   const currentUserDetails = assignee.find((el) => el.id === currentUserId)
 
+  useEffect(() => {
+    console.log('aaa CommentInput detail', detail)
+  }, [detail])
+
   const isContentEmpty = (content: string) => {
     // Regular expression to match only empty paragraphs, whitespace, or <br> tags
     const emptyContentRegex = /^(<p>(\s|(<br\s*\/?>))*<\/p>)*$/
