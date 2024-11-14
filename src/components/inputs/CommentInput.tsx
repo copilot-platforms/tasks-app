@@ -33,6 +33,8 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
     return emptyContentRegex.test(content)
   }
 
+  useEffect(() => console.log('aaa CommentInput detail', detail), [detail])
+
   const handleSubmit = () => {
     let content = detail
     const END_P = '<p></p>'

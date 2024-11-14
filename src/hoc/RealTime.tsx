@@ -43,6 +43,7 @@ export const RealTime = ({
   }
 
   const handleTaskRealTimeUpdates = (payload: RealtimePostgresChangesPayload<RealTimeTaskResponse>) => {
+    console.log('aaa payload', payload)
     if (payload.eventType === 'INSERT') {
       // For both user types, filter out just tasks belonging to workspace.
       let canUserAccessTask = payload.new.workspaceId === tokenPayload?.workspaceId
