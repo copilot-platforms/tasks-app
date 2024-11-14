@@ -8,6 +8,10 @@ const EscapeHandler = () => {
 
   useEffect(() => {
     const handleEsc = (event: KeyboardEvent) => {
+      if (document.querySelector('.tippy-box')) {
+        return
+      }
+
       if (event.key === 'Escape') {
         router.back()
       }

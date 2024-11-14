@@ -6,21 +6,12 @@ import httpStatus from 'http-status'
 import { ISignedUrlUpload } from '@/types/interfaces'
 
 export class SupabaseActions extends SupabaseService {
-  async downloadAttachment(filePath: string, fileName: string) {
+  async downloadAttachment(filePath: string) {
     const { data, error } = await this.supabase.storage.from(supabaseBucket).download(filePath)
     if (error) {
       throw new APIError(httpStatus.BAD_REQUEST, error.message)
     }
-    if (data) {
-      const url = window.URL.createObjectURL(new Blob([data]))
-      const link = document.createElement('a')
-      link.href = url
-      link.download = fileName
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      window.URL.revokeObjectURL(url)
-    }
+    return data
   }
 
   async uploadAttachment(file: File, signedUrl: ISignedUrlUpload, task_id: string | null) {
@@ -49,5 +40,12 @@ export class SupabaseActions extends SupabaseService {
       throw new APIError(httpStatus.BAD_REQUEST, error.message)
     }
     return { data }
+  }
+
+  async moveAttachment(oldPath: string, newPath: string) {
+    const { error } = await this.supabase.storage.from(supabaseBucket).move(oldPath, newPath)
+    if (error) {
+      throw new APIError(httpStatus.BAD_REQUEST, error.message)
+    }
   }
 }

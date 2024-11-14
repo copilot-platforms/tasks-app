@@ -26,6 +26,7 @@ import {
   InprogressIconMedium,
   DoneIconMedium,
   InreviewIconMedium,
+  DefaultFileIcon,
 } from '@/icons'
 import { WorkflowState } from '@/types/dto/workflowStates.dto'
 import { ReactNode } from 'react'
@@ -70,4 +71,5 @@ export const attachmentIcons: { [key: string]: ReactNode } = {
   'text/plain': <TxtIcon />,
   'image/gif': <GifIcon />,
   'audio/mpeg': <Mp3Icon />,
+  default: <DefaultFileIcon />,
 }
