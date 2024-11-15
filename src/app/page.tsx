@@ -13,7 +13,7 @@ import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { redirectIfTaskCta } from '@/utils/redirect'
-import { UserRedirectionType, UserRole } from '@api/core/types/user'
+import { UserRole } from '@api/core/types/user'
 import { Suspense } from 'react'
 import { z } from 'zod'
 import { AssigneeFetcher } from './_fetchers/AssigneeFetcher'
@@ -63,7 +63,7 @@ export default async function Main({ searchParams }: { searchParams: { token: st
     return <SilentError message="Please provide a Valid Token" />
   }
 
-  redirectIfTaskCta(searchParams, UserRedirectionType.IU)
+  redirectIfTaskCta(searchParams)
 
   const [workflowStates, tasks, viewSettings, tokenPayload] = await Promise.all([
     getAllWorkflowStates(token),
