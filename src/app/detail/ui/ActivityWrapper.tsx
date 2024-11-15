@@ -5,6 +5,7 @@ import { deleteComment, postComment } from '@/app/detail/[task_id]/[user_type]/a
 import { ActivityLog } from '@/app/detail/ui/ActivityLog'
 import { Comments } from '@/app/detail/ui/Comments'
 import { CommentInput } from '@/components/inputs/CommentInput'
+import useScrollToElement from '@/hooks/useScrollToElement'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { ClientResponseSchema, InternalUsersSchema, Token } from '@/types/common'
 import { CreateComment } from '@/types/dto/comment.dto'
@@ -37,7 +38,7 @@ export const ActivityWrapper = ({
   })
   const { assignee } = useSelector(selectTaskBoard)
   const { mutate } = useSWRConfig()
-
+  useScrollToElement('commentId')
   useEffect(() => {
     const refetchActivityLog = async () => {
       await mutate(cacheKey)
