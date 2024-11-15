@@ -16,3 +16,8 @@ export enum UserRole {
   Client = 'client',
   IU = 'internalUser',
 }
+
+export enum UserRedirectionType {
+  Client = 'client',
+  IU = 'iu',
+}
