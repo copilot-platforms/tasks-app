@@ -5,7 +5,13 @@ import { UserType } from '@/types/interfaces'
 
 export const redirectIfTaskCta = (searchParams: Record<string, string>) => {
   const taskId = z.string().safeParse(searchParams.taskId)
+  const commentId = z.string().safeParse(searchParams.commentId)
   if (taskId.data) {
+    if (commentId) {
+      redirect(
+        `${apiUrl}/detail/${taskId.data}/iu?token=${z.string().parse(searchParams.token)}&commentId=${commentId}&isRedirect=1`,
+      )
+    }
     redirect(`${apiUrl}/detail/${taskId.data}/iu?token=${z.string().parse(searchParams.token)}&isRedirect=1`)
   }
 }
