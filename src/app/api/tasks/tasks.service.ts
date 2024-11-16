@@ -39,12 +39,21 @@ export class TasksService extends BaseService {
   private buildReadFilters(id?: string) {
     const user = this.user
 
-    let filters = { where: { id, workspaceId: user.workspaceId, OR: undefined as unknown as FilterByAssigneeId[] } }
+    // Default filters
+    let filters = {
+      where: {
+        id,
+        workspaceId: user.workspaceId,
+        OR: undefined as FilterByAssigneeId[] | undefined,
+        isArchived: undefined as boolean | undefined,
+      },
+    }
 
     if (user.clientId) {
       filters = {
         where: {
           ...filters.where,
+          isArchived: false,
           OR: [{ assigneeId: user.clientId as string, assigneeType: 'client' }],
         },
       }
@@ -53,6 +62,7 @@ export class TasksService extends BaseService {
       filters = {
         where: {
           ...filters.where,
+          isArchived: false,
           OR: [
             { assigneeId: user.clientId as string, assigneeType: 'client' },
             { assigneeId: user.companyId, assigneeType: 'company' },
@@ -226,6 +236,10 @@ export class TasksService extends BaseService {
       await labelMappingService.deleteLabel(prevTask.label)
       label = z.string().parse(await labelMappingService.getLabel(data.assigneeId, data.assigneeType))
     }
+
+    // Set / reset lastArchivedDate if isArchived has been triggered, else remove it from the update query
+    const lastArchivedDate = data.isArchived === true ? new Date() : data.isArchived === false ? null : undefined
+
     // Get the updated task
     const updatedTask = await this.db.task.update({
       where: { id },
@@ -233,6 +247,7 @@ export class TasksService extends BaseService {
         ...data,
         assigneeId: data.assigneeId === '' ? null : data.assigneeId,
         label,
+        lastArchivedDate,
         ...(await getTaskTimestamps('update', this.user, data, prevTask)),
       },
       include: { workflowState: true },
