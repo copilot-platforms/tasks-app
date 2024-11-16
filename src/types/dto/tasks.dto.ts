@@ -24,6 +24,7 @@ export const UpdateTaskRequestSchema = z.object({
   body: z.string().nullish(),
   workflowStateId: z.string().uuid().optional(),
   dueDate: DateStringSchema.nullish(),
+  isArchived: z.boolean().optional(),
 })
 export type UpdateTaskRequest = z.infer<typeof UpdateTaskRequestSchema>
 
