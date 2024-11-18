@@ -2,9 +2,8 @@ import { apiUrl } from '@/config'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { UserType } from '@/types/interfaces'
-import { UserRedirectionType } from '@/app/api/core/types/user'
 
-export const redirectIfTaskCta = (searchParams: Record<string, string>, userType: UserRedirectionType) => {
+export const redirectIfTaskCta = (searchParams: Record<string, string>, userType: UserType) => {
   const taskId = z.string().safeParse(searchParams.taskId)
   const commentId = z.string().safeParse(searchParams.commentId)
 

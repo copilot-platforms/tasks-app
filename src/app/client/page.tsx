@@ -14,7 +14,7 @@ import { z } from 'zod'
 import { SilentError } from '@/components/templates/SilentError'
 import { TaskBoard } from '@/app/ui/TaskBoard'
 import { DndWrapper } from '@/hoc/DndWrapper'
-import { UserRedirectionType, UserRole } from '@api/core/types/user'
+import { UserRole } from '@api/core/types/user'
 import { getViewSettings } from '@/app/page'
 import { ValidateNotificationCountFetcher } from '../_fetchers/ValidateNotificationCountFetcher'
 import { redirectIfTaskCta } from '@/utils/redirect'
@@ -49,7 +49,7 @@ export default async function ClientPage({ searchParams }: { searchParams: { tok
   if (!z.string().safeParse(token).success) {
     return <SilentError message="Please provide a Valid Token" />
   }
-  redirectIfTaskCta(searchParams, UserRedirectionType.Client)
+  redirectIfTaskCta(searchParams, UserType.CLIENT_USER)
   const [workflowStates, tasks, viewSettings, tokenPayload] = await Promise.all([
     await getAllWorkflowStates(token),
     await getAllTasks(token),
