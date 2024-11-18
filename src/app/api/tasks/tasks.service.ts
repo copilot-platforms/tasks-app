@@ -19,7 +19,7 @@ import { NotificationTaskActions } from '@api/core/types/tasks'
 import { UserAction, UserRole } from '@api/core/types/user'
 import { LabelMappingService } from '@api/label-mapping/label-mapping.service'
 import { NotificationService } from '@api/notification/notification.service'
-import { getTaskTimestamps } from '@api/tasks/tasks.helpers'
+import { getArchivedStatus, getTaskTimestamps } from '@api/tasks/tasks.helpers'
 import { ActivityType, AssigneeType, StateType, Task, WorkflowState } from '@prisma/client'
 import httpStatus from 'http-status'
 import { z } from 'zod'
@@ -45,7 +45,6 @@ export class TasksService extends BaseService {
         id,
         workspaceId: user.workspaceId,
         OR: undefined as FilterByAssigneeId[] | undefined,
-        isArchived: undefined as boolean | undefined,
       },
     }
 
@@ -53,7 +52,6 @@ export class TasksService extends BaseService {
       filters = {
         where: {
           ...filters.where,
-          isArchived: false,
           OR: [{ assigneeId: user.clientId as string, assigneeType: 'client' }],
         },
       }
@@ -62,7 +60,6 @@ export class TasksService extends BaseService {
       filters = {
         where: {
           ...filters.where,
-          isArchived: false,
           OR: [
             { assigneeId: user.clientId as string, assigneeType: 'client' },
             { assigneeId: user.companyId, assigneeType: 'company' },
@@ -74,7 +71,7 @@ export class TasksService extends BaseService {
     return filters
   }
 
-  async getAllTasks() {
+  async getAllTasks(queryFilters: { showArchived: boolean; showUnarchived: boolean }) {
     // Check if given user role is authorized access to this resource
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Read, Resource.Tasks)
@@ -83,8 +80,22 @@ export class TasksService extends BaseService {
     // while clients can only view the tasks assigned to them or their company
     const filters = this.buildReadFilters()
 
+    let isArchived: boolean | undefined = false
+    // Archived tasks are only accessible to IU
+    if (this.user.internalUserId) {
+      // If both archived filters are explicitly 0 / falsey for IU, shortcircuit and return empty array
+      if (!queryFilters.showArchived && !queryFilters.showUnarchived) {
+        return []
+      }
+
+      isArchived = getArchivedStatus(queryFilters.showArchived, queryFilters.showUnarchived)
+    }
+
     let tasks = await this.db.task.findMany({
-      ...filters,
+      where: {
+        ...filters.where,
+        isArchived,
+      },
       orderBy: { createdAt: 'desc' },
       // @ts-ignore TS support for this param is still shakey
       relationLoadStrategy: 'join',
@@ -544,7 +555,7 @@ export class TasksService extends BaseService {
   private sendCompanyTaskNotifications = async (
     task: Task,
     notificationService: NotificationService,
-    isReassigned = false,
+    _isReassigned = false, // someday this will come in handy
   ) => {
     const copilot = new CopilotAPI(this.user.token)
     const { recipientIds } = await notificationService.getNotificationParties(
