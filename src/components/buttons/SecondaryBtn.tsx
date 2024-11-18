@@ -17,7 +17,7 @@ export const SecondaryBtn = ({
 }: {
   startIcon?: ReactNode
   buttonContent: ReactNode
-  handleClick?: (() => void) | ((e: React.MouseEvent) => void) | ((e: React.MouseEvent<HTMLButtonElement>) => void)
+  handleClick?: (() => void) | ((e: React.MouseEvent) => void)
   enableBackground?: boolean
   outlined?: boolean
   padding?: string

@@ -5,16 +5,16 @@ import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
 import { useState } from 'react'
 import { StyledSwitch } from '@/components/inputs/StyledSwitch'
 
-interface Prop {
+interface DisplaySelectorProps {
   handleModeChange: (mode: ViewMode) => void
   selectedMode: ViewMode
 }
 
-export const DisplaySelector = ({ handleModeChange, selectedMode }: Prop) => {
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+export const DisplaySelector = ({ handleModeChange, selectedMode }: DisplaySelectorProps) => {
+  const [anchorEl, setAnchorEl] = useState<null | Element>(null)
   const open = Boolean(anchorEl)
 
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const handleClick = (event: React.MouseEvent) => {
     setAnchorEl(event.currentTarget)
   }
   const handleClose = () => {
