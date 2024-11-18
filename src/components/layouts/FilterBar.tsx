@@ -17,7 +17,6 @@ import {
   HandleSelectorComponentModes,
 } from '@/types/interfaces'
 import { CrossIcon, FilterByAsigneeIcon } from '@/icons'
-import { ViewModeSelector } from '../inputs/ViewModeSelector'
 import { FilterByAssigneeBtn } from '../buttons/FilterByAssigneeBtn'
 import FilterButtonGroup from '@/components/buttonsGroup/FilterButtonsGroup'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
@@ -377,7 +376,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
                 }}
               />
 
-              <ViewModeSelector
+              <DisplaySelector
                 selectedMode={viewMode}
                 handleModeChange={(mode) => {
                   store.dispatch(setViewSettings({ viewMode: mode, filterOptions: filterOptions }))
