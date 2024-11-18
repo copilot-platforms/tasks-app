@@ -4,6 +4,15 @@ import User from '@api/core/models/User.model'
 import { CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import WorkflowStatesService from '@api/workflow-states/workflowStates.service'
 
+export const getArchivedStatus = (showArchived: boolean, showUnarchived: boolean): undefined | boolean => {
+  if (showArchived && !showUnarchived) {
+    return true
+  } else if (showUnarchived && !showArchived) {
+    return false
+  }
+  return undefined
+}
+
 /**
  * Reusable function to get assignedAt & completedAt time for a task create / update action
  * @param mode 'create' | 'update' as per action
