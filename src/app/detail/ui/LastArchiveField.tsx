@@ -19,7 +19,7 @@ export const LastArchivedField = () => {
         color: (theme) => theme.color.gray[500],
       }}
     >
-      Archived {!task || !task.lastArchivedDate ? null : getTimeDifference(task.lastArchivedDate)}
+      {!task || !task.lastArchivedDate ? null : `Archived ${getTimeDifference(task.lastArchivedDate)}`}
     </Typography>
   )
 }
