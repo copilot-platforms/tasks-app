@@ -53,13 +53,13 @@ const SearchBar = ({ value, getSearchKeyword, onClear, title }: ISearchBar) => {
         '& .MuiOutlinedInput-input': {
           fontSize: '12px',
           fontStyle: 'normal',
-          fontWeight: 500,
+          fontWeight: 400,
           lineHeight: '15px',
           cursor: 'pointer',
           '&::placeholder': {
             fontSize: '12px',
             fontStyle: 'normal',
-            fontWeight: 500,
+            fontWeight: 400,
             lineHeight: '15px',
           },
         },
@@ -78,7 +78,6 @@ const SearchBar = ({ value, getSearchKeyword, onClear, title }: ISearchBar) => {
             position="start"
             sx={{
               cursor: 'pointer',
-
               marginLeft: { xs: '2px', md: '0px' },
             }}
           >
