@@ -54,6 +54,9 @@ export const DisplaySelector = ({ handleModeChange, selectedMode }: DisplaySelec
           },
         }}
         MenuListProps={{ sx: { py: 0 } }}
+        sx={{
+          mt: '6px',
+        }}
       >
         <Stack
           direction="row"

@@ -11,6 +11,7 @@ import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { UrlObject } from 'url'
 import { useEffect, useState } from 'react'
 import { ArchiveBoxIcon } from '@/icons'
+import { getAssigneeName } from '@/utils/assignee'
 
 const TaskCardContainer = styled(Stack)(({ theme }) => ({
   border: `1px solid ${theme.color.borders.border}`,
@@ -71,10 +72,7 @@ export const TaskCard = ({ task, href }: TaskCardProps) => {
                     whiteSpace: 'nowrap',
                   }}
                 >
-                  {(currentAssignee as IAssigneeCombined).name === 'No assignee'
-                    ? 'No assignee'
-                    : (currentAssignee as IAssigneeCombined)?.name ||
-                      `${(currentAssignee as IAssigneeCombined)?.givenName ?? ''} ${(currentAssignee as IAssigneeCombined)?.familyName ?? ''}`.trim()}
+                  {getAssigneeName(currentAssignee)}
                 </Typography>
               </Stack>
             ) : (
