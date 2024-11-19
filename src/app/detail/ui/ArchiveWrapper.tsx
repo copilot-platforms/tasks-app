@@ -21,7 +21,6 @@ export const ArchiveWrapper = ({ taskId }: { taskId: string }) => {
   useEffect(() => {
     const currentTask = tasks.find((el) => el.id === taskId)
     if (currentTask) {
-      console.log('working')
       setIsArchived(currentTask.isArchived)
       store.dispatch(setTask(currentTask))
     }

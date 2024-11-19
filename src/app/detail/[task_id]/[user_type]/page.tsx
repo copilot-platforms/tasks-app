@@ -140,7 +140,7 @@ export default async function TaskDetailPage({
                 }}
               >
                 <StyledTiptapDescriptionWrapper>
-                  <LastArchivedField taskId={task_id} />
+                  <LastArchivedField />
                   <TaskEditor
                     // attachment={attachments}
                     task_id={task_id}
