@@ -20,6 +20,7 @@ import { AssigneeFetcher } from './_fetchers/AssigneeFetcher'
 import { ModalNewTaskForm } from './ui/Modal_NewTaskForm'
 import { TaskBoard } from './ui/TaskBoard'
 import AttachmentLayout from '@/components/AttachmentLayout'
+import { UserType } from '@/types/interfaces'
 
 export async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -63,7 +64,7 @@ export default async function Main({ searchParams }: { searchParams: { token: st
     return <SilentError message="Please provide a Valid Token" />
   }
 
-  redirectIfTaskCta(searchParams)
+  redirectIfTaskCta(searchParams, UserType.INTERNAL_USER)
 
   const [workflowStates, tasks, viewSettings, tokenPayload] = await Promise.all([
     getAllWorkflowStates(token),
