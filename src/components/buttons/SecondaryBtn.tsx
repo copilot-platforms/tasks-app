@@ -13,6 +13,7 @@ export const SecondaryBtn = ({
   outlined,
   padding,
   variant,
+  height,
 }: {
   startIcon?: ReactNode
   buttonContent: ReactNode
@@ -21,6 +22,7 @@ export const SecondaryBtn = ({
   outlined?: boolean
   padding?: string
   variant?: SecondaryBtnVariant
+  height?: string
 }) => {
   const variantStyles: {
     [key in SecondaryBtnVariant]: { padding: string; border: string; bgcolor: string; hoverBgcolor: string }
@@ -49,6 +51,7 @@ export const SecondaryBtn = ({
         },
         padding: padding ? padding : (variantStyling?.padding ?? { xs: '2px 9px', md: '4px 16px' }),
         cursor: 'pointer',
+        height: height ?? 'auto',
       })}
       onClick={handleClick}
       disableRipple

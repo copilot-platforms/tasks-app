@@ -17,7 +17,6 @@ import {
   HandleSelectorComponentModes,
 } from '@/types/interfaces'
 import { CrossIcon, FilterByAsigneeIcon } from '@/icons'
-import { ViewModeSelector } from '../inputs/ViewModeSelector'
 import { FilterByAssigneeBtn } from '../buttons/FilterByAssigneeBtn'
 import FilterButtonGroup from '@/components/buttonsGroup/FilterButtonsGroup'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
@@ -31,6 +30,7 @@ import { MiniLoader } from '@/components/atoms/MiniLoader'
 import { checkAssignee } from '@/utils/assignee'
 import { filterOptionsToAssigneeMap, filterTypeToButtonIndexMap } from '@/types/objectMaps'
 import { UserRole } from '@/app/api/core/types/user'
+import { DisplaySelector } from '@/components/inputs/DisplaySelector'
 
 interface FilterBarProps {
   mode: UserRole
@@ -268,7 +268,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
               }}
             />
 
-            <ViewModeSelector
+            <DisplaySelector
               selectedMode={viewMode}
               handleModeChange={(mode) => {
                 store.dispatch(setViewSettings({ viewMode: mode, filterOptions: filterOptions }))
@@ -376,7 +376,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
                 }}
               />
 
-              <ViewModeSelector
+              <DisplaySelector
                 selectedMode={viewMode}
                 handleModeChange={(mode) => {
                   store.dispatch(setViewSettings({ viewMode: mode, filterOptions: filterOptions }))
