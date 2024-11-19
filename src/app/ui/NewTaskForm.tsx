@@ -334,6 +334,7 @@ const NewTaskFormInputs = () => {
           deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', null)}
           attachmentLayout={AttachmentLayout}
           maxUploadLimit={MAX_UPLOAD_LIMIT}
+          parentContainerStyle={{ gap: '0px' }}
         />
       </Stack>
     </>
