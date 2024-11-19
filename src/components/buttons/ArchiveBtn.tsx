@@ -13,7 +13,7 @@ export const ArchiveBtn = ({ isArchived, handleClick }: { isArchived: boolean; h
         padding: '3px 8px',
         ':hover': {
           cursor: 'pointer',
-          border: ' 1px solid var(--Black-Alpha-1, rgba(0, 0, 0, 0.12))',
+          border: ' 1px solid #EOEOEO, rgba(0, 0, 0, 0.12))',
           borderRadius: '4px',
         },
       }}

@@ -8,28 +8,30 @@ import { useSelector } from 'react-redux'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { Skeleton } from '@mui/material'
 import store from '@/redux/store'
-import { setTask } from '@/redux/features/taskDetailsSlice'
+import { selectTaskDetails, setTask } from '@/redux/features/taskDetailsSlice'
 
 export const ArchiveWrapper = ({ taskId }: { taskId: string }) => {
-  const { token } = useSelector(selectTaskBoard)
+  const { token, tasks } = useSelector(selectTaskBoard)
+  const { task } = useSelector(selectTaskDetails)
   const { mutate } = useSWRConfig()
   const cacheKey = `/api/tasks/${taskId}?token=${token}`
-  const { data, error } = useSWR(cacheKey, fetcher)
   const [isArchived, setIsArchived] = useState<boolean | undefined>(undefined)
 
   // Set the initial state when `data` becomes available
   useEffect(() => {
-    if (data?.task) {
-      setIsArchived(data.task.isArchived)
-      store.dispatch(setTask(data.task))
+    const currentTask = tasks.find((el) => el.id === taskId)
+    if (currentTask) {
+      console.log('working')
+      setIsArchived(currentTask.isArchived)
+      store.dispatch(setTask(currentTask))
     }
-  }, [data])
+  }, [tasks, taskId])
 
   const handleToggleArchive = async () => {
     if (isArchived === undefined) return // Prevent toggling if state isn't initialized yet
 
     const newIsArchived = !isArchived
-    const optimisticTask = { ...data.task, isArchived: newIsArchived }
+    const optimisticTask = { ...task, isArchived: newIsArchived }
 
     setIsArchived(newIsArchived) // Optimistically update local state
 
@@ -59,7 +61,7 @@ export const ArchiveWrapper = ({ taskId }: { taskId: string }) => {
   }
 
   // Handle loading and error states
-  if (!data || error || isArchived === undefined) return <Skeleton variant="rectangular" width="60px" height="16px" />
+  if (!task || isArchived === undefined) return <Skeleton variant="rectangular" width="60px" height="16px" />
 
   return <ArchiveBtn isArchived={isArchived} handleClick={handleToggleArchive} />
 }
