@@ -9,7 +9,7 @@ export const LastArchivedField = () => {
   const { task } = useSelector(selectTaskDetails)
   console.log('task', task)
 
-  if (!task?.isArchived) return null
+  if (!task?.isArchived || !task) return null
 
   return (
     <Typography
