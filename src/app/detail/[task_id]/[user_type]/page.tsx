@@ -42,8 +42,8 @@ import { signedUrlTtl } from '@/types/constants'
 import { ActivityWrapper } from '@/app/detail/ui/ActivityWrapper'
 import { DeletedTaskRedirectPage } from '@/components/layouts/DeletedTaskRedirectPage'
 import { UserRole } from '@/app/api/core/types/user'
-import { ArchiveWrapper } from '../../ui/ArchiveWrapper'
-import { LastArchivedField } from '../../ui/LastArchiveField'
+import { ArchiveWrapper } from '@/app/detail/ui/ArchiveWrapper'
+import { LastArchivedField } from '@/app/detail/ui/LastArchiveField'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
