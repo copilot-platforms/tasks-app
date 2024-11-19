@@ -50,7 +50,6 @@ export const ArchiveWrapper = ({ taskId }: { taskId: string }) => {
         {
           optimisticData: { task: optimisticTask }, // Update UI immediately
           rollbackOnError: true, // Revert on error
-          revalidate: true, // Ensure data consistency
         },
       )
     } catch (error) {
