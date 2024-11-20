@@ -19,6 +19,7 @@ interface IInitialState {
   showArchived: boolean | undefined
   showUnarchived: boolean | undefined
   viewSettingsTemp: CreateViewSettingsDTO | undefined
+  isTasksLoading: boolean
 }
 
 const initialState: IInitialState = {
@@ -37,6 +38,8 @@ const initialState: IInitialState = {
   showArchived: undefined,
   showUnarchived: undefined,
   viewSettingsTemp: undefined,
+  // Use this state as a global loading flag for tasks
+  isTasksLoading: true,
 }
 
 const taskBoardSlice = createSlice({
@@ -111,6 +114,10 @@ const taskBoardSlice = createSlice({
       }
       state.filterOptions = action.payload.filterOptions
     }, //updates filters according to viewSettings
+
+    setIsTasksLoading: (state, action: { payload: boolean }) => {
+      state.isTasksLoading = action.payload
+    },
   },
 })
 
@@ -128,6 +135,7 @@ export const {
   setFilterOptions,
   setFilteredAssgineeList,
   setViewSettingsTemp,
+  setIsTasksLoading,
 } = taskBoardSlice.actions
 
 export default taskBoardSlice.reducer

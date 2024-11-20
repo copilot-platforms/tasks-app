@@ -1,4 +1,4 @@
-import { selectTaskBoard, setTasks } from '@/redux/features/taskBoardSlice'
+import { selectTaskBoard, setIsTasksLoading, setTasks } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
 import { ArchivedOptionsType } from '@/types/dto/viewSettings.dto'
 import { fetcher } from '@/utils/fetcher'
@@ -25,6 +25,7 @@ export const TaskDataFetcher = ({ onDataChange, token }: { onDataChange: (tasks:
   const { data: allTasks, isLoading, mutate } = useSWR(token ? `/api/tasks/?${queryString}` : null, fetcher)
 
   useEffect(() => {
+    store.dispatch(setIsTasksLoading(isLoading))
     if (!isLoading) {
       const tasks = allTasks?.tasks || []
       store.dispatch(setTasks(tasks))
