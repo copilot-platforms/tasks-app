@@ -26,12 +26,24 @@ import { CardDragLayer } from '@/components/cards/CardDragLayer'
 import { UserRole } from '@api/core/types/user'
 import { clientUpdateTask } from '@/app/detail/[task_id]/[user_type]/actions'
 import { TaskDataFetcher } from '@/app/_fetchers/TaskDataFetcher'
+import { NoFilteredTasksState } from '@/components/layouts/EmptyState/NoFilteredTasksState'
 
 interface TaskBoardProps {
   mode: UserRole
 }
 export const TaskBoard = ({ mode }: TaskBoardProps) => {
-  const { workflowStates, tasks, token, filteredTasks, view, viewSettingsTemp, filterOptions } = useSelector(selectTaskBoard)
+  const {
+    workflowStates,
+    tasks,
+    token,
+    filteredTasks,
+    view,
+    viewSettingsTemp,
+    filterOptions,
+    showArchived,
+    showUnarchived,
+    isTasksLoading,
+  } = useSelector(selectTaskBoard)
 
   const onDropItem = useCallback(
     (payload: { taskId: string; targetWorkflowStateId: string }) => {
@@ -66,7 +78,21 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
   const handleTaskFilters = useCallback((newTasks: TaskResponse[]) => {
     store.dispatch(setTasks(newTasks))
   }, [])
-  if (tasks && tasks.length === 0) {
+
+  const viewBoardSettings = viewSettingsTemp ? viewSettingsTemp.viewMode : view
+  const getCardHref = (task: { id: string }) => `/detail/${task.id}/${mode === UserRole.IU ? 'iu' : 'cu'}`
+
+  const userHasNoFilter =
+    filterOptions &&
+    !filterOptions.type &&
+    !filterOptions.keyword &&
+    !filterOptions.assignee &&
+    showUnarchived &&
+    !showArchived
+
+  const isNoTasksWithFilter = tasks && !userHasNoFilter && !filteredTasks.length
+
+  if (tasks && tasks.length === 0 && userHasNoFilter && !isTasksLoading) {
     return (
       <>
         <TaskDataFetcher onDataChange={handleTaskFilters} token={token ?? ''} />
@@ -74,9 +100,6 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
       </>
     )
   }
-
-  const viewBoardSettings = viewSettingsTemp ? viewSettingsTemp.viewMode : view
-  const getCardHref = (task: { id: string }) => `/detail/${task.id}/${mode === UserRole.IU ? 'iu' : 'cu'}`
 
   return (
     <>
@@ -89,7 +112,9 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
         }}
       />
 
-      {viewBoardSettings === View.BOARD_VIEW && (
+      {isNoTasksWithFilter && <NoFilteredTasksState />}
+
+      {!isNoTasksWithFilter && viewBoardSettings === View.BOARD_VIEW && (
         <Box sx={{ padding: '12px 12px' }}>
           <Stack
             columnGap={2}
@@ -151,7 +176,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
         </Box>
       )}
 
-      {viewBoardSettings === View.LIST_VIEW && (
+      {!isNoTasksWithFilter && viewBoardSettings === View.LIST_VIEW && (
         <Stack
           sx={{
             flexDirection: 'column',
