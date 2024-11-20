@@ -16,6 +16,8 @@ interface IInitialState {
   filteredTasks: TaskResponse[]
   filterOptions: IFilterOptions
   filteredAssigneeList: IAssigneeCombined[]
+  showArchived: boolean | undefined
+  showUnarchived: boolean | undefined
   viewSettingsTemp: CreateViewSettingsDTO | undefined
 }
 
@@ -32,6 +34,8 @@ const initialState: IInitialState = {
     [FilterOptions.TYPE]: '',
   },
   filteredAssigneeList: [],
+  showArchived: undefined,
+  showUnarchived: undefined,
   viewSettingsTemp: undefined,
 }
 
@@ -68,8 +72,10 @@ const taskBoardSlice = createSlice({
       state.filteredAssigneeList = action.payload
     },
     setViewSettings: (state, action: { payload: CreateViewSettingsDTO }) => {
-      const { viewMode, filterOptions } = action.payload
+      const { viewMode, filterOptions, showArchived, showUnarchived } = action.payload
       state.view = viewMode
+      state.showArchived = showArchived
+      state.showUnarchived = showUnarchived
       taskBoardSlice.caseReducers.updateFilterOption(state, { payload: { filterOptions } })
     },
     setViewSettingsTemp: (state, action: { payload: CreateViewSettingsDTO }) => {

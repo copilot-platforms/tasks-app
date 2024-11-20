@@ -3,7 +3,7 @@
 import { Box, IconButton, Stack } from '@mui/material'
 import { useEffect, useState } from 'react'
 import store from '@/redux/store'
-import { setFilterOptions, setViewSettingsTemp, setViewSettings } from '@/redux/features/taskBoardSlice'
+import { setFilterOptions, setViewSettingsTemp, setViewSettings, setTasks } from '@/redux/features/taskBoardSlice'
 import SearchBar from '@/components/searchBar'
 import Selector, { SelectorType } from '@/components/inputs/Selector'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
@@ -38,7 +38,9 @@ interface FilterBarProps {
 }
 export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
   const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
-  const { view, filteredAssigneeList, filterOptions, assignee, token, viewSettingsTemp } = useSelector(selectTaskBoard)
+  const { view, filteredAssigneeList, filterOptions, assignee, token, viewSettingsTemp, showArchived, showUnarchived } =
+    useSelector(selectTaskBoard)
+  console.log(showArchived, showUnarchived)
   const [filteredAssignee, setFilteredAssignee] = useState(filteredAssigneeList)
   const [loading, setLoading] = useState(false)
   const viewMode = viewSettingsTemp ? viewSettingsTemp.viewMode : view
@@ -82,6 +84,8 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
       setViewSettingsTemp({
         viewMode: view,
         filterOptions: { ...updatedFilterOptions, [optionType]: newValue },
+        showArchived: showArchived,
+        showUnarchived: showUnarchived,
       }),
     )
     updateViewModeSetting({
@@ -90,6 +94,8 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
         ...updatedFilterOptions,
         [optionType]: newValue,
       },
+      showArchived: showArchived,
+      showUnarchived: showUnarchived,
     })
   }
 
@@ -271,9 +277,53 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
             <DisplaySelector
               selectedMode={viewMode}
               handleModeChange={(mode) => {
-                store.dispatch(setViewSettings({ viewMode: mode, filterOptions: filterOptions }))
-                updateViewModeSetting({ viewMode: mode, filterOptions: filterOptions })
-                store.dispatch(setViewSettingsTemp({ viewMode: mode, filterOptions: viewModeFilterOptions }))
+                store.dispatch(
+                  setViewSettings({
+                    viewMode: mode,
+                    filterOptions: filterOptions,
+                    showArchived: showArchived,
+                    showUnarchived: showUnarchived,
+                  }),
+                )
+                updateViewModeSetting({
+                  viewMode: mode,
+                  filterOptions: filterOptions,
+                  showArchived: showArchived,
+                  showUnarchived: showUnarchived,
+                })
+                store.dispatch(
+                  setViewSettingsTemp({
+                    viewMode: mode,
+                    filterOptions: viewModeFilterOptions,
+                    showArchived: showArchived,
+                    showUnarchived: showUnarchived,
+                  }),
+                )
+              }}
+              archivedOptions={{ showArchived: showArchived, showUnarchived: showUnarchived }}
+              handleArchivedOptionsChange={(archivedOptions) => {
+                store.dispatch(
+                  setViewSettings({
+                    viewMode: viewMode,
+                    filterOptions: filterOptions,
+                    showArchived: archivedOptions.showArchived,
+                    showUnarchived: archivedOptions.showUnarchived,
+                  }),
+                )
+                updateViewModeSetting({
+                  viewMode: viewMode,
+                  filterOptions: filterOptions,
+                  showArchived: archivedOptions.showArchived,
+                  showUnarchived: archivedOptions.showUnarchived,
+                })
+                store.dispatch(
+                  setViewSettingsTemp({
+                    viewMode: viewMode,
+                    filterOptions: filterOptions,
+                    showArchived: archivedOptions.showArchived,
+                    showUnarchived: archivedOptions.showUnarchived,
+                  }),
+                )
               }}
             />
           </Stack>
@@ -379,9 +429,53 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
               <DisplaySelector
                 selectedMode={viewMode}
                 handleModeChange={(mode) => {
-                  store.dispatch(setViewSettings({ viewMode: mode, filterOptions: filterOptions }))
-                  updateViewModeSetting({ viewMode: mode, filterOptions: filterOptions })
-                  store.dispatch(setViewSettingsTemp({ viewMode: mode, filterOptions: viewModeFilterOptions }))
+                  store.dispatch(
+                    setViewSettings({
+                      viewMode: mode,
+                      filterOptions: filterOptions,
+                      showArchived: showArchived,
+                      showUnarchived: showUnarchived,
+                    }),
+                  )
+                  updateViewModeSetting({
+                    viewMode: mode,
+                    filterOptions: filterOptions,
+                    showArchived: showArchived,
+                    showUnarchived: showUnarchived,
+                  })
+                  store.dispatch(
+                    setViewSettingsTemp({
+                      viewMode: mode,
+                      filterOptions: viewModeFilterOptions,
+                      showArchived: showArchived,
+                      showUnarchived: showUnarchived,
+                    }),
+                  )
+                }}
+                archivedOptions={{ showArchived: showArchived, showUnarchived: showUnarchived }}
+                handleArchivedOptionsChange={(archivedOptions) => {
+                  store.dispatch(
+                    setViewSettings({
+                      viewMode: viewMode,
+                      filterOptions: filterOptions,
+                      showArchived: archivedOptions.showArchived,
+                      showUnarchived: archivedOptions.showUnarchived,
+                    }),
+                  )
+                  updateViewModeSetting({
+                    viewMode: viewMode,
+                    filterOptions: filterOptions,
+                    showArchived: archivedOptions.showArchived,
+                    showUnarchived: archivedOptions.showUnarchived,
+                  })
+                  store.dispatch(
+                    setViewSettingsTemp({
+                      viewMode: viewMode,
+                      filterOptions: filterOptions,
+                      showArchived: archivedOptions.showArchived,
+                      showUnarchived: archivedOptions.showUnarchived,
+                    }),
+                  )
                 }}
               />
             </Stack>
