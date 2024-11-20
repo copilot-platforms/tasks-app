@@ -44,6 +44,7 @@ export const TaskResponseSchema = z.object({
   assignee: z.union([ClientResponseSchema, InternalUsersSchema, CompanyResponseSchema]),
   lastActivityLogUpdated: z.date().optional(),
   isArchived: z.boolean().optional(),
+  lastArchivedDate: z.string().datetime(),
 })
 
 export type TaskResponse = z.infer<typeof TaskResponseSchema>
