@@ -30,7 +30,17 @@ interface TaskBoardProps {
   mode: UserRole
 }
 export const TaskBoard = ({ mode }: TaskBoardProps) => {
-  const { workflowStates, tasks, token, filteredTasks, view, viewSettingsTemp, filterOptions } = useSelector(selectTaskBoard)
+  const {
+    workflowStates,
+    tasks,
+    token,
+    filteredTasks,
+    view,
+    viewSettingsTemp,
+    filterOptions,
+    showArchived,
+    showUnarchived,
+  } = useSelector(selectTaskBoard)
 
   const onDropItem = useCallback(
     (payload: { taskId: string; targetWorkflowStateId: string }) => {
@@ -63,12 +73,22 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
     return filteredTaskCount.toString() + '/' + taskCount.toString()
   }
 
-  if (tasks && tasks.length === 0) {
-    return <DashboardEmptyState userType={mode} />
-  }
-
   const viewBoardSettings = viewSettingsTemp ? viewSettingsTemp.viewMode : view
   const getCardHref = (task: { id: string }) => `/detail/${task.id}/${mode === UserRole.IU ? 'iu' : 'cu'}`
+
+  const userHasNoFilter =
+    filterOptions &&
+    !filterOptions.type &&
+    !filterOptions.keyword &&
+    !filterOptions.assignee &&
+    !showArchived &&
+    showUnarchived
+
+  const isNoTasksWithFilter = tasks && !userHasNoFilter && !tasks.length
+
+  if (tasks && tasks.length === 0 && userHasNoFilter) {
+    return <DashboardEmptyState userType={mode} />
+  }
 
   return (
     <>
@@ -80,7 +100,9 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
         }}
       />
 
-      {viewBoardSettings === View.BOARD_VIEW && (
+      {isNoTasksWithFilter && <div>No tasks lol</div>}
+
+      {!isNoTasksWithFilter && viewBoardSettings === View.BOARD_VIEW && (
         <Box sx={{ padding: '12px 12px' }}>
           <Stack
             columnGap={2}
@@ -142,7 +164,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
         </Box>
       )}
 
-      {viewBoardSettings === View.LIST_VIEW && (
+      {!isNoTasksWithFilter && viewBoardSettings === View.LIST_VIEW && (
         <Stack
           sx={{
             flexDirection: 'column',
