@@ -3540,7 +3540,7 @@ convert-source-map@^2.0.0:
   resolved "https://registry.yarnpkg.com/convert-source-map/-/convert-source-map-2.0.0.tgz#4b560f649fc4e918dd0ab75cf4961e8bc882d82a"
   integrity sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==
 
-copilot-node-sdk@^3.2.0:
+copilot-node-sdk@^3.5.0:
   version "3.5.0"
   resolved "https://registry.yarnpkg.com/copilot-node-sdk/-/copilot-node-sdk-3.5.0.tgz#e64ff5bfc218a12bf68f0c03b5e87dcc6b6ffaa4"
   integrity sha512-+3wM0Z40hu62/V7omUq3fDClrPDhjPA4Usup2DSGbp60Zkh2DAfFyYeXz5o+okELkswpAw6x9NfGT651Wbti3w==
