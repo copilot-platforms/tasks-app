@@ -10,6 +10,8 @@ import { DueDateLayout } from '@/components/layouts/DueDateLayout'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { UrlObject } from 'url'
 import { useEffect, useState } from 'react'
+import { ArchiveBoxIcon } from '@/icons'
+import { getAssigneeName } from '@/utils/assignee'
 
 const TaskCardContainer = styled(Stack)(({ theme }) => ({
   border: `1px solid ${theme.color.borders.border}`,
@@ -47,34 +49,42 @@ export const TaskCard = ({ task, href }: TaskCardProps) => {
     <TaskCardContainer>
       <Stack rowGap={1}>
         <Stack direction="row" justifyContent="space-between">
-          {currentAssignee ? (
-            <Stack direction="row" alignItems="center" columnGap={1}>
-              <CopilotAvatar currentAssignee={currentAssignee as IAssigneeCombined} />
-              <Typography
-                variant="sm"
-                fontSize="12px"
-                sx={{
-                  color: (theme) => theme.color.gray[500],
-                  width: '146px',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {(currentAssignee as IAssigneeCombined).name === 'No assignee'
-                  ? 'No assignee'
-                  : (currentAssignee as IAssigneeCombined)?.name ||
-                    `${(currentAssignee as IAssigneeCombined)?.givenName ?? ''} ${(currentAssignee as IAssigneeCombined)?.familyName ?? ''}`.trim()}
-              </Typography>
-            </Stack>
-          ) : (
-            <Box>
-              <Stack direction="row" justifyContent="space-between" alignItems="center" columnGap={'4px'}>
-                <Skeleton variant="circular" width={20} height={20} />
-                <Skeleton variant="rectangular" width="146px" height="12px" />
+          <Stack direction="column" rowGap={'4px'}>
+            {task.isArchived && (
+              <Stack direction="row" alignItems={'center'} columnGap={'4px'}>
+                <ArchiveBoxIcon />
+                <Typography variant="bodyXs" sx={{ color: (theme) => theme.color.text.textSecondary }}>
+                  Archived
+                </Typography>
               </Stack>
-            </Box>
-          )}
+            )}
+            {currentAssignee ? (
+              <Stack direction="row" alignItems="center" columnGap={1}>
+                <CopilotAvatar currentAssignee={currentAssignee as IAssigneeCombined} />
+                <Typography
+                  variant="sm"
+                  fontSize="12px"
+                  sx={{
+                    color: (theme) => theme.color.gray[500],
+                    width: '146px',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {getAssigneeName(currentAssignee)}
+                </Typography>
+              </Stack>
+            ) : (
+              <Box>
+                <Stack direction="row" justifyContent="space-between" alignItems="center" columnGap={'4px'}>
+                  <Skeleton variant="circular" width={20} height={20} />
+                  <Skeleton variant="rectangular" width="146px" height="12px" />
+                </Stack>
+              </Box>
+            )}
+          </Stack>
+
           <Typography variant="bodyXs" fontWeight={400} sx={{ color: (theme) => theme.color.gray[500] }}>
             {task.label}
           </Typography>
