@@ -1,19 +1,24 @@
-import { SupabaseActions } from '@/utils/SupabaseActions'
-import React from 'react'
-import { generateRandomString } from '@/utils/generateRandomString'
 import { ISignedUrlUpload } from '@/types/interfaces'
-
+import { generateRandomString } from '@/utils/generateRandomString'
+import { SupabaseActions } from '@/utils/SupabaseActions'
 import { postScrapImage } from '@/app/detail/[task_id]/[user_type]/actions'
 import { ScrapImageRequest } from '@/types/common'
 import { getFilePathFromUrl } from '@/utils/signedUrlReplacer'
 
-import { getSignedUrlUpload, getSignedUrlFile } from '@/app/actions'
+import { getSignedUrlFile, getSignedUrlUpload } from '@/app/actions'
 
-export const uploadImageHandler = async (file: File, token: string, task_id: string | null): Promise<string | undefined> => {
+const buildFilePath = (workspaceId: string, taskId: string | null) => `/${workspaceId}${taskId ? `/${taskId}` : ''}`
+
+export const uploadImageHandler = async (
+  file: File,
+  token: string,
+  workspaceId: string,
+  task_id: string | null,
+): Promise<string | undefined> => {
   const supabaseActions = new SupabaseActions()
 
   const fileName = generateRandomString(file.name)
-  const signedUrl: ISignedUrlUpload = await getSignedUrlUpload(token, fileName)
+  const signedUrl: ISignedUrlUpload = await getSignedUrlUpload(token, fileName, buildFilePath(workspaceId, task_id))
   const { filePayload, error } = await supabaseActions.uploadAttachment(file, signedUrl, task_id)
   if (filePayload) {
     const url = await getSignedUrlFile(token ?? '', filePayload?.filePath ?? '')

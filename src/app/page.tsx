@@ -91,10 +91,6 @@ export default async function Main({ searchParams }: { searchParams: { token: st
         </DndWrapper>
 
         <ModalNewTaskForm
-          getSignedUrlUpload={async (fileName: string) => {
-            'use server'
-            return await getSignedUrlUpload(token, fileName)
-          }}
           handleCreateMultipleAttachments={async (attachments: CreateAttachmentRequest[]) => {
             'use server'
             await createMultipleAttachments(token, attachments)

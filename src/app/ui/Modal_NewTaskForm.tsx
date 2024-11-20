@@ -19,10 +19,8 @@ import { FilterOptions, ISignedUrlUpload } from '@/types/interfaces'
 import dayjs from 'dayjs'
 
 export const ModalNewTaskForm = ({
-  getSignedUrlUpload,
   handleCreateMultipleAttachments,
 }: {
-  getSignedUrlUpload: (fileName: string) => Promise<ISignedUrlUpload>
   handleCreateMultipleAttachments: (attachments: CreateAttachmentRequest[]) => Promise<void>
 }) => {
   const { token, filterOptions } = useSelector(selectTaskBoard)
@@ -73,8 +71,7 @@ export const ModalNewTaskForm = ({
             await handleCreateMultipleAttachments(toUploadAttachments)
           }
         }}
-        handleClose={() => handleModalClose()}
-        getSignedUrlUpload={getSignedUrlUpload}
+        handleClose={handleModalClose}
       />
     </Modal>
   )

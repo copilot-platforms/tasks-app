@@ -78,6 +78,13 @@ export const RealTime = ({
           }
           //if the task is updated
         } else {
+          // Address Postgres' 8kb pagesize limitation (See TOAST https://www.postgresql.org/docs/current/storage-toast.html)
+          // If `body` field (which can be larger than pagesize) is not changed, Supabase Realtime won't send large fields like this in `payload.new`
+
+          // So, we need to check if the oldTask has valid body but new body field is not being sent in updatedTask, and add it if required
+          if (oldTask?.body && updatedTask.body === undefined) {
+            updatedTask.body = oldTask?.body
+          }
           if (oldTask && oldTask.body && updatedTask.body) {
             const oldImgSrcs = extractImgSrcs(oldTask.body)
             const newImgSrcs = extractImgSrcs(updatedTask.body)
