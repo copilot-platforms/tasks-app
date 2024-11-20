@@ -26,6 +26,7 @@ import { CardDragLayer } from '@/components/cards/CardDragLayer'
 import { UserRole } from '@api/core/types/user'
 import { clientUpdateTask } from '@/app/detail/[task_id]/[user_type]/actions'
 import { TaskDataFetcher } from '@/app/_fetchers/TaskDataFetcher'
+import { NoFilteredTasksState } from '@/components/layouts/EmptyState/NoFilteredTasksState'
 
 interface TaskBoardProps {
   mode: UserRole
@@ -111,7 +112,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
         }}
       />
 
-      {isNoTasksWithFilter && <div>No tasks lol</div>}
+      {isNoTasksWithFilter && <NoFilteredTasksState />}
 
       {!isNoTasksWithFilter && viewBoardSettings === View.BOARD_VIEW && (
         <Box sx={{ padding: '12px 12px' }}>
