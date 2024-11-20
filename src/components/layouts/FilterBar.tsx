@@ -40,7 +40,6 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
   const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
   const { view, filteredAssigneeList, filterOptions, assignee, token, viewSettingsTemp, showArchived, showUnarchived } =
     useSelector(selectTaskBoard)
-  console.log(showArchived, showUnarchived)
   const [filteredAssignee, setFilteredAssignee] = useState(filteredAssigneeList)
   const [loading, setLoading] = useState(false)
   const viewMode = viewSettingsTemp ? viewSettingsTemp.viewMode : view
