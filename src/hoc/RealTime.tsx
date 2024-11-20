@@ -63,6 +63,10 @@ export const RealTime = ({
       const updatedTask = payload.new
       const oldTask = tasks.find((task) => task.id == updatedTask.id)
 
+      if (!oldTask) {
+        return
+      } //adding a short-circuit if task is not found on the store.
+
       if (payload.new.workspaceId === tokenPayload?.workspaceId) {
         //check if the new task in this event belongs to the same workspaceId
         //if the task is deleted
