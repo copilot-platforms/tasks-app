@@ -62,6 +62,9 @@ export const DisplaySelector = ({
           },
         }}
         MenuListProps={{ sx: { py: 0 } }}
+        sx={{
+          mt: '6px',
+        }}
       >
         <Stack
           direction="row"
