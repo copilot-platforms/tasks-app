@@ -7,7 +7,7 @@ import { TaskColumn } from '@/components/cards/TaskColumn'
 import { DragDropHandler } from '@/hoc/DragDropHandler'
 import { useSelector } from 'react-redux'
 import store from '@/redux/store'
-import { selectTaskBoard, updateWorkflowStateIdByTaskId } from '@/redux/features/taskBoardSlice'
+import { selectTaskBoard, setTasks, updateWorkflowStateIdByTaskId } from '@/redux/features/taskBoardSlice'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { ListViewTaskCard } from '@/components/cards/ListViewTaskCard'
 import { TaskRow } from '@/components/cards/TaskRow'
@@ -25,6 +25,7 @@ import { CustomDragLayer } from '@/components/CustomDragLayer'
 import { CardDragLayer } from '@/components/cards/CardDragLayer'
 import { UserRole } from '@api/core/types/user'
 import { clientUpdateTask } from '@/app/detail/[task_id]/[user_type]/actions'
+import { TaskDataFetcher } from '@/app/_fetchers/TaskDataFetcher'
 
 interface TaskBoardProps {
   mode: UserRole
@@ -72,6 +73,17 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
     }
     return filteredTaskCount.toString() + '/' + taskCount.toString()
   }
+  const handleTaskFilters = useCallback((newTasks: TaskResponse[]) => {
+    store.dispatch(setTasks(newTasks))
+  }, [])
+  if (tasks && tasks.length === 0) {
+    return (
+      <>
+        <TaskDataFetcher onDataChange={handleTaskFilters} token={token ?? ''} />
+        <DashboardEmptyState userType={mode} />
+      </>
+    )
+  }
 
   const viewBoardSettings = viewSettingsTemp ? viewSettingsTemp.viewMode : view
   const getCardHref = (task: { id: string }) => `/detail/${task.id}/${mode === UserRole.IU ? 'iu' : 'cu'}`
@@ -92,6 +104,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
 
   return (
     <>
+      <TaskDataFetcher onDataChange={handleTaskFilters} token={token ?? ''} />
       <Header showCreateTaskButton={mode === UserRole.IU} />
       <FilterBar
         mode={mode}

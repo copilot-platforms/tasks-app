@@ -28,6 +28,7 @@ export const RealTime = ({
   tokenPayload: Token
 }) => {
   const { tasks, token } = useSelector(selectTaskBoard)
+  const { showUnarchived } = useSelector(selectTaskBoard)
   const pathname = usePathname()
   const router = useRouter()
 
@@ -52,7 +53,7 @@ export const RealTime = ({
       }
 
       //check if the new task in this event belongs to the same workspaceId
-      if (canUserAccessTask) {
+      if (canUserAccessTask && showUnarchived) {
         store.dispatch(setTasks([...tasks, { ...payload.new, createdAt: new Date(payload.new.createdAt + 'Z') }]))
         // NOTE: we append a Z here to make JS understand this raw timestamp (in format YYYY-MM-DD:HH:MM:SS.MS) is in UTC timezone
         // New payloads listened on the 'INSERT' action in realtime doesn't contain this tz info so the order can mess up
@@ -61,6 +62,10 @@ export const RealTime = ({
     if (payload.eventType === 'UPDATE') {
       const updatedTask = payload.new
       const oldTask = tasks.find((task) => task.id == updatedTask.id)
+
+      if (!oldTask) {
+        return
+      } //adding a short-circuit if task is not found on the store.
 
       if (payload.new.workspaceId === tokenPayload?.workspaceId) {
         //check if the new task in this event belongs to the same workspaceId
