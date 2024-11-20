@@ -41,6 +41,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
     filterOptions,
     showArchived,
     showUnarchived,
+    isTasksLoading,
   } = useSelector(selectTaskBoard)
 
   const onDropItem = useCallback(
@@ -76,14 +77,6 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
   const handleTaskFilters = useCallback((newTasks: TaskResponse[]) => {
     store.dispatch(setTasks(newTasks))
   }, [])
-  if (tasks && tasks.length === 0) {
-    return (
-      <>
-        <TaskDataFetcher onDataChange={handleTaskFilters} token={token ?? ''} />
-        <DashboardEmptyState userType={mode} />
-      </>
-    )
-  }
 
   const viewBoardSettings = viewSettingsTemp ? viewSettingsTemp.viewMode : view
   const getCardHref = (task: { id: string }) => `/detail/${task.id}/${mode === UserRole.IU ? 'iu' : 'cu'}`
@@ -93,13 +86,18 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
     !filterOptions.type &&
     !filterOptions.keyword &&
     !filterOptions.assignee &&
-    !showArchived &&
-    showUnarchived
+    showUnarchived &&
+    !showArchived
 
-  const isNoTasksWithFilter = tasks && !userHasNoFilter && !tasks.length
+  const isNoTasksWithFilter = tasks && !userHasNoFilter && !filteredTasks.length
 
-  if (tasks && tasks.length === 0 && userHasNoFilter) {
-    return <DashboardEmptyState userType={mode} />
+  if (tasks && tasks.length === 0 && userHasNoFilter && !isTasksLoading) {
+    return (
+      <>
+        <TaskDataFetcher onDataChange={handleTaskFilters} token={token ?? ''} />
+        <DashboardEmptyState userType={mode} />
+      </>
+    )
   }
 
   return (
