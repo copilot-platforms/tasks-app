@@ -4,13 +4,21 @@ import { ViewMode } from '@prisma/client'
 import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
 import { useState } from 'react'
 import { StyledSwitch } from '@/components/inputs/StyledSwitch'
+import { ArchivedOptionsType } from '@/types/dto/viewSettings.dto'
 
 interface DisplaySelectorProps {
   handleModeChange: (mode: ViewMode) => void
   selectedMode: ViewMode
+  archivedOptions: ArchivedOptionsType
+  handleArchivedOptionsChange: (archivedOptions: ArchivedOptionsType) => void
 }
 
-export const DisplaySelector = ({ handleModeChange, selectedMode }: DisplaySelectorProps) => {
+export const DisplaySelector = ({
+  handleModeChange,
+  selectedMode,
+  archivedOptions,
+  handleArchivedOptionsChange,
+}: DisplaySelectorProps) => {
   const [anchorEl, setAnchorEl] = useState<null | Element>(null)
   const open = Boolean(anchorEl)
 
@@ -90,7 +98,12 @@ export const DisplaySelector = ({ handleModeChange, selectedMode }: DisplaySelec
           }}
         >
           <Typography variant="bodyMd"> Show unarchived tasks</Typography>
-          <StyledSwitch />
+          <StyledSwitch
+            checked={archivedOptions.showUnarchived}
+            onChange={(e) =>
+              handleArchivedOptionsChange({ showArchived: archivedOptions.showArchived, showUnarchived: e.target.checked })
+            }
+          />
         </Stack>
         <Stack
           direction="row"
@@ -104,7 +117,12 @@ export const DisplaySelector = ({ handleModeChange, selectedMode }: DisplaySelec
           }}
         >
           <Typography variant="bodyMd"> Show archived tasks</Typography>
-          <StyledSwitch />
+          <StyledSwitch
+            checked={archivedOptions.showArchived}
+            onChange={(e) =>
+              handleArchivedOptionsChange({ showArchived: e.target.checked, showUnarchived: archivedOptions.showUnarchived })
+            }
+          />
         </Stack>
       </Menu>
     </>
