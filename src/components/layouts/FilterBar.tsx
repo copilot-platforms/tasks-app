@@ -31,6 +31,7 @@ import { checkAssignee } from '@/utils/assignee'
 import { filterOptionsToAssigneeMap, filterTypeToButtonIndexMap } from '@/types/objectMaps'
 import { UserRole } from '@/app/api/core/types/user'
 import { DisplaySelector } from '@/components/inputs/DisplaySelector'
+import { ViewModeSelector } from '../inputs/ViewModeSelector'
 
 interface FilterBarProps {
   mode: UserRole
@@ -273,59 +274,69 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
                 handleFilterOptionsChange(FilterOptions.KEYWORD, '')
               }}
             />
-
-            <DisplaySelector
-              selectedMode={viewMode}
-              handleModeChange={(mode) => {
-                store.dispatch(
-                  setViewSettings({
+            {mode === UserRole.IU ? (
+              <DisplaySelector
+                selectedMode={viewMode}
+                handleModeChange={(mode) => {
+                  store.dispatch(
+                    setViewSettings({
+                      viewMode: mode,
+                      filterOptions: filterOptions,
+                      showArchived: showArchived,
+                      showUnarchived: showUnarchived,
+                    }),
+                  )
+                  updateViewModeSetting({
                     viewMode: mode,
                     filterOptions: filterOptions,
                     showArchived: showArchived,
                     showUnarchived: showUnarchived,
-                  }),
-                )
-                updateViewModeSetting({
-                  viewMode: mode,
-                  filterOptions: filterOptions,
-                  showArchived: showArchived,
-                  showUnarchived: showUnarchived,
-                })
-                store.dispatch(
-                  setViewSettingsTemp({
-                    viewMode: mode,
-                    filterOptions: viewModeFilterOptions,
-                    showArchived: showArchived,
-                    showUnarchived: showUnarchived,
-                  }),
-                )
-              }}
-              archivedOptions={{ showArchived: showArchived, showUnarchived: showUnarchived }}
-              handleArchivedOptionsChange={(archivedOptions) => {
-                store.dispatch(
-                  setViewSettings({
+                  })
+                  store.dispatch(
+                    setViewSettingsTemp({
+                      viewMode: mode,
+                      filterOptions: viewModeFilterOptions,
+                      showArchived: showArchived,
+                      showUnarchived: showUnarchived,
+                    }),
+                  )
+                }}
+                archivedOptions={{ showArchived: showArchived, showUnarchived: showUnarchived }}
+                handleArchivedOptionsChange={(archivedOptions) => {
+                  store.dispatch(
+                    setViewSettings({
+                      viewMode: viewMode,
+                      filterOptions: filterOptions,
+                      showArchived: archivedOptions.showArchived,
+                      showUnarchived: archivedOptions.showUnarchived,
+                    }),
+                  )
+                  updateViewModeSetting({
                     viewMode: viewMode,
                     filterOptions: filterOptions,
                     showArchived: archivedOptions.showArchived,
                     showUnarchived: archivedOptions.showUnarchived,
-                  }),
-                )
-                updateViewModeSetting({
-                  viewMode: viewMode,
-                  filterOptions: filterOptions,
-                  showArchived: archivedOptions.showArchived,
-                  showUnarchived: archivedOptions.showUnarchived,
-                })
-                store.dispatch(
-                  setViewSettingsTemp({
-                    viewMode: viewMode,
-                    filterOptions: filterOptions,
-                    showArchived: archivedOptions.showArchived,
-                    showUnarchived: archivedOptions.showUnarchived,
-                  }),
-                )
-              }}
-            />
+                  })
+                  store.dispatch(
+                    setViewSettingsTemp({
+                      viewMode: viewMode,
+                      filterOptions: filterOptions,
+                      showArchived: archivedOptions.showArchived,
+                      showUnarchived: archivedOptions.showUnarchived,
+                    }),
+                  )
+                }}
+              />
+            ) : (
+              <ViewModeSelector
+                selectedMode={viewMode}
+                handleModeChange={(mode) => {
+                  store.dispatch(setViewSettings({ viewMode: mode, filterOptions: filterOptions }))
+                  updateViewModeSetting({ viewMode: mode, filterOptions: filterOptions })
+                  store.dispatch(setViewSettingsTemp({ viewMode: mode, filterOptions: viewModeFilterOptions }))
+                }}
+              />
+            )}
           </Stack>
         </Stack>
       </Box>
@@ -425,59 +436,69 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
                   handleFilterOptionsChange(FilterOptions.KEYWORD, '')
                 }}
               />
-
-              <DisplaySelector
-                selectedMode={viewMode}
-                handleModeChange={(mode) => {
-                  store.dispatch(
-                    setViewSettings({
+              {mode === UserRole.IU ? (
+                <DisplaySelector
+                  selectedMode={viewMode}
+                  handleModeChange={(mode) => {
+                    store.dispatch(
+                      setViewSettings({
+                        viewMode: mode,
+                        filterOptions: filterOptions,
+                        showArchived: showArchived,
+                        showUnarchived: showUnarchived,
+                      }),
+                    )
+                    updateViewModeSetting({
                       viewMode: mode,
                       filterOptions: filterOptions,
                       showArchived: showArchived,
                       showUnarchived: showUnarchived,
-                    }),
-                  )
-                  updateViewModeSetting({
-                    viewMode: mode,
-                    filterOptions: filterOptions,
-                    showArchived: showArchived,
-                    showUnarchived: showUnarchived,
-                  })
-                  store.dispatch(
-                    setViewSettingsTemp({
-                      viewMode: mode,
-                      filterOptions: viewModeFilterOptions,
-                      showArchived: showArchived,
-                      showUnarchived: showUnarchived,
-                    }),
-                  )
-                }}
-                archivedOptions={{ showArchived: showArchived, showUnarchived: showUnarchived }}
-                handleArchivedOptionsChange={(archivedOptions) => {
-                  store.dispatch(
-                    setViewSettings({
+                    })
+                    store.dispatch(
+                      setViewSettingsTemp({
+                        viewMode: mode,
+                        filterOptions: viewModeFilterOptions,
+                        showArchived: showArchived,
+                        showUnarchived: showUnarchived,
+                      }),
+                    )
+                  }}
+                  archivedOptions={{ showArchived: showArchived, showUnarchived: showUnarchived }}
+                  handleArchivedOptionsChange={(archivedOptions) => {
+                    store.dispatch(
+                      setViewSettings({
+                        viewMode: viewMode,
+                        filterOptions: filterOptions,
+                        showArchived: archivedOptions.showArchived,
+                        showUnarchived: archivedOptions.showUnarchived,
+                      }),
+                    )
+                    updateViewModeSetting({
                       viewMode: viewMode,
                       filterOptions: filterOptions,
                       showArchived: archivedOptions.showArchived,
                       showUnarchived: archivedOptions.showUnarchived,
-                    }),
-                  )
-                  updateViewModeSetting({
-                    viewMode: viewMode,
-                    filterOptions: filterOptions,
-                    showArchived: archivedOptions.showArchived,
-                    showUnarchived: archivedOptions.showUnarchived,
-                  })
-                  store.dispatch(
-                    setViewSettingsTemp({
-                      viewMode: viewMode,
-                      filterOptions: filterOptions,
-                      showArchived: archivedOptions.showArchived,
-                      showUnarchived: archivedOptions.showUnarchived,
-                    }),
-                  )
-                }}
-              />
+                    })
+                    store.dispatch(
+                      setViewSettingsTemp({
+                        viewMode: viewMode,
+                        filterOptions: filterOptions,
+                        showArchived: archivedOptions.showArchived,
+                        showUnarchived: archivedOptions.showUnarchived,
+                      }),
+                    )
+                  }}
+                />
+              ) : (
+                <ViewModeSelector
+                  selectedMode={viewMode}
+                  handleModeChange={(mode) => {
+                    store.dispatch(setViewSettings({ viewMode: mode, filterOptions: filterOptions }))
+                    updateViewModeSetting({ viewMode: mode, filterOptions: filterOptions })
+                    store.dispatch(setViewSettingsTemp({ viewMode: mode, filterOptions: viewModeFilterOptions }))
+                  }}
+                />
+              )}
             </Stack>
           </Stack>
         </Stack>
