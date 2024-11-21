@@ -67,7 +67,10 @@ const taskBoardSlice = createSlice({
         taskToUpdate.workflowStateId = action.payload.targetWorkflowStateId
         const updatedTasks = [...state.tasks.filter((task) => task.id !== action.payload.taskId), taskToUpdate]
         state.tasks = updatedTasks
-        state.filteredTasks = updatedTasks
+        state.filteredTasks = state.filteredTasks.map((filteredTask) => {
+          const updatedTask = updatedTasks.find((task) => task.id === filteredTask.id)
+          return updatedTask || filteredTask
+        })
       }
     },
     setAssigneeList: (state, action: { payload: IAssigneeCombined[] }) => {
