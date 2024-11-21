@@ -47,6 +47,16 @@ export const DisplaySelector = ({
         anchorEl={anchorEl}
         open={open}
         onClose={handleClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        keepMounted
+        disablePortal
         slotProps={{
           paper: {
             sx: {
@@ -64,6 +74,12 @@ export const DisplaySelector = ({
         MenuListProps={{ sx: { py: 0 } }}
         sx={{
           mt: '6px',
+          '@media (max-width: 600px)': {
+            transformOrigin: {
+              vertical: 'top',
+              horizontal: 'left',
+            },
+          },
         }}
       >
         <Stack
