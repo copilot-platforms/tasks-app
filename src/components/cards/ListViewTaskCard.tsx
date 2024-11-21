@@ -89,7 +89,11 @@ export const ListViewTaskCard = ({
                 >
                   {task?.title}
                 </Typography>
-                {task.isArchived && <ArchiveBoxIcon />}
+                {task.isArchived && (
+                  <Box title="Archived.">
+                    <ArchiveBoxIcon />
+                  </Box>
+                )}
               </Stack>
             </Box>
           </Stack>
