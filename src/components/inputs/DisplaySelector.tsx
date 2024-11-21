@@ -75,14 +75,26 @@ export const DisplaySelector = ({
             paddingBottom: '8px',
           }}
         >
-          <IconContainer direction="column" onClick={() => handleModeChange(ViewMode.list)}>
+          <IconContainer
+            direction="column"
+            onClick={() => handleModeChange(ViewMode.list)}
+            sx={{
+              background: (theme) => (selectedMode == ViewMode.list ? theme.color.gray[100] : theme.color.base.white),
+            }}
+          >
             <ListViewIcon />
             <Typography variant="bodySm" fontSize={'12px'}>
               List
             </Typography>
           </IconContainer>
 
-          <IconContainer direction="column" onClick={() => handleModeChange(ViewMode.board)}>
+          <IconContainer
+            direction="column"
+            onClick={() => handleModeChange(ViewMode.board)}
+            sx={{
+              background: (theme) => (selectedMode == ViewMode.board ? theme.color.gray[100] : theme.color.base.white),
+            }}
+          >
             <BoardViewIcon />
             <Typography variant="bodySm" fontSize={'12px'}>
               Board
