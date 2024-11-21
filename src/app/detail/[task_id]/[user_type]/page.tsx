@@ -116,7 +116,6 @@ export default async function TaskDetailPage({
                     <Typography
                       variant="sm"
                       sx={{
-                        marginTop: '3px',
                         fontSize: '13px',
                       }}
                     >
