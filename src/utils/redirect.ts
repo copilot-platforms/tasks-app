@@ -13,7 +13,7 @@ export const redirectIfTaskCta = (searchParams: Record<string, string>, userType
         `${apiUrl}/detail/${taskId.data}/${userType}?token=${z.string().parse(searchParams.token)}&commentId=${commentId.data}&isRedirect=1`,
       )
     }
-    redirect(`${apiUrl}/detail/${taskId.data}/iu?token=${z.string().parse(searchParams.token)}&isRedirect=1`)
+    redirect(`${apiUrl}/detail/${taskId.data}/${userType}?token=${z.string().parse(searchParams.token)}&isRedirect=1`)
   }
 }
 
