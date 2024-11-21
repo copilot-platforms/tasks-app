@@ -61,7 +61,6 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
     },
     [token],
   )
-
   const filterTaskWithWorkflowStateId = (workflowStateId: string): TaskResponse[] => {
     return filteredTasks.filter((task) => task.workflowStateId === workflowStateId)
   }
@@ -75,9 +74,6 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
     }
     return filteredTaskCount.toString() + '/' + taskCount.toString()
   }
-  const handleTaskFilters = useCallback((newTasks: TaskResponse[]) => {
-    store.dispatch(setTasks(newTasks))
-  }, [])
 
   const viewBoardSettings = viewSettingsTemp ? viewSettingsTemp.viewMode : view
   const getCardHref = (task: { id: string }) => `/detail/${task.id}/${mode === UserRole.IU ? 'iu' : 'cu'}`
@@ -95,7 +91,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
   if (tasks && tasks.length === 0 && userHasNoFilter && !isTasksLoading) {
     return (
       <>
-        <TaskDataFetcher onDataChange={handleTaskFilters} token={token ?? ''} />
+        <TaskDataFetcher token={token ?? ''} />
         <DashboardEmptyState userType={mode} />
       </>
     )
@@ -103,7 +99,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
 
   return (
     <>
-      <TaskDataFetcher onDataChange={handleTaskFilters} token={token ?? ''} />
+      <TaskDataFetcher token={token ?? ''} />
       <Header showCreateTaskButton={mode === UserRole.IU} />
       <FilterBar
         mode={mode}
