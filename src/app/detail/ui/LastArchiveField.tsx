@@ -35,7 +35,7 @@ export const LastArchivedField = () => {
         color: (theme) => theme.color.gray[500],
       }}
     >
-      {`Archived ${timeAgoText}`}
+      {`Archived ${timeAgoText.toLowerCase()}`}
     </Typography>
   )
 }
