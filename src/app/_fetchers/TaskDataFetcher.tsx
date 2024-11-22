@@ -6,8 +6,8 @@ import { useCallback, useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import useSWR from 'swr'
 
-export const TaskDataFetcher = ({ onDataChange, token }: { onDataChange: (tasks: any[]) => void; token: string }) => {
-  const { showArchived, showUnarchived } = useSelector(selectTaskBoard)
+export const TaskDataFetcher = ({ token }: { token: string }) => {
+  const { showArchived, showUnarchived, tasks } = useSelector(selectTaskBoard)
 
   const buildQueryString = useCallback((token: string, archivedOptions?: ArchivedOptionsType) => {
     const queryParams = new URLSearchParams({ token })
@@ -22,21 +22,14 @@ export const TaskDataFetcher = ({ onDataChange, token }: { onDataChange: (tasks:
 
   const queryString = token ? buildQueryString(token, { showArchived, showUnarchived }) : ''
 
-  const { data: allTasks, isLoading, mutate } = useSWR(token ? `/api/tasks/?${queryString}` : null, fetcher)
-
-  useEffect(() => {
-    store.dispatch(setIsTasksLoading(isLoading))
-    if (!isLoading) {
-      const tasks = allTasks?.tasks || []
-      store.dispatch(setTasks(tasks))
-      onDataChange(tasks)
-    }
-  }, [isLoading, allTasks, onDataChange])
+  const { data, isLoading, mutate } = useSWR(token ? `/api/tasks/?${queryString}` : null, fetcher)
 
   const updateTaskOnArchivedStateUpdate = useCallback(async () => {
     if (token) {
       try {
-        await mutate()
+        store.dispatch(setIsTasksLoading(true))
+        await mutate().then((data) => store.dispatch(setTasks(data.tasks))) // preventing extra rerendering
+        store.dispatch(setIsTasksLoading(isLoading))
       } catch (error) {
         console.error('Error updating tasks:', error)
       }
