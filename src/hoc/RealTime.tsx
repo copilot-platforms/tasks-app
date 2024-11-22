@@ -67,6 +67,7 @@ export const RealTime = ({
         return
       } //adding a short-circuit if task is not found on the store.
       if ((updatedTask.isArchived && !showArchived) || (!updatedTask.isArchived && !showUnarchived)) {
+        store.dispatch(setTasks(tasks.filter((el) => el.id !== updatedTask.id)))
         return
       }
 
