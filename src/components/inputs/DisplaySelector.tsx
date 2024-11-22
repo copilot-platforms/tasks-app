@@ -74,12 +74,6 @@ export const DisplaySelector = ({
         MenuListProps={{ sx: { py: 0 } }}
         sx={{
           mt: '6px',
-          '@media (max-width: 600px)': {
-            transformOrigin: {
-              vertical: 'top',
-              horizontal: 'left',
-            },
-          },
         }}
       >
         <Stack
