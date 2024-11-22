@@ -28,7 +28,7 @@ export const RealTime = ({
   tokenPayload: Token
 }) => {
   const { tasks, token } = useSelector(selectTaskBoard)
-  const { showUnarchived } = useSelector(selectTaskBoard)
+  const { showUnarchived, showArchived } = useSelector(selectTaskBoard)
   const pathname = usePathname()
   const router = useRouter()
 
@@ -66,6 +66,9 @@ export const RealTime = ({
       if (!oldTask) {
         return
       } //adding a short-circuit if task is not found on the store.
+      if ((updatedTask.isArchived && !showArchived) || (!updatedTask.isArchived && !showUnarchived)) {
+        return
+      }
 
       if (payload.new.workspaceId === tokenPayload?.workspaceId) {
         //check if the new task in this event belongs to the same workspaceId

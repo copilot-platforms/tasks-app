@@ -7,7 +7,7 @@ import { useSelector } from 'react-redux'
 import useSWR from 'swr'
 
 export const TaskDataFetcher = ({ token }: { token: string }) => {
-  const { showArchived, showUnarchived } = useSelector(selectTaskBoard)
+  const { showArchived, showUnarchived, tasks } = useSelector(selectTaskBoard)
 
   const buildQueryString = useCallback((token: string, archivedOptions?: ArchivedOptionsType) => {
     const queryParams = new URLSearchParams({ token })
