@@ -74,13 +74,18 @@ export default async function Main({ searchParams }: { searchParams: { token: st
     return <SilentError message="Please provide a Valid Token" />
   }
 
-  redirectIfTaskCta(searchParams, UserType.INTERNAL_USER)
+  const tokenPayload = await getTokenPayload(token)
+  const userRole = tokenPayload.internalUserId ? UserType.INTERNAL_USER : tokenPayload.clientId ? UserType.CLIENT_USER : null
+  if (!userRole) {
+    return <SilentError message="Please provide a Valid Token" />
+  }
+  // Both clients and IUs can access this page so hardcoding a UserRole will not work
+  redirectIfTaskCta(searchParams, userRole)
 
   const viewSettings = await getViewSettings(token)
-  const [workflowStates, tasks, tokenPayload] = await Promise.all([
+  const [workflowStates, tasks] = await Promise.all([
     getAllWorkflowStates(token),
     getAllTasks(token, { showArchived: viewSettings.showArchived, showUnarchived: viewSettings.showUnarchived }),
-    getTokenPayload(token),
   ])
 
   console.info(`app/page.tsx | Serving user ${token} with payload`, tokenPayload)
