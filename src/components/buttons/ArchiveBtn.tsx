@@ -2,6 +2,7 @@
 
 import { DustbinIcon } from '@/icons'
 import { Stack, Typography } from '@mui/material'
+import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
 
 export const ArchiveBtn = ({ isArchived, handleClick }: { isArchived: boolean; handleClick: () => void }) => {
   return (
@@ -19,10 +20,14 @@ export const ArchiveBtn = ({ isArchived, handleClick }: { isArchived: boolean; h
       }}
       onClick={handleClick}
     >
-      <DustbinIcon />
-      <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[600] }}>
-        {!isArchived ? 'Archive' : 'Unarchive'}
-      </Typography>
+      <SecondaryBtn
+        startIcon={<DustbinIcon />}
+        buttonContent={
+          <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[600] }}>
+            {!isArchived ? 'Archive' : 'Unarchive'}
+          </Typography>
+        }
+      />
     </Stack>
   )
 }
