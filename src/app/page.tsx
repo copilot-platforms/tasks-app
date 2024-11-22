@@ -95,7 +95,6 @@ export default async function Main({ searchParams }: { searchParams: { token: st
         <DndWrapper>
           <TaskBoard mode={UserRole.IU} />
         </DndWrapper>
-
         <ModalNewTaskForm
           handleCreateMultipleAttachments={async (attachments: CreateAttachmentRequest[]) => {
             'use server'
