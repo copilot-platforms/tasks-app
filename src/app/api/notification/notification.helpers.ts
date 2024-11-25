@@ -39,7 +39,7 @@ export const getInProductNotificationDetails = (
     },
     [NotificationTaskActions.AssignedToCompany]: {
       title: 'Task was assigned to your company',
-      body: `A new task was assigned to your company by ${actionUser}. To see details about the task, navigate to the Tasks App below.`,
+      body: `A new task ‘${task?.title}’ was assigned to your company by ${actionUser}. To see details about the task, navigate to the Tasks App below.`,
     },
     [NotificationTaskActions.ReassignedToIU]: {
       title: 'Task was reassigned to you',
