@@ -83,8 +83,9 @@ export default async function Main({ searchParams }: { searchParams: { token: st
   redirectIfTaskCta(searchParams, userRole)
 
   const viewSettings = await getViewSettings(token)
-  const [workflowStates, tasks] = await Promise.all([
+  const [workflowStates, allTasks, tasks] = await Promise.all([
     getAllWorkflowStates(token),
+    getAllTasks(token),
     getAllTasks(token, { showArchived: viewSettings.showArchived, showUnarchived: viewSettings.showUnarchived }),
   ])
 
@@ -92,7 +93,8 @@ export default async function Main({ searchParams }: { searchParams: { token: st
   return (
     <ClientSideStateUpdate
       workflowStates={workflowStates}
-      tasks={tasks}
+      allTasks={allTasks} //for globalTasksRepo
+      tasks={tasks} // for tasks
       token={token}
       viewSettings={viewSettings}
       tokenPayload={tokenPayload}
