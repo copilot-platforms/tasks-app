@@ -20,6 +20,7 @@ export const ArchiveWrapper = ({ taskId }: { taskId: string }) => {
   // Set the initial state when `data` becomes available
   useEffect(() => {
     const currentTask = globalTasksRepo.find((el) => el.id === taskId)
+    console.log('test', currentTask)
     if (currentTask) {
       setIsArchived(currentTask.isArchived)
       store.dispatch(setTask(currentTask))
