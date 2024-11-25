@@ -46,7 +46,7 @@ export const TaskEditor = ({
   const [updateTitle, setUpdateTitle] = useState('')
   const [updateDetail, setUpdateDetail] = useState('')
   const { showConfirmDeleteModal } = useSelector(selectTaskDetails)
-  const { tasks, token } = useSelector(selectTaskBoard)
+  const { token, globalTasksRepo } = useSelector(selectTaskBoard)
   const [isUserTyping, setIsUserTyping] = useState(false)
   const [activeUploads, setActiveUploads] = useState(0)
 
@@ -66,14 +66,13 @@ export const TaskEditor = ({
 
   useEffect(() => {
     if (!isUserTyping && activeUploads === 0) {
-      const currentTask = tasks.find((el) => el.id === task_id)
+      const currentTask = globalTasksRepo.find((el) => el.id === task_id)
       if (currentTask) {
         setUpdateTitle(currentTask.title || '')
-
         setUpdateDetail(currentTask.body ?? '')
       }
     }
-  }, [tasks, task_id, isUserTyping, activeUploads])
+  }, [globalTasksRepo, task_id, isUserTyping, activeUploads])
 
   const _titleUpdateDebounced = async (title: string) => updateTaskTitle(title)
 
@@ -104,7 +103,7 @@ export const TaskEditor = ({
   const handleTitleBlur = () => {
     if (updateTitle.trim() == '') {
       setTimeout(() => {
-        const currentTask = tasks.find((el) => el.id === task_id)
+        const currentTask = globalTasksRepo.find((el) => el.id === task_id)
         setUpdateTitle(currentTask?.title ?? '')
       }, 300)
     }
