@@ -118,7 +118,7 @@ export const getEmailDetails = (
     [NotificationTaskActions.AssignedToCompany]: {
       subject: 'Task was assigned to your company',
       header: 'Task was assigned to your company',
-      body: `A new task was assigned to your company by ${actionUser}. To see details about the task, open it below.`,
+      body: `A new task ‘${task?.title}’ was assigned to your company by ${actionUser}. To see details about the task, open it below.`,
       title: 'View task',
       ctaParams,
     },
