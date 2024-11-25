@@ -43,6 +43,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
     showArchived,
     showUnarchived,
     isTasksLoading,
+    globalTasksRepo,
   } = useSelector(selectTaskBoard)
 
   const onDropItem = useCallback(
@@ -88,7 +89,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
 
   const isNoTasksWithFilter = tasks && !userHasNoFilter && !filteredTasks.length
 
-  if (tasks && tasks.length === 0 && userHasNoFilter && !isTasksLoading) {
+  if (globalTasksRepo && globalTasksRepo.length === 0) {
     return (
       <>
         <TaskDataFetcher token={token ?? ''} />
