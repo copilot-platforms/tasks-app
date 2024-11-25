@@ -25,12 +25,12 @@ interface IInitialState {
 
 const initialState: IInitialState = {
   workflowStates: [],
-  globalTasksRepo: [],
-  tasks: [],
+  globalTasksRepo: [], //contains all tasks in the current workspace, is populated from page.tsx server component.
+  tasks: [], //contains tasks which are filtered(from api). is populated from client components using swr.
   token: undefined,
   assignee: [],
   view: ViewMode.board,
-  filteredTasks: [],
+  filteredTasks: [], //contains tasks which are client-side filtered. is modified from the useFilter custom hook.
   filterOptions: {
     [FilterOptions.ASSIGNEE]: '',
     [FilterOptions.KEYWORD]: '',
