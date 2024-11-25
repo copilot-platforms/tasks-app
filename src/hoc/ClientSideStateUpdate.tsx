@@ -2,7 +2,13 @@
 
 import { LogResponse } from '@/app/api/activity-logs/schemas/LogResponseSchema'
 import { setTokenPayload } from '@/redux/features/authDetailsSlice'
-import { selectTaskBoard, setAssigneeList, setFilteredAssgineeList, setViewSettings } from '@/redux/features/taskBoardSlice'
+import {
+  selectTaskBoard,
+  setAssigneeList,
+  setFilteredAssgineeList,
+  setGlobalTasksRepo,
+  setViewSettings,
+} from '@/redux/features/taskBoardSlice'
 import { setTasks, setToken, setWorkflowStates } from '@/redux/features/taskBoardSlice'
 import { setAssigneeSuggestion } from '@/redux/features/taskDetailsSlice'
 import { setTemplates } from '@/redux/features/templateSlice'
@@ -50,13 +56,14 @@ export const ClientSideStateUpdate = ({
   assigneeSuggestions?: IAssigneeSuggestions[]
   task?: TaskResponse
 }) => {
-  const { tasks: tasksInStore, viewSettingsTemp } = useSelector(selectTaskBoard)
+  const { tasks: tasksInStore, viewSettingsTemp, globalTasksRepo: globalTasksInStore } = useSelector(selectTaskBoard)
   useEffect(() => {
     if (workflowStates) {
       store.dispatch(setWorkflowStates(workflowStates))
     }
 
     if (tasks && tasksInStore.length === 0) {
+      store.dispatch(setGlobalTasksRepo(tasks))
       store.dispatch(setTasks(tasks))
     }
 
@@ -86,6 +93,8 @@ export const ClientSideStateUpdate = ({
     }
     if (task) {
       const updatedTasks = tasksInStore.map((t) => (t.id === task.id ? task : t))
+      const updatedGlobalTasks = globalTasksInStore.map((t) => (t.id === task.id ? task : t))
+      store.dispatch(setGlobalTasksRepo(updatedGlobalTasks))
       store.dispatch(setTasks(updatedTasks))
     } //for updating a task in store with respect to task response from db in task details page
   }, [workflowStates, tasks, token, assignee, viewSettings, tokenPayload, templates, assigneeSuggestions, task])

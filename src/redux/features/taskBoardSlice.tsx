@@ -10,6 +10,7 @@ import { sortTaskByDescendingOrder } from '@/utils/sortTask'
 interface IInitialState {
   workflowStates: WorkflowStateResponse[]
   assignee: IAssigneeCombined[]
+  globalTasksRepo: TaskResponse[]
   tasks: TaskResponse[]
   token: string | undefined
   view: ViewMode
@@ -24,6 +25,7 @@ interface IInitialState {
 
 const initialState: IInitialState = {
   workflowStates: [],
+  globalTasksRepo: [],
   tasks: [],
   token: undefined,
   assignee: [],
@@ -48,6 +50,9 @@ const taskBoardSlice = createSlice({
   reducers: {
     setWorkflowStates: (state, action: { payload: WorkflowStateResponse[] }) => {
       state.workflowStates = action.payload
+    },
+    setGlobalTasksRepo: (state, action: { payload: TaskResponse[] }) => {
+      state.globalTasksRepo = action.payload
     },
     setTasks: (state, action: { payload: TaskResponse[] }) => {
       state.tasks = action.payload
@@ -128,6 +133,7 @@ export const selectTaskBoard = (state: RootState) => state.taskBoard
 
 export const {
   setWorkflowStates,
+  setGlobalTasksRepo,
   setTasks,
   appendTask,
   updateWorkflowStateIdByTaskId,

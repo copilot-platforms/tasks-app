@@ -3,7 +3,7 @@
 import { UserRole } from '@/app/api/core/types/user'
 import { supabase } from '@/lib/supabase'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
-import { selectTaskBoard, setTasks } from '@/redux/features/taskBoardSlice'
+import { selectTaskBoard, setGlobalTasksRepo, setTasks } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
 import { Token } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
@@ -27,7 +27,7 @@ export const RealTime = ({
   task?: TaskResponse
   tokenPayload: Token
 }) => {
-  const { tasks, token } = useSelector(selectTaskBoard)
+  const { tasks, token, globalTasksRepo } = useSelector(selectTaskBoard)
   const { showUnarchived, showArchived } = useSelector(selectTaskBoard)
   const pathname = usePathname()
   const router = useRouter()
@@ -51,10 +51,13 @@ export const RealTime = ({
       if (userRole === AssigneeType.client) {
         canUserAccessTask = canUserAccessTask && [userId, tokenPayload?.companyId].includes(payload.new.assigneeId)
       }
-
       //check if the new task in this event belongs to the same workspaceId
       if (canUserAccessTask && showUnarchived) {
         store.dispatch(setTasks([...tasks, { ...payload.new, createdAt: new Date(payload.new.createdAt + 'Z') }]))
+        store.dispatch(
+          setGlobalTasksRepo([...globalTasksRepo, { ...payload.new, createdAt: new Date(payload.new.createdAt + 'Z') }]),
+        )
+
         // NOTE: we append a Z here to make JS understand this raw timestamp (in format YYYY-MM-DD:HH:MM:SS.MS) is in UTC timezone
         // New payloads listened on the 'INSERT' action in realtime doesn't contain this tz info so the order can mess up
       }
@@ -62,18 +65,19 @@ export const RealTime = ({
     if (payload.eventType === 'UPDATE') {
       const updatedTask = payload.new
       const oldTask = tasks.find((task) => task.id == updatedTask.id)
-
       if ((updatedTask.isArchived && !showArchived) || (!updatedTask.isArchived && !showUnarchived)) {
         store.dispatch(setTasks(tasks.filter((el) => el.id !== updatedTask.id)))
         return
       }
-
       if (payload.new.workspaceId === tokenPayload?.workspaceId) {
         //check if the new task in this event belongs to the same workspaceId
         //if the task is deleted
         if (updatedTask.deletedAt) {
           const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
+          const newGlobalTaskArr = globalTasksRepo.filter((el) => el.id !== updatedTask.id)
+
           store.dispatch(setTasks(newTaskArr))
+          store.dispatch(setGlobalTasksRepo(newGlobalTaskArr))
           //if a user is in the details page when the task is deleted then we want the user to get redirected to '/' route
           if (pathname.includes('detail')) {
             if (pathname.includes('cu')) {
@@ -100,9 +104,10 @@ export const RealTime = ({
               updatedTask.body = replaceImgSrcs(updatedTask.body, newImgSrcs, oldImgSrcs)
             }
           }
-
           const newTaskArr = [...tasks.filter((task) => task.id !== updatedTask.id), updatedTask]
+          const newGlobalTaskArr = [...globalTasksRepo.filter((task) => task.id !== updatedTask.id), updatedTask]
           store.dispatch(setTasks(newTaskArr))
+          store.dispatch(setGlobalTasksRepo(newGlobalTaskArr))
         }
       }
     }
