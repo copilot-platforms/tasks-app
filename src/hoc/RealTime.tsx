@@ -66,6 +66,8 @@ export const RealTime = ({
       const updatedTask = payload.new
       const oldTask = tasks.find((task) => task.id == updatedTask.id)
       if ((updatedTask.isArchived && !showArchived) || (!updatedTask.isArchived && !showUnarchived)) {
+        const updatedGlobalTasksRepo = globalTasksRepo.map((task) => (task.id === updatedTask.id ? updatedTask : task))
+        store.dispatch(setGlobalTasksRepo(updatedGlobalTasksRepo))
         store.dispatch(setTasks(tasks.filter((el) => el.id !== updatedTask.id)))
         return
       }
