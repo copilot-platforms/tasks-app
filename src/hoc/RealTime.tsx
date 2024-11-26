@@ -147,7 +147,7 @@ export const RealTime = ({
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [supabase, tasks])
+  }, [supabase, tasks, globalTasksRepo])
 
   return children
 }
