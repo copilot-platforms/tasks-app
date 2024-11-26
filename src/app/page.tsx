@@ -85,7 +85,7 @@ export default async function Main({ searchParams }: { searchParams: { token: st
   const viewSettings = await getViewSettings(token)
   const [workflowStates, allTasks, tasks] = await Promise.all([
     getAllWorkflowStates(token),
-    getAllTasks(token),
+    getAllTasks(token, { showArchived: true, showUnarchived: true }), //fetching all data
     getAllTasks(token, { showArchived: viewSettings.showArchived, showUnarchived: viewSettings.showUnarchived }),
   ])
 
