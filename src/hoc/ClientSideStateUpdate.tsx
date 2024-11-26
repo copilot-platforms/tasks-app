@@ -44,10 +44,12 @@ export const ClientSideStateUpdate = ({
   templates,
   assigneeSuggestions,
   task,
+  allTasks,
 }: {
   children: ReactNode
   workflowStates?: WorkflowStateResponse[]
   tasks?: TaskResponse[]
+  allTasks?: TaskResponse[]
   assignee?: IAssigneeCombined[]
   viewSettings?: CreateViewSettingsDTO
   token?: string
@@ -65,6 +67,10 @@ export const ClientSideStateUpdate = ({
     if (tasks && tasksInStore.length === 0) {
       store.dispatch(setGlobalTasksRepo(tasks))
       store.dispatch(setTasks(tasks))
+    }
+
+    if (allTasks && globalTasksInStore.length === 0) {
+      store.dispatch(setGlobalTasksRepo(allTasks))
     }
 
     if (token) {
@@ -97,7 +103,7 @@ export const ClientSideStateUpdate = ({
       store.dispatch(setGlobalTasksRepo(updatedGlobalTasks))
       store.dispatch(setTasks(updatedTasks))
     } //for updating a task in store with respect to task response from db in task details page
-  }, [workflowStates, tasks, token, assignee, viewSettings, tokenPayload, templates, assigneeSuggestions, task])
+  }, [workflowStates, tasks, token, assignee, viewSettings, tokenPayload, templates, assigneeSuggestions, task, allTasks])
 
   return children
 }
