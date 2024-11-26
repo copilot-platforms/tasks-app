@@ -2,13 +2,12 @@ import { selectTaskBoard, setIsTasksLoading, setTasks } from '@/redux/features/t
 import store from '@/redux/store'
 import { ArchivedOptionsType } from '@/types/dto/viewSettings.dto'
 import { fetcher } from '@/utils/fetcher'
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import useSWR from 'swr'
 
 export const TaskDataFetcher = ({ token }: { token: string }) => {
   const { showArchived, showUnarchived, tasks } = useSelector(selectTaskBoard)
-  const lastRequestIdRef = useRef(0)
 
   const buildQueryString = useCallback((token: string, archivedOptions?: ArchivedOptionsType) => {
     const queryParams = new URLSearchParams({ token })
@@ -27,21 +26,12 @@ export const TaskDataFetcher = ({ token }: { token: string }) => {
 
   const updateTaskOnArchivedStateUpdate = useCallback(async () => {
     if (token) {
-      const currentRequestId = ++lastRequestIdRef.current
-
       try {
         store.dispatch(setIsTasksLoading(true))
-        const result = await mutate()
-        //updating the recent requests only
-        if (currentRequestId === lastRequestIdRef.current) {
-          store.dispatch(setTasks(result.tasks))
-          store.dispatch(setIsTasksLoading(false))
-        }
+        await mutate().then((data) => store.dispatch(setTasks(data.tasks))) // preventing extra rerendering
+        store.dispatch(setIsTasksLoading(isLoading))
       } catch (error) {
-        if (currentRequestId === lastRequestIdRef.current) {
-          console.error('Error updating tasks:', error)
-          store.dispatch(setIsTasksLoading(false))
-        }
+        console.error('Error updating tasks:', error)
       }
     }
   }, [token, mutate])
