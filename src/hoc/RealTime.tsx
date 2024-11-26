@@ -65,12 +65,7 @@ export const RealTime = ({
     if (payload.eventType === 'UPDATE') {
       const updatedTask = payload.new
       const oldTask = tasks.find((task) => task.id == updatedTask.id)
-      if ((updatedTask.isArchived && !showArchived) || (!updatedTask.isArchived && !showUnarchived)) {
-        const updatedGlobalTasksRepo = globalTasksRepo.map((task) => (task.id === updatedTask.id ? updatedTask : task))
-        store.dispatch(setGlobalTasksRepo(updatedGlobalTasksRepo))
-        store.dispatch(setTasks(tasks.filter((el) => el.id !== updatedTask.id)))
-        return
-      }
+
       if (payload.new.workspaceId === tokenPayload?.workspaceId) {
         //check if the new task in this event belongs to the same workspaceId
         //if the task is deleted
@@ -90,13 +85,6 @@ export const RealTime = ({
           }
           //if the task is updated
         } else {
-          // Address Postgres' 8kb pagesize limitation (See TOAST https://www.postgresql.org/docs/current/storage-toast.html)
-          // If `body` field (which can be larger than pagesize) is not changed, Supabase Realtime won't send large fields like this in `payload.new`
-
-          // So, we need to check if the oldTask has valid body but new body field is not being sent in updatedTask, and add it if required
-          if (oldTask?.body && updatedTask.body === undefined) {
-            updatedTask.body = oldTask?.body
-          }
           if (oldTask && oldTask.body && updatedTask.body) {
             const oldImgSrcs = extractImgSrcs(oldTask.body)
             const newImgSrcs = extractImgSrcs(updatedTask.body)
@@ -106,6 +94,23 @@ export const RealTime = ({
               updatedTask.body = replaceImgSrcs(updatedTask.body, newImgSrcs, oldImgSrcs)
             }
           }
+
+          // update according to archived unarchived filters.
+          if ((updatedTask.isArchived && !showArchived) || (!updatedTask.isArchived && !showUnarchived)) {
+            const updatedGlobalTasksRepo = globalTasksRepo.map((task) => (task.id === updatedTask.id ? updatedTask : task))
+            store.dispatch(setGlobalTasksRepo(updatedGlobalTasksRepo))
+            store.dispatch(setTasks(tasks.filter((el) => el.id !== updatedTask.id)))
+            return
+          }
+
+          // Address Postgres' 8kb pagesize limitation (See TOAST https://www.postgresql.org/docs/current/storage-toast.html)
+          // If `body` field (which can be larger than pagesize) is not changed, Supabase Realtime won't send large fields like this in `payload.new`
+
+          // So, we need to check if the oldTask has valid body but new body field is not being sent in updatedTask, and add it if required
+          if (oldTask?.body && updatedTask.body === undefined) {
+            updatedTask.body = oldTask?.body
+          }
+
           const newTaskArr = [...tasks.filter((task) => task.id !== updatedTask.id), updatedTask]
           const newGlobalTaskArr = [...globalTasksRepo.filter((task) => task.id !== updatedTask.id), updatedTask]
           store.dispatch(setTasks(newTaskArr))
