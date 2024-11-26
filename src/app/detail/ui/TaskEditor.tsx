@@ -68,8 +68,8 @@ export const TaskEditor = ({
     if (!isUserTyping && activeUploads === 0) {
       const currentTask = globalTasksRepo.find((el) => el.id === task_id)
       if (currentTask) {
-        setUpdateTitle(currentTask.title || '')
-        setUpdateDetail(currentTask.body ?? '')
+        setUpdateTitle((prev) => prev || currentTask.title || '')
+        setUpdateDetail((prev) => (prev || currentTask.body) ?? '')
       }
     }
   }, [globalTasksRepo, task_id, isUserTyping, activeUploads])
@@ -178,34 +178,6 @@ export const TaskEditor = ({
           maxUploadLimit={MAX_UPLOAD_LIMIT}
         />
       </Box>
-
-      {/* {advancedFeatureFlag && ( */}
-      {/* <> */}
-      {/*     <Stack direction="row" columnGap={3} rowGap={3} mt={3} flexWrap={'wrap'}> */}
-      {/*       {attachment?.map((el, key) => { */}
-      {/*         return ( */}
-      {/*           <Box key={key}> */}
-      {/*             <AttachmentCard */}
-      {/*               file={el} */}
-      {/*               deleteAttachment={async (event: any) => { */}
-      {/*                 event.stopPropagation() */}
-      {/*                 const supabaseActions = new SupabaseActions() */}
-      {/*                 const { data } = await supabaseActions.removeAttachment(el.filePath) */}
-      {/*                 if (data && el.id) { */}
-      {/*                   deleteAttachment(el.id) */}
-      {/*                 } */}
-      {/*               }} */}
-      {/*             /> */}
-      {/*           </Box> */}
-      {/*         ) */}
-      {/*       })} */}
-      {/*     </Stack> */}
-
-      {/*     <Stack direction="row" mt={3} justifyContent="flex-end"> */}
-      {/*       <AttachmentInput handleFileSelect={handleFileSelect} /> */}
-      {/*     </Stack> */}
-      {/*   </> */}
-      {/* )} */}
 
       <Modal
         open={showConfirmDeleteModal}
