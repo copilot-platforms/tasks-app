@@ -43,7 +43,7 @@ export const extractImgSrcs = (body: string) => {
   return imgs.map((img) => img.src) // Return an array of srcs
 }
 
-export const replaceImgSrcs = (body: string, newSrcs: string[], oldSrcs: string[]) => {
+export const replaceImgSrcs = async (body: string, newSrcs: string[], oldSrcs: string[]) => {
   let updatedBody = body
   newSrcs.forEach((newSrc, index) => {
     const filePath = getFilePathFromUrl(newSrc)

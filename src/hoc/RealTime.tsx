@@ -43,7 +43,7 @@ export const RealTime = ({
     console.error(`Failed to authenticate a realtime connection for id ${userId} with role ${userRole}`)
   }
 
-  const handleTaskRealTimeUpdates = (payload: RealtimePostgresChangesPayload<RealTimeTaskResponse>) => {
+  const handleTaskRealTimeUpdates = async (payload: RealtimePostgresChangesPayload<RealTimeTaskResponse>) => {
     if (payload.eventType === 'INSERT') {
       // For both user types, filter out just tasks belonging to workspace.
       let canUserAccessTask = payload.new.workspaceId === tokenPayload?.workspaceId
@@ -98,7 +98,7 @@ export const RealTime = ({
             // Need to extract new image Srcs and replace it with old ones, because since we are creating a new url of images on each task details navigation,
             // a second user navigating the task details will generate a new src and replace it in the database which causes the previous user to load the src again(because its new)
             if (oldImgSrcs.length > 0 && newImgSrcs.length > 0) {
-              updatedTask.body = replaceImgSrcs(updatedTask.body, newImgSrcs, oldImgSrcs)
+              updatedTask.body = await replaceImgSrcs(updatedTask.body, newImgSrcs, oldImgSrcs)
             }
           }
           if ((updatedTask.isArchived && !showArchived) || (!updatedTask.isArchived && !showUnarchived)) {
