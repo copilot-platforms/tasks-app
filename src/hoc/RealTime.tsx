@@ -103,7 +103,7 @@ export const RealTime = ({
             }
           }
           if ((updatedTask.isArchived && !showArchived) || (!updatedTask.isArchived && !showUnarchived)) {
-            const updatedGlobalTasksRepo = globalTasksRepo.map((task) => (task.id === updatedTask.id ? updatedTask : task))
+            const updatedGlobalTasksRepo = [...globalTasksRepo.filter((task) => task.id !== updatedTask.id), updatedTask]
             store.dispatch(setGlobalTasksRepo(updatedGlobalTasksRepo))
             store.dispatch(setTasks(tasks.filter((el) => el.id !== updatedTask.id)))
             return
@@ -147,7 +147,7 @@ export const RealTime = ({
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [supabase, tasks, globalTasksRepo])
+  }, [supabase, tasks])
 
   return children
 }
