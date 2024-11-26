@@ -71,7 +71,7 @@ export class TasksService extends BaseService {
     return filters
   }
 
-  async getAllTasks(queryFilters?: { showArchived: boolean; showUnarchived: boolean }) {
+  async getAllTasks(queryFilters: { showArchived: boolean; showUnarchived: boolean }) {
     // Check if given user role is authorized access to this resource
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Read, Resource.Tasks)
@@ -82,7 +82,7 @@ export class TasksService extends BaseService {
 
     let isArchived: boolean | undefined = false
     // Archived tasks are only accessible to IU
-    if (this.user.internalUserId && queryFilters) {
+    if (this.user.internalUserId) {
       // If both archived filters are explicitly 0 / falsey for IU, shortcircuit and return empty array
       if (!queryFilters.showArchived && !queryFilters.showUnarchived) {
         return []
