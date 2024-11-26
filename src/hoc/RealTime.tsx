@@ -67,24 +67,6 @@ export const RealTime = ({
       const oldTask = tasks.find((task) => task.id == updatedTask.id)
 
       if (payload.new.workspaceId === tokenPayload?.workspaceId) {
-        console.log('trigger')
-
-        if ((updatedTask.isArchived && !showArchived) || (!updatedTask.isArchived && !showUnarchived)) {
-          if (oldTask && oldTask.body && updatedTask.body) {
-            const oldImgSrcs = extractImgSrcs(oldTask.body)
-            const newImgSrcs = extractImgSrcs(updatedTask.body)
-            // Need to extract new image Srcs and replace it with old ones, because since we are creating a new url of images on each task details navigation,
-            // a second user navigating the task details will generate a new src and replace it in the database which causes the previous user to load the src again(because its new)
-            if (oldImgSrcs.length > 0 && newImgSrcs.length > 0) {
-              updatedTask.body = replaceImgSrcs(updatedTask.body, newImgSrcs, oldImgSrcs)
-            }
-          }
-          console.log('trigger', updatedTask.body)
-          const updatedGlobalTasksRepo = globalTasksRepo.map((task) => (task.id === updatedTask.id ? updatedTask : task))
-          store.dispatch(setGlobalTasksRepo(updatedGlobalTasksRepo))
-          store.dispatch(setTasks(tasks.filter((el) => el.id !== updatedTask.id)))
-          return
-        }
         //check if the new task in this event belongs to the same workspaceId
         //if the task is deleted
         if (updatedTask.deletedAt) {
@@ -118,6 +100,13 @@ export const RealTime = ({
             if (oldImgSrcs.length > 0 && newImgSrcs.length > 0) {
               updatedTask.body = replaceImgSrcs(updatedTask.body, newImgSrcs, oldImgSrcs)
             }
+          }
+          if ((updatedTask.isArchived && !showArchived) || (!updatedTask.isArchived && !showUnarchived)) {
+            const updatedGlobalTasksRepo = globalTasksRepo.map((task) => (task.id === updatedTask.id ? updatedTask : task))
+            store.dispatch(setGlobalTasksRepo(updatedGlobalTasksRepo))
+            store.dispatch(setTasks(tasks.filter((el) => el.id !== updatedTask.id)))
+            console.log('running')
+            return
           }
           const newTaskArr = [...tasks.filter((task) => task.id !== updatedTask.id), updatedTask]
           const newGlobalTaskArr = [...globalTasksRepo.filter((task) => task.id !== updatedTask.id), updatedTask]
