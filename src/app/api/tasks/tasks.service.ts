@@ -82,7 +82,7 @@ export class TasksService extends BaseService {
 
     let isArchived: boolean | undefined = false
     // Archived tasks are only accessible to IU
-    if (this.user.internalUserId && queryFilters) {
+    if (queryFilters) {
       // If both archived filters are explicitly 0 / falsey for IU, shortcircuit and return empty array
       if (!queryFilters.showArchived && !queryFilters.showUnarchived) {
         return []
