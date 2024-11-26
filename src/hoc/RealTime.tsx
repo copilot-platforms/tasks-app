@@ -85,6 +85,11 @@ export const RealTime = ({
           }
           //if the task is updated
         } else {
+          // So, we need to check if the oldTask has valid body but new body field is not being sent in updatedTask, and add it if required
+          if (oldTask?.body && updatedTask.body === undefined) {
+            updatedTask.body = oldTask?.body
+          }
+
           if (oldTask && oldTask.body && updatedTask.body) {
             const oldImgSrcs = extractImgSrcs(oldTask.body)
             const newImgSrcs = extractImgSrcs(updatedTask.body)
@@ -92,12 +97,18 @@ export const RealTime = ({
             // a second user navigating the task details will generate a new src and replace it in the database which causes the previous user to load the src again(because its new)
             if (oldImgSrcs.length > 0 && newImgSrcs.length > 0) {
               updatedTask.body = replaceImgSrcs(updatedTask.body, newImgSrcs, oldImgSrcs)
+              console.log(11, replaceImgSrcs(updatedTask.body, newImgSrcs, oldImgSrcs))
             }
           }
 
           // update according to archived unarchived filters.
           if ((updatedTask.isArchived && !showArchived) || (!updatedTask.isArchived && !showUnarchived)) {
             const updatedGlobalTasksRepo = globalTasksRepo.map((task) => (task.id === updatedTask.id ? updatedTask : task))
+            console.log(
+              22,
+              updatedGlobalTasksRepo.find((task) => task.id == updatedTask.id),
+            )
+            console.log(33, updatedTask)
             store.dispatch(setGlobalTasksRepo(updatedGlobalTasksRepo))
             store.dispatch(setTasks(tasks.filter((el) => el.id !== updatedTask.id)))
             return
@@ -105,11 +116,6 @@ export const RealTime = ({
 
           // Address Postgres' 8kb pagesize limitation (See TOAST https://www.postgresql.org/docs/current/storage-toast.html)
           // If `body` field (which can be larger than pagesize) is not changed, Supabase Realtime won't send large fields like this in `payload.new`
-
-          // So, we need to check if the oldTask has valid body but new body field is not being sent in updatedTask, and add it if required
-          if (oldTask?.body && updatedTask.body === undefined) {
-            updatedTask.body = oldTask?.body
-          }
 
           const newTaskArr = [...tasks.filter((task) => task.id !== updatedTask.id), updatedTask]
           const newGlobalTaskArr = [...globalTasksRepo.filter((task) => task.id !== updatedTask.id), updatedTask]
