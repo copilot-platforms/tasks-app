@@ -55,6 +55,7 @@ const taskBoardSlice = createSlice({
     },
     setTasks: (state, action: { payload: TaskResponse[] }) => {
       state.tasks = action.payload
+      console.log('meowmeowtasksfromslice', action.payload)
     },
     appendTask: (state, action: { payload: TaskResponse }) => {
       state.tasks = [...state.tasks, action.payload]
