@@ -88,15 +88,19 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
 
   const isNoTasksWithFilter = tasks && !userHasNoFilter && !filteredTasks.length
 
+  if (isTasksLoading) {
+    ;<TaskDataFetcher token={token ?? ''} />
+  }
+
   if (tasks && tasks.length === 0 && userHasNoFilter && !isTasksLoading) {
     return (
       <>
-        <TaskDataFetcher token={token ?? ''} />
         <DashboardEmptyState userType={mode} />
       </>
     )
   }
 
+  console.log('isTasksLoading', isTasksLoading)
   return (
     <>
       <TaskDataFetcher token={token ?? ''} />
