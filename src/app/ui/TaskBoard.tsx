@@ -139,6 +139,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
                   <CustomScrollbar style={{ padding: '4px' }}>
                     <Stack direction="column" rowGap="6px" sx={{ overflowX: 'auto' }}>
                       {sortTaskByDescendingOrder(filterTaskWithWorkflowStateId(list.id)).map((task, index) => {
+                        console.log('task', task)
                         return (
                           <CustomLink
                             key={task.id}
