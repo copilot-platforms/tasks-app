@@ -47,11 +47,7 @@ export const ArchiveWrapper = ({ taskId }: { taskId: string }) => {
 
           // Re-fetch updated data
           const updatedTask = await fetcher(cacheKey)
-          const updatedTasks = backupTasks.some((t) => t.id === updatedTask.task.id)
-            ? backupTasks.map((t) => (t.id === updatedTask.task.id ? updatedTask.task : t))
-            : [...backupTasks, updatedTask.task]
 
-          store.dispatch(setBackupTasks(updatedTasks))
           return updatedTask
         },
         {

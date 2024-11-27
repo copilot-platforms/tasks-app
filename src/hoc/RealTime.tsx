@@ -102,6 +102,8 @@ export const RealTime = ({
             }
           }
           if ((updatedTask.isArchived && !showArchived) || (!updatedTask.isArchived && !showUnarchived)) {
+            const backupTaskArr = [...backupTasks.filter((task) => task.id !== updatedTask.id), updatedTask]
+            store.dispatch(setBackupTasks(backupTaskArr))
             store.dispatch(setTasks(tasks.filter((el) => el.id !== updatedTask.id)))
             return
           }
