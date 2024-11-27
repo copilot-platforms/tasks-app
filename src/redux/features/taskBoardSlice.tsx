@@ -25,7 +25,7 @@ interface IInitialState {
 
 const initialState: IInitialState = {
   workflowStates: [],
-  backupTasks: [],
+  backupTasks: [], //state for tasks used as a dependency for details page to listen to real-time changes. This should be updated everytime tasks state is updated to keep up, except the one with archived-unarchived filter updates.
   tasks: [],
   token: undefined,
   assignee: [],

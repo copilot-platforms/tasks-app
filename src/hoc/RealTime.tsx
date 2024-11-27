@@ -65,10 +65,7 @@ export const RealTime = ({
     if (payload.eventType === 'UPDATE') {
       const updatedTask = payload.new
       const oldTask = tasks.find((task) => task.id == updatedTask.id)
-      if ((updatedTask.isArchived && !showArchived) || (!updatedTask.isArchived && !showUnarchived)) {
-        store.dispatch(setTasks(tasks.filter((el) => el.id !== updatedTask.id)))
-        return
-      }
+
       if (payload.new.workspaceId === tokenPayload?.workspaceId) {
         //check if the new task in this event belongs to the same workspaceId
         //if the task is deleted
@@ -103,6 +100,10 @@ export const RealTime = ({
             if (oldImgSrcs.length > 0 && newImgSrcs.length > 0) {
               updatedTask.body = replaceImgSrcs(updatedTask.body, newImgSrcs, oldImgSrcs)
             }
+          }
+          if ((updatedTask.isArchived && !showArchived) || (!updatedTask.isArchived && !showUnarchived)) {
+            store.dispatch(setTasks(tasks.filter((el) => el.id !== updatedTask.id)))
+            return
           }
           const newTaskArr = [...tasks.filter((task) => task.id !== updatedTask.id), updatedTask]
           const backupTaskArr = [...backupTasks.filter((task) => task.id !== updatedTask.id), updatedTask]
