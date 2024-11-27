@@ -5,13 +5,13 @@ import { cache, useEffect, useState } from 'react'
 import useSWR, { useSWRConfig } from 'swr'
 import { fetcher } from '@/utils/fetcher'
 import { useSelector } from 'react-redux'
-import { selectTaskBoard, setTasks } from '@/redux/features/taskBoardSlice'
+import { selectTaskBoard, setBackupTasks } from '@/redux/features/taskBoardSlice'
 import { Skeleton } from '@mui/material'
 import store from '@/redux/store'
 import { selectTaskDetails, setTask } from '@/redux/features/taskDetailsSlice'
 
 export const ArchiveWrapper = ({ taskId }: { taskId: string }) => {
-  const { token, tasks } = useSelector(selectTaskBoard)
+  const { token, backupTasks } = useSelector(selectTaskBoard)
   const { task } = useSelector(selectTaskDetails)
   const { mutate } = useSWRConfig()
   const cacheKey = `/api/tasks/${taskId}?token=${token}`
@@ -19,12 +19,12 @@ export const ArchiveWrapper = ({ taskId }: { taskId: string }) => {
 
   // Set the initial state when `data` becomes available
   useEffect(() => {
-    const currentTask = tasks.find((el) => el.id === taskId)
+    const currentTask = backupTasks.find((el) => el.id === taskId)
     if (currentTask) {
       setIsArchived(currentTask.isArchived)
       store.dispatch(setTask(currentTask))
     }
-  }, [tasks, taskId])
+  }, [backupTasks, taskId])
 
   const handleToggleArchive = async () => {
     if (isArchived === undefined) return // Prevent toggling if state isn't initialized yet
@@ -47,11 +47,11 @@ export const ArchiveWrapper = ({ taskId }: { taskId: string }) => {
 
           // Re-fetch updated data
           const updatedTask = await fetcher(cacheKey)
-          const updatedTasks = tasks.some((t) => t.id === updatedTask.task.id)
-            ? tasks.map((t) => (t.id === updatedTask.task.id ? updatedTask.task : t))
-            : [...tasks, updatedTask.task]
+          const updatedTasks = backupTasks.some((t) => t.id === updatedTask.task.id)
+            ? backupTasks.map((t) => (t.id === updatedTask.task.id ? updatedTask.task : t))
+            : [...backupTasks, updatedTask.task]
 
-          store.dispatch(setTasks(updatedTasks))
+          store.dispatch(setBackupTasks(updatedTasks))
           return updatedTask
         },
         {

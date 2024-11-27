@@ -1,4 +1,4 @@
-import { selectTaskBoard, setIsTasksLoading, setTasks } from '@/redux/features/taskBoardSlice'
+import { selectTaskBoard, setBackupTasks, setIsTasksLoading, setTasks } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
 import { ArchivedOptionsType } from '@/types/dto/viewSettings.dto'
 import { fetcher } from '@/utils/fetcher'
@@ -28,7 +28,10 @@ export const TaskDataFetcher = ({ token }: { token: string }) => {
     if (token) {
       try {
         store.dispatch(setIsTasksLoading(true))
-        await mutate().then((data) => store.dispatch(setTasks(data.tasks))) // preventing extra rerendering
+        await mutate().then((data) => {
+          store.dispatch(setTasks(data.tasks))
+          store.dispatch(setBackupTasks(data.tasks))
+        }) // preventing extra rerendering
         store.dispatch(setIsTasksLoading(isLoading))
       } catch (error) {
         console.error('Error updating tasks:', error)
