@@ -47,8 +47,11 @@ export const ArchiveWrapper = ({ taskId }: { taskId: string }) => {
 
           // Re-fetch updated data
           const updatedTask = await fetcher(cacheKey)
-          console.log(updatedTask)
-          store.dispatch(setTasks([...tasks.filter((t) => t.id !== updatedTask.id), updatedTask]))
+          const updatedTasks = tasks.some((t) => t.id === updatedTask.task.id)
+            ? tasks.map((t) => (t.id === updatedTask.task.id ? updatedTask.task : t))
+            : [...tasks, updatedTask.task]
+
+          store.dispatch(setTasks(updatedTasks))
           return updatedTask
         },
         {
