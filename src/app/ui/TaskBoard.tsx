@@ -97,7 +97,6 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
     )
   }
 
-  console.log('isTasksLoading', isTasksLoading)
   return (
     <>
       <TaskDataFetcher token={token ?? ''} />
