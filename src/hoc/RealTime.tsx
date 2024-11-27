@@ -64,7 +64,7 @@ export const RealTime = ({
     }
     if (payload.eventType === 'UPDATE') {
       const updatedTask = payload.new
-      const oldTask = tasks.find((task) => task.id == updatedTask.id)
+      const oldTask = backupTasks.find((task) => task.id == updatedTask.id)
 
       if (payload.new.workspaceId === tokenPayload?.workspaceId) {
         //check if the new task in this event belongs to the same workspaceId
