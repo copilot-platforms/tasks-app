@@ -21,7 +21,7 @@ const TaskCardContainer = styled(Stack)(({ theme }) => ({
   overflowWrap: 'break-word',
   userSelect: 'none',
   ':hover': {
-    background: theme.color.gray[150],
+    background: theme.color.gray[100],
   },
   cursor: 'pointer',
   width: '304px',
