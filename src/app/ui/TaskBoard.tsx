@@ -137,39 +137,35 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
                   columnName={list.name}
                   taskCount={taskCountForWorkflowStateId(list.id)}
                 >
-                  {isTasksLoading ? (
-                    <p>loading</p>
-                  ) : (
-                    <CustomScrollbar style={{ padding: '4px' }}>
-                      <Stack direction="column" rowGap="6px" sx={{ overflowX: 'auto' }}>
-                        {sortTaskByDescendingOrder(filterTaskWithWorkflowStateId(list.id)).map((task, index) => {
-                          return (
-                            <CustomLink
+                  <CustomScrollbar style={{ padding: '4px' }}>
+                    <Stack direction="column" rowGap="6px" sx={{ overflowX: 'auto' }}>
+                      {sortTaskByDescendingOrder(filterTaskWithWorkflowStateId(list.id)).map((task, index) => {
+                        return (
+                          <CustomLink
+                            key={task.id}
+                            href={{ pathname: getCardHref(task), query: { token } }}
+                            style={{ width: 'fit-content' }}
+                          >
+                            <DragDropHandler
                               key={task.id}
-                              href={{ pathname: getCardHref(task), query: { token } }}
-                              style={{ width: 'fit-content' }}
+                              accept={'taskCard'}
+                              index={index}
+                              task={task}
+                              draggable // Make TaskCard draggable
                             >
-                              <DragDropHandler
-                                key={task.id}
-                                accept={'taskCard'}
-                                index={index}
-                                task={task}
-                                draggable // Make TaskCard draggable
-                              >
-                                <Box key={task.id}>
-                                  <TaskCard
-                                    task={task}
-                                    key={task.id}
-                                    href={{ pathname: getCardHref(task), query: { token } }}
-                                  />
-                                </Box>
-                              </DragDropHandler>
-                            </CustomLink>
-                          )
-                        })}
-                      </Stack>
-                    </CustomScrollbar>
-                  )}
+                              <Box key={task.id}>
+                                <TaskCard
+                                  task={task}
+                                  key={task.id}
+                                  href={{ pathname: getCardHref(task), query: { token } }}
+                                />
+                              </Box>
+                            </DragDropHandler>
+                          </CustomLink>
+                        )
+                      })}
+                    </Stack>
+                  </CustomScrollbar>
                 </TaskColumn>
               </DragDropHandler>
             ))}
