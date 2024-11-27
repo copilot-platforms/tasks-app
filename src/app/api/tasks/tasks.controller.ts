@@ -36,7 +36,16 @@ export const getTask = async (req: NextRequest, { params: { id } }: IdParams) =>
   const tasksService = new TasksService(user)
   const task = await tasksService.getOneTask(id)
   const assignee = await tasksService.getTaskAssignee(task)
-  return NextResponse.json({ task: { ...task, assignee } })
+  return NextResponse.json({
+    task: {
+      ...task,
+      createdAt:
+        (task.createdAt as unknown as string)[(task.createdAt as unknown as string).length - 1].toLowerCase() === 'z'
+          ? task.createdAt
+          : task.createdAt + 'Z',
+      assignee,
+    },
+  })
 }
 
 export const updateTask = async (req: NextRequest, { params: { id } }: IdParams) => {
