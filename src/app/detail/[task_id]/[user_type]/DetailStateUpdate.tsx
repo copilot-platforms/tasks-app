@@ -13,6 +13,7 @@ interface DetailStateUpdateProps {
 
 export const DetailStateUpdate = async ({ isRedirect, token, tokenPayload, task, children }: DetailStateUpdateProps) => {
   if (!isRedirect) {
+    console.log('aaatask', task)
     return (
       <ClientSideStateUpdate token={token} tokenPayload={tokenPayload} task={task}>
         {children}
