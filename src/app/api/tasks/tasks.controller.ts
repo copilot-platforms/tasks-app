@@ -39,10 +39,7 @@ export const getTask = async (req: NextRequest, { params: { id } }: IdParams) =>
   return NextResponse.json({
     task: {
       ...task,
-      createdAt:
-        (task.createdAt as unknown as string)[(task.createdAt as unknown as string).length - 1].toLowerCase() === 'z'
-          ? task.createdAt
-          : task.createdAt + 'Z',
+      createdAt: task.createdAt + 'Z',
       assignee,
     },
   })
