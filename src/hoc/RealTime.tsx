@@ -3,7 +3,7 @@
 import { UserRole } from '@/app/api/core/types/user'
 import { supabase } from '@/lib/supabase'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
-import { selectTaskBoard, setTasks } from '@/redux/features/taskBoardSlice'
+import { selectTaskBoard, setFilteredTasks, setTasks } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
 import { Token } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
@@ -62,7 +62,7 @@ export const RealTime = ({
       const updatedTask = payload.new
       const oldTask = tasks.find((task) => task.id == updatedTask.id)
       if ((updatedTask.isArchived && !showArchived) || (!updatedTask.isArchived && !showUnarchived)) {
-        store.dispatch(setTasks(tasks.filter((el) => el.id !== updatedTask.id)))
+        store.dispatch(setFilteredTasks(tasks.filter((el) => el.id !== updatedTask.id)))
         return
       }
       if (payload.new.workspaceId === tokenPayload?.workspaceId) {
