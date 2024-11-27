@@ -25,6 +25,7 @@ export const ArchiveWrapper = ({ taskId }: { taskId: string }) => {
       store.dispatch(setTask(currentTask))
     }
   }, [tasks, taskId])
+  console.log(tasks.filter((el) => el.id == task?.id))
 
   const handleToggleArchive = async () => {
     if (isArchived === undefined) return // Prevent toggling if state isn't initialized yet
@@ -47,6 +48,7 @@ export const ArchiveWrapper = ({ taskId }: { taskId: string }) => {
 
           // Re-fetch updated data
           const updatedTask = await fetcher(cacheKey)
+          console.log(updatedTask)
           store.dispatch(setTasks([...tasks.filter((t) => t.id !== updatedTask.id), ...updatedTask]))
           return updatedTask
         },
