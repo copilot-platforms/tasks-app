@@ -109,7 +109,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
         }}
       />
 
-      {isNoTasksWithFilter && <NoFilteredTasksState />}
+      {isNoTasksWithFilter && !isTasksLoading && <NoFilteredTasksState />}
 
       {!isNoTasksWithFilter && viewBoardSettings === View.BOARD_VIEW && (
         <Box sx={{ padding: '12px 12px' }}>
