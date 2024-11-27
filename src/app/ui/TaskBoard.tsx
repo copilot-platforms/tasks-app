@@ -154,11 +154,15 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
                               draggable // Make TaskCard draggable
                             >
                               <Box key={task.id}>
-                                <TaskCard
-                                  task={task}
-                                  key={task.id}
-                                  href={{ pathname: getCardHref(task), query: { token } }}
-                                />
+                                {isTasksLoading ? (
+                                  <p>loading</p>
+                                ) : (
+                                  <TaskCard
+                                    task={task}
+                                    key={task.id}
+                                    href={{ pathname: getCardHref(task), query: { token } }}
+                                  />
+                                )}
                               </Box>
                             </DragDropHandler>
                           </CustomLink>
