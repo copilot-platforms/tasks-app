@@ -79,6 +79,9 @@ export default async function TaskDetailPage({
   const copilotClient = new CopilotAPI(token)
 
   const [task, tokenPayload] = await Promise.all([getOneTask(token, task_id), copilotClient.getTokenPayload()])
+  //@ts-ignore
+  task.createdAt = task.createdAt.replaceAll('Z', '').replaceAll('z', '')
+  console.log('aaaaa', task.createdAt.toString().replaceAll('Z', '').replaceAll('z', ''))
 
   if (!tokenPayload) {
     throw new Error('Please provide a Valid Token')
