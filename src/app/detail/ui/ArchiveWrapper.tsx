@@ -1,17 +1,17 @@
 'use client'
 
 import { ArchiveBtn } from '@/components/buttons/ArchiveBtn'
-import { useEffect, useState } from 'react'
+import { cache, useEffect, useState } from 'react'
 import useSWR, { useSWRConfig } from 'swr'
 import { fetcher } from '@/utils/fetcher'
 import { useSelector } from 'react-redux'
-import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { selectTaskBoard, setTasks } from '@/redux/features/taskBoardSlice'
 import { Skeleton } from '@mui/material'
 import store from '@/redux/store'
 import { selectTaskDetails, setTask } from '@/redux/features/taskDetailsSlice'
 
 export const ArchiveWrapper = ({ taskId }: { taskId: string }) => {
-  const { token, globalTasksRepo } = useSelector(selectTaskBoard)
+  const { token, tasks } = useSelector(selectTaskBoard)
   const { task } = useSelector(selectTaskDetails)
   const { mutate } = useSWRConfig()
   const cacheKey = `/api/tasks/${taskId}?token=${token}`
@@ -19,12 +19,12 @@ export const ArchiveWrapper = ({ taskId }: { taskId: string }) => {
 
   // Set the initial state when `data` becomes available
   useEffect(() => {
-    const currentTask = globalTasksRepo.find((el) => el.id === taskId)
+    const currentTask = tasks.find((el) => el.id === taskId)
     if (currentTask) {
       setIsArchived(currentTask.isArchived)
       store.dispatch(setTask(currentTask))
     }
-  }, [globalTasksRepo, taskId])
+  }, [tasks, taskId])
 
   const handleToggleArchive = async () => {
     if (isArchived === undefined) return // Prevent toggling if state isn't initialized yet
@@ -46,7 +46,9 @@ export const ArchiveWrapper = ({ taskId }: { taskId: string }) => {
           })
 
           // Re-fetch updated data
-          return await fetcher(cacheKey)
+          const updatedTask = await fetcher(cacheKey)
+          store.dispatch(setTasks([...tasks.filter((t) => t.id !== updatedTask.id), ...updatedTask]))
+          return updatedTask
         },
         {
           optimisticData: { task: optimisticTask }, // Update UI immediately
