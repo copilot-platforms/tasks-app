@@ -88,7 +88,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
 
   const isNoTasksWithFilter = tasks && !userHasNoFilter && !filteredTasks.length
 
-  if (tasks && tasks.length === 0 && userHasNoFilter && !isTasksLoading) {
+  if (tasks && tasks.length === 0 && userHasNoFilter) {
     return (
       <>
         <TaskDataFetcher token={token ?? ''} />
