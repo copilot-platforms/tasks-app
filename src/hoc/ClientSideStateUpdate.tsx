@@ -64,6 +64,7 @@ export const ClientSideStateUpdate = ({
 
     if (tasks && tasksInStore.length === 0) {
       store.dispatch(setGlobalTasksRepo(tasks))
+      console.log('ClientSideStateUpdate 2')
       store.dispatch(setTasks(tasks))
     }
 

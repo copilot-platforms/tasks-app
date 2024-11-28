@@ -28,6 +28,7 @@ export const TaskDataFetcher = ({ token }: { token: string }) => {
     if (token) {
       try {
         store.dispatch(setIsTasksLoading(true))
+        console.log('TaskDataFetcher')
         await mutate().then((data) => store.dispatch(setTasks(data.tasks))) // preventing extra rerendering
         store.dispatch(setIsTasksLoading(false))
       } catch (error) {

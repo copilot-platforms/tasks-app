@@ -53,6 +53,7 @@ export const RealTime = ({
       }
       //check if the new task in this event belongs to the same workspaceId
       if (canUserAccessTask && showUnarchived) {
+        console.log('Realtime 4')
         store.dispatch(setTasks([...tasks, { ...payload.new, createdAt: new Date(payload.new.createdAt + 'Z') }]))
         store.dispatch(
           setGlobalTasksRepo([...globalTasksRepo, { ...payload.new, createdAt: new Date(payload.new.createdAt + 'Z') }]),
@@ -68,6 +69,7 @@ export const RealTime = ({
       if ((updatedTask.isArchived && !showArchived) || (!updatedTask.isArchived && !showUnarchived)) {
         const updatedGlobalTasksRepo = globalTasksRepo.map((task) => (task.id === updatedTask.id ? updatedTask : task))
         store.dispatch(setGlobalTasksRepo(updatedGlobalTasksRepo))
+        console.log('RealTime 3')
         store.dispatch(setTasks(tasks.filter((el) => el.id !== updatedTask.id)))
         return
       }
@@ -78,6 +80,7 @@ export const RealTime = ({
           const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
           const newGlobalTaskArr = globalTasksRepo.filter((el) => el.id !== updatedTask.id)
 
+          console.log('RealTime 2')
           store.dispatch(setTasks(newTaskArr))
           store.dispatch(setGlobalTasksRepo(newGlobalTaskArr))
           //if a user is in the details page when the task is deleted then we want the user to get redirected to '/' route
@@ -108,6 +111,7 @@ export const RealTime = ({
           }
           const newTaskArr = [...tasks.filter((task) => task.id !== updatedTask.id), updatedTask]
           const newGlobalTaskArr = [...globalTasksRepo.filter((task) => task.id !== updatedTask.id), updatedTask]
+          console.log('RealTime')
           store.dispatch(setTasks(newTaskArr))
           store.dispatch(setGlobalTasksRepo(newGlobalTaskArr))
         }
