@@ -64,6 +64,7 @@ export const RealTime = ({
       }
     }
     if (payload.eventType === 'UPDATE') {
+      console.log('payload', payload)
       const updatedTask = payload.new
       const oldTask = tasks.find((task) => task.id == updatedTask.id)
       if ((updatedTask.isArchived && !showArchived) || (!updatedTask.isArchived && !showUnarchived)) {
