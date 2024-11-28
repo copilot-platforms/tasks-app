@@ -5,14 +5,14 @@ import { cache, useEffect, useState } from 'react'
 import useSWR, { useSWRConfig } from 'swr'
 import { fetcher } from '@/utils/fetcher'
 import { useSelector } from 'react-redux'
-import { selectTaskBoard, setBackupTasks } from '@/redux/features/taskBoardSlice'
+import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { Skeleton } from '@mui/material'
 import store from '@/redux/store'
 import { selectTaskDetails, setTask } from '@/redux/features/taskDetailsSlice'
 import { UserType } from '@/types/interfaces'
 
 export const ArchiveWrapper = ({ taskId, userType }: { taskId: string; userType: UserType }) => {
-  const { token, backupTasks } = useSelector(selectTaskBoard)
+  const { token, activeTask } = useSelector(selectTaskBoard)
   const { task } = useSelector(selectTaskDetails)
   const { mutate } = useSWRConfig()
   const cacheKey = `/api/tasks/${taskId}?token=${token}`
@@ -20,12 +20,12 @@ export const ArchiveWrapper = ({ taskId, userType }: { taskId: string; userType:
 
   // Set the initial state when `data` becomes available
   useEffect(() => {
-    const currentTask = backupTasks.find((el) => el.id === taskId)
+    const currentTask = activeTask
     if (currentTask) {
       setIsArchived(currentTask.isArchived)
       store.dispatch(setTask(currentTask))
     }
-  }, [backupTasks, taskId])
+  }, [activeTask, taskId])
 
   const handleToggleArchive = async () => {
     if (isArchived === undefined) return // Prevent toggling if state isn't initialized yet

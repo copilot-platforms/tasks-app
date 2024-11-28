@@ -10,7 +10,6 @@ import { sortTaskByDescendingOrder } from '@/utils/sortTask'
 interface IInitialState {
   workflowStates: WorkflowStateResponse[]
   assignee: IAssigneeCombined[]
-  backupTasks: TaskResponse[]
   tasks: TaskResponse[]
   token: string | undefined
   view: ViewMode
@@ -21,11 +20,11 @@ interface IInitialState {
   showUnarchived: boolean | undefined
   viewSettingsTemp: CreateViewSettingsDTO | undefined
   isTasksLoading: boolean
+  activeTask: TaskResponse | undefined
 }
 
 const initialState: IInitialState = {
   workflowStates: [],
-  backupTasks: [], //state for tasks used as a dependency for details page to listen to real-time changes. This should be updated everytime tasks state is updated to keep up, except the one with archived-unarchived filter updates.
   tasks: [],
   token: undefined,
   assignee: [],
@@ -42,6 +41,7 @@ const initialState: IInitialState = {
   viewSettingsTemp: undefined,
   // Use this state as a global loading flag for tasks
   isTasksLoading: true,
+  activeTask: undefined,
 }
 
 const taskBoardSlice = createSlice({
@@ -51,8 +51,8 @@ const taskBoardSlice = createSlice({
     setWorkflowStates: (state, action: { payload: WorkflowStateResponse[] }) => {
       state.workflowStates = action.payload
     },
-    setBackupTasks: (state, action: { payload: TaskResponse[] }) => {
-      state.backupTasks = action.payload
+    setActiveTask: (state, action: { payload: TaskResponse }) => {
+      state.activeTask = action.payload
     },
     setTasks: (state, action: { payload: TaskResponse[] }) => {
       state.tasks = action.payload
@@ -133,7 +133,6 @@ export const selectTaskBoard = (state: RootState) => state.taskBoard
 
 export const {
   setWorkflowStates,
-  setBackupTasks,
   setTasks,
   appendTask,
   updateWorkflowStateIdByTaskId,
@@ -145,6 +144,7 @@ export const {
   setFilteredAssgineeList,
   setViewSettingsTemp,
   setIsTasksLoading,
+  setActiveTask,
 } = taskBoardSlice.actions
 
 export default taskBoardSlice.reducer
