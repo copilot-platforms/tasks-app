@@ -111,7 +111,7 @@ export const RealTime = ({
           }
           const newTaskArr = [...tasks.filter((task) => task.id !== updatedTask.id), updatedTask]
           const newGlobalTaskArr = [...globalTasksRepo.filter((task) => task.id !== updatedTask.id), updatedTask]
-          console.log('RealTime')
+          console.log('RealTime', updatedTask)
           store.dispatch(setTasks(newTaskArr))
           store.dispatch(setGlobalTasksRepo(newGlobalTaskArr))
         }
