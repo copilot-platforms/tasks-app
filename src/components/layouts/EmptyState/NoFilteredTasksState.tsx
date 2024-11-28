@@ -10,7 +10,7 @@ export const NoFilteredTasksState = () => {
         <Box
           sx={{
             display: 'flex',
-            height: '80vh',
+            height: 'calc(100vh - 160px)',
             ...SxCenter,
           }}
         >
