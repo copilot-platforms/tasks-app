@@ -64,7 +64,6 @@ export const ClientSideStateUpdate = ({
 
     if (tasks && tasksInStore.length === 0) {
       store.dispatch(setGlobalTasksRepo(tasks))
-      console.log('ClientSideStateUpdate 2')
       store.dispatch(setTasks(tasks))
     }
 
@@ -94,7 +93,6 @@ export const ClientSideStateUpdate = ({
     }
 
     if (task) {
-      console.log('ClientSideStateUpdate task', task)
       const updatedTasks = tasksInStore.map((t) => (t.id === task.id ? task : t))
       const updatedGlobalTasks = globalTasksInStore.map((t) => (t.id === task.id ? task : t))
       store.dispatch(setGlobalTasksRepo(updatedGlobalTasks))

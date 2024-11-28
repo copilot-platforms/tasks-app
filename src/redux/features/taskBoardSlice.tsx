@@ -54,7 +54,6 @@ const taskBoardSlice = createSlice({
       state.globalTasksRepo = action.payload
     },
     setTasks: (state, action: { payload: TaskResponse[] }) => {
-      console.log('taskBoardSlice tasks', action.payload)
       state.tasks = action.payload
     },
     appendTask: (state, action: { payload: TaskResponse }) => {
