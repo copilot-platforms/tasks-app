@@ -35,10 +35,11 @@ export const TaskDataFetcher = ({ token }: { token: string }) => {
     const currentQueryString = buildQueryString(token, currentArchivedOptions)
     if (token) {
       try {
-        store.dispatch(setIsTasksLoading(true))
         await mutate().then((data) => {
           if (currentQueryString === buildQueryString(token, latestArchivedOptions.current)) {
-            store.dispatch(setTasks(data.tasks))
+            if (data) {
+              store.dispatch(setTasks(data.tasks))
+            }
           }
         }) // preventing extra rerendering
       } catch (error) {

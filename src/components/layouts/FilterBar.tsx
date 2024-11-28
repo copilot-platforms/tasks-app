@@ -3,7 +3,7 @@
 import { Box, IconButton, Stack } from '@mui/material'
 import { useEffect, useState } from 'react'
 import store from '@/redux/store'
-import { setFilterOptions, setViewSettingsTemp, setViewSettings } from '@/redux/features/taskBoardSlice'
+import { setFilterOptions, setViewSettingsTemp, setViewSettings, setIsTasksLoading } from '@/redux/features/taskBoardSlice'
 import SearchBar from '@/components/searchBar'
 import Selector, { SelectorType } from '@/components/inputs/Selector'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
@@ -300,6 +300,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
               }}
               archivedOptions={{ showArchived: showArchived, showUnarchived: showUnarchived }}
               handleArchivedOptionsChange={(archivedOptions) => {
+                store.dispatch(setIsTasksLoading(true))
                 store.dispatch(
                   setViewSettings({
                     viewMode: viewMode,
@@ -451,6 +452,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
                 }}
                 archivedOptions={{ showArchived: showArchived, showUnarchived: showUnarchived }}
                 handleArchivedOptionsChange={(archivedOptions) => {
+                  store.dispatch(setIsTasksLoading(true))
                   store.dispatch(
                     setViewSettings({
                       viewMode: viewMode,
