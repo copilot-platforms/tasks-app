@@ -29,7 +29,7 @@ export const TaskDataFetcher = ({ token }: { token: string }) => {
       try {
         store.dispatch(setIsTasksLoading(true))
         await mutate().then((data) => store.dispatch(setTasks(data.tasks))) // preventing extra rerendering
-        store.dispatch(setIsTasksLoading(isLoading))
+        store.dispatch(setIsTasksLoading(false))
       } catch (error) {
         console.error('Error updating tasks:', error)
       }

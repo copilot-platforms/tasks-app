@@ -108,7 +108,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
         }}
       />
 
-      {isNoTasksWithFilter && <NoFilteredTasksState />}
+      {isNoTasksWithFilter && !isTasksLoading && <NoFilteredTasksState />}
 
       {!isNoTasksWithFilter && viewBoardSettings === View.BOARD_VIEW && (
         <Box sx={{ padding: '12px 12px' }}>
@@ -138,7 +138,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
                 >
                   <CustomScrollbar style={{ padding: '4px' }}>
                     <Stack direction="column" rowGap="6px" sx={{ overflowX: 'auto' }}>
-                      {sortTaskByDescendingOrder(filterTaskWithWorkflowStateId(list.id)).map((task, index) => {
+                      {sortTaskByDescendingOrder<TaskResponse>(filterTaskWithWorkflowStateId(list.id)).map((task, index) => {
                         return (
                           <CustomLink
                             key={task.id}
@@ -199,7 +199,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
                   taskCount={taskCountForWorkflowStateId(list.id)}
                   display={!!filterTaskWithWorkflowStateId(list.id).length}
                 >
-                  {sortTaskByDescendingOrder(filterTaskWithWorkflowStateId(list.id)).map((task, index) => {
+                  {sortTaskByDescendingOrder<TaskResponse>(filterTaskWithWorkflowStateId(list.id)).map((task, index) => {
                     return (
                       <CustomLink key={task.id} href={{ pathname: getCardHref(task), query: { token } }}>
                         <DragDropHandler
