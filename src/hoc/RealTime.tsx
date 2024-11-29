@@ -64,6 +64,13 @@ export const RealTime = ({
     }
     if (payload.eventType === 'UPDATE') {
       const updatedTask = payload.new
+      const isCreatedAtGMT = (updatedTask.createdAt as unknown as string).slice(-1).toLowerCase() === 'z'
+      if (!isCreatedAtGMT) {
+        // DB stores GMT timestamp without 'z', so need to append this manually
+        updatedTask.createdAt = ((updatedTask.createdAt as unknown as string) + 'Z') as unknown as Date
+        // This casting is safe
+      }
+
       const oldTask = tasks.find((task) => task.id == updatedTask.id)
       if ((updatedTask.isArchived && !showArchived) || (!updatedTask.isArchived && !showUnarchived)) {
         const updatedGlobalTasksRepo = globalTasksRepo.map((task) => (task.id === updatedTask.id ? updatedTask : task))

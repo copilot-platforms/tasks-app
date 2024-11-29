@@ -91,6 +91,7 @@ export const ClientSideStateUpdate = ({
     if (assigneeSuggestions) {
       store.dispatch(setAssigneeSuggestion(assigneeSuggestions))
     }
+
     if (task) {
       const updatedTasks = tasksInStore.map((t) => (t.id === task.id ? task : t))
       const updatedGlobalTasks = globalTasksInStore.map((t) => (t.id === task.id ? task : t))
