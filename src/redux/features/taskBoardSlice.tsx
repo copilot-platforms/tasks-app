@@ -9,7 +9,6 @@ import { CreateViewSettingsDTO, FilterOptionsType } from '@/types/dto/viewSettin
 interface IInitialState {
   workflowStates: WorkflowStateResponse[]
   assignee: IAssigneeCombined[]
-  globalTasksRepo: TaskResponse[]
   tasks: TaskResponse[]
   token: string | undefined
   view: ViewMode
@@ -20,12 +19,12 @@ interface IInitialState {
   showUnarchived: boolean | undefined
   viewSettingsTemp: CreateViewSettingsDTO | undefined
   isTasksLoading: boolean
+  activeTask: TaskResponse | undefined
 }
 
 const initialState: IInitialState = {
   workflowStates: [],
-  globalTasksRepo: [], //contains all tasks in the current workspace, is populated from page.tsx server component.
-  tasks: [], //contains tasks which are filtered(from api). is populated from client components using swr.
+  tasks: [],
   token: undefined,
   assignee: [],
   view: ViewMode.board,
@@ -41,6 +40,7 @@ const initialState: IInitialState = {
   viewSettingsTemp: undefined,
   // Use this state as a global loading flag for tasks
   isTasksLoading: true,
+  activeTask: undefined,
 }
 
 const taskBoardSlice = createSlice({
@@ -50,8 +50,8 @@ const taskBoardSlice = createSlice({
     setWorkflowStates: (state, action: { payload: WorkflowStateResponse[] }) => {
       state.workflowStates = action.payload
     },
-    setGlobalTasksRepo: (state, action: { payload: TaskResponse[] }) => {
-      state.globalTasksRepo = action.payload
+    setActiveTask: (state, action: { payload: TaskResponse }) => {
+      state.activeTask = action.payload
     },
     setTasks: (state, action: { payload: TaskResponse[] }) => {
       state.tasks = action.payload
@@ -132,7 +132,6 @@ export const selectTaskBoard = (state: RootState) => state.taskBoard
 
 export const {
   setWorkflowStates,
-  setGlobalTasksRepo,
   setTasks,
   appendTask,
   updateWorkflowStateIdByTaskId,
@@ -144,6 +143,7 @@ export const {
   setFilteredAssgineeList,
   setViewSettingsTemp,
   setIsTasksLoading,
+  setActiveTask,
 } = taskBoardSlice.actions
 
 export default taskBoardSlice.reducer

@@ -1,7 +1,7 @@
 'use client'
 
 import { ArchiveBtn } from '@/components/buttons/ArchiveBtn'
-import { useEffect, useState } from 'react'
+import { cache, useEffect, useState } from 'react'
 import useSWR, { useSWRConfig } from 'swr'
 import { fetcher } from '@/utils/fetcher'
 import { useSelector } from 'react-redux'
@@ -12,7 +12,7 @@ import { selectTaskDetails, setTask } from '@/redux/features/taskDetailsSlice'
 import { UserType } from '@/types/interfaces'
 
 export const ArchiveWrapper = ({ taskId, userType }: { taskId: string; userType: UserType }) => {
-  const { token, globalTasksRepo } = useSelector(selectTaskBoard)
+  const { token, activeTask } = useSelector(selectTaskBoard)
   const { task } = useSelector(selectTaskDetails)
   const { mutate } = useSWRConfig()
   const cacheKey = `/api/tasks/${taskId}?token=${token}`
@@ -20,12 +20,12 @@ export const ArchiveWrapper = ({ taskId, userType }: { taskId: string; userType:
 
   // Set the initial state when `data` becomes available
   useEffect(() => {
-    const currentTask = globalTasksRepo.find((el) => el.id === taskId)
+    const currentTask = activeTask
     if (currentTask) {
       setIsArchived(currentTask.isArchived)
       store.dispatch(setTask(currentTask))
     }
-  }, [globalTasksRepo, taskId])
+  }, [activeTask, taskId])
 
   const handleToggleArchive = async () => {
     if (isArchived === undefined) return // Prevent toggling if state isn't initialized yet
@@ -47,7 +47,9 @@ export const ArchiveWrapper = ({ taskId, userType }: { taskId: string; userType:
           })
 
           // Re-fetch updated data
-          return await fetcher(cacheKey)
+          const updatedTask = await fetcher(cacheKey)
+
+          return updatedTask
         },
         {
           optimisticData: { task: optimisticTask }, // Update UI immediately

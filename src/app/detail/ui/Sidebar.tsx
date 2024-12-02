@@ -49,7 +49,7 @@ export const Sidebar = ({
   disabled: boolean
   workflowDisabled?: false
 }) => {
-  const { globalTasksRepo, token, workflowStates, assignee } = useSelector(selectTaskBoard)
+  const { activeTask, token, workflowStates, assignee } = useSelector(selectTaskBoard)
   const { showSidebar } = useSelector(selectTaskDetails)
   const [filteredAssignees, setFilteredAssignees] = useState(assignee)
   const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
@@ -72,8 +72,8 @@ export const Sidebar = ({
   const assigneeValue = _assigneeValue as IAssigneeCombined //typecasting
 
   useEffect(() => {
-    if (globalTasksRepo && workflowStates) {
-      const currentTask = globalTasksRepo.find((el) => el.id === task_id)
+    if (activeTask && workflowStates) {
+      const currentTask = activeTask
 
       const currentWorkflowState = workflowStates.find((el) => el?.id === currentTask?.workflowStateId)
       const currentAssigneeId = currentTask?.assigneeId
@@ -81,7 +81,7 @@ export const Sidebar = ({
       updateAssigneeValue(currentAssigneeId ? assignee.find((el) => el.id === currentAssigneeId) : NoAssignee)
       setDueDate(currentTask?.dueDate)
     }
-  }, [globalTasksRepo, workflowStates])
+  }, [activeTask, workflowStates])
 
   const windowWidth = useWindowWidth()
   const isMobile = windowWidth < 600 && windowWidth !== 0
@@ -92,7 +92,7 @@ export const Sidebar = ({
     }
   }, [isMobile])
 
-  if (!globalTasksRepo) return null
+  if (!activeTask) return null
 
   return (
     <Box
