@@ -12,16 +12,9 @@ export class TemplatesService extends BaseService {
 
     let templates = await this.db.taskTemplate.findMany({
       where: { workspaceId: this.user.workspaceId },
-    })
-    return templates
-  }
-
-  async getTaskTemplate(id: string) {
-    const policyGate = new PoliciesService(this.user)
-    policyGate.authorize(UserAction.Read, Resource.TaskTemplates)
-
-    let templates = await this.db.taskTemplate.findFirstOrThrow({
-      where: { id, workspaceId: this.user.workspaceId },
+      relationLoadStrategy: 'join',
+      include: { workflowState: true },
+      orderBy: { updatedAt: 'desc' },
     })
     return templates
   }
