@@ -11,6 +11,7 @@ interface DisplaySelectorProps {
   selectedMode: ViewMode
   archivedOptions: ArchivedOptionsType
   handleArchivedOptionsChange: (archivedOptions: ArchivedOptionsType) => void
+  mobileView?: boolean
 }
 
 export const DisplaySelector = ({
@@ -18,6 +19,7 @@ export const DisplaySelector = ({
   selectedMode,
   archivedOptions,
   handleArchivedOptionsChange,
+  mobileView,
 }: DisplaySelectorProps) => {
   const [anchorEl, setAnchorEl] = useState<null | Element>(null)
   const open = Boolean(anchorEl)
@@ -33,14 +35,19 @@ export const DisplaySelector = ({
     <>
       <SecondaryBtn
         buttonContent={
-          <Typography variant="bodySm" sx={{ color: (theme) => theme.color.gray[600], fontSize: '12px' }}>
-            Display
-          </Typography>
+          !mobileView ? (
+            <Typography variant="bodySm" sx={{ color: (theme) => theme.color.gray[600], fontSize: '12px' }}>
+              Display
+            </Typography>
+          ) : (
+            <DisplayOptionsIcon />
+          )
         }
-        startIcon={<DisplayOptionsIcon />}
+        startIcon={!mobileView && <DisplayOptionsIcon />}
         height="31.25px"
         padding="4px 8px 4px 10px"
         handleClick={handleClick}
+        width={mobileView ? '32px' : 'auto'}
       />
       <Menu
         id="basic-menu"
