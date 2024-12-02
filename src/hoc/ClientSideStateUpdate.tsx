@@ -90,6 +90,7 @@ export const ClientSideStateUpdate = ({
     if (assigneeSuggestions) {
       store.dispatch(setAssigneeSuggestion(assigneeSuggestions))
     }
+
     if (task) {
       const updatedTasks = tasksInStore.map((t) => (t.id === task.id ? task : t))
       store.dispatch(setTasks(updatedTasks))

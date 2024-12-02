@@ -96,7 +96,14 @@ export class TasksService extends BaseService {
         ...filters.where,
         isArchived,
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: [
+        {
+          dueDate: { sort: 'asc', nulls: 'last' },
+        },
+        {
+          createdAt: 'desc',
+        },
+      ],
       // @ts-ignore TS support for this param is still shakey
       relationLoadStrategy: 'join',
       include: {
