@@ -81,7 +81,6 @@ export default function Selector({
     }
     onClick?.()
   }
-
   const open = Boolean(anchorEl)
   const id = open ? 'autocomplete-popper' : ''
 
@@ -192,7 +191,7 @@ export default function Selector({
           }}
           openOnFocus
           onKeyDown={handleKeyDown}
-          ListboxProps={{ sx: { maxHeight: { xs: '175px', sm: '291px' } } }}
+          ListboxProps={{ sx: { maxHeight: { xs: '175px', sm: '291px' }, padding: '0px 0px 12px 0px' } }}
           options={extraOption ? [extraOption, ...options] : options}
           value={value}
           onChange={(_, newValue: unknown) => {
@@ -259,8 +258,29 @@ export default function Selector({
               />
             )
           }}
-          renderOption={(props, option: unknown) =>
-            extraOption && extraOptionRenderer && (option as IExtraOption)?.extraOptionFlag ? (
+          renderOption={(props, option: unknown) => {
+            if ((option as IExtraOption).id === 'not_found') {
+              return (
+                <Box
+                  sx={{
+                    color: 'gray',
+                    textAlign: 'left',
+                    padding: '2px 14px',
+
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    maxWidth: '205px',
+                  }}
+                >
+                  <Typography variant="sm" sx={{ color: (theme) => theme.color.text.textDisabled }}>
+                    {`No matches found for "${inputStatusValue}"`}
+                  </Typography>
+                </Box>
+              )
+            }
+
+            return extraOption && extraOptionRenderer && (option as IExtraOption)?.extraOptionFlag ? (
               extraOptionRenderer(setAnchorEl, anchorEl, props)
             ) : selectorType === SelectorType.ASSIGNEE_SELECTOR ? (
               <AssigneeSelectorRenderer props={props} option={option} />
@@ -271,7 +291,7 @@ export default function Selector({
             ) : (
               <></>
             )
-          }
+          }}
         />
       </Popper>
     </Stack>
