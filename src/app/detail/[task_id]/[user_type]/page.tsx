@@ -123,9 +123,11 @@ export default async function TaskDetailPage({
                     </Typography>
                   </Stack>
                   <Stack direction="row" alignItems="center" columnGap="8px">
-                    <ArchiveWrapper taskId={task_id} userType={user_type} />
+                    {params.user_type === UserType.INTERNAL_USER && <MenuBoxContainer />}
+
                     <Stack direction="row" alignItems="center" columnGap="8px">
-                      {params.user_type === UserType.INTERNAL_USER && <MenuBoxContainer />}
+                      <ArchiveWrapper taskId={task_id} userType={user_type} />
+
                       <ToggleButtonContainer />
                     </Stack>
                   </Stack>
