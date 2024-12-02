@@ -22,7 +22,7 @@ import FilterButtonGroup from '@/components/buttonsGroup/FilterButtonsGroup'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { useFilter } from '@/hooks/useFilter'
 import { IUTokenSchema } from '@/types/common'
-import { NoAssigneeExtraOptions } from '@/utils/noAssignee'
+import { NoAssigneeExtraOptions, NoDataFoundOption } from '@/utils/noAssignee'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { z } from 'zod'
 import { setDebouncedFilteredAssignees } from '@/utils/users'
@@ -214,7 +214,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
                           </IconButton>
                         )
                       }
-                      options={loading ? [] : filteredAssignee}
+                      options={loading ? [] : filteredAssignee.length ? filteredAssignee : [NoDataFoundOption]}
                       placeholder="Assignee"
                       value={assigneeValue}
                       selectorType={SelectorType.ASSIGNEE_SELECTOR}
@@ -381,7 +381,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
                       </IconButton>
                     )
                   }
-                  options={loading ? [] : filteredAssignee}
+                  options={loading ? [] : filteredAssignee.length ? filteredAssignee : [NoDataFoundOption]}
                   placeholder="Assignee"
                   value={assigneeValue}
                   selectorType={SelectorType.ASSIGNEE_SELECTOR}
