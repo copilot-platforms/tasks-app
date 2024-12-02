@@ -81,6 +81,8 @@ export const TemplateBoard = ({
             store.dispatch(clearTemplateFields())
             const temp = {
               templateName,
+              // WARNING: @arpandhakal remove this while doing frontend integration with new selector data
+              workflowStateId: 'remove-this',
               title: taskName,
               body: description,
             }
