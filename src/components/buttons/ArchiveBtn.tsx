@@ -1,10 +1,11 @@
 'use client'
 
 import { DustbinIcon } from '@/icons'
-import { Stack, Typography } from '@mui/material'
+import { Stack, Theme, Typography, useMediaQuery } from '@mui/material'
 import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
 
 export const ArchiveBtn = ({ isArchived, handleClick }: { isArchived: boolean; handleClick: () => void }) => {
+  const isXsScreen = useMediaQuery((theme: Theme) => `(max-width:${theme.breakpoints.values.sm}px)`)
   return (
     <Stack
       direction="row"
@@ -20,14 +21,22 @@ export const ArchiveBtn = ({ isArchived, handleClick }: { isArchived: boolean; h
       }}
       onClick={handleClick}
     >
-      <SecondaryBtn
-        startIcon={<DustbinIcon />}
-        buttonContent={
-          <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[600] }}>
-            {!isArchived ? 'Archive' : 'Unarchive'}
-          </Typography>
-        }
-      />
+      {isXsScreen ? (
+        <DustbinIcon />
+      ) : (
+        <SecondaryBtn
+          startIcon={<DustbinIcon />}
+          buttonContent={
+            isXsScreen ? (
+              <DustbinIcon />
+            ) : (
+              <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[600] }}>
+                {!isArchived ? 'Archive' : 'Unarchive'}
+              </Typography>
+            )
+          }
+        />
+      )}
     </Stack>
   )
 }

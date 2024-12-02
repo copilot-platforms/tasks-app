@@ -332,7 +332,19 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
         <Stack direction="column" rowGap={'8px'}>
           {mode === UserRole.IU && <FilterButtonGroup filterButtons={filterButtons} activeButtonIndex={ButtonIndex} />}
 
-          <Stack direction="row" justifyContent="space-between" alignItems="center">
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+            sx={{
+              '@media (max-width: 368px)': {
+                flexWrap: 'wrap',
+                height: 'auto',
+              },
+              rowGap: '8px',
+              columnGap: '8px',
+            }}
+          >
             <Box>
               {filterOptions[FilterOptions.TYPE] !== tokenPayload?.internalUserId && mode === UserRole.IU && (
                 <Selector
@@ -425,6 +437,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
                 }}
               />
               <DisplaySelector
+                mobileView
                 selectedMode={viewMode}
                 handleModeChange={(mode) => {
                   store.dispatch(
