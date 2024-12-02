@@ -103,23 +103,28 @@ export const Sidebar = ({
         width: isMobile && showSidebar ? '100vw' : '25vw',
       }}
     >
-      <Stack direction="row" justifyContent="space-between" alignItems="center">
-        <StyledBox
-          display="flex"
-          justifyContent="space-between"
-          alignItems="center"
-          sx={{ padding: { xs: '16px 20px', sm: '20px 20px' } }}
-        >
-          <Typography variant="sm">Properties</Typography>
-          <Box
-            sx={{
-              display: isMobile ? 'block' : 'none',
-            }}
+      <StyledBox>
+        <AppMargin size={SizeofAppMargin.LARGE} py="16px">
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+            sx={{ height: { sm: '32px', md: '36px' } }}
           >
-            <ToggleButtonContainer />
-          </Box>
-        </StyledBox>
-      </Stack>
+            <Typography variant="sm" lineHeight={'21px'} fontSize={'13px'}>
+              Properties
+            </Typography>
+            <Box
+              sx={{
+                display: isMobile ? 'block' : 'none',
+              }}
+            >
+              <ToggleButtonContainer />
+            </Box>
+          </Stack>
+        </AppMargin>
+      </StyledBox>
+
       <AppMargin size={SizeofAppMargin.SMALL}>
         <Stack direction="row" alignItems="center" m="16px 0px" columnGap="10px">
           <StyledText variant="md" minWidth="80px">
