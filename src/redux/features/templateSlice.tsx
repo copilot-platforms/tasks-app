@@ -1,26 +1,36 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { RootState } from '../store'
 import { AssigneeType } from '@/types/dto/tasks.dto'
-import { ITemplate, TargetMethod } from '@/types/interfaces'
+import { createTemplateErrors, ITemplate, TargetMethod } from '@/types/interfaces'
+
+interface IErrors {
+  [createTemplateErrors.TITLE]: boolean
+}
 
 interface IInitialState {
   showTemplateModal: boolean
   taskName: string
   description: string
-  templateName: string
+  workflowStateId: string
   templates: ITemplate[]
   targetMethod: TargetMethod.EDIT | TargetMethod.POST //the target method for which modal is evoked
   targetTemplateId: string
+  errors: IErrors
+  activeWorkflowStateId: string | null
 }
 
 const initialState: IInitialState = {
   showTemplateModal: false,
   taskName: '',
   description: '',
-  templateName: '',
+  workflowStateId: '',
   templates: [],
   targetMethod: TargetMethod.POST,
   targetTemplateId: '',
+  errors: {
+    [createTemplateErrors.TITLE]: false,
+  },
+  activeWorkflowStateId: null,
 }
 
 const createTemplateSlice = createSlice({
@@ -41,24 +51,44 @@ const createTemplateSlice = createSlice({
       //@ts-ignore
       state[targetField] = value
     },
+
+    // Sets the default workflowStateId to be selected when opening template create modal
+    setActiveWorkflowStateId: (state, action: { payload: string | null }) => {
+      state.activeWorkflowStateId = action.payload
+    },
+
     setTemplates: (state, action: { payload: ITemplate[] }) => {
       state.templates = action.payload
     },
     clearTemplateFields: (state) => {
-      state.templateName = ''
+      state.workflowStateId = ''
       state.description = ''
       state.taskName = ''
       state.targetTemplateId = ''
+      state.errors = {
+        [createTemplateErrors.TITLE]: false,
+      }
     },
     setTargetTemplateId: (state, action: { payload: string }) => {
       state.targetTemplateId = action.payload
+    },
+    setErrors: (state, action: { payload: { key: createTemplateErrors; value: boolean } }) => {
+      const { key, value } = action.payload
+      state.errors[key] = value
     },
   },
 })
 
 export const selectCreateTemplate = (state: RootState) => state.createTemplate
 
-export const { setShowTemplateModal, setCreateTemplateFields, setTemplates, clearTemplateFields, setTargetTemplateId } =
-  createTemplateSlice.actions
+export const {
+  setShowTemplateModal,
+  setCreateTemplateFields,
+  setTemplates,
+  clearTemplateFields,
+  setTargetTemplateId,
+  setErrors,
+  setActiveWorkflowStateId,
+} = createTemplateSlice.actions
 
 export default createTemplateSlice.reducer
