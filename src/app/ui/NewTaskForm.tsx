@@ -122,7 +122,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
                     updateStatusValue(todoWorkflowState)
                   }}
                   startIcon={<TemplateIconSm />}
-                  options={templates}
+                  options={templates || []}
                   placeholder="Apply template..."
                   value={templateValue}
                   selectorType={SelectorType.TEMPLATE_SELECTOR}
@@ -159,7 +159,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
                   }}
                   buttonContent={
                     <Typography variant="bodySm" sx={{ color: (theme) => theme.color.gray[600] }}>
-                      {templateValue ? templateValue.templateName : 'Select template'}
+                      {templateValue ? templateValue.title : 'Select template'}
                     </Typography>
                   }
                 />

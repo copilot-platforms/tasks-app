@@ -131,7 +131,6 @@ export interface IAssigneeSuggestions {
 export interface ITemplate {
   id: string
   workspaceId: string
-  templateName: string
   title: string
   body: string
   assigneeId: string
