@@ -24,6 +24,9 @@ import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowStat
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { SelectorType } from '@/components/inputs/Selector'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
+import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
+import { uploadImageHandler } from '@/utils/inlineImage'
+import AttachmentLayout from '@/components/AttachmentLayout'
 
 export const TemplateForm = ({ handleCreate }: { handleCreate: () => void }) => {
   const { workflowStates, assignee } = useSelector(selectTaskBoard)
@@ -46,7 +49,7 @@ export const TemplateForm = ({ handleCreate }: { handleCreate: () => void }) => 
           justifyContent="space-between"
           sx={{
             border: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
-            padding: '16px 28px',
+            padding: '14px 28px',
           }}
         >
           {targetMethod === TargetMethod.POST ? (
@@ -58,6 +61,13 @@ export const TemplateForm = ({ handleCreate }: { handleCreate: () => void }) => 
               Edit Template
             </Typography>
           )}
+          <Close
+            sx={{ color: (theme) => theme.color.gray[500], cursor: 'pointer', width: 20, height: 20 }}
+            onClick={() => {
+              store.dispatch(setShowTemplateModal({}))
+              store.dispatch(clearTemplateFields())
+            }}
+          />
         </Stack>
 
         <AppMargin size={SizeofAppMargin.MEDIUM} py="16px">
@@ -70,8 +80,14 @@ export const TemplateForm = ({ handleCreate }: { handleCreate: () => void }) => 
 }
 
 const NewTaskFormInputs = () => {
-  const { workflowStateId, taskName, description, errors, activeWorkflowStateId } = useSelector(selectCreateTemplate)
-  const { workflowStates } = useSelector(selectTaskBoard)
+  const { taskName, description, errors, activeWorkflowStateId } = useSelector(selectCreateTemplate)
+  const { workflowStates, token } = useSelector(selectTaskBoard)
+  const { tokenPayload } = useSelector(selectAuthDetails)
+
+  const uploadFn =
+    token && tokenPayload?.workspaceId
+      ? async (file: File) => uploadImageHandler(file, token, tokenPayload.workspaceId, null, 'templates')
+      : undefined
 
   const todoWorkflowState = workflowStates.find((el) => el.key === 'todo') || workflowStates[0]
 
@@ -120,9 +136,9 @@ const NewTaskFormInputs = () => {
           getContent={handleDescriptionChange}
           placeholder="Add description..."
           editorClass="tapwrite-task-description"
-          // uploadFn={uploadFn}
+          uploadFn={uploadFn}
           // deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', null)}
-          // attachmentLayout={AttachmentLayout}
+          attachmentLayout={AttachmentLayout}
           maxUploadLimit={MAX_UPLOAD_LIMIT}
           parentContainerStyle={{ gap: '0px' }}
         />
