@@ -26,7 +26,7 @@ export const TemplateBoard = ({
   handleDeleteTemplate: (templateId: string) => void
   handleEditTemplate: (payload: CreateTemplateRequest, templateId: string) => void
 }) => {
-  const { targetTemplateId, targetMethod, templates, showTemplateModal, templateName, taskName, description } =
+  const { targetTemplateId, targetMethod, templates, showTemplateModal, workflowStateId, taskName, description } =
     useSelector(selectCreateTemplate)
 
   const { showConfirmDeleteModal } = useSelector(selectTaskDetails)
@@ -80,10 +80,8 @@ export const TemplateBoard = ({
             store.dispatch(setShowTemplateModal({}))
             store.dispatch(clearTemplateFields())
             const temp = {
-              templateName,
-              // WARNING: @arpandhakal remove this while doing frontend integration with new selector data
-              workflowStateId: 'remove-this',
               title: taskName,
+              workflowStateId: workflowStateId,
               body: description,
             }
             if (targetMethod === TargetMethod.POST) {
