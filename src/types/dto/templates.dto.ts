@@ -9,8 +9,8 @@ export const CreateTemplateRequestSchema = z.object({
 export type CreateTemplateRequest = z.infer<typeof CreateTemplateRequestSchema>
 
 export const UpdateTemplateRequestSchema = z.object({
-  workflowStateId: z.string().uuid().optional(),
   title: z.string().optional(),
+  workflowStateId: z.string().uuid().optional(),
   body: z.string().nullish(),
 })
 export type UpdateTemplateRequest = z.infer<typeof UpdateTemplateRequestSchema>
