@@ -10,6 +10,7 @@ import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import { createNewTemplate, deleteTemplate, editTemplate } from './actions'
 import { ManageTemplateHeader } from './ui/Header'
 import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
+import { CopilotAPI } from '@/utils/CopilotAPI'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -44,14 +45,23 @@ async function getAllTemplates(token: string): Promise<ITemplate[]> {
 export default async function ManageTemplatesPage({ searchParams }: { searchParams: { token: string } }) {
   const { token } = searchParams
 
-  const [workflowStates, assignee, templates] = await Promise.all([
+  const copilotClient = new CopilotAPI(token)
+
+  const [workflowStates, assignee, templates, tokenPayload] = await Promise.all([
     await getAllWorkflowStates(token),
     addTypeToAssignee(await getAssigneeList(token)),
     await getAllTemplates(token),
+    copilotClient.getTokenPayload(),
   ])
 
   return (
-    <ClientSideStateUpdate workflowStates={workflowStates} token={token} assignee={assignee} templates={templates}>
+    <ClientSideStateUpdate
+      workflowStates={workflowStates}
+      token={token}
+      assignee={assignee}
+      templates={templates}
+      tokenPayload={tokenPayload}
+    >
       <AppMargin size={SizeofAppMargin.LARGE}>
         <ManageTemplateHeader showNewTemplateButton={templates?.length > 0} />
         <TemplateBoard
