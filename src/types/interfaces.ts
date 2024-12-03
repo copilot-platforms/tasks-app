@@ -22,6 +22,10 @@ export enum CreateTaskErrors {
   ASSIGNEE = 'assignee',
 }
 
+export enum createTemplateErrors {
+  TITLE = 'title',
+}
+
 export enum FileTypes {
   PNG = 'image/png',
   PDF = 'application/pdf',
