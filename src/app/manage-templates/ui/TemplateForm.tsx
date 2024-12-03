@@ -143,7 +143,7 @@ const NewTaskFormInputs = () => {
           parentContainerStyle={{ gap: '0px' }}
         />
       </Stack>
-      <Stack direction="column" rowGap={1} m="16px 0px">
+      <Stack direction="column" rowGap={1} m="0px 0px">
         <Box sx={{ padding: 0.1 }}>
           <WorkflowStateSelector
             option={workflowStates}
@@ -162,7 +162,7 @@ const NewTaskFormInputs = () => {
 const NewTaskFooter = ({ handleCreate, targetMethod }: { handleCreate: () => void; targetMethod: TargetMethod }) => {
   return (
     <Box sx={{ borderTop: (theme) => `1px solid ${theme.color.borders.border2}` }}>
-      <AppMargin size={SizeofAppMargin.MEDIUM} py="21px">
+      <AppMargin size={SizeofAppMargin.MEDIUM} py="16px">
         <Stack direction="row" justifyContent="right" alignItems="center">
           <Stack direction="row" columnGap={4}>
             <SecondaryBtn
