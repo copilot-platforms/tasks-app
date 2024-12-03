@@ -1,6 +1,8 @@
 'use client'
 
-import { EmojiIcon, ReplyIcon } from '@/icons'
+import { ListBtn } from '@/components/buttons/ListBtn'
+import { MenuBox } from '@/components/inputs/MenuBox'
+import { EmojiIcon, ReplyIcon, TemplateIcon } from '@/icons'
 import { KeyboardArrowRight } from '@mui/icons-material'
 import { Box, Stack, Typography, styled } from '@mui/material'
 import Link from 'next/link'
@@ -98,4 +100,16 @@ export const TaskDetailsContainer = styled(Box)(({ theme }) => ({
 
   display: 'flex',
   flexDirection: 'column',
+}))
+
+export const StyledMenuBox = styled(MenuBox)(({ theme }) => ({
+  div: {
+    height: '20px !important',
+    width: '20px !important',
+    background: theme.color.gray[150],
+  },
+  svg: {
+    height: '13px',
+    width: '13px',
+  },
 }))
