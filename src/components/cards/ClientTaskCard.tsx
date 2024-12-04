@@ -16,6 +16,7 @@ import { CustomLink } from '@/hoc/CustomLink'
 import { getAssigneeName } from '@/utils/assignee'
 import { GetMaxAssigneeNameWidth } from '@/utils/getMaxAssigneeNameWidth'
 import { useEffect, useState } from 'react'
+import { StateType } from '@prisma/client'
 
 export const ClientTaskCard = ({
   task,
@@ -132,7 +133,10 @@ export const ClientTaskCard = ({
                     }}
                   >
                     <Typography variant="bodySm" sx={{ fontSize: '12px', color: (theme) => theme.color.gray[500] }}>
-                      <DueDateLayout dateString={task.dueDate} />
+                      <DueDateLayout
+                        dateString={task.dueDate}
+                        isCompleted={task.workflowState.type === StateType.completed}
+                      />
                     </Typography>
                   </Box>
                 )}
@@ -149,7 +153,10 @@ export const ClientTaskCard = ({
                   >
                     {task.dueDate && (
                       <Typography variant="bodySm" sx={{ fontSize: '12px', color: (theme) => theme.color.gray[500] }}>
-                        <DueDateLayout dateString={task.dueDate} />
+                        <DueDateLayout
+                          dateString={task.dueDate}
+                          isCompleted={task.workflowState.type === StateType.completed}
+                        />
                       </Typography>
                     )}
                   </Box>

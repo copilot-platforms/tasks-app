@@ -16,7 +16,7 @@ import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { UrlObject } from 'url'
 import { CustomLink } from '@/hoc/CustomLink'
 import { getAssigneeName } from '@/utils/assignee'
-import { AssigneeType } from '@prisma/client'
+import { AssigneeType, StateType } from '@prisma/client'
 import { useEffect, useState } from 'react'
 import { ArchiveBoxIcon } from '@/icons'
 
@@ -109,7 +109,9 @@ export const ListViewTaskCard = ({
                 whiteSpace: 'nowrap',
               }}
             >
-              {task.dueDate && <DueDateLayout dateString={task.dueDate} />}
+              {task.dueDate && (
+                <DueDateLayout dateString={task.dueDate} isCompleted={task.workflowState.type === StateType.completed} />
+              )}
             </Box>
 
             {currentAssignee ? (

@@ -11,9 +11,11 @@ dayjs.extend(isTomorrow)
 
 interface DueDateLayoutProp {
   dateString: DateString
+  isCompleted: Boolean
 }
 
-export const DueDateLayout = ({ dateString }: DueDateLayoutProp) => {
+export const DueDateLayout = ({ dateString, isCompleted }: DueDateLayoutProp) => {
+  console.log('isCompleted', isCompleted)
   const date = createDateFromFormattedDateString(dateString)
   const now = dayjs()
   const calculateFormattedDueDate = useCallback(() => {
@@ -53,7 +55,10 @@ export const DueDateLayout = ({ dateString }: DueDateLayoutProp) => {
   const isPast = now.isAfter(formattedDueDate)
 
   return (
-    <Typography variant="bodySm" sx={{ color: (theme) => (isPast ? theme.color.error : theme.color.gray[500]) }}>
+    <Typography
+      variant="bodySm"
+      sx={{ color: (theme) => (isPast && !isCompleted ? theme.color.error : theme.color.gray[500]) }}
+    >
       {formattedDueDate}
     </Typography>
   )

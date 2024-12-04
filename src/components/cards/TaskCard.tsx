@@ -12,6 +12,7 @@ import { UrlObject } from 'url'
 import { useEffect, useState } from 'react'
 import { ArchiveBoxIcon } from '@/icons'
 import { getAssigneeName } from '@/utils/assignee'
+import { StateType } from '@prisma/client'
 
 const TaskCardContainer = styled(Stack)(({ theme }) => ({
   border: `1px solid ${theme.color.borders.border}`,
@@ -33,6 +34,7 @@ interface TaskCardProps {
 }
 
 export const TaskCard = ({ task, href }: TaskCardProps) => {
+  console.log('tt', task)
   const { assignee } = useSelector(selectTaskBoard)
 
   const [currentAssignee, setCurrentAssignee] = useState<IAssigneeCombined | undefined>(undefined)
@@ -92,7 +94,9 @@ export const TaskCard = ({ task, href }: TaskCardProps) => {
         <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[600] }}>
           {task.title}
         </Typography>
-        {task.dueDate && <DueDateLayout dateString={task.dueDate} />}
+        {task.dueDate && (
+          <DueDateLayout dateString={task.dueDate} isCompleted={task.workflowState.type === StateType.completed} />
+        )}
       </Stack>
     </TaskCardContainer>
   )
