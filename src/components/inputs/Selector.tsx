@@ -98,7 +98,7 @@ export default function Selector({
       return (option as WorkflowStateResponse).name as string
     }
     if (selectorType === SelectorType.TEMPLATE_SELECTOR) {
-      return (option as ITemplate).templateName as string
+      return (option as ITemplate).title as string
     } else {
       return ''
     }
@@ -315,7 +315,7 @@ const TemplateSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTM
     >
       <Stack direction="row" alignItems="center" columnGap={3}>
         <Typography variant="sm" fontWeight={400}>
-          {(option as ITemplate).templateName as string}
+          {(option as ITemplate).title as string}
         </Typography>
       </Stack>
     </Box>
