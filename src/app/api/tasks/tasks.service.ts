@@ -107,7 +107,7 @@ export class TasksService extends BaseService {
       // @ts-ignore TS support for this param is still shakey
       relationLoadStrategy: 'join',
       include: {
-        workflowState: { select: { name: true } },
+        workflowState: { select: { name: true, type: true } },
       },
     })
 
