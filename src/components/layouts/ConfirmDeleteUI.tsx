@@ -9,7 +9,7 @@ import { PrimaryBtn } from '../buttons/PrimaryBtn'
 interface Prop {
   handleCancel: () => void
   handleDelete: () => void
-  body?: 'task' | 'comment'
+  body?: 'task' | 'comment' | 'template'
 }
 
 export const ConfirmDeleteUI = ({ handleCancel, handleDelete, body = 'task' }: Prop) => {
