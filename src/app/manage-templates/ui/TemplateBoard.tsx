@@ -66,6 +66,9 @@ export const TemplateBoard = ({
                     store.dispatch(setShowTemplateModal({ targetMethod: TargetMethod.EDIT, targetTemplateId: template.id }))
                     store.dispatch(setCreateTemplateFields({ targetField: 'taskName', value: template.title }))
                     store.dispatch(setCreateTemplateFields({ targetField: 'description', value: template.body }))
+                    store.dispatch(
+                      setCreateTemplateFields({ targetField: 'activeWorkflowStateId', value: template.workflowStateId }),
+                    )
                   }}
                 />
               )
