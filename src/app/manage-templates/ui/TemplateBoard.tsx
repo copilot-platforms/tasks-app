@@ -119,6 +119,7 @@ export const TemplateBoard = ({
             store.dispatch(setShowConfirmDeleteModal())
             handleDeleteTemplate(targetTemplateId)
           }}
+          body="template"
         />
       </Modal>
     </>
