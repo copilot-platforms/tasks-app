@@ -8,23 +8,32 @@ export const MoreBtn = ({
   isSecondary,
   displayButtonBackground = true,
   displayBorder = true,
+  noHover = false,
+  height,
+  width,
 }: {
   handleClick: (e: React.MouseEvent<HTMLElement>) => void
   isSecondary: Boolean
   displayButtonBackground?: Boolean
   displayBorder?: Boolean
+  noHover?: Boolean
+  height?: string
+  width?: string
 }) => {
   return (
     <Stack
       direction="column"
       justifyContent="center"
       alignItems="center"
-      width="25px"
-      height="25px"
+      width={width ? width : '25px'}
+      height={height ? height : '25px'}
       sx={(theme) =>
         displayButtonBackground
           ? {
-              padding: 0,
+              padding: noHover && isSecondary ? '5px' : null,
+              background: noHover && isSecondary ? theme.color.gray[200] : theme.color.gray[100],
+              border: noHover ? `1px solid ${theme.color.borders.border3}` : 'none',
+              borderRadius: noHover && isSecondary ? '5px' : 1,
               ':hover': {
                 background: isSecondary ? theme.color.gray[200] : theme.color.gray[100],
                 border: displayBorder ? `1px solid ${theme.color.borders.border3}` : 'none',
@@ -35,6 +44,9 @@ export const MoreBtn = ({
             }
           : {
               background: 'none !important',
+              padding: noHover && isSecondary ? '5px' : null,
+              border: noHover ? `1px solid ${theme.color.borders.border3}` : 'none',
+              borderRadius: noHover && isSecondary ? '5px' : 1,
               ':hover': {
                 background: theme.color.gray[150] + ' !important',
                 cursor: 'pointer',

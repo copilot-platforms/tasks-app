@@ -10,14 +10,20 @@ export const MenuBox = ({
   isSecondary = false,
   displayButtonBackground,
   displayBorder,
+  noHover,
   setIsMenuOpen,
+  height,
+  width,
 }: {
   menuContent: ReactNode
   className?: string
   isSecondary?: boolean
   displayButtonBackground?: boolean
   displayBorder?: boolean
+  noHover?: boolean
   setIsMenuOpen?: any
+  height?: string
+  width?: string
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
@@ -44,6 +50,9 @@ export const MenuBox = ({
             isSecondary={isSecondary}
             displayButtonBackground={displayButtonBackground}
             displayBorder={displayBorder}
+            noHover={noHover}
+            height={height}
+            width={width}
           />
         </Box>
         <Popper
