@@ -120,7 +120,7 @@ export const TemplateBoard = ({
             store.dispatch(setShowConfirmDeleteModal())
             handleDeleteTemplate(targetTemplateId)
           }}
-          description={`"${taskName}" will be permanently deleted.`}
+          description={`${taskName} will be permanently deleted.`}
           customBody={'Delete template?'}
         />
       </Modal>
