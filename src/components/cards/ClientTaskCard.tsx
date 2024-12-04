@@ -135,7 +135,7 @@ export const ClientTaskCard = ({
                     <Typography variant="bodySm" sx={{ fontSize: '12px', color: (theme) => theme.color.gray[500] }}>
                       <DueDateLayout
                         dateString={task.dueDate}
-                        isCompleted={task.workflowState.type === StateType.completed}
+                        isCompleted={task.workflowState?.type === StateType.completed}
                       />
                     </Typography>
                   </Box>
@@ -155,7 +155,7 @@ export const ClientTaskCard = ({
                       <Typography variant="bodySm" sx={{ fontSize: '12px', color: (theme) => theme.color.gray[500] }}>
                         <DueDateLayout
                           dateString={task.dueDate}
-                          isCompleted={task.workflowState.type === StateType.completed}
+                          isCompleted={task.workflowState?.type === StateType.completed}
                         />
                       </Typography>
                     )}

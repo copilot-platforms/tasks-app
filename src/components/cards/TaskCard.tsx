@@ -34,7 +34,6 @@ interface TaskCardProps {
 }
 
 export const TaskCard = ({ task, href }: TaskCardProps) => {
-  console.log('tt', task)
   const { assignee } = useSelector(selectTaskBoard)
 
   const [currentAssignee, setCurrentAssignee] = useState<IAssigneeCombined | undefined>(undefined)
@@ -95,7 +94,7 @@ export const TaskCard = ({ task, href }: TaskCardProps) => {
           {task.title}
         </Typography>
         {task.dueDate && (
-          <DueDateLayout dateString={task.dueDate} isCompleted={task.workflowState.type === StateType.completed} />
+          <DueDateLayout dateString={task.dueDate} isCompleted={task.workflowState?.type === StateType.completed} />
         )}
       </Stack>
     </TaskCardContainer>

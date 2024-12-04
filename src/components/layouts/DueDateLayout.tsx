@@ -15,7 +15,6 @@ interface DueDateLayoutProp {
 }
 
 export const DueDateLayout = ({ dateString, isCompleted }: DueDateLayoutProp) => {
-  console.log('isCompleted', isCompleted)
   const date = createDateFromFormattedDateString(dateString)
   const now = dayjs()
   const calculateFormattedDueDate = useCallback(() => {

@@ -110,7 +110,7 @@ export const ListViewTaskCard = ({
               }}
             >
               {task.dueDate && (
-                <DueDateLayout dateString={task.dueDate} isCompleted={task.workflowState.type === StateType.completed} />
+                <DueDateLayout dateString={task.dueDate} isCompleted={task.workflowState?.type === StateType.completed} />
               )}
             </Box>
 
