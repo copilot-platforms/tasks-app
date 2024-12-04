@@ -1,28 +1,29 @@
 'use client'
 import { TemplateCard } from '@/components/cards/TemplateCard'
+import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
+import { selectTaskDetails, setShowConfirmDeleteModal } from '@/redux/features/taskDetailsSlice'
 import {
   clearTemplateFields,
   selectCreateTemplate,
   setCreateTemplateFields,
   setShowTemplateModal,
   setTargetTemplateId,
+  setTemplates,
 } from '@/redux/features/templateSlice'
-import { Modal, Stack } from '@mui/material'
-import { useSelector } from 'react-redux'
-import { TemplateForm } from './TemplateForm'
 import store from '@/redux/store'
 import { CreateTemplateRequest } from '@/types/dto/templates.dto'
-import { TargetMethod } from '@/types/interfaces'
+import { ITemplate, TargetMethod } from '@/types/interfaces'
+import { Box, Modal, Stack, Typography } from '@mui/material'
+import { useSelector } from 'react-redux'
 import { NoTemplateLayout } from './NoTemplateLayout'
-import { selectTaskDetails, setShowConfirmDeleteModal } from '@/redux/features/taskDetailsSlice'
-import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
+import { TemplateForm } from './TemplateForm'
 
 export const TemplateBoard = ({
   handleCreateTemplate,
   handleDeleteTemplate,
   handleEditTemplate,
 }: {
-  handleCreateTemplate: (payload: CreateTemplateRequest) => void
+  handleCreateTemplate: (payload: CreateTemplateRequest) => Promise<any>
   handleDeleteTemplate: (templateId: string) => void
   handleEditTemplate: (payload: CreateTemplateRequest, templateId: string) => void
 }) => {
@@ -31,37 +32,46 @@ export const TemplateBoard = ({
 
   const { showConfirmDeleteModal } = useSelector(selectTaskDetails)
 
+  if (templates === undefined) {
+    return null
+  }
+
   return (
     <>
-      {templates.length > 0 ? (
-        <Stack
-          direction="column"
-          py="40px"
-          sx={{
-            width: { xs: '90%', sm: '60%' },
-            margin: '0 auto',
-          }}
-          rowGap={4}
-        >
-          {templates.map((template, key) => {
-            return (
-              <TemplateCard
-                templateName={template.templateName}
-                key={key}
-                handleDelete={() => {
-                  store.dispatch(setShowConfirmDeleteModal())
-                  store.dispatch(setTargetTemplateId(template.id))
-                }}
-                handleEdit={() => {
-                  store.dispatch(setShowTemplateModal({ targetMethod: TargetMethod.EDIT, targetTemplateId: template.id }))
-                  store.dispatch(setCreateTemplateFields({ targetField: 'templateName', value: template.templateName }))
-                  store.dispatch(setCreateTemplateFields({ targetField: 'taskName', value: template.title }))
-                  store.dispatch(setCreateTemplateFields({ targetField: 'description', value: template.body }))
-                }}
-              />
-            )
-          })}
-        </Stack>
+      {templates.length ? (
+        <Box id="templates-box" sx={{ maxWidth: '384px', marginTop: '32px', marginLeft: 'auto', marginRight: 'auto' }}>
+          <Typography variant="xl" lineHeight={'28px'}>
+            Templates
+          </Typography>
+
+          <Stack
+            direction="column"
+            py="24px"
+            sx={{
+              width: { xs: '90%', sm: '100%' },
+              margin: '0 auto',
+            }}
+            rowGap={4}
+          >
+            {templates.map((template) => {
+              return (
+                <TemplateCard
+                  title={template.title}
+                  key={template.id}
+                  handleDelete={() => {
+                    store.dispatch(setShowConfirmDeleteModal())
+                    store.dispatch(setTargetTemplateId(template.id))
+                  }}
+                  handleEdit={() => {
+                    store.dispatch(setShowTemplateModal({ targetMethod: TargetMethod.EDIT, targetTemplateId: template.id }))
+                    store.dispatch(setCreateTemplateFields({ targetField: 'taskName', value: template.title }))
+                    store.dispatch(setCreateTemplateFields({ targetField: 'description', value: template.body }))
+                  }}
+                />
+              )
+            })}
+          </Stack>
+        </Box>
       ) : (
         <NoTemplateLayout />
       )}
@@ -76,7 +86,7 @@ export const TemplateBoard = ({
         aria-describedby="add-new-task"
       >
         <TemplateForm
-          handleCreate={() => {
+          handleCreate={async () => {
             store.dispatch(setShowTemplateModal({}))
             store.dispatch(clearTemplateFields())
             const temp = {
@@ -85,7 +95,8 @@ export const TemplateBoard = ({
               body: description,
             }
             if (targetMethod === TargetMethod.POST) {
-              handleCreateTemplate(temp)
+              const data = await handleCreateTemplate(temp)
+              store.dispatch(setTemplates([data as ITemplate, ...templates]))
             } else {
               handleEditTemplate(temp, targetTemplateId)
             }

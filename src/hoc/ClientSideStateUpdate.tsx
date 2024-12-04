@@ -17,13 +17,7 @@ import { Token } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import {
-  FilterByOptions,
-  FilterOptionsKeywords,
-  IAssigneeSuggestions,
-  IAssigneeCombined,
-  ITemplate,
-} from '@/types/interfaces'
+import { IAssigneeSuggestions, IAssigneeCombined, ITemplate } from '@/types/interfaces'
 import { filterOptionsMap } from '@/types/objectMaps'
 import { ReactNode, useEffect } from 'react'
 import { useSelector } from 'react-redux'

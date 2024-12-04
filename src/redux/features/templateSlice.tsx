@@ -12,7 +12,7 @@ interface IInitialState {
   taskName: string
   description: string
   workflowStateId: string
-  templates: ITemplate[]
+  templates?: ITemplate[]
   targetMethod: TargetMethod.EDIT | TargetMethod.POST //the target method for which modal is evoked
   targetTemplateId: string
   errors: IErrors
@@ -24,7 +24,7 @@ const initialState: IInitialState = {
   taskName: '',
   description: '',
   workflowStateId: '',
-  templates: [],
+  templates: undefined,
   targetMethod: TargetMethod.POST,
   targetTemplateId: '',
   errors: {
