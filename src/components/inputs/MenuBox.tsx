@@ -2,7 +2,7 @@
 
 import { MoreBtn } from '@/components/buttons/MoreBtn'
 import { Box, ClickAwayListener, Popper } from '@mui/material'
-import { ReactNode, useState } from 'react'
+import { Dispatch, ReactNode, SetStateAction, useState } from 'react'
 
 export const MenuBox = ({
   menuContent,
@@ -17,13 +17,13 @@ export const MenuBox = ({
   isSecondary?: boolean
   displayButtonBackground?: boolean
   displayBorder?: boolean
-  setIsMenuOpen?: any
+  setIsMenuOpen?: Dispatch<SetStateAction<boolean>>
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(anchorEl ? null : event.currentTarget)
-    setIsMenuOpen(Boolean(anchorEl ? null : event.currentTarget))
+    setIsMenuOpen && setIsMenuOpen(Boolean(anchorEl ? null : event.currentTarget))
   }
 
   const open = Boolean(anchorEl)
@@ -34,7 +34,7 @@ export const MenuBox = ({
     <ClickAwayListener
       onClickAway={() => {
         setAnchorEl(null)
-        setIsMenuOpen(false)
+        setIsMenuOpen && setIsMenuOpen(false)
       }}
     >
       <Box className="menubox">
