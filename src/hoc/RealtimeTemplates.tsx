@@ -28,37 +28,30 @@ export const RealTimeTemplates = ({
   const { templates } = useSelector(selectCreateTemplate)
   const { token } = useSelector(selectTaskBoard)
 
-  const userId = tokenPayload?.internalUserId || tokenPayload?.clientId
-  const userRole = tokenPayload?.internalUserId
-    ? AssigneeType.internalUser
-    : tokenPayload?.clientId
-      ? AssigneeType.client
-      : undefined
+  const userId = tokenPayload?.internalUserId
+  const userRole = AssigneeType.internalUser
 
   if (!userId || !userRole) {
-    console.error(`Failed to authenticate a realtime connection for id ${userId} with role ${userRole}`)
+    console.error(`Failed to authenticate a realtime connection for id ${userId} with role ${userRole}`) //client users cannot connect to the templates real time channel
   }
 
   const handleTemplatesRealTimeUpdates = (payload: RealtimePostgresChangesPayload<RealTimeTemplateResponse>) => {
     if (payload.eventType === 'INSERT') {
       let canUserAccessTask = payload.new.workspaceId === tokenPayload?.workspaceId
-      if (userRole === AssigneeType.client) {
-        canUserAccessTask = false
-      }
       if (canUserAccessTask) {
         templates
           ? store.dispatch(
-              setTemplates([...templates, { ...payload.new, createdAt: new Date(payload.new.createdAt + 'Z') }]),
+              setTemplates([{ ...payload.new, updatedAt: new Date(payload.new.updatedAt + 'Z') }, ...templates]),
             )
-          : store.dispatch(setTemplates([{ ...payload.new, createdAt: new Date(payload.new.createdAt + 'Z') }]))
+          : store.dispatch(setTemplates([{ ...payload.new, updatedAt: new Date(payload.new.updatedAt + 'Z') }]))
       }
     }
     if (payload.eventType === 'UPDATE') {
       const updatedTemplate = payload.new
-      const isCreatedAtGMT = (updatedTemplate.createdAt as unknown as string).slice(-1).toLowerCase() === 'z'
-      if (!isCreatedAtGMT) {
+      const isUpdatedAtGMT = (updatedTemplate.updatedAt as unknown as string).slice(-1).toLowerCase() === 'z'
+      if (!isUpdatedAtGMT) {
         // DB stores GMT timestamp without 'z', so need to append this manually
-        updatedTemplate.createdAt = ((updatedTemplate.createdAt as unknown as string) + 'Z') as unknown as Date
+        updatedTemplate.updatedAt = ((updatedTemplate.updatedAt as unknown as string) + 'Z') as unknown as Date
         // This casting is safe
       }
       const oldTemplate = templates && templates.find((template) => template.id == updatedTemplate.id)
@@ -83,9 +76,9 @@ export const RealTimeTemplates = ({
               updatedTemplate.body = replaceImgSrcs(updatedTemplate.body, newImgSrcs, oldImgSrcs)
             }
           }
-          const newTemplateArr = templates && [
-            ...templates.filter((template) => template.id !== updatedTemplate.id),
+          const newTemplateArr = [
             updatedTemplate,
+            ...(templates?.filter((template) => template.id !== updatedTemplate.id) || []),
           ]
           store.dispatch(setTemplates(newTemplateArr))
         }
@@ -108,7 +101,7 @@ export const RealTimeTemplates = ({
           event: '*',
           schema: 'public',
           table: 'TaskTemplates',
-          filter: userRole === AssigneeType.internalUser ? `workspaceId=eq.${tokenPayload?.workspaceId}` : undefined,
+          filter: `workspaceId=eq.${tokenPayload?.workspaceId}`,
         },
         handleTemplatesRealTimeUpdates,
       )

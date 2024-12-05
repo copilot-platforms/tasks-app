@@ -35,7 +35,6 @@ export const TemplateBoard = ({
   if (templates === undefined) {
     return null
   }
-  console.log(templates)
 
   return (
     <>

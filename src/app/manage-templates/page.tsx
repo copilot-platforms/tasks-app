@@ -48,7 +48,7 @@ async function getAllTemplates(token: string): Promise<ITemplate[]> {
 async function getTokenPayload(token: string): Promise<Token> {
   const copilotClient = new CopilotAPI(token)
   const payload = TokenSchema.parse(await copilotClient.getTokenPayload())
-  return payload as Token
+  return payload
 }
 
 interface ManageTemplatesPageProps {
