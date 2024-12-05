@@ -291,18 +291,18 @@ const NewTaskFooter = ({ handleCreate, handleClose }: NewTaskFormProps) => {
   const templateValue = _templateValue as ITemplate //typecasting
 
   const ManageTemplatesEndOption = () => {
-    useEffect(() => {
-      const manageTemplatesBtn = document.getElementById('manage-templates-btn')
-      const handler = () => {
-        console.log('meow!')
-      }
-      manageTemplatesBtn?.addEventListener('mouseover', handler)
-      manageTemplatesBtn?.addEventListener('click', handler)
-      return () => {
-        document.removeEventListener('mouseover', handler)
-        document.removeEventListener('click', handler)
-      }
-    }, [])
+    // IMPORTANT: keep this for the meanwhile to deal with Manage Templates btn click
+    // useEffect(() => {
+    //   const manageTemplatesBtn = document.getElementById('manage-templates-btn')
+    //   const handler = () => {
+    //   }
+    //   manageTemplatesBtn?.addEventListener('mouseover', handler)
+    //   manageTemplatesBtn?.addEventListener('click', handler)
+    //   return () => {
+    //     document.removeEventListener('mouseover', handler)
+    //     document.removeEventListener('click', handler)
+    //   }
+    // }, [])
 
     return (
       <Stack
