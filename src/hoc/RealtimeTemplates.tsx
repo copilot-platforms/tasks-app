@@ -41,6 +41,7 @@ export const RealTimeTemplates = ({
 
   const handleTemplatesRealTimeUpdates = (payload: RealtimePostgresChangesPayload<RealTimeTemplateResponse>) => {
     if (payload.eventType === 'INSERT') {
+      console.log('inserting')
       let canUserAccessTask = payload.new.workspaceId === tokenPayload?.workspaceId
       if (userRole === AssigneeType.client) {
         canUserAccessTask = false
@@ -52,6 +53,7 @@ export const RealTimeTemplates = ({
             )
           : store.dispatch(setTemplates([{ ...payload.new, createdAt: new Date(payload.new.createdAt + 'Z') }]))
       }
+      console.log(payload, 'inserted')
     }
     if (payload.eventType === 'UPDATE') {
       const updatedTemplate = payload.new
