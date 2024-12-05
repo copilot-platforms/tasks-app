@@ -62,7 +62,6 @@ export const RealTimeTemplates = ({
         // This casting is safe
       }
       const oldTemplate = templates && templates.find((template) => template.id == updatedTemplate.id)
-      console.log(oldTemplate)
       if (payload.new.workspaceId === tokenPayload?.workspaceId) {
         if (updatedTemplate.deletedAt) {
           const newTemplateArr = templates && templates.filter((el) => el.id !== updatedTemplate.id)
