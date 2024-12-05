@@ -45,7 +45,7 @@ async function getAllTemplates(token: string): Promise<ITemplate[]> {
   return templates.data
 }
 
-export async function getTokenPayload(token: string): Promise<Token> {
+async function getTokenPayload(token: string): Promise<Token> {
   const copilotClient = new CopilotAPI(token)
   const payload = TokenSchema.parse(await copilotClient.getTokenPayload())
   return payload as Token
@@ -59,11 +59,11 @@ interface ManageTemplatesPageProps {
 
 export default async function ManageTemplatesPage({ searchParams }: ManageTemplatesPageProps) {
   const { token } = searchParams
-  const tokenPayload = await getTokenPayload(token)
-  const [workflowStates, assignee, templates] = await Promise.all([
+  const [workflowStates, assignee, templates, tokenPayload] = await Promise.all([
     await getAllWorkflowStates(token),
     addTypeToAssignee(await getAssigneeList(token)),
     await getAllTemplates(token),
+    await getTokenPayload(token),
   ])
 
   return (
