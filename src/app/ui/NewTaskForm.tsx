@@ -268,7 +268,7 @@ const NewTaskFormInputs = () => {
           placeholder="Add description..."
           editorClass="tapwrite-task-description"
           uploadFn={uploadFn}
-          deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', null)}
+          deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', null, null)}
           attachmentLayout={AttachmentLayout}
           maxUploadLimit={MAX_UPLOAD_LIMIT}
           parentContainerStyle={{ gap: '0px' }}
