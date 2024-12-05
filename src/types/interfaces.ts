@@ -137,6 +137,7 @@ export interface ITemplate {
   assigneeType: string
   workflowStateId: string
   createdBy: string
+  createdAt: Date
 }
 
 export interface ISignedUrlUpload {

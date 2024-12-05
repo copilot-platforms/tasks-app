@@ -57,7 +57,7 @@ const createTemplateSlice = createSlice({
       state.activeWorkflowStateId = action.payload
     },
 
-    setTemplates: (state, action: { payload: ITemplate[] }) => {
+    setTemplates: (state, action: { payload: ITemplate[] | undefined }) => {
       state.templates = action.payload
     },
     clearTemplateFields: (state) => {
