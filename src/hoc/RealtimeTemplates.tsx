@@ -54,7 +54,6 @@ export const RealTimeTemplates = ({
       }
     }
     if (payload.eventType === 'UPDATE') {
-      console.log('updating', payload.new)
       const updatedTemplate = payload.new
       const isCreatedAtGMT = (updatedTemplate.createdAt as unknown as string).slice(-1).toLowerCase() === 'z'
       if (!isCreatedAtGMT) {
@@ -62,10 +61,9 @@ export const RealTimeTemplates = ({
         updatedTemplate.createdAt = ((updatedTemplate.createdAt as unknown as string) + 'Z') as unknown as Date
         // This casting is safe
       }
-      const oldTemplate = templates && templates.find((template) => (template.id = updatedTemplate.id))
+      const oldTemplate = templates && templates.find((template) => template.id == updatedTemplate.id)
       console.log(oldTemplate)
       if (payload.new.workspaceId === tokenPayload?.workspaceId) {
-        console.log('enter 1')
         if (updatedTemplate.deletedAt) {
           const newTemplateArr = templates && templates.filter((el) => el.id !== updatedTemplate.id)
           store.dispatch(setTemplates(newTemplateArr))
@@ -90,13 +88,9 @@ export const RealTimeTemplates = ({
             ...templates.filter((template) => template.id !== updatedTemplate.id),
             updatedTemplate,
           ]
-          console.log('enter 2')
-          console.log(templates && templates.find((template) => template.id == updatedTemplate.id))
           store.dispatch(setTemplates(newTemplateArr))
         }
       }
-    }
-    if (payload.eventType === 'DELETE') {
     }
   }
 
