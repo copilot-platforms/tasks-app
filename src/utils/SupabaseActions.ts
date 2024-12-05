@@ -48,4 +48,11 @@ export class SupabaseActions extends SupabaseService {
       throw new APIError(httpStatus.BAD_REQUEST, error.message)
     }
   }
+
+  async copyAttachment(fromPath: string, toPath: string) {
+    const { error } = await this.supabase.storage.from(supabaseBucket).copy(fromPath, toPath)
+    if (error) {
+      throw new APIError(httpStatus.INTERNAL_SERVER_ERROR, error.message)
+    }
+  }
 }
