@@ -22,29 +22,50 @@ export class ScrapImageService {
     })
     const supabase = new SupabaseService()
 
-    const tasks = await db.task.findMany({
-      where: {
-        id: {
-          in: scrapImages.map((image: ScrapImage) => image.taskId).filter((taskId): taskId is string => !taskId),
-        },
-      },
-    })
+    const taskIds = scrapImages.map((image) => image.taskId).filter((taskId): taskId is string => taskId !== null)
+
+    const templateIds = scrapImages
+      .map((image) => image.templateId)
+      .filter((templateId): templateId is string => templateId !== null)
+
+    const tasks =
+      taskIds.length > 0
+        ? await db.task.findMany({
+            where: {
+              id: { in: taskIds },
+            },
+          })
+        : []
+
+    const taskTemplates =
+      templateIds.length > 0
+        ? await db.taskTemplate.findMany({
+            where: {
+              id: { in: templateIds },
+            },
+          })
+        : []
+
     const scrapImagesToDelete = []
     const scrapImagesToDeleteFromBucket = []
 
     for (const image of scrapImages) {
       try {
-        // For each scrap image, check if the task still has the img url in its body
+        // For each scrap image, check if the task or taskTemplate still has the img url in its body
         const task = tasks.find((_task) => _task.id === image.taskId)
+        const taskTemplate = taskTemplates.find((_template) => _template.id === image.templateId)
 
-        if (!task) {
+        const isInTaskBody = task && (task.body || '').includes(image.filePath)
+        const isInTemplateBody = taskTemplate && (taskTemplate.body || '').includes(image.filePath)
+
+        if (!task && !taskTemplate) {
           console.error('Could not find task for scrap image', image)
           scrapImagesToDelete.push(image.id)
           scrapImagesToDeleteFromBucket.push(image.filePath)
           continue
         }
         // If image is in task body
-        if ((task.body || '').includes(image.filePath)) {
+        if (isInTaskBody || isInTemplateBody) {
           scrapImagesToDelete.push(image.id)
           continue
         }
@@ -53,7 +74,7 @@ export class ScrapImageService {
         scrapImagesToDeleteFromBucket.push(image.filePath)
         scrapImagesToDelete.push(image.id)
       } catch (e: unknown) {
-        console.error('What just happened...', e)
+        console.error('Error processing scrap image', e)
       }
     }
     if (scrapImagesToDeleteFromBucket.length !== 0) {
