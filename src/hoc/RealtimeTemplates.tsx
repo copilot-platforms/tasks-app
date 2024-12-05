@@ -41,7 +41,6 @@ export const RealTimeTemplates = ({
 
   const handleTemplatesRealTimeUpdates = (payload: RealtimePostgresChangesPayload<RealTimeTemplateResponse>) => {
     if (payload.eventType === 'INSERT') {
-      console.log('inserting')
       let canUserAccessTask = payload.new.workspaceId === tokenPayload?.workspaceId
       if (userRole === AssigneeType.client) {
         canUserAccessTask = false
@@ -53,7 +52,6 @@ export const RealTimeTemplates = ({
             )
           : store.dispatch(setTemplates([{ ...payload.new, createdAt: new Date(payload.new.createdAt + 'Z') }]))
       }
-      console.log(payload, 'inserted')
     }
     if (payload.eventType === 'UPDATE') {
       console.log('updating')
@@ -87,9 +85,11 @@ export const RealTimeTemplates = ({
             }
           }
           const newTemplateArr = templates && [
-            ...templates.filter((task) => task.id !== updatedTemplate.id),
+            ...templates.filter((template) => template.id !== updatedTemplate.id),
             updatedTemplate,
           ]
+          console.log(updatedTemplate)
+          console.log(templates && templates.find((template) => template.id == updatedTemplate.id))
           store.dispatch(setTemplates(newTemplateArr))
         }
       }
@@ -103,7 +103,6 @@ export const RealTimeTemplates = ({
       // Don't try to open a connection with `undefined` parameters
       return
     }
-    console.log(userRole === AssigneeType.internalUser ? `workspaceId=eq.${tokenPayload?.workspaceId}` : undefined)
     const channel = supabase
       .channel('realtime templates')
       .on(
