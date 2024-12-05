@@ -56,6 +56,7 @@ export const RealTimeTemplates = ({
       console.log(payload, 'inserted')
     }
     if (payload.eventType === 'UPDATE') {
+      console.log('updating')
       const updatedTemplate = payload.new
       const isCreatedAtGMT = (updatedTemplate.createdAt as unknown as string).slice(-1).toLowerCase() === 'z'
       if (!isCreatedAtGMT) {
