@@ -101,7 +101,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
         }}
       >
         <AppMargin size={SizeofAppMargin.MEDIUM} py="12px">
-          <Stack direction="row" alignItems="center" justifyContent="space-between">
+          <Stack direction="row" alignItems="center" justifyContent="flex-end">
             <CloseIcon style={{ cursor: 'pointer' }} onClick={() => handleClose()} />
           </Stack>
         </AppMargin>
