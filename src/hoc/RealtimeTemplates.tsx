@@ -102,7 +102,7 @@ export const RealTimeTemplates = ({
       // Don't try to open a connection with `undefined` parameters
       return
     }
-
+    console.log(userRole === AssigneeType.internalUser ? `workspaceId=eq.${tokenPayload?.workspaceId}` : undefined)
     const channel = supabase
       .channel('realtime templates')
       .on(
