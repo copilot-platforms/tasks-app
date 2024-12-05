@@ -4,6 +4,7 @@ import { signedUrlTtl } from '@/constants/attachments'
 import { ClientResponse, CompanyResponse, InternalUsers, NotificationCreatedResponseSchema } from '@/types/common'
 import { CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { CopilotAPI } from '@/utils/CopilotAPI'
+import { copySupabaseMediaToTask } from '@/utils/signedTemplateUrlReplacer'
 import { getFilePathFromUrl, replaceImageSrc } from '@/utils/signedUrlReplacer'
 import { SupabaseActions } from '@/utils/SupabaseActions'
 import { TaskAssignedSchema } from '@api/activity-logs/schemas/TaskAssignedSchema'
@@ -145,6 +146,9 @@ export class TasksService extends BaseService {
     //generate the label
     const labelMappingService = new LabelMappingService(this.user)
     const label = z.string().parse(await labelMappingService.getLabel(data.assigneeId, data.assigneeType))
+
+    // If task was created from template, copy all template assets to task folder
+    data.body && (await copySupabaseMediaToTask('temp_id', this.user.workspaceId, data.body))
 
     // Create a new task associated with current workspaceId. Also inject current request user as the creator.
     const newTask = await this.db.task.create({
