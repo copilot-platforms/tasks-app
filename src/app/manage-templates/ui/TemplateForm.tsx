@@ -58,7 +58,7 @@ export const TemplateForm = ({ handleCreate }: { handleCreate: () => void }) => 
             </Typography>
           ) : (
             <Typography variant="md" fontSize={'15px'} lineHeight={'18.15px'}>
-              Edit Template
+              Template
             </Typography>
           )}
           <Close
@@ -90,7 +90,6 @@ const NewTaskFormInputs = () => {
       : undefined
 
   const todoWorkflowState = workflowStates.find((el) => el.key === 'todo') || workflowStates[0]
-
   const defaultWorkflowState = activeWorkflowStateId
     ? workflowStates.find((state) => state.id === activeWorkflowStateId)
     : todoWorkflowState
@@ -105,6 +104,7 @@ const NewTaskFormInputs = () => {
   const handleDescriptionChange = (content: string) => {
     store.dispatch(setCreateTemplateFields({ targetField: 'description', value: content }))
   }
+
   return (
     <>
       <Stack direction="column" rowGap={1}>
@@ -176,7 +176,7 @@ const NewTaskFooter = ({ handleCreate, targetMethod }: { handleCreate: () => voi
                 </Typography>
               }
             />
-            <PrimaryBtn handleClick={handleCreate} buttonText={targetMethod === TargetMethod.POST ? 'Create' : 'Edit'} />
+            <PrimaryBtn handleClick={handleCreate} buttonText={targetMethod === TargetMethod.POST ? 'Create' : 'Save'} />
           </Stack>
         </Stack>
       </AppMargin>

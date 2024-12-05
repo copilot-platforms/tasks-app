@@ -61,11 +61,15 @@ export const TemplateBoard = ({
                   handleDelete={() => {
                     store.dispatch(setShowConfirmDeleteModal())
                     store.dispatch(setTargetTemplateId(template.id))
+                    store.dispatch(setCreateTemplateFields({ targetField: 'taskName', value: template.title }))
                   }}
                   handleEdit={() => {
                     store.dispatch(setShowTemplateModal({ targetMethod: TargetMethod.EDIT, targetTemplateId: template.id }))
                     store.dispatch(setCreateTemplateFields({ targetField: 'taskName', value: template.title }))
                     store.dispatch(setCreateTemplateFields({ targetField: 'description', value: template.body }))
+                    store.dispatch(
+                      setCreateTemplateFields({ targetField: 'activeWorkflowStateId', value: template.workflowStateId }),
+                    )
                   }}
                 />
               )
@@ -116,6 +120,8 @@ export const TemplateBoard = ({
             store.dispatch(setShowConfirmDeleteModal())
             handleDeleteTemplate(targetTemplateId)
           }}
+          description={`“${taskName}” will be permanently deleted.`}
+          customBody={'Delete template?'}
         />
       </Modal>
     </>

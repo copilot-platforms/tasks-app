@@ -194,7 +194,7 @@ export const CommentCard = ({
             deleteComment((comment as LogResponse).details.id as string)
             setShowConfirmDeleteModal(false)
           }}
-          body="comment"
+          bodyTag="comment"
         />
       </Modal>
     </CommentCardContainer>
