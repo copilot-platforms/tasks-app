@@ -333,6 +333,16 @@ const NewTaskFooter = ({ handleCreate, handleClose }: NewTaskFormProps) => {
     )
   }
 
+  useEffect(() => {
+    if (!templateValue) return
+
+    // Overwrite task input fields
+    store.dispatch(setCreateTaskFields({ targetField: 'title', value: templateValue.title }))
+    store.dispatch(setCreateTaskFields({ targetField: 'description', value: templateValue.body }))
+    // Reset any errors that might have come from title field being empty
+    store.dispatch(setErrors({ key: CreateTaskErrors.TITLE, value: false }))
+  }, [templateValue])
+
   return (
     <Box sx={{ borderTop: (theme) => `1px solid ${theme.color.borders.border2}` }}>
       <AppMargin size={SizeofAppMargin.MEDIUM} py="21px">
