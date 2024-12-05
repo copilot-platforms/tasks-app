@@ -1,11 +1,12 @@
+import { TaskCard } from '@/components/cards/TaskCard'
+import { ArchiveBoxIcon } from '@/icons'
+import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { TaskResponse } from '@/types/dto/tasks.dto'
 import { Box, Stack, Typography } from '@mui/material'
 import { ViewMode } from '@prisma/client'
-import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
-import { useSelector } from 'react-redux'
-import { XYCoord } from 'react-dnd'
 import { FC } from 'react'
-import { TaskResponse } from '@/types/dto/tasks.dto'
-import { TaskCard } from './TaskCard'
+import { XYCoord } from 'react-dnd'
+import { useSelector } from 'react-redux'
 
 const getItemStyles = (currentOffset: XYCoord | null, previewWidth: number, viewMode: ViewMode) => {
   if (!currentOffset) {
@@ -91,7 +92,7 @@ export const CardDragLayer: FC<Prop> = (props) => {
         >
           {currentTask?.label}
         </Typography>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap' }}>
+        <Box sx={{ display: 'flex', gap: '8px' }}>
           <Typography
             variant="sm"
             sx={{
@@ -102,6 +103,11 @@ export const CardDragLayer: FC<Prop> = (props) => {
           >
             {currentTask?.title}
           </Typography>
+          {currentTask.isArchived && (
+            <Box sx={{ display: 'flex', alignItems: 'center', minHeight: '100%' }}>
+              <ArchiveBoxIcon />
+            </Box>
+          )}
         </Box>
       </Stack>
     )

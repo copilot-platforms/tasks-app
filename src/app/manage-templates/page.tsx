@@ -10,6 +10,8 @@ import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import { createNewTemplate, deleteTemplate, editTemplate } from './actions'
 import { ManageTemplateHeader } from './ui/Header'
 import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
+import { CopilotAPI } from '@/utils/CopilotAPI'
+import { CreateTemplateRequest, UpdateTemplateRequest } from '@/types/dto/templates.dto'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -41,29 +43,44 @@ async function getAllTemplates(token: string): Promise<ITemplate[]> {
   return templates.data
 }
 
-export default async function ManageTemplatesPage({ searchParams }: { searchParams: { token: string } }) {
+interface ManageTemplatesPageProps {
+  searchParams: {
+    token: string
+  }
+}
+
+export default async function ManageTemplatesPage({ searchParams }: ManageTemplatesPageProps) {
   const { token } = searchParams
 
-  const [workflowStates, assignee, templates] = await Promise.all([
+  const copilotClient = new CopilotAPI(token)
+
+  const [workflowStates, assignee, templates, tokenPayload] = await Promise.all([
     await getAllWorkflowStates(token),
     addTypeToAssignee(await getAssigneeList(token)),
     await getAllTemplates(token),
+    copilotClient.getTokenPayload(),
   ])
 
   return (
-    <ClientSideStateUpdate workflowStates={workflowStates} token={token} assignee={assignee} templates={templates}>
+    <ClientSideStateUpdate
+      workflowStates={workflowStates}
+      token={token}
+      assignee={assignee}
+      templates={templates}
+      tokenPayload={tokenPayload}
+    >
       <AppMargin size={SizeofAppMargin.LARGE}>
         <ManageTemplateHeader showNewTemplateButton={templates?.length > 0} />
         <TemplateBoard
-          handleCreateTemplate={async (payload) => {
+          handleCreateTemplate={async (payload: CreateTemplateRequest) => {
             'use server'
-            await createNewTemplate(token, payload)
+            return await createNewTemplate(token, payload)
           }}
-          handleDeleteTemplate={async (templateId) => {
+          handleDeleteTemplate={async (templateId: string) => {
             'use server'
             await deleteTemplate(token, templateId)
           }}
-          handleEditTemplate={async (payload, templateId) => {
+          handleEditTemplate={async (payload: UpdateTemplateRequest, templateId: string) => {
             'use server'
             await editTemplate(token, templateId, payload)
           }}

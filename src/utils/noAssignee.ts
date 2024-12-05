@@ -15,3 +15,10 @@ export const NoAssigneeExtraOptions: IExtraOption = {
   value: '',
   extraOptionFlag: true,
 }
+
+export const NoDataFoundOption: IExtraOption = {
+  id: 'not_found',
+  name: 'Not found',
+  value: '',
+  extraOptionFlag: true,
+} //treating no data found placeholder also as an option.

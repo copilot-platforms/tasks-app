@@ -24,6 +24,7 @@ export const UpdateTaskRequestSchema = z.object({
   body: z.string().nullish(),
   workflowStateId: z.string().uuid().optional(),
   dueDate: DateStringSchema.nullish(),
+  isArchived: z.boolean().optional(),
 })
 export type UpdateTaskRequest = z.infer<typeof UpdateTaskRequestSchema>
 
@@ -42,6 +43,8 @@ export const TaskResponseSchema = z.object({
   createdAt: z.date(),
   assignee: z.union([ClientResponseSchema, InternalUsersSchema, CompanyResponseSchema]),
   lastActivityLogUpdated: z.date().optional(),
+  isArchived: z.boolean().optional(),
+  lastArchivedDate: z.string().datetime(),
 })
 
 export type TaskResponse = z.infer<typeof TaskResponseSchema>

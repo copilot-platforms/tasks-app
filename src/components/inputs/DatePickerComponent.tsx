@@ -19,7 +19,7 @@ export const DatePickerComponent = ({ getDate, dateValue, disabled, isButton = f
   const [value, setValue] = useState(dateValue ? dayjs(dateValue) : null)
 
   const formatDate = (date: Dayjs | null) => {
-    return date ? date.format('MMMM DD, YYYY') : '' // Format the date as "March 08, 2024"
+    return date ? date.format('MMMM D, YYYY') : '' // Format the date as "March 8, 2024"
   }
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)

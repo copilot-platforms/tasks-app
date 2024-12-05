@@ -1,7 +1,5 @@
-<svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g id="List">
-<line id="Line 491" x1="1" y1="2.625" x2="11" y2="2.625" stroke="#C9CBCD" stroke-width="1.25"/>
-<line id="Line 492" x1="1" y1="6.375" x2="11" y2="6.375" stroke="#C9CBCD" stroke-width="1.25"/>
-<line id="Line 493" x1="1" y1="10.125" x2="11" y2="10.125" stroke="#C9CBCD" stroke-width="1.25"/>
-</g>
+<svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+<line x1="1.16669" y1="3.06283" x2="12.8334" y2="3.06283" stroke="#212B36" stroke-width="1.45833"/>
+<line x1="1.16669" y1="7.43783" x2="12.8334" y2="7.43783" stroke="#212B36" stroke-width="1.45833"/>
+<line x1="1.16669" y1="11.8128" x2="12.8334" y2="11.8128" stroke="#212B36" stroke-width="1.45833"/>
 </svg>

@@ -63,6 +63,8 @@ export class ViewSettingsService extends BaseService {
           [FilterOptions.KEYWORD]: '',
           [FilterOptions.TYPE]: '',
         },
+        showUnarchived: true,
+        showArchived: false,
       },
     })
   }

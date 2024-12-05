@@ -5,7 +5,11 @@ dayjs.extend(relativeTime)
 
 export const getTimeDifference = (createdAt: string): string => {
   const now = dayjs()
-  const targetTime = dayjs(createdAt)
+
+  // Ensure the input timestamp always has a Z (UTC) if no timezone is present
+  const sanitizedCreatedAt = createdAt.match(/Z|[+-]\d{2}:\d{2}$/) ? createdAt : `${createdAt}Z`
+
+  const targetTime = dayjs(sanitizedCreatedAt)
   const diffInSeconds = now.diff(targetTime, 'second')
 
   if (diffInSeconds < 60) {

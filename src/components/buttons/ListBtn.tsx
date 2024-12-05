@@ -8,21 +8,25 @@ export const ListBtn = ({
   handleClick,
   icon,
   contentColor,
+  width,
 }: {
   content: string
   handleClick: () => void
   icon: ReactNode
   contentColor: string | ((theme: Theme) => string)
+  width?: string
 }) => {
   return (
     <Box
-      p="4px 0px"
+      p="2px 0px"
       sx={{
-        border: (theme) => `1px solid ${theme.color.gray[150]}`,
         borderRadius: '4px',
-        width: '138px',
+        width: width ? width : '138px',
         cursor: 'pointer',
-        background: (theme) => theme.color.gray[100],
+        background: (theme) => theme.color.base.white,
+        ':hover': {
+          backgroundColor: (theme) => theme.color.background.bgCallout,
+        },
       }}
       onClick={handleClick}
     >
@@ -30,6 +34,7 @@ export const ListBtn = ({
         direction="row"
         columnGap={'10px'}
         sx={{
+          borderRadius: '4px',
           background: '#ffffff',
           ':hover': {
             backgroundColor: (theme) => theme.color.background.bgCallout,
