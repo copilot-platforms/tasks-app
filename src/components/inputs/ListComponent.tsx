@@ -13,6 +13,7 @@ export interface ListComponentProps extends Omit<ScrollbarProps, 'ref'> {
 const ListComponentInternal = forwardRef<Scrollbars, ListComponentProps>((props, ref) => {
   const { children, endOption, endOptionHref, autoHeightMax, ...comProps } = props
   const xs = useMediaQuery('(max-width:600px)')
+  const router = useRouter()
 
   return (
     <Box>
@@ -51,7 +52,7 @@ const ListComponentInternal = forwardRef<Scrollbars, ListComponentProps>((props,
       >
         {children}
       </Scrollbars>
-      {endOption ?? null}
+      <Box onMouseDown={() => endOptionHref && router.push(endOptionHref)}>{endOption ?? null}</Box>
     </Box>
   )
 })

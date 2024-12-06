@@ -29,7 +29,7 @@ import { NoAssigneeExtraOptions } from '@/utils/noAssignee'
 import { setDebouncedFilteredAssignees } from '@/utils/users'
 import { Box, Link, Stack, Typography, styled } from '@mui/material'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
 import { z } from 'zod'
@@ -232,8 +232,9 @@ const NewTaskFormInputs = () => {
   const { token } = useSelector(selectTaskBoard)
   const { tokenPayload } = useSelector(selectAuthDetails)
 
-  const handleDetailChange = (content: string) =>
+  const handleDetailChange = (content: string) => {
     store.dispatch(setCreateTaskFields({ targetField: 'description', value: content }))
+  }
 
   const uploadFn =
     token && tokenPayload?.workspaceId
@@ -281,14 +282,32 @@ const NewTaskFormInputs = () => {
 const NewTaskFooter = ({ handleCreate, handleClose }: NewTaskFormProps) => {
   const [inputStatusValue, setInputStatusValue] = useState('')
 
-  const { title, assigneeId } = useSelector(selectCreateTask)
+  const { title, description, assigneeId } = useSelector(selectCreateTask)
   const { token } = useSelector(selectTaskBoard)
   const { templates } = useSelector(selectCreateTemplate)
+
+  useEffect(() => {
+    console.log('descriptoin', description)
+  }, [description])
+
   const { renderingItem: _templateValue, updateRenderingItem: updateTemplateValue } = useHandleSelectorComponent({
     item: undefined, //initially we don't want any value to be selected
     type: SelectorType.TEMPLATE_SELECTOR,
   })
   const templateValue = _templateValue as ITemplate //typecasting
+
+  const applyTemplate = useCallback(
+    async (id: string) => {
+      const resp = await fetch(`/api/tasks/templates/${id}/apply?token=${token}`)
+      const { data: template } = await resp.json()
+
+      store.dispatch(setCreateTaskFields({ targetField: 'title', value: template.title }))
+      store.dispatch(setCreateTaskFields({ targetField: 'description', value: template.body }))
+      // Reset any errors that might have come from title field being empty
+      store.dispatch(setErrors({ key: CreateTaskErrors.TITLE, value: false }))
+    },
+    [token],
+  )
 
   const ManageTemplatesEndOption = () => {
     // IMPORTANT: keep this for the meanwhile to deal with Manage Templates btn click
@@ -334,14 +353,10 @@ const NewTaskFooter = ({ handleCreate, handleClose }: NewTaskFormProps) => {
   }
 
   useEffect(() => {
-    if (!templateValue) return
+    if (!templateValue || !token) return
 
-    // Overwrite task input fields
-    store.dispatch(setCreateTaskFields({ targetField: 'title', value: templateValue.title }))
-    store.dispatch(setCreateTaskFields({ targetField: 'description', value: templateValue.body }))
-    // Reset any errors that might have come from title field being empty
-    store.dispatch(setErrors({ key: CreateTaskErrors.TITLE, value: false }))
-  }, [templateValue])
+    applyTemplate(templateValue.id)
+  }, [templateValue, applyTemplate, token])
 
   return (
     <Box sx={{ borderTop: (theme) => `1px solid ${theme.color.borders.border2}` }}>

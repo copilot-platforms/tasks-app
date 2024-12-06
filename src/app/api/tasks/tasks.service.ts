@@ -1,11 +1,9 @@
 import { ScrapImageService } from '@/app/api/scrap-images/scrap-images.service'
-import { supabaseBucket } from '@/config'
-import { signedUrlTtl } from '@/constants/attachments'
 import { ClientResponse, CompanyResponse, InternalUsers, NotificationCreatedResponseSchema } from '@/types/common'
 import { CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { CopilotAPI } from '@/utils/CopilotAPI'
-import { copySupabaseMediaToTask } from '@/utils/signedTemplateUrlReplacer'
 import { getFilePathFromUrl, replaceImageSrc } from '@/utils/signedUrlReplacer'
+import { getSignedUrl } from '@/utils/signUrl'
 import { SupabaseActions } from '@/utils/SupabaseActions'
 import { TaskAssignedSchema } from '@api/activity-logs/schemas/TaskAssignedSchema'
 import { TaskCreatedSchema } from '@api/activity-logs/schemas/TaskCreatedSchema'
@@ -147,8 +145,7 @@ export class TasksService extends BaseService {
     const labelMappingService = new LabelMappingService(this.user)
     const label = z.string().parse(await labelMappingService.getLabel(data.assigneeId, data.assigneeType))
 
-    // If task was created from template, copy all template assets to task folder
-    data.body && (await copySupabaseMediaToTask('temp_id', this.user.workspaceId, data.body))
+    console.log('\n\n\n\n\n\npayload', data)
 
     // Create a new task associated with current workspaceId. Also inject current request user as the creator.
     const newTask = await this.db.task.create({
@@ -213,7 +210,7 @@ export class TasksService extends BaseService {
     const updatedTask = await this.db.task.update({
       where: { id: task.id },
       data: {
-        body: task.body && (await replaceImageSrc(task.body, this.getSignedUrl)),
+        body: task.body && (await replaceImageSrc(task.body, getSignedUrl)),
       },
     })
 
@@ -392,7 +389,7 @@ export class TasksService extends BaseService {
     await Promise.all(copyAttachmentPromises)
 
     const signedUrlPromises = newFilePaths.map(async ({ originalSrc, newFilePath }) => {
-      const newUrl = await this.getSignedUrl(newFilePath)
+      const newUrl = await getSignedUrl(newFilePath)
       if (newUrl) {
         replacements.push({ originalSrc, newUrl })
       }
@@ -708,13 +705,4 @@ export class TasksService extends BaseService {
       await this.sendTaskCreateNotifications(updatedTask)
     }
   }
-
-  async getSignedUrl(filePath: string) {
-    const supabase = new SupabaseService()
-    const { data } = await supabase.supabase.storage.from(supabaseBucket).createSignedUrl(filePath, signedUrlTtl)
-
-    const url = data?.signedUrl
-
-    return url
-  } // used to replace urls for images in task body
 }
