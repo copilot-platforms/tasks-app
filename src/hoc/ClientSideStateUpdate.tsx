@@ -2,7 +2,13 @@
 
 import { LogResponse } from '@/app/api/activity-logs/schemas/LogResponseSchema'
 import { setTokenPayload } from '@/redux/features/authDetailsSlice'
-import { selectTaskBoard, setAssigneeList, setFilteredAssgineeList, setViewSettings } from '@/redux/features/taskBoardSlice'
+import {
+  selectTaskBoard,
+  setActiveTask,
+  setAssigneeList,
+  setFilteredAssgineeList,
+  setViewSettings,
+} from '@/redux/features/taskBoardSlice'
 import { setTasks, setToken, setWorkflowStates } from '@/redux/features/taskBoardSlice'
 import { setAssigneeSuggestion } from '@/redux/features/taskDetailsSlice'
 import { setTemplates } from '@/redux/features/templateSlice'
@@ -84,9 +90,11 @@ export const ClientSideStateUpdate = ({
     if (assigneeSuggestions) {
       store.dispatch(setAssigneeSuggestion(assigneeSuggestions))
     }
+
     if (task) {
       const updatedTasks = tasksInStore.map((t) => (t.id === task.id ? task : t))
       store.dispatch(setTasks(updatedTasks))
+      store.dispatch(setActiveTask(task))
     } //for updating a task in store with respect to task response from db in task details page
   }, [workflowStates, tasks, token, assignee, viewSettings, tokenPayload, templates, assigneeSuggestions, task])
 

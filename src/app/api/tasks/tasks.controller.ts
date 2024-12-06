@@ -5,14 +5,19 @@ import { IdParams } from '@api/core/types/api'
 import httpStatus from 'http-status'
 import authenticate from '@api/core/utils/authenticate'
 import { unstable_noStore as noStore } from 'next/cache'
-import { ScrapImageRequestSchema } from '@/types/common'
+import { getBooleanQuery, getSearchParams } from '@/utils/request'
 
 export const getTasks = async (req: NextRequest) => {
   noStore()
   const user = await authenticate(req)
 
+  const { showArchived, showUnarchived } = getSearchParams(req.nextUrl.searchParams, ['showArchived', 'showUnarchived'])
+
   const tasksService = new TasksService(user)
-  const tasks = await tasksService.getAllTasks()
+  const tasks = await tasksService.getAllTasks({
+    showUnarchived: getBooleanQuery(showUnarchived, true),
+    showArchived: getBooleanQuery(showArchived, false),
+  })
 
   return NextResponse.json({ tasks })
 }

@@ -5,7 +5,6 @@ import { TaskResponse } from '@/types/dto/tasks.dto'
 import { AssigneeType, FilterByOptions, FilterOptions, IAssigneeCombined, IFilterOptions, View } from '@/types/interfaces'
 import { ViewMode } from '@prisma/client'
 import { CreateViewSettingsDTO, FilterOptionsType } from '@/types/dto/viewSettings.dto'
-import { sortTaskByDescendingOrder } from '@/utils/sortTask'
 
 interface IInitialState {
   workflowStates: WorkflowStateResponse[]
@@ -16,7 +15,11 @@ interface IInitialState {
   filteredTasks: TaskResponse[]
   filterOptions: IFilterOptions
   filteredAssigneeList: IAssigneeCombined[]
+  showArchived: boolean | undefined
+  showUnarchived: boolean | undefined
   viewSettingsTemp: CreateViewSettingsDTO | undefined
+  isTasksLoading: boolean
+  activeTask: TaskResponse | undefined
 }
 
 const initialState: IInitialState = {
@@ -25,14 +28,19 @@ const initialState: IInitialState = {
   token: undefined,
   assignee: [],
   view: ViewMode.board,
-  filteredTasks: [],
+  filteredTasks: [], //contains tasks which are client-side filtered. is modified from the useFilter custom hook.
   filterOptions: {
     [FilterOptions.ASSIGNEE]: '',
     [FilterOptions.KEYWORD]: '',
     [FilterOptions.TYPE]: '',
   },
   filteredAssigneeList: [],
+  showArchived: undefined,
+  showUnarchived: undefined,
   viewSettingsTemp: undefined,
+  // Use this state as a global loading flag for tasks
+  isTasksLoading: true,
+  activeTask: undefined,
 }
 
 const taskBoardSlice = createSlice({
@@ -41,6 +49,9 @@ const taskBoardSlice = createSlice({
   reducers: {
     setWorkflowStates: (state, action: { payload: WorkflowStateResponse[] }) => {
       state.workflowStates = action.payload
+    },
+    setActiveTask: (state, action: { payload: TaskResponse }) => {
+      state.activeTask = action.payload
     },
     setTasks: (state, action: { payload: TaskResponse[] }) => {
       state.tasks = action.payload
@@ -60,7 +71,10 @@ const taskBoardSlice = createSlice({
         taskToUpdate.workflowStateId = action.payload.targetWorkflowStateId
         const updatedTasks = [...state.tasks.filter((task) => task.id !== action.payload.taskId), taskToUpdate]
         state.tasks = updatedTasks
-        state.filteredTasks = updatedTasks
+        state.filteredTasks = state.filteredTasks.map((filteredTask) => {
+          const updatedTask = updatedTasks.find((task) => task.id === filteredTask.id)
+          return updatedTask || filteredTask
+        })
       }
     },
     setAssigneeList: (state, action: { payload: IAssigneeCombined[] }) => {
@@ -68,8 +82,10 @@ const taskBoardSlice = createSlice({
       state.filteredAssigneeList = action.payload
     },
     setViewSettings: (state, action: { payload: CreateViewSettingsDTO }) => {
-      const { viewMode, filterOptions } = action.payload
+      const { viewMode, filterOptions, showArchived, showUnarchived } = action.payload
       state.view = viewMode
+      state.showArchived = showArchived
+      state.showUnarchived = showUnarchived
       taskBoardSlice.caseReducers.updateFilterOption(state, { payload: { filterOptions } })
     },
     setViewSettingsTemp: (state, action: { payload: CreateViewSettingsDTO }) => {
@@ -105,6 +121,10 @@ const taskBoardSlice = createSlice({
       }
       state.filterOptions = action.payload.filterOptions
     }, //updates filters according to viewSettings
+
+    setIsTasksLoading: (state, action: { payload: boolean }) => {
+      state.isTasksLoading = action.payload
+    },
   },
 })
 
@@ -122,6 +142,8 @@ export const {
   setFilterOptions,
   setFilteredAssgineeList,
   setViewSettingsTemp,
+  setIsTasksLoading,
+  setActiveTask,
 } = taskBoardSlice.actions
 
 export default taskBoardSlice.reducer

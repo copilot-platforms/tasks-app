@@ -18,6 +18,7 @@ import { CustomLink } from '@/hoc/CustomLink'
 import { getAssigneeName } from '@/utils/assignee'
 import { AssigneeType } from '@prisma/client'
 import { useEffect, useState } from 'react'
+import { ArchiveBoxIcon } from '@/icons'
 
 export const ListViewTaskCard = ({
   task,
@@ -77,16 +78,23 @@ export const ListViewTaskCard = ({
               {task.label}
             </Typography>
             <Box sx={{ display: 'flex', flexWrap: 'wrap' }}>
-              <Typography
-                variant="sm"
-                sx={{
-                  lineHeight: '21px',
-                  wordBreak: 'break-word',
-                  flexGrow: 1,
-                }}
-              >
-                {task?.title}
-              </Typography>
+              <Stack direction={'row'} alignItems="center" columnGap={'8px'}>
+                <Typography
+                  variant="sm"
+                  sx={{
+                    lineHeight: '21px',
+                    wordBreak: 'break-word',
+                    flexGrow: 1,
+                  }}
+                >
+                  {task?.title}
+                </Typography>
+                {task.isArchived && (
+                  <Box title="Archived">
+                    <ArchiveBoxIcon />
+                  </Box>
+                )}
+              </Stack>
             </Box>
           </Stack>
           <Stack direction="row" alignItems="center" columnGap={'20px'}>

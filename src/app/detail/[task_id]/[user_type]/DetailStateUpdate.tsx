@@ -34,6 +34,7 @@ export const DetailStateUpdate = async ({ isRedirect, token, tokenPayload, task,
       token={token}
       viewSettings={viewSettings}
       tokenPayload={tokenPayload}
+      task={task}
     >
       {children}
     </ClientSideStateUpdate>
