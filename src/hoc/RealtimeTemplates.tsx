@@ -7,6 +7,7 @@ import store from '@/redux/store'
 import { Token } from '@/types/common'
 import { ITemplate } from '@/types/interfaces'
 import { extractImgSrcs, replaceImgSrcs } from '@/utils/signedUrlReplacer'
+import { validateTimeStamp } from '@/utils/validateTimeStamp'
 import { AssigneeType, TaskTemplate } from '@prisma/client'
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
 import { ReactNode, useEffect } from 'react'
@@ -26,14 +27,6 @@ export const RealTimeTemplates = ({
   tokenPayload: Token
 }) => {
   const { templates } = useSelector(selectCreateTemplate)
-  const { token } = useSelector(selectTaskBoard)
-
-  const userId = tokenPayload?.internalUserId
-  const userRole = AssigneeType.internalUser
-
-  if (!userId || !userRole) {
-    console.error(`Failed to authenticate a realtime connection for id ${userId} with role ${userRole}`) //client users cannot connect to the templates real time channel
-  }
 
   const handleTemplatesRealTimeUpdates = (payload: RealtimePostgresChangesPayload<RealTimeTemplateResponse>) => {
     if (payload.eventType === 'INSERT') {
@@ -41,19 +34,14 @@ export const RealTimeTemplates = ({
       if (canUserAccessTask) {
         templates
           ? store.dispatch(
-              setTemplates([{ ...payload.new, updatedAt: new Date(payload.new.updatedAt + 'Z') }, ...templates]),
+              setTemplates([{ ...payload.new, updatedAt: validateTimeStamp(payload.new.updatedAt) }, ...templates]),
             )
-          : store.dispatch(setTemplates([{ ...payload.new, updatedAt: new Date(payload.new.updatedAt + 'Z') }]))
+          : store.dispatch(setTemplates([{ ...payload.new, updatedAt: validateTimeStamp(payload.new.updatedAt) }]))
       }
     }
     if (payload.eventType === 'UPDATE') {
       const updatedTemplate = payload.new
-      const isUpdatedAtGMT = (updatedTemplate.updatedAt as unknown as string).slice(-1).toLowerCase() === 'z'
-      if (!isUpdatedAtGMT) {
-        // DB stores GMT timestamp without 'z', so need to append this manually
-        updatedTemplate.updatedAt = ((updatedTemplate.updatedAt as unknown as string) + 'Z') as unknown as Date
-        // This casting is safe
-      }
+      updatedTemplate.updatedAt = validateTimeStamp(updatedTemplate.updatedAt)
       const oldTemplate = templates && templates.find((template) => template.id == updatedTemplate.id)
       if (payload.new.workspaceId === tokenPayload?.workspaceId) {
         if (updatedTemplate.deletedAt) {
@@ -87,8 +75,8 @@ export const RealTimeTemplates = ({
   }
 
   useEffect(() => {
-    if (!userId || !userRole) {
-      // Don't try to open a connection with `undefined` parameters
+    console.log(tokenPayload)
+    if (!tokenPayload.internalUserId) {
       return
     }
     const channel = supabase
