@@ -100,7 +100,6 @@ export const TemplateBoard = ({
             }
             if (targetMethod === TargetMethod.POST) {
               const data = await handleCreateTemplate(temp)
-              store.dispatch(setTemplates([data as ITemplate, ...templates]))
             } else {
               handleEditTemplate(temp, targetTemplateId)
             }
