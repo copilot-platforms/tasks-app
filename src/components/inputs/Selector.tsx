@@ -191,7 +191,7 @@ export default function Selector({
           }}
           openOnFocus
           onKeyDown={handleKeyDown}
-          ListboxProps={{ sx: { maxHeight: { xs: '175px', sm: '291px' }, padding: '0px' } }}
+          ListboxProps={{ sx: { maxHeight: { xs: '175px', sm: '291px' }, padding: '0px 0px 8px 0px' } }}
           options={extraOption ? [extraOption, ...options] : options}
           value={value}
           onChange={(_, newValue: unknown) => {
@@ -265,7 +265,7 @@ export default function Selector({
                   sx={{
                     color: 'gray',
                     textAlign: 'left',
-                    padding: '2px 14px',
+                    padding: '6px 14px',
 
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
