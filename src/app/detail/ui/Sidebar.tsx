@@ -92,7 +92,7 @@ export const Sidebar = ({
     }
   }, [isMobile])
 
-  if (!activeTask) return null
+  if (!activeTask) return <SidebarSkeleton />
 
   return (
     <Box
