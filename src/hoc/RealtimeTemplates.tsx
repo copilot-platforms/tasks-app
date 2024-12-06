@@ -30,7 +30,7 @@ export const RealTimeTemplates = ({
 
   const handleTemplatesRealTimeUpdates = (payload: RealtimePostgresChangesPayload<RealTimeTemplateResponse>) => {
     if (payload.eventType === 'INSERT') {
-      let canUserAccessTask = payload.new.workspaceId === tokenPayload?.workspaceId
+      let canUserAccessTask = payload.new.workspaceId === tokenPayload.workspaceId
       if (canUserAccessTask) {
         templates
           ? store.dispatch(
@@ -43,7 +43,7 @@ export const RealTimeTemplates = ({
       const updatedTemplate = payload.new
       updatedTemplate.updatedAt = validateTimeStamp(updatedTemplate.updatedAt)
       const oldTemplate = templates && templates.find((template) => template.id == updatedTemplate.id)
-      if (payload.new.workspaceId === tokenPayload?.workspaceId) {
+      if (payload.new.workspaceId === tokenPayload.workspaceId) {
         if (updatedTemplate.deletedAt) {
           const newTemplateArr = templates && templates.filter((el) => el.id !== updatedTemplate.id)
           store.dispatch(setTemplates(newTemplateArr))
@@ -75,7 +75,6 @@ export const RealTimeTemplates = ({
   }
 
   useEffect(() => {
-    console.log(tokenPayload)
     if (!tokenPayload.internalUserId) {
       return
     }
@@ -89,7 +88,7 @@ export const RealTimeTemplates = ({
           event: '*',
           schema: 'public',
           table: 'TaskTemplates',
-          filter: `workspaceId=eq.${tokenPayload?.workspaceId}`,
+          filter: `workspaceId=eq.${tokenPayload.workspaceId}`,
         },
         handleTemplatesRealTimeUpdates,
       )
