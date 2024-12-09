@@ -16,6 +16,7 @@ import { CustomLink } from '@/hoc/CustomLink'
 import { getAssigneeName } from '@/utils/assignee'
 import { GetMaxAssigneeNameWidth } from '@/utils/getMaxAssigneeNameWidth'
 import { useEffect, useState } from 'react'
+import { isTaskCompleted } from '@/utils/isTaskCompleted'
 
 export const ClientTaskCard = ({
   task,
@@ -28,7 +29,7 @@ export const ClientTaskCard = ({
   markdoneFlag: boolean
   href: string | UrlObject
 }) => {
-  const { assignee } = useSelector(selectTaskBoard)
+  const { assignee, workflowStates } = useSelector(selectTaskBoard)
   const [currentAssignee, setCurrentAssignee] = useState<IAssigneeCombined | undefined>(undefined)
 
   useEffect(() => {
@@ -132,7 +133,7 @@ export const ClientTaskCard = ({
                     }}
                   >
                     <Typography variant="bodySm" sx={{ fontSize: '12px', color: (theme) => theme.color.gray[500] }}>
-                      <DueDateLayout dateString={task.dueDate} />
+                      <DueDateLayout dateString={task.dueDate} isDone={isTaskCompleted(task, workflowStates)} />
                     </Typography>
                   </Box>
                 )}
@@ -149,7 +150,7 @@ export const ClientTaskCard = ({
                   >
                     {task.dueDate && (
                       <Typography variant="bodySm" sx={{ fontSize: '12px', color: (theme) => theme.color.gray[500] }}>
-                        <DueDateLayout dateString={task.dueDate} />
+                        <DueDateLayout dateString={task.dueDate} isDone={isTaskCompleted(task, workflowStates)} />
                       </Typography>
                     )}
                   </Box>
