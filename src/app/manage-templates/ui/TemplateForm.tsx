@@ -160,6 +160,15 @@ const NewTaskFormInputs = () => {
 }
 
 const NewTaskFooter = ({ handleCreate, targetMethod }: { handleCreate: () => void; targetMethod: TargetMethod }) => {
+  const { taskName } = useSelector(selectCreateTemplate)
+  const handleTemplateCreation = () => {
+    const hasTitleError = !taskName.trim()
+    if (hasTitleError) {
+      store.dispatch(setErrors({ key: createTemplateErrors.TITLE, value: true }))
+    } else {
+      handleCreate()
+    }
+  }
   return (
     <Box sx={{ borderTop: (theme) => `1px solid ${theme.color.borders.border2}` }}>
       <AppMargin size={SizeofAppMargin.MEDIUM} py="16px">
@@ -176,7 +185,10 @@ const NewTaskFooter = ({ handleCreate, targetMethod }: { handleCreate: () => voi
                 </Typography>
               }
             />
-            <PrimaryBtn handleClick={handleCreate} buttonText={targetMethod === TargetMethod.POST ? 'Create' : 'Save'} />
+            <PrimaryBtn
+              handleClick={handleTemplateCreation}
+              buttonText={targetMethod === TargetMethod.POST ? 'Create' : 'Save'}
+            />
           </Stack>
         </Stack>
       </AppMargin>
