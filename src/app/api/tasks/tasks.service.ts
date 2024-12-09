@@ -145,8 +145,6 @@ export class TasksService extends BaseService {
     const labelMappingService = new LabelMappingService(this.user)
     const label = z.string().parse(await labelMappingService.getLabel(data.assigneeId, data.assigneeType))
 
-    console.log('\n\n\n\n\n\npayload', data)
-
     // Create a new task associated with current workspaceId. Also inject current request user as the creator.
     const newTask = await this.db.task.create({
       data: {

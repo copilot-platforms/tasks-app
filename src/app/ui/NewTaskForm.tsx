@@ -286,10 +286,6 @@ const NewTaskFooter = ({ handleCreate, handleClose }: NewTaskFormProps) => {
   const { token } = useSelector(selectTaskBoard)
   const { templates } = useSelector(selectCreateTemplate)
 
-  useEffect(() => {
-    console.log('descriptoin', description)
-  }, [description])
-
   const { renderingItem: _templateValue, updateRenderingItem: updateTemplateValue } = useHandleSelectorComponent({
     item: undefined, //initially we don't want any value to be selected
     type: SelectorType.TEMPLATE_SELECTOR,

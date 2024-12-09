@@ -42,8 +42,6 @@ export class TemplatesService extends BaseService {
     if (newBody) {
       newBody = await replaceImageSrc(newBody, getSignedUrl)
     }
-    console.log('\n\nold', template.body)
-    console.log('\n\n\nnew', newBody)
     return { ...template, body: newBody }
   }
 

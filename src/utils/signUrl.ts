@@ -3,7 +3,6 @@ import { supabaseBucket } from '@/config'
 import { signedUrlTtl } from '@/constants/attachments'
 
 export const getSignedUrl = async (filePath: string) => {
-  console.log('\n\n\n\n\nfp', filePath)
   const supabase = new SupabaseService()
   const { data } = await supabase.supabase.storage.from(supabaseBucket).createSignedUrl(filePath, signedUrlTtl)
 

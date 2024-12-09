@@ -56,7 +56,6 @@ export const getSignedUrlUpload = async (req: NextRequest) => {
 
   const user = await authenticate(req)
   const attachmentsService = new AttachmentsService(user)
-  console.log('\n\n\n\nxxx attach signed', fileName, filePath)
   const signedUrl = await attachmentsService.signUrlUpload(fileName, filePath)
   return NextResponse.json({ signedUrl })
 }

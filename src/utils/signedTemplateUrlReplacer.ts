@@ -24,18 +24,28 @@ const extractTemplatePath = (url: string): string | null => {
 export const copyTemplateMediaToTask = async (workspaceId: string, body: string): Promise<string | null> => {
   // Regex to match template img srcs
   // Eg https://abcd.supabase.co/storage/v1/object/sign/media/{workspaceId}/templates/
-  const templateImageRegex = /^https:\/\/([^\/]+)\.supabase\.co\/storage\/v1\/object\/sign\/media\/([^\/]+)\/templates\//
+  const templateUrlRegex = /^https:\/\/([^\/]+)\.supabase\.co\/storage\/v1\/object\/sign\/media\/([^\/]+)\/templates\//
 
   const dom = new JSDOM(body)
   const document = dom.window.document
   const images = document.querySelectorAll('img')
+  const attachments = document.querySelectorAll('div[data-type="attachment"]')
 
   // Extract all img src with images belonging to template folder
-  const srcArray = Array.from(images)
+  const imgArray = Array.from(images)
     .map((img) => img.src)
-    .filter((url) => templateImageRegex.test(url))
+    .filter((url) => templateUrlRegex.test(url))
     .map((url) => extractTemplatePath(url))
     .filter((url): url is string => !!url)
+
+  const attachmentsArray = Array.from(attachments)
+    .map((attachmentEl) => attachmentEl.getAttribute('data-src'))
+    .filter((url): url is string => !!url)
+    .filter((url) => templateUrlRegex.test(url))
+    .map((url) => extractTemplatePath(url))
+    .filter((url): url is string => !!url)
+
+  const srcArray = [...imgArray, ...attachmentsArray]
 
   // Copy assets from template folder to root of workspaceId folder
   const supabase = new SupabaseActions()
@@ -46,12 +56,11 @@ export const copyTemplateMediaToTask = async (workspaceId: string, body: string)
     const newUniqueFilename = crypto.randomUUID() + filename.slice(36)
     copyPromises.push(supabase.copyAttachment(src, `${workspaceId}/${newUniqueFilename}`))
   }
+
   const destinations = await Promise.all(copyPromises)
   // Strip bucketName from destinations to get a 1:1 mapping of src -> destination
   const destArray = destinations.map((path) => path.replace(`${supabaseBucket}/`, ''))
-  console.log('\n\n\n\n\n\n\n\n\n\n\n\nxxx signed', await getSignedUrl(destArray[0]))
   for (let i in srcArray) {
-    console.log('\n\n\n\n\n\n\n\nxxx', srcArray[i], destArray[i])
     body = body.replace(srcArray[i], destArray[i])
   }
 
