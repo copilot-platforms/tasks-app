@@ -8,6 +8,7 @@ import store from '@/redux/store'
 import { setShowModal } from '@/redux/features/createTaskSlice'
 import { IconBtn } from '../buttons/IconBtn'
 import { AddIcon, AddLargeIcon } from '@/icons'
+import { MenuBoxContainer } from '@/app/ui/MenuBoxContainer'
 
 export const Header = ({ showCreateTaskButton }: { showCreateTaskButton: boolean }) => {
   return (
@@ -15,31 +16,35 @@ export const Header = ({ showCreateTaskButton }: { showCreateTaskButton: boolean
       <AppMargin size={SizeofAppMargin.HEADER} py="14px">
         <Stack direction="row" alignItems="center" justifyContent="space-between">
           <Typography variant="lg">Tasks</Typography>
+
           {showCreateTaskButton && (
-            <>
-              <Box
-                sx={{
-                  display: { xs: 'none', sm: 'block' },
-                }}
-              >
-                <PrimaryBtn
-                  startIcon={<AddIcon />}
-                  buttonText="New task"
-                  handleClick={() => {
-                    store.dispatch(setShowModal())
+            <Stack direction="row" alignItems="center" columnGap={'14px'}>
+              <MenuBoxContainer />
+              <>
+                <Box
+                  sx={{
+                    display: { xs: 'none', sm: 'block' },
                   }}
-                />
-              </Box>
-              <Box sx={{ display: { xs: 'block', sm: 'none' } }}>
-                <IconBtn
-                  handleClick={() => {
-                    store.dispatch(setShowModal())
-                  }}
-                  padding="8px"
-                  icon={<AddLargeIcon />}
-                />
-              </Box>
-            </>
+                >
+                  <PrimaryBtn
+                    startIcon={<AddIcon />}
+                    buttonText="New task"
+                    handleClick={() => {
+                      store.dispatch(setShowModal())
+                    }}
+                  />
+                </Box>
+                <Box sx={{ display: { xs: 'block', sm: 'none' } }}>
+                  <IconBtn
+                    handleClick={() => {
+                      store.dispatch(setShowModal())
+                    }}
+                    padding="8px"
+                    icon={<AddLargeIcon />}
+                  />
+                </Box>
+              </>
+            </Stack>
           )}
         </Stack>
       </AppMargin>

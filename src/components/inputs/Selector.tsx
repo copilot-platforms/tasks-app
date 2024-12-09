@@ -47,6 +47,9 @@ interface Prop {
   onClick?: () => void
   error?: boolean
   endIcon?: ReactNode
+  endOption?: ReactNode
+  endOptionHref?: string
+  listAutoHeightMax?: string
 }
 
 export default function Selector({
@@ -72,6 +75,9 @@ export default function Selector({
   onClick,
   error,
   endIcon,
+  endOption,
+  endOptionHref,
+  listAutoHeightMax,
 }: Prop) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
@@ -98,7 +104,7 @@ export default function Selector({
       return (option as WorkflowStateResponse).name as string
     }
     if (selectorType === SelectorType.TEMPLATE_SELECTOR) {
-      return (option as ITemplate).templateName as string
+      return (option as ITemplate).title as string
     } else {
       return ''
     }
@@ -123,6 +129,10 @@ export default function Selector({
       setAnchorEl(null)
     }
   }
+
+  const ListWithEndOption = (props: JSX.IntrinsicElements['div']) => (
+    <ListComponent {...props} endOption={endOption} endOptionHref={endOptionHref} autoHeightMax={listAutoHeightMax} />
+  )
 
   return (
     <Stack direction="column">
@@ -201,7 +211,7 @@ export default function Selector({
               setInputStatusValue('')
             }
           }}
-          ListboxComponent={ListComponent}
+          ListboxComponent={ListWithEndOption}
           getOptionLabel={(option: unknown) => detectSelectorType(option)}
           groupBy={(option: unknown) =>
             selectorType === SelectorType.ASSIGNEE_SELECTOR ? UserTypesName[(option as IAssigneeCombined).type] : ''
@@ -311,11 +321,23 @@ const TemplateSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTM
         '&.MuiAutocomplete-option[aria-selected="true"].Mui-focused': {
           bgcolor: (theme) => theme.color.gray[100],
         },
+        '&.MuiAutocomplete-option': {
+          minHeight: { xs: '32px' },
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap',
+        },
+        '&.MuiAutocomplete-option.Mui-focused': {
+          bgcolor: (theme) => theme.color.background.bgHover,
+        },
+        '&.MuiAutocomplete-option:hover': {
+          bgcolor: (theme) => theme.color.background.bgHover,
+        },
       }}
     >
       <Stack direction="row" alignItems="center" columnGap={3}>
         <Typography variant="sm" fontWeight={400}>
-          {(option as ITemplate).templateName as string}
+          {(option as ITemplate).title as string}
         </Typography>
       </Stack>
     </Box>

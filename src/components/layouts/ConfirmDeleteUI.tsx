@@ -9,46 +9,46 @@ import { PrimaryBtn } from '../buttons/PrimaryBtn'
 interface Prop {
   handleCancel: () => void
   handleDelete: () => void
-  body?: 'task' | 'comment'
+  bodyTag?: 'task' | 'comment' | 'template'
+  customBody?: string
+  description?: string
 }
 
-export const ConfirmDeleteUI = ({ handleCancel, handleDelete, body = 'task' }: Prop) => {
+export const ConfirmDeleteUI = ({
+  handleCancel,
+  handleDelete,
+  bodyTag = 'task',
+  customBody,
+  description = `This action can't be undone.`,
+}: Prop) => {
   return (
     <UIContainer sx={{ width: { xs: '80%', sm: '470px' } }}>
       <StyledBox>
-        <AppMargin size={SizeofAppMargin.MEDIUM} py="20px">
-          <Stack direction="column" rowGap={4}>
-            <Typography variant="2xl" sx={{ fontSize: { xs: '18px', sm: '24px' }, lineHeight: { xs: '26px', md: '32px' } }}>
-              Are you sure you want to delete this {body}?
-            </Typography>
-            <Typography
-              variant="lg"
-              sx={{
-                color: (theme) => theme.color.gray[500],
-                fontSize: { xs: '14px', sm: '16px' },
-                lineHeight: { xs: '20px', md: '24px' },
-              }}
-            >
-              This action can&apos;t be undone.
-            </Typography>
-          </Stack>
-        </AppMargin>
-      </StyledBox>
-      <AppMargin size={SizeofAppMargin.MEDIUM} py="21px">
-        <Stack direction="row" justifyContent="right" alignItems="center">
-          <Stack direction="row" columnGap={4}>
-            <SecondaryBtn
-              handleClick={handleCancel}
-              buttonContent={
-                <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[700] }}>
-                  Cancel
-                </Typography>
-              }
-            />
-            <PrimaryBtn handleClick={() => handleDelete()} buttonText="Delete" buttonBackground="#CC0000" />
-          </Stack>
+        <Stack direction="column" rowGap={4} sx={{ padding: '12px 12px 12px 20px' }}>
+          <Typography variant="lg">
+            {customBody ? customBody : `Are you sure you want to delete this ${bodyTag}?`}
+          </Typography>
         </Stack>
-      </AppMargin>
+      </StyledBox>
+      <StyledBox>
+        <Stack direction="column" rowGap={4} sx={{ padding: '20px' }}>
+          <Typography variant="bodyMd">{description}</Typography>
+        </Stack>
+      </StyledBox>
+
+      <Stack direction="row" justifyContent="right" alignItems="center" sx={{ padding: '16px 20px' }}>
+        <Stack direction="row" columnGap={4}>
+          <SecondaryBtn
+            handleClick={handleCancel}
+            buttonContent={
+              <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[700] }}>
+                Cancel
+              </Typography>
+            }
+          />
+          <PrimaryBtn handleClick={() => handleDelete()} buttonText="Delete" buttonBackground="#CC0000" />
+        </Stack>
+      </Stack>
     </UIContainer>
   )
 }

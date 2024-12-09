@@ -5,6 +5,7 @@ import {
   selectCreateTask,
   setShowModal,
   setActiveWorkflowStateId,
+  setCreateTaskFields,
 } from '@/redux/features/createTaskSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
@@ -17,6 +18,7 @@ import { CreateTaskRequestSchema } from '@/types/dto/tasks.dto'
 import { NewTaskForm } from './NewTaskForm'
 import { FilterOptions, ISignedUrlUpload } from '@/types/interfaces'
 import dayjs from 'dayjs'
+import { useEffect } from 'react'
 
 export const ModalNewTaskForm = ({
   handleCreateMultipleAttachments,
@@ -37,6 +39,10 @@ export const ModalNewTaskForm = ({
     // NOTE: Reimplement in M3
     // await bulkRemoveAttachments(attachments)
   }
+
+  useEffect(() => {
+    store.dispatch(setCreateTaskFields({ targetField: 'description', value: '' }))
+  }, [showModal])
 
   return (
     <Modal

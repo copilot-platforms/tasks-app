@@ -53,7 +53,7 @@ export const NoTemplateLayout = () => {
             handleClick={() => {
               store.dispatch(setShowTemplateModal({ targetMethod: TargetMethod.POST }))
             }}
-            buttonText="New Template"
+            buttonText="Create template"
             startIcon={<PlusIcon />}
           />
         </Box>

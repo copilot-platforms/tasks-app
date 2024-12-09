@@ -22,6 +22,10 @@ export enum CreateTaskErrors {
   ASSIGNEE = 'assignee',
 }
 
+export enum createTemplateErrors {
+  TITLE = 'title',
+}
+
 export enum FileTypes {
   PNG = 'image/png',
   PDF = 'application/pdf',
@@ -127,13 +131,14 @@ export interface IAssigneeSuggestions {
 export interface ITemplate {
   id: string
   workspaceId: string
-  templateName: string
   title: string
   body: string
   assigneeId: string
   assigneeType: string
   workflowStateId: string
   createdBy: string
+  createdAt: Date
+  updatedAt: Date
 }
 
 export interface ISignedUrlUpload {
