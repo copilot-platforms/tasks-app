@@ -25,12 +25,25 @@ import { CustomDragLayer } from '@/components/CustomDragLayer'
 import { CardDragLayer } from '@/components/cards/CardDragLayer'
 import { UserRole } from '@api/core/types/user'
 import { clientUpdateTask } from '@/app/detail/[task_id]/[user_type]/actions'
+import { TaskDataFetcher } from '@/app/_fetchers/TaskDataFetcher'
+import { NoFilteredTasksState } from '@/components/layouts/EmptyState/NoFilteredTasksState'
 
 interface TaskBoardProps {
   mode: UserRole
 }
 export const TaskBoard = ({ mode }: TaskBoardProps) => {
-  const { workflowStates, tasks, token, filteredTasks, view, viewSettingsTemp, filterOptions } = useSelector(selectTaskBoard)
+  const {
+    workflowStates,
+    tasks,
+    token,
+    filteredTasks,
+    view,
+    viewSettingsTemp,
+    filterOptions,
+    showArchived,
+    showUnarchived,
+    isTasksLoading,
+  } = useSelector(selectTaskBoard)
 
   const onDropItem = useCallback(
     (payload: { taskId: string; targetWorkflowStateId: string }) => {
@@ -48,7 +61,6 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
     },
     [token],
   )
-
   const filterTaskWithWorkflowStateId = (workflowStateId: string): TaskResponse[] => {
     return filteredTasks.filter((task) => task.workflowStateId === workflowStateId)
   }
@@ -63,15 +75,31 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
     return filteredTaskCount.toString() + '/' + taskCount.toString()
   }
 
-  if (tasks && tasks.length === 0) {
-    return <DashboardEmptyState userType={mode} />
-  }
-
   const viewBoardSettings = viewSettingsTemp ? viewSettingsTemp.viewMode : view
   const getCardHref = (task: { id: string }) => `/detail/${task.id}/${mode === UserRole.IU ? 'iu' : 'cu'}`
 
+  const userHasNoFilter =
+    filterOptions &&
+    !filterOptions.type &&
+    !filterOptions.keyword &&
+    !filterOptions.assignee &&
+    showUnarchived &&
+    !showArchived
+
+  const isNoTasksWithFilter = tasks && !userHasNoFilter && !filteredTasks.length
+
+  if (tasks && tasks.length === 0 && userHasNoFilter && !isTasksLoading) {
+    return (
+      <>
+        <TaskDataFetcher token={token ?? ''} />
+        <DashboardEmptyState userType={mode} />
+      </>
+    )
+  }
+
   return (
     <>
+      <TaskDataFetcher token={token ?? ''} />
       <Header showCreateTaskButton={mode === UserRole.IU} />
       <FilterBar
         mode={mode}
@@ -80,7 +108,9 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
         }}
       />
 
-      {viewBoardSettings === View.BOARD_VIEW && (
+      {isNoTasksWithFilter && !isTasksLoading && <NoFilteredTasksState />}
+
+      {!isNoTasksWithFilter && viewBoardSettings === View.BOARD_VIEW && (
         <Box sx={{ padding: '12px 12px' }}>
           <Stack
             columnGap={2}
@@ -108,7 +138,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
                 >
                   <CustomScrollbar style={{ padding: '4px' }}>
                     <Stack direction="column" rowGap="6px" sx={{ overflowX: 'auto' }}>
-                      {sortTaskByDescendingOrder(filterTaskWithWorkflowStateId(list.id)).map((task, index) => {
+                      {sortTaskByDescendingOrder<TaskResponse>(filterTaskWithWorkflowStateId(list.id)).map((task, index) => {
                         return (
                           <CustomLink
                             key={task.id}
@@ -142,7 +172,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
         </Box>
       )}
 
-      {viewBoardSettings === View.LIST_VIEW && (
+      {!isNoTasksWithFilter && viewBoardSettings === View.LIST_VIEW && (
         <Stack
           sx={{
             flexDirection: 'column',
@@ -169,7 +199,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
                   taskCount={taskCountForWorkflowStateId(list.id)}
                   display={!!filterTaskWithWorkflowStateId(list.id).length}
                 >
-                  {sortTaskByDescendingOrder(filterTaskWithWorkflowStateId(list.id)).map((task, index) => {
+                  {sortTaskByDescendingOrder<TaskResponse>(filterTaskWithWorkflowStateId(list.id)).map((task, index) => {
                     return (
                       <CustomLink key={task.id} href={{ pathname: getCardHref(task), query: { token } }}>
                         <DragDropHandler

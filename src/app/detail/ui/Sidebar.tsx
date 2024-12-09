@@ -49,7 +49,7 @@ export const Sidebar = ({
   disabled: boolean
   workflowDisabled?: false
 }) => {
-  const { tasks, token, workflowStates, assignee } = useSelector(selectTaskBoard)
+  const { activeTask, token, workflowStates, assignee } = useSelector(selectTaskBoard)
   const { showSidebar } = useSelector(selectTaskDetails)
   const [filteredAssignees, setFilteredAssignees] = useState(assignee)
   const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
@@ -72,15 +72,16 @@ export const Sidebar = ({
   const assigneeValue = _assigneeValue as IAssigneeCombined //typecasting
 
   useEffect(() => {
-    if (tasks && workflowStates) {
-      const currentTask = tasks.find((el) => el.id === task_id)
+    if (activeTask && workflowStates) {
+      const currentTask = activeTask
+
       const currentWorkflowState = workflowStates.find((el) => el?.id === currentTask?.workflowStateId)
       const currentAssigneeId = currentTask?.assigneeId
       updateStatusValue(currentWorkflowState)
       updateAssigneeValue(currentAssigneeId ? assignee.find((el) => el.id === currentAssigneeId) : NoAssignee)
       setDueDate(currentTask?.dueDate)
     }
-  }, [tasks, workflowStates])
+  }, [activeTask, workflowStates])
 
   const windowWidth = useWindowWidth()
   const isMobile = windowWidth < 600 && windowWidth !== 0
@@ -91,7 +92,7 @@ export const Sidebar = ({
     }
   }, [isMobile])
 
-  if (!tasks) return null
+  if (!activeTask) return <SidebarSkeleton />
 
   return (
     <Box
@@ -102,23 +103,28 @@ export const Sidebar = ({
         width: isMobile && showSidebar ? '100vw' : '25vw',
       }}
     >
-      <Stack direction="row" justifyContent="space-between" alignItems="center">
-        <StyledBox
-          display="flex"
-          justifyContent="space-between"
-          alignItems="center"
-          sx={{ padding: { xs: '16px 20px', sm: '20px 20px' } }}
-        >
-          <Typography variant="sm">Properties</Typography>
-          <Box
-            sx={{
-              display: isMobile ? 'block' : 'none',
-            }}
+      <StyledBox>
+        <AppMargin size={SizeofAppMargin.LARGE} py="16px">
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+            sx={{ height: { sm: '32px', md: '36px' } }}
           >
-            <ToggleButtonContainer />
-          </Box>
-        </StyledBox>
-      </Stack>
+            <Typography variant="sm" lineHeight={'21px'} fontSize={'13px'}>
+              Properties
+            </Typography>
+            <Box
+              sx={{
+                display: isMobile ? 'block' : 'none',
+              }}
+            >
+              <ToggleButtonContainer />
+            </Box>
+          </Stack>
+        </AppMargin>
+      </StyledBox>
+
       <AppMargin size={SizeofAppMargin.SMALL}>
         <Stack direction="row" alignItems="center" m="16px 0px" columnGap="10px">
           <StyledText variant="md" minWidth="80px">

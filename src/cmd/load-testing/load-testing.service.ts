@@ -89,7 +89,10 @@ class LoadTester {
   private async seedTasks(users: Taskable[], assigneeType: TaskableAssigneeType, taskPerUser: number) {
     const seedPromises = []
     for (let user of users) {
-      const data: Omit<Task, 'id' | 'completedAt' | 'deletedAt' | 'lastActivityLogUpdated'>[] = []
+      const data: Omit<
+        Task,
+        'id' | 'completedAt' | 'deletedAt' | 'lastActivityLogUpdated' | 'isArchived' | 'lastArchivedDate'
+      >[] = []
       const currentUser = await authenticateWithToken(this.token, this.apiKey)
       const labelsService = new LabelMappingService(currentUser, this.apiKey)
       const workflowStates = await this.db.workflowState.findMany({

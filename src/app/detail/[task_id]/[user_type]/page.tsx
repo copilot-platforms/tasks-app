@@ -41,6 +41,8 @@ import { z } from 'zod'
 import { ActivityWrapper } from '@/app/detail/ui/ActivityWrapper'
 import { DeletedTaskRedirectPage } from '@/components/layouts/DeletedTaskRedirectPage'
 import { UserRole } from '@/app/api/core/types/user'
+import { ArchiveWrapper } from '@/app/detail/ui/ArchiveWrapper'
+import { LastArchivedField } from '@/app/detail/ui/LastArchiveField'
 import { signedUrlTtl } from '@/constants/attachments'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
@@ -114,7 +116,6 @@ export default async function TaskDetailPage({
                     <Typography
                       variant="sm"
                       sx={{
-                        marginTop: '3px',
                         fontSize: '13px',
                       }}
                     >
@@ -123,7 +124,12 @@ export default async function TaskDetailPage({
                   </Stack>
                   <Stack direction="row" alignItems="center" columnGap="8px">
                     {params.user_type === UserType.INTERNAL_USER && <MenuBoxContainer />}
-                    <ToggleButtonContainer />
+
+                    <Stack direction="row" alignItems="center" columnGap="8px">
+                      <ArchiveWrapper taskId={task_id} userType={user_type} />
+
+                      <ToggleButtonContainer />
+                    </Stack>
                   </Stack>
                 </Stack>
               </AppMargin>
@@ -135,6 +141,7 @@ export default async function TaskDetailPage({
                 }}
               >
                 <StyledTiptapDescriptionWrapper>
+                  <LastArchivedField />
                   <TaskEditor
                     // attachment={attachments}
                     task_id={task_id}

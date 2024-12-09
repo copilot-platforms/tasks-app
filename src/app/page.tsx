@@ -31,8 +31,18 @@ export async function getAllWorkflowStates(token: string): Promise<WorkflowState
   return data.workflowStates
 }
 
-export async function getAllTasks(token: string): Promise<TaskResponse[]> {
-  const res = await fetch(`${apiUrl}/api/tasks?token=${token}`, {
+export async function getAllTasks(
+  token: string,
+  filters?: { showArchived?: boolean; showUnarchived?: boolean },
+): Promise<TaskResponse[]> {
+  const queryParams = new URLSearchParams({ token })
+  if (filters?.showArchived !== undefined) {
+    queryParams.append('showArchived', filters.showArchived.toString())
+  }
+  if (filters?.showUnarchived !== undefined) {
+    queryParams.append('showUnarchived', filters.showUnarchived.toString())
+  }
+  const res = await fetch(`${apiUrl}/api/tasks?${queryParams.toString()}`, {
     next: { tags: ['getTasks'] },
   })
 
@@ -72,14 +82,13 @@ export default async function Main({ searchParams }: { searchParams: { token: st
   // Both clients and IUs can access this page so hardcoding a UserRole will not work
   redirectIfTaskCta(searchParams, userRole)
 
-  const [workflowStates, tasks, viewSettings] = await Promise.all([
+  const viewSettings = await getViewSettings(token)
+  const [workflowStates, tasks] = await Promise.all([
     getAllWorkflowStates(token),
-    getAllTasks(token),
-    getViewSettings(token),
+    getAllTasks(token, { showArchived: viewSettings.showArchived, showUnarchived: viewSettings.showUnarchived }),
   ])
 
   console.info(`app/page.tsx | Serving user ${token} with payload`, tokenPayload)
-
   return (
     <ClientSideStateUpdate
       workflowStates={workflowStates}

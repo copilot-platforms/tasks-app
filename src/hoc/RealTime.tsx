@@ -3,7 +3,7 @@
 import { UserRole } from '@/app/api/core/types/user'
 import { supabase } from '@/lib/supabase'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
-import { selectTaskBoard, setTasks } from '@/redux/features/taskBoardSlice'
+import { selectTaskBoard, setActiveTask, setFilteredTasks, setTasks } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
 import { Token } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
@@ -27,7 +27,8 @@ export const RealTime = ({
   task?: TaskResponse
   tokenPayload: Token
 }) => {
-  const { tasks, token } = useSelector(selectTaskBoard)
+  const { tasks, token, activeTask } = useSelector(selectTaskBoard)
+  const { showUnarchived, showArchived } = useSelector(selectTaskBoard)
   const pathname = usePathname()
   const router = useRouter()
 
@@ -50,9 +51,8 @@ export const RealTime = ({
       if (userRole === AssigneeType.client) {
         canUserAccessTask = canUserAccessTask && [userId, tokenPayload?.companyId].includes(payload.new.assigneeId)
       }
-
       //check if the new task in this event belongs to the same workspaceId
-      if (canUserAccessTask) {
+      if (canUserAccessTask && showUnarchived) {
         store.dispatch(setTasks([...tasks, { ...payload.new, createdAt: new Date(payload.new.createdAt + 'Z') }]))
         // NOTE: we append a Z here to make JS understand this raw timestamp (in format YYYY-MM-DD:HH:MM:SS.MS) is in UTC timezone
         // New payloads listened on the 'INSERT' action in realtime doesn't contain this tz info so the order can mess up
@@ -60,7 +60,14 @@ export const RealTime = ({
     }
     if (payload.eventType === 'UPDATE') {
       const updatedTask = payload.new
-      const oldTask = tasks.find((task) => task.id == updatedTask.id)
+      const isCreatedAtGMT = (updatedTask.createdAt as unknown as string).slice(-1).toLowerCase() === 'z'
+      if (!isCreatedAtGMT) {
+        // DB stores GMT timestamp without 'z', so need to append this manually
+        updatedTask.createdAt = ((updatedTask.createdAt as unknown as string) + 'Z') as unknown as Date
+        // This casting is safe
+      }
+      const oldTask =
+        activeTask && updatedTask.id === activeTask.id ? activeTask : tasks.find((task) => task.id == updatedTask.id)
 
       if (payload.new.workspaceId === tokenPayload?.workspaceId) {
         //check if the new task in this event belongs to the same workspaceId
@@ -68,6 +75,7 @@ export const RealTime = ({
         if (updatedTask.deletedAt) {
           const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
           store.dispatch(setTasks(newTaskArr))
+
           //if a user is in the details page when the task is deleted then we want the user to get redirected to '/' route
           if (pathname.includes('detail')) {
             if (pathname.includes('cu')) {
@@ -94,9 +102,18 @@ export const RealTime = ({
               updatedTask.body = replaceImgSrcs(updatedTask.body, newImgSrcs, oldImgSrcs)
             }
           }
-
+          if ((updatedTask.isArchived && !showArchived) || (!updatedTask.isArchived && !showUnarchived)) {
+            if (activeTask && activeTask.id === updatedTask.id) {
+              store.dispatch(setActiveTask(updatedTask))
+            }
+            store.dispatch(setTasks(tasks.filter((el) => el.id !== updatedTask.id)))
+            return
+          }
           const newTaskArr = [...tasks.filter((task) => task.id !== updatedTask.id), updatedTask]
           store.dispatch(setTasks(newTaskArr))
+          if (activeTask && activeTask.id === updatedTask.id) {
+            store.dispatch(setActiveTask(updatedTask))
+          }
         }
       }
     }

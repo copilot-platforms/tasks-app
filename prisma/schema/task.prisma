@@ -29,5 +29,8 @@ model Task {
   ClientNotification       ClientNotification[]
   InternalUserNotification InternalUserNotification[]
 
+  isArchived       Boolean   @default(false)
+  lastArchivedDate DateTime?
+
   @@map("Tasks")
 }
