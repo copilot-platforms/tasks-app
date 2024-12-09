@@ -6,6 +6,8 @@ model ScrapImage {
   createdAt   DateTime     @default(now()) @db.Timestamptz()
   updatedAt   DateTime     @updatedAt @db.Timestamptz()
   deletedAt   DateTime?    @db.Timestamptz()
+  templateId  String?      @db.Uuid
+  template    TaskTemplate? @relation(fields: [templateId], references: [id], onDelete: Cascade)
 
   @@index([createdAt])
   @@index([filePath])

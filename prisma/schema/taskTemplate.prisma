@@ -11,5 +11,8 @@ model TaskTemplate {
   updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
 
+  scrapImages     ScrapImage[]
+
+
   @@map("TaskTemplates")
 }
