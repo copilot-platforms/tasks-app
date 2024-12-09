@@ -52,7 +52,7 @@ const ListComponentInternal = forwardRef<Scrollbars, ListComponentProps>((props,
       >
         {children}
       </Scrollbars>
-      <Box onMouseDown={() => endOptionHref && router.push(endOptionHref)}>{endOption ?? null}</Box>
+      <Box onMouseDown={() => endOptionHref && endOptionHref && router.push(endOptionHref)}>{endOption ?? null}</Box>
     </Box>
   )
 })
