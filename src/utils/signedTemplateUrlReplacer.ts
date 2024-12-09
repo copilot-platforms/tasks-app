@@ -1,8 +1,6 @@
-import { JSDOM } from 'jsdom'
-import { SupabaseActions } from './SupabaseActions'
-import { TaskTemplate } from '@prisma/client'
 import { supabaseBucket } from '@/config'
-import { getSignedUrl } from './signUrl'
+import { SupabaseActions } from '@/utils/SupabaseActions'
+import { JSDOM } from 'jsdom'
 
 /**
  * Extracts the template path from a given url string
@@ -32,20 +30,15 @@ export const copyTemplateMediaToTask = async (workspaceId: string, body: string)
   const attachments = document.querySelectorAll('div[data-type="attachment"]')
 
   // Extract all img src with images belonging to template folder
-  const imgArray = Array.from(images)
-    .map((img) => img.src)
-    .filter((url) => templateUrlRegex.test(url))
-    .map((url) => extractTemplatePath(url))
-    .filter((url): url is string => !!url)
-
-  const attachmentsArray = Array.from(attachments)
-    .map((attachmentEl) => attachmentEl.getAttribute('data-src'))
+  const rawSrcArray = [
+    ...Array.from(images).map((el) => el.src),
+    ...Array.from(attachments).map((el) => el.getAttribute('data-src')),
+  ]
+  const srcArray = rawSrcArray
     .filter((url): url is string => !!url)
     .filter((url) => templateUrlRegex.test(url))
-    .map((url) => extractTemplatePath(url))
+    .map(extractTemplatePath)
     .filter((url): url is string => !!url)
-
-  const srcArray = [...imgArray, ...attachmentsArray]
 
   // Copy assets from template folder to root of workspaceId folder
   const supabase = new SupabaseActions()

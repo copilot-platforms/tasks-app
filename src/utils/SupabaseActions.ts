@@ -54,7 +54,6 @@ export class SupabaseActions extends SupabaseService {
     if (error) {
       throw new APIError(httpStatus.INTERNAL_SERVER_ERROR, error.message)
     }
-    const { path } = data
-    return path
+    return data.path
   }
 }

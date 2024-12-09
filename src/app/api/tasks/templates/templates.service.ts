@@ -4,15 +4,15 @@ import { signedUrlTtl } from '@/constants/attachments'
 import { CreateTemplateRequest, UpdateTemplateRequest } from '@/types/dto/templates.dto'
 import { copyTemplateMediaToTask } from '@/utils/signedTemplateUrlReplacer'
 import { getFilePathFromUrl, replaceImageSrc } from '@/utils/signedUrlReplacer'
+import { getSignedUrl } from '@/utils/signUrl'
 import { SupabaseActions } from '@/utils/SupabaseActions'
+import APIError from '@api/core/exceptions/api'
 import { BaseService } from '@api/core/services/base.service'
 import { PoliciesService } from '@api/core/services/policies.service'
 import { Resource } from '@api/core/types/api'
 import { UserAction } from '@api/core/types/user'
-import { z } from 'zod'
-import APIError from '../../core/exceptions/api'
 import httpStatus from 'http-status'
-import { getSignedUrl } from '@/utils/signUrl'
+import { z } from 'zod'
 
 export class TemplatesService extends BaseService {
   async getTaskTemplates() {
@@ -38,11 +38,12 @@ export class TemplatesService extends BaseService {
     if (!template) {
       throw new APIError(httpStatus.NOT_FOUND, 'Could not find template to apply')
     }
-    let newBody = template.body ? await copyTemplateMediaToTask(this.user.workspaceId, template.body) : template.body
-    if (newBody) {
-      newBody = await replaceImageSrc(newBody, getSignedUrl)
+    let replacedBody
+    if (template.body) {
+      replacedBody = await copyTemplateMediaToTask(this.user.workspaceId, template.body)
+      replacedBody = replacedBody && (await replaceImageSrc(replacedBody, getSignedUrl))
     }
-    return { ...template, body: newBody }
+    return { ...template, body: replacedBody || template.body }
   }
 
   async createTaskTemplate(payload: CreateTemplateRequest) {
