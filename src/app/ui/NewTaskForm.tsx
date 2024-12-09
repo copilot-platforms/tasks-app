@@ -1,16 +1,18 @@
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { MiniLoader } from '@/components/atoms/MiniLoader'
+import AttachmentLayout from '@/components/AttachmentLayout'
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
 import { DatePickerComponent } from '@/components/inputs/DatePickerComponent'
 import Selector, { SelectorType } from '@/components/inputs/Selector'
 import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
 import { StyledTextField } from '@/components/inputs/TextField'
+import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
-import { ArrowLinkIcon, ArrowRightIcon, AssigneePlaceholderSmall, CloseIcon, TemplateIconSm } from '@/icons'
+import { ArrowRightIcon, AssigneePlaceholderSmall, CloseIcon, TemplateIconSm } from '@/icons'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
-import { selectCreateTask, setCreateTaskFields, setErrors, setShowModal } from '@/redux/features/createTaskSlice'
+import { selectCreateTask, setCreateTaskFields, setErrors } from '@/redux/features/createTaskSlice'
 import { selectTaskBoard, setAssigneeList } from '@/redux/features/taskBoardSlice'
 import { selectCreateTemplate } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
@@ -27,19 +29,20 @@ import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
 import { NoAssigneeExtraOptions } from '@/utils/noAssignee'
 import { setDebouncedFilteredAssignees } from '@/utils/users'
-import { Box, Link, Stack, Typography, styled } from '@mui/material'
-import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { Box, Stack, Typography, styled } from '@mui/material'
+import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
 import { z } from 'zod'
-import AttachmentLayout from '@/components/AttachmentLayout'
-import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
-import { ArrowRight } from '@mui/icons-material'
+
+interface NewTaskFormInputsProps {
+  isEditorReadonly?: boolean
+}
 
 interface NewTaskFormProps {
   handleCreate: () => void
   handleClose: () => void
+  setIsEditorReadonly?: Dispatch<SetStateAction<boolean>>
 }
 
 export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => {
@@ -73,6 +76,8 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
   const [tempAssignee, setTempAssignee] = useState<IAssigneeCombined | null>(assigneeValue)
 
   const [inputStatusValue, setInputStatusValue] = useState('')
+
+  const [isEditorReadonly, setIsEditorReadonly] = useState(false)
 
   const handleCreateWithAssignee = () => {
     if (!!tempAssignee?.id && !assignee.find((assignee) => assignee.id === tempAssignee.id)) {
@@ -108,7 +113,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
       </Stack>
 
       <AppMargin size={SizeofAppMargin.MEDIUM} py="16px">
-        <NewTaskFormInputs />
+        <NewTaskFormInputs isEditorReadonly={isEditorReadonly} />
 
         <Stack direction="row" columnGap={3} position="relative" sx={{ flexWrap: 'wrap' }}>
           <Box sx={{ padding: 0.1 }}>
@@ -221,19 +226,24 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
           </Stack>
         </Stack>
       </AppMargin>
-      <NewTaskFooter handleCreate={handleCreateWithAssignee} handleClose={handleClose} />
+      <NewTaskFooter
+        handleCreate={handleCreateWithAssignee}
+        handleClose={handleClose}
+        setIsEditorReadonly={setIsEditorReadonly}
+      />
     </NewTaskContainer>
   )
 }
 
-const NewTaskFormInputs = () => {
+const NewTaskFormInputs = ({ isEditorReadonly }: NewTaskFormInputsProps) => {
   const { title, description } = useSelector(selectCreateTask)
   const { errors } = useSelector(selectCreateTask)
   const { token } = useSelector(selectTaskBoard)
   const { tokenPayload } = useSelector(selectAuthDetails)
 
-  const handleDetailChange = (content: string) =>
+  const handleDetailChange = (content: string) => {
     store.dispatch(setCreateTaskFields({ targetField: 'description', value: content }))
+  }
 
   const uploadFn =
     token && tokenPayload?.workspaceId
@@ -258,6 +268,7 @@ const NewTaskFormInputs = () => {
           inputProps={{
             maxLength: 255,
           }}
+          disabled={isEditorReadonly}
         />
       </Stack>
       <Stack direction="column" rowGap={1} m="16px 0px">
@@ -268,6 +279,7 @@ const NewTaskFormInputs = () => {
           placeholder="Add description..."
           editorClass="tapwrite-task-description"
           uploadFn={uploadFn}
+          readonly={isEditorReadonly}
           deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', null)}
           attachmentLayout={AttachmentLayout}
           maxUploadLimit={MAX_UPLOAD_LIMIT}
@@ -278,32 +290,35 @@ const NewTaskFormInputs = () => {
   )
 }
 
-const NewTaskFooter = ({ handleCreate, handleClose }: NewTaskFormProps) => {
+const NewTaskFooter = ({ handleCreate, handleClose, setIsEditorReadonly }: NewTaskFormProps) => {
   const [inputStatusValue, setInputStatusValue] = useState('')
 
   const { title, assigneeId } = useSelector(selectCreateTask)
   const { token } = useSelector(selectTaskBoard)
   const { templates } = useSelector(selectCreateTemplate)
+
   const { renderingItem: _templateValue, updateRenderingItem: updateTemplateValue } = useHandleSelectorComponent({
     item: undefined, //initially we don't want any value to be selected
     type: SelectorType.TEMPLATE_SELECTOR,
   })
   const templateValue = _templateValue as ITemplate //typecasting
 
-  const ManageTemplatesEndOption = () => {
-    // IMPORTANT: keep this for the meanwhile to deal with Manage Templates btn click
-    // useEffect(() => {
-    //   const manageTemplatesBtn = document.getElementById('manage-templates-btn')
-    //   const handler = () => {
-    //   }
-    //   manageTemplatesBtn?.addEventListener('mouseover', handler)
-    //   manageTemplatesBtn?.addEventListener('click', handler)
-    //   return () => {
-    //     document.removeEventListener('mouseover', handler)
-    //     document.removeEventListener('click', handler)
-    //   }
-    // }, [])
+  const applyTemplate = useCallback(
+    async (id: string, title: string) => {
+      setIsEditorReadonly?.(true)
+      store.dispatch(setCreateTaskFields({ targetField: 'title', value: title }))
+      const resp = await fetch(`/api/tasks/templates/${id}/apply?token=${token}`)
+      const { data: template } = await resp.json()
+      setIsEditorReadonly?.(false)
 
+      store.dispatch(setCreateTaskFields({ targetField: 'description', value: template.body }))
+      // Reset any errors that might have come from title field being empty
+      store.dispatch(setErrors({ key: CreateTaskErrors.TITLE, value: false }))
+    },
+    [token, setIsEditorReadonly],
+  )
+
+  const ManageTemplatesEndOption = () => {
     return (
       <Stack
         id="manage-templates-btn"
@@ -332,6 +347,12 @@ const NewTaskFooter = ({ handleCreate, handleClose }: NewTaskFormProps) => {
       </Stack>
     )
   }
+
+  useEffect(() => {
+    if (!templateValue || !token) return
+
+    applyTemplate(templateValue.id, templateValue.title)
+  }, [templateValue, applyTemplate, token])
 
   return (
     <Box sx={{ borderTop: (theme) => `1px solid ${theme.color.borders.border2}` }}>

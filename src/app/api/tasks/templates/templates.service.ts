@@ -2,12 +2,16 @@ import { SupabaseService } from '@/app/api/core/services/supabase.service'
 import { supabaseBucket } from '@/config'
 import { signedUrlTtl } from '@/constants/attachments'
 import { CreateTemplateRequest, UpdateTemplateRequest } from '@/types/dto/templates.dto'
-import { getFilePathFromUrl } from '@/utils/signedUrlReplacer'
+import { copyTemplateMediaToTask } from '@/utils/signedTemplateUrlReplacer'
+import { getFilePathFromUrl, replaceImageSrc } from '@/utils/signedUrlReplacer'
+import { getSignedUrl } from '@/utils/signUrl'
 import { SupabaseActions } from '@/utils/SupabaseActions'
+import APIError from '@api/core/exceptions/api'
 import { BaseService } from '@api/core/services/base.service'
 import { PoliciesService } from '@api/core/services/policies.service'
 import { Resource } from '@api/core/types/api'
 import { UserAction } from '@api/core/types/user'
+import httpStatus from 'http-status'
 import { z } from 'zod'
 
 export class TemplatesService extends BaseService {
@@ -22,6 +26,24 @@ export class TemplatesService extends BaseService {
       orderBy: { updatedAt: 'desc' },
     })
     return templates
+  }
+
+  async getAppliedTemplateDescription(id: string) {
+    const policyGate = new PoliciesService(this.user)
+    policyGate.authorize(UserAction.Read, Resource.TaskTemplates)
+
+    const template = await this.db.taskTemplate.findFirst({
+      where: { workspaceId: this.user.workspaceId, id },
+    })
+    if (!template) {
+      throw new APIError(httpStatus.NOT_FOUND, 'Could not find template to apply')
+    }
+    let replacedBody
+    if (template.body) {
+      replacedBody = await copyTemplateMediaToTask(this.user.workspaceId, template.body)
+      replacedBody = replacedBody && (await replaceImageSrc(replacedBody, getSignedUrl))
+    }
+    return { ...template, body: replacedBody || template.body }
   }
 
   async createTaskTemplate(payload: CreateTemplateRequest) {
