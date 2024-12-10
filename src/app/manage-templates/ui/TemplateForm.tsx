@@ -54,11 +54,11 @@ export const TemplateForm = ({ handleCreate }: { handleCreate: () => void }) => 
         >
           {targetMethod === TargetMethod.POST ? (
             <Typography variant="md" fontSize={'15px'} lineHeight={'18.15px'}>
-              Create Template
+              Create template
             </Typography>
           ) : (
             <Typography variant="md" fontSize={'15px'} lineHeight={'18.15px'}>
-              Template
+              Edit template
             </Typography>
           )}
           <Close

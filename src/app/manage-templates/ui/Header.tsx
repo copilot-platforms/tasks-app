@@ -6,7 +6,7 @@ import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 import { PlusIcon } from '@/icons'
 import { StyledBox, StyledKeyboardIcon, StyledTypography } from '@/app/detail/ui/styledComponent'
 import store from '@/redux/store'
-import { setShowTemplateModal } from '@/redux/features/templateSlice'
+import { selectCreateTemplate, setShowTemplateModal } from '@/redux/features/templateSlice'
 import { TargetMethod } from '@/types/interfaces'
 import { useSelector } from 'react-redux'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
@@ -14,14 +14,15 @@ import { IconBtn } from '@/components/buttons/IconBtn'
 import { Add } from '@mui/icons-material'
 import { HeaderBreadcrumbs } from '@/components/layouts/HeaderBreadcrumbs'
 
-export const ManageTemplateHeader = ({ showNewTemplateButton }: { showNewTemplateButton: boolean }) => {
+export const ManageTemplateHeader = () => {
   const { token } = useSelector(selectTaskBoard)
+  const { templates } = useSelector(selectCreateTemplate)
   return (
     <StyledBox>
       <AppMargin size={SizeofAppMargin.LARGE} py="16px">
         <Stack direction="row" justifyContent="space-between" alignItems="center">
           <HeaderBreadcrumbs title="Manage templates" token={token} />
-          {showNewTemplateButton && (
+          {templates?.length ? (
             <>
               <Box
                 sx={{
@@ -45,7 +46,7 @@ export const ManageTemplateHeader = ({ showNewTemplateButton }: { showNewTemplat
                 />
               </Box>
             </>
-          )}
+          ) : null}
         </Stack>
       </AppMargin>
     </StyledBox>
