@@ -21,6 +21,7 @@ import { ModalNewTaskForm } from './ui/Modal_NewTaskForm'
 import { TaskBoard } from './ui/TaskBoard'
 import AttachmentLayout from '@/components/AttachmentLayout'
 import { UserType } from '@/types/interfaces'
+import { TemplatesFetcher } from './_fetchers/TemplatesFetcher'
 
 export async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -97,9 +98,14 @@ export default async function Main({ searchParams }: { searchParams: { token: st
       viewSettings={viewSettings}
       tokenPayload={tokenPayload}
     >
+      {/* Async fetchers */}
       <Suspense fallback={null}>
         <AssigneeFetcher token={token} viewSettings={viewSettings} />
       </Suspense>
+      <Suspense fallback={null}>
+        <TemplatesFetcher token={token} />
+      </Suspense>
+
       <RealTime tokenPayload={tokenPayload}>
         <DndWrapper>
           <TaskBoard mode={UserRole.IU} />
