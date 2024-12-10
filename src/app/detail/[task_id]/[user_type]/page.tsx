@@ -44,7 +44,6 @@ import { UserRole } from '@/app/api/core/types/user'
 import { ArchiveWrapper } from '@/app/detail/ui/ArchiveWrapper'
 import { LastArchivedField } from '@/app/detail/ui/LastArchiveField'
 import { signedUrlTtl } from '@/constants/attachments'
-import { HeaderBreadcrumbs } from '@/components/layouts/HeaderBreadcrumbs'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
@@ -100,7 +99,29 @@ export default async function TaskDetailPage({
             <StyledBox>
               <AppMargin size={SizeofAppMargin.LARGE} py="16px">
                 <Stack direction="row" justifyContent="space-between">
-                  <HeaderBreadcrumbs token={token} title={task?.label} userType={params.user_type} />
+                  <Stack direction="row" alignItems="center" columnGap={3}>
+                    <CustomLink
+                      href={{ pathname: params.user_type === UserType.INTERNAL_USER ? `/` : `/client`, query: { token } }}
+                    >
+                      <SecondaryBtn
+                        buttonContent={
+                          <StyledTypography variant="sm" lineHeight={'21px'} sx={{ fontSize: '13px' }}>
+                            Tasks
+                          </StyledTypography>
+                        }
+                        variant="breadcrumb"
+                      />
+                    </CustomLink>
+                    <StyledKeyboardIcon />
+                    <Typography
+                      variant="sm"
+                      sx={{
+                        fontSize: '13px',
+                      }}
+                    >
+                      {task?.label}
+                    </Typography>
+                  </Stack>
                   <Stack direction="row" alignItems="center" columnGap="8px">
                     {params.user_type === UserType.INTERNAL_USER && <MenuBoxContainer />}
 
