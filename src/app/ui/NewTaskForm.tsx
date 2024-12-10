@@ -230,6 +230,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
         handleCreate={handleCreateWithAssignee}
         handleClose={handleClose}
         setIsEditorReadonly={setIsEditorReadonly}
+        updateWorkflowStatusValue={updateStatusValue}
       />
     </NewTaskContainer>
   )
@@ -290,11 +291,16 @@ const NewTaskFormInputs = ({ isEditorReadonly }: NewTaskFormInputsProps) => {
   )
 }
 
-const NewTaskFooter = ({ handleCreate, handleClose, setIsEditorReadonly }: NewTaskFormProps) => {
+const NewTaskFooter = ({
+  handleCreate,
+  handleClose,
+  setIsEditorReadonly,
+  updateWorkflowStatusValue,
+}: NewTaskFormProps & { updateWorkflowStatusValue: (value: unknown) => void }) => {
   const [inputStatusValue, setInputStatusValue] = useState('')
 
   const { title, assigneeId } = useSelector(selectCreateTask)
-  const { token } = useSelector(selectTaskBoard)
+  const { token, workflowStates } = useSelector(selectTaskBoard)
   const { templates } = useSelector(selectCreateTemplate)
 
   const { renderingItem: _templateValue, updateRenderingItem: updateTemplateValue } = useHandleSelectorComponent({
@@ -311,6 +317,8 @@ const NewTaskFooter = ({ handleCreate, handleClose, setIsEditorReadonly }: NewTa
       const { data: template } = await resp.json()
       setIsEditorReadonly?.(false)
 
+      updateWorkflowStatusValue(workflowStates.find((state) => state.id === template.workflowStateId))
+      store.dispatch(setCreateTaskFields({ targetField: 'workflowStateId', value: template.workflowStateId }))
       store.dispatch(setCreateTaskFields({ targetField: 'description', value: template.body }))
       // Reset any errors that might have come from title field being empty
       store.dispatch(setErrors({ key: CreateTaskErrors.TITLE, value: false }))
