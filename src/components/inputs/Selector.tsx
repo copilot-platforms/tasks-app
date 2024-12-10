@@ -199,6 +199,7 @@ export default function Selector({
           onBlur={() => {
             setAnchorEl(null)
           }}
+          blurOnSelect={true}
           openOnFocus
           onKeyDown={handleKeyDown}
           ListboxProps={{ sx: { maxHeight: { xs: '175px', sm: '291px' }, padding: '0px 0px 8px 0px' } }}
