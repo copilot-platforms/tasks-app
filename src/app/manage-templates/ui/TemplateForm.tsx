@@ -58,7 +58,7 @@ export const TemplateForm = ({ handleCreate }: { handleCreate: () => void }) => 
             </Typography>
           ) : (
             <Typography variant="md" fontSize={'15px'} lineHeight={'18.15px'}>
-              Template
+              Edit template
             </Typography>
           )}
           <Close
