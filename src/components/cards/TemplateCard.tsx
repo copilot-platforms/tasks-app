@@ -25,6 +25,7 @@ export const TemplateCard = ({ title, handleDelete, handleEdit }: TemplateCardPr
       direction="row"
       sx={{
         border: (theme) => `1px solid ${theme.color.borders.border}`,
+        cursor: 'pointer',
         borderRadius: '4px',
         padding: '16px',
         background: (theme) => (isHovered ? theme.color.background.bgCallout : 'white'),
