@@ -103,26 +103,24 @@ export const Sidebar = ({
         width: isMobile && showSidebar ? '100vw' : '25vw',
       }}
     >
-      <StyledBox>
-        <AppMargin size={SizeofAppMargin.LARGE} py="16px">
-          <Stack
-            direction="row"
-            justifyContent="space-between"
-            alignItems="center"
-            sx={{ height: { sm: '32px', md: '36px' } }}
+      <StyledBox sx={{ padding: { xs: '16px 20px', sm: '16px 25px' } }}>
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+          sx={{ height: { sm: '32px', md: '36px' } }}
+        >
+          <Typography variant="sm" lineHeight={'21px'} fontSize={'13px'}>
+            Properties
+          </Typography>
+          <Box
+            sx={{
+              display: isMobile ? 'block' : 'none',
+            }}
           >
-            <Typography variant="sm" lineHeight={'21px'} fontSize={'13px'}>
-              Properties
-            </Typography>
-            <Box
-              sx={{
-                display: isMobile ? 'block' : 'none',
-              }}
-            >
-              <ToggleButtonContainer />
-            </Box>
-          </Stack>
-        </AppMargin>
+            <ToggleButtonContainer />
+          </Box>
+        </Stack>
       </StyledBox>
 
       <AppMargin size={SizeofAppMargin.SMALL}>
@@ -286,14 +284,16 @@ export const SidebarSkeleton = () => {
         width: isMobile && showSidebar ? '100vw' : '25vw',
       }}
     >
-      <Stack direction="row" justifyContent="space-between" alignItems="center">
-        <StyledBox
-          display="flex"
+      <StyledBox sx={{ padding: { xs: '16px 20px', sm: '16px 25px' } }}>
+        <Stack
+          direction="row"
           justifyContent="space-between"
           alignItems="center"
-          sx={{ padding: { xs: '16px 20px', sm: '20px 20px' } }}
+          sx={{ height: { sm: '32px', md: '36px' } }}
         >
-          <Typography variant="sm">Properties</Typography>
+          <Typography variant="sm" lineHeight={'21px'} fontSize={'13px'}>
+            Properties
+          </Typography>
           <Box
             sx={{
               display: isMobile ? 'block' : 'none',
@@ -301,8 +301,8 @@ export const SidebarSkeleton = () => {
           >
             <ToggleButtonContainer />
           </Box>
-        </StyledBox>
-      </Stack>
+        </Stack>
+      </StyledBox>
       <AppMargin size={SizeofAppMargin.SMALL}>
         <Stack direction="row" alignItems="center" m="25px 0px" columnGap="10px">
           <StyledText variant="md" minWidth="80px">
