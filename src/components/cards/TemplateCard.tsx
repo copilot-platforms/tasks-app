@@ -25,9 +25,18 @@ export const TemplateCard = ({ title, handleDelete, handleEdit }: TemplateCardPr
       direction="row"
       sx={{
         border: (theme) => `1px solid ${theme.color.borders.border}`,
+        cursor: 'pointer',
         borderRadius: '4px',
         padding: '16px',
         background: (theme) => (isHovered ? theme.color.background.bgCallout : 'white'),
+      }}
+      onClick={(e) => {
+        setTimeout(() => {
+          const menuOpen = document.getElementById('template-menu-open')
+          if (!menuOpen) {
+            handleEdit()
+          }
+        }, 0)
       }}
       justifyContent="space-between"
       alignItems="center"
@@ -39,7 +48,10 @@ export const TemplateCard = ({ title, handleDelete, handleEdit }: TemplateCardPr
         <Typography variant="bodyMd">{truncateText(title, 38)}</Typography>
       </Box>
 
-      <Box sx={{ opacity: isHovered || isMenuOpen ? '100%' : '0' }}>
+      <Box
+        id={isMenuOpen ? 'template-menu-open' : 'template-menu-closed'}
+        sx={{ opacity: isHovered || isMenuOpen ? '100%' : '0' }}
+      >
         <StyledMenuBox
           setIsMenuOpen={setIsMenuOpen}
           menuContent={
