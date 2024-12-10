@@ -337,7 +337,11 @@ const TemplateSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTM
       }}
     >
       <Stack direction="row" alignItems="center" columnGap={3}>
-        <Typography variant="sm" fontWeight={400}>
+        <Typography
+          variant="sm"
+          fontWeight={400}
+          sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '160px' }}
+        >
           {(option as ITemplate).title as string}
         </Typography>
       </Stack>
