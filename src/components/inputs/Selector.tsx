@@ -216,6 +216,15 @@ export default function Selector({
           groupBy={(option: unknown) =>
             selectorType === SelectorType.ASSIGNEE_SELECTOR ? UserTypesName[(option as IAssigneeCombined).type] : ''
           }
+          slotProps={{
+            paper: {
+              sx: {
+                '& .MuiAutocomplete-noOptions': {
+                  padding: '0px',
+                },
+              },
+            },
+          }}
           filterOptions={filterOption}
           renderGroup={(params) => {
             const hasNoAssignee =
@@ -302,6 +311,7 @@ export default function Selector({
               <></>
             )
           }}
+          noOptionsText={endOption && <ListWithEndOption />}
         />
       </Popper>
     </Stack>
