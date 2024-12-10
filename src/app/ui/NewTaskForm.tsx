@@ -357,7 +357,7 @@ const NewTaskFooter = ({ handleCreate, handleClose, setIsEditorReadonly }: NewTa
   return (
     <Box sx={{ borderTop: (theme) => `1px solid ${theme.color.borders.border2}` }}>
       <AppMargin size={SizeofAppMargin.MEDIUM} py="21px">
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
           <Selector
             inputStatusValue={inputStatusValue}
             setInputStatusValue={setInputStatusValue}
@@ -379,7 +379,14 @@ const NewTaskFooter = ({ handleCreate, handleClose, setIsEditorReadonly }: NewTa
               </Typography>
             }
           />
-          <Stack direction="row" justifyContent="flex-end" alignItems="center">
+          <Stack
+            direction="row"
+            justifyContent="flex-end"
+            alignItems="center"
+            sx={{
+              marginLeft: 'auto',
+            }}
+          >
             <Stack direction="row" columnGap={4}>
               <SecondaryBtn
                 handleClick={() => handleClose()}
