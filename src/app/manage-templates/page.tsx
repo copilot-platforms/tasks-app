@@ -76,7 +76,7 @@ export default async function ManageTemplatesPage({ searchParams }: ManageTempla
     >
       <RealTimeTemplates tokenPayload={tokenPayload}>
         <AppMargin size={SizeofAppMargin.LARGE}>
-          <ManageTemplateHeader showNewTemplateButton={templates?.length > 0} />
+          <ManageTemplateHeader />
           <TemplateBoard
             handleCreateTemplate={async (payload: CreateTemplateRequest) => {
               'use server'

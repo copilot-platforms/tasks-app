@@ -6,7 +6,7 @@ import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 import { PlusIcon } from '@/icons'
 import { StyledBox, StyledKeyboardIcon, StyledTypography } from '@/app/detail/ui/styledComponent'
 import store from '@/redux/store'
-import { setShowTemplateModal } from '@/redux/features/templateSlice'
+import { selectCreateTemplate, setShowTemplateModal } from '@/redux/features/templateSlice'
 import { TargetMethod } from '@/types/interfaces'
 import { useRouter } from 'next/navigation'
 import { useSelector } from 'react-redux'
@@ -14,9 +14,10 @@ import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { IconBtn } from '@/components/buttons/IconBtn'
 import { Add } from '@mui/icons-material'
 
-export const ManageTemplateHeader = ({ showNewTemplateButton }: { showNewTemplateButton: boolean }) => {
+export const ManageTemplateHeader = () => {
   const router = useRouter()
   const { token } = useSelector(selectTaskBoard)
+  const { templates } = useSelector(selectCreateTemplate)
   return (
     <StyledBox>
       <AppMargin size={SizeofAppMargin.LARGE} py="16px">
@@ -33,7 +34,7 @@ export const ManageTemplateHeader = ({ showNewTemplateButton }: { showNewTemplat
             <StyledKeyboardIcon />
             <Typography variant="sm">Manage Templates</Typography>
           </Stack>
-          {showNewTemplateButton && (
+          {templates?.length ? (
             <>
               <Box
                 sx={{
@@ -57,7 +58,7 @@ export const ManageTemplateHeader = ({ showNewTemplateButton }: { showNewTemplat
                 />
               </Box>
             </>
-          )}
+          ) : null}
         </Stack>
       </AppMargin>
     </StyledBox>
