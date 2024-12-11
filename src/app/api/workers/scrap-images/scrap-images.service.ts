@@ -28,14 +28,13 @@ export class ScrapImageService {
       .map((image) => image.templateId)
       .filter((templateId): templateId is string => templateId !== null)
 
-    const tasks =
-      taskIds.length > 0
-        ? await db.task.findMany({
-            where: {
-              id: { in: taskIds },
-            },
-          })
-        : []
+    const tasks = taskIds.length
+      ? await db.task.findMany({
+          where: {
+            id: { in: taskIds },
+          },
+        })
+      : []
 
     const taskTemplates =
       templateIds.length > 0
