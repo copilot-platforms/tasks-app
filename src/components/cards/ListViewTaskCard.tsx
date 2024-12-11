@@ -19,6 +19,7 @@ import { getAssigneeName } from '@/utils/assignee'
 import { AssigneeType } from '@prisma/client'
 import { useEffect, useState } from 'react'
 import { ArchiveBoxIcon } from '@/icons'
+import { isTaskCompleted } from '@/utils/isTaskCompleted'
 
 export const ListViewTaskCard = ({
   task,
@@ -29,7 +30,7 @@ export const ListViewTaskCard = ({
   updateTask?: ({ payload }: { payload: UpdateTaskRequest }) => void
   href: string | UrlObject
 }) => {
-  const { assignee } = useSelector(selectTaskBoard)
+  const { assignee, workflowStates } = useSelector(selectTaskBoard)
 
   const [currentAssignee, setCurrentAssignee] = useState<IAssigneeCombined | undefined>(undefined)
   const [inputStatusValue, setInputStatusValue] = useState('')
@@ -109,7 +110,7 @@ export const ListViewTaskCard = ({
                 whiteSpace: 'nowrap',
               }}
             >
-              {task.dueDate && <DueDateLayout dateString={task.dueDate} />}
+              {task.dueDate && <DueDateLayout dateString={task.dueDate} isDone={isTaskCompleted(task, workflowStates)} />}
             </Box>
 
             {currentAssignee ? (

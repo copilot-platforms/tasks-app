@@ -54,11 +54,11 @@ export const TemplateForm = ({ handleCreate }: { handleCreate: () => void }) => 
         >
           {targetMethod === TargetMethod.POST ? (
             <Typography variant="md" fontSize={'15px'} lineHeight={'18.15px'}>
-              Create Template
+              Create template
             </Typography>
           ) : (
             <Typography variant="md" fontSize={'15px'} lineHeight={'18.15px'}>
-              Template
+              Edit template
             </Typography>
           )}
           <Close
@@ -168,6 +168,15 @@ const NewTaskFormInputs = () => {
 }
 
 const NewTaskFooter = ({ handleCreate, targetMethod }: { handleCreate: () => void; targetMethod: TargetMethod }) => {
+  const { taskName } = useSelector(selectCreateTemplate)
+  const handleTemplateCreation = () => {
+    const hasTitleError = !taskName.trim()
+    if (hasTitleError) {
+      store.dispatch(setErrors({ key: createTemplateErrors.TITLE, value: true }))
+    } else {
+      handleCreate()
+    }
+  }
   return (
     <Box sx={{ borderTop: (theme) => `1px solid ${theme.color.borders.border2}` }}>
       <AppMargin size={SizeofAppMargin.MEDIUM} py="16px">
@@ -184,7 +193,10 @@ const NewTaskFooter = ({ handleCreate, targetMethod }: { handleCreate: () => voi
                 </Typography>
               }
             />
-            <PrimaryBtn handleClick={handleCreate} buttonText={targetMethod === TargetMethod.POST ? 'Create' : 'Save'} />
+            <PrimaryBtn
+              handleClick={handleTemplateCreation}
+              buttonText={targetMethod === TargetMethod.POST ? 'Create' : 'Save'}
+            />
           </Stack>
         </Stack>
       </AppMargin>

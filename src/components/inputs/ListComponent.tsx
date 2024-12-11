@@ -13,6 +13,7 @@ export interface ListComponentProps extends Omit<ScrollbarProps, 'ref'> {
 const ListComponentInternal = forwardRef<Scrollbars, ListComponentProps>((props, ref) => {
   const { children, endOption, endOptionHref, autoHeightMax, ...comProps } = props
   const xs = useMediaQuery('(max-width:600px)')
+  const router = useRouter()
 
   return (
     <Box>
@@ -35,7 +36,7 @@ const ListComponentInternal = forwardRef<Scrollbars, ListComponentProps>((props,
               ...viewProps.style,
               borderRadius: '0',
               position: 'relative',
-              maxHeight: xs ? '175px' : '291px',
+              maxHeight: autoHeightMax ?? (xs ? '175px' : '291px'),
               inset: '0px',
               overflow: 'auto',
               paddingBottom: xs ? '12px' : '7px',
@@ -51,7 +52,7 @@ const ListComponentInternal = forwardRef<Scrollbars, ListComponentProps>((props,
       >
         {children}
       </Scrollbars>
-      {endOption ?? null}
+      <Box onMouseDown={() => endOptionHref && endOptionHref && router.push(endOptionHref)}>{endOption ?? null}</Box>
     </Box>
   )
 })

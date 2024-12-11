@@ -42,3 +42,11 @@ export const deleteTaskTemplate = async (req: NextRequest, { params: { id } }: I
 
   return new NextResponse(null, { status: httpStatus.NO_CONTENT })
 }
+
+export const applyTemplate = async (req: NextRequest, { params: { id } }: IdParams) => {
+  const user = await authenticate(req)
+  const templatesService = new TemplatesService(user)
+  const data = await templatesService.getAppliedTemplateDescription(id)
+
+  return NextResponse.json({ data })
+}

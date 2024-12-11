@@ -6,34 +6,23 @@ import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 import { PlusIcon } from '@/icons'
 import { StyledBox, StyledKeyboardIcon, StyledTypography } from '@/app/detail/ui/styledComponent'
 import store from '@/redux/store'
-import { setShowTemplateModal } from '@/redux/features/templateSlice'
+import { selectCreateTemplate, setShowTemplateModal } from '@/redux/features/templateSlice'
 import { TargetMethod } from '@/types/interfaces'
-import { useRouter } from 'next/navigation'
 import { useSelector } from 'react-redux'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { IconBtn } from '@/components/buttons/IconBtn'
 import { Add } from '@mui/icons-material'
+import { HeaderBreadcrumbs } from '@/components/layouts/HeaderBreadcrumbs'
 
-export const ManageTemplateHeader = ({ showNewTemplateButton }: { showNewTemplateButton: boolean }) => {
-  const router = useRouter()
+export const ManageTemplateHeader = () => {
   const { token } = useSelector(selectTaskBoard)
+  const { templates } = useSelector(selectCreateTemplate)
   return (
     <StyledBox>
       <AppMargin size={SizeofAppMargin.LARGE} py="16px">
         <Stack direction="row" justifyContent="space-between" alignItems="center">
-          <Stack direction="row" alignItems="center" columnGap={3}>
-            <SecondaryBtn
-              buttonContent={
-                <StyledTypography variant="sm" onClick={() => router.push(`/?token=${token}`)}>
-                  Tasks
-                </StyledTypography>
-              }
-              enableBackground
-            />
-            <StyledKeyboardIcon />
-            <Typography variant="sm">Manage Templates</Typography>
-          </Stack>
-          {showNewTemplateButton && (
+          <HeaderBreadcrumbs title="Manage templates" token={token} />
+          {templates?.length ? (
             <>
               <Box
                 sx={{
@@ -57,7 +46,7 @@ export const ManageTemplateHeader = ({ showNewTemplateButton }: { showNewTemplat
                 />
               </Box>
             </>
-          )}
+          ) : null}
         </Stack>
       </AppMargin>
     </StyledBox>

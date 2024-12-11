@@ -14,7 +14,7 @@ export const MenuBoxContainer = () => {
       menuContent={
         <CustomLink href={{ pathname: '/manage-templates', query: { token } }}>
           <ListBtn
-            content="Manage Templates"
+            content="Manage templates"
             handleClick={() => {}}
             icon={<TemplateIcon />}
             contentColor={(theme) => theme.color.text.text}

@@ -199,9 +199,10 @@ export default function Selector({
           onBlur={() => {
             setAnchorEl(null)
           }}
+          blurOnSelect={true}
           openOnFocus
           onKeyDown={handleKeyDown}
-          ListboxProps={{ sx: { maxHeight: { xs: '175px', sm: '291px' }, padding: '0px' } }}
+          ListboxProps={{ sx: { maxHeight: { xs: '175px', sm: '291px' }, padding: '0px 0px 8px 0px' } }}
           options={extraOption ? [extraOption, ...options] : options}
           value={value}
           onChange={(_, newValue: unknown) => {
@@ -216,6 +217,15 @@ export default function Selector({
           groupBy={(option: unknown) =>
             selectorType === SelectorType.ASSIGNEE_SELECTOR ? UserTypesName[(option as IAssigneeCombined).type] : ''
           }
+          slotProps={{
+            paper: {
+              sx: {
+                '& .MuiAutocomplete-noOptions': {
+                  padding: '0px',
+                },
+              },
+            },
+          }}
           filterOptions={filterOption}
           renderGroup={(params) => {
             const hasNoAssignee =
@@ -275,7 +285,7 @@ export default function Selector({
                   sx={{
                     color: 'gray',
                     textAlign: 'left',
-                    padding: '2px 14px',
+                    padding: '6px 14px',
 
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
@@ -302,6 +312,7 @@ export default function Selector({
               <></>
             )
           }}
+          noOptionsText={endOption && <ListWithEndOption />}
         />
       </Popper>
     </Stack>
@@ -336,7 +347,11 @@ const TemplateSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTM
       }}
     >
       <Stack direction="row" alignItems="center" columnGap={3}>
-        <Typography variant="sm" fontWeight={400}>
+        <Typography
+          variant="sm"
+          fontWeight={400}
+          sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '160px' }}
+        >
           {(option as ITemplate).title as string}
         </Typography>
       </Stack>
