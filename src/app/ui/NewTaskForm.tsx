@@ -363,7 +363,8 @@ const NewTaskFooter = ({
     if (!templateValue || !token) return
 
     applyTemplate(templateValue.id, templateValue.title)
-  }, [templateValue, applyTemplate, token])
+    updateTemplateValue(null)
+  }, [templateValue, applyTemplate, token, updateTemplateValue])
 
   return (
     <Box sx={{ borderTop: (theme) => `1px solid ${theme.color.borders.border2}` }}>
