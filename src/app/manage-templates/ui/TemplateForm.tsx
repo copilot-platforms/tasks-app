@@ -121,7 +121,7 @@ const NewTaskFormInputs = () => {
             store.dispatch(setErrors({ key: createTemplateErrors.TITLE, value: false }))
           }}
           error={errors.title}
-          helperText={errors.title && 'Required'}
+          helperText={errors.title && 'Enter template name'}
           inputProps={{
             maxLength: 255,
           }}
