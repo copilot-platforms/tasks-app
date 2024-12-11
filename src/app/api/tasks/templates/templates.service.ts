@@ -60,6 +60,7 @@ export class TemplatesService extends BaseService {
       SELECT COUNT(*) AS count
       FROM "TaskTemplates"
       WHERE "title" ~ '^${Prisma.raw(`${title}`)}( copy)*$'
+        AND "workspaceId" = '${Prisma.raw(`${this.user.workspaceId}`)}'
         AND "deletedAt" IS NULL;
     `
     const result = await this.db.$queryRaw<{ count: bigint }[]>`${query}`
