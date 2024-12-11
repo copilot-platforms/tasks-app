@@ -2,7 +2,7 @@
 
 import { Box, Stack, Typography } from '@mui/material'
 import { ListBtn } from '../buttons/ListBtn'
-import { EditIcon, TemplateIcon, TrashIcon } from '@/icons'
+import { EditIcon, EllipsisIcon, TemplateIcon, TrashIcon } from '@/icons'
 import { MenuBox } from '../inputs/MenuBox'
 import { useState } from 'react'
 import { StyledMenuBox } from '@/app/detail/ui/styledComponent'
@@ -54,15 +54,23 @@ export const TemplateCard = ({ title, handleDelete, handleEdit }: TemplateCardPr
       >
         <StyledMenuBox
           setIsMenuOpen={setIsMenuOpen}
+          customIcon={<EllipsisIcon />}
           menuContent={
             <>
               <ListBtn
                 content="Edit template"
                 handleClick={() => handleEdit()}
+                width="146px"
                 icon={<EditIcon />}
                 contentColor={'#212B36'}
               />
-              <ListBtn content="Delete" handleClick={() => handleDelete()} icon={<TrashIcon />} contentColor={'#CC0000'} />
+              <ListBtn
+                content="Delete template"
+                handleClick={() => handleDelete()}
+                width="146px"
+                icon={<TrashIcon />}
+                contentColor={'#CC0000'}
+              />
             </>
           }
           displayButtonBackground={false}
