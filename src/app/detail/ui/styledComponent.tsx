@@ -104,12 +104,11 @@ export const TaskDetailsContainer = styled(Box)(({ theme }) => ({
 
 export const StyledMenuBox = styled(MenuBox)(({ theme }) => ({
   div: {
-    height: '20px !important',
-    width: '20px !important',
     background: theme.color.gray[150],
+    padding: '4px',
   },
   svg: {
-    height: '13px',
-    width: '13px',
+    height: '12px',
+    width: '12px',
   },
 }))

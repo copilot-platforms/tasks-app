@@ -14,6 +14,7 @@ export const MenuBox = ({
   setIsMenuOpen,
   height,
   width,
+  customIcon,
 }: {
   menuContent: ReactNode
   className?: string
@@ -24,6 +25,7 @@ export const MenuBox = ({
   setIsMenuOpen?: Dispatch<SetStateAction<boolean>>
   height?: string
   width?: string
+  customIcon?: ReactNode
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
@@ -53,6 +55,7 @@ export const MenuBox = ({
             noHover={noHover}
             height={height}
             width={width}
+            customIcon={customIcon}
           />
         </Box>
         <Popper
