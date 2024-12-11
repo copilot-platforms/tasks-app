@@ -2,6 +2,7 @@
 
 import { MoreHoriz } from '@mui/icons-material'
 import { Stack } from '@mui/material'
+import { ReactNode } from 'react'
 
 export const MoreBtn = ({
   handleClick,
@@ -11,6 +12,7 @@ export const MoreBtn = ({
   noHover = false,
   height,
   width,
+  customIcon,
 }: {
   handleClick: (e: React.MouseEvent<HTMLElement>) => void
   isSecondary: Boolean
@@ -19,6 +21,7 @@ export const MoreBtn = ({
   noHover?: Boolean
   height?: string
   width?: string
+  customIcon?: ReactNode
 }) => {
   return (
     <Stack
@@ -57,12 +60,16 @@ export const MoreBtn = ({
       }
       onClick={handleClick}
     >
-      <MoreHoriz
-        fontSize="small"
-        sx={{
-          color: '#000000',
-        }}
-      />
+      {customIcon ? (
+        customIcon
+      ) : (
+        <MoreHoriz
+          fontSize="small"
+          sx={{
+            color: '#000000',
+          }}
+        />
+      )}
     </Stack>
   )
 }
