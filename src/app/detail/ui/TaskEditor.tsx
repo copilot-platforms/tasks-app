@@ -172,7 +172,7 @@ export const TaskEditor = ({
           editorClass=""
           placeholder="Add description..."
           uploadFn={uploadFn}
-          deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', task_id)}
+          deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', task_id, null)}
           attachmentLayout={AttachmentLayout}
           addAttachmentButton
           maxUploadLimit={MAX_UPLOAD_LIMIT}
