@@ -68,6 +68,7 @@ const createTemplateSlice = createSlice({
       state.errors = {
         [createTemplateErrors.TITLE]: false,
       }
+      state.activeWorkflowStateId = null
     },
     setTargetTemplateId: (state, action: { payload: string }) => {
       state.targetTemplateId = action.payload
