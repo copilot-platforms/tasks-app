@@ -14,12 +14,11 @@ import { IconBtn } from '@/components/buttons/IconBtn'
 import { Add } from '@mui/icons-material'
 import { HeaderBreadcrumbs } from '@/components/layouts/HeaderBreadcrumbs'
 
-export const ManageTemplateHeader = () => {
-  const { token } = useSelector(selectTaskBoard)
+export const ManageTemplateHeader = ({ token }: { token: string }) => {
   const { templates } = useSelector(selectCreateTemplate)
   return (
     <StyledBox>
-      <AppMargin size={SizeofAppMargin.LARGE} py="16px">
+      <AppMargin size={SizeofAppMargin.HEADER} py="17.5px">
         <Stack direction="row" justifyContent="space-between" alignItems="center">
           <HeaderBreadcrumbs title="Manage templates" token={token} />
           {templates?.length ? (

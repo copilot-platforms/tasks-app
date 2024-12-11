@@ -104,7 +104,7 @@ export const Sidebar = ({
       }}
     >
       <StyledBox>
-        <AppMargin size={SizeofAppMargin.LARGE} py="16px">
+        <AppMargin size={SizeofAppMargin.HEADER} py="17.5px">
           <Stack
             direction="row"
             justifyContent="space-between"
@@ -125,8 +125,8 @@ export const Sidebar = ({
         </AppMargin>
       </StyledBox>
 
-      <AppMargin size={SizeofAppMargin.SMALL}>
-        <Stack direction="row" alignItems="center" m="16px 0px" columnGap="10px">
+      <AppMargin size={SizeofAppMargin.HEADER} py={'4px'}>
+        <Stack direction="row" alignItems="center" m="4px 0px" columnGap="10px">
           <StyledText variant="md" minWidth="80px">
             Status
           </StyledText>
@@ -291,20 +291,29 @@ export const SidebarSkeleton = () => {
           display="flex"
           justifyContent="space-between"
           alignItems="center"
-          sx={{ padding: { xs: '16px 20px', sm: '20px 20px' } }}
+          sx={{ padding: { xs: '17.5px 20px', sm: '17.5px 20px' } }}
         >
-          <Typography variant="sm">Properties</Typography>
-          <Box
-            sx={{
-              display: isMobile ? 'block' : 'none',
-            }}
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+            sx={{ height: { sm: '32px', md: '36px' } }}
           >
-            <ToggleButtonContainer />
-          </Box>
+            <Typography variant="sm" lineHeight={'21px'} fontSize={'13px'}>
+              Properties
+            </Typography>
+            <Box
+              sx={{
+                display: isMobile ? 'block' : 'none',
+              }}
+            >
+              <ToggleButtonContainer />
+            </Box>
+          </Stack>
         </StyledBox>
       </Stack>
-      <AppMargin size={SizeofAppMargin.SMALL}>
-        <Stack direction="row" alignItems="center" m="25px 0px" columnGap="10px">
+      <AppMargin size={SizeofAppMargin.HEADER} py={'4px'}>
+        <Stack direction="row" alignItems="center" m="4px 0px" columnGap="10px">
           <StyledText variant="md" minWidth="80px">
             Status
           </StyledText>

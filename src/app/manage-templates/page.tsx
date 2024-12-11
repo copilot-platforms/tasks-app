@@ -75,23 +75,21 @@ export default async function ManageTemplatesPage({ searchParams }: ManageTempla
       tokenPayload={tokenPayload}
     >
       <RealTimeTemplates tokenPayload={tokenPayload}>
-        <AppMargin size={SizeofAppMargin.LARGE}>
-          <ManageTemplateHeader />
-          <TemplateBoard
-            handleCreateTemplate={async (payload: CreateTemplateRequest) => {
-              'use server'
-              return await createNewTemplate(token, payload)
-            }}
-            handleDeleteTemplate={async (templateId: string) => {
-              'use server'
-              await deleteTemplate(token, templateId)
-            }}
-            handleEditTemplate={async (payload: UpdateTemplateRequest, templateId: string) => {
-              'use server'
-              await editTemplate(token, templateId, payload)
-            }}
-          />
-        </AppMargin>
+        <ManageTemplateHeader token={token} />
+        <TemplateBoard
+          handleCreateTemplate={async (payload: CreateTemplateRequest) => {
+            'use server'
+            return await createNewTemplate(token, payload)
+          }}
+          handleDeleteTemplate={async (templateId: string) => {
+            'use server'
+            await deleteTemplate(token, templateId)
+          }}
+          handleEditTemplate={async (payload: UpdateTemplateRequest, templateId: string) => {
+            'use server'
+            await editTemplate(token, templateId, payload)
+          }}
+        />
       </RealTimeTemplates>
     </ClientSideStateUpdate>
   )
