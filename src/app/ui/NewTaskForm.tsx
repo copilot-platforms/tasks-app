@@ -382,10 +382,13 @@ const NewTaskFooter = ({
             endOptionHref={`/manage-templates?token=${token}`}
             listAutoHeightMax="147px"
             buttonContent={
-              <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[600] }}>
+              <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[600], lineHeight: '24px' }}>
                 {'Apply template'}
               </Typography>
             }
+            disableOutline
+            responsiveNoHide
+            buttonWidth="auto"
           />
           <Stack
             direction="row"

@@ -26,6 +26,7 @@ export const ArchiveBtn = ({ isArchived, handleClick }: { isArchived: boolean; h
       ) : (
         <SecondaryBtn
           startIcon={<DustbinIcon />}
+          height="28px"
           buttonContent={
             isXsScreen ? (
               <DustbinIcon />

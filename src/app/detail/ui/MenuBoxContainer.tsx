@@ -18,6 +18,10 @@ export const MenuBoxContainer = () => {
           contentColor="#CC0000"
         />
       }
+      noHover={true}
+      displayButtonBackground={false}
+      width={'28px'}
+      height={'28px'}
     />
   )
 }
