@@ -98,7 +98,7 @@ export default async function TaskDetailPage({
         <Stack direction="row" sx={{ height: '100vh' }}>
           <ToggleController>
             <StyledBox>
-              <AppMargin size={SizeofAppMargin.LARGE} py="16px">
+              <AppMargin size={SizeofAppMargin.HEADER} py="17.5px">
                 <Stack direction="row" justifyContent="space-between">
                   <HeaderBreadcrumbs token={token} title={task?.label} userType={params.user_type} />
                   <Stack direction="row" alignItems="center" columnGap="8px">

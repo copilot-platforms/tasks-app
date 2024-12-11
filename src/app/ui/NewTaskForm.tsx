@@ -106,7 +106,10 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
         }}
       >
         <AppMargin size={SizeofAppMargin.MEDIUM} py="12px">
-          <Stack direction="row" alignItems="center" justifyContent="flex-end">
+          <Stack direction="row" alignItems="center" justifyContent="space-between">
+            <Typography variant="md" fontSize={'15px'} lineHeight={'18.15px'}>
+              Create task
+            </Typography>
             <CloseIcon style={{ cursor: 'pointer' }} onClick={() => handleClose()} />
           </Stack>
         </AppMargin>
@@ -332,7 +335,7 @@ const NewTaskFooter = ({
         id="manage-templates-btn"
         key={'Manage templates'}
         direction="row"
-        pl="20px"
+        pl="16px"
         py="6px"
         justifyContent="space-between"
         sx={{
