@@ -191,6 +191,7 @@ export default function Selector({
         sx={{
           width: 'fit-content',
           zIndex: '9999',
+          borderRadius: '4px',
         }}
         placement="bottom-start"
       >
@@ -266,6 +267,7 @@ export default function Selector({
                 sx={{
                   width: '200px',
                   visibility: { xs: 'none', sm: 'visible' },
+                  borderRadius: '4px',
                 }}
                 onChange={(e) => {
                   handleInputChange?.(e.target.value)
