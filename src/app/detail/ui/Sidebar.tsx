@@ -105,12 +105,7 @@ export const Sidebar = ({
     >
       <StyledBox>
         <AppMargin size={SizeofAppMargin.HEADER} py="17.5px">
-          <Stack
-            direction="row"
-            justifyContent="space-between"
-            alignItems="center"
-            sx={{ height: { xs: '28px', sm: '34px' } }}
-          >
+          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ height: '28px' }}>
             <Typography variant="sm" lineHeight={'21px'} fontSize={'13px'}>
               Properties
             </Typography>
@@ -288,12 +283,7 @@ export const SidebarSkeleton = () => {
     >
       <StyledBox>
         <AppMargin size={SizeofAppMargin.HEADER} py="17.5px">
-          <Stack
-            direction="row"
-            justifyContent="space-between"
-            alignItems="center"
-            sx={{ height: { xs: '28px', sm: '34px' } }}
-          >
+          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ height: '28px' }}>
             <Typography variant="sm" lineHeight={'21px'} fontSize={'13px'}>
               Properties
             </Typography>
