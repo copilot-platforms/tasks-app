@@ -12,7 +12,7 @@ export const ArchiveBtn = ({ isArchived, handleClick }: { isArchived: boolean; h
       alignItems="center"
       columnGap="6px"
       sx={{
-        padding: '3px 8px',
+        padding: '0px 8px',
         ':hover': {
           cursor: 'pointer',
           border: ' 1px solid #EOEOEO, rgba(0, 0, 0, 0.12))',
