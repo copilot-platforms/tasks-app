@@ -13,7 +13,7 @@ export class ScrapImageService {
     const scrapImages = await db.scrapImage.findMany({
       where: {
         updatedAt: {
-          lt: oneWeekAgo, //apply oneWeekAgo. three minutes ago is used for testing
+          lt: subMinutes(new Date(), 1), //apply oneWeekAgo. 1 minute ago is used for testing
         },
       },
       // Putting a buffer of 0.5s for each deletion (which should be more than very enough), we take 600 records at a time
