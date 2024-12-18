@@ -47,7 +47,7 @@ interface NewTaskFormProps {
 
 export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => {
   const { activeWorkflowStateId, errors } = useSelector(selectCreateTask)
-  const { workflowStates, assignee, token, filterOptions } = useSelector(selectTaskBoard)
+  const { workflowStates, assignee, token, filterOptions, previewMode } = useSelector(selectTaskBoard)
   const [filteredAssignees, setFilteredAssignees] = useState(assignee)
   const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
   const [loading, setLoading] = useState(false)
@@ -131,6 +131,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
           </Box>
           <Stack alignSelf="flex-start">
             <Selector
+              disabled={!!previewMode}
               inputStatusValue={inputStatusValue}
               setInputStatusValue={setInputStatusValue}
               placeholder="Set assignee"
