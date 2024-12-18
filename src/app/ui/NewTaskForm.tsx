@@ -302,7 +302,7 @@ const NewTaskFooter = ({
 }: NewTaskFormProps & { updateWorkflowStatusValue: (value: unknown) => void }) => {
   const [inputStatusValue, setInputStatusValue] = useState('')
 
-  const { title, assigneeId } = useSelector(selectCreateTask)
+  const { title, assigneeId, showModal } = useSelector(selectCreateTask)
   const { token, workflowStates } = useSelector(selectTaskBoard)
   const { templates } = useSelector(selectCreateTemplate)
 
@@ -313,22 +313,44 @@ const NewTaskFooter = ({
   const templateValue = _templateValue as ITemplate //typecasting
 
   const applyTemplate = useCallback(
-    async (id: string, title: string) => {
-      setIsEditorReadonly?.(true)
-      store.dispatch(setCreateTaskFields({ targetField: 'title', value: title }))
-      const resp = await fetch(`/api/tasks/templates/${id}/apply?token=${token}`)
-      const { data: template } = await resp.json()
-      setIsEditorReadonly?.(false)
+    (id: string, title: string) => {
+      const controller = new AbortController()
 
-      updateWorkflowStatusValue(workflowStates.find((state) => state.id === template.workflowStateId))
-      store.dispatch(setCreateTaskFields({ targetField: 'workflowStateId', value: template.workflowStateId }))
-      store.dispatch(setCreateTaskFields({ targetField: 'description', value: template.body }))
-      // Reset any errors that might have come from title field being empty
-      store.dispatch(setErrors({ key: CreateTaskErrors.TITLE, value: false }))
+      const fetchTemplate = async () => {
+        try {
+          if (!showModal) {
+            controller.abort()
+            return
+          }
+
+          setIsEditorReadonly?.(true)
+          store.dispatch(setCreateTaskFields({ targetField: 'title', value: title }))
+
+          const resp = await fetch(`/api/tasks/templates/${id}/apply?token=${token}`, {
+            signal: controller.signal,
+          })
+          const { data: template } = await resp.json()
+          if (!showModal) return
+
+          setIsEditorReadonly?.(false)
+          updateWorkflowStatusValue(workflowStates.find((state) => state.id === template.workflowStateId))
+          store.dispatch(setCreateTaskFields({ targetField: 'workflowStateId', value: template.workflowStateId }))
+          store.dispatch(setCreateTaskFields({ targetField: 'activeWorkflowStateId', value: template.workflowStateId }))
+
+          store.dispatch(setCreateTaskFields({ targetField: 'description', value: template.body }))
+          store.dispatch(setErrors({ key: CreateTaskErrors.TITLE, value: false }))
+        } catch (error) {
+          if (error instanceof DOMException && error.name === 'AbortError') {
+          }
+        } finally {
+          setIsEditorReadonly?.(false)
+        }
+      }
+      fetchTemplate()
+      return controller
     },
-    [token, setIsEditorReadonly],
+    [token, setIsEditorReadonly, workflowStates],
   )
-
   const ManageTemplatesEndOption = () => {
     return (
       <Stack
@@ -361,10 +383,11 @@ const NewTaskFooter = ({
 
   useEffect(() => {
     if (!templateValue || !token) return
-
-    applyTemplate(templateValue.id, templateValue.title)
-    updateTemplateValue(null)
-  }, [templateValue, applyTemplate, token, updateTemplateValue])
+    const controller = applyTemplate(templateValue.id, templateValue.title)
+    return () => {
+      controller.abort()
+    }
+  }, [templateValue, applyTemplate, token, showModal])
 
   return (
     <Box sx={{ borderTop: (theme) => `1px solid ${theme.color.borders.border2}` }}>
