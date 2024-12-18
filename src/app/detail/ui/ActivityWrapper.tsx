@@ -49,7 +49,7 @@ export const ActivityWrapper = ({
     }
   }, [task?.lastActivityLogUpdated])
 
-  const currentUserId = tokenPayload.clientId ?? tokenPayload.internalUserId
+  const currentUserId = tokenPayload.internalUserId ?? tokenPayload.clientId
 
   const currentUserDetails = useMemo(() => {
     const currentAssignee = assignee.find((el) => el.id === currentUserId)
