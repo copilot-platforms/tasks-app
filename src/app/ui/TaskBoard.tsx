@@ -101,7 +101,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
   return (
     <>
       <TaskDataFetcher token={token ?? ''} />
-      <Header showCreateTaskButton={mode === UserRole.IU || !!previewMode} />
+      <Header showCreateTaskButton={mode === UserRole.IU || !!previewMode} showMenuBox={!previewMode} />
       <FilterBar
         mode={mode}
         updateViewModeSetting={async (payload: CreateViewSettingsDTO) => {
