@@ -1,17 +1,18 @@
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { MiniLoader } from '@/components/atoms/MiniLoader'
+import AttachmentLayout from '@/components/AttachmentLayout'
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
 import { DatePickerComponent } from '@/components/inputs/DatePickerComponent'
 import Selector, { SelectorType } from '@/components/inputs/Selector'
 import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
 import { StyledTextField } from '@/components/inputs/TextField'
-import { advancedFeatureFlag } from '@/config'
+import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
-import { ArrowLinkIcon, AssigneePlaceholderSmall, CloseIcon, TemplateIconSm } from '@/icons'
+import { ArrowRightIcon, AssigneePlaceholderSmall, CloseIcon, TemplateIconSm } from '@/icons'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
-import { selectCreateTask, setCreateTaskFields, setErrors, setShowModal } from '@/redux/features/createTaskSlice'
+import { selectCreateTask, setCreateTaskFields, setErrors } from '@/redux/features/createTaskSlice'
 import { selectTaskBoard, setAssigneeList } from '@/redux/features/taskBoardSlice'
 import { selectCreateTemplate } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
@@ -29,17 +30,19 @@ import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inli
 import { NoAssigneeExtraOptions } from '@/utils/noAssignee'
 import { setDebouncedFilteredAssignees } from '@/utils/users'
 import { Box, Stack, Typography, styled } from '@mui/material'
-import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
 import { z } from 'zod'
-import AttachmentLayout from '@/components/AttachmentLayout'
-import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
+
+interface NewTaskFormInputsProps {
+  isEditorReadonly?: boolean
+}
 
 interface NewTaskFormProps {
   handleCreate: () => void
   handleClose: () => void
+  setIsEditorReadonly?: Dispatch<SetStateAction<boolean>>
 }
 
 export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => {
@@ -48,7 +51,6 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
   const [filteredAssignees, setFilteredAssignees] = useState(assignee)
   const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
   const [loading, setLoading] = useState(false)
-  const { templates } = useSelector(selectCreateTemplate)
 
   const todoWorkflowState = workflowStates.find((el) => el.key === 'todo') || workflowStates[0]
   const defaultWorkflowState = activeWorkflowStateId
@@ -67,18 +69,15 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
     type: SelectorType.ASSIGNEE_SELECTOR,
     mode: HandleSelectorComponentModes.CreateTaskFieldUpdate,
   })
-  const { renderingItem: _templateValue, updateRenderingItem: updateTemplateValue } = useHandleSelectorComponent({
-    item: undefined, //initially we don't want any value to be selected
-    type: SelectorType.TEMPLATE_SELECTOR,
-  })
 
   const statusValue = _statusValue as WorkflowStateResponse //typecasting
   const assigneeValue = _assigneeValue as IAssigneeCombined //typecasting
-  const templateValue = _templateValue as ITemplate //typecasting
   // use temp state pattern so that we don't fall into an infinite loop of assigneeValue set -> trigger -> set
   const [tempAssignee, setTempAssignee] = useState<IAssigneeCombined | null>(assigneeValue)
 
   const [inputStatusValue, setInputStatusValue] = useState('')
+
+  const [isEditorReadonly, setIsEditorReadonly] = useState(false)
 
   const handleCreateWithAssignee = () => {
     if (!!tempAssignee?.id && !assignee.find((assignee) => assignee.id === tempAssignee.id)) {
@@ -86,7 +85,6 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
     }
     handleCreate()
   }
-  const router = useRouter()
 
   useEffect(() => {
     function handleEscPress(e: KeyboardEvent) {
@@ -109,69 +107,16 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
       >
         <AppMargin size={SizeofAppMargin.MEDIUM} py="12px">
           <Stack direction="row" alignItems="center" justifyContent="space-between">
-            <Box>
-              {advancedFeatureFlag && (
-                <Selector
-                  inputStatusValue={inputStatusValue}
-                  setInputStatusValue={setInputStatusValue}
-                  getSelectedValue={(_newValue) => {
-                    const newValue = _newValue as ITemplate
-                    updateTemplateValue(newValue)
-                    store.dispatch(setCreateTaskFields({ targetField: 'title', value: newValue?.title }))
-                    store.dispatch(setCreateTaskFields({ targetField: 'description', value: newValue?.body }))
-                    updateStatusValue(todoWorkflowState)
-                  }}
-                  startIcon={<TemplateIconSm />}
-                  options={templates}
-                  placeholder="Apply template..."
-                  value={templateValue}
-                  selectorType={SelectorType.TEMPLATE_SELECTOR}
-                  extraOption={{
-                    id: '',
-                    name: 'Manage templates',
-                    value: '',
-                    extraOptionFlag: true,
-                  }}
-                  extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
-                    return (
-                      <Stack
-                        key={'Manage templates'}
-                        direction="row"
-                        pl="20px"
-                        py="6px"
-                        justifyContent="space-between"
-                        sx={{
-                          borderBottom: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
-                          cursor: 'pointer',
-                        }}
-                        onClick={() => {
-                          setAnchorEl(null)
-                          store.dispatch(setShowModal())
-                          router.push(`/manage-templates?token=${token}`)
-                        }}
-                      >
-                        <Typography variant="sm">Manage templates</Typography>
-                        <Box>
-                          <ArrowLinkIcon />
-                        </Box>
-                      </Stack>
-                    )
-                  }}
-                  buttonContent={
-                    <Typography variant="bodySm" sx={{ color: (theme) => theme.color.gray[600] }}>
-                      {templateValue ? templateValue.templateName : 'Select template'}
-                    </Typography>
-                  }
-                />
-              )}
-            </Box>
+            <Typography variant="md" fontSize={'15px'} lineHeight={'18.15px'}>
+              Create task
+            </Typography>
             <CloseIcon style={{ cursor: 'pointer' }} onClick={() => handleClose()} />
           </Stack>
         </AppMargin>
       </Stack>
 
       <AppMargin size={SizeofAppMargin.MEDIUM} py="16px">
-        <NewTaskFormInputs />
+        <NewTaskFormInputs isEditorReadonly={isEditorReadonly} />
 
         <Stack direction="row" columnGap={3} position="relative" sx={{ flexWrap: 'wrap' }}>
           <Box sx={{ padding: 0.1 }}>
@@ -284,19 +229,25 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
           </Stack>
         </Stack>
       </AppMargin>
-      <NewTaskFooter handleCreate={handleCreateWithAssignee} handleClose={handleClose} />
+      <NewTaskFooter
+        handleCreate={handleCreateWithAssignee}
+        handleClose={handleClose}
+        setIsEditorReadonly={setIsEditorReadonly}
+        updateWorkflowStatusValue={updateStatusValue}
+      />
     </NewTaskContainer>
   )
 }
 
-const NewTaskFormInputs = () => {
-  const { title, description, attachments } = useSelector(selectCreateTask)
+const NewTaskFormInputs = ({ isEditorReadonly }: NewTaskFormInputsProps) => {
+  const { title, description } = useSelector(selectCreateTask)
   const { errors } = useSelector(selectCreateTask)
   const { token } = useSelector(selectTaskBoard)
   const { tokenPayload } = useSelector(selectAuthDetails)
 
-  const handleDetailChange = (content: string) =>
+  const handleDetailChange = (content: string) => {
     store.dispatch(setCreateTaskFields({ targetField: 'description', value: content }))
+  }
 
   const uploadFn =
     token && tokenPayload?.workspaceId
@@ -321,6 +272,7 @@ const NewTaskFormInputs = () => {
           inputProps={{
             maxLength: 255,
           }}
+          disabled={isEditorReadonly}
         />
       </Stack>
       <Stack direction="column" rowGap={1} m="16px 0px">
@@ -331,7 +283,8 @@ const NewTaskFormInputs = () => {
           placeholder="Add description..."
           editorClass="tapwrite-task-description"
           uploadFn={uploadFn}
-          deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', null)}
+          readonly={isEditorReadonly}
+          deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', null, null)}
           attachmentLayout={AttachmentLayout}
           maxUploadLimit={MAX_UPLOAD_LIMIT}
           parentContainerStyle={{ gap: '0px' }}
@@ -341,37 +294,139 @@ const NewTaskFormInputs = () => {
   )
 }
 
-const NewTaskFooter = ({ handleCreate, handleClose }: NewTaskFormProps) => {
+const NewTaskFooter = ({
+  handleCreate,
+  handleClose,
+  setIsEditorReadonly,
+  updateWorkflowStatusValue,
+}: NewTaskFormProps & { updateWorkflowStatusValue: (value: unknown) => void }) => {
+  const [inputStatusValue, setInputStatusValue] = useState('')
+
   const { title, assigneeId } = useSelector(selectCreateTask)
+  const { token, workflowStates } = useSelector(selectTaskBoard)
+  const { templates } = useSelector(selectCreateTemplate)
+
+  const { renderingItem: _templateValue, updateRenderingItem: updateTemplateValue } = useHandleSelectorComponent({
+    item: undefined, //initially we don't want any value to be selected
+    type: SelectorType.TEMPLATE_SELECTOR,
+  })
+  const templateValue = _templateValue as ITemplate //typecasting
+
+  const applyTemplate = useCallback(
+    async (id: string, title: string) => {
+      setIsEditorReadonly?.(true)
+      store.dispatch(setCreateTaskFields({ targetField: 'title', value: title }))
+      const resp = await fetch(`/api/tasks/templates/${id}/apply?token=${token}`)
+      const { data: template } = await resp.json()
+      setIsEditorReadonly?.(false)
+
+      updateWorkflowStatusValue(workflowStates.find((state) => state.id === template.workflowStateId))
+      store.dispatch(setCreateTaskFields({ targetField: 'workflowStateId', value: template.workflowStateId }))
+      store.dispatch(setCreateTaskFields({ targetField: 'description', value: template.body }))
+      // Reset any errors that might have come from title field being empty
+      store.dispatch(setErrors({ key: CreateTaskErrors.TITLE, value: false }))
+    },
+    [token, setIsEditorReadonly],
+  )
+
+  const ManageTemplatesEndOption = () => {
+    return (
+      <Stack
+        id="manage-templates-btn"
+        key={'Manage templates'}
+        direction="row"
+        pl="16px"
+        py="6px"
+        justifyContent="space-between"
+        sx={{
+          borderTop: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
+          borderBottom: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
+          cursor: 'pointer',
+          lineHeight: '21px',
+          ':hover': (theme) => ({
+            zIndex: '999',
+            bgcolor: theme.color.background.bgHover,
+          }),
+        }}
+      >
+        <Typography variant="sm">
+          <Box display="flex" gap="4px" alignItems="center">
+            Manage templates
+            <ArrowRightIcon />
+          </Box>
+        </Typography>
+      </Stack>
+    )
+  }
+
+  useEffect(() => {
+    if (!templateValue || !token) return
+
+    applyTemplate(templateValue.id, templateValue.title)
+    updateTemplateValue(null)
+  }, [templateValue, applyTemplate, token, updateTemplateValue])
 
   return (
     <Box sx={{ borderTop: (theme) => `1px solid ${theme.color.borders.border2}` }}>
       <AppMargin size={SizeofAppMargin.MEDIUM} py="21px">
-        <Stack direction="row" justifyContent="flex-end" alignItems="center">
-          <Stack direction="row" columnGap={4}>
-            <SecondaryBtn
-              handleClick={() => handleClose()}
-              buttonContent={
-                <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[700] }}>
-                  Cancel
-                </Typography>
-              }
-            />
-            <PrimaryBtn
-              handleClick={() => {
-                const hasTitleError = !title.trim()
-                const hasAssigneeError = !assigneeId
-                if (hasTitleError || hasAssigneeError) {
-                  hasTitleError && store.dispatch(setErrors({ key: CreateTaskErrors.TITLE, value: true }))
-                  hasAssigneeError && store.dispatch(setErrors({ key: CreateTaskErrors.ASSIGNEE, value: true }))
-                } else {
-                  handleCreate()
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+          <Selector
+            inputStatusValue={inputStatusValue}
+            setInputStatusValue={setInputStatusValue}
+            getSelectedValue={(_newValue) => {
+              const newValue = _newValue as ITemplate
+              updateTemplateValue(newValue)
+            }}
+            startIcon={<TemplateIconSm />}
+            options={templates || []}
+            placeholder="Search..."
+            value={templateValue}
+            selectorType={SelectorType.TEMPLATE_SELECTOR}
+            endOption={<ManageTemplatesEndOption />}
+            endOptionHref={`/manage-templates?token=${token}`}
+            listAutoHeightMax="147px"
+            buttonContent={
+              <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[600], lineHeight: '24px' }}>
+                {'Apply template'}
+              </Typography>
+            }
+            disableOutline
+            responsiveNoHide
+            buttonWidth="auto"
+          />
+          <Stack
+            direction="row"
+            justifyContent="flex-end"
+            alignItems="center"
+            sx={{
+              marginLeft: 'auto',
+            }}
+          >
+            <Stack direction="row" columnGap={4}>
+              <SecondaryBtn
+                handleClick={() => handleClose()}
+                buttonContent={
+                  <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[700] }}>
+                    Cancel
+                  </Typography>
                 }
-              }}
-              buttonText="Create"
-            />
+              />
+              <PrimaryBtn
+                handleClick={() => {
+                  const hasTitleError = !title.trim()
+                  const hasAssigneeError = !assigneeId
+                  if (hasTitleError || hasAssigneeError) {
+                    hasTitleError && store.dispatch(setErrors({ key: CreateTaskErrors.TITLE, value: true }))
+                    hasAssigneeError && store.dispatch(setErrors({ key: CreateTaskErrors.ASSIGNEE, value: true }))
+                  } else {
+                    handleCreate()
+                  }
+                }}
+                buttonText="Create"
+              />
+            </Stack>
           </Stack>
-        </Stack>
+        </Box>
       </AppMargin>
     </Box>
   )

@@ -48,7 +48,7 @@ const DashboardEmptyState = ({ userType }: { userType: UserRole }) => {
               <Box>
                 <PrimaryBtn
                   startIcon={<AddIcon />}
-                  buttonText="New task"
+                  buttonText="Create task"
                   handleClick={() => {
                     store.dispatch(setShowModal())
                   }}
