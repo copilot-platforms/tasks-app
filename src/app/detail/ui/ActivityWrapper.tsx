@@ -50,7 +50,9 @@ export const ActivityWrapper = ({
     }
   }, [task?.lastActivityLogUpdated])
 
-  const currentUserId = (previewMode && tokenPayload.internalUserId) ?? tokenPayload.clientId ?? tokenPayload.internalUserId
+  const isPreviewModeInternalUserId = previewMode && tokenPayload.internalUserId
+
+  const currentUserId = isPreviewModeInternalUserId ?? tokenPayload.clientId ?? tokenPayload.internalUserId
 
   const currentUserDetails = useMemo(() => {
     const currentAssignee = assignee.find((el) => el.id === currentUserId)
@@ -90,6 +92,7 @@ export const ActivityWrapper = ({
     }
 
     const optimisticData = activities ? [...activities.data, tempLog] : [tempLog]
+
     try {
       mutate(
         cacheKey,
