@@ -36,7 +36,8 @@ export const ActivityWrapper = ({
   const { data: activities, isLoading } = useSWR(`/api/tasks/${task_id}/activity-logs?token=${token}`, fetcher, {
     refreshInterval: 0,
   })
-  const { assignee } = useSelector(selectTaskBoard)
+  const { assignee, previewMode } = useSelector(selectTaskBoard)
+
   const { mutate } = useSWRConfig()
   useScrollToElement('commentId')
   useEffect(() => {
@@ -49,7 +50,7 @@ export const ActivityWrapper = ({
     }
   }, [task?.lastActivityLogUpdated])
 
-  const currentUserId = tokenPayload.clientId ?? tokenPayload.internalUserId
+  const currentUserId = (previewMode && tokenPayload.internalUserId) ?? tokenPayload.clientId ?? tokenPayload.internalUserId
 
   const currentUserDetails = useMemo(() => {
     const currentAssignee = assignee.find((el) => el.id === currentUserId)

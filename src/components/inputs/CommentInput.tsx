@@ -23,8 +23,9 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
   const [isListOrMenuActive, setIsListOrMenuActive] = useState(false)
   const { assigneeSuggestions } = useSelector(selectTaskDetails)
   const { tokenPayload } = useSelector(selectAuthDetails)
-  const { assignee } = useSelector(selectTaskBoard)
-  const currentUserId = tokenPayload?.clientId ?? tokenPayload?.internalUserId
+  const { assignee, previewMode } = useSelector(selectTaskBoard)
+  const currentUserId =
+    (previewMode && tokenPayload?.internalUserId) ?? tokenPayload?.clientId ?? tokenPayload?.internalUserId
   const currentUserDetails = assignee.find((el) => el.id === currentUserId)
 
   const isContentEmpty = (content: string) => {
