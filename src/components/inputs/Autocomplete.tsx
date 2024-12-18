@@ -3,7 +3,7 @@ import { Autocomplete, styled } from '@mui/material'
 export const StyledAutocomplete = styled(Autocomplete)(({ theme }) => ({
   '& .MuiOutlinedInput-root': {
     borderRadius: '4px',
-    padding: '6px 14px 10px 14px',
+    padding: '6px 14px 10px 14px !important',
     paddingRight: '14px !important',
   },
 
