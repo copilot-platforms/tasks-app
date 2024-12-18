@@ -284,7 +284,7 @@ const NewTaskFormInputs = ({ isEditorReadonly }: NewTaskFormInputsProps) => {
           editorClass="tapwrite-task-description"
           uploadFn={uploadFn}
           readonly={isEditorReadonly}
-          deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', null)}
+          deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', null, null)}
           attachmentLayout={AttachmentLayout}
           maxUploadLimit={MAX_UPLOAD_LIMIT}
           parentContainerStyle={{ gap: '0px' }}

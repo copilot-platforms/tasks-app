@@ -183,6 +183,7 @@ export const NotificationRequestBodySchema = z.object({
 export const ScrapImageRequestSchema = z.object({
   filePath: z.string(),
   taskId: z.string().uuid().nullable(),
+  templateId: z.string().uuid().nullable(),
 })
 
 export type ScrapImageRequest = z.infer<typeof ScrapImageRequestSchema>
