@@ -202,7 +202,7 @@ export default function Selector({
           blurOnSelect={true}
           openOnFocus
           onKeyDown={handleKeyDown}
-          ListboxProps={{ sx: { maxHeight: { xs: '175px', sm: '291px' }, padding: '0px 0px 8px 0px' } }}
+          ListboxProps={{ sx: { maxHeight: { xs: '175px', sm: '291px' }, padding: { xs: ' 0px', sm: '0px 0px 8px 0px' } } }}
           options={extraOption ? [extraOption, ...options] : options}
           value={value}
           onChange={(_, newValue: unknown) => {
