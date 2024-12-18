@@ -12,7 +12,7 @@ export interface ListComponentProps extends Omit<ScrollbarProps, 'ref'> {
 
 const ListComponentInternal = forwardRef<Scrollbars, ListComponentProps>((props, ref) => {
   const { children, endOption, endOptionHref, autoHeightMax, ...comProps } = props
-  const xs = useMediaQuery('(max-width:600px) or (max-height:800px)')
+  const xs = useMediaQuery('(max-width:600px)')
   const router = useRouter()
 
   return (
@@ -36,16 +36,16 @@ const ListComponentInternal = forwardRef<Scrollbars, ListComponentProps>((props,
               ...viewProps.style,
               borderRadius: '0',
               position: 'relative',
-              maxHeight: autoHeightMax ?? (xs ? '17vh' : '30vh'),
+              maxHeight: autoHeightMax ?? (xs ? '175px' : '291px'),
               inset: '0px',
               overflow: 'auto',
-              paddingBottom: '7px',
+              paddingBottom: xs ? '12px' : '7px',
             }}
           />
         )}
         autoHide
         autoHeight
-        autoHeightMax={autoHeightMax ?? (xs ? '15vh' : '30vh')}
+        autoHeightMax={autoHeightMax ?? (xs ? '172px' : '291px')}
         autoHideTimeout={500}
         autoHideDuration={500}
         hideTracksWhenNotNeeded
