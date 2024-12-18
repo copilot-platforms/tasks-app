@@ -16,7 +16,7 @@ class User {
   // Instantiate a User from a request token & decrypted payload
   constructor(token: string, tokenPayload: Token) {
     this.token = token
-    this.role = tokenPayload.clientId ? UserRole.Client : UserRole.IU
+    this.role = tokenPayload.internalUserId ? UserRole.IU : UserRole.Client
     this.internalUserId = tokenPayload.internalUserId
     this.clientId = tokenPayload.clientId
     this.companyId = tokenPayload.companyId
