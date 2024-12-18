@@ -2457,10 +2457,10 @@
   dependencies:
     "@sinonjs/commons" "^3.0.0"
 
-"@supabase/auth-js@2.65.1":
-  version "2.65.1"
-  resolved "https://registry.yarnpkg.com/@supabase/auth-js/-/auth-js-2.65.1.tgz#4f6ab9ece2e6613d2648ecf5482800f3766479ea"
-  integrity sha512-IA7i2Xq2SWNCNMKxwmPlHafBQda0qtnFr8QnyyBr+KaSxoXXqEzFCnQ1dGTy6bsZjVBgXu++o3qrDypTspaAPw==
+"@supabase/auth-js@2.66.1":
+  version "2.66.1"
+  resolved "https://registry.yarnpkg.com/@supabase/auth-js/-/auth-js-2.66.1.tgz#40d9e7d98206123afc169877ecfe3fea33a4a0ae"
+  integrity sha512-kOW+04SuDXmP2jRX9JL1Rgzduj8BcOG1qC3RaWdZsxnv89svNCdLRv8PfXW3QPKJdw0k1jF30OlQDPkzbDEL9w==
   dependencies:
     "@supabase/node-fetch" "^2.6.14"
 
@@ -2485,15 +2485,15 @@
   dependencies:
     "@supabase/node-fetch" "^2.6.14"
 
-"@supabase/realtime-js@2.10.7":
-  version "2.10.7"
-  resolved "https://registry.yarnpkg.com/@supabase/realtime-js/-/realtime-js-2.10.7.tgz#9e0cbecdffbfda3ae94639dbe0e55b06c6f79290"
-  integrity sha512-OLI0hiSAqQSqRpGMTUwoIWo51eUivSYlaNBgxsXZE7PSoWh12wPRdVt0psUMaUzEonSB85K21wGc7W5jHnT6uA==
+"@supabase/realtime-js@2.11.2":
+  version "2.11.2"
+  resolved "https://registry.yarnpkg.com/@supabase/realtime-js/-/realtime-js-2.11.2.tgz#7f7399c326be717eadc9d5e259f9e2690fbf83dd"
+  integrity sha512-u/XeuL2Y0QEhXSoIPZZwR6wMXgB+RQbJzG9VErA3VghVt7uRfSVsjeqd7m5GhX3JR6dM/WRmLbVR8URpDWG4+w==
   dependencies:
     "@supabase/node-fetch" "^2.6.14"
     "@types/phoenix" "^1.5.4"
     "@types/ws" "^8.5.10"
-    ws "^8.14.2"
+    ws "^8.18.0"
 
 "@supabase/storage-js@2.7.1":
   version "2.7.1"
@@ -2502,16 +2502,16 @@
   dependencies:
     "@supabase/node-fetch" "^2.6.14"
 
-"@supabase/supabase-js@^2.43.4":
-  version "2.45.6"
-  resolved "https://registry.yarnpkg.com/@supabase/supabase-js/-/supabase-js-2.45.6.tgz#5b74abb58bba7c99ee141706e1609f794f5417c8"
-  integrity sha512-qVXSSUhhIqdFnF2VUGgeecPvw1cDW6+avcTbRgur4LaGnzrJCbM3Rx7g81/SSZjjeqYOtmHuKWhiHzV/EN8Ktw==
+"@supabase/supabase-js@^2.47.5":
+  version "2.47.5"
+  resolved "https://registry.yarnpkg.com/@supabase/supabase-js/-/supabase-js-2.47.5.tgz#4b4fce9a36f7c27b2990017e6000fb175acba70a"
+  integrity sha512-Xd4L2HR0pdZ+rBnoIi33CJ0K0q9BU9b42NaR13jDkiSYGbxJlZdYtXkTEhyVMQBXnYVvUHXM53q54iw/lgFrHA==
   dependencies:
-    "@supabase/auth-js" "2.65.1"
+    "@supabase/auth-js" "2.66.1"
     "@supabase/functions-js" "2.4.3"
     "@supabase/node-fetch" "2.6.15"
     "@supabase/postgrest-js" "1.16.3"
-    "@supabase/realtime-js" "2.10.7"
+    "@supabase/realtime-js" "2.11.2"
     "@supabase/storage-js" "2.7.1"
 
 "@svgr/babel-plugin-add-jsx-attribute@8.0.0":
@@ -7175,10 +7175,10 @@ tapable@^2.2.0:
   resolved "https://registry.yarnpkg.com/tapable/-/tapable-2.2.1.tgz#1967a73ef4060a82f12ab96af86d52fdb76eeca0"
   integrity sha512-GNzQvQTOIP6RyTfE2Qxb8ZVlNmw0n88vp1szwWRimP02mnTsx3Wtn5qRdqY9w2XduFNUgvOwhNnQsjwCp+kqaQ==
 
-tapwrite@1.1.81:
-  version "1.1.81"
-  resolved "https://registry.yarnpkg.com/tapwrite/-/tapwrite-1.1.81.tgz#c57cd4d4ab41b208bb0b450ffb43b630f7602d40"
-  integrity sha512-+l402szIQ67isleoa0QJgGZxSSCPCu2J5vqf1TXsQHI1a88CoMcb6v5tUv7004rNmdxTwKUYWMVL3g3Q7UxrHw==
+tapwrite@1.1.82:
+  version "1.1.82"
+  resolved "https://registry.yarnpkg.com/tapwrite/-/tapwrite-1.1.82.tgz#9056cef00520fd2b75b4739715faf4771397f269"
+  integrity sha512-qkQ1sLe2FuisYukFiJ7BosT6pmtSSZdwuQvFOZ51zbrhyFc0TAdHhd7ufBvEoeM3YhiyYg/CqO1/UAjw3DQwCQ==
   dependencies:
     re-resizable "^6.10.0"
     tippy.js "^6.3.7"
@@ -7666,7 +7666,7 @@ ws@8.14.2:
   resolved "https://registry.yarnpkg.com/ws/-/ws-8.14.2.tgz#6c249a806eb2db7a20d26d51e7709eab7b2e6c7f"
   integrity sha512-wEBG1ftX4jcglPxgFCMJmZ2PLtSbJ2Peg6TmpJFTbe9GZYOQCDPdMYu/Tm0/bGZkw8paZnJY45J4K2PZrLYq8g==
 
-ws@^8.14.2, ws@^8.18.0:
+ws@^8.18.0:
   version "8.18.0"
   resolved "https://registry.yarnpkg.com/ws/-/ws-8.18.0.tgz#0d7505a6eafe2b0e712d232b42279f53bc289bbc"
   integrity sha512-8VbfWfHLbbwu3+N6OKsOMpBdT4kXPDDB9cJk2bJ6mh9ucxdlnNvH1e+roYkKmN9Nxw2yjz7VzeO9oOz2zJ04Pw==

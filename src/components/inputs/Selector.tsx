@@ -191,6 +191,7 @@ export default function Selector({
         sx={{
           width: 'fit-content',
           zIndex: '9999',
+          borderRadius: '4px',
         }}
         placement="bottom-start"
       >
@@ -199,6 +200,7 @@ export default function Selector({
           onBlur={() => {
             setAnchorEl(null)
           }}
+          PopperComponent={({ style, ...props }) => <Popper {...props} style={{ ...style, height: 0 }} />} // always place popper at the bottom.
           blurOnSelect={true}
           openOnFocus
           onKeyDown={handleKeyDown}
@@ -223,6 +225,13 @@ export default function Selector({
                 '& .MuiAutocomplete-noOptions': {
                   padding: '0px',
                 },
+                boxShadow: 'none',
+                border: 'solid #EDEDF0',
+                borderWidth: '0px 1px 1px 1px',
+                borderTopLeftRadius: '0',
+                borderTopRightRadius: '0',
+                borderBottomLeftRadius: '4px',
+                borderBottomRightRadius: '4px',
               },
             },
           }}
@@ -263,9 +272,12 @@ export default function Selector({
                 inputRef={setSelectorRef}
                 placeholder={placeholder}
                 borderColor="#EDEDF0"
+                padding="0px"
+                basePadding="0px"
                 sx={{
                   width: '200px',
                   visibility: { xs: 'none', sm: 'visible' },
+                  borderRadius: '4px',
                 }}
                 onChange={(e) => {
                   handleInputChange?.(e.target.value)
@@ -286,7 +298,6 @@ export default function Selector({
                     color: 'gray',
                     textAlign: 'left',
                     padding: '6px 14px',
-
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',

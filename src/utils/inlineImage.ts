@@ -39,12 +39,18 @@ export const uploadImageHandler = async (
   }
 }
 
-export const deleteEditorAttachmentsHandler = async (url: string, token: string, task_id: string | null) => {
+export const deleteEditorAttachmentsHandler = async (
+  url: string,
+  token: string,
+  task_id: string | null,
+  template_id: string | null,
+) => {
   const filePath = getFilePathFromUrl(url)
   if (filePath) {
     const payload: ScrapImageRequest = {
       filePath: filePath,
       taskId: task_id,
+      templateId: template_id,
     }
     postScrapImage(token, payload)
   }
