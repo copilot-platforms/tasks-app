@@ -13,6 +13,6 @@ model TaskTemplate {
 
   scrapImages     ScrapImage[]
 
-
+  @@unique([title, workspaceId], name: "UQ_TaskTemplates_title_workspaceId")
   @@map("TaskTemplates")
 }

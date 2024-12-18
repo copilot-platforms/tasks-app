@@ -5,12 +5,14 @@ import { CreateTemplateRequest, UpdateTemplateRequest } from '@/types/dto/templa
 import { copyTemplateMediaToTask } from '@/utils/signedTemplateUrlReplacer'
 import { getFilePathFromUrl, replaceImageSrc } from '@/utils/signedUrlReplacer'
 import { getSignedUrl } from '@/utils/signUrl'
+import { sanitize } from '@/utils/sql'
 import { SupabaseActions } from '@/utils/SupabaseActions'
 import APIError from '@api/core/exceptions/api'
 import { BaseService } from '@api/core/services/base.service'
 import { PoliciesService } from '@api/core/services/policies.service'
 import { Resource } from '@api/core/types/api'
 import { UserAction } from '@api/core/types/user'
+import { Prisma } from '@prisma/client'
 import httpStatus from 'http-status'
 import { z } from 'zod'
 
@@ -50,9 +52,28 @@ export class TemplatesService extends BaseService {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Create, Resource.TaskTemplates)
 
+    // If template with same title already exists, append successive "copy" string after it
+    // E.g. "hello" -> "hello copy" -> "hello copy copy"
+    let title = sanitize(payload.title.trim())
+    // For some reason normal parameterized string doesn't work so using Prisma.raw with sanitized strings
+    const query = Prisma.sql`
+      SELECT COUNT(*) AS count
+      FROM "TaskTemplates"
+      WHERE "title" ~ '^${Prisma.raw(`${title}`)}( copy)*$'
+        AND "workspaceId" = '${Prisma.raw(`${this.user.workspaceId}`)}'
+        AND "deletedAt" IS NULL;
+    `
+    const result = await this.db.$queryRaw<{ count: bigint }[]>`${query}`
+
+    const count = result[0]?.count
+    for (let i = 0; i < count; i++) {
+      title += ' copy'
+    }
+
     let templates = await this.db.taskTemplate.create({
       data: {
         ...payload,
+        title,
         workspaceId: this.user.workspaceId,
         createdById: z.string().parse(this.user.internalUserId),
       },

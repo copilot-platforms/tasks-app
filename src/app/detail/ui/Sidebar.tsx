@@ -104,13 +104,8 @@ export const Sidebar = ({
       }}
     >
       <StyledBox>
-        <AppMargin size={SizeofAppMargin.LARGE} py="16px">
-          <Stack
-            direction="row"
-            justifyContent="space-between"
-            alignItems="center"
-            sx={{ height: { sm: '32px', md: '36px' } }}
-          >
+        <AppMargin size={SizeofAppMargin.HEADER} py="17.5px">
+          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ height: '28px' }}>
             <Typography variant="sm" lineHeight={'21px'} fontSize={'13px'}>
               Properties
             </Typography>
@@ -125,8 +120,8 @@ export const Sidebar = ({
         </AppMargin>
       </StyledBox>
 
-      <AppMargin size={SizeofAppMargin.SMALL}>
-        <Stack direction="row" alignItems="center" m="16px 0px" columnGap="10px">
+      <AppMargin size={SizeofAppMargin.HEADER} py={'4px'}>
+        <Stack direction="row" alignItems="center" m="4px 0px" columnGap="10px">
           <StyledText variant="md" minWidth="80px">
             Status
           </StyledText>
@@ -153,7 +148,7 @@ export const Sidebar = ({
             />
           </Box>
         </Stack>
-        <Stack direction="row" m="16px 0px" alignItems="center" columnGap="10px">
+        <Stack direction="row" m="8px 0px" alignItems="center" columnGap="10px">
           <StyledText variant="md" minWidth="80px">
             Assignee
           </StyledText>
@@ -235,7 +230,7 @@ export const Sidebar = ({
             />
           </Box>
         </Stack>
-        <Stack direction="row" m="16px 0px" alignItems="center" columnGap="10px" minWidth="fit-content">
+        <Stack direction="row" m="8px 0px" alignItems="center" columnGap="10px" minWidth="fit-content">
           <StyledText variant="md" minWidth="80px">
             Due date
           </StyledText>
@@ -286,41 +281,47 @@ export const SidebarSkeleton = () => {
         width: isMobile && showSidebar ? '100vw' : '25vw',
       }}
     >
-      <Stack direction="row" justifyContent="space-between" alignItems="center">
-        <StyledBox
-          display="flex"
-          justifyContent="space-between"
-          alignItems="center"
-          sx={{ padding: { xs: '16px 20px', sm: '20px 20px' } }}
-        >
-          <Typography variant="sm">Properties</Typography>
-          <Box
-            sx={{
-              display: isMobile ? 'block' : 'none',
-            }}
-          >
-            <ToggleButtonContainer />
-          </Box>
-        </StyledBox>
-      </Stack>
-      <AppMargin size={SizeofAppMargin.SMALL}>
-        <Stack direction="row" alignItems="center" m="25px 0px" columnGap="10px">
+      <StyledBox>
+        <AppMargin size={SizeofAppMargin.HEADER} py="17.5px">
+          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ height: '28px' }}>
+            <Typography variant="sm" lineHeight={'21px'} fontSize={'13px'}>
+              Properties
+            </Typography>
+            <Box
+              sx={{
+                display: isMobile ? 'block' : 'none',
+              }}
+            >
+              <ToggleButtonContainer />
+            </Box>
+          </Stack>
+        </AppMargin>
+      </StyledBox>
+
+      <AppMargin size={SizeofAppMargin.HEADER} py={'4px'}>
+        <Stack direction="row" alignItems="center" m="4px 0px" columnGap="10px">
           <StyledText variant="md" minWidth="80px">
             Status
           </StyledText>
-          <Skeleton variant="rectangular" width={120} height={15} />
+          <Box sx={{ height: '38px', alignItems: 'center', justifyContent: 'center', display: 'flex' }}>
+            <Skeleton variant="rectangular" width={120} height={15} />
+          </Box>
         </Stack>
-        <Stack direction="row" m="30px 0px" alignItems="center" columnGap="10px">
+        <Stack direction="row" m="8px 0px" alignItems="center" columnGap="10px">
           <StyledText variant="md" minWidth="80px">
             Assignee
           </StyledText>
-          <Skeleton variant="rectangular" width={120} height={15} />
+          <Box sx={{ height: '38px', alignItems: 'center', justifyContent: 'center', display: 'flex' }}>
+            <Skeleton variant="rectangular" width={120} height={15} />
+          </Box>
         </Stack>
-        <Stack direction="row" m="31px 0px" alignItems="center" columnGap="10px" minWidth="fit-content">
+        <Stack direction="row" m="8x 0px" alignItems="center" columnGap="10px" minWidth="fit-content">
           <StyledText variant="md" minWidth="80px">
             Due date
           </StyledText>
-          <Skeleton variant="rectangular" width={120} height={15} />
+          <Box sx={{ height: '40px', alignItems: 'center', justifyContent: 'center', display: 'flex' }}>
+            <Skeleton variant="rectangular" width={120} height={15} />
+          </Box>
         </Stack>
       </AppMargin>
     </Box>

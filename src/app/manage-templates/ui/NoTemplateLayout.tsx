@@ -1,7 +1,7 @@
 'use client'
 
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
-import { PlusIcon, TemplateIcon } from '@/icons'
+import { PlusIcon, TemplateIconLg } from '@/icons'
 import { Box, Stack, Typography } from '@mui/material'
 import store from '@/redux/store'
 import { setShowTemplateModal } from '@/redux/features/templateSlice'
@@ -40,13 +40,13 @@ export const NoTemplateLayout = () => {
               borderRadius: '6px',
             }}
           >
-            <TemplateIcon />
+            <TemplateIconLg />
           </Stack>
         </Stack>
 
-        <Typography variant="2xl">No templates have been created yet</Typography>
+        <Typography variant="2xl">No templates found</Typography>
         <Typography variant="bodyMd" fontSize="15px" sx={{ color: (theme) => theme.color.gray[500] }}>
-          Templates will be shown here
+          Templates will be shown here.
         </Typography>
         <Box width="fit-content">
           <PrimaryBtn
