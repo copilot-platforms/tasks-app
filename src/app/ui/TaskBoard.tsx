@@ -43,6 +43,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
     showArchived,
     showUnarchived,
     isTasksLoading,
+    previewMode,
   } = useSelector(selectTaskBoard)
 
   const onDropItem = useCallback(
@@ -100,7 +101,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
   return (
     <>
       <TaskDataFetcher token={token ?? ''} />
-      <Header showCreateTaskButton={mode === UserRole.IU} />
+      <Header showCreateTaskButton={mode === UserRole.IU || !!previewMode} />
       <FilterBar
         mode={mode}
         updateViewModeSetting={async (payload: CreateViewSettingsDTO) => {
@@ -135,6 +136,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
                   workflowStateId={list.id}
                   columnName={list.name}
                   taskCount={taskCountForWorkflowStateId(list.id)}
+                  showAddBtn={mode === UserRole.IU || !!previewMode}
                 >
                   <CustomScrollbar style={{ padding: '4px' }}>
                     <Stack direction="column" rowGap="6px" sx={{ overflowX: 'auto' }}>
