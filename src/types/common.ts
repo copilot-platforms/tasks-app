@@ -1,4 +1,5 @@
 import { UserRole } from '@/app/api/core/types/user'
+import { AssigneeType } from '@prisma/client'
 import { z } from 'zod'
 
 export const HexColorSchema = z.string().refine((val) => /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/.test(val), {
@@ -219,3 +220,5 @@ export interface FilterableUser {
   familyName?: string
   name?: string
 }
+
+export type PreviewMode = 'client' | 'company' | null
