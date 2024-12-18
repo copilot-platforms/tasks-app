@@ -40,10 +40,6 @@ export const ModalNewTaskForm = ({
     // await bulkRemoveAttachments(attachments)
   }
 
-  // useEffect(() => {
-  //   store.dispatch(setCreateTaskFields({ targetField: 'description', value: '' }))
-  // }, [showModal])
-
   return (
     <Modal
       open={showModal}
