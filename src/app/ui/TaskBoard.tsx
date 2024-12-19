@@ -88,7 +88,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
 
   const isNoTasksWithFilter = tasks && !userHasNoFilter && !filteredTasks.length
 
-  if (tasks && tasks.length === 0 && userHasNoFilter && !isTasksLoading) {
+  if (tasks && tasks.length === 0 && userHasNoFilter) {
     return (
       <>
         <TaskDataFetcher token={token ?? ''} />
@@ -107,7 +107,6 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
           await updateViewModeSettings(z.string().parse(token), payload)
         }}
       />
-
       {isNoTasksWithFilter && !isTasksLoading && <NoFilteredTasksState />}
 
       {!isNoTasksWithFilter && viewBoardSettings === View.BOARD_VIEW && (
@@ -171,7 +170,6 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
           </Stack>
         </Box>
       )}
-
       {!isNoTasksWithFilter && viewBoardSettings === View.LIST_VIEW && (
         <Stack
           sx={{
