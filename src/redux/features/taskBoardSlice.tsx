@@ -2,9 +2,10 @@ import { createSlice } from '@reduxjs/toolkit'
 import { RootState } from '../store'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { TaskResponse } from '@/types/dto/tasks.dto'
-import { AssigneeType, FilterByOptions, FilterOptions, IAssigneeCombined, IFilterOptions, View } from '@/types/interfaces'
+import { FilterByOptions, FilterOptions, IAssigneeCombined, IFilterOptions } from '@/types/interfaces'
 import { ViewMode } from '@prisma/client'
 import { CreateViewSettingsDTO, FilterOptionsType } from '@/types/dto/viewSettings.dto'
+import { PreviewMode } from '@/types/common'
 
 interface IInitialState {
   workflowStates: WorkflowStateResponse[]
@@ -20,6 +21,7 @@ interface IInitialState {
   viewSettingsTemp: CreateViewSettingsDTO | undefined
   isTasksLoading: boolean
   activeTask: TaskResponse | undefined
+  previewMode: PreviewMode
 }
 
 const initialState: IInitialState = {
@@ -41,6 +43,7 @@ const initialState: IInitialState = {
   // Use this state as a global loading flag for tasks
   isTasksLoading: true,
   activeTask: undefined,
+  previewMode: null,
 }
 
 const taskBoardSlice = createSlice({
@@ -125,6 +128,10 @@ const taskBoardSlice = createSlice({
     setIsTasksLoading: (state, action: { payload: boolean }) => {
       state.isTasksLoading = action.payload
     },
+
+    setPreviewMode: (state, action: { payload: PreviewMode }) => {
+      state.previewMode = action.payload
+    },
   },
 })
 
@@ -144,6 +151,7 @@ export const {
   setViewSettingsTemp,
   setIsTasksLoading,
   setActiveTask,
+  setPreviewMode,
 } = taskBoardSlice.actions
 
 export default taskBoardSlice.reducer

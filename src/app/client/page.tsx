@@ -1,23 +1,27 @@
 export const fetchCache = 'force-no-store'
 
+import { AssigneeFetcher } from '@/app/_fetchers/AssigneeFetcher'
+import { ValidateNotificationCountFetcher } from '@/app/_fetchers/ValidateNotificationCountFetcher'
+import { createMultipleAttachments } from '@/app/actions'
+import { getViewSettings } from '@/app/page'
+import { ModalNewTaskForm } from '@/app/ui/Modal_NewTaskForm'
+import { TaskBoard } from '@/app/ui/TaskBoard'
+import { SilentError } from '@/components/templates/SilentError'
 import { apiUrl } from '@/config'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
+import { DndWrapper } from '@/hoc/DndWrapper'
+import { RealTime } from '@/hoc/RealTime'
+import { Token, TokenSchema } from '@/types/common'
+import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { UserType } from '@/types/interfaces'
-import { RealTime } from '@/hoc/RealTime'
 import { CopilotAPI } from '@/utils/CopilotAPI'
-import { Token, TokenSchema } from '@/types/common'
-import { Suspense } from 'react'
-import { AssigneeFetcher } from '@/app/_fetchers/AssigneeFetcher'
-import { z } from 'zod'
-import { SilentError } from '@/components/templates/SilentError'
-import { TaskBoard } from '@/app/ui/TaskBoard'
-import { DndWrapper } from '@/hoc/DndWrapper'
-import { UserRole } from '@api/core/types/user'
-import { getViewSettings } from '@/app/page'
-import { ValidateNotificationCountFetcher } from '../_fetchers/ValidateNotificationCountFetcher'
 import { redirectIfTaskCta } from '@/utils/redirect'
+import { UserRole } from '@api/core/types/user'
+
+import { Suspense } from 'react'
+import { z } from 'zod'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -78,6 +82,12 @@ export default async function ClientPage({ searchParams }: { searchParams: { tok
           <DndWrapper>
             <TaskBoard mode={UserRole.Client} />
           </DndWrapper>
+          <ModalNewTaskForm
+            handleCreateMultipleAttachments={async (attachments: CreateAttachmentRequest[]) => {
+              'use server'
+              await createMultipleAttachments(token, attachments)
+            }}
+          />
         </RealTime>
       </ClientSideStateUpdate>
     </>
