@@ -11,14 +11,11 @@ interface Props {
   token: string
   viewSettings?: CreateViewSettingsDTO
   userType?: UserType
+  isPreview?: boolean
 }
 
-const fetchAssignee = async (
-  token: string,
-
-  userType?: UserType,
-): Promise<IAssignee> => {
-  if (userType === UserType.CLIENT_USER) {
+const fetchAssignee = async (token: string, userType?: UserType, isPreview?: boolean): Promise<IAssignee> => {
+  if (userType === UserType.CLIENT_USER && !isPreview) {
     const res = await fetch(`${apiUrl}/api/users/client?token=${token}&limit=${MAX_FETCH_ASSIGNEE_COUNT}`, {
       next: { tags: ['getAssigneeList'] },
     })
@@ -34,9 +31,8 @@ const fetchAssignee = async (
 
   return (await res.json()).users as IAssignee
 }
-
-export const AssigneeFetcher = async ({ token, userType, viewSettings }: Props) => {
-  const assignableUsersWithType = addTypeToAssignee(await fetchAssignee(token, userType))
+export const AssigneeFetcher = async ({ token, userType, viewSettings, isPreview }: Props) => {
+  const assignableUsersWithType = addTypeToAssignee(await fetchAssignee(token, userType, isPreview))
   return (
     <ClientSideStateUpdate assignee={assignableUsersWithType} viewSettings={viewSettings}>
       {null}
