@@ -13,6 +13,7 @@ import { getAssigneeName } from '@/utils/assignee'
 import { StyledHelperText } from '@/components/error/FormHelperText'
 import React from 'react'
 import { ListComponent } from '@/components/inputs/ListComponent'
+import { ModifierArguments } from '@popperjs/core'
 
 export enum SelectorType {
   ASSIGNEE_SELECTOR = 'assigneeSelector',
@@ -110,6 +111,14 @@ export default function Selector({
     }
   }
 
+  const [placement, setPlacement] = useState('')
+
+  const handlePlacementChange = (data: ModifierArguments<any>) => {
+    if (data.state && data.state.placement) {
+      setPlacement(data.state.placement)
+    }
+  }
+
   useEffect(() => {
     function closePopper(e: KeyboardEvent) {
       if (e.key === 'Escape') {
@@ -195,6 +204,7 @@ export default function Selector({
         placement="bottom-start"
       >
         <StyledAutocomplete
+          placement={placement}
           id={selectorType}
           onBlur={() => {
             setAnchorEl(null)
@@ -202,7 +212,7 @@ export default function Selector({
           blurOnSelect={true}
           openOnFocus
           onKeyDown={handleKeyDown}
-          ListboxProps={{ sx: { maxHeight: { xs: '175px', sm: '291px' }, padding: { xs: ' 0px', sm: '0px 0px 8px 0px' } } }}
+          ListboxProps={{ sx: { maxHeight: { xs: '175px', sm: '291px' }, padding: '0px 0px 8px 0px' } }}
           options={extraOption ? [extraOption, ...options] : options}
           value={value}
           onChange={(_, newValue: unknown) => {
@@ -223,7 +233,22 @@ export default function Selector({
                 '& .MuiAutocomplete-noOptions': {
                   padding: '0px',
                 },
+                boxShadow: 'none',
+                border: (theme) => `1px solid ${theme.color.borders.border2}`,
+                borderTop: (theme) => (placement === 'top' ? `1px solid ${theme.color.borders.border2}` : 'none'),
+                borderBottom: (theme) => (placement === 'top' ? 'none' : `1px solid ${theme.color.borders.border2}`),
+                borderRadius: placement == 'top' ? '4px 4px 0px 0px' : '0px 0px 4px 4px',
               },
+            },
+            popper: {
+              modifiers: [
+                {
+                  name: 'onUpdatePlacement',
+                  enabled: true,
+                  phase: 'afterWrite',
+                  fn: handlePlacementChange,
+                },
+              ],
             },
           }}
           filterOptions={filterOption}
@@ -263,9 +288,12 @@ export default function Selector({
                 inputRef={setSelectorRef}
                 placeholder={placeholder}
                 borderColor="#EDEDF0"
+                padding="4px 12px 8px 12px"
+                basePadding="4px 12px 8px 12px"
                 sx={{
                   width: '200px',
                   visibility: { xs: 'none', sm: 'visible' },
+                  borderRadius: '4px',
                 }}
                 onChange={(e) => {
                   handleInputChange?.(e.target.value)
