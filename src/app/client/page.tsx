@@ -17,6 +17,7 @@ import { TaskResponse } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { UserType } from '@/types/interfaces'
 import { CopilotAPI } from '@/utils/CopilotAPI'
+import { getPreviewMode } from '@/utils/previewMode'
 import { redirectIfTaskCta } from '@/utils/redirect'
 import { UserRole } from '@api/core/types/user'
 
@@ -76,11 +77,7 @@ export default async function ClientPage({ searchParams }: { searchParams: { tok
         viewSettings={viewSettings}
       >
         <Suspense fallback={null}>
-          <AssigneeFetcher
-            token={token}
-            userType={UserType.CLIENT_USER}
-            isPreview={!!(tokenPayload.internalUserId && tokenPayload.clientId)}
-          />
+          <AssigneeFetcher token={token} userType={UserType.CLIENT_USER} isPreview={!!getPreviewMode(tokenPayload)} />
         </Suspense>
         <RealTime tokenPayload={tokenPayload}>
           <DndWrapper>
