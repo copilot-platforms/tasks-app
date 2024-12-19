@@ -362,7 +362,7 @@ const NewTaskFooter = ({
         justifyContent="space-between"
         sx={{
           borderTop: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
-          borderBottom: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
+          borderBottom: (theme) => `0px solid ${theme.color.borders.borderDisabled}`,
           cursor: 'pointer',
           lineHeight: '21px',
           ':hover': (theme) => ({
