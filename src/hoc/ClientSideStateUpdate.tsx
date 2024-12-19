@@ -85,7 +85,6 @@ export const ClientSideStateUpdate = ({
       const isClientPreview = tokenPayload.internalUserId && tokenPayload.clientId
       const isCompanyPreview = tokenPayload.internalUserId && tokenPayload.companyId === 'default'
       const previewMode: PreviewMode = isClientPreview ? 'client' : isCompanyPreview ? 'company' : null
-      console.log('xxx', previewMode)
       store.dispatch(setPreviewMode(previewMode))
 
       previewMode && handlePreviewMode(previewMode, tokenPayload)

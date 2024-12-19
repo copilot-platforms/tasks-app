@@ -57,7 +57,6 @@ const taskBoardSlice = createSlice({
       state.activeTask = action.payload
     },
     setTasks: (state, action: { payload: TaskResponse[] }) => {
-      console.log('xxx setTasks', action.payload)
       state.tasks = action.payload
     },
     appendTask: (state, action: { payload: TaskResponse }) => {

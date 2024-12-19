@@ -50,7 +50,7 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
       createComment(commentPayload)
       setDetail('') // Clear the input after creating comment
     } else {
-      console.log('Comment cannot be empty.')
+      console.info('Comment cannot be empty.')
     }
   }
   // useEffect to handle keydown event for Enter key
