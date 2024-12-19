@@ -1,29 +1,32 @@
+import React from 'react'
 import { Autocomplete, styled } from '@mui/material'
 
-export const StyledAutocomplete = styled(Autocomplete)(({ theme }) => ({
-  '& .MuiOutlinedInput-root': {
-    borderRadius: '4px',
-    padding: '6px 14px 10px 14px !important',
-    paddingRight: '14px !important',
-  },
+interface StyledAutocompleteProps {
+  placement?: string
+}
 
-  '& .MuiOutlinedInput-root.Mui-focused': {
-    borderRadius: '4px 4px 0px 0px',
-  },
-  '& fieldset.MuiOutlinedInput-notchedOutline': {
-    borderWidth: '1px',
-  },
-  '& .MuiAutocomplete-inputRoot .MuiAutocomplete-input': {
-    padding: '0px',
-  },
-  '& .MuiAutocomplete-popper div': {
-    borderTopRightRadius: '0px',
-    borderTopLeftRadius: '0px',
-  },
+export const StyledAutocomplete = styled(Autocomplete, {
+  shouldForwardProp: (prop) => prop !== 'placement',
+})<StyledAutocompleteProps>(({ theme, placement }) => ({
   '& .MuiAutocomplete-endAdornment': {
     display: 'none',
   },
+  '& .MuiOutlinedInput-root': {
+    padding: placement === 'top' ? '8px 12px 4px 12px' : '4px 12px 8px 12px',
+    paddingRight: '12px !important',
+    '& .MuiAutocomplete-input': {
+      padding: '0px',
+      height: '21px',
+    },
+  },
+  '& .MuiOutlinedInput-root.Mui-focused': {
+    borderRadius: placement === 'top' ? '0px 0px 4px 4px' : '4px 4px 0px 0px',
+  },
   '&:hover .MuiOutlinedInput-notchedOutline': {
     border: '1px solid #EDEDF0',
+  },
+  '& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline': {
+    border: '1px solid #EDEDF0',
+    padding: 0,
   },
 }))

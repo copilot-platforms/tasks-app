@@ -36,7 +36,6 @@ export const StyledTextField = styled(TextField, {
       '&::placeholder': {
         opacity: 1,
         fontSize: '12px',
-        color: theme.color.text.textSecondary,
       },
       fontSize: '12px',
     },
