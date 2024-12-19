@@ -76,7 +76,11 @@ export default async function ClientPage({ searchParams }: { searchParams: { tok
         viewSettings={viewSettings}
       >
         <Suspense fallback={null}>
-          <AssigneeFetcher token={token} userType={UserType.CLIENT_USER} />
+          <AssigneeFetcher
+            token={token}
+            userType={UserType.CLIENT_USER}
+            isPreview={!!(tokenPayload.internalUserId && tokenPayload.clientId)}
+          />
         </Suspense>
         <RealTime tokenPayload={tokenPayload}>
           <DndWrapper>
