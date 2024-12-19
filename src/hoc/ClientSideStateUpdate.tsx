@@ -21,7 +21,7 @@ import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { IAssigneeSuggestions, IAssigneeCombined, ITemplate } from '@/types/interfaces'
 import { filterOptionsMap } from '@/types/objectMaps'
-import { handlePreviewMode } from '@/utils/previewMode'
+import { getPreviewMode, handlePreviewMode } from '@/utils/previewMode'
 import { AssigneeType } from '@prisma/client'
 import { ReactNode, useEffect } from 'react'
 import { useSelector } from 'react-redux'
@@ -82,9 +82,7 @@ export const ClientSideStateUpdate = ({
       store.dispatch(setTokenPayload(tokenPayload))
 
       // Handle preview mode feature
-      const isClientPreview = tokenPayload.internalUserId && tokenPayload.clientId
-      const isCompanyPreview = tokenPayload.internalUserId && tokenPayload.companyId === 'default'
-      const previewMode: PreviewMode = isClientPreview ? 'client' : isCompanyPreview ? 'company' : null
+      const previewMode = getPreviewMode(tokenPayload)
       store.dispatch(setPreviewMode(previewMode))
 
       previewMode && handlePreviewMode(previewMode, tokenPayload)
