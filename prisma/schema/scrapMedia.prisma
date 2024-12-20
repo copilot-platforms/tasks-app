@@ -1,4 +1,4 @@
-model ScrapImage {
+model ScrapMedia {
   id          String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   filePath    String       @unique
   taskId      String?       @db.Uuid
@@ -11,6 +11,6 @@ model ScrapImage {
 
   @@index([createdAt])
   @@index([filePath])
-  @@map("ScrapImages")
+  @@map("ScrapMedias")
 
 }

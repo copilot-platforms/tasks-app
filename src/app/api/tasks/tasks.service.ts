@@ -1,4 +1,4 @@
-import { ScrapImageService } from '@/app/api/scrap-images/scrap-images.service'
+import { ScrapMediaService } from '@/app/api/scrap-medias/scrap-medias.service'
 import { ClientResponse, CompanyResponse, InternalUsers, NotificationCreatedResponseSchema } from '@/types/common'
 import { CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { CopilotAPI } from '@/utils/CopilotAPI'
@@ -160,7 +160,6 @@ export class TasksService extends BaseService {
     if (newTask) {
       // @todo move this logic to any pub/sub service like event bus
       const activityLogger = new ActivityLogger({ taskId: newTask.id, user: this.user })
-      const scrapImageService = new ScrapImageService(this.user)
       await activityLogger.log(
         ActivityType.TASK_CREATED,
         TaskCreatedSchema.parse({
@@ -399,7 +398,7 @@ export class TasksService extends BaseService {
       htmlString = htmlString.replace(originalSrc, newUrl)
     }
     const filePaths = newFilePaths.map(({ newFilePath }) => newFilePath)
-    await this.db.scrapImage.updateMany({
+    await this.db.scrapMedia.updateMany({
       where: {
         filePath: {
           in: filePaths,

@@ -181,13 +181,13 @@ export const NotificationRequestBodySchema = z.object({
     .optional(),
 })
 
-export const ScrapImageRequestSchema = z.object({
+export const ScrapMediaRequestSchema = z.object({
   filePath: z.string(),
   taskId: z.string().uuid().nullable(),
   templateId: z.string().uuid().nullable(),
 })
 
-export type ScrapImageRequest = z.infer<typeof ScrapImageRequestSchema>
+export type ScrapMediaRequest = z.infer<typeof ScrapMediaRequestSchema>
 export type CopilotUser = InternalUsers | ClientResponse
 
 export type NotificationRequestBody = z.infer<typeof NotificationRequestBodySchema>

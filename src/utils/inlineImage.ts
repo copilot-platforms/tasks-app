@@ -1,8 +1,8 @@
 import { ISignedUrlUpload } from '@/types/interfaces'
 import { generateRandomString } from '@/utils/generateRandomString'
 import { SupabaseActions } from '@/utils/SupabaseActions'
-import { postScrapImage } from '@/app/detail/[task_id]/[user_type]/actions'
-import { ScrapImageRequest } from '@/types/common'
+import { postScrapMedia } from '@/app/detail/[task_id]/[user_type]/actions'
+import { ScrapMediaRequest } from '@/types/common'
 import { getFilePathFromUrl } from '@/utils/signedUrlReplacer'
 
 import { getSignedUrlFile, getSignedUrlUpload } from '@/app/actions'
@@ -47,11 +47,11 @@ export const deleteEditorAttachmentsHandler = async (
 ) => {
   const filePath = getFilePathFromUrl(url)
   if (filePath) {
-    const payload: ScrapImageRequest = {
+    const payload: ScrapMediaRequest = {
       filePath: filePath,
       taskId: task_id,
       templateId: template_id,
     }
-    postScrapImage(token, payload)
+    postScrapMedia(token, payload)
   }
 }
