@@ -1,6 +1,7 @@
 export const fetchCache = 'force-no-store'
 
 import { AssigneeFetcher } from '@/app/_fetchers/AssigneeFetcher'
+import { TemplatesFetcher } from '@/app/_fetchers/TemplatesFetcher'
 import { ValidateNotificationCountFetcher } from '@/app/_fetchers/ValidateNotificationCountFetcher'
 import { createMultipleAttachments } from '@/app/actions'
 import { getViewSettings } from '@/app/page'
@@ -78,6 +79,9 @@ export default async function ClientPage({ searchParams }: { searchParams: { tok
       >
         <Suspense fallback={null}>
           <AssigneeFetcher token={token} userType={UserType.CLIENT_USER} isPreview={!!getPreviewMode(tokenPayload)} />
+        </Suspense>
+        <Suspense fallback={null}>
+          <TemplatesFetcher token={token} />
         </Suspense>
         <RealTime tokenPayload={tokenPayload}>
           <DndWrapper>
