@@ -50,7 +50,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
     (payload: { taskId: string; targetWorkflowStateId: string }) => {
       const { taskId, targetWorkflowStateId } = payload
       store.dispatch(updateWorkflowStateIdByTaskId({ taskId, targetWorkflowStateId }))
-      if (mode === UserRole.Client) {
+      if (mode === UserRole.Client && !previewMode) {
         clientUpdateTask(z.string().parse(token), taskId, targetWorkflowStateId)
       } else {
         updateTask({

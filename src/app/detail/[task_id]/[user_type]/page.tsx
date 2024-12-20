@@ -165,7 +165,7 @@ export default async function TaskDetailPage({
                   selectedWorkflowState={task?.workflowState}
                   updateWorkflowState={async (workflowState) => {
                     'use server'
-                    params.user_type === UserType.CLIENT_USER
+                    params.user_type === UserType.CLIENT_USER && !getPreviewMode(tokenPayload)
                       ? await clientUpdateTask(token, task_id, workflowState.id)
                       : await updateWorkflowStateIdOfTask(token, task_id, workflowState?.id)
                   }}
