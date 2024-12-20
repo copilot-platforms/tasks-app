@@ -1,0 +1,16 @@
+model ScrapMedia {
+  id          String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  filePath    String       @unique
+  taskId      String?       @db.Uuid
+  task        Task?         @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  createdAt   DateTime     @default(now()) @db.Timestamptz()
+  updatedAt   DateTime     @updatedAt @db.Timestamptz()
+  deletedAt   DateTime?    @db.Timestamptz()
+  templateId  String?      @db.Uuid
+  template    TaskTemplate? @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@index([createdAt])
+  @@index([filePath])
+  @@map("ScrapMedias")
+
+}
