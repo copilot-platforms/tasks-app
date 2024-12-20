@@ -45,6 +45,7 @@ import { ArchiveWrapper } from '@/app/detail/ui/ArchiveWrapper'
 import { LastArchivedField } from '@/app/detail/ui/LastArchiveField'
 import { signedUrlTtl } from '@/constants/attachments'
 import { HeaderBreadcrumbs } from '@/components/layouts/HeaderBreadcrumbs'
+import { getPreviewMode } from '@/utils/previewMode'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
@@ -157,7 +158,7 @@ export default async function TaskDetailPage({
           <Box>
             <Suspense fallback={<SidebarSkeleton />}>
               <WorkflowStateFetcher token={token}>
-                <AssigneeFetcher token={token} userType={params.user_type} />
+                <AssigneeFetcher token={token} userType={UserType.CLIENT_USER} isPreview={!!getPreviewMode(tokenPayload)} />
                 <Sidebar
                   task_id={task_id}
                   selectedAssigneeId={task?.assigneeId}
