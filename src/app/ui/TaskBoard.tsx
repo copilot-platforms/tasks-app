@@ -120,7 +120,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
           await updateViewModeSettings(z.string().parse(token), payload)
         }}
       />
-      {isNoTasksWithFilter && <NoFilteredTasksState />}
+      {!filteredTasks.length && <NoFilteredTasksState />}
 
       {!isNoTasksWithFilter && viewBoardSettings === View.BOARD_VIEW && (
         <Box sx={{ padding: '12px 12px' }}>
