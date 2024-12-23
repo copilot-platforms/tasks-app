@@ -1,23 +1,29 @@
 export const fetchCache = 'force-no-store'
 
+import { AssigneeFetcher } from '@/app/_fetchers/AssigneeFetcher'
+import { TemplatesFetcher } from '@/app/_fetchers/TemplatesFetcher'
+import { ValidateNotificationCountFetcher } from '@/app/_fetchers/ValidateNotificationCountFetcher'
+import { createMultipleAttachments } from '@/app/actions'
+import { getViewSettings } from '@/app/page'
+import { ModalNewTaskForm } from '@/app/ui/Modal_NewTaskForm'
+import { TaskBoard } from '@/app/ui/TaskBoard'
+import { SilentError } from '@/components/templates/SilentError'
 import { apiUrl } from '@/config'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
+import { DndWrapper } from '@/hoc/DndWrapper'
+import { RealTime } from '@/hoc/RealTime'
+import { Token, TokenSchema } from '@/types/common'
+import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { UserType } from '@/types/interfaces'
-import { RealTime } from '@/hoc/RealTime'
 import { CopilotAPI } from '@/utils/CopilotAPI'
-import { Token, TokenSchema } from '@/types/common'
-import { Suspense } from 'react'
-import { AssigneeFetcher } from '@/app/_fetchers/AssigneeFetcher'
-import { z } from 'zod'
-import { SilentError } from '@/components/templates/SilentError'
-import { TaskBoard } from '@/app/ui/TaskBoard'
-import { DndWrapper } from '@/hoc/DndWrapper'
-import { UserRole } from '@api/core/types/user'
-import { getViewSettings } from '@/app/page'
-import { ValidateNotificationCountFetcher } from '../_fetchers/ValidateNotificationCountFetcher'
+import { getPreviewMode } from '@/utils/previewMode'
 import { redirectIfTaskCta } from '@/utils/redirect'
+import { UserRole } from '@api/core/types/user'
+
+import { Suspense } from 'react'
+import { z } from 'zod'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -57,13 +63,13 @@ export default async function ClientPage({ searchParams }: { searchParams: { tok
     getTokenPayload(token),
   ])
 
+  const previewMode = getPreviewMode(tokenPayload)
+
   console.info(`app/client/page.tsx | Serving user ${token} with payload`, tokenPayload)
 
   return (
     <>
-      <Suspense>
-        <ValidateNotificationCountFetcher token={token} />
-      </Suspense>
+      <Suspense>{!previewMode && <ValidateNotificationCountFetcher token={token} />}</Suspense>
       <ClientSideStateUpdate
         workflowStates={workflowStates}
         tasks={tasks}
@@ -72,12 +78,25 @@ export default async function ClientPage({ searchParams }: { searchParams: { tok
         viewSettings={viewSettings}
       >
         <Suspense fallback={null}>
-          <AssigneeFetcher token={token} userType={UserType.CLIENT_USER} />
+          <AssigneeFetcher
+            token={token}
+            userType={previewMode ? UserType.INTERNAL_USER : UserType.CLIENT_USER}
+            isPreview={!!getPreviewMode(tokenPayload)}
+          />
+        </Suspense>
+        <Suspense fallback={null}>
+          <TemplatesFetcher token={token} />
         </Suspense>
         <RealTime tokenPayload={tokenPayload}>
           <DndWrapper>
             <TaskBoard mode={UserRole.Client} />
           </DndWrapper>
+          <ModalNewTaskForm
+            handleCreateMultipleAttachments={async (attachments: CreateAttachmentRequest[]) => {
+              'use server'
+              await createMultipleAttachments(token, attachments)
+            }}
+          />
         </RealTime>
       </ClientSideStateUpdate>
     </>

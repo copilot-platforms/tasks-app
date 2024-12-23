@@ -482,7 +482,7 @@ const SelectorButton = ({
               : `1px solid ${theme.color.borders.border}`,
         bgcolor: enableBackground ? theme.color.gray[150] : '',
         '&:hover': {
-          bgcolor: theme.color.gray[100],
+          bgcolor: disabled ? 'white' : theme.color.gray[100],
           border:
             enableBackground || outlined
               ? 'none'

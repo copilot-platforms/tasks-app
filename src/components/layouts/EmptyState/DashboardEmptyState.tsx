@@ -5,11 +5,19 @@ import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { AddIcon, TasksListIcon } from '@/icons'
 import { setShowModal } from '@/redux/features/createTaskSlice'
+import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
 import { SxCenter } from '@/utils/mui'
 import { Box, Stack, Typography } from '@mui/material'
+import { useSelector } from 'react-redux'
 
 const DashboardEmptyState = ({ userType }: { userType: UserRole }) => {
+  const { previewMode } = useSelector(selectTaskBoard)
+
+  if (previewMode) {
+    userType = UserRole.IU
+  }
+
   return (
     <>
       <AppMargin size={SizeofAppMargin.LARGE} py="20px">
