@@ -73,7 +73,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
     if (!isFilterOn) {
       return taskCount.toString()
     }
-    return filteredTaskCount.toString() + '/' + taskCount.toString()
+    return filteredTaskCount.toString()
   }
 
   const viewBoardSettings = viewSettingsTemp ? viewSettingsTemp.viewMode : view
