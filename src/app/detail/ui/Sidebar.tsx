@@ -49,7 +49,7 @@ export const Sidebar = ({
   disabled: boolean
   workflowDisabled?: false
 }) => {
-  const { activeTask, token, workflowStates, assignee } = useSelector(selectTaskBoard)
+  const { activeTask, token, workflowStates, assignee, previewMode } = useSelector(selectTaskBoard)
   const { showSidebar } = useSelector(selectTaskDetails)
   const [filteredAssignees, setFilteredAssignees] = useState(assignee)
   const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
@@ -237,7 +237,7 @@ export const Sidebar = ({
           <Box
             sx={{
               ':hover': {
-                bgcolor: (theme) => (!!disabled ? '' : theme.color.background.bgCallout),
+                bgcolor: (theme) => (!!disabled && !previewMode ? '' : theme.color.background.bgCallout),
               },
               padding: '4px',
               borderRadius: '4px',
@@ -252,7 +252,7 @@ export const Sidebar = ({
                 })
               }}
               dateValue={dueDate ? createDateFromFormattedDateString(z.string().parse(dueDate)) : undefined}
-              disabled={disabled}
+              disabled={disabled && !previewMode}
             />
           </Box>
         </Stack>

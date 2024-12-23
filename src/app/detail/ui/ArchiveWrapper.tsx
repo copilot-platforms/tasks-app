@@ -12,7 +12,7 @@ import { selectTaskDetails, setTask } from '@/redux/features/taskDetailsSlice'
 import { UserType } from '@/types/interfaces'
 
 export const ArchiveWrapper = ({ taskId, userType }: { taskId: string; userType: UserType }) => {
-  const { token, activeTask } = useSelector(selectTaskBoard)
+  const { token, activeTask, previewMode } = useSelector(selectTaskBoard)
   const { task } = useSelector(selectTaskDetails)
   const { mutate } = useSWRConfig()
   const cacheKey = `/api/tasks/${taskId}?token=${token}`
@@ -34,7 +34,6 @@ export const ArchiveWrapper = ({ taskId, userType }: { taskId: string; userType:
     const optimisticTask = { ...task, isArchived: newIsArchived }
 
     setIsArchived(newIsArchived) // Optimistically update local state
-
     try {
       await mutate(
         cacheKey,
@@ -62,7 +61,7 @@ export const ArchiveWrapper = ({ taskId, userType }: { taskId: string; userType:
     }
   }
 
-  if (userType === UserType.CLIENT_USER) return null
+  if (userType === UserType.CLIENT_USER && !previewMode) return null
 
   // Handle loading and error states
   if (!task || isArchived === undefined) return <Skeleton variant="rectangular" width="60px" height="16px" />
