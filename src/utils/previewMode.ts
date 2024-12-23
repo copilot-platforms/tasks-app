@@ -5,12 +5,12 @@ import { FilterOptions } from '@/types/interfaces'
 
 export const getPreviewMode = (tokenPayload: Token): PreviewMode => {
   const isClientPreview = tokenPayload.internalUserId && tokenPayload.clientId
-  const isCompanyPreview = tokenPayload.internalUserId && tokenPayload.companyId === 'default'
+  const isCompanyPreview = tokenPayload.internalUserId && tokenPayload.companyId !== 'default'
   const previewMode: PreviewMode = isClientPreview ? 'client' : isCompanyPreview ? 'company' : null
   return previewMode
 }
 
-export const handlePreviewMode = (previewMode: NonNullable<PreviewMode>, tokenPayload: Token) => {
+export const handlePreviewMode = (_previewMode: NonNullable<PreviewMode>, tokenPayload: Token) => {
   // If clientId is provided, ignore corresponding companyId. Else pick up the companyId
   const previewId = tokenPayload.clientId || tokenPayload.companyId
   if (!previewId) {
