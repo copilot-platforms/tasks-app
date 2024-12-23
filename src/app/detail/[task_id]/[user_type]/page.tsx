@@ -87,7 +87,6 @@ export default async function TaskDetailPage({
   }
 
   console.info(`app/detail/${task_id}/${user_type}/page.tsx | Serving user ${token} with payload`, tokenPayload)
-
   if (!task) {
     return <DeletedTaskRedirectPage userType={tokenPayload.internalUserId ? UserRole.IU : UserRole.Client} token={token} />
   }
@@ -103,7 +102,7 @@ export default async function TaskDetailPage({
                 <Stack direction="row" justifyContent="space-between">
                   <HeaderBreadcrumbs token={token} title={task?.label} userType={params.user_type} />
                   <Stack direction="row" alignItems="center" columnGap="8px">
-                    {params.user_type === UserType.INTERNAL_USER && <MenuBoxContainer />}
+                    {params.user_type === UserType.INTERNAL_USER || (!!getPreviewMode(tokenPayload) && <MenuBoxContainer />)}
 
                     <Stack direction="row" alignItems="center" columnGap="8px">
                       <ArchiveWrapper taskId={task_id} userType={user_type} />
@@ -126,7 +125,7 @@ export default async function TaskDetailPage({
                     // attachment={attachments}
                     task_id={task_id}
                     task={task}
-                    isEditable={params.user_type === UserType.INTERNAL_USER}
+                    isEditable={params.user_type === UserType.INTERNAL_USER || !!getPreviewMode(tokenPayload)}
                     updateTaskDetail={async (detail) => {
                       'use server'
                       await updateTaskDetail({ token, taskId: task_id, payload: { body: detail } })
