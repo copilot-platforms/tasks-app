@@ -10,7 +10,7 @@ export const getPreviewMode = (tokenPayload: Token): PreviewMode => {
   return previewMode
 }
 
-export const handlePreviewMode = (_previewMode: NonNullable<PreviewMode>, tokenPayload: Token) => {
+export const handlePreviewMode = (previewMode: NonNullable<PreviewMode>, tokenPayload: Token) => {
   // If clientId is provided, ignore corresponding companyId. Else pick up the companyId
   const previewId = tokenPayload.clientId || tokenPayload.companyId
   if (!previewId) {
