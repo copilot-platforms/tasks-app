@@ -39,7 +39,7 @@ const ListComponentInternal = forwardRef<Scrollbars, ListComponentProps>((props,
               maxHeight: autoHeightMax ?? (xs ? '175px' : '291px'),
               inset: '0px',
               overflow: 'auto',
-              paddingBottom: xs ? '12px' : '7px',
+              paddingBottom: '7px',
             }}
           />
         )}
@@ -59,5 +59,9 @@ const ListComponentInternal = forwardRef<Scrollbars, ListComponentProps>((props,
 ListComponentInternal.displayName = 'ListComponentInternal'
 
 export const ListComponent = (
-  props: JSX.IntrinsicElements['div'] & { endOption?: React.ReactNode; endOptionHref?: string; autoHeightMax?: string },
+  props: JSX.IntrinsicElements['div'] & {
+    endOption?: React.ReactNode
+    endOptionHref?: string
+    autoHeightMax?: string
+  },
 ) => <ListComponentInternal {...(props as ListComponentProps)} />

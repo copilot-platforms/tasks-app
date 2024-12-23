@@ -13,6 +13,7 @@ import { getAssigneeName } from '@/utils/assignee'
 import { StyledHelperText } from '@/components/error/FormHelperText'
 import React from 'react'
 import { ListComponent } from '@/components/inputs/ListComponent'
+import { ModifierArguments } from '@popperjs/core'
 
 export enum SelectorType {
   ASSIGNEE_SELECTOR = 'assigneeSelector',
@@ -110,6 +111,14 @@ export default function Selector({
     }
   }
 
+  const [placement, setPlacement] = useState('')
+
+  const handlePlacementChange = (data: ModifierArguments<any>) => {
+    if (data.state && data.state.placement) {
+      setPlacement(data.state.placement)
+    }
+  }
+
   useEffect(() => {
     function closePopper(e: KeyboardEvent) {
       if (e.key === 'Escape') {
@@ -191,16 +200,15 @@ export default function Selector({
         sx={{
           width: 'fit-content',
           zIndex: '9999',
-          borderRadius: '4px',
         }}
         placement="bottom-start"
       >
         <StyledAutocomplete
+          placement={placement}
           id={selectorType}
           onBlur={() => {
             setAnchorEl(null)
           }}
-          PopperComponent={({ style, ...props }) => <Popper {...props} style={{ ...style, height: 0 }} />} // always place popper at the bottom.
           blurOnSelect={true}
           openOnFocus
           onKeyDown={handleKeyDown}
@@ -226,13 +234,21 @@ export default function Selector({
                   padding: '0px',
                 },
                 boxShadow: 'none',
-                border: 'solid #EDEDF0',
-                borderWidth: '0px 1px 1px 1px',
-                borderTopLeftRadius: '0',
-                borderTopRightRadius: '0',
-                borderBottomLeftRadius: '4px',
-                borderBottomRightRadius: '4px',
+                border: (theme) => `1px solid ${theme.color.borders.border2}`,
+                borderTop: (theme) => (placement === 'top' ? `1px solid ${theme.color.borders.border2}` : 'none'),
+                borderBottom: (theme) => (placement === 'top' ? 'none' : `1px solid ${theme.color.borders.border2}`),
+                borderRadius: placement == 'top' ? '4px 4px 0px 0px' : '0px 0px 4px 4px',
               },
+            },
+            popper: {
+              modifiers: [
+                {
+                  name: 'onUpdatePlacement',
+                  enabled: true,
+                  phase: 'afterWrite',
+                  fn: handlePlacementChange,
+                },
+              ],
             },
           }}
           filterOptions={filterOption}
@@ -272,8 +288,8 @@ export default function Selector({
                 inputRef={setSelectorRef}
                 placeholder={placeholder}
                 borderColor="#EDEDF0"
-                padding="0px"
-                basePadding="0px"
+                padding="4px 12px 8px 12px"
+                basePadding="4px 12px 8px 12px"
                 sx={{
                   width: '200px',
                   visibility: { xs: 'none', sm: 'visible' },
