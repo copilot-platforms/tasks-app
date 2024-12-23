@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Box, Stack } from '@mui/material'
 import { TaskCard } from '@/components/cards/TaskCard'
 import { TaskColumn } from '@/components/cards/TaskColumn'
@@ -89,6 +89,18 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
 
   const isNoTasksWithFilter = tasks && !userHasNoFilter && !filteredTasks.length
 
+  const [hasInitialized, setHasInitialized] = useState(false)
+
+  useEffect(() => {
+    if (!isTasksLoading && !hasInitialized) {
+      setHasInitialized(true)
+    }
+  }, [isTasksLoading])
+
+  if (!hasInitialized) {
+    return <TaskDataFetcher token={token ?? ''} />
+  } //fix this logic as soon as copilot API natively supports access scopes by creating an endpoint which shows the count of filteredTask and total tasks.
+
   if (tasks && tasks.length === 0 && userHasNoFilter && !isTasksLoading) {
     return (
       <>
@@ -108,8 +120,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
           await updateViewModeSettings(z.string().parse(token), payload)
         }}
       />
-
-      {isNoTasksWithFilter && !isTasksLoading && <NoFilteredTasksState />}
+      {isNoTasksWithFilter && <NoFilteredTasksState />}
 
       {!isNoTasksWithFilter && viewBoardSettings === View.BOARD_VIEW && (
         <Box sx={{ padding: '12px 12px' }}>
@@ -173,7 +184,6 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
           </Stack>
         </Box>
       )}
-
       {!isNoTasksWithFilter && viewBoardSettings === View.LIST_VIEW && (
         <Stack
           sx={{

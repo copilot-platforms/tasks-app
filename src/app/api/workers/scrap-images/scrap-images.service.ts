@@ -1,19 +1,20 @@
 import { subWeeks, isBefore, subMinutes } from 'date-fns'
 import { SupabaseService } from '@/app/api/core/services/supabase.service'
-import { supabaseBucket } from '@/config'
+import { ScrapImageExpiryPeriod, supabaseBucket } from '@/config'
 import { PrismaClient, ScrapImage } from '@prisma/client'
 import DBClient from '@/lib/db'
 import APIError from '@/app/api/core/exceptions/api'
+import { z } from 'zod'
 
 export class ScrapImageService {
   async removeScrapImages() {
-    const oneWeekAgo = subWeeks(new Date(), 1)
+    const expiryPeriod = new Date(Date.now() - z.number().parse(ScrapImageExpiryPeriod))
 
     const db: PrismaClient = DBClient.getInstance()
     const scrapImages = await db.scrapImage.findMany({
       where: {
         updatedAt: {
-          lt: subMinutes(new Date(), 1), //apply oneWeekAgo. 1 minute ago is used for testing
+          lt: expiryPeriod,
         },
       },
       // Putting a buffer of 0.5s for each deletion (which should be more than very enough), we take 600 records at a time

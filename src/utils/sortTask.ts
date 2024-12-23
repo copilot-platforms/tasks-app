@@ -13,8 +13,13 @@ export const sortTaskByDescendingOrder = <T extends Sortable>(tasks: T[]): T[] =
     } else if (b.dueDate && !a.dueDate) {
       return 1
     } else if (a.dueDate && b.dueDate) {
-      // Sort by duedate in asc order
-      return getTimestamp(a.dueDate) - getTimestamp(b.dueDate)
+      // Sort by duedate in asc order.
+      if (a.dueDate !== b.dueDate) {
+        return getTimestamp(a.dueDate) - getTimestamp(b.dueDate)
+      } else {
+        // If due dates are the same use descending createdAt order
+        return getTimestamp(b.createdAt) - getTimestamp(a.createdAt)
+      }
     } else {
       // Sort by createdAt in desc order
       return getTimestamp(b.createdAt) - getTimestamp(a.createdAt)
