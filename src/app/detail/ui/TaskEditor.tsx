@@ -168,7 +168,7 @@ export const TaskEditor = ({
         <Tapwrite
           content={updateDetail}
           getContent={handleDetailChange}
-          readonly={userType === UserType.CLIENT_USER}
+          readonly={!isEditable}
           editorClass=""
           placeholder="Add description..."
           uploadFn={uploadFn}
