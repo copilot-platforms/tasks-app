@@ -63,13 +63,13 @@ export default async function ClientPage({ searchParams }: { searchParams: { tok
     getTokenPayload(token),
   ])
 
+  const previewMode = getPreviewMode(tokenPayload)
+
   console.info(`app/client/page.tsx | Serving user ${token} with payload`, tokenPayload)
 
   return (
     <>
-      <Suspense>
-        <ValidateNotificationCountFetcher token={token} />
-      </Suspense>
+      <Suspense>{!previewMode && <ValidateNotificationCountFetcher token={token} />}</Suspense>
       <ClientSideStateUpdate
         workflowStates={workflowStates}
         tasks={tasks}
@@ -78,7 +78,11 @@ export default async function ClientPage({ searchParams }: { searchParams: { tok
         viewSettings={viewSettings}
       >
         <Suspense fallback={null}>
-          <AssigneeFetcher token={token} userType={UserType.CLIENT_USER} isPreview={!!getPreviewMode(tokenPayload)} />
+          <AssigneeFetcher
+            token={token}
+            userType={previewMode ? UserType.INTERNAL_USER : UserType.CLIENT_USER}
+            isPreview={!!getPreviewMode(tokenPayload)}
+          />
         </Suspense>
         <Suspense fallback={null}>
           <TemplatesFetcher token={token} />
