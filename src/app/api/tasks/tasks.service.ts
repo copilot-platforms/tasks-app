@@ -172,6 +172,14 @@ export class TasksService extends BaseService {
           dueData: newTask.dueDate,
         }),
       )
+      if (newTask.assigneeId) {
+        await activityLogger.log(
+          ActivityType.TASK_ASSIGNED,
+          TaskAssignedSchema.parse({
+            assigneeId: newTask.assigneeId,
+          }),
+        )
+      }
       if (newTask.body) {
         const newBody = await this.updateTaskIdOfAttachmentsAfterCreation(newTask.body, newTask.id)
         await this.db.task.update({
@@ -276,9 +284,7 @@ export class TasksService extends BaseService {
         await activityLogger.log(
           ActivityType.TASK_ASSIGNED,
           TaskAssignedSchema.parse({
-            oldAssigneeId: prevTask.assigneeId,
-            newAssigneeId: updatedTask.assigneeId,
-            assigneeType: updatedTask.assigneeType,
+            assigneeId: updatedTask.assigneeId,
           }),
         )
       }
