@@ -1,14 +1,13 @@
 'use client'
 
-import { Box, Stack, Typography } from '@mui/material'
-import { PrimaryBtn } from '../buttons/PrimaryBtn'
-
-import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
-import store from '@/redux/store'
-import { setShowModal } from '@/redux/features/createTaskSlice'
-import { IconBtn } from '../buttons/IconBtn'
-import { AddIcon, AddLargeIcon } from '@/icons'
 import { MenuBoxContainer } from '@/app/ui/MenuBoxContainer'
+import { IconBtn } from '@/components/buttons/IconBtn'
+import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
+import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
+import { AddIcon, AddLargeIcon } from '@/icons'
+import { setShowModal } from '@/redux/features/createTaskSlice'
+import store from '@/redux/store'
+import { Box, Stack, Typography } from '@mui/material'
 
 interface HeaderProps {
   showCreateTaskButton: boolean
