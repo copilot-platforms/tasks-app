@@ -45,6 +45,7 @@ import { ArchiveWrapper } from '@/app/detail/ui/ArchiveWrapper'
 import { LastArchivedField } from '@/app/detail/ui/LastArchiveField'
 import { signedUrlTtl } from '@/constants/attachments'
 import { HeaderBreadcrumbs } from '@/components/layouts/HeaderBreadcrumbs'
+import { getPreviewMode } from '@/utils/previewMode'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
@@ -86,7 +87,6 @@ export default async function TaskDetailPage({
   }
 
   console.info(`app/detail/${task_id}/${user_type}/page.tsx | Serving user ${token} with payload`, tokenPayload)
-
   if (!task) {
     return <DeletedTaskRedirectPage userType={tokenPayload.internalUserId ? UserRole.IU : UserRole.Client} token={token} />
   }
@@ -102,7 +102,7 @@ export default async function TaskDetailPage({
                 <Stack direction="row" justifyContent="space-between">
                   <HeaderBreadcrumbs token={token} title={task?.label} userType={params.user_type} />
                   <Stack direction="row" alignItems="center" columnGap="8px">
-                    {params.user_type === UserType.INTERNAL_USER && <MenuBoxContainer />}
+                    {params.user_type === UserType.INTERNAL_USER || (!!getPreviewMode(tokenPayload) && <MenuBoxContainer />)}
 
                     <Stack direction="row" alignItems="center" columnGap="8px">
                       <ArchiveWrapper taskId={task_id} userType={user_type} />
@@ -125,7 +125,7 @@ export default async function TaskDetailPage({
                     // attachment={attachments}
                     task_id={task_id}
                     task={task}
-                    isEditable={params.user_type === UserType.INTERNAL_USER}
+                    isEditable={params.user_type === UserType.INTERNAL_USER || !!getPreviewMode(tokenPayload)}
                     updateTaskDetail={async (detail) => {
                       'use server'
                       await updateTaskDetail({ token, taskId: task_id, payload: { body: detail } })
@@ -157,14 +157,14 @@ export default async function TaskDetailPage({
           <Box>
             <Suspense fallback={<SidebarSkeleton />}>
               <WorkflowStateFetcher token={token}>
-                <AssigneeFetcher token={token} userType={params.user_type} />
+                <AssigneeFetcher token={token} userType={UserType.CLIENT_USER} isPreview={!!getPreviewMode(tokenPayload)} />
                 <Sidebar
                   task_id={task_id}
                   selectedAssigneeId={task?.assigneeId}
                   selectedWorkflowState={task?.workflowState}
                   updateWorkflowState={async (workflowState) => {
                     'use server'
-                    params.user_type === UserType.CLIENT_USER
+                    params.user_type === UserType.CLIENT_USER && !getPreviewMode(tokenPayload)
                       ? await clientUpdateTask(token, task_id, workflowState.id)
                       : await updateWorkflowStateIdOfTask(token, task_id, workflowState?.id)
                   }}

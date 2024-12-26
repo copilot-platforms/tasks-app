@@ -1,6 +1,7 @@
 export const fetchCache = 'force-no-store'
 
 import { AssigneeFetcher } from '@/app/_fetchers/AssigneeFetcher'
+import { TemplatesFetcher } from '@/app/_fetchers/TemplatesFetcher'
 import { ValidateNotificationCountFetcher } from '@/app/_fetchers/ValidateNotificationCountFetcher'
 import { createMultipleAttachments } from '@/app/actions'
 import { getViewSettings } from '@/app/page'
@@ -17,6 +18,7 @@ import { TaskResponse } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { UserType } from '@/types/interfaces'
 import { CopilotAPI } from '@/utils/CopilotAPI'
+import { getPreviewMode } from '@/utils/previewMode'
 import { redirectIfTaskCta } from '@/utils/redirect'
 import { UserRole } from '@api/core/types/user'
 
@@ -61,13 +63,13 @@ export default async function ClientPage({ searchParams }: { searchParams: { tok
     getTokenPayload(token),
   ])
 
+  const previewMode = getPreviewMode(tokenPayload)
+
   console.info(`app/client/page.tsx | Serving user ${token} with payload`, tokenPayload)
 
   return (
     <>
-      <Suspense>
-        <ValidateNotificationCountFetcher token={token} />
-      </Suspense>
+      <Suspense>{!previewMode && <ValidateNotificationCountFetcher token={token} />}</Suspense>
       <ClientSideStateUpdate
         workflowStates={workflowStates}
         tasks={tasks}
@@ -76,7 +78,14 @@ export default async function ClientPage({ searchParams }: { searchParams: { tok
         viewSettings={viewSettings}
       >
         <Suspense fallback={null}>
-          <AssigneeFetcher token={token} userType={UserType.CLIENT_USER} />
+          <AssigneeFetcher
+            token={token}
+            userType={previewMode ? UserType.INTERNAL_USER : UserType.CLIENT_USER}
+            isPreview={!!getPreviewMode(tokenPayload)}
+          />
+        </Suspense>
+        <Suspense fallback={null}>
+          <TemplatesFetcher token={token} />
         </Suspense>
         <RealTime tokenPayload={tokenPayload}>
           <DndWrapper>

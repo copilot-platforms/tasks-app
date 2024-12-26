@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Box, Stack } from '@mui/material'
 import { TaskCard } from '@/components/cards/TaskCard'
 import { TaskColumn } from '@/components/cards/TaskColumn'
@@ -50,7 +50,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
     (payload: { taskId: string; targetWorkflowStateId: string }) => {
       const { taskId, targetWorkflowStateId } = payload
       store.dispatch(updateWorkflowStateIdByTaskId({ taskId, targetWorkflowStateId }))
-      if (mode === UserRole.Client) {
+      if (mode === UserRole.Client && !previewMode) {
         clientUpdateTask(z.string().parse(token), taskId, targetWorkflowStateId)
       } else {
         updateTask({
@@ -73,7 +73,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
     if (!isFilterOn) {
       return taskCount.toString()
     }
-    return filteredTaskCount.toString() + '/' + taskCount.toString()
+    return filteredTaskCount.toString()
   }
 
   const viewBoardSettings = viewSettingsTemp ? viewSettingsTemp.viewMode : view
@@ -89,6 +89,18 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
 
   const isNoTasksWithFilter = tasks && !userHasNoFilter && !filteredTasks.length
 
+  const [hasInitialized, setHasInitialized] = useState(false)
+
+  useEffect(() => {
+    if (!isTasksLoading && !hasInitialized) {
+      setHasInitialized(true)
+    }
+  }, [isTasksLoading])
+
+  if (!hasInitialized) {
+    return <TaskDataFetcher token={token ?? ''} />
+  } //fix this logic as soon as copilot API natively supports access scopes by creating an endpoint which shows the count of filteredTask and total tasks.
+
   if (tasks && tasks.length === 0 && userHasNoFilter && !isTasksLoading) {
     return (
       <>
@@ -101,15 +113,14 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
   return (
     <>
       <TaskDataFetcher token={token ?? ''} />
-      <Header showCreateTaskButton={mode === UserRole.IU || !!previewMode} />
+      <Header showCreateTaskButton={mode === UserRole.IU || !!previewMode} showMenuBox={!previewMode} />
       <FilterBar
         mode={mode}
         updateViewModeSetting={async (payload: CreateViewSettingsDTO) => {
           await updateViewModeSettings(z.string().parse(token), payload)
         }}
       />
-
-      {isNoTasksWithFilter && !isTasksLoading && <NoFilteredTasksState />}
+      {!filteredTasks.length && <NoFilteredTasksState />}
 
       {!isNoTasksWithFilter && viewBoardSettings === View.BOARD_VIEW && (
         <Box sx={{ padding: '12px 12px' }}>
@@ -173,7 +184,6 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
           </Stack>
         </Box>
       )}
-
       {!isNoTasksWithFilter && viewBoardSettings === View.LIST_VIEW && (
         <Stack
           sx={{
