@@ -1,13 +1,12 @@
 'use client'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
-import { Box, Stack, Typography } from '@mui/material'
-import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
+import { Box, Stack } from '@mui/material'
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 import { PlusIcon } from '@/icons'
-import { StyledBox, StyledKeyboardIcon, StyledTypography } from '@/app/detail/ui/styledComponent'
+import { StyledBox } from '@/app/detail/ui/styledComponent'
 import store from '@/redux/store'
 import { selectCreateTemplate, setShowTemplateModal } from '@/redux/features/templateSlice'
-import { TargetMethod } from '@/types/interfaces'
+import { TargetMethod, UserType } from '@/types/interfaces'
 import { useSelector } from 'react-redux'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { IconBtn } from '@/components/buttons/IconBtn'
@@ -16,11 +15,17 @@ import { HeaderBreadcrumbs } from '@/components/layouts/HeaderBreadcrumbs'
 
 export const ManageTemplateHeader = ({ token }: { token: string }) => {
   const { templates } = useSelector(selectCreateTemplate)
+  const { previewMode } = useSelector(selectTaskBoard)
   return (
     <StyledBox>
       <AppMargin size={SizeofAppMargin.HEADER} py="17.5px">
         <Stack direction="row" justifyContent="space-between" alignItems="center">
-          <HeaderBreadcrumbs title="Manage templates" token={token} />
+          <HeaderBreadcrumbs
+            title="Manage templates"
+            token={token}
+            // Treat user as IU since only they are allowed to manage templates for now
+            userType={UserType.INTERNAL_USER}
+          />
           {templates?.length ? (
             <>
               <Box
