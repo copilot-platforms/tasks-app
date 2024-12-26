@@ -8,7 +8,7 @@ import { UserType } from '@/types/interfaces'
 import { Stack, Typography } from '@mui/material'
 import { useSelector } from 'react-redux'
 
-type ValidTasksBoardLinks = '/' | '/client'
+type ValidTasksBoardLink = '/' | '/client'
 
 export const HeaderBreadcrumbs = ({
   token,
@@ -21,10 +21,10 @@ export const HeaderBreadcrumbs = ({
 }) => {
   const { previewMode } = useSelector(selectTaskBoard)
 
-  const getTasksLink = (userType: UserType): ValidTasksBoardLinks => {
+  const getTasksLink = (userType: UserType): ValidTasksBoardLink => {
     if (previewMode) return '/client'
 
-    const tasksLinks: Record<UserType, ValidTasksBoardLinks> = {
+    const tasksLinks: Record<UserType, ValidTasksBoardLink> = {
       [UserType.INTERNAL_USER]: '/',
       [UserType.CLIENT_USER]: '/client',
     }
