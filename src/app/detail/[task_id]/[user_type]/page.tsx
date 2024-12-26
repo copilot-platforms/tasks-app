@@ -157,7 +157,7 @@ export default async function TaskDetailPage({
           <Box>
             <Suspense fallback={<SidebarSkeleton />}>
               <WorkflowStateFetcher token={token}>
-                <AssigneeFetcher token={token} userType={UserType.CLIENT_USER} isPreview={!!getPreviewMode(tokenPayload)} />
+                <AssigneeFetcher token={token} userType={params.user_type} isPreview={!!getPreviewMode(tokenPayload)} />
                 <Sidebar
                   task_id={task_id}
                   selectedAssigneeId={task?.assigneeId}
