@@ -6,8 +6,8 @@ import DBClient from '@/lib/db'
 import APIError from '@/app/api/core/exceptions/api'
 import { z } from 'zod'
 
-export class ScrapImageService {
-  async removeScrapImages() {
+export class ScrapMediaService {
+  async removeScrapMedias() {
     const expiryPeriod = new Date(Date.now() - z.number().parse(ScrapImageExpiryPeriod))
 
     const db: PrismaClient = DBClient.getInstance()
