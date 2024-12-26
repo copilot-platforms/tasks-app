@@ -13,11 +13,16 @@ export const HeaderBreadcrumbs = ({
 }: {
   token: string | undefined
   title: string
-  userType?: UserType
+  userType: UserType
 }) => {
+  const tasksLinks = {
+    [UserType.INTERNAL_USER]: '/',
+    [UserType.CLIENT_USER]: '/client',
+  }
+
   return (
     <Stack direction="row" alignItems="center" columnGap={3}>
-      <CustomLink href={{ pathname: userType === UserType.CLIENT_USER ? `/client` : `/`, query: { token } }}>
+      <CustomLink href={{ pathname: tasksLinks[userType], query: { token } }}>
         <SecondaryBtn
           buttonContent={
             <StyledTypography variant="sm" lineHeight={'21px'} sx={{ fontSize: '13px' }}>
