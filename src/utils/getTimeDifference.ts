@@ -35,7 +35,7 @@ export const getTimeDifference = (createdAt: string): string => {
 
   if (diffInWeeks < 4 || (diffInWeeks === 4 && diffInDays < 30)) {
     return `${diffInWeeks} week${diffInWeeks === 1 ? '' : 's'} ago`
-  }
+  } //4 weeks is not necessarily a month, there will still be 2 days left to complete a month. So in those 2 days, it will show 0 months, to fix this added a check: diffInDays<30
 
   const diffInMonths = now.diff(targetTime, 'month')
   if (diffInMonths < 12) {
