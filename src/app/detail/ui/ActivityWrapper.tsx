@@ -150,8 +150,6 @@ export const ActivityWrapper = ({
                 key={index}
                 sx={{
                   height: 'auto',
-                  display:
-                    item.type === ActivityType.TASK_CREATED || item.type === ActivityType.COMMENT_ADDED ? 'block' : 'none',
                 }}
               >
                 {item.type === ActivityType.COMMENT_ADDED ? (
@@ -162,7 +160,7 @@ export const ActivityWrapper = ({
                     task_id={task_id}
                   />
                 ) : (
-                  item.type === ActivityType.TASK_CREATED && <ActivityLog log={item} />
+                  <ActivityLog log={item} />
                 )}
               </Box>
             ))}

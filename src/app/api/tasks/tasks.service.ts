@@ -1,3 +1,4 @@
+import { TaskAssignedSchema } from '@/app/api/activity-logs/schemas/TaskAssignedSchema'
 import { ClientResponse, CompanyResponse, InternalUsers, NotificationCreatedResponseSchema } from '@/types/common'
 import { CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { CopilotAPI } from '@/utils/CopilotAPI'
@@ -169,6 +170,14 @@ export class TasksService extends BaseService {
           dueData: newTask.dueDate,
         }),
       )
+      if (newTask.assigneeId) {
+        await activityLogger.log(
+          ActivityType.TASK_ASSIGNED,
+          TaskAssignedSchema.parse({
+            assigneeId: newTask.assigneeId,
+          }),
+        )
+      }
       if (newTask.body) {
         const newBody = await this.updateTaskIdOfAttachmentsAfterCreation(newTask.body, newTask.id)
         await this.db.task.update({
