@@ -32,11 +32,12 @@ export const getTimeDifference = (createdAt: string): string => {
   }
 
   const diffInWeeks = now.diff(targetTime, 'week')
-  if (diffInWeeks < 4) {
+  const diffInMonths = now.diff(targetTime, 'month')
+
+  if (diffInWeeks < 4 || (diffInWeeks === 4 && diffInMonths < 1)) {
     return `${diffInWeeks} week${diffInWeeks === 1 ? '' : 's'} ago`
   }
 
-  const diffInMonths = now.diff(targetTime, 'month')
   if (diffInMonths < 12) {
     return `${diffInMonths} month${diffInMonths === 1 ? '' : 's'} ago`
   }
