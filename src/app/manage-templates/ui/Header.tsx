@@ -23,8 +23,8 @@ export const ManageTemplateHeader = ({ token }: { token: string }) => {
           <HeaderBreadcrumbs
             title="Manage templates"
             token={token}
-            // Treat user as client if previewMode, else only IU is allowed to manage templates for now
-            userType={previewMode ? UserType.CLIENT_USER : UserType.INTERNAL_USER}
+            // Treat user as IU since only they are allowed to manage templates for now
+            userType={UserType.INTERNAL_USER}
           />
           {templates?.length ? (
             <>
