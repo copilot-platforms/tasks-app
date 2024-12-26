@@ -1,7 +1,7 @@
 {
   "crons": [
     {
-      "path": "/api/workers/scrap-images",
+      "path": "/api/workers/scrap-medias",
       "schedule": "0 0 * * *"
     }
   ]
