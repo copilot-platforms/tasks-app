@@ -26,8 +26,8 @@ export const ActivityLog = ({ log }: Prop) => {
   const logEntities =
     log.type == ActivityType.WORKFLOW_STATE_UPDATED
       ? [
-          WorkflowStateUpdatedSchema.parse(log.details)?.oldWorkflowState?.name,
-          WorkflowStateUpdatedSchema.parse(log.details)?.newWorkflowState?.name,
+          // WorkflowStateUpdatedSchema.parse(log.details)?.oldWorkflowState?.name,
+          // WorkflowStateUpdatedSchema.parse(log.details)?.newWorkflowState?.name,
         ]
       : log.type == ActivityType.TASK_ASSIGNED
         ? [getAssignedToName(TaskAssignedResponseSchema.parse(log.details))]
