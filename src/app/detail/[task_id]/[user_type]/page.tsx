@@ -91,6 +91,8 @@ export default async function TaskDetailPage({
     return <DeletedTaskRedirectPage userType={tokenPayload.internalUserId ? UserRole.IU : UserRole.Client} token={token} />
   }
 
+  const showTaskMenu = params.user_type === UserType.INTERNAL_USER || !!getPreviewMode(tokenPayload)
+
   return (
     <DetailStateUpdate isRedirect={!!searchParams.isRedirect} token={token} tokenPayload={tokenPayload} task={task}>
       <RealTime tokenPayload={tokenPayload}>
@@ -102,8 +104,7 @@ export default async function TaskDetailPage({
                 <Stack direction="row" justifyContent="space-between">
                   <HeaderBreadcrumbs token={token} title={task?.label} userType={params.user_type} />
                   <Stack direction="row" alignItems="center" columnGap="8px">
-                    {params.user_type === UserType.INTERNAL_USER || (!!getPreviewMode(tokenPayload) && <MenuBoxContainer />)}
-
+                    {showTaskMenu && <MenuBoxContainer />}
                     <Stack direction="row" alignItems="center" columnGap="8px">
                       <ArchiveWrapper taskId={task_id} userType={user_type} />
 
