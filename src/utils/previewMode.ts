@@ -5,7 +5,7 @@ import { FilterOptions } from '@/types/interfaces'
 
 export const getPreviewMode = (tokenPayload: Token): PreviewMode => {
   const isClientPreview = tokenPayload.internalUserId && tokenPayload.clientId
-  const isCompanyPreview = tokenPayload.internalUserId && tokenPayload.companyId !== 'default'
+  const isCompanyPreview = tokenPayload.internalUserId && (tokenPayload.companyId !== 'default' || !tokenPayload.companyId)
   const previewMode: PreviewMode = isClientPreview ? 'client' : isCompanyPreview ? 'company' : null
   return previewMode
 }
