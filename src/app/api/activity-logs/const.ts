@@ -11,7 +11,7 @@ export const SchemaByActivityType = {
   [ActivityType.TASK_ASSIGNED]: TaskAssignedSchema,
   [ActivityType.WORKFLOW_STATE_UPDATED]: WorkflowStateUpdatedSchema,
   [ActivityType.COMMENT_ADDED]: CommentAddedSchema,
-  [ActivityType.DUE_DATE_CHANGED]: null, //solve merge conflict here , implement incoming due date changed schemma.
+  [ActivityType.DUE_DATE_CHANGED]: ArchivedStateUpdatedSchema, //solve merge conflict here , implement incoming due date changed schemma.
   [ActivityType.ARCHIVE_STATE_UPDATED]: ArchivedStateUpdatedSchema,
 }
 
