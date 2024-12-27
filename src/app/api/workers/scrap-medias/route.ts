@@ -1,8 +1,8 @@
 import { withErrorHandler } from '@/app/api/core/utils/withErrorHandler'
-import { removeScrapImages } from '@/app/api/workers/scrap-images/scrap-images.controller'
+import { removeScrapMedias } from '@/app/api/workers/scrap-medias/scrap-medias.controller'
 
 export const dynamic = 'force-dynamic'
 
 export const maxDuration = 300
 
-export const GET = withErrorHandler(removeScrapImages)
+export const GET = withErrorHandler(removeScrapMedias)
