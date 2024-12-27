@@ -9,6 +9,7 @@ import { useSelector } from 'react-redux'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { IAssigneeCombined } from '@/types/interfaces'
+import { ArchivedStateUpdatedSchema } from '@/app/api/activity-logs/schemas/ArchiveStateUpdatedSchema'
 
 interface Prop {
   log: LogResponse
@@ -31,7 +32,9 @@ export const ActivityLog = ({ log }: Prop) => {
         ]
       : log.type == ActivityType.TASK_ASSIGNED
         ? [getAssignedToName(TaskAssignedResponseSchema.parse(log.details))]
-        : []
+        : log.type == ActivityType.ARCHIVE_STATE_UPDATED
+          ? [ArchivedStateUpdatedSchema.parse(log.details)?.newValue ? 'archived' : 'unarchived'] //Solve conflict here. Accept both changes from ARCHIVE_STATE_UPDATED and DUE_DATE_CHANGED.
+          : []
 
   const activityDescription: { [key in ActivityType]: (...args: string[]) => React.ReactNode } = {
     [ActivityType.TASK_CREATED]: () => (
@@ -53,6 +56,13 @@ export const ActivityLog = ({ log }: Prop) => {
         <StyledTypography> to </StyledTypography>
         <BoldTypography>{to}.</BoldTypography>
       </>
+    ),
+    [ActivityType.DUE_DATE_CHANGED]: () => null, //Solve conflict here. Implement changes from OUT-1991 branch
+    [ActivityType.ARCHIVE_STATE_UPDATED]: (archivedStatus: string) => (
+      <StyledTypography>
+        {' '}
+        {archivedStatus} task <span>&#x2022;</span>{' '}
+      </StyledTypography>
     ),
     [ActivityType.COMMENT_ADDED]: () => null,
   }

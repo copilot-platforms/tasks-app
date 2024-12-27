@@ -1,3 +1,4 @@
+import { ArchivedStateUpdatedSchema } from '@/app/api/activity-logs/schemas/ArchiveStateUpdatedSchema'
 import { TaskAssignedSchema } from '@api/activity-logs/schemas/TaskAssignedSchema'
 import { WorkflowStateUpdatedSchema } from '@api/activity-logs/schemas/WorkflowStateUpdatedSchema'
 import { ActivityLogger } from '@api/activity-logs/services/activity-logger.service'
@@ -30,6 +31,9 @@ export class TasksActivityLogger extends BaseService {
     if (this.task.workflowStateId !== prevTask?.workflowStateId) {
       await this.logWorkflowStateUpdated(prevTask)
     }
+    if (this.task.isArchived !== prevTask.isArchived) {
+      await this.logArchiveStateUpdated(prevTask)
+    }
   }
 
   private async logWorkflowStateUpdated(prevTask: Task & { workflowState: WorkflowState }) {
@@ -38,6 +42,16 @@ export class TasksActivityLogger extends BaseService {
       WorkflowStateUpdatedSchema.parse({
         oldValue: prevTask.workflowState.id,
         newValue: this.task.workflowState.id,
+      }),
+    )
+  }
+
+  private async logArchiveStateUpdated(prevTask: Task) {
+    await this.activityLogger.log(
+      ActivityType.ARCHIVE_STATE_UPDATED,
+      ArchivedStateUpdatedSchema.parse({
+        oldValue: prevTask.isArchived,
+        newValue: this.task.isArchived,
       }),
     )
   }
