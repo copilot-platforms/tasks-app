@@ -1,4 +1,3 @@
-import { TaskAssignedSchema } from '@/app/api/activity-logs/schemas/TaskAssignedSchema'
 import { ClientResponse, CompanyResponse, InternalUsers, NotificationCreatedResponseSchema } from '@/types/common'
 import { CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { CopilotAPI } from '@/utils/CopilotAPI'
