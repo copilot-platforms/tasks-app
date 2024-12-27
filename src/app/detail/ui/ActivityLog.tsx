@@ -9,6 +9,8 @@ import { useSelector } from 'react-redux'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { IAssigneeCombined } from '@/types/interfaces'
+import { DueDateChangedSchema } from '@/app/api/activity-logs/schemas/DueDateChangedSchema'
+import { DueDateFormatter } from '@/utils/dueDateFormatter'
 
 interface Prop {
   log: LogResponse
@@ -31,7 +33,12 @@ export const ActivityLog = ({ log }: Prop) => {
         ]
       : log.type == ActivityType.TASK_ASSIGNED
         ? [getAssignedToName(TaskAssignedResponseSchema.parse(log.details))]
-        : []
+        : log.type == ActivityType.DUE_DATE_CHANGED
+          ? [
+              DueDateChangedSchema.parse(log.details)?.oldValue ?? '',
+              DueDateChangedSchema.parse(log.details)?.newValue ?? '',
+            ]
+          : []
 
   const activityDescription: { [key in ActivityType]: (...args: string[]) => React.ReactNode } = {
     [ActivityType.TASK_CREATED]: () => (
@@ -52,6 +59,22 @@ export const ActivityLog = ({ log }: Prop) => {
         <BoldTypography>{from}</BoldTypography>
         <StyledTypography> to </StyledTypography>
         <BoldTypography>{to}.</BoldTypography>
+      </>
+    ),
+    [ActivityType.DUE_DATE_CHANGED]: (from: string, to: string) => (
+      <>
+        <StyledTypography> changed due date </StyledTypography>
+        {from && (
+          <>
+            <StyledTypography> from </StyledTypography> <BoldTypography> {DueDateFormatter(from)}</BoldTypography>
+          </>
+        )}
+        <StyledTypography> to</StyledTypography>
+        <BoldTypography> {DueDateFormatter(to)}</BoldTypography>
+        <StyledTypography>
+          {' '}
+          <span>&#x2022;</span>
+        </StyledTypography>
       </>
     ),
     [ActivityType.COMMENT_ADDED]: () => null,
