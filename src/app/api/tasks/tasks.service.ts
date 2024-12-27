@@ -5,8 +5,6 @@ import { CopilotAPI } from '@/utils/CopilotAPI'
 import { getFilePathFromUrl, replaceImageSrc } from '@/utils/signedUrlReplacer'
 import { getSignedUrl } from '@/utils/signUrl'
 import { SupabaseActions } from '@/utils/SupabaseActions'
-import { TaskCreatedSchema } from '@api/activity-logs/schemas/TaskCreatedSchema'
-import { ActivityLogger } from '@api/activity-logs/services/activity-logger.service'
 import APIError from '@api/core/exceptions/api'
 import { BaseService } from '@api/core/services/base.service'
 import { PoliciesService } from '@api/core/services/policies.service'
@@ -157,27 +155,9 @@ export class TasksService extends BaseService {
 
     if (newTask) {
       // @todo move this logic to any pub/sub service like event bus
-      const activityLogger = new ActivityLogger({ taskId: newTask.id, user: this.user })
-      await activityLogger.log(
-        ActivityType.TASK_CREATED,
-        TaskCreatedSchema.parse({
-          id: newTask.id,
-          workspaceId: newTask.workspaceId,
-          assigneeId: newTask.assigneeId,
-          assigneeType: newTask.assigneeType,
-          title: newTask.title,
-          body: newTask.body,
-          dueData: newTask.dueDate,
-        }),
-      )
-      if (newTask.assigneeId) {
-        await activityLogger.log(
-          ActivityType.TASK_ASSIGNED,
-          TaskAssignedSchema.parse({
-            assigneeId: newTask.assigneeId,
-          }),
-        )
-      }
+      const activityLogger = new TasksActivityLogger(this.user, newTask)
+      await activityLogger.logNewTask()
+
       if (newTask.body) {
         const newBody = await this.updateTaskIdOfAttachmentsAfterCreation(newTask.body, newTask.id)
         await this.db.task.update({
