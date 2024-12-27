@@ -161,7 +161,7 @@ export class TemplatesService extends BaseService {
       htmlString = htmlString.replace(originalSrc, newUrl)
     }
     const filePaths = newFilePaths.map(({ newFilePath }) => newFilePath)
-    await this.db.scrapImage.updateMany({
+    await this.db.scrapMedia.updateMany({
       where: {
         filePath: {
           in: filePaths,

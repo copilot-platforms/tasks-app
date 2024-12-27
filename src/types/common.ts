@@ -1,4 +1,5 @@
 import { UserRole } from '@/app/api/core/types/user'
+import { AssigneeType } from '@prisma/client'
 import { z } from 'zod'
 
 export const HexColorSchema = z.string().refine((val) => /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/.test(val), {
@@ -180,13 +181,13 @@ export const NotificationRequestBodySchema = z.object({
     .optional(),
 })
 
-export const ScrapImageRequestSchema = z.object({
+export const ScrapMediaRequestSchema = z.object({
   filePath: z.string(),
   taskId: z.string().uuid().nullable(),
   templateId: z.string().uuid().nullable(),
 })
 
-export type ScrapImageRequest = z.infer<typeof ScrapImageRequestSchema>
+export type ScrapMediaRequest = z.infer<typeof ScrapMediaRequestSchema>
 export type CopilotUser = InternalUsers | ClientResponse
 
 export type NotificationRequestBody = z.infer<typeof NotificationRequestBodySchema>
@@ -219,3 +220,5 @@ export interface FilterableUser {
   familyName?: string
   name?: string
 }
+
+export type PreviewMode = 'client' | 'company' | null
