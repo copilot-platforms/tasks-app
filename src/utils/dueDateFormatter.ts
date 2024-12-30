@@ -1,7 +1,15 @@
 import dayjs from 'dayjs'
 
-export const DueDateFormatter = (date: string) => {
+export const DueDateFormatter = (date: string | Date, isRelativeDate: boolean = false) => {
   const parsedDate = dayjs(date)
+  if (isRelativeDate) {
+    if (parsedDate.isToday()) {
+      return 'Today'
+    }
+    if (parsedDate.isTomorrow()) {
+      return 'Tomorrow'
+    }
+  }
   const monthFormats: { [key: string]: string } = {
     January: 'Jan',
     February: 'Feb',

@@ -1,6 +1,7 @@
+import { DateStringSchema } from '@/types/date'
 import { z } from 'zod'
 
 export const DueDateChangedSchema = z.object({
-  oldValue: z.string().nullish(),
-  newValue: z.string().nullish(),
+  oldValue: DateStringSchema.nullish(),
+  newValue: DateStringSchema.nullish(),
 })
