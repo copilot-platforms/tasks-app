@@ -5,13 +5,14 @@ import { WorkflowStateUpdatedSchema } from '@api/activity-logs/schemas/WorkflowS
 import { CommentAddedSchema } from '@api/activity-logs/schemas/CommentAddedSchema'
 import { z } from 'zod'
 import { ArchivedStateUpdatedSchema } from '@/app/api/activity-logs/schemas/ArchiveStateUpdatedSchema'
+import { DueDateChangedSchema } from '@/app/api/activity-logs/schemas/DueDateChangedSchema'
 
 export const SchemaByActivityType = {
   [ActivityType.TASK_CREATED]: TaskCreatedSchema,
   [ActivityType.TASK_ASSIGNED]: TaskAssignedSchema,
   [ActivityType.WORKFLOW_STATE_UPDATED]: WorkflowStateUpdatedSchema,
   [ActivityType.COMMENT_ADDED]: CommentAddedSchema,
-  [ActivityType.DUE_DATE_CHANGED]: ArchivedStateUpdatedSchema, //solve merge conflict here , implement incoming due date changed schemma.
+  [ActivityType.DUE_DATE_CHANGED]: DueDateChangedSchema,
   [ActivityType.ARCHIVE_STATE_UPDATED]: ArchivedStateUpdatedSchema,
 }
 

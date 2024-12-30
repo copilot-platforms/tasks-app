@@ -10,6 +10,8 @@ import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { IAssigneeCombined } from '@/types/interfaces'
 import { ArchivedStateUpdatedSchema } from '@/app/api/activity-logs/schemas/ArchiveStateUpdatedSchema'
+import { DueDateChangedSchema } from '@/app/api/activity-logs/schemas/DueDateChangedSchema'
+import { DueDateFormatter } from '@/utils/dueDateFormatter'
 import { getAssigneeName } from '@/utils/assignee'
 
 interface Prop {
@@ -33,8 +35,13 @@ export const ActivityLog = ({ log }: Prop) => {
       : log.type == ActivityType.TASK_ASSIGNED
         ? getAssignedToName(TaskAssignedResponseSchema.parse(log.details))
         : log.type == ActivityType.ARCHIVE_STATE_UPDATED
-          ? [ArchivedStateUpdatedSchema.parse(log.details)?.newValue ? 'archived' : 'unarchived'] //Solve conflict here. Accept both changes from ARCHIVE_STATE_UPDATED and DUE_DATE_CHANGED.
-          : []
+          ? [ArchivedStateUpdatedSchema.parse(log.details)?.newValue ? 'archived' : 'unarchived']
+          : log.type == ActivityType.DUE_DATE_CHANGED
+            ? [
+                DueDateChangedSchema.parse(log.details)?.oldValue ?? '',
+                DueDateChangedSchema.parse(log.details)?.newValue ?? '',
+              ]
+            : []
 
   const activityDescription: { [key in ActivityType]: (...args: string[]) => React.ReactNode } = {
     [ActivityType.TASK_CREATED]: () => (
@@ -62,7 +69,22 @@ export const ActivityLog = ({ log }: Prop) => {
         <BoldTypography>{to}.</BoldTypography>
       </>
     ),
-    [ActivityType.DUE_DATE_CHANGED]: () => null, //Solve conflict here. Implement changes from OUT-1991 branch
+    [ActivityType.DUE_DATE_CHANGED]: (from: string, to: string) => (
+      <>
+        <StyledTypography> changed due date </StyledTypography>
+        {from && (
+          <>
+            <StyledTypography> from </StyledTypography> <BoldTypography> {DueDateFormatter(from)}</BoldTypography>
+          </>
+        )}
+        <StyledTypography> to</StyledTypography>
+        <BoldTypography> {DueDateFormatter(to)}</BoldTypography>
+        <StyledTypography>
+          {' '}
+          <span>&#x2022;</span>
+        </StyledTypography>
+      </>
+    ),
     [ActivityType.ARCHIVE_STATE_UPDATED]: (archivedStatus: string) => (
       <StyledTypography>
         {' '}
