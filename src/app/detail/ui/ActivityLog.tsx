@@ -2,10 +2,12 @@ import { DotSeparator } from '@/app/detail/ui/DotSeparator'
 import { BoldTypography, StyledTypography, TypographyContainer, VerticalLine } from '@/app/detail/ui/styledComponent'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { TruncateMaxNumber } from '@/types/constants'
 import { IAssigneeCombined } from '@/types/interfaces'
 import { getAssigneeName } from '@/utils/assignee'
 import { DueDateFormatter } from '@/utils/dueDateFormatter'
 import { getTimeDifference } from '@/utils/getTimeDifference'
+import { truncateText } from '@/utils/truncateText'
 import { ArchivedStateUpdatedSchema } from '@api/activity-logs/schemas/ArchiveStateUpdatedSchema'
 import { DueDateChangedSchema } from '@api/activity-logs/schemas/DueDateChangedSchema'
 import { LogResponse } from '@api/activity-logs/schemas/LogResponseSchema'
@@ -77,7 +79,7 @@ export const ActivityLog = ({ log }: Prop) => {
     [ActivityType.TITLE_UPDATED]: (_from: string, to: string) => (
       <>
         <StyledTypography> changed title to </StyledTypography>
-        <BoldTypography>{to}</BoldTypography>
+        <BoldTypography>{truncateText(to, TruncateMaxNumber.ACTIVITY_LOG_TITLE_UPDATED)}</BoldTypography>
         <DotSeparator />
       </>
     ),
