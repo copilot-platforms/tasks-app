@@ -1,11 +1,9 @@
-import {
-  DueDateChangedSchema,
-  TaskAssignedSchema,
-  TaskCreatedSchema,
-  TitleUpdatedSchema,
-  WorkflowStateUpdatedSchema,
-} from '@/app/api/activity-logs/schemas/'
-import { ArchivedStateUpdatedSchema } from '@/app/api/activity-logs/schemas/ArchiveStateUpdatedSchema'
+import { ArchivedStateUpdatedSchema } from '@api/activity-logs/schemas/ArchiveStateUpdatedSchema'
+import { DueDateChangedSchema } from '@api/activity-logs/schemas/DueDateChangedSchema'
+import { TaskAssignedSchema } from '@api/activity-logs/schemas/TaskAssignedSchema'
+import { TaskCreatedSchema } from '@api/activity-logs/schemas/TaskCreatedSchema'
+import { TitleUpdatedSchema } from '@api/activity-logs/schemas/TitleUpdatedSchema'
+import { WorkflowStateUpdatedSchema } from '@api/activity-logs/schemas/WorkflowStateUpdatedSchema'
 import { ActivityLogger } from '@api/activity-logs/services/activity-logger.service'
 import User from '@api/core/models/User.model'
 import { BaseService } from '@api/core/services/base.service'

@@ -1,12 +1,3 @@
-import {
-  ArchivedStateUpdatedSchema,
-  DueDateChangedSchema,
-  LogResponse,
-  TaskAssignedResponse,
-  TaskAssignedResponseSchema,
-  TitleUpdatedSchema,
-  WorkflowStateUpdatedSchema,
-} from '@/app/api/activity-logs/schemas'
 import { DotSeparator } from '@/app/detail/ui/DotSeparator'
 import { BoldTypography, StyledTypography, TypographyContainer, VerticalLine } from '@/app/detail/ui/styledComponent'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
@@ -15,6 +6,12 @@ import { IAssigneeCombined } from '@/types/interfaces'
 import { getAssigneeName } from '@/utils/assignee'
 import { DueDateFormatter } from '@/utils/dueDateFormatter'
 import { getTimeDifference } from '@/utils/getTimeDifference'
+import { ArchivedStateUpdatedSchema } from '@api/activity-logs/schemas/ArchiveStateUpdatedSchema'
+import { DueDateChangedSchema } from '@api/activity-logs/schemas/DueDateChangedSchema'
+import { LogResponse } from '@api/activity-logs/schemas/LogResponseSchema'
+import { TaskAssignedResponse, TaskAssignedResponseSchema } from '@api/activity-logs/schemas/TaskAssignedSchema'
+import { TitleUpdatedSchema } from '@api/activity-logs/schemas/TitleUpdatedSchema'
+import { WorkflowStateUpdatedSchema } from '@api/activity-logs/schemas/WorkflowStateUpdatedSchema'
 import { Stack, Typography } from '@mui/material'
 import { ActivityType } from '@prisma/client'
 import { useSelector } from 'react-redux'
