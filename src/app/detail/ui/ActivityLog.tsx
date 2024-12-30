@@ -18,8 +18,9 @@ interface Prop {
 export const ActivityLog = ({ log }: Prop) => {
   const { assignee } = useSelector(selectTaskBoard)
   const getAssignedToName = (details: TaskAssignedResponse) => {
-    const assignedTo = assignee.find((el) => el.id === details.assigneeId)
-    return getAssigneeName(assignedTo, 'Deleted User')
+    const assignedTo = assignee.find((el) => el.id === details.newValue)
+    const assignedFrom = assignee.find((el) => el.id === details.oldValue)
+    return [getAssigneeName(assignedFrom, ''), getAssigneeName(assignedTo, 'Deleted User')]
   }
 
   const logEntities =
@@ -29,7 +30,7 @@ export const ActivityLog = ({ log }: Prop) => {
           // WorkflowStateUpdatedSchema.parse(log.details)?.newWorkflowState?.name,
         ]
       : log.type == ActivityType.TASK_ASSIGNED
-        ? [getAssignedToName(TaskAssignedResponseSchema.parse(log.details))]
+        ? getAssignedToName(TaskAssignedResponseSchema.parse(log.details))
         : []
 
   const activityDescription: { [key in ActivityType]: (...args: string[]) => React.ReactNode } = {
@@ -39,9 +40,10 @@ export const ActivityLog = ({ log }: Prop) => {
         created task <span>&#x2022;</span>{' '}
       </StyledTypography>
     ),
-    [ActivityType.TASK_ASSIGNED]: (to: string) => (
+    [ActivityType.TASK_ASSIGNED]: (from: string, to: string) => (
       <>
-        <StyledTypography> assigned task to </StyledTypography>
+        <StyledTypography> {from && `re-`}assigned task </StyledTypography>
+        <StyledTypography> to </StyledTypography>
         <BoldTypography>{to}</BoldTypography>
         <StyledTypography>
           {' '}

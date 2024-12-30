@@ -27,7 +27,7 @@ export class TasksActivityLogger extends BaseService {
   async logNewTask() {
     await this.logTaskCreated()
     if (this.task.assigneeId) {
-      await this.logTaskAssigneeUpdated(this.task)
+      await this.logTaskAssigneeUpdated()
     }
   }
 
@@ -50,11 +50,12 @@ export class TasksActivityLogger extends BaseService {
     )
   }
 
-  private async logTaskAssigneeUpdated(prevTask: Task & { workflowState: WorkflowState }) {
+  private async logTaskAssigneeUpdated(prevTask?: Task & { workflowState: WorkflowState }) {
     await this.activityLogger.log(
       ActivityType.TASK_ASSIGNED,
       TaskAssignedSchema.parse({
-        assigneeId: this.task.assigneeId,
+        oldValue: prevTask?.assigneeId ?? null,
+        newValue: this.task.assigneeId,
       }),
     )
   }
