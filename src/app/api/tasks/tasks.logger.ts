@@ -1,3 +1,4 @@
+import { TaskCreatedSchema } from '@/app/api/activity-logs/schemas/TaskCreatedSchema'
 import { TaskAssignedSchema } from '@api/activity-logs/schemas/TaskAssignedSchema'
 import { WorkflowStateUpdatedSchema } from '@api/activity-logs/schemas/WorkflowStateUpdatedSchema'
 import { ActivityLogger } from '@api/activity-logs/services/activity-logger.service'
@@ -23,6 +24,13 @@ export class TasksActivityLogger extends BaseService {
     this.activityLogger = new ActivityLogger({ taskId: this.task.id, user })
   }
 
+  async logNewTask() {
+    await this.logTaskCreated()
+    if (this.task.assigneeId) {
+      await this.logTaskAssigneeUpdated()
+    }
+  }
+
   async logTaskUpdated(prevTask: Task & { workflowState: WorkflowState }) {
     if (this.task.assigneeId !== prevTask.assigneeId) {
       await this.logTaskAssigneeUpdated(prevTask)
@@ -42,13 +50,21 @@ export class TasksActivityLogger extends BaseService {
     )
   }
 
-  private async logTaskAssigneeUpdated(prevTask: Task & { workflowState: WorkflowState }) {
+  private async logTaskAssigneeUpdated(prevTask?: Task & { workflowState: WorkflowState }) {
     await this.activityLogger.log(
       ActivityType.TASK_ASSIGNED,
       TaskAssignedSchema.parse({
-        oldAssigneeId: prevTask.assigneeId,
-        newAssigneeId: this.task.assigneeId,
-        assigneeType: this.task.assigneeType,
+        oldValue: prevTask?.assigneeId ?? null,
+        newValue: this.task.assigneeId,
+      }),
+    )
+  }
+
+  private async logTaskCreated() {
+    await this.activityLogger.log(
+      ActivityType.TASK_CREATED,
+      TaskCreatedSchema.parse({
+        taskId: this.task.id,
       }),
     )
   }

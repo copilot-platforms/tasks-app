@@ -135,25 +135,6 @@ export class ActivityLogService extends BaseService {
           replies,
         }
 
-      case ActivityType.TASK_ASSIGNED:
-        const newAssigneeId = payload.newAssigneeId as string
-        const newAssigneeDetails = (() => {
-          switch (payload.assigneeType) {
-            case AssigneeType.internalUser:
-              return internalUsers.data.find((iu) => iu.id === newAssigneeId)
-            case AssigneeType.client:
-              return clientUsers.data?.find((client) => client.id === newAssigneeId)
-            case AssigneeType.company:
-              return companies.data?.find((company) => company.id === newAssigneeId)
-            default:
-              return null
-          }
-        })()
-        return {
-          ...payload,
-          newAssigneeDetails,
-        }
-
       default:
         return payload
     }

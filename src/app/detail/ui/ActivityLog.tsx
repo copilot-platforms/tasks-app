@@ -9,20 +9,20 @@ import { useSelector } from 'react-redux'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { IAssigneeCombined } from '@/types/interfaces'
+import { getAssigneeName } from '@/utils/assignee'
 
 interface Prop {
   log: LogResponse
 }
 
-const getAssignedToName = (details: TaskAssignedResponse) => {
-  if (details.newAssigneeDetails.givenName || details.newAssigneeDetails.familyName) {
-    return `${details.newAssigneeDetails.givenName} ${details.newAssigneeDetails.familyName}`
-  } else {
-    return `${details.newAssigneeDetails.name}`
-  }
-}
-
 export const ActivityLog = ({ log }: Prop) => {
+  const { assignee } = useSelector(selectTaskBoard)
+  const getAssignedToName = (details: TaskAssignedResponse) => {
+    const assignedTo = assignee.find((el) => el.id === details.newValue)
+    const assignedFrom = assignee.find((el) => el.id === details.oldValue)
+    return [getAssigneeName(assignedFrom, ''), getAssigneeName(assignedTo, 'Deleted User')]
+  }
+
   const logEntities =
     log.type == ActivityType.WORKFLOW_STATE_UPDATED
       ? [
@@ -30,7 +30,7 @@ export const ActivityLog = ({ log }: Prop) => {
           // WorkflowStateUpdatedSchema.parse(log.details)?.newWorkflowState?.name,
         ]
       : log.type == ActivityType.TASK_ASSIGNED
-        ? [getAssignedToName(TaskAssignedResponseSchema.parse(log.details))]
+        ? getAssignedToName(TaskAssignedResponseSchema.parse(log.details))
         : []
 
   const activityDescription: { [key in ActivityType]: (...args: string[]) => React.ReactNode } = {
@@ -40,10 +40,15 @@ export const ActivityLog = ({ log }: Prop) => {
         created task <span>&#x2022;</span>{' '}
       </StyledTypography>
     ),
-    [ActivityType.TASK_ASSIGNED]: (to: string) => (
+    [ActivityType.TASK_ASSIGNED]: (from: string, to: string) => (
       <>
-        <StyledTypography> assigned task to </StyledTypography>
-        <BoldTypography>{to}.</BoldTypography>
+        <StyledTypography> {from && `re-`}assigned task </StyledTypography>
+        <StyledTypography> to </StyledTypography>
+        <BoldTypography>{to}</BoldTypography>
+        <StyledTypography>
+          {' '}
+          <span>&#x2022;</span>{' '}
+        </StyledTypography>
       </>
     ),
     [ActivityType.WORKFLOW_STATE_UPDATED]: (from: string, to: string) => (
@@ -57,8 +62,6 @@ export const ActivityLog = ({ log }: Prop) => {
     [ActivityType.COMMENT_ADDED]: () => null,
   }
 
-  const { assignee } = useSelector(selectTaskBoard)
-
   return (
     <Stack direction="row" columnGap={4} position="relative">
       <VerticalLine />
@@ -71,17 +74,6 @@ export const ActivityLog = ({ log }: Prop) => {
           border: (theme) => `1.1px solid ${theme.color.gray[200]}`,
         }}
       />
-
-      {/* <Avatar */}
-      {/*   src={log?.initiator?.avatarImageUrl || 'user'} */}
-      {/*   alt={log?.initiator?.givenName} */}
-      {/*   sx={{ */}
-      {/*     width: '25px', */}
-      {/*     height: '25px', */}
-      {/*     border: (theme) => `1.1px solid ${theme.color.gray[200]}`, */}
-      {/*     fontSize: '13px', */}
-      {/*   }} */}
-      {/* /> */}
       <TypographyContainer direction="row" columnGap={1}>
         {assignee.find((el) => el.id === log?.initiator?.id) ? (
           <BoldTypography>
