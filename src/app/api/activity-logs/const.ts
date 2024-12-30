@@ -4,6 +4,7 @@ import { TaskAssignedSchema } from '@api/activity-logs/schemas/TaskAssignedSchem
 import { WorkflowStateUpdatedSchema } from '@api/activity-logs/schemas/WorkflowStateUpdatedSchema'
 import { CommentAddedSchema } from '@api/activity-logs/schemas/CommentAddedSchema'
 import { z } from 'zod'
+import { ArchivedStateUpdatedSchema } from '@/app/api/activity-logs/schemas/ArchiveStateUpdatedSchema'
 import { DueDateChangedSchema } from '@/app/api/activity-logs/schemas/DueDateChangedSchema'
 
 export const SchemaByActivityType = {
@@ -12,6 +13,7 @@ export const SchemaByActivityType = {
   [ActivityType.WORKFLOW_STATE_UPDATED]: WorkflowStateUpdatedSchema,
   [ActivityType.COMMENT_ADDED]: CommentAddedSchema,
   [ActivityType.DUE_DATE_CHANGED]: DueDateChangedSchema,
+  [ActivityType.ARCHIVE_STATE_UPDATED]: ArchivedStateUpdatedSchema,
 }
 
 export const DBActivityLogDetailsSchema = z.record(z.string(), z.unknown())

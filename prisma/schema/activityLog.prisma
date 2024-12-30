@@ -4,6 +4,7 @@ enum ActivityType {
   WORKFLOW_STATE_UPDATED
   COMMENT_ADDED
   DUE_DATE_CHANGED
+  ARCHIVE_STATE_UPDATED
 }
 
 model ActivityLog {

@@ -9,6 +9,7 @@ import { useSelector } from 'react-redux'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { IAssigneeCombined } from '@/types/interfaces'
+import { ArchivedStateUpdatedSchema } from '@/app/api/activity-logs/schemas/ArchiveStateUpdatedSchema'
 import { DueDateChangedSchema } from '@/app/api/activity-logs/schemas/DueDateChangedSchema'
 import { DueDateFormatter } from '@/utils/dueDateFormatter'
 import { getAssigneeName } from '@/utils/assignee'
@@ -33,12 +34,14 @@ export const ActivityLog = ({ log }: Prop) => {
         ]
       : log.type == ActivityType.TASK_ASSIGNED
         ? getAssignedToName(TaskAssignedResponseSchema.parse(log.details))
-        : log.type == ActivityType.DUE_DATE_CHANGED
-          ? [
-              DueDateChangedSchema.parse(log.details)?.oldValue ?? '',
-              DueDateChangedSchema.parse(log.details)?.newValue ?? '',
-            ]
-          : []
+        : log.type == ActivityType.ARCHIVE_STATE_UPDATED
+          ? [ArchivedStateUpdatedSchema.parse(log.details)?.newValue ? 'archived' : 'unarchived']
+          : log.type == ActivityType.DUE_DATE_CHANGED
+            ? [
+                DueDateChangedSchema.parse(log.details)?.oldValue ?? '',
+                DueDateChangedSchema.parse(log.details)?.newValue ?? '',
+              ]
+            : []
 
   const activityDescription: { [key in ActivityType]: (...args: string[]) => React.ReactNode } = {
     [ActivityType.TASK_CREATED]: () => (
@@ -81,6 +84,12 @@ export const ActivityLog = ({ log }: Prop) => {
           <span>&#x2022;</span>
         </StyledTypography>
       </>
+    ),
+    [ActivityType.ARCHIVE_STATE_UPDATED]: (archivedStatus: string) => (
+      <StyledTypography>
+        {' '}
+        {archivedStatus} task <span>&#x2022;</span>{' '}
+      </StyledTypography>
     ),
     [ActivityType.COMMENT_ADDED]: () => null,
   }
