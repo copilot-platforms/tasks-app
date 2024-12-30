@@ -1,5 +1,5 @@
-import { z } from 'zod'
 import { ClientResponseSchema, InternalUsersSchema } from '@/types/common'
+import { z } from 'zod'
 
 export const CommentAddedSchema = z.object({
   id: z.string().uuid(),
