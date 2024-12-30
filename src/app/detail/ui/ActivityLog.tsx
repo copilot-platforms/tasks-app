@@ -1,64 +1,72 @@
-import { Avatar, Box, Stack, Typography } from '@mui/material'
-import { BoldTypography, StyledTypography, TypographyContainer, VerticalLine } from '@/app/detail/ui/styledComponent'
-import { getTimeDifference } from '@/utils/getTimeDifference'
+import { ArchivedStateUpdatedSchema } from '@/app/api/activity-logs/schemas/ArchiveStateUpdatedSchema'
+import { DueDateChangedSchema } from '@/app/api/activity-logs/schemas/DueDateChangedSchema'
 import { LogResponse } from '@/app/api/activity-logs/schemas/LogResponseSchema'
 import { TaskAssignedResponse, TaskAssignedResponseSchema } from '@/app/api/activity-logs/schemas/TaskAssignedSchema'
 import { WorkflowStateUpdatedSchema } from '@/app/api/activity-logs/schemas/WorkflowStateUpdatedSchema'
+import { DotSeparator } from '@/app/detail/ui/DotSeparator'
+import { BoldTypography, StyledTypography, TypographyContainer, VerticalLine } from '@/app/detail/ui/styledComponent'
+import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
+import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { IAssigneeCombined } from '@/types/interfaces'
+import { getAssigneeName } from '@/utils/assignee'
+import { DueDateFormatter } from '@/utils/dueDateFormatter'
+import { getTimeDifference } from '@/utils/getTimeDifference'
+import { Stack, Typography } from '@mui/material'
 import { ActivityType } from '@prisma/client'
 import { useSelector } from 'react-redux'
-import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
-import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
-import { IAssigneeCombined } from '@/types/interfaces'
-import { ArchivedStateUpdatedSchema } from '@/app/api/activity-logs/schemas/ArchiveStateUpdatedSchema'
-import { DueDateChangedSchema } from '@/app/api/activity-logs/schemas/DueDateChangedSchema'
-import { DueDateFormatter } from '@/utils/dueDateFormatter'
-import { getAssigneeName } from '@/utils/assignee'
 
 interface Prop {
   log: LogResponse
 }
 
 export const ActivityLog = ({ log }: Prop) => {
-  const { assignee } = useSelector(selectTaskBoard)
+  const { assignee, workflowStates } = useSelector(selectTaskBoard)
+
   const getAssignedToName = (details: TaskAssignedResponse) => {
     const assignedTo = assignee.find((el) => el.id === details.newValue)
     const assignedFrom = assignee.find((el) => el.id === details.oldValue)
     return [getAssigneeName(assignedFrom, ''), getAssigneeName(assignedTo, 'Deleted User')]
   }
 
-  const logEntities =
-    log.type == ActivityType.WORKFLOW_STATE_UPDATED
-      ? [
-          // WorkflowStateUpdatedSchema.parse(log.details)?.oldWorkflowState?.name,
-          // WorkflowStateUpdatedSchema.parse(log.details)?.newWorkflowState?.name,
+  const getLogEntities = (type: ActivityType) => {
+    switch (type) {
+      case ActivityType.WORKFLOW_STATE_UPDATED:
+        const { oldValue, newValue } = WorkflowStateUpdatedSchema.parse(log.details)
+        const getWorkflowStateName = (id: string) => workflowStates.find((state) => state.id === id)?.name || 'Deleted'
+        return [getWorkflowStateName(oldValue), getWorkflowStateName(newValue)]
+
+      case ActivityType.TASK_ASSIGNED:
+        return getAssignedToName(TaskAssignedResponseSchema.parse(log.details))
+
+      case ActivityType.ARCHIVE_STATE_UPDATED:
+        return [ArchivedStateUpdatedSchema.parse(log.details)?.newValue ? 'archived' : 'unarchived']
+
+      case ActivityType.DUE_DATE_CHANGED:
+        return [
+          DueDateChangedSchema.parse(log.details)?.oldValue ?? '',
+          DueDateChangedSchema.parse(log.details)?.newValue ?? '',
         ]
-      : log.type == ActivityType.TASK_ASSIGNED
-        ? getAssignedToName(TaskAssignedResponseSchema.parse(log.details))
-        : log.type == ActivityType.ARCHIVE_STATE_UPDATED
-          ? [ArchivedStateUpdatedSchema.parse(log.details)?.newValue ? 'archived' : 'unarchived']
-          : log.type == ActivityType.DUE_DATE_CHANGED
-            ? [
-                DueDateChangedSchema.parse(log.details)?.oldValue ?? '',
-                DueDateChangedSchema.parse(log.details)?.newValue ?? '',
-              ]
-            : []
+
+      default:
+        return []
+    }
+  }
+
+  const logEntities = getLogEntities(log.type)
 
   const activityDescription: { [key in ActivityType]: (...args: string[]) => React.ReactNode } = {
     [ActivityType.TASK_CREATED]: () => (
-      <StyledTypography>
-        {' '}
-        created task <span>&#x2022;</span>{' '}
-      </StyledTypography>
+      <>
+        <StyledTypography> created task</StyledTypography>
+        <DotSeparator />
+      </>
     ),
     [ActivityType.TASK_ASSIGNED]: (from: string, to: string) => (
       <>
         <StyledTypography> {from && `re-`}assigned task </StyledTypography>
         <StyledTypography> to </StyledTypography>
         <BoldTypography>{to}</BoldTypography>
-        <StyledTypography>
-          {' '}
-          <span>&#x2022;</span>{' '}
-        </StyledTypography>
+        <DotSeparator />
       </>
     ),
     [ActivityType.WORKFLOW_STATE_UPDATED]: (from: string, to: string) => (
@@ -66,7 +74,8 @@ export const ActivityLog = ({ log }: Prop) => {
         <StyledTypography> changed status from </StyledTypography>
         <BoldTypography>{from}</BoldTypography>
         <StyledTypography> to </StyledTypography>
-        <BoldTypography>{to}.</BoldTypography>
+        <BoldTypography>{to}</BoldTypography>
+        <DotSeparator />
       </>
     ),
     [ActivityType.DUE_DATE_CHANGED]: (from: string, to: string) => (
@@ -79,20 +88,19 @@ export const ActivityLog = ({ log }: Prop) => {
         )}
         <StyledTypography> to</StyledTypography>
         <BoldTypography> {DueDateFormatter(to)}</BoldTypography>
-        <StyledTypography>
-          {' '}
-          <span>&#x2022;</span>
-        </StyledTypography>
+        <DotSeparator />
       </>
     ),
     [ActivityType.ARCHIVE_STATE_UPDATED]: (archivedStatus: string) => (
-      <StyledTypography>
-        {' '}
-        {archivedStatus} task <span>&#x2022;</span>{' '}
-      </StyledTypography>
+      <>
+        <StyledTypography> {archivedStatus} task</StyledTypography>
+        <DotSeparator />
+      </>
     ),
     [ActivityType.COMMENT_ADDED]: () => null,
   }
+
+  const activityUser = assignee.find((el) => el.id === log?.initiator?.id)
 
   return (
     <Stack direction="row" columnGap={4} position="relative">
@@ -107,10 +115,8 @@ export const ActivityLog = ({ log }: Prop) => {
         }}
       />
       <TypographyContainer direction="row" columnGap={1}>
-        {assignee.find((el) => el.id === log?.initiator?.id) ? (
-          <BoldTypography>
-            {log.initiator.givenName} {log.initiator.familyName}
-          </BoldTypography>
+        {activityUser ? (
+          <BoldTypography>{getAssigneeName(activityUser, '')}</BoldTypography>
         ) : (
           <Typography variant="md" sx={{ fontStyle: 'italic' }}>
             Deleted User
