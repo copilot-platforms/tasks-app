@@ -1,16 +1,19 @@
-import { ArchivedStateUpdatedSchema } from '@/app/api/activity-logs/schemas/ArchiveStateUpdatedSchema'
-import { DueDateChangedSchema } from '@/app/api/activity-logs/schemas/DueDateChangedSchema'
-import { LogResponse } from '@/app/api/activity-logs/schemas/LogResponseSchema'
-import { TaskAssignedResponse, TaskAssignedResponseSchema } from '@/app/api/activity-logs/schemas/TaskAssignedSchema'
-import { WorkflowStateUpdatedSchema } from '@/app/api/activity-logs/schemas/WorkflowStateUpdatedSchema'
 import { DotSeparator } from '@/app/detail/ui/DotSeparator'
 import { BoldTypography, StyledTypography, TypographyContainer, VerticalLine } from '@/app/detail/ui/styledComponent'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { TruncateMaxNumber } from '@/types/constants'
 import { IAssigneeCombined } from '@/types/interfaces'
 import { getAssigneeName } from '@/utils/assignee'
 import { DueDateFormatter } from '@/utils/dueDateFormatter'
 import { getTimeDifference } from '@/utils/getTimeDifference'
+import { truncateText } from '@/utils/truncateText'
+import { ArchivedStateUpdatedSchema } from '@api/activity-logs/schemas/ArchiveStateUpdatedSchema'
+import { DueDateChangedSchema } from '@api/activity-logs/schemas/DueDateChangedSchema'
+import { LogResponse } from '@api/activity-logs/schemas/LogResponseSchema'
+import { TaskAssignedResponse, TaskAssignedResponseSchema } from '@api/activity-logs/schemas/TaskAssignedSchema'
+import { TitleUpdatedSchema } from '@api/activity-logs/schemas/TitleUpdatedSchema'
+import { WorkflowStateUpdatedSchema } from '@api/activity-logs/schemas/WorkflowStateUpdatedSchema'
 import { Stack, Typography } from '@mui/material'
 import { ActivityType } from '@prisma/client'
 import { useSelector } from 'react-redux'
@@ -36,16 +39,20 @@ export const ActivityLog = ({ log }: Prop) => {
         return [getWorkflowStateName(oldValue), getWorkflowStateName(newValue)]
 
       case ActivityType.TASK_ASSIGNED:
-        return getAssignedToName(TaskAssignedResponseSchema.parse(log.details))
+        const taskAssignees = TaskAssignedResponseSchema.parse(log.details)
+        return getAssignedToName(taskAssignees)
+
+      case ActivityType.TITLE_UPDATED:
+        const titles = TitleUpdatedSchema.parse(log.details)
+        return [titles.oldValue, titles.newValue]
 
       case ActivityType.ARCHIVE_STATE_UPDATED:
-        return [ArchivedStateUpdatedSchema.parse(log.details)?.newValue ? 'archived' : 'unarchived']
+        const archivedStates = ArchivedStateUpdatedSchema.parse(log.details)
+        return [archivedStates.newValue ? 'archived' : 'unarchived']
 
       case ActivityType.DUE_DATE_CHANGED:
-        return [
-          DueDateChangedSchema.parse(log.details)?.oldValue ?? '',
-          DueDateChangedSchema.parse(log.details)?.newValue ?? '',
-        ]
+        const dueDates = DueDateChangedSchema.parse(log.details)
+        return [dueDates.oldValue ?? '', dueDates.newValue ?? '']
 
       default:
         return []
@@ -69,6 +76,13 @@ export const ActivityLog = ({ log }: Prop) => {
         <DotSeparator />
       </>
     ),
+    [ActivityType.TITLE_UPDATED]: (_from: string, to: string) => (
+      <>
+        <StyledTypography> changed title to </StyledTypography>
+        <BoldTypography>{truncateText(to, TruncateMaxNumber.ACTIVITY_LOG_TITLE_UPDATED)}</BoldTypography>
+        <DotSeparator />
+      </>
+    ),
     [ActivityType.WORKFLOW_STATE_UPDATED]: (from: string, to: string) => (
       <>
         <StyledTypography> changed status from </StyledTypography>
@@ -87,7 +101,7 @@ export const ActivityLog = ({ log }: Prop) => {
           </>
         )}
         <StyledTypography> to</StyledTypography>
-        <BoldTypography> {DueDateFormatter(to)}</BoldTypography>
+        {to ? <BoldTypography> {DueDateFormatter(to)}</BoldTypography> : <StyledTypography> none</StyledTypography>}
         <DotSeparator />
       </>
     ),

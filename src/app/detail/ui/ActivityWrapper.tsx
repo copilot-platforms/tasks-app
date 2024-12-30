@@ -1,6 +1,5 @@
 'use client'
 
-import { LogResponse } from '@/app/api/activity-logs/schemas/LogResponseSchema'
 import { deleteComment, postComment } from '@/app/detail/[task_id]/[user_type]/actions'
 import { ActivityLog } from '@/app/detail/ui/ActivityLog'
 import { Comments } from '@/app/detail/ui/Comments'
@@ -11,6 +10,7 @@ import { ClientResponseSchema, InternalUsersSchema, Token } from '@/types/common
 import { CreateComment } from '@/types/dto/comment.dto'
 import { fetcher } from '@/utils/fetcher'
 import { generateRandomString } from '@/utils/generateRandomString'
+import { LogResponse } from '@api/activity-logs/schemas/LogResponseSchema'
 import { Box, Skeleton, Stack, Typography } from '@mui/material'
 import { ActivityType } from '@prisma/client'
 import { useEffect, useMemo, useState } from 'react'

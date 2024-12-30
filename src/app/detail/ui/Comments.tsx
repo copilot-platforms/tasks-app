@@ -1,10 +1,10 @@
-import { Avatar, Stack } from '@mui/material'
-import { VerticalLine } from './styledComponent'
+import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { CommentCard } from '@/components/cards/CommentCard'
 import { CreateComment } from '@/types/dto/comment.dto'
-import { LogResponse } from '@/app/api/activity-logs/schemas/LogResponseSchema'
-import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { IAssigneeCombined } from '@/types/interfaces'
+import { LogResponse } from '@api/activity-logs/schemas/LogResponseSchema'
+import { Stack } from '@mui/material'
+import { VerticalLine } from './styledComponent'
 
 interface Prop {
   comment: LogResponse
