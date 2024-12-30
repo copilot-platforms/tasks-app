@@ -11,12 +11,13 @@ import { ClientResponseSchema, InternalUsersSchema, Token } from '@/types/common
 import { CreateComment } from '@/types/dto/comment.dto'
 import { fetcher } from '@/utils/fetcher'
 import { generateRandomString } from '@/utils/generateRandomString'
-import { Box, Skeleton, Stack, Typography } from '@mui/material'
+import { Box, Collapse, Skeleton, Stack, Typography } from '@mui/material'
 import { ActivityType } from '@prisma/client'
 import { useEffect, useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
 import useSWR, { useSWRConfig } from 'swr'
 import { z } from 'zod'
+import { TransitionGroup } from 'react-transition-group'
 
 export const ActivityWrapper = ({
   token,
@@ -145,26 +146,29 @@ export const ActivityWrapper = ({
           </Stack>
         ) : (
           <Stack direction="column" alignItems="left" rowGap={4}>
-            {activities?.data?.map((item: LogResponse, index: number) => (
-              <Box
-                key={index}
-                sx={{
-                  height: 'auto',
-                }}
-              >
-                {item.type === ActivityType.COMMENT_ADDED ? (
-                  <Comments
-                    comment={item}
-                    createComment={handleCreateComment}
-                    deleteComment={(commentId) => handleDeleteComment(commentId, item.id)}
-                    task_id={task_id}
-                  />
-                ) : (
-                  <ActivityLog log={item} />
-                )}
-              </Box>
-            ))}
-
+            <TransitionGroup>
+              {activities?.data?.map((item: LogResponse, index: number) => (
+                <Collapse key={item.id}>
+                  <Box
+                    key={index}
+                    sx={{
+                      height: 'auto',
+                    }}
+                  >
+                    {item.type === ActivityType.COMMENT_ADDED ? (
+                      <Comments
+                        comment={item}
+                        createComment={handleCreateComment}
+                        deleteComment={(commentId) => handleDeleteComment(commentId, item.id)}
+                        task_id={task_id}
+                      />
+                    ) : (
+                      <ActivityLog log={item} />
+                    )}
+                  </Box>
+                </Collapse>
+              ))}
+            </TransitionGroup>
             <CommentInput createComment={handleCreateComment} task_id={task_id} />
           </Stack>
         )}

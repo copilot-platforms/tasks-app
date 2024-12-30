@@ -95,7 +95,7 @@ export const ActivityLog = ({ log }: Prop) => {
   }
 
   return (
-    <Stack direction="row" columnGap={4} position="relative">
+    <Stack direction="row" columnGap={4} position="relative" sx={{ padding: '12px 0px 12px 0px' }}>
       <VerticalLine />
       <CopilotAvatar
         width="24px"
