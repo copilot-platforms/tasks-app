@@ -1,3 +1,4 @@
+import { DueDateChangedSchema } from '@/app/api/activity-logs/schemas/DueDateChangedSchema'
 import { TaskCreatedSchema } from '@/app/api/activity-logs/schemas/TaskCreatedSchema'
 import { TaskAssignedSchema } from '@api/activity-logs/schemas/TaskAssignedSchema'
 import { WorkflowStateUpdatedSchema } from '@api/activity-logs/schemas/WorkflowStateUpdatedSchema'
@@ -38,6 +39,9 @@ export class TasksActivityLogger extends BaseService {
     if (this.task.workflowStateId !== prevTask?.workflowStateId) {
       await this.logWorkflowStateUpdated(prevTask)
     }
+    if (this.task.dueDate !== prevTask.dueDate) {
+      await this.logDueDateChanged(prevTask)
+    }
   }
 
   private async logWorkflowStateUpdated(prevTask: Task & { workflowState: WorkflowState }) {
@@ -46,6 +50,16 @@ export class TasksActivityLogger extends BaseService {
       WorkflowStateUpdatedSchema.parse({
         oldValue: prevTask.workflowState.id,
         newValue: this.task.workflowState.id,
+      }),
+    )
+  }
+
+  private async logDueDateChanged(prevTask: Task) {
+    await this.activityLogger.log(
+      ActivityType.DUE_DATE_CHANGED,
+      DueDateChangedSchema.parse({
+        oldValue: prevTask.dueDate,
+        newValue: this.task.dueDate,
       }),
     )
   }
