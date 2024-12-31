@@ -47,7 +47,7 @@ export class TasksActivityLogger extends BaseService {
     if (this.task.dueDate !== prevTask.dueDate) {
       await this.logDueDateChanged(prevTask)
     }
-    if (this.task.title !== prevTask.title) {
+    if (this.task.title.trim() !== prevTask.title.trim()) {
       await this.logTitleUpdated(prevTask)
     }
   }
