@@ -75,7 +75,7 @@ export const ActivityWrapper = ({
       type: ActivityType.COMMENT_ADDED,
       details: {
         content: postCommentPayload.content,
-        id: generateRandomString('temp-comment'),
+        id: stableId,
       },
       taskId: task_id,
       userId: currentUserId as string,
@@ -105,6 +105,12 @@ export const ActivityWrapper = ({
         async () => {
           // Post the actual comment to the server
           await postComment(token, postCommentPayload)
+
+          setOptimisticCommentMap((prev) => {
+            const newMap = { ...prev }
+            delete newMap[tempId]
+            return newMap
+          })
           // Return the actual updated data (this will trigger revalidation)
           return await fetcher(cacheKey)
         },
