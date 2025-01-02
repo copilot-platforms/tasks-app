@@ -13,7 +13,7 @@ import { fetcher } from '@/utils/fetcher'
 import { generateRandomString } from '@/utils/generateRandomString'
 import { Box, Collapse, Skeleton, Stack, Typography } from '@mui/material'
 import { ActivityType } from '@prisma/client'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useRef } from 'react'
 import { useSelector } from 'react-redux'
 import useSWR, { useSWRConfig } from 'swr'
 import { z } from 'zod'
@@ -31,23 +31,35 @@ export const ActivityWrapper = ({
   const { tasks } = useSelector(selectTaskBoard)
   const task = tasks.find((task) => task.id === task_id)
   const [lastUpdated, setLastUpdated] = useState(task?.lastActivityLogUpdated)
+  const [initialDataLoaded, setInitialDataLoaded] = useState(false)
+  const optimisticUpdatesRef = useRef(new Set<string>())
+  const previousActivitiesRef = useRef<LogResponse[]>([])
 
   const cacheKey = `/api/tasks/${task_id}/activity-logs?token=${token}`
 
-  const { data: activities, isLoading } = useSWR(`/api/tasks/${task_id}/activity-logs?token=${token}`, fetcher, {
+  const { data: activities, isLoading } = useSWR(cacheKey, fetcher, {
     refreshInterval: 0,
   })
+
   const { assignee } = useSelector(selectTaskBoard)
   const { mutate } = useSWRConfig()
   useScrollToElement('commentId')
+
+  // Set initial data once it's loaded
+  useEffect(() => {
+    if (activities?.data && !initialDataLoaded) {
+      previousActivitiesRef.current = activities.data
+      setInitialDataLoaded(true)
+    }
+  }, [activities?.data])
+
   useEffect(() => {
     const refetchActivityLog = async () => {
       await mutate(cacheKey)
       setLastUpdated(task?.lastActivityLogUpdated)
     }
-    if (lastUpdated !== task?.lastActivityLogUpdated) {
-      refetchActivityLog()
-    }
+
+    refetchActivityLog()
   }, [task?.lastActivityLogUpdated])
 
   const currentUserId = tokenPayload.internalUserId ?? tokenPayload.clientId
@@ -60,10 +72,12 @@ export const ActivityWrapper = ({
     return z.union([InternalUsersSchema, ClientResponseSchema]).parse(assignee.find((el) => el.id === currentUserId))
   }, [assignee, currentUserId])
 
-  // Handle comment creation
   const handleCreateComment = async (postCommentPayload: CreateComment) => {
+    const tempId = generateRandomString('temp-comment')
+    optimisticUpdatesRef.current.add(tempId)
+
     const tempLog: LogResponse = {
-      id: generateRandomString('temp-comment'),
+      id: tempId,
       type: ActivityType.COMMENT_ADDED,
       details: {
         content: postCommentPayload.content,
@@ -90,49 +104,103 @@ export const ActivityWrapper = ({
     }
 
     const optimisticData = activities ? [...activities.data, tempLog] : [tempLog]
+    previousActivitiesRef.current = activities?.data || []
+
     try {
-      mutate(
+      await mutate(
         cacheKey,
         async () => {
-          // Post the actual comment to the server
           await postComment(token, postCommentPayload)
-          // Return the actual updated data (this will trigger revalidation)
-          return await fetcher(cacheKey)
+          const newData = await fetcher(cacheKey)
+          optimisticUpdatesRef.current.delete(tempId)
+          return newData
         },
         {
           optimisticData: { data: optimisticData },
           rollbackOnError: true,
-          revalidate: true, // Make sure to revalidate after mutation
+          revalidate: false,
         },
       )
     } catch (error) {
+      optimisticUpdatesRef.current.delete(tempId)
       console.error('Failed to post comment:', error)
     }
   }
 
-  // Handle comment deletion
   const handleDeleteComment = async (commentId: string, logId: string) => {
+    previousActivitiesRef.current = activities?.data || []
     const optimisticData = activities ? activities.data.filter((comment: LogResponse) => comment.id !== logId) : []
 
     try {
       await mutate(
         cacheKey,
         async () => {
-          // Delete the comment from the server
           await deleteComment(token, commentId)
-          // Return the actual updated data (this will trigger revalidation)
           return await fetcher(cacheKey)
         },
         {
           optimisticData: { data: optimisticData },
           rollbackOnError: true,
-          revalidate: true, // Make sure to revalidate after mutation
+          revalidate: true,
         },
       )
     } catch (error) {
       console.error('Failed to delete comment:', error)
     }
   }
+
+  const renderableActivities = useMemo(() => {
+    if (!activities?.data || !initialDataLoaded) return []
+
+    // For the initial render, return activities without animation wrapper
+    if (previousActivitiesRef.current.length === 0) {
+      return activities.data.map((item: LogResponse) => (
+        <Box
+          key={item.id}
+          sx={{
+            height: 'auto',
+          }}
+        >
+          {item.type === ActivityType.COMMENT_ADDED ? (
+            <Comments
+              comment={item}
+              createComment={handleCreateComment}
+              deleteComment={(commentId) => handleDeleteComment(commentId, item.id)}
+              task_id={task_id}
+            />
+          ) : (
+            <ActivityLog log={item} />
+          )}
+        </Box>
+      ))
+    }
+
+    // For subsequent updates, wrap in TransitionGroup and Collapse
+    return (
+      <TransitionGroup>
+        {activities.data.map((item: LogResponse) => (
+          <Collapse key={item.id}>
+            <Box
+              sx={{
+                height: 'auto',
+              }}
+            >
+              {item.type === ActivityType.COMMENT_ADDED ? (
+                <Comments
+                  comment={item}
+                  createComment={handleCreateComment}
+                  deleteComment={(commentId) => handleDeleteComment(commentId, item.id)}
+                  task_id={task_id}
+                />
+              ) : (
+                <ActivityLog log={item} />
+              )}
+            </Box>
+          </Collapse>
+        ))}
+      </TransitionGroup>
+    )
+  }, [activities?.data, initialDataLoaded])
 
   return (
     <Box width="100%">
@@ -146,29 +214,7 @@ export const ActivityWrapper = ({
           </Stack>
         ) : (
           <Stack direction="column" alignItems="left" rowGap={4}>
-            <TransitionGroup>
-              {activities?.data?.map((item: LogResponse, index: number) => (
-                <Collapse key={item.id}>
-                  <Box
-                    key={index}
-                    sx={{
-                      height: 'auto',
-                    }}
-                  >
-                    {item.type === ActivityType.COMMENT_ADDED ? (
-                      <Comments
-                        comment={item}
-                        createComment={handleCreateComment}
-                        deleteComment={(commentId) => handleDeleteComment(commentId, item.id)}
-                        task_id={task_id}
-                      />
-                    ) : (
-                      <ActivityLog log={item} />
-                    )}
-                  </Box>
-                </Collapse>
-              ))}
-            </TransitionGroup>
+            {renderableActivities}
             <CommentInput createComment={handleCreateComment} task_id={task_id} />
           </Stack>
         )}
