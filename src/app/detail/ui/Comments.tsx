@@ -16,7 +16,7 @@ interface Prop {
 
 export const Comments = ({ comment, createComment, deleteComment, task_id, stableId }: Prop) => {
   return (
-    <Stack id={stableId} direction="row" columnGap={2} position="relative" sx={{ padding: '11px 0px 11px 0px' }}>
+    <Stack id={stableId} direction="row" columnGap={2} position="relative" sx={{ margin: '11px 0px 11px 0px' }}>
       <VerticalLine />
       <CopilotAvatar
         width="24px"
