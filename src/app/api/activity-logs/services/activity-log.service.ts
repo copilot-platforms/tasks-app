@@ -34,8 +34,8 @@ export class ActivityLogService extends BaseService {
           CASE
             WHEN "type" = 'TASK_CREATED' THEN 1
             WHEN "type" = 'TASK_ASSIGNED' THEN 2
-            WHEN "type" = 'DUE_DATE_CHANGED' THEN 2
-            ELSE 2
+            WHEN "type" = 'DUE_DATE_CHANGED' THEN 3
+            ELSE 4
           END;
     `
     const parsedActivityLogs = DBActivityLogArraySchema.parse(activityLogs)
