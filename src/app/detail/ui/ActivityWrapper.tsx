@@ -19,6 +19,12 @@ import useSWR, { useSWRConfig } from 'swr'
 import { z } from 'zod'
 import { TransitionGroup } from 'react-transition-group'
 
+interface OptimisticUpdate {
+  tempId: string
+  serverId?: string
+  timestamp: number
+}
+
 export const ActivityWrapper = ({
   token,
   task_id,
@@ -31,7 +37,7 @@ export const ActivityWrapper = ({
   const { tasks } = useSelector(selectTaskBoard)
   const task = tasks.find((task) => task.id === task_id)
   const [lastUpdated, setLastUpdated] = useState(task?.lastActivityLogUpdated)
-
+  const [optimisticUpdates, setOptimisticUpdates] = useState<OptimisticUpdate[]>([])
   const cacheKey = `/api/tasks/${task_id}/activity-logs?token=${token}`
 
   const { data: activities, isLoading } = useSWR(`/api/tasks/${task_id}/activity-logs?token=${token}`, fetcher, {
@@ -60,9 +66,22 @@ export const ActivityWrapper = ({
     return z.union([InternalUsersSchema, ClientResponseSchema]).parse(assignee.find((el) => el.id === currentUserId))
   }, [assignee, currentUserId])
 
+  const getStableId = (log: LogResponse) => {
+    const matchingUpdate = optimisticUpdates.find((update) => update.serverId === log.id || update.tempId === log.id)
+    return matchingUpdate?.tempId || log.id
+  }
+
   // Handle comment creation
   const handleCreateComment = async (postCommentPayload: CreateComment) => {
     const tempId = generateRandomString('temp-comment')
+
+    setOptimisticUpdates((prev) => [
+      ...prev,
+      {
+        tempId,
+        timestamp: Date.now(),
+      },
+    ])
 
     const tempLog: LogResponse = {
       id: tempId,
@@ -97,8 +116,10 @@ export const ActivityWrapper = ({
         cacheKey,
         async () => {
           // Post the actual comment to the server
-          await postComment(token, postCommentPayload)
-
+          const comment = await postComment(token, postCommentPayload)
+          setOptimisticUpdates((prev) =>
+            prev.map((update) => (update.tempId === tempId ? { ...update, serverId: comment.id } : update)),
+          )
           // Return the actual updated data (this will trigger revalidation)
           return await fetcher(cacheKey)
         },
@@ -110,6 +131,7 @@ export const ActivityWrapper = ({
       )
     } catch (error) {
       console.error('Failed to post comment:', error)
+      setOptimisticUpdates((prev) => prev.filter((update) => update.tempId !== tempId))
     }
   }
 
@@ -151,7 +173,7 @@ export const ActivityWrapper = ({
           <Stack direction="column" alignItems="left" rowGap={4}>
             <TransitionGroup>
               {activities?.data?.map((item: LogResponse, index: number) => (
-                <Collapse key={item.id}>
+                <Collapse key={getStableId(item)}>
                   <Box
                     key={index}
                     sx={{
