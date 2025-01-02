@@ -69,10 +69,11 @@ export const ActivityWrapper = ({
   const getStableId = (log: LogResponse) => {
     if (log.type === ActivityType.COMMENT_ADDED) {
       const matchingUpdate = optimisticUpdates.find(
-        (update) => update.serverId === log.details.id || update.tempId === log.id,
+        (update) => update.tempId === log.id || (log.details.id && update.serverId === log.details.id),
       )
-
-      return matchingUpdate?.tempId || z.string().parse(log.details.id) || log.id
+      if (matchingUpdate) {
+        return matchingUpdate?.tempId
+      }
     }
     return log.id
   }
