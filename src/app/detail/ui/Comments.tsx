@@ -11,11 +11,12 @@ interface Prop {
   createComment: (postCommentPayload: CreateComment) => void
   deleteComment: (id: string) => void
   task_id: string
+  stableId: string
 }
 
-export const Comments = ({ comment, createComment, deleteComment, task_id }: Prop) => {
+export const Comments = ({ comment, createComment, deleteComment, task_id, stableId }: Prop) => {
   return (
-    <Stack id={String(comment.details.id)} direction="row" columnGap={2} position="relative">
+    <Stack id={stableId} direction="row" columnGap={2} position="relative" sx={{ padding: '11px 0px 11px 0px' }}>
       <VerticalLine />
       <CopilotAvatar
         width="24px"
