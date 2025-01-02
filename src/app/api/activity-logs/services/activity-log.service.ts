@@ -30,7 +30,13 @@ export class ActivityLogService extends BaseService {
                 AND C."deletedAt" IS NULL AND C."parentId" IS NULL
             )
           )
-        ORDER BY "ActivityLogs"."createdAt";
+        ORDER BY "ActivityLogs"."createdAt",
+          CASE
+            WHEN "type" = 'TASK_CREATED' THEN 1
+            WHEN "type" = 'TASK_ASSIGNED' THEN 2
+            WHEN "type" = 'DUE_DATE_CHANGED' THEN 3
+            ELSE 4
+          END;
     `
     const parsedActivityLogs = DBActivityLogArraySchema.parse(activityLogs)
 
