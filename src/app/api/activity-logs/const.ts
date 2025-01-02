@@ -1,15 +1,17 @@
-import { ActivityType, AssigneeType } from '@prisma/client'
-import { TaskCreatedSchema } from '@api/activity-logs/schemas/TaskCreatedSchema'
-import { TaskAssignedSchema } from '@api/activity-logs/schemas/TaskAssignedSchema'
-import { WorkflowStateUpdatedSchema } from '@api/activity-logs/schemas/WorkflowStateUpdatedSchema'
+import { ArchivedStateUpdatedSchema } from '@api/activity-logs/schemas/ArchiveStateUpdatedSchema'
 import { CommentAddedSchema } from '@api/activity-logs/schemas/CommentAddedSchema'
+import { DueDateChangedSchema } from '@api/activity-logs/schemas/DueDateChangedSchema'
+import { TaskAssignedSchema } from '@api/activity-logs/schemas/TaskAssignedSchema'
+import { TaskCreatedSchema } from '@api/activity-logs/schemas/TaskCreatedSchema'
+import { TitleUpdatedSchema } from '@api/activity-logs/schemas/TitleUpdatedSchema'
+import { WorkflowStateUpdatedSchema } from '@api/activity-logs/schemas/WorkflowStateUpdatedSchema'
+import { ActivityType, AssigneeType } from '@prisma/client'
 import { z } from 'zod'
-import { ArchivedStateUpdatedSchema } from '@/app/api/activity-logs/schemas/ArchiveStateUpdatedSchema'
-import { DueDateChangedSchema } from '@/app/api/activity-logs/schemas/DueDateChangedSchema'
 
 export const SchemaByActivityType = {
   [ActivityType.TASK_CREATED]: TaskCreatedSchema,
   [ActivityType.TASK_ASSIGNED]: TaskAssignedSchema,
+  [ActivityType.TITLE_UPDATED]: TitleUpdatedSchema,
   [ActivityType.WORKFLOW_STATE_UPDATED]: WorkflowStateUpdatedSchema,
   [ActivityType.COMMENT_ADDED]: CommentAddedSchema,
   [ActivityType.DUE_DATE_CHANGED]: DueDateChangedSchema,
