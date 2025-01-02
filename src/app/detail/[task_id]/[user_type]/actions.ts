@@ -96,7 +96,7 @@ export const postComment = async (token: string, payload: CreateComment) => {
     body: JSON.stringify(payload),
   })
   const data = await res.json()
-  return data
+  return data.comment
   // revalidateTag('getActivities')
 }
 

@@ -67,10 +67,15 @@ export const ActivityWrapper = ({
   }, [assignee, currentUserId])
 
   const getStableId = (log: LogResponse) => {
-    const matchingUpdate = optimisticUpdates.find((update) => update.serverId === log.id || update.tempId === log.id)
-    return matchingUpdate?.tempId || log.id
-  }
+    if (log.type === ActivityType.COMMENT_ADDED) {
+      const matchingUpdate = optimisticUpdates.find(
+        (update) => update.serverId === log.details.id || update.tempId === log.id,
+      )
 
+      return matchingUpdate?.tempId || z.string().parse(log.details.id) || log.id
+    }
+    return log.id
+  }
   // Handle comment creation
   const handleCreateComment = async (postCommentPayload: CreateComment) => {
     const tempId = generateRandomString('temp-comment')
