@@ -22,7 +22,7 @@ export const fillTaskAssigned = async () => {
     const task = tasks[i]
     if (!task.assigneeId) return
 
-    console.info(`    🛠️ Inserting activity log ${i + 1}/${tasks.length} for task ${task.id} (${task.title})...`)
+    console.info(`    🛠️ Queuing insert activity log ${i + 1}/${tasks.length} for task ${task.id} (${task.title})...`)
     const details: TaskAssignedResponse = {
       oldValue: null,
       newValue: task.assigneeId,

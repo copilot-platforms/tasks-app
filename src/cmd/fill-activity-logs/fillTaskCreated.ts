@@ -19,7 +19,7 @@ export const fillTaskCreated = async () => {
 
   for (let i = 0; i < tasks.length; i++) {
     const task = tasks[i]
-    console.info(`    🛠️ Inserting activity log ${i + 1}/${tasks.length} for task ${task.id} (${task.title})...`)
+    console.info(`    🛠️ Queuing insert activity log ${i + 1}/${tasks.length} for task ${task.id} (${task.title})...`)
     const details = {
       id: task.id,
       body: '',
