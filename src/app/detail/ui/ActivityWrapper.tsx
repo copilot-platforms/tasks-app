@@ -31,6 +31,7 @@ export const ActivityWrapper = ({
   const { tasks } = useSelector(selectTaskBoard)
   const task = tasks.find((task) => task.id === task_id)
   const [lastUpdated, setLastUpdated] = useState(task?.lastActivityLogUpdated)
+  const [optimisticCommentMap, setOptimisticCommentMap] = useState<Record<string, string>>({})
 
   const cacheKey = `/api/tasks/${task_id}/activity-logs?token=${token}`
 
@@ -62,8 +63,15 @@ export const ActivityWrapper = ({
 
   // Handle comment creation
   const handleCreateComment = async (postCommentPayload: CreateComment) => {
+    const tempId = generateRandomString('temp-comment')
+    const stableId = generateRandomString('stable-comment')
+
+    setOptimisticCommentMap((prev) => ({
+      ...prev,
+      [tempId]: stableId,
+    }))
     const tempLog: LogResponse = {
-      id: generateRandomString('temp-comment'),
+      id: tempId,
       type: ActivityType.COMMENT_ADDED,
       details: {
         content: postCommentPayload.content,
@@ -135,6 +143,14 @@ export const ActivityWrapper = ({
     }
   }
 
+  const getStableKey = (item: LogResponse) => {
+    if (item.id.startsWith('temp-comment')) {
+      return optimisticCommentMap[item.id] || item.id
+    }
+
+    return item.id
+  }
+
   return (
     <Box width="100%">
       <Stack direction="column" alignItems="left" p="12px 0px" rowGap={5}>
@@ -149,7 +165,7 @@ export const ActivityWrapper = ({
           <Stack direction="column" alignItems="left" rowGap={4}>
             <TransitionGroup>
               {activities?.data?.map((item: LogResponse, index: number) => (
-                <Collapse key={item.id}>
+                <Collapse key={getStableKey(item)}>
                   <Box
                     key={index}
                     sx={{

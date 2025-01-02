@@ -14,7 +14,6 @@ interface Prop {
 }
 
 export const Comments = ({ comment, createComment, deleteComment, task_id }: Prop) => {
-  console.log(comment.details.id)
   return (
     <Stack
       id={String(comment.details.id)}
