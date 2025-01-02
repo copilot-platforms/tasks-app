@@ -178,6 +178,7 @@ export const ActivityWrapper = ({
                         createComment={handleCreateComment}
                         deleteComment={(commentId) => handleDeleteComment(commentId, item.id)}
                         task_id={task_id}
+                        stableId={getStableKey(item)}
                       />
                     ) : (
                       <ActivityLog log={item} />
