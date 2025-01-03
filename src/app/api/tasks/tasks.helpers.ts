@@ -1,8 +1,8 @@
-import { TaskTimestamps } from '@api/core/types/tasks'
-import { StateType, Task, WorkflowState } from '@prisma/client'
-import User from '@api/core/models/User.model'
 import { CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
+import User from '@api/core/models/User.model'
+import { TaskTimestamps } from '@api/core/types/tasks'
 import WorkflowStatesService from '@api/workflow-states/workflowStates.service'
+import { StateType, Task, WorkflowState } from '@prisma/client'
 
 export const getArchivedStatus = (showArchived: boolean, showUnarchived: boolean): undefined | boolean => {
   if (showArchived && !showUnarchived) {

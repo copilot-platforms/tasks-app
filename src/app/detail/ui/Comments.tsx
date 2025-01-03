@@ -1,21 +1,22 @@
-import { Avatar, Stack } from '@mui/material'
-import { VerticalLine } from './styledComponent'
+import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { CommentCard } from '@/components/cards/CommentCard'
 import { CreateComment } from '@/types/dto/comment.dto'
-import { LogResponse } from '@/app/api/activity-logs/schemas/LogResponseSchema'
-import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { IAssigneeCombined } from '@/types/interfaces'
+import { LogResponse } from '@api/activity-logs/schemas/LogResponseSchema'
+import { Stack } from '@mui/material'
+import { VerticalLine } from './styledComponent'
 
 interface Prop {
   comment: LogResponse
   createComment: (postCommentPayload: CreateComment) => void
   deleteComment: (id: string) => void
   task_id: string
+  stableId: string
 }
 
-export const Comments = ({ comment, createComment, deleteComment, task_id }: Prop) => {
+export const Comments = ({ comment, createComment, deleteComment, task_id, stableId }: Prop) => {
   return (
-    <Stack id={String(comment.details.id)} direction="row" columnGap={2} position="relative">
+    <Stack id={stableId} direction="row" columnGap={2} position="relative" sx={{ margin: '11px 0px 11px 0px' }}>
       <VerticalLine />
       <CopilotAvatar
         width="24px"

@@ -91,10 +91,12 @@ export const deleteAttachment = async (token: string, id: string) => {
 }
 
 export const postComment = async (token: string, payload: CreateComment) => {
-  await fetch(`${apiUrl}/api/comment?token=${token}`, {
+  const res = await fetch(`${apiUrl}/api/comment?token=${token}`, {
     method: 'POST',
     body: JSON.stringify(payload),
   })
+  const data = await res.json()
+  return data.comment
   // revalidateTag('getActivities')
 }
 

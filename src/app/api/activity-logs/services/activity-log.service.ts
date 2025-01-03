@@ -30,7 +30,13 @@ export class ActivityLogService extends BaseService {
                 AND C."deletedAt" IS NULL AND C."parentId" IS NULL
             )
           )
-        ORDER BY "ActivityLogs"."createdAt";
+        ORDER BY "ActivityLogs"."createdAt",
+          CASE
+            WHEN "type" = 'TASK_CREATED' THEN 1
+            WHEN "type" = 'TASK_ASSIGNED' THEN 2
+            WHEN "type" = 'DUE_DATE_CHANGED' THEN 3
+            ELSE 4
+          END;
     `
     const parsedActivityLogs = DBActivityLogArraySchema.parse(activityLogs)
 
@@ -133,25 +139,6 @@ export class ActivityLogService extends BaseService {
           ...payload,
           content: comment.content,
           replies,
-        }
-
-      case ActivityType.TASK_ASSIGNED:
-        const newAssigneeId = payload.newAssigneeId as string
-        const newAssigneeDetails = (() => {
-          switch (payload.assigneeType) {
-            case AssigneeType.internalUser:
-              return internalUsers.data.find((iu) => iu.id === newAssigneeId)
-            case AssigneeType.client:
-              return clientUsers.data?.find((client) => client.id === newAssigneeId)
-            case AssigneeType.company:
-              return companies.data?.find((company) => company.id === newAssigneeId)
-            default:
-              return null
-          }
-        })()
-        return {
-          ...payload,
-          newAssigneeDetails,
         }
 
       default:

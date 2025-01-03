@@ -1,28 +1,27 @@
 'use client'
 
-import { LogResponse } from '@/app/api/activity-logs/schemas/LogResponseSchema'
 import { setTokenPayload } from '@/redux/features/authDetailsSlice'
-import { setCreateTaskFields } from '@/redux/features/createTaskSlice'
 import {
   selectTaskBoard,
   setActiveTask,
   setAssigneeList,
   setFilteredAssgineeList,
   setPreviewMode,
+  setTasks,
+  setToken,
   setViewSettings,
+  setWorkflowStates,
 } from '@/redux/features/taskBoardSlice'
-import { setTasks, setToken, setWorkflowStates } from '@/redux/features/taskBoardSlice'
 import { setAssigneeSuggestion } from '@/redux/features/taskDetailsSlice'
 import { setTemplates } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
-import { PreviewMode, Token } from '@/types/common'
+import { Token } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { IAssigneeSuggestions, IAssigneeCombined, ITemplate } from '@/types/interfaces'
+import { IAssigneeCombined, IAssigneeSuggestions, ITemplate } from '@/types/interfaces'
 import { filterOptionsMap } from '@/types/objectMaps'
 import { getPreviewMode, handlePreviewMode } from '@/utils/previewMode'
-import { AssigneeType } from '@prisma/client'
 import { ReactNode, useEffect } from 'react'
 import { useSelector } from 'react-redux'
 

@@ -1,24 +1,19 @@
-import { ScrapMediaService } from '@/app/api/scrap-medias/scrap-medias.service'
 import { ClientResponse, CompanyResponse, InternalUsers, NotificationCreatedResponseSchema } from '@/types/common'
 import { CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { getFilePathFromUrl, replaceImageSrc } from '@/utils/signedUrlReplacer'
 import { getSignedUrl } from '@/utils/signUrl'
 import { SupabaseActions } from '@/utils/SupabaseActions'
-import { TaskAssignedSchema } from '@api/activity-logs/schemas/TaskAssignedSchema'
-import { TaskCreatedSchema } from '@api/activity-logs/schemas/TaskCreatedSchema'
-import { WorkflowStateUpdatedSchema } from '@api/activity-logs/schemas/WorkflowStateUpdatedSchema'
-import { ActivityLogger } from '@api/activity-logs/services/activity-logger.service'
 import APIError from '@api/core/exceptions/api'
 import { BaseService } from '@api/core/services/base.service'
 import { PoliciesService } from '@api/core/services/policies.service'
-import { SupabaseService } from '@api/core/services/supabase.service'
 import { Resource } from '@api/core/types/api'
 import { NotificationTaskActions } from '@api/core/types/tasks'
 import { UserAction, UserRole } from '@api/core/types/user'
 import { LabelMappingService } from '@api/label-mapping/label-mapping.service'
 import { NotificationService } from '@api/notification/notification.service'
 import { getArchivedStatus, getTaskTimestamps } from '@api/tasks/tasks.helpers'
+import { TasksActivityLogger } from '@api/tasks/tasks.logger'
 import { ActivityType, AssigneeType, StateType, Task, WorkflowState } from '@prisma/client'
 import httpStatus from 'http-status'
 import { z } from 'zod'
@@ -159,19 +154,9 @@ export class TasksService extends BaseService {
 
     if (newTask) {
       // @todo move this logic to any pub/sub service like event bus
-      const activityLogger = new ActivityLogger({ taskId: newTask.id, user: this.user })
-      await activityLogger.log(
-        ActivityType.TASK_CREATED,
-        TaskCreatedSchema.parse({
-          id: newTask.id,
-          workspaceId: newTask.workspaceId,
-          assigneeId: newTask.assigneeId,
-          assigneeType: newTask.assigneeType,
-          title: newTask.title,
-          body: newTask.body,
-          dueData: newTask.dueDate,
-        }),
-      )
+      const activityLogger = new TasksActivityLogger(this.user, newTask)
+      await activityLogger.logNewTask()
+
       if (newTask.body) {
         const newBody = await this.updateTaskIdOfAttachmentsAfterCreation(newTask.body, newTask.id)
         await this.db.task.update({
@@ -270,43 +255,8 @@ export class TasksService extends BaseService {
     })
 
     if (updatedTask) {
-      const activityLogger = new ActivityLogger({ taskId: updatedTask.id, user: this.user })
-
-      if (updatedTask.assigneeId !== prevTask.assigneeId) {
-        await activityLogger.log(
-          ActivityType.TASK_ASSIGNED,
-          TaskAssignedSchema.parse({
-            oldAssigneeId: prevTask.assigneeId,
-            newAssigneeId: updatedTask.assigneeId,
-            assigneeType: updatedTask.assigneeType,
-          }),
-        )
-      }
-
-      if (updatedTask.workflowStateId !== prevTask?.workflowStateId) {
-        const prevWorkflowState = prevTask.workflowState
-        const currentWorkflowState = updatedTask.workflowState
-
-        await activityLogger.log(
-          ActivityType.WORKFLOW_STATE_UPDATED,
-          WorkflowStateUpdatedSchema.parse({
-            oldWorkflowState: {
-              id: prevWorkflowState.id,
-              type: prevWorkflowState.type,
-              name: prevWorkflowState.name,
-              key: prevWorkflowState.key,
-              color: prevWorkflowState.color,
-            },
-            newWorkflowState: {
-              id: currentWorkflowState.id,
-              type: currentWorkflowState.type,
-              name: currentWorkflowState.name,
-              key: currentWorkflowState.key,
-              color: currentWorkflowState.color,
-            },
-          }),
-        )
-      }
+      const activityLogger = new TasksActivityLogger(this.user, updatedTask)
+      await activityLogger.logTaskUpdated(prevTask)
     }
 
     await this.sendTaskUpdateNotifications(prevTask, updatedTask)
@@ -486,7 +436,16 @@ export class TasksService extends BaseService {
         ...data,
         ...(await getTaskTimestamps('update', this.user, data, prevTask)),
       },
+      include: { workflowState: true },
     })
+
+    // --------------------------
+    // --- Activity log Logic
+    // --------------------------
+    if (updatedTask) {
+      const activityLogger = new TasksActivityLogger(this.user, updatedTask)
+      await activityLogger.logTaskUpdated(prevTask)
+    }
 
     // --------------------------
     // --- Notifications Logic

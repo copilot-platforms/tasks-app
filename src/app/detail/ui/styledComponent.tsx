@@ -11,6 +11,7 @@ import { Tapwrite } from 'tapwrite'
 export const StyledTypography = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[500],
   fontSize: theme.typography.md.fontSize,
+  lineHeight: '22px',
 }))
 
 export const BoldTypography = styled(Typography)(({ theme }) => ({
