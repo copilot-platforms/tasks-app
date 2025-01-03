@@ -167,7 +167,7 @@ export const ActivityWrapper = ({
 
   return (
     <Box width="100%">
-      <Stack direction="column" alignItems="left" p="12px 0px" rowGap={4}>
+      <Stack direction="column" alignItems="left" p="16px 0px" rowGap={4}>
         <Typography variant="lg">Activity</Typography>
         {isLoading ? (
           <Stack direction="column" rowGap={5}>
