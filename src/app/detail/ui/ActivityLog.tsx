@@ -117,7 +117,7 @@ export const ActivityLog = ({ log }: Prop) => {
   const activityUser = assignee.find((el) => el.id === log?.initiator?.id)
 
   return (
-    <Stack direction="row" columnGap={4} position="relative" sx={{ margin: '12px 0px 12px 0px' }}>
+    <Stack direction="row" columnGap={4} position="relative">
       <VerticalLine />
       <CopilotAvatar
         width="24px"
