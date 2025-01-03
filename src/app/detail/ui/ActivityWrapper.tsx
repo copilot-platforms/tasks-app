@@ -176,8 +176,8 @@ export const ActivityWrapper = ({
             <Skeleton variant="rectangular" width={'100%'} height={15} />
           </Stack>
         ) : (
-          <Stack direction="column" alignItems="left" rowGap={4}>
-            <TransitionGroup style={{ rowGap: '12px', display: 'flex', flexDirection: 'column' }}>
+          <Stack direction="column" alignItems="left" rowGap={2}>
+            <TransitionGroup>
               {activities?.data?.map((item: LogResponse, index: number) => (
                 <Collapse key={getStableId(item)}>
                   <Box
