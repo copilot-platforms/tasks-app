@@ -30,6 +30,9 @@ export class TasksActivityLogger extends BaseService {
 
   async logNewTask() {
     await this.logTaskCreated()
+    if (this.task.assigneeId) {
+      await this.logTaskAssigneeUpdated()
+    }
   }
 
   async logTaskUpdated(prevTask: Task & { workflowState: WorkflowState }) {

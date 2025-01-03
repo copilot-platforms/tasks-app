@@ -41,27 +41,3 @@ export const fillTaskAssigned = async () => {
 
   await db.activityLog.createMany({ data })
 }
-
-/** //remove the comment below
- * cmd script to delete 'X assigned task to Y' activity logs for tasks
- */
-// export const revertTaskAssigned = async () => {
-//   const db = DBClient.getInstance()
-//   // Gets all activity logs of type TASK_ASSIGNED
-//   const activityLogs = await db.activityLog.findMany({
-//     where: { type: ActivityType.TASK_ASSIGNED },
-//   })
-//   if (!activityLogs.length) {
-//     console.info('No TASK_ASSIGNED activity logs found!')
-//     return
-//   }
-//   console.warn(`⚠️ ${activityLogs.length} TASK_ASSIGNED activity logs will be deleted!`)
-
-//   const activityLogIds = activityLogs.map((log) => log.id)
-
-//   await db.activityLog.deleteMany({
-//     where: { id: { in: activityLogIds } },
-//   })
-
-//   console.info('All TASK_ASSIGNED activity logs have been deleted!')
-// }
