@@ -16,6 +16,7 @@ import { getArchivedStatus, getTaskTimestamps } from '@api/tasks/tasks.helpers'
 import { TasksActivityLogger } from '@api/tasks/tasks.logger'
 import { ActivityType, AssigneeType, StateType, Task, WorkflowState } from '@prisma/client'
 import httpStatus from 'http-status'
+import { markAsUntransferable } from 'worker_threads'
 import { z } from 'zod'
 
 type FilterByAssigneeId = {
@@ -566,6 +567,29 @@ export class TasksService extends BaseService {
     if (prevTask.workflowStateId === updatedTask.workflowStateId) return
 
     const notificationService = new NotificationService(this.user)
+
+    // Handle archive status update.
+    // If task is moved to archived -> Mark as read notifications
+    // If task is moved to uarchived -> Add appropriate notification
+    if (prevTask.isArchived !== updatedTask.isArchived) {
+      // Since we patch only one field at a time, we aren't at risk of
+      // having both isArchived changed and assigneeId changed. AssigneeId of prev or updated will be same
+      if (!prevTask.assigneeId) {
+        return
+      }
+      // Case I: Task is archived from unarchived state
+      if (updatedTask.isArchived) {
+        console.log('here 1')
+        const markAsRead =
+          prevTask.assigneeType === AssigneeType.client
+            ? notificationService.markClientNotificationAsRead
+            : notificationService.markAsReadForAllRecipients
+        await markAsRead(prevTask)
+      } else {
+        // Case II: Task is unarchived from archived state
+        await this.sendTaskCreateNotifications(updatedTask)
+      }
+    }
 
     /*
      * Cases:
