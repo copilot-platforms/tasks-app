@@ -436,7 +436,16 @@ export class TasksService extends BaseService {
         ...data,
         ...(await getTaskTimestamps('update', this.user, data, prevTask)),
       },
+      include: { workflowState: true },
     })
+
+    // --------------------------
+    // --- Activity log Logic
+    // --------------------------
+    if (updatedTask) {
+      const activityLogger = new TasksActivityLogger(this.user, updatedTask)
+      await activityLogger.logTaskUpdated(prevTask)
+    }
 
     // --------------------------
     // --- Notifications Logic
