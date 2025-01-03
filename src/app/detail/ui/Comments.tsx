@@ -16,20 +16,22 @@ interface Prop {
 
 export const Comments = ({ comment, createComment, deleteComment, task_id, stableId }: Prop) => {
   return (
-    <Stack id={stableId} direction="row" columnGap={2} position="relative" sx={{ margin: '11px 0px 11px 0px' }}>
+    <Stack id={stableId} direction="row" columnGap={2} position="relative">
       <VerticalLine />
-      <CopilotAvatar
-        width="24px"
-        height="24px"
-        fontSize="13px"
-        currentAssignee={comment.initiator as unknown as IAssigneeCombined}
-        sx={{
-          border: (theme) => `1.1px solid ${theme.color.gray[200]}`,
-          marginTop: '5px',
-        }}
-      />
+      <Stack direction="row" columnGap={2} padding={'0px 0px 12px 0px'} width={'100%'}>
+        <CopilotAvatar
+          width="24px"
+          height="24px"
+          fontSize="13px"
+          currentAssignee={comment.initiator as unknown as IAssigneeCombined}
+          sx={{
+            border: (theme) => `1.1px solid ${theme.color.gray[200]}`,
+            marginTop: '5px',
+          }}
+        />
 
-      <CommentCard comment={comment} createComment={createComment} deleteComment={deleteComment} task_id={task_id} />
+        <CommentCard comment={comment} createComment={createComment} deleteComment={deleteComment} task_id={task_id} />
+      </Stack>
     </Stack>
   )
 }
