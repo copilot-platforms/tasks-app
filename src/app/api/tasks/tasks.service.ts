@@ -371,7 +371,12 @@ export class TasksService extends BaseService {
   async getIncompleteTasksForCompany(assigneeId: string): Promise<(Task & { workflowState: WorkflowState })[]> {
     // This works across workspaces
     return await this.db.task.findMany({
-      where: { assigneeId, assigneeType: AssigneeType.company, workflowState: { type: { not: StateType.completed } } },
+      where: {
+        assigneeId,
+        assigneeType: AssigneeType.company,
+        workflowState: { type: { not: StateType.completed } },
+        isArchived: false,
+      },
       // @ts-ignore TS support for this param is still shakey
       relationLoadStrategy: 'join',
       include: { workflowState: true },
