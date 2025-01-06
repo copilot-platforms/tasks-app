@@ -126,7 +126,7 @@ export class ValidateCountService extends NotificationService {
     for (const i in newNotifications) {
       newClientNotificationData.push({
         notificationId: newNotifications[i].id,
-        taskId: tasks[i].id,
+        taskId: tasksWithoutNotifications[i].id,
         clientId,
       })
     }
