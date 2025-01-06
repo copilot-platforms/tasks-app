@@ -117,28 +117,31 @@ export const ActivityLog = ({ log }: Prop) => {
   const activityUser = assignee.find((el) => el.id === log?.initiator?.id)
 
   return (
-    <Stack direction="row" columnGap={4} position="relative" sx={{ margin: '12px 0px 12px 0px' }}>
+    <Stack direction="row" columnGap={4} position="relative">
       <VerticalLine />
-      <CopilotAvatar
-        width="24px"
-        height="24px"
-        fontSize="13px"
-        currentAssignee={log?.initiator as unknown as IAssigneeCombined}
-        sx={{
-          border: (theme) => `1.1px solid ${theme.color.gray[200]}`,
-        }}
-      />
-      <TypographyContainer direction="row" columnGap={1}>
-        {activityUser ? (
-          <BoldTypography>{getAssigneeName(activityUser, '')}</BoldTypography>
-        ) : (
-          <Typography variant="md" sx={{ fontStyle: 'italic' }}>
-            Deleted User
-          </Typography>
-        )}
-        {activityDescription[log.type as ActivityType](...logEntities)}
-        <StyledTypography> {getTimeDifference(log.createdAt)}</StyledTypography>
-      </TypographyContainer>
+
+      <Stack direction="row" columnGap={4} padding={'11px 0px 11px 0px'} width={'100%'}>
+        <CopilotAvatar
+          width="24px"
+          height="24px"
+          fontSize="13px"
+          currentAssignee={log?.initiator as unknown as IAssigneeCombined}
+          sx={{
+            border: (theme) => `1.1px solid ${theme.color.gray[200]}`,
+          }}
+        />
+        <TypographyContainer direction="row" columnGap={1}>
+          {activityUser ? (
+            <BoldTypography>{getAssigneeName(activityUser, '')}</BoldTypography>
+          ) : (
+            <Typography variant="md" sx={{ fontStyle: 'italic' }}>
+              Deleted User
+            </Typography>
+          )}
+          {activityDescription[log.type as ActivityType](...logEntities)}
+          <StyledTypography> {getTimeDifference(log.createdAt)}</StyledTypography>
+        </TypographyContainer>
+      </Stack>
     </Stack>
   )
 }
