@@ -18,7 +18,7 @@ export const ManageTemplateHeader = ({ token }: { token: string }) => {
   const { previewMode } = useSelector(selectTaskBoard)
   return (
     <StyledBox>
-      <AppMargin size={SizeofAppMargin.HEADER} py="17.5px">
+      <AppMargin size={SizeofAppMargin.HEADER} py="14px">
         <Stack direction="row" justifyContent="space-between" alignItems="center">
           <HeaderBreadcrumbs
             title="Manage templates"
@@ -47,6 +47,7 @@ export const ManageTemplateHeader = ({ token }: { token: string }) => {
                     store.dispatch(setShowTemplateModal({ targetMethod: TargetMethod.POST }))
                   }}
                   icon={<Add sx={{ color: '#fff' }} />}
+                  padding="4px"
                 />
               </Box>
             </>
