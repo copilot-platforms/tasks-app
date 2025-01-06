@@ -11,8 +11,8 @@ model TaskTemplate {
   updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
 
-  scrapMedias     ScrapMedia[]
+  scrapMedias ScrapMedia[]
 
-  @@unique([title, workspaceId], name: "UQ_TaskTemplates_title_workspaceId")
+  @@unique([title, workspaceId, deletedAt], name: "UQ_TaskTemplates_title_workspaceId_deletedAt")
   @@map("TaskTemplates")
 }
