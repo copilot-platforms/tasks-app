@@ -43,13 +43,14 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
     showArchived,
     showUnarchived,
     isTasksLoading,
+    previewMode,
   } = useSelector(selectTaskBoard)
 
   const onDropItem = useCallback(
     (payload: { taskId: string; targetWorkflowStateId: string }) => {
       const { taskId, targetWorkflowStateId } = payload
       store.dispatch(updateWorkflowStateIdByTaskId({ taskId, targetWorkflowStateId }))
-      if (mode === UserRole.Client) {
+      if (mode === UserRole.Client && !previewMode) {
         clientUpdateTask(z.string().parse(token), taskId, targetWorkflowStateId)
       } else {
         updateTask({
@@ -72,7 +73,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
     if (!isFilterOn) {
       return taskCount.toString()
     }
-    return filteredTaskCount.toString() + '/' + taskCount.toString()
+    return filteredTaskCount.toString()
   }
 
   const viewBoardSettings = viewSettingsTemp ? viewSettingsTemp.viewMode : view
@@ -112,7 +113,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
   return (
     <>
       <TaskDataFetcher token={token ?? ''} />
-      <Header showCreateTaskButton={mode === UserRole.IU} />
+      <Header showCreateTaskButton={mode === UserRole.IU || !!previewMode} showMenuBox={!previewMode} />
       <FilterBar
         mode={mode}
         updateViewModeSetting={async (payload: CreateViewSettingsDTO) => {
@@ -146,6 +147,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
                   workflowStateId={list.id}
                   columnName={list.name}
                   taskCount={taskCountForWorkflowStateId(list.id)}
+                  showAddBtn={mode === UserRole.IU || !!previewMode}
                 >
                   <CustomScrollbar style={{ padding: '4px' }}>
                     <Stack direction="column" rowGap="6px" sx={{ overflowX: 'auto' }}>
