@@ -543,6 +543,29 @@ export class TasksService extends BaseService {
     }
   }
 
+  private async handleTaskArchiveToggle(
+    notificationService: NotificationService,
+    prevTask: Task & { workflowState: WorkflowState },
+    updatedTask: Task & { workflowState: WorkflowState },
+  ) {
+    // Since we patch only one field at a time, we aren't at risk of
+    // having both isArchived changed and assigneeId changed. AssigneeId of prev or updated will be same
+    if (!prevTask.assigneeId) {
+      return
+    }
+    // Case I: Task is archived from unarchived state
+    if (updatedTask.isArchived) {
+      const markAsRead =
+        prevTask.assigneeType === AssigneeType.client
+          ? notificationService.markClientNotificationAsRead
+          : notificationService.markAsReadForAllRecipients
+      await markAsRead(prevTask)
+    } else {
+      // Case II: Task is unarchived from archived state
+      await this.sendTaskCreateNotifications(updatedTask)
+    }
+  }
+
   async sendTaskCreateNotifications(task: Task & { workflowState: WorkflowState }, isReassigned = false) {
     // If task is unassigned, there's nobody to send notifications to
     if (!task.assigneeId) return
@@ -564,33 +587,16 @@ export class TasksService extends BaseService {
     prevTask: Task & { workflowState: WorkflowState },
     updatedTask: Task & { workflowState: WorkflowState },
   ) {
-    if (prevTask.workflowStateId === updatedTask.workflowStateId) return
-
     const notificationService = new NotificationService(this.user)
 
     // Handle archive status update.
     // If task is moved to archived -> Mark as read notifications
     // If task is moved to uarchived -> Add appropriate notification
     if (prevTask.isArchived !== updatedTask.isArchived) {
-      // Since we patch only one field at a time, we aren't at risk of
-      // having both isArchived changed and assigneeId changed. AssigneeId of prev or updated will be same
-      if (!prevTask.assigneeId) {
-        return
-      }
-      // Case I: Task is archived from unarchived state
-      if (updatedTask.isArchived) {
-        console.log('here 1')
-        const markAsRead =
-          prevTask.assigneeType === AssigneeType.client
-            ? notificationService.markClientNotificationAsRead
-            : notificationService.markAsReadForAllRecipients
-        await markAsRead(prevTask)
-      } else {
-        // Case II: Task is unarchived from archived state
-        await this.sendTaskCreateNotifications(updatedTask)
-      }
+      return await this.handleTaskArchiveToggle(notificationService, prevTask, updatedTask)
     }
 
+    if (prevTask.workflowStateId === updatedTask.workflowStateId) return
     /*
      * Cases:
      * 1. Assignee ID is changed for incomplete task -> Mark as read for previous recipients and trigger new notifications for new assignee
