@@ -1,25 +1,20 @@
-import { ScrapMediaService } from '@/app/api/scrap-medias/scrap-medias.service'
 import { ClientResponse, CompanyResponse, InternalUsers, NotificationCreatedResponseSchema } from '@/types/common'
 import { CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { getFilePathFromUrl, replaceImageSrc } from '@/utils/signedUrlReplacer'
 import { getSignedUrl } from '@/utils/signUrl'
 import { SupabaseActions } from '@/utils/SupabaseActions'
-import { TaskAssignedSchema } from '@api/activity-logs/schemas/TaskAssignedSchema'
-import { TaskCreatedSchema } from '@api/activity-logs/schemas/TaskCreatedSchema'
-import { WorkflowStateUpdatedSchema } from '@api/activity-logs/schemas/WorkflowStateUpdatedSchema'
-import { ActivityLogger } from '@api/activity-logs/services/activity-logger.service'
 import APIError from '@api/core/exceptions/api'
 import { BaseService } from '@api/core/services/base.service'
 import { PoliciesService } from '@api/core/services/policies.service'
-import { SupabaseService } from '@api/core/services/supabase.service'
 import { Resource } from '@api/core/types/api'
 import { NotificationTaskActions } from '@api/core/types/tasks'
 import { UserAction, UserRole } from '@api/core/types/user'
 import { LabelMappingService } from '@api/label-mapping/label-mapping.service'
 import { NotificationService } from '@api/notification/notification.service'
 import { getArchivedStatus, getTaskTimestamps } from '@api/tasks/tasks.helpers'
-import { ActivityType, AssigneeType, StateType, Task, WorkflowState } from '@prisma/client'
+import { TasksActivityLogger } from '@api/tasks/tasks.logger'
+import { AssigneeType, StateType, Task, WorkflowState } from '@prisma/client'
 import httpStatus from 'http-status'
 import { z } from 'zod'
 
@@ -103,7 +98,6 @@ export class TasksService extends BaseService {
           createdAt: 'desc',
         },
       ],
-      // @ts-ignore TS support for this param is still shakey
       relationLoadStrategy: 'join',
       include: {
         workflowState: { select: { name: true } },
@@ -159,19 +153,9 @@ export class TasksService extends BaseService {
 
     if (newTask) {
       // @todo move this logic to any pub/sub service like event bus
-      const activityLogger = new ActivityLogger({ taskId: newTask.id, user: this.user })
-      await activityLogger.log(
-        ActivityType.TASK_CREATED,
-        TaskCreatedSchema.parse({
-          id: newTask.id,
-          workspaceId: newTask.workspaceId,
-          assigneeId: newTask.assigneeId,
-          assigneeType: newTask.assigneeType,
-          title: newTask.title,
-          body: newTask.body,
-          dueData: newTask.dueDate,
-        }),
-      )
+      const activityLogger = new TasksActivityLogger(this.user, newTask)
+      await activityLogger.logNewTask()
+
       if (newTask.body) {
         const newBody = await this.updateTaskIdOfAttachmentsAfterCreation(newTask.body, newTask.id)
         await this.db.task.update({
@@ -197,7 +181,6 @@ export class TasksService extends BaseService {
 
     const task = await this.db.task.findFirst({
       ...filters,
-      // @ts-ignore TS support for this param is still shakey
       relationLoadStrategy: 'join',
       include: {
         workflowState: true,
@@ -238,7 +221,6 @@ export class TasksService extends BaseService {
     const filters = this.buildReadFilters(id)
     const prevTask = await this.db.task.findFirst({
       ...filters,
-      // @ts-ignore TS support for this param is still shakey
       relationLoadStrategy: 'join',
       include: { workflowState: true },
     })
@@ -270,43 +252,8 @@ export class TasksService extends BaseService {
     })
 
     if (updatedTask) {
-      const activityLogger = new ActivityLogger({ taskId: updatedTask.id, user: this.user })
-
-      if (updatedTask.assigneeId !== prevTask.assigneeId) {
-        await activityLogger.log(
-          ActivityType.TASK_ASSIGNED,
-          TaskAssignedSchema.parse({
-            oldAssigneeId: prevTask.assigneeId,
-            newAssigneeId: updatedTask.assigneeId,
-            assigneeType: updatedTask.assigneeType,
-          }),
-        )
-      }
-
-      if (updatedTask.workflowStateId !== prevTask?.workflowStateId) {
-        const prevWorkflowState = prevTask.workflowState
-        const currentWorkflowState = updatedTask.workflowState
-
-        await activityLogger.log(
-          ActivityType.WORKFLOW_STATE_UPDATED,
-          WorkflowStateUpdatedSchema.parse({
-            oldWorkflowState: {
-              id: prevWorkflowState.id,
-              type: prevWorkflowState.type,
-              name: prevWorkflowState.name,
-              key: prevWorkflowState.key,
-              color: prevWorkflowState.color,
-            },
-            newWorkflowState: {
-              id: currentWorkflowState.id,
-              type: currentWorkflowState.type,
-              name: currentWorkflowState.name,
-              key: currentWorkflowState.key,
-              color: currentWorkflowState.color,
-            },
-          }),
-        )
-      }
+      const activityLogger = new TasksActivityLogger(this.user, updatedTask)
+      await activityLogger.logTaskUpdated(prevTask)
     }
 
     await this.sendTaskUpdateNotifications(prevTask, updatedTask)
@@ -321,7 +268,6 @@ export class TasksService extends BaseService {
     // Try to delete existing client notification related to this task if exists
     const task = await this.db.task.findFirst({
       where: { id },
-      // @ts-ignore TS support for this param is still shakey
       relationLoadStrategy: 'join',
       include: { workflowState: true },
     })
@@ -421,8 +367,12 @@ export class TasksService extends BaseService {
   async getIncompleteTasksForCompany(assigneeId: string): Promise<(Task & { workflowState: WorkflowState })[]> {
     // This works across workspaces
     return await this.db.task.findMany({
-      where: { assigneeId, assigneeType: AssigneeType.company, workflowState: { type: { not: StateType.completed } } },
-      // @ts-ignore TS support for this param is still shakey
+      where: {
+        assigneeId,
+        assigneeType: AssigneeType.company,
+        workflowState: { type: { not: StateType.completed } },
+        isArchived: false,
+      },
       relationLoadStrategy: 'join',
       include: { workflowState: true },
     })
@@ -456,7 +406,6 @@ export class TasksService extends BaseService {
     const filters = this.buildReadFilters(id)
     const prevTask = await this.db.task.findFirst({
       ...filters,
-      // @ts-ignore TS support for this param is still shakey
       relationLoadStrategy: 'join',
       include: { workflowState: true },
     })
@@ -486,7 +435,16 @@ export class TasksService extends BaseService {
         ...data,
         ...(await getTaskTimestamps('update', this.user, data, prevTask)),
       },
+      include: { workflowState: true },
     })
+
+    // --------------------------
+    // --- Activity log Logic
+    // --------------------------
+    if (updatedTask) {
+      const activityLogger = new TasksActivityLogger(this.user, updatedTask)
+      await activityLogger.logTaskUpdated(prevTask)
+    }
 
     // --------------------------
     // --- Notifications Logic
@@ -592,6 +550,29 @@ export class TasksService extends BaseService {
     }
   }
 
+  private async handleTaskArchiveToggle(
+    notificationService: NotificationService,
+    prevTask: Task & { workflowState: WorkflowState },
+    updatedTask: Task & { workflowState: WorkflowState },
+  ) {
+    // Since we patch only one field at a time, we aren't at risk of
+    // having both isArchived changed and assigneeId changed. AssigneeId of prev or updated will be same
+    if (!prevTask.assigneeId) {
+      return
+    }
+    // Case I: Task is archived from unarchived state
+    if (updatedTask.isArchived) {
+      const markAsRead =
+        prevTask.assigneeType === AssigneeType.client
+          ? notificationService.markClientNotificationAsRead
+          : notificationService.markAsReadForAllRecipients
+      await markAsRead(prevTask)
+    } else {
+      // Case II: Task is unarchived from archived state
+      await this.sendTaskCreateNotifications(updatedTask)
+    }
+  }
+
   async sendTaskCreateNotifications(task: Task & { workflowState: WorkflowState }, isReassigned = false) {
     // If task is unassigned, there's nobody to send notifications to
     if (!task.assigneeId) return
@@ -613,10 +594,16 @@ export class TasksService extends BaseService {
     prevTask: Task & { workflowState: WorkflowState },
     updatedTask: Task & { workflowState: WorkflowState },
   ) {
-    if (prevTask.workflowStateId === updatedTask.workflowStateId) return
-
     const notificationService = new NotificationService(this.user)
 
+    // Handle archive status update.
+    // If task is moved to archived -> Mark as read notifications
+    // If task is moved to uarchived -> Add appropriate notification
+    if (prevTask.isArchived !== updatedTask.isArchived) {
+      return await this.handleTaskArchiveToggle(notificationService, prevTask, updatedTask)
+    }
+
+    if (prevTask.workflowStateId === updatedTask.workflowStateId) return
     /*
      * Cases:
      * 1. Assignee ID is changed for incomplete task -> Mark as read for previous recipients and trigger new notifications for new assignee
