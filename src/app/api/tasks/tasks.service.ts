@@ -65,7 +65,7 @@ export class TasksService extends BaseService {
     return filters
   }
 
-  async getAllTasks(queryFilters?: { showArchived: boolean; showUnarchived: boolean }) {
+  async getAllTasks(queryFilters?: { showArchived: boolean; showUnarchived: boolean; showIncompleteOnly?: boolean }) {
     // Check if given user role is authorized access to this resource
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Read, Resource.Tasks)
@@ -83,6 +83,13 @@ export class TasksService extends BaseService {
       }
 
       isArchived = getArchivedStatus(queryFilters.showArchived, queryFilters.showUnarchived)
+    }
+
+    if (queryFilters?.showIncompleteOnly) {
+      // @ts-expect-error Injecting a valid workflowState query here
+      filters.where.workflowState = {
+        type: { not: StateType.completed },
+      }
     }
 
     let tasks = await this.db.task.findMany({
