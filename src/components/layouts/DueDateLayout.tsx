@@ -5,6 +5,7 @@ import isTomorrow from 'dayjs/plugin/isTomorrow'
 import { useCallback } from 'react'
 import { createDateFromFormattedDateString } from '@/utils/dateHelper'
 import { DateString } from '@/types/date'
+import { DueDateFormatter } from '@/utils/dueDateFormatter'
 
 dayjs.extend(isToday)
 dayjs.extend(isTomorrow)
@@ -18,36 +19,7 @@ export const DueDateLayout = ({ dateString, isDone }: DueDateLayoutProp) => {
   const date = createDateFromFormattedDateString(dateString)
   const now = dayjs()
   const calculateFormattedDueDate = useCallback(() => {
-    const parsedDate = dayjs(date)
-
-    if (parsedDate.isToday()) {
-      return 'Today'
-    } else if (parsedDate.isTomorrow()) {
-      return 'Tomorrow'
-    } else {
-      const monthFormats: { [key: string]: string } = {
-        January: 'Jan',
-        February: 'Feb',
-        March: 'March',
-        April: 'April',
-        May: 'May',
-        June: 'June',
-        July: 'July',
-        August: 'Aug',
-        September: 'Sep',
-        October: 'Oct',
-        November: 'Nov',
-        December: 'Dec',
-      }
-
-      const month = parsedDate.format('MMMM')
-      const day = parsedDate.format('D')
-      const year = parsedDate.format('YYYY')
-
-      const formattedMonth = month.length <= 5 ? month : monthFormats[month]
-
-      return `${formattedMonth} ${day}, ${year}`
-    }
+    return DueDateFormatter(date, true)
   }, [date])
 
   const formattedDueDate = calculateFormattedDueDate()

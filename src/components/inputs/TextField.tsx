@@ -3,7 +3,8 @@
 import { TextField, styled } from '@mui/material'
 
 export const StyledTextField = styled(TextField, {
-  shouldForwardProp: (prop) => prop !== 'padding',
+  shouldForwardProp: (prop) =>
+    prop !== 'basePadding' && prop !== 'padding' && prop !== 'borderColor' && prop !== 'borderLess',
 })<{ basePadding?: string; padding?: string; borderColor?: string; borderLess?: boolean }>(
   ({ basePadding, padding, borderColor, borderLess, theme }) => ({
     '& .MuiInputBase-root': {
