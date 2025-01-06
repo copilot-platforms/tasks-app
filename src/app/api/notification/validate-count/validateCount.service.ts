@@ -20,6 +20,7 @@ export class ValidateCountService extends NotificationService {
    */
   async fixClientNotificationCount(clientId: string): Promise<void> {
     const notifications = await this.copilot.getNotifications(clientId, { limit: 1_000_000 })
+    console.info('ValidateCount :: Copilot Notifications', notifications.length, notifications)
     await this.validateWithTasks(
       clientId,
       notifications.map((n) => n.id),
@@ -34,10 +35,12 @@ export class ValidateCountService extends NotificationService {
   private async validateWithTasks(clientId: string, copilotNotificationIds: string[]): Promise<void> {
     const tasksService = new TasksService(this.user)
     const tasks = await tasksService.getAllTasks({ showArchived: false, showUnarchived: true })
+    console.info('ValidateCount :: User tasks', tasks.length, tasks)
 
     // Query all notifications triggered for a list of client/company tasks
     const appNotifications = await this.getAllForTasks(tasks)
     const appNotificationIds = appNotifications.map((n) => n.notificationId)
+    console.info('ValidateCount :: App notifications', appNotifications.length, appNotifications)
 
     if (getArrayDifference(appNotificationIds, copilotNotificationIds).length) {
       await this.removeOrphanNotificationsFromDb(appNotificationIds, copilotNotificationIds)
@@ -57,10 +60,11 @@ export class ValidateCountService extends NotificationService {
    * Removes notifications present in db, which are not present in Copilot
    */
   private async removeOrphanNotificationsFromDb(appNotificationIds: string[], copilotNotificationIds: string[]) {
-    console.info('Removing orphan notifications from db')
+    console.info('ValidateCount :: Removing orphan notifications from db')
     // Delete orphan notifications (notifications in db that don't exist in Copilot)
     const orphanNotifications = appNotificationIds.filter((id) => !copilotNotificationIds.includes(id))
     if (orphanNotifications.length) {
+      console.log('ValidateCount :: Found orphanNotifications', orphanNotifications.length, orphanNotifications)
       await this.db.clientNotification.deleteMany({ where: { notificationId: { in: orphanNotifications } } })
     }
   }
@@ -69,9 +73,13 @@ export class ValidateCountService extends NotificationService {
    * Cleans up and removes notifications present in Copilot, which are not present in db
    */
   private async removeOrphanNotificationsFromCopilot(appNotificationIds: string[], copilotNotificationIds: string[]) {
-    console.info('Removing orphan notifications from copilot')
     // -- Handle copilotNotifications having notifications that appNotifications does not
     const extraCopilotNotifications = copilotNotificationIds.filter((id) => !appNotificationIds.includes(id))
+    console.info(
+      'ValidateCount :: Removing orphan notifications from copilot',
+      extraCopilotNotifications.length,
+      extraCopilotNotifications,
+    )
     if (extraCopilotNotifications.length) {
       await this.bulkMarkAsRead(extraCopilotNotifications)
     }
@@ -84,12 +92,16 @@ export class ValidateCountService extends NotificationService {
   private async addMissingNotifications(tasks: Task[], clientId: string, appNotifications: ClientNotification[]) {
     // First create missing notifications in Copilot in-product
     const tasksWithNotifications = appNotifications.map((n: any) => n.taskId)
+    console.info('ValidateCount :: Tasks with notifications', tasksWithNotifications.length, tasksWithNotifications)
     const tasksWithoutNotifications = tasks.filter((task) => !tasksWithNotifications.includes(task.id))
+    console.info('ValidateCount :: Tasks without notifications', tasksWithoutNotifications.length, tasksWithoutNotifications)
+
     const createNotificationPromises = []
+    // Create missing task notifications in Copilot
     for (const task of tasksWithoutNotifications) {
       createNotificationPromises.push(
         bottleneck.schedule(() => {
-          console.info(`Creating missing notification for task ${task.id} - ${task.title}`)
+          console.info(`ValidateCount :: Creating missing notification for task ${task.id} - ${task.title}`)
           return this.copilot.createNotification({
             senderId: task.createdById,
             recipientId: clientId,
@@ -104,6 +116,7 @@ export class ValidateCountService extends NotificationService {
       )
     }
     const newNotifications = await Promise.all(createNotificationPromises)
+
     // Now track those to ClientNotifications table
     const newClientNotificationData = []
     for (const i in newNotifications) {
