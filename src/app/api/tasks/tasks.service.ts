@@ -99,7 +99,6 @@ export class TasksService extends BaseService {
           createdAt: 'desc',
         },
       ],
-      // @ts-ignore TS support for this param is still shakey
       relationLoadStrategy: 'join',
       include: {
         workflowState: { select: { name: true } },
@@ -183,7 +182,6 @@ export class TasksService extends BaseService {
 
     const task = await this.db.task.findFirst({
       ...filters,
-      // @ts-ignore TS support for this param is still shakey
       relationLoadStrategy: 'join',
       include: {
         workflowState: true,
@@ -224,7 +222,6 @@ export class TasksService extends BaseService {
     const filters = this.buildReadFilters(id)
     const prevTask = await this.db.task.findFirst({
       ...filters,
-      // @ts-ignore TS support for this param is still shakey
       relationLoadStrategy: 'join',
       include: { workflowState: true },
     })
@@ -272,7 +269,6 @@ export class TasksService extends BaseService {
     // Try to delete existing client notification related to this task if exists
     const task = await this.db.task.findFirst({
       where: { id },
-      // @ts-ignore TS support for this param is still shakey
       relationLoadStrategy: 'join',
       include: { workflowState: true },
     })
@@ -378,7 +374,6 @@ export class TasksService extends BaseService {
         workflowState: { type: { not: StateType.completed } },
         isArchived: false,
       },
-      // @ts-ignore TS support for this param is still shakey
       relationLoadStrategy: 'join',
       include: { workflowState: true },
     })
@@ -412,7 +407,6 @@ export class TasksService extends BaseService {
     const filters = this.buildReadFilters(id)
     const prevTask = await this.db.task.findFirst({
       ...filters,
-      // @ts-ignore TS support for this param is still shakey
       relationLoadStrategy: 'join',
       include: { workflowState: true },
     })
