@@ -14,9 +14,8 @@ import { LabelMappingService } from '@api/label-mapping/label-mapping.service'
 import { NotificationService } from '@api/notification/notification.service'
 import { getArchivedStatus, getTaskTimestamps } from '@api/tasks/tasks.helpers'
 import { TasksActivityLogger } from '@api/tasks/tasks.logger'
-import { ActivityType, AssigneeType, StateType, Task, WorkflowState } from '@prisma/client'
+import { AssigneeType, StateType, Task, WorkflowState } from '@prisma/client'
 import httpStatus from 'http-status'
-import { markAsUntransferable } from 'worker_threads'
 import { z } from 'zod'
 
 type FilterByAssigneeId = {
