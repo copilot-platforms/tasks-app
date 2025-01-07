@@ -51,7 +51,6 @@ interface Prop {
   endOption?: ReactNode
   endOptionHref?: string
   listAutoHeightMax?: string
-  useClickHandler?: boolean
 }
 
 export default function Selector({
@@ -80,7 +79,6 @@ export default function Selector({
   endOption,
   endOptionHref,
   listAutoHeightMax,
-  useClickHandler,
 }: Prop) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
@@ -218,7 +216,7 @@ export default function Selector({
           options={extraOption ? [extraOption, ...options] : options}
           value={value}
           onChange={(_, newValue: unknown) => {
-            if (newValue && !useClickHandler) {
+            if (newValue) {
               getSelectedValue(newValue)
               setAnchorEl(null)
               setInputStatusValue('')
@@ -309,11 +307,6 @@ export default function Selector({
             )
           }}
           renderOption={(props, option: unknown) => {
-            const onClickHandler = () => {
-              getSelectedValue(option)
-              setAnchorEl(null)
-              setInputStatusValue('')
-            }
             if ((option as IExtraOption).id === 'not_found') {
               return (
                 <Box
@@ -341,11 +334,7 @@ export default function Selector({
             ) : selectorType === SelectorType.STATUS_SELECTOR ? (
               <StatusSelectorRenderer props={props} option={option} />
             ) : selectorType === SelectorType.TEMPLATE_SELECTOR ? (
-              <TemplateSelectorRenderer
-                props={props}
-                option={option}
-                onClickHandler={useClickHandler ? onClickHandler : undefined}
-              />
+              <TemplateSelectorRenderer props={props} option={option} />
             ) : (
               <></>
             )
@@ -357,15 +346,7 @@ export default function Selector({
   )
 }
 
-const TemplateSelectorRenderer = ({
-  props,
-  option,
-  onClickHandler,
-}: {
-  props: HTMLAttributes<HTMLLIElement>
-  option: unknown
-  onClickHandler?: () => void
-}) => {
+const TemplateSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTMLLIElement>; option: unknown }) => {
   return (
     <Box
       key={(option as ITemplate).id}
@@ -391,7 +372,6 @@ const TemplateSelectorRenderer = ({
           bgcolor: (theme) => theme.color.background.bgHover,
         },
       }}
-      onClick={onClickHandler && onClickHandler}
     >
       <Stack direction="row" alignItems="center" columnGap={3}>
         <Typography

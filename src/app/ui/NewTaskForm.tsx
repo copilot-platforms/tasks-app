@@ -382,13 +382,13 @@ const NewTaskFooter = ({
     )
   }
 
-  const applyTemplateHandler = (newValue: ITemplate) => {
-    if (!newValue || !token) return
-    const controller = applyTemplate(newValue.id, newValue.title)
+  useEffect(() => {
+    if (!templateValue || !token) return
+    const controller = applyTemplate(templateValue.id, templateValue.title)
     return () => {
       controller.abort()
     }
-  }
+  }, [templateValue, applyTemplate, token, showModal])
 
   return (
     <Box sx={{ borderTop: (theme) => `1px solid ${theme.color.borders.border2}` }}>
@@ -400,7 +400,6 @@ const NewTaskFooter = ({
             getSelectedValue={(_newValue) => {
               const newValue = _newValue as ITemplate
               updateTemplateValue(newValue)
-              applyTemplateHandler(newValue)
             }}
             startIcon={<TemplateIconSm />}
             options={templates || []}
@@ -418,7 +417,6 @@ const NewTaskFooter = ({
             disableOutline
             responsiveNoHide
             buttonWidth="auto"
-            useClickHandler
           />
           <Stack
             direction="row"
