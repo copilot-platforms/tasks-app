@@ -1,3 +1,4 @@
+import { DuplicateNotificationsQuerySchema } from '@/types/client-notifications'
 import { getArrayDifference } from '@/utils/array'
 import { bottleneck } from '@/utils/bottleneck'
 import { CopilotAPI } from '@/utils/CopilotAPI'
@@ -6,6 +7,7 @@ import { UserRole } from '@api/core/types/user'
 import { NotificationService } from '@api/notification/notification.service'
 import { TasksService } from '@api/tasks/tasks.service'
 import { ClientNotification, Task } from '@prisma/client'
+import { z } from 'zod'
 
 export class ValidateCountService extends NotificationService {
   private readonly copilot: CopilotAPI
@@ -58,6 +60,49 @@ export class ValidateCountService extends NotificationService {
     if (getArrayDifference(copilotNotificationIds, appNotificationIds).length) {
       await this.removeOrphanNotificationsFromCopilot(appNotificationIds, copilotNotificationIds)
     }
+
+    const newAppNotifications = await this.getAllForTasks(tasks)
+    // Add robustness and legacy fixes by checking and fixing duplicate notifications for tasks
+    if (tasks.length !== newAppNotifications.length) {
+      await this.removeDuplicateNotifications(clientId)
+    }
+  }
+
+  private async removeDuplicateNotifications(clientId: string) {
+    const queryResult = await this.db.$queryRaw`
+        SELECT "c"."taskId", count("c".*) as "rowCount", max("c"."createdAt") as "latestCreatedAt"
+        FROM (
+          SELECT "taskId", "clientId", "createdAt"
+          FROM "ClientNotifications"
+          WHERE "clientId" = ${clientId}::uuid 
+            AND "deletedAt" IS NULL
+        ) c
+        GROUP BY "c"."taskId"
+        HAVING count("c".*) > 1
+      `
+    const duplicateNotifications = z.array(DuplicateNotificationsQuerySchema).parse(queryResult)
+    const duplicateNotificationIds = await this.db.clientNotification.findMany({
+      where: {
+        OR: duplicateNotifications.map(({ taskId, latestCreatedAt }) => ({
+          taskId,
+          createdAt: {
+            not: latestCreatedAt,
+          },
+        })),
+      },
+      select: { id: true, notificationId: true },
+    })
+    // Remove duplicate notifications from copilot
+    const targetNotificationIds = duplicateNotificationIds.map((elem) => elem.notificationId)
+    await this.copilot.bulkMarkNotificationsAsRead(targetNotificationIds)
+    console.info('ValidateCount :: Removing duplicate notifications', targetNotificationIds.length, targetNotificationIds)
+
+    // Remove those duplicate notifications from db
+    await this.db.clientNotification.deleteMany({
+      where: {
+        id: { in: duplicateNotificationIds.map((elem) => elem.id) },
+      },
+    })
   }
 
   /**
