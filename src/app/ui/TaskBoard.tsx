@@ -83,7 +83,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
     filterOptions &&
     !filterOptions.type &&
     !filterOptions.keyword &&
-    !filterOptions.assignee &&
+    (!filterOptions.assignee || previewMode) &&
     showUnarchived &&
     !showArchived
 
@@ -109,7 +109,6 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
       </>
     )
   }
-
   return (
     <>
       <TaskDataFetcher token={token ?? ''} />
