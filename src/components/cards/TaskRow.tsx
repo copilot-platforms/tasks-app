@@ -9,9 +9,18 @@ import { UserRole } from '@/app/api/core/types/user'
 
 interface TaskRowProps extends TaskWorkflowStateProps {
   display?: boolean
+  showAddBtn?: boolean
 }
 
-export const TaskRow = ({ workflowStateId, mode, children, columnName, taskCount, display = true }: TaskRowProps) => {
+export const TaskRow = ({
+  workflowStateId,
+  mode,
+  children,
+  columnName,
+  taskCount,
+  display = true,
+  showAddBtn,
+}: TaskRowProps) => {
   return display ? (
     <Box>
       <Box
@@ -33,9 +42,7 @@ export const TaskRow = ({ workflowStateId, mode, children, columnName, taskCount
                 {taskCount}
               </Typography>
             </Stack>
-            {mode === UserRole.IU && (
-              <AddBtn handleClick={() => handleAddBtnClicked(workflowStateId)} sx={{ paddingRight: '3px' }} />
-            )}
+            {showAddBtn && <AddBtn handleClick={() => handleAddBtnClicked(workflowStateId)} sx={{ paddingRight: '3px' }} />}
           </Stack>
         </AppMargin>
       </Box>
