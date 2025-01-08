@@ -1,5 +1,6 @@
 'use client'
 
+import { DotSeparator } from '@/app/detail/ui/DotSeparator'
 import { BoldTypography, CommentCardContainer, StyledTypography } from '@/app/detail/ui/styledComponent'
 import { ListBtn } from '@/components/buttons/ListBtn'
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
@@ -82,7 +83,7 @@ export const CommentCard = ({
     >
       <Stack direction="column" rowGap={'2px'}>
         <Stack direction="row" justifyContent={'space-between'} alignItems="center">
-          <Stack direction="row" columnGap={3} alignItems="center">
+          <Stack direction="row" columnGap={1} alignItems="center">
             {assignee.find((el) => el.id === comment.initiator.id) ? (
               <BoldTypography>
                 {comment.initiator.givenName} {comment.initiator.familyName}
@@ -92,9 +93,7 @@ export const CommentCard = ({
                 Deleted User
               </Typography>
             )}
-            <BoldTypography>
-              <span>&#x2022;</span>
-            </BoldTypography>
+            <DotSeparator />
             <StyledTypography sx={{ lineHeight: '22px' }}> {timeAgo}</StyledTypography>
           </Stack>
 
