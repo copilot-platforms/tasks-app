@@ -70,7 +70,7 @@ export class ValidateCountService extends NotificationService {
 
   private async removeDuplicateNotifications(clientId: string) {
     const queryResult = await this.db.$queryRaw`
-        SELECT "taskId", count(*) as "rowCount", max("createdAt") as "latestCreatedAt"
+        SELECT "taskId", count(*) as "rowCount", max("createdAt") AS "latestCreatedAt"
         FROM (
           SELECT "taskId", "clientId", "createdAt"
           FROM "ClientNotifications"
@@ -93,14 +93,14 @@ export class ValidateCountService extends NotificationService {
       select: { id: true, notificationId: true },
     })
     // Remove duplicate notifications from copilot
-    const targetNotificationIds = duplicateNotificationIds.map((elem) => elem.notificationId)
+    const targetNotificationIds = duplicateNotificationIds.map(({ notificationId }) => notificationId)
     await this.copilot.bulkMarkNotificationsAsRead(targetNotificationIds)
     console.info('ValidateCount :: Removing duplicate notifications', targetNotificationIds.length)
 
     // Remove those duplicate notifications from db
     await this.db.clientNotification.deleteMany({
       where: {
-        id: { in: duplicateNotificationIds.map((elem) => elem.id) },
+        id: { in: duplicateNotificationIds.map(({ id }) => id) },
       },
     })
   }
@@ -113,7 +113,7 @@ export class ValidateCountService extends NotificationService {
     // Delete orphan notifications (notifications in db that don't exist in Copilot)
     const orphanNotifications = appNotificationIds.filter((id) => !copilotNotificationIds.includes(id))
     if (orphanNotifications.length) {
-      console.log('ValidateCount :: Found orphanNotifications', orphanNotifications.length)
+      console.info('ValidateCount :: Found orphanNotifications', orphanNotifications.length)
       await this.db.clientNotification.deleteMany({ where: { notificationId: { in: orphanNotifications } } })
     }
   }
