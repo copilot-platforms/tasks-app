@@ -77,6 +77,11 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
   }
 
   const viewBoardSettings = viewSettingsTemp ? viewSettingsTemp.viewMode : view
+  const archivedOptions = {
+    showArchived: viewSettingsTemp ? viewSettingsTemp.showArchived : showArchived,
+    showUnarchived: viewSettingsTemp ? viewSettingsTemp.showUnarchived : showUnarchived,
+  }
+
   const getCardHref = (task: { id: string }) => `/detail/${task.id}/${mode === UserRole.IU ? 'iu' : 'cu'}`
 
   const userHasNoFilter =
@@ -84,13 +89,12 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
     !filterOptions.type &&
     !filterOptions.keyword &&
     !filterOptions.assignee &&
-    showUnarchived &&
-    !showArchived
+    archivedOptions.showUnarchived &&
+    !archivedOptions.showArchived
 
   const isNoTasksWithFilter = tasks && !userHasNoFilter && !filteredTasks.length
 
   const [hasInitialized, setHasInitialized] = useState(false)
-
   useEffect(() => {
     if (!isTasksLoading && !hasInitialized) {
       setHasInitialized(true)
