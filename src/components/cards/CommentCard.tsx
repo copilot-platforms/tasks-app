@@ -19,6 +19,7 @@ import { Avatar, Box, InputAdornment, Modal, Stack, styled, Typography } from '@
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
+import { getAssigneeName } from '@/utils/assignee'
 
 const CustomDivider = styled(Box)(({ theme }) => ({
   height: '1px',
@@ -46,7 +47,7 @@ export const CommentCard = ({
 
   const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState(false)
   const { tokenPayload } = useSelector(selectAuthDetails)
-  const canEdit = tokenPayload?.internalUserId == comment.initiator.id
+  const canEdit = tokenPayload?.internalUserId == comment?.initiator?.id
   const { assigneeSuggestions } = useSelector(selectTaskDetails)
   const { assignee } = useSelector(selectTaskBoard)
 
@@ -71,6 +72,7 @@ export const CommentCard = ({
     const intervalId = setInterval(updateTimeAgo, 60 * 1000)
     return () => clearInterval(intervalId)
   }, [comment.createdAt])
+  const commentUser = assignee.find((el) => el.id === comment?.initiator?.id)
 
   return (
     <CommentCardContainer
@@ -83,10 +85,8 @@ export const CommentCard = ({
       <Stack direction="column" rowGap={'2px'}>
         <Stack direction="row" justifyContent={'space-between'} alignItems="center">
           <Stack direction="row" columnGap={3} alignItems="center">
-            {assignee.find((el) => el.id === comment.initiator.id) ? (
-              <BoldTypography>
-                {comment.initiator.givenName} {comment.initiator.familyName}
-              </BoldTypography>
+            {commentUser ? (
+              <BoldTypography>{getAssigneeName(commentUser, '')}</BoldTypography>
             ) : (
               <Typography variant="md" sx={{ fontStyle: 'italic' }}>
                 Deleted User
