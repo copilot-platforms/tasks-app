@@ -21,6 +21,8 @@ interface IInitialState {
   attachments: CreateAttachmentRequest[]
   dueDate: DateString | null
   errors: IErrors
+  appliedTitle: string | null
+  appliedDescription: string | null
 }
 
 const initialState: IInitialState = {
@@ -37,6 +39,8 @@ const initialState: IInitialState = {
     [CreateTaskErrors.TITLE]: false,
     [CreateTaskErrors.ASSIGNEE]: false,
   },
+  appliedTitle: null,
+  appliedDescription: null,
 }
 
 const createTaskSlice = createSlice({
@@ -81,11 +85,22 @@ const createTaskSlice = createSlice({
         [CreateTaskErrors.TITLE]: false,
         [CreateTaskErrors.ASSIGNEE]: false,
       }
+      state.appliedDescription = null
+      state.appliedTitle = null
     },
 
     setErrors: (state, action: { payload: { key: CreateTaskErrors; value: boolean } }) => {
       const { key, value } = action.payload
       state.errors[key] = value
+    },
+
+    setAppliedTitle: (state, action: { payload: { title: string | null } }) => {
+      const { title } = action.payload
+      state.appliedTitle = title
+    },
+    setAppliedDescription: (state, action: { payload: { description: string | null } }) => {
+      const { description } = action.payload
+      state.appliedDescription = description
     },
   },
 })
@@ -99,6 +114,8 @@ export const {
   clearCreateTaskFields,
   removeOneAttachment,
   setErrors,
+  setAppliedDescription,
+  setAppliedTitle,
 } = createTaskSlice.actions
 
 export default createTaskSlice.reducer
