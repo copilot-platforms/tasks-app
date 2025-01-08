@@ -1,4 +1,4 @@
-import { NoAssigneeAvatar, NoAssigneeAvatarSmall } from '@/icons'
+import { NoAssigneeAvatar, NoAssigneeAvatarSmall, NoAssigneeAvatarLarge } from '@/icons'
 import { copilotTheme } from '@/theme/copilot'
 import { IAssigneeCombined } from '@/types/interfaces'
 import { getAssigneeName } from '@/utils/assignee'
@@ -10,9 +10,9 @@ interface CopilotAvatarProps {
   alt?: string
   width?: string
   height?: string
-  isSmall?: boolean
   fontSize?: string
   sx?: SxProps<any>
+  size?: 'small' | 'large'
 }
 
 export const CopilotAvatar = ({
@@ -20,9 +20,9 @@ export const CopilotAvatar = ({
   alt,
   width = '20px',
   height = '20px',
-  isSmall = false,
   fontSize = '14px',
   sx,
+  size,
 }: CopilotAvatarProps) => {
   const avatarSx: SxProps = {
     ...sx,
@@ -38,7 +38,7 @@ export const CopilotAvatar = ({
   const avatarVariant: 'circular' | 'rounded' | 'square' = currentAssignee?.type === 'companies' ? 'rounded' : 'circular'
 
   if (!currentAssignee || (currentAssignee?.name || currentAssignee?.givenName) === 'No assignee') {
-    return isSmall ? <NoAssigneeAvatarSmall /> : <NoAssigneeAvatar />
+    return size == 'small' ? <NoAssigneeAvatarSmall /> : size == 'large' ? <NoAssigneeAvatarLarge /> : <NoAssigneeAvatar />
   }
   if (currentAssignee?.iconImageUrl || currentAssignee?.avatarImageUrl) {
     return (

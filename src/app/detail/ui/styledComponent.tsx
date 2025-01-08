@@ -58,6 +58,7 @@ export const VerticalLine = styled('div')(({ theme }) => ({
   width: '1px',
   height: 'calc(100% + 20px)',
   backgroundColor: theme.color.gray[150],
+  zIndex: -10,
 }))
 
 export const StyledEmojiIcon = styled(EmojiIcon)(({ theme }) => ({

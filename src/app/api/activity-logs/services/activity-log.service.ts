@@ -69,7 +69,7 @@ export class ActivityLogService extends BaseService {
     const allReplies = await commentService.getReplies(commentIds)
 
     const logResponseData = parsedActivityLogs.map((activityLog) => {
-      const initiator = copilotUsers.find((iu) => iu.id === activityLog.userId)
+      const initiator = copilotUsers.find((iu) => iu.id === activityLog.userId) || null
       return {
         ...activityLog,
         details: this.formatActivityLogDetails(
@@ -83,7 +83,7 @@ export class ActivityLogService extends BaseService {
           companies,
         ),
         createdAt: activityLog.createdAt.toISOString(),
-        initiator: initiator || null,
+        initiator,
       }
     })
 
