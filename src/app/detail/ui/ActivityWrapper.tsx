@@ -34,12 +34,11 @@ export const ActivityWrapper = ({
   task_id: string
   tokenPayload: Token
 }) => {
-  const { tasks } = useSelector(selectTaskBoard)
-  const task = tasks.find((task) => task.id === task_id)
+  const { activeTask } = useSelector(selectTaskBoard)
+  const task = activeTask
   const [lastUpdated, setLastUpdated] = useState(task?.lastActivityLogUpdated)
   const [optimisticUpdates, setOptimisticUpdates] = useState<OptimisticUpdate[]>([])
   const cacheKey = `/api/tasks/${task_id}/activity-logs?token=${token}`
-
   const { data: activities, isLoading } = useSWR(`/api/tasks/${task_id}/activity-logs?token=${token}`, fetcher, {
     refreshInterval: 0,
   })
