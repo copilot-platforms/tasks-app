@@ -83,7 +83,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
     filterOptions &&
     !filterOptions.type &&
     !filterOptions.keyword &&
-    !filterOptions.assignee &&
+    (!filterOptions.assignee || previewMode) &&
     showUnarchived &&
     !showArchived
 
@@ -109,7 +109,6 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
       </>
     )
   }
-
   return (
     <>
       <TaskDataFetcher token={token ?? ''} />
@@ -210,6 +209,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
                   columnName={list.name}
                   taskCount={taskCountForWorkflowStateId(list.id)}
                   display={!!filterTaskWithWorkflowStateId(list.id).length}
+                  showAddBtn={mode === UserRole.IU || !!previewMode}
                 >
                   {sortTaskByDescendingOrder<TaskResponse>(filterTaskWithWorkflowStateId(list.id)).map((task, index) => {
                     return (
