@@ -129,6 +129,7 @@ export const ActivityLog = ({ log }: Prop) => {
           sx={{
             border: (theme) => `1.1px solid ${theme.color.gray[200]}`,
           }}
+          size="large"
         />
         <TypographyContainer direction="row" columnGap={1}>
           {activityUser ? (
