@@ -1,20 +1,8 @@
 export const fetchCache = 'force-no-store'
 
-import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
-import { TaskEditor } from '@/app/detail/ui/TaskEditor'
-import { Box, Stack, Typography } from '@mui/material'
-import { Sidebar, SidebarSkeleton } from '@/app/detail/ui/Sidebar'
-import { UserType } from '@/types/interfaces'
-import { apiUrl } from '@/config'
-import { TaskResponse } from '@/types/dto/tasks.dto'
-import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
-import {
-  StyledBox,
-  StyledKeyboardIcon,
-  StyledTiptapDescriptionWrapper,
-  StyledTypography,
-  TaskDetailsContainer,
-} from '@/app/detail/ui/styledComponent'
+import { AssigneeFetcher } from '@/app/_fetchers/AssigneeFetcher'
+import { WorkflowStateFetcher } from '@/app/_fetchers/WorkflowStateFetcher'
+import { UserRole } from '@/app/api/core/types/user'
 import {
   clientUpdateTask,
   deleteAttachment,
@@ -22,30 +10,36 @@ import {
   postAttachment,
   updateAssignee,
   updateTaskDetail,
+  updateWorkflowStateIdOfTask,
 } from '@/app/detail/[task_id]/[user_type]/actions'
-import { updateWorkflowStateIdOfTask } from '@/app/detail/[task_id]/[user_type]/actions'
+import { DetailStateUpdate } from '@/app/detail/[task_id]/[user_type]/DetailStateUpdate'
+import { ActivityWrapper } from '@/app/detail/ui/ActivityWrapper'
+import { ArchiveWrapper } from '@/app/detail/ui/ArchiveWrapper'
+import { DetailAppBridge } from '@/app/detail/ui/DetailAppBridge'
+import { LastArchivedField } from '@/app/detail/ui/LastArchiveField'
 import { MenuBoxContainer } from '@/app/detail/ui/MenuBoxContainer'
+import { Sidebar, SidebarSkeleton } from '@/app/detail/ui/Sidebar'
+import { StyledBox, StyledTiptapDescriptionWrapper, TaskDetailsContainer } from '@/app/detail/ui/styledComponent'
+import { TaskEditor } from '@/app/detail/ui/TaskEditor'
 import { ToggleButtonContainer } from '@/app/detail/ui/ToggleButtonContainer'
 import { ToggleController } from '@/app/detail/ui/ToggleController'
+import { getWorkspace } from '@/app/page'
+import { DeletedTaskRedirectPage } from '@/components/layouts/DeletedTaskRedirectPage'
+import { HeaderBreadcrumbs } from '@/components/layouts/HeaderBreadcrumbs'
+import { SilentError } from '@/components/templates/SilentError'
+import { apiUrl } from '@/config'
+import { signedUrlTtl } from '@/constants/attachments'
+import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
+import { CustomScrollbar } from '@/hoc/CustomScrollbar'
+import { RealTime } from '@/hoc/RealTime'
+import { TaskResponse } from '@/types/dto/tasks.dto'
+import { UserType } from '@/types/interfaces'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import EscapeHandler from '@/utils/escapeHandler'
-import { RealTime } from '@/hoc/RealTime'
-import { CustomScrollbar } from '@/hoc/CustomScrollbar'
-import { Suspense } from 'react'
-import { WorkflowStateFetcher } from '@/app/_fetchers/WorkflowStateFetcher'
-import { AssigneeFetcher } from '@/app/_fetchers/AssigneeFetcher'
-import { CustomLink } from '@/hoc/CustomLink'
-import { DetailStateUpdate } from '@/app/detail/[task_id]/[user_type]/DetailStateUpdate'
-import { SilentError } from '@/components/templates/SilentError'
-import { z } from 'zod'
-import { ActivityWrapper } from '@/app/detail/ui/ActivityWrapper'
-import { DeletedTaskRedirectPage } from '@/components/layouts/DeletedTaskRedirectPage'
-import { UserRole } from '@/app/api/core/types/user'
-import { ArchiveWrapper } from '@/app/detail/ui/ArchiveWrapper'
-import { LastArchivedField } from '@/app/detail/ui/LastArchiveField'
-import { signedUrlTtl } from '@/constants/attachments'
-import { HeaderBreadcrumbs } from '@/components/layouts/HeaderBreadcrumbs'
 import { getPreviewMode } from '@/utils/previewMode'
+import { Box, Stack } from '@mui/material'
+import { Suspense } from 'react'
+import { z } from 'zod'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
@@ -80,7 +74,11 @@ export default async function TaskDetailPage({
 
   const copilotClient = new CopilotAPI(token)
 
-  const [task, tokenPayload] = await Promise.all([getOneTask(token, task_id), copilotClient.getTokenPayload()])
+  const [task, tokenPayload, workspace] = await Promise.all([
+    getOneTask(token, task_id),
+    copilotClient.getTokenPayload(),
+    getWorkspace(token),
+  ])
 
   if (!tokenPayload) {
     throw new Error('Please provide a Valid Token')
@@ -95,6 +93,7 @@ export default async function TaskDetailPage({
 
   return (
     <DetailStateUpdate isRedirect={!!searchParams.isRedirect} token={token} tokenPayload={tokenPayload} task={task}>
+      <DetailAppBridge role={UserRole.IU} portalUrl={workspace.portalUrl} />
       <RealTime tokenPayload={tokenPayload}>
         <EscapeHandler />
         <Stack direction="row" sx={{ height: '100vh' }}>
