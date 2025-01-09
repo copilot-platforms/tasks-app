@@ -1771,6 +1771,90 @@
   resolved "https://registry.yarnpkg.com/@next/swc-win32-x64-msvc/-/swc-win32-x64-msvc-14.2.6.tgz#6b63a7b4ff3b7b410a038e3ee839c951a3136dc9"
   integrity sha512-NANtw+ead1rSDK1jxmzq3TYkl03UNK2KHqUYf1nIhNci6NkeqBD4s1njSzYGIlSHxCK+wSaL8RXZm4v+NF/pMw==
 
+"@ngrok/ngrok-android-arm-eabi@1.4.1":
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/@ngrok/ngrok-android-arm-eabi/-/ngrok-android-arm-eabi-1.4.1.tgz#5a5ab818e1fe8ccfe25b6e0f6c7d41b810c89da5"
+  integrity sha512-KQe59T8PhFg5XvWypcOCIgUakk/A9ipD1UvSgGuLI7pYIiVcx6oyW12RxCJr6cfdO0K5GrbUG6dlEXSmDD4jBg==
+
+"@ngrok/ngrok-android-arm64@1.4.1":
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/@ngrok/ngrok-android-arm64/-/ngrok-android-arm64-1.4.1.tgz#16fb6ef2b9a63bc8ef92f2d18eee5dc89a082be9"
+  integrity sha512-WPYJenabIArkGmeVhBcIVtgXmLK297pfJCYHP1Tnw220ANEXFdo7EW4dZoP0AA0gxciFHGYnQUMOn1Meo0IQFQ==
+
+"@ngrok/ngrok-darwin-arm64@1.4.1":
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/@ngrok/ngrok-darwin-arm64/-/ngrok-darwin-arm64-1.4.1.tgz#464309b710e3465c2f5e6dafcad958c2529297e9"
+  integrity sha512-hJW+ZDJ0uV7PieZAdZHdzR/WBRctjOkLzFqHTxSuNbmBr9uIg6PGf1dB2lySszK1wyKZL7wvh4GedQ4vSU5lkw==
+
+"@ngrok/ngrok-darwin-universal@1.4.1":
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/@ngrok/ngrok-darwin-universal/-/ngrok-darwin-universal-1.4.1.tgz#81efe1d0a5fdbdbbbcc005ba94b9f366f38d8e36"
+  integrity sha512-rUZKl/vr2cALpT1Ng91h8Jf5OfDtF+zNEC65AFWthPkHJpPQCLvuEC9hyF8XI52Bv45ORRb1YKR3hdhjZ4WGHQ==
+
+"@ngrok/ngrok-darwin-x64@1.4.1":
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/@ngrok/ngrok-darwin-x64/-/ngrok-darwin-x64-1.4.1.tgz#d3eebbbcc4c690d8349f63570c1ae2d99db777a5"
+  integrity sha512-UKIkRpsGBywAqvwz8L6R8ITz+xxPoZ58LSFhZoMAWm2alGOdA2js1eHZwwVTSz96/tmmSRE/H+r69TvtuL0lXA==
+
+"@ngrok/ngrok-freebsd-x64@1.4.1":
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/@ngrok/ngrok-freebsd-x64/-/ngrok-freebsd-x64-1.4.1.tgz#33413ee3161304592b58795aa045048040c7917c"
+  integrity sha512-v1xXqmu3f4W1PQt+NKlqXgLcpULYCSwStKGRSdgXljg1bRdOnW3ZdjbGzrIdKwQ7OcwZP34KbP13G+hqcTxo5Q==
+
+"@ngrok/ngrok-linux-arm-gnueabihf@1.4.1":
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/@ngrok/ngrok-linux-arm-gnueabihf/-/ngrok-linux-arm-gnueabihf-1.4.1.tgz#dc40f3c6fbe1d74031276a521e9fd8973f7fc775"
+  integrity sha512-yEeiVAGQNUErkSpOI1EZI+X3AkHCGd8yzqfjHamnhEONkwxLcWuTiUfcwFeMVtE9jyLfvQxctldPXXAjvaI/QA==
+
+"@ngrok/ngrok-linux-arm64-gnu@1.4.1":
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/@ngrok/ngrok-linux-arm64-gnu/-/ngrok-linux-arm64-gnu-1.4.1.tgz#8763e281febce49d4622a86d760b70bd0be6681b"
+  integrity sha512-Fb2uju769eO/yOrWdbMvCXNczbXHnqNmN5TCYvqQbPdscFgrsNaJcVr2SmWOfBq+OcLWYbx6mXE1ki5yOZKU9w==
+
+"@ngrok/ngrok-linux-arm64-musl@1.4.1":
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/@ngrok/ngrok-linux-arm64-musl/-/ngrok-linux-arm64-musl-1.4.1.tgz#68ca49fcb07a468dde15337eefd5b007f3fe086f"
+  integrity sha512-nMTTZkUnwCzeIVDkoUdNqBKe6ArYXRWGjC4iXinfPOdENkb/tZ/eAjVdg+8bQ5PJgl/n/TbdZKNj//Jz2x8fdw==
+
+"@ngrok/ngrok-linux-x64-gnu@1.4.1":
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/@ngrok/ngrok-linux-x64-gnu/-/ngrok-linux-x64-gnu-1.4.1.tgz#f2bed3d9b066e63c776c0e62c141fda283f6dc1e"
+  integrity sha512-IfDaYd9ZGk7F0szHql5Tr3rlLBlhuKbbNXDVkujGy/njA4/YnckfsZilGEtgnR7aYgHo3NqppfEw+AOmlDytCw==
+
+"@ngrok/ngrok-linux-x64-musl@1.4.1":
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/@ngrok/ngrok-linux-x64-musl/-/ngrok-linux-x64-musl-1.4.1.tgz#59729bfa9ea58a684bf15c38958029e9f967676b"
+  integrity sha512-Ze6wb2umg6hfJhxOrFQhiyIZOf9YjSRkefnaQdAaONrIKxiFsu5SIKQbp7MQRnm8wabB9i0OI0Q/TVBsxo/HLw==
+
+"@ngrok/ngrok-win32-ia32-msvc@1.4.1":
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/@ngrok/ngrok-win32-ia32-msvc/-/ngrok-win32-ia32-msvc-1.4.1.tgz#0fab1cf1a36ad6ed6c552eadc9f673348448e4e3"
+  integrity sha512-FV3dwGpbh1h2fJ7h+Od8vFRrR9RxqBUAI+ELxQxropDxwYp6rWGKFnfE+JUcT79fEH3OpA0ElULrIDrLgK7bgg==
+
+"@ngrok/ngrok-win32-x64-msvc@1.4.1":
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/@ngrok/ngrok-win32-x64-msvc/-/ngrok-win32-x64-msvc-1.4.1.tgz#add9186b672712f33e14123291a482343d162013"
+  integrity sha512-Zr1Dyel4M3cA1kjT/N5ftTiCdoPnVv/VbyE6AKKemP9DDFkTlpdvMwSXikm/ypNtCNFEs/+q8CBZPhhaKktl8A==
+
+"@ngrok/ngrok@^1.4.1":
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/@ngrok/ngrok/-/ngrok-1.4.1.tgz#92e5026d4b0d27eb3321ae2fbfeb4f0cb536781a"
+  integrity sha512-KZ7/T4UOY3BqJBdweJPeebKW34YzIH+a2y4o7yqTIowoi6dw3sMj140o1Q8FvpPbH5J6lr2TWVCWdgSTYvHNgw==
+  optionalDependencies:
+    "@ngrok/ngrok-android-arm-eabi" "1.4.1"
+    "@ngrok/ngrok-android-arm64" "1.4.1"
+    "@ngrok/ngrok-darwin-arm64" "1.4.1"
+    "@ngrok/ngrok-darwin-universal" "1.4.1"
+    "@ngrok/ngrok-darwin-x64" "1.4.1"
+    "@ngrok/ngrok-freebsd-x64" "1.4.1"
+    "@ngrok/ngrok-linux-arm-gnueabihf" "1.4.1"
+    "@ngrok/ngrok-linux-arm64-gnu" "1.4.1"
+    "@ngrok/ngrok-linux-arm64-musl" "1.4.1"
+    "@ngrok/ngrok-linux-x64-gnu" "1.4.1"
+    "@ngrok/ngrok-linux-x64-musl" "1.4.1"
+    "@ngrok/ngrok-win32-ia32-msvc" "1.4.1"
+    "@ngrok/ngrok-win32-x64-msvc" "1.4.1"
+
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"
   resolved "https://registry.yarnpkg.com/@nodelib/fs.scandir/-/fs.scandir-2.1.5.tgz#7619c2eb21b25483f6d167548b4cfd5a7488c3d5"
@@ -3403,6 +3487,13 @@ bufferutil@4.0.8:
   dependencies:
     node-gyp-build "^4.3.0"
 
+bundle-name@^4.1.0:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/bundle-name/-/bundle-name-4.1.0.tgz#f3b96b34160d6431a19d7688135af7cfb8797889"
+  integrity sha512-tjwM5exMg6BGRI+kNmTntNsvdZS1X8BFYS6tnJ2hdH0kVxM6/eVZ2xy+FqStSWvYmtfFMDLIxurorHwDKfDz5Q==
+  dependencies:
+    run-applescript "^7.0.0"
+
 busboy@1.6.0:
   version "1.6.0"
   resolved "https://registry.yarnpkg.com/busboy/-/busboy-1.6.0.tgz#966ea36a9502e43cdb9146962523b92f531f6893"
@@ -3809,6 +3900,19 @@ deepmerge@^4.2.2, deepmerge@^4.3.1:
   resolved "https://registry.yarnpkg.com/deepmerge/-/deepmerge-4.3.1.tgz#44b5f2147cd3b00d4b56137685966f26fd25dd4a"
   integrity sha512-3sUqbMEc77XqpdNO7FRyRog+eW3ph+GYCbj+rK+uYyRMuwsVy0rMiVtPn+QJlKFvWP/1PYpapqYn0Me2knFn+A==
 
+default-browser-id@^5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/default-browser-id/-/default-browser-id-5.0.0.tgz#a1d98bf960c15082d8a3fa69e83150ccccc3af26"
+  integrity sha512-A6p/pu/6fyBcA1TRz/GqWYPViplrftcW2gZC9q79ngNCKAeR/X3gcEdXQHl4KNXV+3wgIJ1CPkJQ3IHM6lcsyA==
+
+default-browser@^5.2.1:
+  version "5.2.1"
+  resolved "https://registry.yarnpkg.com/default-browser/-/default-browser-5.2.1.tgz#7b7ba61204ff3e425b556869ae6d3e9d9f1712cf"
+  integrity sha512-WY/3TUME0x3KPYdRRxEJJvXRHV4PyPoUsxtZa78lwItwRQRHhd2U9xOscaT/YTf8uCXIAjeJOFBVEh/7FtD8Xg==
+  dependencies:
+    bundle-name "^4.1.0"
+    default-browser-id "^5.0.0"
+
 define-data-property@^1.0.1, define-data-property@^1.1.4:
   version "1.1.4"
   resolved "https://registry.yarnpkg.com/define-data-property/-/define-data-property-1.1.4.tgz#894dc141bb7d3060ae4366f6a0107e68fbe48c5e"
@@ -3817,6 +3921,11 @@ define-data-property@^1.0.1, define-data-property@^1.1.4:
     es-define-property "^1.0.0"
     es-errors "^1.3.0"
     gopd "^1.0.1"
+
+define-lazy-prop@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/define-lazy-prop/-/define-lazy-prop-3.0.0.tgz#dbb19adfb746d7fc6d734a06b72f4a00d021255f"
+  integrity sha512-N+MeXYoqr3pOgn8xfyRPREN7gHakLYjhsHhWGT3fWAiL4IkAt0iDw14QiiEm2bE30c5XX5q0FtAA3CK5f9/BUg==
 
 define-properties@^1.1.3, define-properties@^1.2.0, define-properties@^1.2.1:
   version "1.2.1"
@@ -4991,6 +5100,11 @@ is-date-object@^1.0.1, is-date-object@^1.0.5:
   dependencies:
     has-tostringtag "^1.0.0"
 
+is-docker@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/is-docker/-/is-docker-3.0.0.tgz#90093aa3106277d8a77a5910dbae71747e15a200"
+  integrity sha512-eljcgEDlEns/7AXFosB5K/2nCM4P7FQPkGc/DWLy5rmFEWvZayGrik1d9/QIY5nJ4f9YsVvBkA6kJpHn9rISdQ==
+
 is-extglob@^2.1.1:
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/is-extglob/-/is-extglob-2.1.1.tgz#a88c02535791f02ed37c76a1b9ea9773c833f8c2"
@@ -5026,6 +5140,13 @@ is-glob@^4.0.0, is-glob@^4.0.1, is-glob@^4.0.3, is-glob@~4.0.1:
   integrity sha512-xelSayHH36ZgE7ZWhli7pW34hNbNl8Ojv5KVmkJD4hBdD3th8Tfk9vYasLM+mXWOZhFkgZfxhLSnrwRr4elSSg==
   dependencies:
     is-extglob "^2.1.1"
+
+is-inside-container@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/is-inside-container/-/is-inside-container-1.0.0.tgz#e81fba699662eb31dbdaf26766a61d4814717ea4"
+  integrity sha512-KIYLCCJghfHZxqjYBE7rEy0OBuTd5xCHS7tHVgvCLkx7StIoaxwNW3hCALgEUjFfeRk+MG/Qxmp/vtETEF3tRA==
+  dependencies:
+    is-docker "^3.0.0"
 
 is-map@^2.0.3:
   version "2.0.3"
@@ -5141,6 +5262,13 @@ is-weakset@^2.0.3:
   dependencies:
     call-bind "^1.0.7"
     get-intrinsic "^1.2.4"
+
+is-wsl@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/is-wsl/-/is-wsl-3.1.0.tgz#e1c657e39c10090afcbedec61720f6b924c3cbd2"
+  integrity sha512-UcVfVfaK4Sc4m7X3dUSoHoozQGBEFeDC+zVo06t98xe8CzHSZZBekNXH+tu0NalHolcJ/QAGqS46Hef7QXBIMw==
+  dependencies:
+    is-inside-container "^1.0.0"
 
 isarray@^2.0.5:
   version "2.0.5"
@@ -6172,6 +6300,16 @@ onetime@^5.1.2:
   dependencies:
     mimic-fn "^2.1.0"
 
+open@^10.1.0:
+  version "10.1.0"
+  resolved "https://registry.yarnpkg.com/open/-/open-10.1.0.tgz#a7795e6e5d519abe4286d9937bb24b51122598e1"
+  integrity sha512-mnkeQ1qP5Ue2wd+aivTD3NHd/lZ96Lu0jgf0pwktLPtx6cTZiH7tyeGRRHs0zX0rbrahXPnXlUnbeXyaBBuIaw==
+  dependencies:
+    default-browser "^5.2.1"
+    define-lazy-prop "^3.0.0"
+    is-inside-container "^1.0.0"
+    is-wsl "^3.1.0"
+
 optionator@^0.9.3:
   version "0.9.4"
   resolved "https://registry.yarnpkg.com/optionator/-/optionator-0.9.4.tgz#7ea1c1a5d91d764fb282139c88fe11e182a3a734"
@@ -6851,6 +6989,11 @@ rrweb-cssom@^0.7.1:
   version "0.7.1"
   resolved "https://registry.yarnpkg.com/rrweb-cssom/-/rrweb-cssom-0.7.1.tgz#c73451a484b86dd7cfb1e0b2898df4b703183e4b"
   integrity sha512-TrEMa7JGdVm0UThDJSx7ddw5nVm3UJS9o9CCIZ72B1vSyEZoziDqBYP3XIoi/12lKrJR8rE3jeFHMok2F/Mnsg==
+
+run-applescript@^7.0.0:
+  version "7.0.0"
+  resolved "https://registry.yarnpkg.com/run-applescript/-/run-applescript-7.0.0.tgz#e5a553c2bffd620e169d276c1cd8f1b64778fbeb"
+  integrity sha512-9by4Ij99JUr/MCFBUkDKLWK3G9HVXmabKz9U5MlIAIuvuzkiOicRYs8XJLxX+xahD+mLiiCYDqF9dKAgtzKP1A==
 
 run-parallel@^1.1.9:
   version "1.2.0"
