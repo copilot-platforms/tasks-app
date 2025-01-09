@@ -12,6 +12,7 @@ import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 import { CreateComment } from '@/types/dto/comment.dto'
+import { getAssigneeName } from '@/utils/assignee'
 import { getMentionsList } from '@/utils/getMentionList'
 import { getTimeDifference } from '@/utils/getTimeDifference'
 import { commentAddedResponseSchema } from '@api/activity-logs/schemas/CommentAddedSchema'
@@ -20,7 +21,6 @@ import { Avatar, Box, InputAdornment, Modal, Stack, styled, Typography } from '@
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
-import { getAssigneeName } from '@/utils/assignee'
 
 const CustomDivider = styled(Box)(({ theme }) => ({
   height: '1px',
@@ -85,7 +85,7 @@ export const CommentCard = ({
     >
       <Stack direction="column" rowGap={'2px'}>
         <Stack direction="row" justifyContent={'space-between'} alignItems="center">
-          <Stack direction="row" columnGap={3} alignItems="center">
+          <Stack direction="row" columnGap={1} alignItems="center">
             {commentUser ? (
               <BoldTypography>{getAssigneeName(commentUser, '')}</BoldTypography>
             ) : (
