@@ -3,9 +3,9 @@ import { Box } from '@mui/material'
 
 export const DotSeparator = () => {
   return (
-    <StyledTypography className="dot-separator">
+    <StyledTypography color={({ color }) => color.gray[300]}>
       {' '}
-      <Box color={(theme) => theme.color.gray[300]}>&#x2022;</Box>{' '}
+      <span>&#x2022;</span>{' '}
     </StyledTypography>
   )
 }
