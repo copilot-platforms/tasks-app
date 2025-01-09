@@ -1,4 +1,5 @@
 import { BreadcrumbsPayload, Clickable, Configurable } from '@/hooks/app-bridge/types'
+import { ensureHttps } from '@/utils/https'
 import { useEffect, useMemo } from 'react'
 
 const getBreadcrumbId = (idx: number) => `header.breadcrumbs.${idx}`
