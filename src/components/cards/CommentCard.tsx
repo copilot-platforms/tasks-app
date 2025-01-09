@@ -1,5 +1,6 @@
 'use client'
 
+import { DotSeparator } from '@/app/detail/ui/DotSeparator'
 import { BoldTypography, CommentCardContainer, StyledTypography } from '@/app/detail/ui/styledComponent'
 import { ListBtn } from '@/components/buttons/ListBtn'
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
@@ -11,6 +12,7 @@ import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 import { CreateComment } from '@/types/dto/comment.dto'
+import { getAssigneeName } from '@/utils/assignee'
 import { getMentionsList } from '@/utils/getMentionList'
 import { getTimeDifference } from '@/utils/getTimeDifference'
 import { commentAddedResponseSchema } from '@api/activity-logs/schemas/CommentAddedSchema'
@@ -46,7 +48,7 @@ export const CommentCard = ({
 
   const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState(false)
   const { tokenPayload } = useSelector(selectAuthDetails)
-  const canEdit = tokenPayload?.internalUserId == comment.initiator.id
+  const canEdit = tokenPayload?.internalUserId == comment?.initiator?.id
   const { assigneeSuggestions } = useSelector(selectTaskDetails)
   const { assignee } = useSelector(selectTaskBoard)
 
@@ -71,6 +73,7 @@ export const CommentCard = ({
     const intervalId = setInterval(updateTimeAgo, 60 * 1000)
     return () => clearInterval(intervalId)
   }, [comment.createdAt])
+  const commentUser = assignee.find((el) => el.id === comment?.initiator?.id)
 
   return (
     <CommentCardContainer
@@ -82,19 +85,15 @@ export const CommentCard = ({
     >
       <Stack direction="column" rowGap={'2px'}>
         <Stack direction="row" justifyContent={'space-between'} alignItems="center">
-          <Stack direction="row" columnGap={3} alignItems="center">
-            {assignee.find((el) => el.id === comment.initiator.id) ? (
-              <BoldTypography>
-                {comment.initiator.givenName} {comment.initiator.familyName}
-              </BoldTypography>
+          <Stack direction="row" columnGap={1} alignItems="center">
+            {commentUser ? (
+              <BoldTypography>{getAssigneeName(commentUser, '')}</BoldTypography>
             ) : (
               <Typography variant="md" sx={{ fontStyle: 'italic' }}>
                 Deleted User
               </Typography>
             )}
-            <BoldTypography>
-              <span>&#x2022;</span>
-            </BoldTypography>
+            <DotSeparator />
             <StyledTypography sx={{ lineHeight: '22px' }}> {timeAgo}</StyledTypography>
           </Stack>
 

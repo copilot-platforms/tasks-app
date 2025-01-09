@@ -49,7 +49,7 @@ export const TemplateForm = ({ handleCreate }: { handleCreate: () => void }) => 
           justifyContent="space-between"
           sx={{
             border: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
-            padding: '14px 28px',
+            padding: '14px 20px',
           }}
         >
           {targetMethod === TargetMethod.POST ? (
