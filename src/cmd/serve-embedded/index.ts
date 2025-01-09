@@ -29,7 +29,7 @@ app.prepare().then(async () => {
     addr: port,
   })
 
-  console.log(`> Tunnel opened at ${listener.url()}`)
+  console.info(`> Tunnel opened at ${listener.url()}`)
   const ngrokUrl = listener.url()
 
   if (!ngrokUrl) {
@@ -39,7 +39,7 @@ app.prepare().then(async () => {
   const { default: open, apps } = await import('open')
   const url = `https://dashboard.copilot.com/dev-mode?url=${encodeURIComponent(ngrokUrl)}`
 
-  console.log(`> Opening browser at ${url}`)
+  console.info(`> Opening browser at ${url}`)
 
   open(url, {
     app: Array.isArray(apps.browser) ? apps.browser[0] : apps.browser,
@@ -49,8 +49,8 @@ app.prepare().then(async () => {
 process.stdin.resume()
 
 process.on('SIGINT', async () => {
-  console.log('> Closing ngrok tunnel...')
+  console.info('> Closing ngrok tunnel...')
   await ngrok.kill()
-  console.log('> Ngrok tunnel closed.')
+  console.info('> Ngrok tunnel closed.')
   process.exit()
 })
