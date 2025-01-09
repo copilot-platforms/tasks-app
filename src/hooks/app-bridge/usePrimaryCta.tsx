@@ -1,4 +1,5 @@
 import { Clickable, Configurable, PrimaryCtaPayload } from '@/hooks/app-bridge/types'
+import { ensureHttps } from '@/utils/https'
 import { useEffect } from 'react'
 
 export const usePrimaryCta = (primaryCta: Clickable | null, config?: Configurable) => {

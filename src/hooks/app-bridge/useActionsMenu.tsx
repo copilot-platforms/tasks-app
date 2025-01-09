@@ -1,4 +1,5 @@
 import { ActionsMenuPayload, Clickable, Configurable } from '@/hooks/app-bridge/types'
+import { ensureHttps } from '@/utils/https'
 import { useEffect, useMemo } from 'react'
 
 const getActionMenuItemId = (idx: number) => `header.actionsMenu.${idx}`
