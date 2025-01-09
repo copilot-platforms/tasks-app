@@ -1,5 +1,10 @@
 // Icons defined for app bridge
-export type Icons = 'Archive' | 'Plus' | 'Templates' | 'Trash'
+export enum Icons {
+  ARCHIVE = 'Archive',
+  PLUS = 'Plus',
+  TEMPLATES = 'Templates',
+  TRASH = 'Trash',
+}
 
 export interface BreadcrumbsPayload {
   items: {
