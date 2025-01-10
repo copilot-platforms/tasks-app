@@ -15,7 +15,6 @@ import {
 import { DetailStateUpdate } from '@/app/detail/[task_id]/[user_type]/DetailStateUpdate'
 import { ActivityWrapper } from '@/app/detail/ui/ActivityWrapper'
 import { ArchiveWrapper } from '@/app/detail/ui/ArchiveWrapper'
-import { DetailAppBridge } from '@/app/detail/ui/DetailAppBridge'
 import { LastArchivedField } from '@/app/detail/ui/LastArchiveField'
 import { MenuBoxContainer } from '@/app/detail/ui/MenuBoxContainer'
 import { Sidebar, SidebarSkeleton } from '@/app/detail/ui/Sidebar'
@@ -93,7 +92,6 @@ export default async function TaskDetailPage({
 
   return (
     <DetailStateUpdate isRedirect={!!searchParams.isRedirect} token={token} tokenPayload={tokenPayload} task={task}>
-      <DetailAppBridge role={UserRole.IU} portalUrl={workspace.portalUrl} />
       <RealTime tokenPayload={tokenPayload}>
         <EscapeHandler />
         <Stack direction="row" sx={{ height: '100vh' }}>
