@@ -21,10 +21,6 @@ export const MenuBoxContainer = ({ role, isPreviewMode }: MenuBoxContainerProps)
 
   const handleDelete = () => store.dispatch(setShowConfirmDeleteModal())
 
-  if (!isPreviewMode) {
-    return <DetailAppBridge handleDelete={handleDelete} />
-  }
-
   return (
     <MenuBox
       menuContent={<ListBtn content="Delete" handleClick={handleDelete} icon={<TrashIcon />} contentColor="#CC0000" />}
