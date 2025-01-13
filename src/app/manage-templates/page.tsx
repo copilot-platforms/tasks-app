@@ -53,7 +53,7 @@ async function getTokenPayload(token: string): Promise<Token> {
   return payload
 }
 
-export async function getWorkspace(token: string): Promise<WorkspaceResponse> {
+async function getWorkspace(token: string): Promise<WorkspaceResponse> {
   const copilot = new CopilotAPI(token)
   return await copilot.getWorkspace()
 }
