@@ -4,16 +4,19 @@ import { UserRole } from '@/app/api/core/types/user'
 import { ListBtn } from '@/components/buttons/ListBtn'
 import { MenuBox } from '@/components/inputs/MenuBox'
 import { TrashIcon } from '@/icons'
+import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { setShowConfirmDeleteModal } from '@/redux/features/taskDetailsSlice'
 import store from '@/redux/store'
+import { useSelector } from 'react-redux'
 
 interface MenuBoxContainerProps {
   role: UserRole
-  isPreviewMode: boolean
 }
 
-export const MenuBoxContainer = ({ role, isPreviewMode }: MenuBoxContainerProps) => {
-  if ((role === UserRole.IU && !isPreviewMode) || role === UserRole.Client) {
+export const MenuBoxContainer = ({ role }: MenuBoxContainerProps) => {
+  const { previewMode } = useSelector(selectTaskBoard)
+
+  if ((role === UserRole.IU && !previewMode) || role === UserRole.Client) {
     return null
   }
 
