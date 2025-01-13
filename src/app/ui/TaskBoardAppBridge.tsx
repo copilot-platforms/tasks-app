@@ -10,7 +10,6 @@ import store from '@/redux/store'
 import { UserRole } from '@api/core/types/user'
 import { useRouter } from 'next/navigation'
 import { useCallback, useState } from 'react'
-import { useDispatch } from 'react-redux'
 
 interface TaskBoardAppBridgeProps {
   token: string
@@ -21,11 +20,16 @@ interface TaskBoardAppBridgeProps {
 export const TaskBoardAppBridge = ({ token, role, portalUrl }: TaskBoardAppBridgeProps) => {
   const router = useRouter()
 
-  const dispatch = useDispatch()
+  const [awake, setAwake] = useState(false)
+  setTimeout(() => {
+    setAwake(true)
+  }, 0)
 
   const handleTaskCreate = useCallback(() => {
-    dispatch(setShowModal())
-  }, [dispatch])
+    store.dispatch(setShowModal())
+    // "awaken" callback using one more render to avoid hydration issues
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [awake])
 
   const handleManageTemplatesClick = () => {
     router.push(`/manage-templates?token=${token}`)
