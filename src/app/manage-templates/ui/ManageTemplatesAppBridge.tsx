@@ -4,8 +4,9 @@ import { Icons } from '@/hooks/app-bridge/types'
 import { useActionsMenu } from '@/hooks/app-bridge/useActionsMenu'
 import { useBreadcrumbs } from '@/hooks/app-bridge/useBreadcrumbs'
 import { usePrimaryCta } from '@/hooks/app-bridge/usePrimaryCta'
-import { setShowModal } from '@/redux/features/createTaskSlice'
+import { setShowTemplateModal } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
+import { TargetMethod } from '@/types/interfaces'
 import { UserRole } from '@api/core/types/user'
 import { useRouter } from 'next/navigation'
 
@@ -15,36 +16,33 @@ interface TaskBoardAppBridgeProps {
   portalUrl?: string
 }
 
-export const TaskBoardAppBridge = ({ token, role, portalUrl }: TaskBoardAppBridgeProps) => {
+export const ManageTemplatesAppBridge = ({ token, role, portalUrl }: TaskBoardAppBridgeProps) => {
   const router = useRouter()
-
-  const handleTaskCreate = () => {
-    store.dispatch(setShowModal())
+  const handleTemplateCreate = () => {
+    store.dispatch(setShowTemplateModal({ targetMethod: TargetMethod.POST }))
   }
-  const handleManageTemplatesClick = () => {
-    router.push(`/manage-templates?token=${token}`)
+
+  const handleBreadcrumbsClick = () => {
+    router.push(`/?token=${token}`)
   }
 
   usePrimaryCta(
     {
-      label: 'Create task',
+      label: 'Create template',
       icon: Icons.PLUS,
-      onClick: handleTaskCreate,
+      onClick: handleTemplateCreate,
     },
     { portalUrl },
   )
-
-  useActionsMenu(
+  useActionsMenu([], { portalUrl })
+  useBreadcrumbs(
     [
       {
         label: 'Manage templates',
-        icon: Icons.ARCHIVE,
-        onClick: handleManageTemplatesClick,
+        onClick: handleBreadcrumbsClick,
       },
     ],
     { portalUrl },
   )
-  useBreadcrumbs([], { portalUrl })
-
   return <></>
 }
