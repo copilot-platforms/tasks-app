@@ -20,9 +20,14 @@ interface TaskBoardAppBridgeProps {
 export const TaskBoardAppBridge = ({ token, role, portalUrl }: TaskBoardAppBridgeProps) => {
   const router = useRouter()
 
+  const [awake, setAwake] = useState(false)
+  setTimeout(() => {
+    setAwake(true)
+  }, 0)
+
   const handleTaskCreate = useCallback(() => {
     store.dispatch(setShowModal())
-  }, [token])
+  }, [awake])
 
   const handleManageTemplatesClick = () => {
     router.push(`/manage-templates?token=${token}`)
