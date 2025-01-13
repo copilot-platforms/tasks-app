@@ -17,6 +17,8 @@ import { Box, Modal, Stack, Typography } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { NoTemplateLayout } from './NoTemplateLayout'
 import { TemplateForm } from './TemplateForm'
+import { ManageTemplateHeader } from '@/app/manage-templates/ui/Header'
+import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 
 export const TemplateBoard = ({
   handleCreateTemplate,
@@ -30,14 +32,19 @@ export const TemplateBoard = ({
   const { targetTemplateId, targetMethod, templates, showTemplateModal, workflowStateId, taskName, description } =
     useSelector(selectCreateTemplate)
 
+  const { token, previewMode } = useSelector(selectTaskBoard)
+
   const { showConfirmDeleteModal } = useSelector(selectTaskDetails)
 
   if (templates === undefined) {
     return null
   }
+  const showHeader = token && !!previewMode
 
   return (
     <>
+      {showHeader && <ManageTemplateHeader token={token} />}
+
       {templates.length ? (
         <Box id="templates-box" sx={{ maxWidth: '384px', marginTop: '32px', marginLeft: 'auto', marginRight: 'auto' }}>
           <Box
