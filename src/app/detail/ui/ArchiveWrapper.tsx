@@ -71,5 +71,5 @@ export const ArchiveWrapper = ({ taskId, userType }: { taskId: string; userType:
     return <ArchiveBtn isArchived={isArchived} handleClick={handleToggleArchive} />
   }
 
-  return <DetailAppBridge handleToggleArchive={handleToggleArchive} />
+  return <DetailAppBridge isArchived={isArchived} handleToggleArchive={handleToggleArchive} />
 }
