@@ -10,6 +10,7 @@ import store from '@/redux/store'
 import { UserRole } from '@api/core/types/user'
 import { useRouter } from 'next/navigation'
 import { useCallback, useState } from 'react'
+import { useDispatch } from 'react-redux'
 
 interface TaskBoardAppBridgeProps {
   token: string
@@ -20,14 +21,11 @@ interface TaskBoardAppBridgeProps {
 export const TaskBoardAppBridge = ({ token, role, portalUrl }: TaskBoardAppBridgeProps) => {
   const router = useRouter()
 
-  const [awake, setAwake] = useState(false)
-  setTimeout(() => {
-    setAwake(true)
-  }, 0)
+  const dispatch = useDispatch()
 
   const handleTaskCreate = useCallback(() => {
-    store.dispatch(setShowModal())
-  }, [awake])
+    dispatch(setShowModal())
+  }, [dispatch])
 
   const handleManageTemplatesClick = () => {
     router.push(`/manage-templates?token=${token}`)
