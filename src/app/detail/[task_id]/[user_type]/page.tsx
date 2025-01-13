@@ -96,10 +96,7 @@ export default async function TaskDetailPage({
                 <Stack direction="row" justifyContent="space-between">
                   <HeaderBreadcrumbs token={token} title={task?.label} userType={params.user_type} />
                   <Stack direction="row" alignItems="center" columnGap="8px">
-                    <MenuBoxContainer
-                      isPreviewMode={isPreviewMode}
-                      role={tokenPayload.internalUserId ? UserRole.IU : UserRole.Client}
-                    />
+                    <MenuBoxContainer role={tokenPayload.internalUserId ? UserRole.IU : UserRole.Client} />
                     <Stack direction="row" alignItems="center" columnGap="8px">
                       <ArchiveWrapper taskId={task_id} userType={user_type} />
                       <ToggleButtonContainer />
