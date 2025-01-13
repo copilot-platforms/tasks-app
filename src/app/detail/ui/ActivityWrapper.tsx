@@ -1,6 +1,5 @@
 'use client'
 
-import { LogResponse } from '@/app/api/activity-logs/schemas/LogResponseSchema'
 import { deleteComment, postComment } from '@/app/detail/[task_id]/[user_type]/actions'
 import { ActivityLog } from '@/app/detail/ui/ActivityLog'
 import { Comments } from '@/app/detail/ui/Comments'
@@ -11,12 +10,20 @@ import { ClientResponseSchema, InternalUsersSchema, Token } from '@/types/common
 import { CreateComment } from '@/types/dto/comment.dto'
 import { fetcher } from '@/utils/fetcher'
 import { generateRandomString } from '@/utils/generateRandomString'
-import { Box, Skeleton, Stack, Typography } from '@mui/material'
+import { LogResponse } from '@api/activity-logs/schemas/LogResponseSchema'
+import { Box, Collapse, Skeleton, Stack, Typography } from '@mui/material'
 import { ActivityType } from '@prisma/client'
 import { useEffect, useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
 import useSWR, { useSWRConfig } from 'swr'
 import { z } from 'zod'
+import { TransitionGroup } from 'react-transition-group'
+
+interface OptimisticUpdate {
+  tempId: string
+  serverId?: string
+  timestamp: number
+}
 
 export const ActivityWrapper = ({
   token,
@@ -27,12 +34,11 @@ export const ActivityWrapper = ({
   task_id: string
   tokenPayload: Token
 }) => {
-  const { tasks } = useSelector(selectTaskBoard)
-  const task = tasks.find((task) => task.id === task_id)
+  const { activeTask } = useSelector(selectTaskBoard)
+  const task = activeTask
   const [lastUpdated, setLastUpdated] = useState(task?.lastActivityLogUpdated)
-
+  const [optimisticUpdates, setOptimisticUpdates] = useState<OptimisticUpdate[]>([])
   const cacheKey = `/api/tasks/${task_id}/activity-logs?token=${token}`
-
   const { data: activities, isLoading } = useSWR(`/api/tasks/${task_id}/activity-logs?token=${token}`, fetcher, {
     refreshInterval: 0,
   })
@@ -59,10 +65,31 @@ export const ActivityWrapper = ({
     return z.union([InternalUsersSchema, ClientResponseSchema]).parse(assignee.find((el) => el.id === currentUserId))
   }, [assignee, currentUserId])
 
+  const getStableId = (log: LogResponse) => {
+    if (log.type === ActivityType.COMMENT_ADDED) {
+      const matchingUpdate = optimisticUpdates.find(
+        (update) => update.tempId === log.id || (log.details.id && update.serverId === log.details.id),
+      )
+      if (matchingUpdate) {
+        return matchingUpdate?.tempId
+      }
+    }
+    return log.id
+  }
   // Handle comment creation
   const handleCreateComment = async (postCommentPayload: CreateComment) => {
+    const tempId = generateRandomString('temp-comment')
+
+    setOptimisticUpdates((prev) => [
+      ...prev,
+      {
+        tempId,
+        timestamp: Date.now(),
+      },
+    ])
+
     const tempLog: LogResponse = {
-      id: generateRandomString('temp-comment'),
+      id: tempId,
       type: ActivityType.COMMENT_ADDED,
       details: {
         content: postCommentPayload.content,
@@ -94,7 +121,10 @@ export const ActivityWrapper = ({
         cacheKey,
         async () => {
           // Post the actual comment to the server
-          await postComment(token, postCommentPayload)
+          const comment = await postComment(token, postCommentPayload)
+          setOptimisticUpdates((prev) =>
+            prev.map((update) => (update.tempId === tempId ? { ...update, serverId: comment.id } : update)),
+          )
           // Return the actual updated data (this will trigger revalidation)
           return await fetcher(cacheKey)
         },
@@ -106,6 +136,7 @@ export const ActivityWrapper = ({
       )
     } catch (error) {
       console.error('Failed to post comment:', error)
+      setOptimisticUpdates((prev) => prev.filter((update) => update.tempId !== tempId))
     }
   }
 
@@ -135,7 +166,7 @@ export const ActivityWrapper = ({
 
   return (
     <Box width="100%">
-      <Stack direction="column" alignItems="left" p="12px 0px" rowGap={5}>
+      <Stack direction="column" alignItems="left" p="16px 0px" rowGap={4}>
         <Typography variant="lg">Activity</Typography>
         {isLoading ? (
           <Stack direction="column" rowGap={5}>
@@ -144,29 +175,31 @@ export const ActivityWrapper = ({
             <Skeleton variant="rectangular" width={'100%'} height={15} />
           </Stack>
         ) : (
-          <Stack direction="column" alignItems="left" rowGap={4}>
-            {activities?.data?.map((item: LogResponse, index: number) => (
-              <Box
-                key={index}
-                sx={{
-                  height: 'auto',
-                  display:
-                    item.type === ActivityType.TASK_CREATED || item.type === ActivityType.COMMENT_ADDED ? 'block' : 'none',
-                }}
-              >
-                {item.type === ActivityType.COMMENT_ADDED ? (
-                  <Comments
-                    comment={item}
-                    createComment={handleCreateComment}
-                    deleteComment={(commentId) => handleDeleteComment(commentId, item.id)}
-                    task_id={task_id}
-                  />
-                ) : (
-                  item.type === ActivityType.TASK_CREATED && <ActivityLog log={item} />
-                )}
-              </Box>
-            ))}
-
+          <Stack direction="column" alignItems="left" rowGap={2}>
+            <TransitionGroup>
+              {activities?.data?.map((item: LogResponse, index: number) => (
+                <Collapse key={getStableId(item)}>
+                  <Box
+                    key={index}
+                    sx={{
+                      height: 'auto',
+                    }}
+                  >
+                    {item.type === ActivityType.COMMENT_ADDED ? (
+                      <Comments
+                        comment={item}
+                        createComment={handleCreateComment}
+                        deleteComment={(commentId) => handleDeleteComment(commentId, item.id)}
+                        task_id={task_id}
+                        stableId={item.id}
+                      />
+                    ) : (
+                      <ActivityLog log={item} />
+                    )}
+                  </Box>
+                </Collapse>
+              ))}
+            </TransitionGroup>
             <CommentInput createComment={handleCreateComment} task_id={task_id} />
           </Stack>
         )}

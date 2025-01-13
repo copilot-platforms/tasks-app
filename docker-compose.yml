@@ -1,3 +1,6 @@
+# NOTE: Favor local Supabase through CLI rather than Postgres
+# See `supabase/config.toml`
+
 services:
   postgres:
     image: postgres:15-alpine

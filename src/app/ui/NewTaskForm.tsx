@@ -12,7 +12,13 @@ import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { ArrowRightIcon, AssigneePlaceholderSmall, CloseIcon, TemplateIconSm } from '@/icons'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
-import { selectCreateTask, setCreateTaskFields, setErrors } from '@/redux/features/createTaskSlice'
+import {
+  selectCreateTask,
+  setCreateTaskFields,
+  setErrors,
+  setAppliedDescription,
+  setAppliedTitle,
+} from '@/redux/features/createTaskSlice'
 import { selectTaskBoard, setAssigneeList } from '@/redux/features/taskBoardSlice'
 import { selectCreateTemplate } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
@@ -28,6 +34,7 @@ import { getAssigneeName } from '@/utils/assignee'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
 import { NoAssigneeExtraOptions } from '@/utils/noAssignee'
+import { trimAllTags } from '@/utils/trimTags'
 import { setDebouncedFilteredAssignees } from '@/utils/users'
 import { Box, Stack, Typography, styled } from '@mui/material'
 import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react'
@@ -303,7 +310,7 @@ const NewTaskFooter = ({
 }: NewTaskFormProps & { updateWorkflowStatusValue: (value: unknown) => void }) => {
   const [inputStatusValue, setInputStatusValue] = useState('')
 
-  const { title, assigneeId, showModal } = useSelector(selectCreateTask)
+  const { title, assigneeId, showModal, description, appliedDescription, appliedTitle } = useSelector(selectCreateTask)
   const { token, workflowStates } = useSelector(selectTaskBoard)
   const { templates } = useSelector(selectCreateTemplate)
 
@@ -314,7 +321,7 @@ const NewTaskFooter = ({
   const templateValue = _templateValue as ITemplate //typecasting
 
   const applyTemplate = useCallback(
-    (id: string, title: string) => {
+    (id: string, templateTitle: string) => {
       const controller = new AbortController()
 
       const fetchTemplate = async () => {
@@ -325,7 +332,13 @@ const NewTaskFooter = ({
           }
 
           setIsEditorReadonly?.(true)
-          store.dispatch(setCreateTaskFields({ targetField: 'title', value: title }))
+
+          store.dispatch(setAppliedTitle({ title: templateTitle }))
+          if (appliedTitle == title.trim()) {
+            store.dispatch(setCreateTaskFields({ targetField: 'title', value: templateTitle }))
+          } else {
+            store.dispatch(setCreateTaskFields({ targetField: 'title', value: title + ' ' + templateTitle }))
+          }
 
           const resp = await fetch(`/api/tasks/templates/${id}/apply?token=${token}`, {
             signal: controller.signal,
@@ -337,8 +350,16 @@ const NewTaskFooter = ({
           updateWorkflowStatusValue(workflowStates.find((state) => state.id === template.workflowStateId))
           store.dispatch(setCreateTaskFields({ targetField: 'workflowStateId', value: template.workflowStateId }))
           store.dispatch(setCreateTaskFields({ targetField: 'activeWorkflowStateId', value: template.workflowStateId }))
+          store.dispatch(setAppliedDescription({ description: template.body }))
 
-          store.dispatch(setCreateTaskFields({ targetField: 'description', value: template.body }))
+          const trimmedAppliedDescription = appliedDescription && trimAllTags(appliedDescription)
+          const trimmedDescription = trimAllTags(description)
+
+          if (trimmedAppliedDescription == trimmedDescription || trimmedDescription === '<p></p>') {
+            store.dispatch(setCreateTaskFields({ targetField: 'description', value: template.body }))
+          } else {
+            store.dispatch(setCreateTaskFields({ targetField: 'description', value: description + template.body }))
+          }
           store.dispatch(setErrors({ key: CreateTaskErrors.TITLE, value: false }))
         } catch (error) {
           if (error instanceof DOMException && error.name === 'AbortError') {
@@ -350,7 +371,7 @@ const NewTaskFooter = ({
       fetchTemplate()
       return controller
     },
-    [token, setIsEditorReadonly, workflowStates],
+    [token, setIsEditorReadonly, workflowStates, title, description, appliedDescription, appliedTitle],
   )
   const ManageTemplatesEndOption = () => {
     return (
@@ -382,13 +403,13 @@ const NewTaskFooter = ({
     )
   }
 
-  useEffect(() => {
-    if (!templateValue || !token) return
-    const controller = applyTemplate(templateValue.id, templateValue.title)
+  const applyTemplateHandler = (newValue: ITemplate) => {
+    if (!newValue || !token) return
+    const controller = applyTemplate(newValue.id, newValue.title)
     return () => {
       controller.abort()
     }
-  }, [templateValue, applyTemplate, token, showModal])
+  }
 
   return (
     <Box sx={{ borderTop: (theme) => `1px solid ${theme.color.borders.border2}` }}>
@@ -400,6 +421,7 @@ const NewTaskFooter = ({
             getSelectedValue={(_newValue) => {
               const newValue = _newValue as ITemplate
               updateTemplateValue(newValue)
+              applyTemplateHandler(newValue)
             }}
             startIcon={<TemplateIconSm />}
             options={templates || []}
@@ -417,6 +439,7 @@ const NewTaskFooter = ({
             disableOutline
             responsiveNoHide
             buttonWidth="auto"
+            useClickHandler
           />
           <Stack
             direction="row"

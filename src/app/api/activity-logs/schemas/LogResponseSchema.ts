@@ -1,7 +1,7 @@
-import { z } from 'zod'
-import { ActivityType, AssigneeType } from '@prisma/client'
-import { DBActivityLogDetailsSchema } from '@api/activity-logs/const'
 import { ClientResponseSchema, InternalUsersSchema } from '@/types/common'
+import { DBActivityLogDetailsSchema } from '@api/activity-logs/const'
+import { ActivityType, AssigneeType } from '@prisma/client'
+import { z } from 'zod'
 
 export const LogResponseSchema = z.object({
   id: z.string().uuid(),
@@ -11,7 +11,7 @@ export const LogResponseSchema = z.object({
   userId: z.string().uuid(),
   userRole: z.nativeEnum(AssigneeType),
   workspaceId: z.string(),
-  initiator: z.union([InternalUsersSchema, ClientResponseSchema]),
+  initiator: z.union([InternalUsersSchema, ClientResponseSchema]).nullable(),
   createdAt: z.string().datetime(),
 })
 

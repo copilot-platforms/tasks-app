@@ -11,6 +11,7 @@ import { Tapwrite } from 'tapwrite'
 export const StyledTypography = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[500],
   fontSize: theme.typography.md.fontSize,
+  lineHeight: '22px',
 }))
 
 export const BoldTypography = styled(Typography)(({ theme }) => ({
@@ -52,11 +53,12 @@ export const StyledTiptapDescriptionWrapper = styled(Box)(({ theme }) => ({
 export const VerticalLine = styled('div')(({ theme }) => ({
   position: 'absolute',
   left: '12px',
-  top: 0,
+  top: '11px',
   bottom: 0,
   width: '1px',
   height: 'calc(100% + 20px)',
   backgroundColor: theme.color.gray[150],
+  zIndex: -10,
 }))
 
 export const StyledEmojiIcon = styled(EmojiIcon)(({ theme }) => ({

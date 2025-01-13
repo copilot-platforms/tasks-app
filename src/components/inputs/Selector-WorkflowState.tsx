@@ -48,6 +48,7 @@ export const WorkflowStateSelector = ({
         sx={{
           outline: 'none',
           boxShadow: 'none',
+          borderRadius: '4px',
         }}
       >
         <Box onClick={handleClick} aria-describedby={id}>
@@ -61,7 +62,6 @@ export const WorkflowStateSelector = ({
                 padding: '4px 8px',
                 justifyContent: { xs: 'end', sm: 'flex-start' },
                 cursor: disabled ? 'auto' : 'default',
-                borderRadius: '4px',
               }}
             >
               <Box>{statusIcons[value?.type]}</Box>
@@ -104,6 +104,7 @@ export const WorkflowStateSelector = ({
             sx={{
               boxShadow: '0px 6px 20px 0px rgba(0, 0, 0, 0.12)',
               background: (theme) => theme.color.base.white,
+              borderRadius: '4px',
             }}
             rowGap={'2px'}
           >

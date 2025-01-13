@@ -1,19 +1,8 @@
 import { z } from 'zod'
-import { StateType } from '@prisma/client'
 
 export const WorkflowStateUpdatedSchema = z.object({
-  oldWorkflowState: z.object({
-    id: z.string().uuid(),
-    type: z.nativeEnum(StateType),
-    name: z.string(),
-    key: z.string(),
-    color: z.string().nullable(),
-  }),
-  newWorkflowState: z.object({
-    id: z.string().uuid(),
-    type: z.nativeEnum(StateType),
-    name: z.string(),
-    key: z.string(),
-    color: z.string().nullable(),
-  }),
+  // Old workflow state id
+  oldValue: z.string().uuid(),
+  // New workflow state id
+  newValue: z.string().uuid(),
 })

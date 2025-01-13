@@ -40,9 +40,16 @@ export const TemplateBoard = ({
     <>
       {templates.length ? (
         <Box id="templates-box" sx={{ maxWidth: '384px', marginTop: '32px', marginLeft: 'auto', marginRight: 'auto' }}>
-          <Typography variant="xl" lineHeight={'28px'}>
-            Templates
-          </Typography>
+          <Box
+            sx={{
+              width: { xs: '90%', sm: '100%' },
+              margin: '0 auto',
+            }}
+          >
+            <Typography variant="xl" lineHeight={'28px'}>
+              Templates
+            </Typography>
+          </Box>
 
           <Stack
             direction="column"

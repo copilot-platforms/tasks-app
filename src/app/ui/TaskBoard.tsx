@@ -77,20 +77,24 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
   }
 
   const viewBoardSettings = viewSettingsTemp ? viewSettingsTemp.viewMode : view
+  const archivedOptions = {
+    showArchived: viewSettingsTemp ? viewSettingsTemp.showArchived : showArchived,
+    showUnarchived: viewSettingsTemp ? viewSettingsTemp.showUnarchived : showUnarchived,
+  }
+
   const getCardHref = (task: { id: string }) => `/detail/${task.id}/${mode === UserRole.IU ? 'iu' : 'cu'}`
 
   const userHasNoFilter =
     filterOptions &&
     !filterOptions.type &&
     !filterOptions.keyword &&
-    !filterOptions.assignee &&
-    showUnarchived &&
-    !showArchived
+    (!filterOptions.assignee || previewMode) &&
+    archivedOptions.showUnarchived &&
+    !archivedOptions.showArchived
 
   const isNoTasksWithFilter = tasks && !userHasNoFilter && !filteredTasks.length
 
   const [hasInitialized, setHasInitialized] = useState(false)
-
   useEffect(() => {
     if (!isTasksLoading && !hasInitialized) {
       setHasInitialized(true)
@@ -109,7 +113,6 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
       </>
     )
   }
-
   return (
     <>
       <TaskDataFetcher token={token ?? ''} />
@@ -210,6 +213,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
                   columnName={list.name}
                   taskCount={taskCountForWorkflowStateId(list.id)}
                   display={!!filterTaskWithWorkflowStateId(list.id).length}
+                  showAddBtn={mode === UserRole.IU || !!previewMode}
                 >
                   {sortTaskByDescendingOrder<TaskResponse>(filterTaskWithWorkflowStateId(list.id)).map((task, index) => {
                     return (
