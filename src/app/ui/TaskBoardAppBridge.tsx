@@ -4,6 +4,7 @@ import { Icons } from '@/hooks/app-bridge/types'
 import { useActionsMenu } from '@/hooks/app-bridge/useActionsMenu'
 import { useBreadcrumbs } from '@/hooks/app-bridge/useBreadcrumbs'
 import { usePrimaryCta } from '@/hooks/app-bridge/usePrimaryCta'
+import { useSecondaryCta } from '@/hooks/app-bridge/useSecondaryCta'
 import { setShowModal } from '@/redux/features/createTaskSlice'
 import store from '@/redux/store'
 import { UserRole } from '@api/core/types/user'
@@ -33,6 +34,9 @@ export const TaskBoardAppBridge = ({ token, role, portalUrl }: TaskBoardAppBridg
     },
     { portalUrl },
   )
+
+  // Unset "Unarchive" button from tasks details if redirected to board from an archived task
+  useSecondaryCta(null, { portalUrl })
 
   useActionsMenu(
     [
