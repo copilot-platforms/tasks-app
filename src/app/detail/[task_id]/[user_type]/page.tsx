@@ -17,6 +17,7 @@ import { ActivityWrapper } from '@/app/detail/ui/ActivityWrapper'
 import { ArchiveWrapper } from '@/app/detail/ui/ArchiveWrapper'
 import { LastArchivedField } from '@/app/detail/ui/LastArchiveField'
 import { MenuBoxContainer } from '@/app/detail/ui/MenuBoxContainer'
+import { ResponsiveStack } from '@/app/detail/ui/ResponsiveStack'
 import { Sidebar, SidebarSkeleton } from '@/app/detail/ui/Sidebar'
 import { StyledBox, StyledTiptapDescriptionWrapper, TaskDetailsContainer } from '@/app/detail/ui/styledComponent'
 import { TaskEditor } from '@/app/detail/ui/TaskEditor'
@@ -89,7 +90,7 @@ export default async function TaskDetailPage({
     <DetailStateUpdate isRedirect={!!searchParams.isRedirect} token={token} tokenPayload={tokenPayload} task={task}>
       <RealTime tokenPayload={tokenPayload}>
         <EscapeHandler />
-        <Stack direction="row" sx={{ height: '100vh' }}>
+        <ResponsiveStack>
           <ToggleController>
             <StyledBox>
               {isPreviewMode ? (
@@ -176,7 +177,7 @@ export default async function TaskDetailPage({
               </WorkflowStateFetcher>
             </Suspense>
           </Box>
-        </Stack>
+        </ResponsiveStack>
       </RealTime>
     </DetailStateUpdate>
   )

@@ -7,15 +7,25 @@ import { CalenderIcon, CalenderIconSmall } from '@/icons'
 import { Box, Popper, Stack, Typography } from '@mui/material'
 import { SecondaryBtn } from '../buttons/SecondaryBtn'
 import { useState } from 'react'
+import { Sizes } from '@/types/interfaces'
 
 interface Prop {
   getDate: (value: string) => void
   dateValue?: Date
   isButton?: boolean
   disabled?: boolean
+  size?: Sizes
+  padding?: string
 }
 
-export const DatePickerComponent = ({ getDate, dateValue, disabled, isButton = false }: Prop) => {
+export const DatePickerComponent = ({
+  getDate,
+  dateValue,
+  disabled,
+  isButton = false,
+  size = Sizes.SMALL,
+  padding,
+}: Prop) => {
   const [value, setValue] = useState(dateValue ? dayjs(dateValue) : null)
 
   const formatDate = (date: Dayjs | null) => {
@@ -53,21 +63,28 @@ export const DatePickerComponent = ({ getDate, dateValue, disabled, isButton = f
       >
         {isButton ? (
           <SecondaryBtn
-            startIcon={<CalenderIconSmall />}
+            padding={padding}
+            startIcon={size == Sizes.SMALL ? <CalenderIconSmall /> : <CalenderIcon />}
             buttonContent={
-              <Typography
-                variant="bodySm"
-                sx={{
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  fontSize: '12px',
-                  overflow: 'hidden',
-                  maxWidth: { xs: '100px', sm: 'none' },
-                  color: (theme) => (value ? theme.color.gray[600] : theme.color.gray[550]),
-                }}
-              >
-                {value ? formatDate(value) : 'Due date'}
-              </Typography>
+              size == Sizes.SMALL ? (
+                <Typography
+                  variant="bodySm"
+                  sx={{
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    fontSize: '12px',
+                    overflow: 'hidden',
+                    maxWidth: { xs: '100px', sm: 'none' },
+                    color: (theme) => (value ? theme.color.gray[600] : theme.color.gray[550]),
+                  }}
+                >
+                  {value ? formatDate(value) : 'Due date'}
+                </Typography>
+              ) : (
+                <Typography variant="md" lineHeight="22px">
+                  {value ? formatDate(value) : 'Due date'}
+                </Typography>
+              )
             }
           />
         ) : (

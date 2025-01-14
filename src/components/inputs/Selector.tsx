@@ -5,7 +5,7 @@ import { useFocusableInput } from '@/hooks/useFocusableInput'
 import { HTMLAttributes, ReactNode, useEffect, useState } from 'react'
 import { StyledTextField } from './TextField'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { IAssigneeCombined, IExtraOption, ITemplate, UserTypesName } from '@/types/interfaces'
+import { IAssigneeCombined, Sizes, IExtraOption, ITemplate, UserTypesName } from '@/types/interfaces'
 import { TruncateMaxNumber } from '@/types/constants'
 import { truncateText } from '@/utils/truncateText'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
@@ -421,7 +421,7 @@ const StatusSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTMLL
       }}
     >
       <Stack direction="row" alignItems="center" columnGap={3}>
-        <Box>{statusIcons[(option as WorkflowStateResponse).type]}</Box>
+        <Box>{statusIcons[Sizes.LARGE][(option as WorkflowStateResponse).type]}</Box>
         <Typography variant="sm" fontWeight={400}>
           {(option as WorkflowStateResponse).name as string}
         </Typography>
