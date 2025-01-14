@@ -115,7 +115,6 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
     type: SelectorType.ASSIGNEE_SELECTOR,
     mode: HandleSelectorComponentModes.CreateTaskFieldUpdate,
   })
-  useFilter(viewSettingsTemp ? viewSettingsTemp.filterOptions : filterOptions)
   const filterButtons = [
     {
       name: 'My tasks',
