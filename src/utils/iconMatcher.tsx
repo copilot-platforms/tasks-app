@@ -29,30 +29,32 @@ import {
   DefaultFileIcon,
 } from '@/icons'
 import { WorkflowState } from '@/types/dto/workflowStates.dto'
+import { Sizes } from '@/types/interfaces'
+
 import { ReactNode } from 'react'
 
-export const statusIcons: { [key in WorkflowState]: ReactNode } = {
-  backlog: <TodoIcon />,
-  unstarted: <TodoIcon />,
-  started: <InprogressIcon />,
-  completed: <DoneIcon />,
-  cancelled: <InreviewIcon />,
-}
-
-export const statusIconsMedium: { [key in WorkflowState]: ReactNode } = {
-  backlog: <TodoIconMedium />,
-  unstarted: <TodoIconMedium />,
-  started: <InprogressIconMedium />,
-  completed: <DoneIconMedium />,
-  cancelled: <InreviewIconMedium />,
-}
-
-export const statusIconsSmall: { [key in WorkflowState]: ReactNode } = {
-  backlog: <TodoIconSmall />,
-  unstarted: <TodoIconSmall />,
-  started: <InprogressIconSmall />,
-  completed: <DoneIconSmall />,
-  cancelled: <InreviewIconSmall />,
+export const statusIcons: { [key in Sizes]: { [key in WorkflowState]: ReactNode } } = {
+  large: {
+    backlog: <TodoIcon />,
+    unstarted: <TodoIcon />,
+    started: <InprogressIcon />,
+    completed: <DoneIcon />,
+    cancelled: <InreviewIcon />,
+  },
+  medium: {
+    backlog: <TodoIconMedium />,
+    unstarted: <TodoIconMedium />,
+    started: <InprogressIconMedium />,
+    completed: <DoneIconMedium />,
+    cancelled: <InreviewIconMedium />,
+  },
+  small: {
+    backlog: <TodoIconSmall />,
+    unstarted: <TodoIconSmall />,
+    started: <InprogressIconSmall />,
+    completed: <DoneIconSmall />,
+    cancelled: <InreviewIconSmall />,
+  },
 }
 
 export const attachmentIcons: { [key: string]: ReactNode } = {

@@ -3,7 +3,7 @@
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { Box, Skeleton, Stack, Typography, styled, useMediaQuery } from '@mui/material'
 import Selector, { SelectorType } from '@/components/inputs/Selector'
-import { IAssigneeCombined } from '@/types/interfaces'
+import { IAssigneeCombined, Sizes } from '@/types/interfaces'
 import { DatePickerComponent } from '@/components/inputs/DatePickerComponent'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { useSelector } from 'react-redux'
@@ -93,6 +93,118 @@ export const Sidebar = ({
   }, [isMobile])
 
   if (!activeTask) return <SidebarSkeleton />
+  if (!showSidebar) {
+    return (
+      <Stack
+        direction="row"
+        columnGap={'8px'}
+        rowGap={'8px'}
+        position="relative"
+        sx={{ flexWrap: 'wrap', padding: '12px 18px' }}
+      >
+        <Box
+          sx={{
+            borderRadius: '4px',
+            width: 'fit-content',
+          }}
+        >
+          <WorkflowStateSelector
+            option={workflowStates}
+            value={statusValue}
+            getValue={(value) => {
+              updateStatusValue(value)
+              updateWorkflowState(value)
+            }}
+            responsiveNoHide
+            disabled={workflowDisabled}
+            size={Sizes.LARGE}
+            padding={'3px 8px'}
+          />
+        </Box>
+        <Box
+          sx={{
+            borderRadius: '4px',
+            width: 'fit-content',
+          }}
+        >
+          <Selector
+            inputStatusValue={inputStatusValue}
+            setInputStatusValue={setInputStatusValue}
+            buttonWidth="100%"
+            padding={'3px 8px'}
+            placeholder="Change assignee"
+            getSelectedValue={(newValue) => {
+              const assignee = newValue as IAssigneeCombined
+              updateAssigneeValue(assignee)
+              const assigneeType = getAssigneeTypeCorrected(assignee)
+              updateAssignee(assigneeType, assignee?.id)
+            }}
+            startIcon={
+              (assigneeValue as IAssigneeCombined)?.name == 'No assignee' ? (
+                <AssigneePlaceholder />
+              ) : (
+                <CopilotAvatar currentAssignee={assigneeValue} />
+              )
+            }
+            options={loading ? [] : filteredAssignees}
+            value={assigneeValue?.name == 'No assignee' ? null : assigneeValue}
+            selectorType={SelectorType.ASSIGNEE_SELECTOR}
+            buttonHeight="auto"
+            buttonContent={
+              <Typography
+                variant="md"
+                lineHeight="22px"
+                sx={{
+                  color: (theme) => theme.color.gray[600],
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  maxWidth: '150px',
+                }}
+              >
+                {(assigneeValue as IAssigneeCombined)?.name == 'No assignee'
+                  ? 'Unassigned'
+                  : getAssigneeName(assigneeValue, 'Unassigned')}
+              </Typography>
+            }
+            handleInputChange={async (newInputValue: string) => {
+              if (!newInputValue || isAssigneeTextMatching(newInputValue, assigneeValue)) {
+                setFilteredAssignees(assignee)
+                return
+              }
+
+              setDebouncedFilteredAssignees(
+                activeDebounceTimeoutId,
+                setActiveDebounceTimeoutId,
+                setLoading,
+                setFilteredAssignees,
+                z.string().parse(token),
+                newInputValue,
+              )
+            }}
+            filterOption={(x: unknown) => x}
+            disabled={true} //for now, disable re-assignment completely
+            responsiveNoHide
+          />
+        </Box>
+        <Box sx={{}}>
+          <DatePickerComponent
+            getDate={(date) => {
+              const isoDate = DateStringSchema.parse(formatDate(date))
+              updateTask({
+                dueDate: isoDate,
+              })
+            }}
+            dateValue={dueDate ? createDateFromFormattedDateString(z.string().parse(dueDate)) : undefined}
+            disabled={disabled && !previewMode}
+            isButton={true}
+            size={Sizes.MEDIUM}
+            padding={'3px 8px'}
+          />
+        </Box>
+      </Stack>
+    )
+  }
 
   return (
     <Box
@@ -262,9 +374,33 @@ export const SidebarSkeleton = () => {
   useEffect(() => {
     if (isMobile) {
       store.dispatch(setShowSidebar(false))
+    } else {
+      store.dispatch(setShowSidebar(true))
     }
   }, [isMobile])
 
+  if (isMobile) {
+    return (
+      <Stack
+        direction="row"
+        columnGap={'8px'}
+        rowGap={'8px'}
+        position="relative"
+        sx={{ flexWrap: 'wrap', padding: '12px 18px' }}
+      >
+        <Box sx={{ height: '30px', alignItems: 'center', justifyContent: 'center', display: 'flex' }}>
+          <Skeleton variant="rectangular" width={120} height={15} />
+        </Box>
+        <Box sx={{ height: '30px', alignItems: 'center', justifyContent: 'center', display: 'flex' }}>
+          <Skeleton variant="rectangular" width={120} height={15} />
+        </Box>
+
+        <Box sx={{ height: '30px', alignItems: 'center', justifyContent: 'center', display: 'flex' }}>
+          <Skeleton variant="rectangular" width={120} height={15} />
+        </Box>
+      </Stack>
+    )
+  }
   return (
     <Box
       sx={{

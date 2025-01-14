@@ -1,8 +1,9 @@
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { SecondaryBtn } from '../buttons/SecondaryBtn'
-import { statusIcons, statusIconsMedium, statusIconsSmall } from '@/utils/iconMatcher'
+import { statusIcons } from '@/utils/iconMatcher'
 import { Box, ClickAwayListener, Popper, Stack, Typography } from '@mui/material'
 import { ReactNode, useState } from 'react'
+import { Sizes } from '@/types/interfaces'
 
 export const WorkflowStateSelector = ({
   value,
@@ -11,6 +12,8 @@ export const WorkflowStateSelector = ({
   getValue,
   disableOutline,
   responsiveNoHide,
+  size = Sizes.SMALL,
+  padding,
 }: {
   value: WorkflowStateResponse
   option: WorkflowStateResponse[]
@@ -18,6 +21,8 @@ export const WorkflowStateSelector = ({
   getValue: (value: WorkflowStateResponse) => void
   disableOutline?: boolean
   responsiveNoHide?: boolean
+  size?: Sizes
+  padding?: string
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const open = Boolean(anchorEl)
@@ -64,7 +69,7 @@ export const WorkflowStateSelector = ({
                 cursor: disabled ? 'auto' : 'default',
               }}
             >
-              <Box>{statusIcons[value?.type]}</Box>
+              <Box>{statusIcons[Sizes.LARGE][value?.type]}</Box>
               <Typography
                 variant="md"
                 sx={{
@@ -80,11 +85,18 @@ export const WorkflowStateSelector = ({
             </Stack>
           ) : (
             <SecondaryBtn
-              startIcon={statusIconsSmall[value?.type]}
+              startIcon={statusIcons[size][value?.type]}
+              padding={padding}
               buttonContent={
-                <Typography variant="bodySm" sx={{ color: (theme) => theme.color.gray[600], fontSize: '12px' }}>
-                  {value?.name as ReactNode}
-                </Typography>
+                size == Sizes.SMALL ? (
+                  <Typography variant="bodySm" sx={{ color: (theme) => theme.color.gray[600], fontSize: '12px' }}>
+                    {value?.name as ReactNode}
+                  </Typography>
+                ) : (
+                  <Typography variant="md" lineHeight="22px">
+                    {value?.name as ReactNode}
+                  </Typography>
+                )
               }
             />
           )}
@@ -127,7 +139,7 @@ export const WorkflowStateSelector = ({
                     setAnchorEl(null)
                   }}
                 >
-                  <Box padding={'4px 0px'}>{statusIconsMedium[el?.type]}</Box>
+                  <Box padding={'4px 0px'}>{statusIcons[Sizes.MEDIUM][el?.type]}</Box>
                   <Typography variant="bodySm" fontWeight={400} lineHeight={'21px'}>
                     {el.name}
                   </Typography>

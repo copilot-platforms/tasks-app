@@ -26,6 +26,12 @@ export enum createTemplateErrors {
   TITLE = 'title',
 }
 
+export enum Sizes {
+  SMALL = 'small',
+  MEDIUM = 'medium',
+  LARGE = 'large',
+}
+
 export enum FileTypes {
   PNG = 'image/png',
   PDF = 'application/pdf',
