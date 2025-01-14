@@ -92,7 +92,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
     archivedOptions.showUnarchived &&
     !archivedOptions.showArchived
 
-  const isNoTasksWithFilter = tasks && !userHasNoFilter && !filteredTasks.length
+  const isNoTasksWithFilter = !filteredTasks.length && (!tasks.length || !userHasNoFilter)
 
   const [hasInitialized, setHasInitialized] = useState(false)
   useEffect(() => {
@@ -113,6 +113,8 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
       </>
     )
   }
+
+  const showHeader = !!previewMode
   return (
     <>
       <TaskDataFetcher token={token ?? ''} />
@@ -123,9 +125,9 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
           await updateViewModeSettings(z.string().parse(token), payload)
         }}
       />
-      {!filteredTasks.length && <NoFilteredTasksState />}
+      {isNoTasksWithFilter && <NoFilteredTasksState />}
 
-      {!isNoTasksWithFilter && viewBoardSettings === View.BOARD_VIEW && (
+      {filteredTasks.length && tasks.length && viewBoardSettings === View.BOARD_VIEW && (
         <Box sx={{ padding: '12px 12px' }}>
           <Stack
             columnGap={2}
@@ -187,7 +189,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
           </Stack>
         </Box>
       )}
-      {!isNoTasksWithFilter && viewBoardSettings === View.LIST_VIEW && (
+      {filteredTasks.length && tasks.length && viewBoardSettings === View.LIST_VIEW && (
         <Stack
           sx={{
             flexDirection: 'column',
