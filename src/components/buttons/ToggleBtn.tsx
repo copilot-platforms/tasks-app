@@ -5,6 +5,9 @@ import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 import { Stack } from '@mui/material'
 import { useSelector } from 'react-redux'
 
+/**
+ * @deprecated We have dropped support for toggle buttons
+ */
 export const ToggleBtn = ({ onClick }: { onClick: () => void }) => {
   const { showSidebar } = useSelector(selectTaskDetails)
 

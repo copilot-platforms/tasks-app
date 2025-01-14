@@ -109,13 +109,6 @@ export const Sidebar = ({
             <Typography variant="sm" lineHeight={'21px'} fontSize={'13px'}>
               Properties
             </Typography>
-            <Box
-              sx={{
-                display: isMobile ? 'block' : 'none',
-              }}
-            >
-              <ToggleButtonContainer />
-            </Box>
           </Stack>
         </AppMargin>
       </StyledBox>
@@ -287,13 +280,6 @@ export const SidebarSkeleton = () => {
             <Typography variant="sm" lineHeight={'21px'} fontSize={'13px'}>
               Properties
             </Typography>
-            <Box
-              sx={{
-                display: isMobile ? 'block' : 'none',
-              }}
-            >
-              <ToggleButtonContainer />
-            </Box>
           </Stack>
         </AppMargin>
       </StyledBox>

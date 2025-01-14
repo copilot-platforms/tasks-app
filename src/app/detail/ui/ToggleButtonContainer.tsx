@@ -6,6 +6,9 @@ import store from '@/redux/store'
 import { Box } from '@mui/material'
 import { useSelector } from 'react-redux'
 
+/**
+ * @deprecated We have dropped support for toggle buttons
+ */
 export const ToggleButtonContainer = () => {
   const { showSidebar } = useSelector(selectTaskDetails)
   const { previewMode } = useSelector(selectTaskBoard)

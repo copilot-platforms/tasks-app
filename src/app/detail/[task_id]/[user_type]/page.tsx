@@ -92,18 +92,21 @@ export default async function TaskDetailPage({
         <Stack direction="row" sx={{ height: '100vh' }}>
           <ToggleController>
             <StyledBox>
-              <AppMargin size={SizeofAppMargin.HEADER} py="17.5px">
-                <Stack direction="row" justifyContent="space-between">
-                  <HeaderBreadcrumbs token={token} title={task?.label} userType={params.user_type} />
-                  <Stack direction="row" alignItems="center" columnGap="8px">
-                    <MenuBoxContainer role={tokenPayload.internalUserId ? UserRole.IU : UserRole.Client} />
+              {isPreviewMode ? (
+                <AppMargin size={SizeofAppMargin.HEADER} py="17.5px">
+                  <Stack direction="row" justifyContent="space-between">
+                    <HeaderBreadcrumbs token={token} title={task?.label} userType={params.user_type} />
                     <Stack direction="row" alignItems="center" columnGap="8px">
-                      <ArchiveWrapper taskId={task_id} userType={user_type} />
-                      <ToggleButtonContainer />
+                      <MenuBoxContainer role={tokenPayload.internalUserId ? UserRole.IU : UserRole.Client} />
+                      <Stack direction="row" alignItems="center" columnGap="8px">
+                        <ArchiveWrapper taskId={task_id} userType={user_type} />
+                      </Stack>
                     </Stack>
                   </Stack>
-                </Stack>
-              </AppMargin>
+                </AppMargin>
+              ) : (
+                <HeaderBreadcrumbs token={token} title={task?.label} userType={params.user_type} />
+              )}
             </StyledBox>
             <CustomScrollbar style={{ width: '8px' }}>
               <TaskDetailsContainer
