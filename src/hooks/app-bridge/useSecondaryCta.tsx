@@ -9,6 +9,7 @@ export const useSecondaryCta = (secondaryCta: Clickable | null, config?: Configu
       : {
           type: 'header.secondaryCta',
           label: secondaryCta.label,
+          icon: secondaryCta.icon,
           onClick: 'header.secondaryCta.onClick',
         }
 
