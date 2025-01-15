@@ -129,7 +129,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
       />
       {isNoTasksWithFilter && <NoFilteredTasksState />}
 
-      {filteredTasks.length && tasks.length && viewBoardSettings === View.BOARD_VIEW && (
+      {filteredTasks.length && tasks.length && viewBoardSettings === View.BOARD_VIEW ? (
         <Box sx={{ padding: '12px 12px' }}>
           <Stack
             columnGap={2}
@@ -190,8 +190,8 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
             ))}
           </Stack>
         </Box>
-      )}
-      {filteredTasks.length && tasks.length && viewBoardSettings === View.LIST_VIEW && (
+      ) : null}
+      {filteredTasks.length && tasks.length && viewBoardSettings === View.LIST_VIEW ? (
         <Stack
           sx={{
             flexDirection: 'column',
@@ -246,7 +246,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
             ))}
           </CustomScrollbar>
         </Stack>
-      )}
+      ) : null}
       <CustomDragLayer>
         <CardDragLayer />
       </CustomDragLayer>
