@@ -51,7 +51,7 @@ export const TaskBoardAppBridge = ({ token, role, portalUrl }: TaskBoardAppBridg
     [
       {
         label: 'Manage templates',
-        icon: Icons.ARCHIVE,
+        icon: Icons.TEMPLATES,
         onClick: handleManageTemplatesClick,
       },
     ],
