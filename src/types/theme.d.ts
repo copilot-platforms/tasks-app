@@ -65,6 +65,9 @@ export declare module '@mui/material/styles' {
         textSecondary: string
         textDisabled: string
       }
+      modal: {
+        backdrop: string
+      }
       borders: {
         border: string
         borderHover: string
@@ -144,6 +147,9 @@ export declare module '@mui/material/styles' {
         text: React.CSSProperties['color']
         textSecondary: React.CSSProperties['color']
         textDisabled: React.CSSProperties['color']
+      }
+      modal: {
+        backdrop: React.CSSProperties['color']
       }
       borders: {
         border: React.CSSProperties['color']

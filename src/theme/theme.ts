@@ -67,6 +67,9 @@ export const theme = createTheme({
       textSecondary: '#6B6F76',
       textDisabled: '#90959D',
     },
+    modal: {
+      backdrop: 'rgba(15,15,15,0.6)',
+    },
     borders: {
       border: '#DFE1E4',
       borderHover: '#C9CBCD',
