@@ -10,6 +10,7 @@ import { Skeleton } from '@mui/material'
 import store from '@/redux/store'
 import { selectTaskDetails, setTask } from '@/redux/features/taskDetailsSlice'
 import { UserType } from '@/types/interfaces'
+import { DetailAppBridge } from './DetailAppBridge'
 
 export const ArchiveWrapper = ({ taskId, userType }: { taskId: string; userType: UserType }) => {
   const { token, activeTask, previewMode } = useSelector(selectTaskBoard)
@@ -66,5 +67,9 @@ export const ArchiveWrapper = ({ taskId, userType }: { taskId: string; userType:
   // Handle loading and error states
   if (!task || isArchived === undefined) return <Skeleton variant="rectangular" width="60px" height="16px" />
 
-  return <ArchiveBtn isArchived={isArchived} handleClick={handleToggleArchive} />
+  if (previewMode) {
+    return <ArchiveBtn isArchived={isArchived} handleClick={handleToggleArchive} />
+  }
+
+  return <DetailAppBridge isArchived={isArchived} handleToggleArchive={handleToggleArchive} />
 }

@@ -3,9 +3,11 @@
 import { StyledKeyboardIcon, StyledTypography } from '@/app/detail/ui/styledComponent'
 import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
 import { CustomLink } from '@/hoc/CustomLink'
+import { useBreadcrumbs } from '@/hooks/app-bridge/useBreadcrumbs'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { UserType } from '@/types/interfaces'
 import { Stack, Typography } from '@mui/material'
+import { useRouter } from 'next/navigation'
 import { useSelector } from 'react-redux'
 
 type ValidTasksBoardLink = '/' | '/client'
@@ -20,6 +22,7 @@ export const HeaderBreadcrumbs = ({
   userType: UserType
 }) => {
   const { previewMode } = useSelector(selectTaskBoard)
+  const router = useRouter()
 
   const getTasksLink = (userType: UserType): ValidTasksBoardLink => {
     if (previewMode) return '/client'
@@ -29,6 +32,20 @@ export const HeaderBreadcrumbs = ({
       [UserType.CLIENT_USER]: '/client',
     }
     return tasksLinks[userType]
+  }
+
+  useBreadcrumbs([
+    {
+      label: 'Tasks',
+      onClick: () => router.push(`/?token=${token}`),
+    },
+    {
+      label: title,
+    },
+  ])
+
+  if (!previewMode) {
+    return null
   }
 
   return (

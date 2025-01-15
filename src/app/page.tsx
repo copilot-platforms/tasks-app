@@ -1,27 +1,27 @@
 export const fetchCache = 'force-no-store'
 
-import { createMultipleAttachments, getSignedUrlUpload } from '@/app/actions'
+import { createMultipleAttachments } from '@/app/actions'
+import { TaskBoardAppBridge } from '@/app/ui/TaskBoardAppBridge'
 import { SilentError } from '@/components/templates/SilentError'
 import { apiUrl } from '@/config'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import { DndWrapper } from '@/hoc/DndWrapper'
 import { RealTime } from '@/hoc/RealTime'
-import { Token, TokenSchema } from '@/types/common'
+import { Token, TokenSchema, WorkspaceResponse } from '@/types/common'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
+import { UserType } from '@/types/interfaces'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { redirectIfTaskCta } from '@/utils/redirect'
 import { UserRole } from '@api/core/types/user'
 import { Suspense } from 'react'
 import { z } from 'zod'
 import { AssigneeFetcher } from './_fetchers/AssigneeFetcher'
+import { TemplatesFetcher } from './_fetchers/TemplatesFetcher'
 import { ModalNewTaskForm } from './ui/Modal_NewTaskForm'
 import { TaskBoard } from './ui/TaskBoard'
-import AttachmentLayout from '@/components/AttachmentLayout'
-import { UserType } from '@/types/interfaces'
-import { TemplatesFetcher } from './_fetchers/TemplatesFetcher'
 
 export async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -58,6 +58,11 @@ export async function getTokenPayload(token: string): Promise<Token> {
   return payload as Token
 }
 
+export async function getWorkspace(token: string): Promise<WorkspaceResponse> {
+  const copilot = new CopilotAPI(token)
+  return await copilot.getWorkspace()
+}
+
 export async function getViewSettings(token: string): Promise<CreateViewSettingsDTO> {
   const res = await fetch(`${apiUrl}/api/view-settings?token=${token}`, {
     next: { tags: ['getViewSettings'] },
@@ -84,9 +89,10 @@ export default async function Main({ searchParams }: { searchParams: { token: st
   redirectIfTaskCta(searchParams, userRole)
 
   const viewSettings = await getViewSettings(token)
-  const [workflowStates, tasks] = await Promise.all([
+  const [workflowStates, tasks, workspace] = await Promise.all([
     getAllWorkflowStates(token),
     getAllTasks(token, { showArchived: viewSettings.showArchived, showUnarchived: viewSettings.showUnarchived }),
+    getWorkspace(token),
   ])
 
   console.info(`app/page.tsx | Serving user ${token} with payload`, tokenPayload)
@@ -105,6 +111,8 @@ export default async function Main({ searchParams }: { searchParams: { token: st
       <Suspense fallback={null}>
         <TemplatesFetcher token={token} />
       </Suspense>
+
+      <TaskBoardAppBridge token={token} role={UserRole.IU} portalUrl={workspace.portalUrl} />
 
       <RealTime tokenPayload={tokenPayload}>
         <DndWrapper>
