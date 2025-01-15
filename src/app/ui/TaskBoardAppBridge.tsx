@@ -36,11 +36,13 @@ export const TaskBoardAppBridge = ({ token, role, portalUrl }: TaskBoardAppBridg
   }
 
   usePrimaryCta(
-    {
-      label: 'Create task',
-      icon: Icons.PLUS,
-      onClick: handleTaskCreate,
-    },
+    role == UserRole.Client
+      ? null
+      : {
+          label: 'Create task',
+          icon: Icons.PLUS,
+          onClick: handleTaskCreate,
+        },
     { portalUrl },
   )
 
@@ -48,13 +50,15 @@ export const TaskBoardAppBridge = ({ token, role, portalUrl }: TaskBoardAppBridg
   useSecondaryCta(null, { portalUrl })
 
   useActionsMenu(
-    [
-      {
-        label: 'Manage templates',
-        icon: Icons.TEMPLATES,
-        onClick: handleManageTemplatesClick,
-      },
-    ],
+    role == UserRole.Client
+      ? []
+      : [
+          {
+            label: 'Manage templates',
+            icon: Icons.TEMPLATES,
+            onClick: handleManageTemplatesClick,
+          },
+        ],
     { portalUrl },
   )
   useBreadcrumbs([], { portalUrl })

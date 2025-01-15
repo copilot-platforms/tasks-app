@@ -7,12 +7,13 @@ import { createMultipleAttachments } from '@/app/actions'
 import { getViewSettings } from '@/app/page'
 import { ModalNewTaskForm } from '@/app/ui/Modal_NewTaskForm'
 import { TaskBoard } from '@/app/ui/TaskBoard'
+import { TaskBoardAppBridge } from '@/app/ui/TaskBoardAppBridge'
 import { SilentError } from '@/components/templates/SilentError'
 import { apiUrl } from '@/config'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import { DndWrapper } from '@/hoc/DndWrapper'
 import { RealTime } from '@/hoc/RealTime'
-import { Token, TokenSchema } from '@/types/common'
+import { Token, TokenSchema, WorkspaceResponse } from '@/types/common'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
@@ -50,17 +51,23 @@ async function getTokenPayload(token: string): Promise<Token> {
   return payload as Token
 }
 
+async function getWorkspace(token: string): Promise<WorkspaceResponse> {
+  const copilot = new CopilotAPI(token)
+  return await copilot.getWorkspace()
+}
+
 export default async function ClientPage({ searchParams }: { searchParams: { token: string } }) {
   const token = searchParams.token
   if (!z.string().safeParse(token).success) {
     return <SilentError message="Please provide a Valid Token" />
   }
   redirectIfTaskCta(searchParams, UserType.CLIENT_USER)
-  const [workflowStates, tasks, viewSettings, tokenPayload] = await Promise.all([
+  const [workflowStates, tasks, viewSettings, tokenPayload, workspace] = await Promise.all([
     await getAllWorkflowStates(token),
     await getAllTasks(token),
     getViewSettings(token),
     getTokenPayload(token),
+    getWorkspace(token),
   ])
 
   const previewMode = getPreviewMode(tokenPayload)
@@ -87,6 +94,7 @@ export default async function ClientPage({ searchParams }: { searchParams: { tok
         <Suspense fallback={null}>
           <TemplatesFetcher token={token} />
         </Suspense>
+        <TaskBoardAppBridge token={token} role={UserRole.Client} portalUrl={workspace.portalUrl} />
         <RealTime tokenPayload={tokenPayload}>
           <DndWrapper>
             <TaskBoard mode={UserRole.Client} />
