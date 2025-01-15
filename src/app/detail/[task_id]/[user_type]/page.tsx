@@ -106,7 +106,10 @@ export default async function TaskDetailPage({
                   </Stack>
                 </AppMargin>
               ) : (
-                <HeaderBreadcrumbs token={token} title={task?.label} userType={params.user_type} />
+                <>
+                  <HeaderBreadcrumbs token={token} title={task?.label} userType={params.user_type} />
+                  <ArchiveWrapper taskId={task_id} userType={user_type} />
+                </>
               )}
             </StyledBox>
             <CustomScrollbar style={{ width: '8px' }}>
