@@ -10,7 +10,6 @@ import {
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
 import { bulkRemoveAttachments } from '@/utils/bulkRemoveAttachments'
-import { Modal } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { handleCreate } from '../actions'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
@@ -19,6 +18,7 @@ import { NewTaskForm } from './NewTaskForm'
 import { FilterOptions, ISignedUrlUpload } from '@/types/interfaces'
 import dayjs from 'dayjs'
 import { useEffect } from 'react'
+import { StyledModal } from '@/app/detail/ui/styledComponent'
 
 export const ModalNewTaskForm = ({
   handleCreateMultipleAttachments,
@@ -41,11 +41,16 @@ export const ModalNewTaskForm = ({
   }
 
   return (
-    <Modal
+    <StyledModal
       open={showModal}
       onClose={() => handleModalClose(true)}
       aria-labelledby="create-task-modal"
       aria-describedby="add-new-task"
+      sx={{
+        '& > .MuiBackdrop-root': {
+          backgroundColor: 'rgba(15,15,15,0.6)',
+        },
+      }}
     >
       <NewTaskForm
         handleCreate={async () => {
@@ -75,6 +80,6 @@ export const ModalNewTaskForm = ({
         }}
         handleClose={handleModalClose}
       />
-    </Modal>
+    </StyledModal>
   )
 }
