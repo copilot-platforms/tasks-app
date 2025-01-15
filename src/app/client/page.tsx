@@ -50,7 +50,8 @@ async function getTokenPayload(token: string): Promise<Token> {
   const payload = TokenSchema.parse(await copilotClient.getTokenPayload())
   return payload as Token
 }
-export async function getWorkspace(token: string): Promise<WorkspaceResponse> {
+
+async function getWorkspace(token: string): Promise<WorkspaceResponse> {
   const copilot = new CopilotAPI(token)
   return await copilot.getWorkspace()
 }
