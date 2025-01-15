@@ -51,7 +51,7 @@ async function getOneTask(token: string, taskId: string): Promise<TaskResponse> 
   return data.task
 }
 
-export async function getWorkspace(token: string): Promise<WorkspaceResponse> {
+async function getWorkspace(token: string): Promise<WorkspaceResponse> {
   const copilot = new CopilotAPI(token)
   return await copilot.getWorkspace()
 }
