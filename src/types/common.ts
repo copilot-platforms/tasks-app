@@ -71,7 +71,9 @@ export const ClientResponseSchema = z.object({
   companyId: z.string(),
   status: z.string(),
   avatarImageUrl: z.string().nullable(),
-  customFields: z.record(z.string(), z.union([z.string(), z.array(z.string())]).nullable()).nullish(),
+  customFields: z
+    .record(z.string(), z.union([z.string().nullable(), z.array(z.string()).nullable(), z.object({}).nullable()]))
+    .nullable(),
   fallbackColor: z.string().nullish(),
   createdAt: z.string().datetime(),
 })

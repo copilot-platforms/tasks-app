@@ -9,7 +9,7 @@ import store from '@/redux/store'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { UserType } from '@/types/interfaces'
-import { Box, Modal } from '@mui/material'
+import { Box } from '@mui/material'
 import { useCallback, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
@@ -17,6 +17,7 @@ import { Tapwrite } from 'tapwrite'
 import AttachmentLayout from '@/components/AttachmentLayout'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
 import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
+import { StyledModal } from '@/app/detail/ui/styledComponent'
 
 interface Prop {
   task_id: string
@@ -207,7 +208,7 @@ export const TaskEditor = ({
       {/*   </> */}
       {/* )} */}
 
-      <Modal
+      <StyledModal
         open={showConfirmDeleteModal}
         onClose={() => store.dispatch(setShowConfirmDeleteModal())}
         aria-labelledby="delete-task-modal"
@@ -220,7 +221,7 @@ export const TaskEditor = ({
             store.dispatch(setShowConfirmDeleteModal())
           }}
         />
-      </Modal>
+      </StyledModal>
     </>
   )
 }
