@@ -4,7 +4,7 @@ import { ListBtn } from '@/components/buttons/ListBtn'
 import { MenuBox } from '@/components/inputs/MenuBox'
 import { EmojiIcon, ReplyIcon, TemplateIcon } from '@/icons'
 import { KeyboardArrowRight } from '@mui/icons-material'
-import { Box, Stack, Typography, styled } from '@mui/material'
+import { Box, Modal, Stack, Typography, styled } from '@mui/material'
 import Link from 'next/link'
 import { Tapwrite } from 'tapwrite'
 
@@ -112,5 +112,11 @@ export const StyledMenuBox = styled(MenuBox)(({ theme }) => ({
   svg: {
     height: '12px',
     width: '12px',
+  },
+}))
+
+export const StyledModal = styled(Modal)(({ theme }) => ({
+  '& > .MuiBackdrop-root': {
+    backgroundColor: theme.color.modal.backdrop,
   },
 }))

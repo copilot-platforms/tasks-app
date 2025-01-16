@@ -13,12 +13,13 @@ import {
 import store from '@/redux/store'
 import { CreateTemplateRequest } from '@/types/dto/templates.dto'
 import { ITemplate, TargetMethod } from '@/types/interfaces'
-import { Box, Modal, Stack, Typography } from '@mui/material'
+import { Box, Stack, Typography } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { NoTemplateLayout } from './NoTemplateLayout'
 import { TemplateForm } from './TemplateForm'
 import { ManageTemplateHeader } from '@/app/manage-templates/ui/Header'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { StyledModal } from '@/app/detail/ui/styledComponent'
 
 export const TemplateBoard = ({
   handleCreateTemplate,
@@ -94,7 +95,7 @@ export const TemplateBoard = ({
         <NoTemplateLayout />
       )}
 
-      <Modal
+      <StyledModal
         open={showTemplateModal}
         onClose={() => {
           store.dispatch(setShowTemplateModal({}))
@@ -119,9 +120,9 @@ export const TemplateBoard = ({
             }
           }}
         />
-      </Modal>
+      </StyledModal>
 
-      <Modal
+      <StyledModal
         open={showConfirmDeleteModal}
         onClose={() => store.dispatch(setShowConfirmDeleteModal())}
         aria-labelledby="delete-task-modal"
@@ -137,7 +138,7 @@ export const TemplateBoard = ({
           description={`“${taskName}” will be permanently deleted.`}
           customBody={'Delete template?'}
         />
-      </Modal>
+      </StyledModal>
     </>
   )
 }

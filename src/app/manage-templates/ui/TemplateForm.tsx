@@ -7,7 +7,7 @@ import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { AttachmentIcon } from '@/icons'
 import store from '@/redux/store'
 import { Close } from '@mui/icons-material'
-import { Box, Modal, Stack, Typography, styled } from '@mui/material'
+import { Box, Stack, Typography, styled } from '@mui/material'
 import { createTemplateErrors, TargetMethod } from '@/types/interfaces'
 import { useSelector } from 'react-redux'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
@@ -27,13 +27,14 @@ import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
 import AttachmentLayout from '@/components/AttachmentLayout'
+import { StyledModal } from '@/app/detail/ui/styledComponent'
 
 export const TemplateForm = ({ handleCreate }: { handleCreate: () => void }) => {
   const { workflowStates, assignee } = useSelector(selectTaskBoard)
   const { showTemplateModal, targetMethod } = useSelector(selectCreateTemplate)
 
   return (
-    <Modal
+    <StyledModal
       open={showTemplateModal}
       onClose={() => {
         store.dispatch(setShowTemplateModal({}))
@@ -75,7 +76,7 @@ export const TemplateForm = ({ handleCreate }: { handleCreate: () => void }) => 
         </AppMargin>
         <NewTaskFooter handleCreate={handleCreate} targetMethod={targetMethod} />
       </NewTaskContainer>
-    </Modal>
+    </StyledModal>
   )
 }
 

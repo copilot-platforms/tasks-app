@@ -22,7 +22,7 @@ export const ManageTemplatesAppBridge = ({ token, role, portalUrl }: TaskBoardAp
     store.dispatch(setShowTemplateModal({ targetMethod: TargetMethod.POST }))
   }
 
-  const handleBreadcrumbsClick = () => {
+  const handleNavigation = () => {
     router.push(`/?token=${token}`)
   }
 
@@ -38,11 +38,15 @@ export const ManageTemplatesAppBridge = ({ token, role, portalUrl }: TaskBoardAp
   useBreadcrumbs(
     [
       {
+        label: 'Tasks',
+        onClick: handleNavigation,
+      },
+      {
         label: 'Manage templates',
-        onClick: handleBreadcrumbsClick,
       },
     ],
     { portalUrl },
   )
+
   return <></>
 }

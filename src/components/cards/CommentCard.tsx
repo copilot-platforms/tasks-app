@@ -1,7 +1,7 @@
 'use client'
 
 import { DotSeparator } from '@/app/detail/ui/DotSeparator'
-import { BoldTypography, CommentCardContainer, StyledTypography } from '@/app/detail/ui/styledComponent'
+import { BoldTypography, CommentCardContainer, StyledModal, StyledTypography } from '@/app/detail/ui/styledComponent'
 import { ListBtn } from '@/components/buttons/ListBtn'
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 import { MenuBox } from '@/components/inputs/MenuBox'
@@ -17,7 +17,7 @@ import { getMentionsList } from '@/utils/getMentionList'
 import { getTimeDifference } from '@/utils/getTimeDifference'
 import { commentAddedResponseSchema } from '@api/activity-logs/schemas/CommentAddedSchema'
 import { LogResponse } from '@api/activity-logs/schemas/LogResponseSchema'
-import { Avatar, Box, InputAdornment, Modal, Stack, styled, Typography } from '@mui/material'
+import { Avatar, Box, InputAdornment, Stack, styled, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
@@ -182,7 +182,7 @@ export const CommentCard = ({
           </>
         ) : null}
       </Stack>
-      <Modal
+      <StyledModal
         open={showConfirmDeleteModal}
         onClose={() => setShowConfirmDeleteModal(false)}
         aria-labelledby="delete-task-modal"
@@ -196,7 +196,7 @@ export const CommentCard = ({
           }}
           bodyTag="comment"
         />
-      </Modal>
+      </StyledModal>
     </CommentCardContainer>
   )
 }
