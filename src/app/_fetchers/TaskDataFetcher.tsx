@@ -7,7 +7,7 @@ import { useSelector } from 'react-redux'
 import useSWR from 'swr'
 
 export const TaskDataFetcher = ({ token }: { token: string }) => {
-  const { showArchived, showUnarchived, tasks } = useSelector(selectTaskBoard)
+  const { showArchived, showUnarchived } = useSelector(selectTaskBoard)
 
   const latestArchivedOptions = useRef({ showArchived, showUnarchived })
 
@@ -35,6 +35,7 @@ export const TaskDataFetcher = ({ token }: { token: string }) => {
     const currentQueryString = buildQueryString(token, currentArchivedOptions)
     if (token) {
       try {
+        store.dispatch(setIsTasksLoading(true))
         await mutate().then((data) => {
           if (currentQueryString === buildQueryString(token, latestArchivedOptions.current)) {
             if (data) {
