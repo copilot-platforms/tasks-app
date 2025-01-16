@@ -15,10 +15,11 @@ export function useActionsMenu(actions: Clickable[], config?: Configurable) {
   useEffect(() => {
     const payload: ActionsMenuPayload = {
       type: 'header.actionsMenu',
-      items: actions.map(({ label, onClick, icon }, idx) => ({
+      items: actions.map(({ label, onClick, icon, color }, idx) => ({
         onClick: onClick ? getActionMenuItemId(idx) : '',
         label,
         icon,
+        color,
       })),
     }
 
