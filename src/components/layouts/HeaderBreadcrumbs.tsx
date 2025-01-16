@@ -24,7 +24,6 @@ export const HeaderBreadcrumbs = ({
   portalUrl?: string
 }) => {
   const { previewMode } = useSelector(selectTaskBoard)
-  const router = useRouter()
 
   const getTasksLink = (userType: UserType): ValidTasksBoardLink => {
     if (previewMode) return '/client'
@@ -37,10 +36,6 @@ export const HeaderBreadcrumbs = ({
   }
   useBreadcrumbs(
     [
-      {
-        label: 'Tasks',
-        onClick: () => router.push(getTasksLink(userType) + `?token=${token}`),
-      },
       {
         label: title,
       },

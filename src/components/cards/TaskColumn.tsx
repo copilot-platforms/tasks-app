@@ -14,19 +14,27 @@ const TaskColumnHeader = styled(Stack)({
   width: '304px',
 })
 
-const TaskColumnContainer = styled(Stack)({
+const TaskColumnContainer = styled(Stack)<{ showHeader?: boolean }>(({ showHeader }) => ({
   width: '306px',
-  height: 'calc(100vh - 195px)',
+  height: `calc(100vh - ${showHeader ? '195px' : '145px'})`,
   marginTop: '6px',
   justifyContent: 'space-between',
   alignItems: 'center',
-})
+}))
 
 interface TaskColumnProps extends TaskWorkflowStateProps {
   showAddBtn: boolean
+  showHeader: boolean
 }
 
-export const TaskColumn = ({ workflowStateId, children, columnName, taskCount, showAddBtn }: TaskColumnProps) => {
+export const TaskColumn = ({
+  workflowStateId,
+  children,
+  columnName,
+  taskCount,
+  showAddBtn,
+  showHeader,
+}: TaskColumnProps) => {
   return (
     <>
       <TaskColumnHeader>
@@ -43,7 +51,7 @@ export const TaskColumn = ({ workflowStateId, children, columnName, taskCount, s
           {/* (22 - 16) / 2 */}
         </Box>
       </TaskColumnHeader>
-      <TaskColumnContainer>{children}</TaskColumnContainer>
+      <TaskColumnContainer showHeader={showHeader}>{children}</TaskColumnContainer>
     </>
   )
 }
