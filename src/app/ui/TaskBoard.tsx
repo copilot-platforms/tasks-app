@@ -155,6 +155,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
                   columnName={list.name}
                   taskCount={taskCountForWorkflowStateId(list.id)}
                   showAddBtn={mode === UserRole.IU || !!previewMode}
+                  showHeader={showHeader}
                 >
                   <CustomScrollbar style={{ padding: '4px' }}>
                     <Stack direction="column" rowGap="6px" sx={{ overflowX: 'auto' }}>
@@ -195,7 +196,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
         <Stack
           sx={{
             flexDirection: 'column',
-            height: 'calc(100vh - 135px)',
+            height: `calc(100vh - ${showHeader ? '135px' : '75px'})`,
             width: '99.92%',
             margin: '0 auto',
           }}
