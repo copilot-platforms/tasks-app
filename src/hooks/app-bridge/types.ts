@@ -33,6 +33,7 @@ export interface ActionsMenuPayload {
     label: string
     onClick: string
     icon?: Icons
+    color?: string
   }[]
   type: 'header.actionsMenu'
 }
@@ -41,6 +42,7 @@ export interface Clickable {
   label: string
   onClick?: () => void
   icon?: Icons
+  color?: string
 }
 
 export interface Configurable {

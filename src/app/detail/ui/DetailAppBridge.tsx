@@ -33,6 +33,7 @@ export const DetailAppBridge = ({ isArchived, handleToggleArchive, portalUrl }: 
       label: 'Delete task',
       icon: Icons.TRASH,
       onClick: handleDelete,
+      color: 'red',
     },
   ]
   if (!isArchived) {
