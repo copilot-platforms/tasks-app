@@ -66,7 +66,7 @@ class UsersService extends BaseService {
 
     return {
       // CopilotAPI doesn't currently support sorting data, so manually sort them before returning a response
-      internalUsers: internalUsers,
+      internalUsers,
       clients: orderByRecentlyCreatedAt(accessibleClients),
       companies: orderByRecentlyCreatedAt(filteredCompanies),
     }
