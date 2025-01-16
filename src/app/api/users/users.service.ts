@@ -59,9 +59,14 @@ class UsersService extends BaseService {
         : clientsWithCompanyData
     )?.slice(0, limit)
 
+    const internalUsers = [
+      currentInternalUser,
+      ...orderByRecentlyCreatedAt(ius.data.filter((user) => user.id !== currentInternalUser.id)),
+    ] //Always keeping the current user at the first of the list.
+
     return {
       // CopilotAPI doesn't currently support sorting data, so manually sort them before returning a response
-      internalUsers: orderByRecentlyCreatedAt(ius.data),
+      internalUsers,
       clients: orderByRecentlyCreatedAt(accessibleClients),
       companies: orderByRecentlyCreatedAt(filteredCompanies),
     }
