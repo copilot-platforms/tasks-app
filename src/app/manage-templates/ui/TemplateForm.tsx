@@ -50,17 +50,13 @@ export const TemplateForm = ({ handleCreate }: { handleCreate: () => void }) => 
           justifyContent="space-between"
           sx={{
             border: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
-            padding: '14px 20px',
+            padding: '12px 28px',
           }}
         >
           {targetMethod === TargetMethod.POST ? (
-            <Typography variant="md" fontSize={'15px'} lineHeight={'18.15px'}>
-              Create template
-            </Typography>
+            <Typography variant="lg">Create template</Typography>
           ) : (
-            <Typography variant="md" fontSize={'15px'} lineHeight={'18.15px'}>
-              Edit template
-            </Typography>
+            <Typography variant="lg">Edit template</Typography>
           )}
           <Close
             sx={{ color: (theme) => theme.color.gray[500], cursor: 'pointer', width: 20, height: 20 }}
@@ -71,7 +67,7 @@ export const TemplateForm = ({ handleCreate }: { handleCreate: () => void }) => 
           />
         </Stack>
 
-        <AppMargin size={SizeofAppMargin.MEDIUM} py="16px">
+        <AppMargin size={SizeofAppMargin.MEDIUM} py="12px">
           <NewTaskFormInputs />
         </AppMargin>
         <NewTaskFooter handleCreate={handleCreate} targetMethod={targetMethod} />
