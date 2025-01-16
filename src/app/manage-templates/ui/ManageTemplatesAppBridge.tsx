@@ -17,13 +17,8 @@ interface TaskBoardAppBridgeProps {
 }
 
 export const ManageTemplatesAppBridge = ({ token, role, portalUrl }: TaskBoardAppBridgeProps) => {
-  const router = useRouter()
   const handleTemplateCreate = () => {
     store.dispatch(setShowTemplateModal({ targetMethod: TargetMethod.POST }))
-  }
-
-  const handleNavigation = () => {
-    router.push(`/?token=${token}`)
   }
 
   usePrimaryCta(
@@ -37,10 +32,6 @@ export const ManageTemplatesAppBridge = ({ token, role, portalUrl }: TaskBoardAp
   useActionsMenu([], { portalUrl })
   useBreadcrumbs(
     [
-      {
-        label: 'Tasks',
-        onClick: handleNavigation,
-      },
       {
         label: 'Manage templates',
       },
