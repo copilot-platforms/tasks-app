@@ -21,10 +21,7 @@ export const useBreadcrumbs = (breadcrumbs: Clickable[], config?: Configurable) 
       })),
     }
 
-    window.parent.postMessage(payload, ensureHttps('https://dashboard.copilot.com'))
-    if (config?.portalUrl) {
-      window.parent.postMessage(payload, ensureHttps(config.portalUrl))
-    }
+    window.parent.postMessage(payload, ensureHttps(config?.portalUrl ?? 'https://dashboard.copilot.com'))
 
     const handleMessage = (event: MessageEvent) => {
       if (
