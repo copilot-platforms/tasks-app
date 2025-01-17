@@ -11,7 +11,7 @@ export const useBreadcrumbs = (breadcrumbs: Clickable[], config?: Configurable) 
       return acc
     }, {})
   }, [breadcrumbs])
-
+  console.log('breadcrumbs', breadcrumbs)
   useEffect(() => {
     const payload: BreadcrumbsPayload = {
       type: 'header.breadcrumbs',
@@ -20,6 +20,7 @@ export const useBreadcrumbs = (breadcrumbs: Clickable[], config?: Configurable) 
         label,
       })),
     }
+    console.log('payload', payload)
 
     window.parent.postMessage(payload, ensureHttps(config?.portalUrl ?? 'https://dashboard.copilot.com'))
 
