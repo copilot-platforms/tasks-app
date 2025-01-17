@@ -27,12 +27,6 @@ export const HeaderBreadcrumbs = ({
   const { previewMode } = useSelector(selectTaskBoard)
   const router = useRouter()
 
-  const [awake, setAwake] = useState(false)
-  setTimeout(() => {
-    console.log('setting timeout')
-    setAwake(true)
-  }, 2000)
-
   const getTasksLink = (userType: UserType): ValidTasksBoardLink => {
     if (previewMode) return '/client'
 
