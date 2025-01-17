@@ -28,6 +28,8 @@ import { clientUpdateTask } from '@/app/detail/[task_id]/[user_type]/actions'
 import { TaskDataFetcher } from '@/app/_fetchers/TaskDataFetcher'
 import { NoFilteredTasksState } from '@/components/layouts/EmptyState/NoFilteredTasksState'
 import { useFilter } from '@/hooks/useFilter'
+import { TaskBoardAppBridge } from '@/app/ui/TaskBoardAppBridge'
+import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 
 interface TaskBoardProps {
   mode: UserRole
@@ -46,7 +48,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
     isTasksLoading,
     previewMode,
   } = useSelector(selectTaskBoard)
-
+  const { workspace } = useSelector(selectAuthDetails)
   const onDropItem = useCallback(
     (payload: { taskId: string; targetWorkflowStateId: string }) => {
       const { taskId, targetWorkflowStateId } = payload
@@ -110,6 +112,8 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
     return (
       <>
         <TaskDataFetcher token={token ?? ''} />
+        <TaskBoardAppBridge token={token ?? ''} role={UserRole.IU} isTaskBoardEmpty={true} />
+
         <DashboardEmptyState userType={mode} />
       </>
     )
@@ -119,6 +123,8 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
 
   return (
     <>
+      <TaskBoardAppBridge token={token ?? ''} role={UserRole.IU} />
+
       <TaskDataFetcher token={token ?? ''} />
       {showHeader && <Header showCreateTaskButton={mode === UserRole.IU || !!previewMode} showMenuBox={!previewMode} />}
       <FilterBar

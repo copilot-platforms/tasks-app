@@ -83,6 +83,7 @@ export default async function ClientPage({ searchParams }: { searchParams: { tok
         token={token}
         tokenPayload={tokenPayload}
         viewSettings={viewSettings}
+        workspace={workspace}
       >
         <Suspense fallback={null}>
           <AssigneeFetcher
@@ -94,7 +95,7 @@ export default async function ClientPage({ searchParams }: { searchParams: { tok
         <Suspense fallback={null}>
           <TemplatesFetcher token={token} />
         </Suspense>
-        <TaskBoardAppBridge token={token} role={UserRole.Client} portalUrl={workspace.portalUrl} />
+        <TaskBoardAppBridge token={token} role={UserRole.Client} />
         <RealTime tokenPayload={tokenPayload}>
           <DndWrapper>
             <TaskBoard mode={UserRole.Client} />

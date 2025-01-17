@@ -51,12 +51,6 @@ async function getTokenPayload(token: string): Promise<Token> {
   const payload = TokenSchema.parse(await copilotClient.getTokenPayload())
   return payload
 }
-
-async function getWorkspace(token: string): Promise<WorkspaceResponse> {
-  const copilot = new CopilotAPI(token)
-  return await copilot.getWorkspace()
-}
-
 interface ManageTemplatesPageProps {
   searchParams: {
     token: string
@@ -65,12 +59,11 @@ interface ManageTemplatesPageProps {
 
 export default async function ManageTemplatesPage({ searchParams }: ManageTemplatesPageProps) {
   const { token } = searchParams
-  const [workflowStates, assignee, templates, tokenPayload, workspace] = await Promise.all([
+  const [workflowStates, assignee, templates, tokenPayload] = await Promise.all([
     getAllWorkflowStates(token),
     addTypeToAssignee(await getAssigneeList(token)),
     getAllTemplates(token),
     getTokenPayload(token),
-    getWorkspace(token),
   ])
 
   return (
@@ -81,7 +74,7 @@ export default async function ManageTemplatesPage({ searchParams }: ManageTempla
       templates={templates}
       tokenPayload={tokenPayload}
     >
-      <ManageTemplatesAppBridge token={token} role={UserRole.IU} portalUrl={workspace.portalUrl} />
+      <ManageTemplatesAppBridge token={token} role={UserRole.IU} />
       <RealTimeTemplates tokenPayload={tokenPayload}>
         <TemplateBoard
           handleCreateTemplate={async (payload: CreateTemplateRequest) => {

@@ -4,6 +4,7 @@ import { StyledKeyboardIcon, StyledTypography } from '@/app/detail/ui/styledComp
 import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
 import { CustomLink } from '@/hoc/CustomLink'
 import { useBreadcrumbs } from '@/hooks/app-bridge/useBreadcrumbs'
+import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { UserType } from '@/types/interfaces'
 import { Stack, Typography } from '@mui/material'
@@ -16,15 +17,13 @@ export const HeaderBreadcrumbs = ({
   token,
   title,
   userType,
-  portalUrl,
 }: {
   token: string | undefined
   title: string
   userType: UserType
-  portalUrl?: string
 }) => {
   const { previewMode } = useSelector(selectTaskBoard)
-
+  const { workspace } = useSelector(selectAuthDetails)
   const getTasksLink = (userType: UserType): ValidTasksBoardLink => {
     if (previewMode) return '/client'
 
@@ -34,6 +33,8 @@ export const HeaderBreadcrumbs = ({
     }
     return tasksLinks[userType]
   }
+
+  const portalUrl = workspace?.portalUrl
   useBreadcrumbs(
     [
       {

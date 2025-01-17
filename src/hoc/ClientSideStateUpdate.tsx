@@ -1,6 +1,6 @@
 'use client'
 
-import { setTokenPayload } from '@/redux/features/authDetailsSlice'
+import { setTokenPayload, setWorkspace } from '@/redux/features/authDetailsSlice'
 import {
   selectTaskBoard,
   setActiveTask,
@@ -15,7 +15,7 @@ import {
 import { setAssigneeSuggestion } from '@/redux/features/taskDetailsSlice'
 import { setTemplates } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
-import { Token } from '@/types/common'
+import { Token, WorkspaceResponse } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
@@ -41,6 +41,7 @@ export const ClientSideStateUpdate = ({
   templates,
   assigneeSuggestions,
   task,
+  workspace,
 }: {
   children: ReactNode
   workflowStates?: WorkflowStateResponse[]
@@ -52,6 +53,7 @@ export const ClientSideStateUpdate = ({
   templates?: ITemplate[]
   assigneeSuggestions?: IAssigneeSuggestions[]
   task?: TaskResponse
+  workspace?: WorkspaceResponse
 }) => {
   const { tasks: tasksInStore, viewSettingsTemp } = useSelector(selectTaskBoard)
   useEffect(() => {
@@ -100,6 +102,10 @@ export const ClientSideStateUpdate = ({
       store.dispatch(setTasks(updatedTasks))
       store.dispatch(setActiveTask(task))
     } //for updating a task in store with respect to task response from db in task details page
+
+    if (workspace) {
+      store.dispatch(setWorkspace(workspace))
+    }
   }, [workflowStates, tasks, token, assignee, viewSettings, tokenPayload, templates, assigneeSuggestions, task])
 
   return children

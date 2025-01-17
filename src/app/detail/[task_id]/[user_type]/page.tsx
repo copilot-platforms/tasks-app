@@ -51,11 +51,6 @@ async function getOneTask(token: string, taskId: string): Promise<TaskResponse> 
   return data.task
 }
 
-async function getWorkspace(token: string): Promise<WorkspaceResponse> {
-  const copilot = new CopilotAPI(token)
-  return await copilot.getWorkspace()
-}
-
 export default async function TaskDetailPage({
   params,
   searchParams,
@@ -72,11 +67,7 @@ export default async function TaskDetailPage({
 
   const copilotClient = new CopilotAPI(token)
 
-  const [task, tokenPayload, workspace] = await Promise.all([
-    getOneTask(token, task_id),
-    copilotClient.getTokenPayload(),
-    getWorkspace(token),
-  ])
+  const [task, tokenPayload] = await Promise.all([getOneTask(token, task_id), copilotClient.getTokenPayload()])
 
   if (!tokenPayload) {
     throw new Error('Please provide a Valid Token')
@@ -110,12 +101,7 @@ export default async function TaskDetailPage({
                 </AppMargin>
               ) : (
                 <>
-                  <HeaderBreadcrumbs
-                    token={token}
-                    title={task?.label}
-                    userType={params.user_type}
-                    portalUrl={workspace.portalUrl}
-                  />
+                  <HeaderBreadcrumbs token={token} title={task?.label} userType={params.user_type} />
                   <ArchiveWrapper taskId={task_id} userType={user_type} />
                 </>
               )}

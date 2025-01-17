@@ -103,6 +103,7 @@ export default async function Main({ searchParams }: { searchParams: { token: st
       token={token}
       viewSettings={viewSettings}
       tokenPayload={tokenPayload}
+      workspace={workspace}
     >
       {/* Async fetchers */}
       <Suspense fallback={null}>
@@ -112,7 +113,7 @@ export default async function Main({ searchParams }: { searchParams: { token: st
         <TemplatesFetcher token={token} />
       </Suspense>
 
-      <TaskBoardAppBridge token={token} role={UserRole.IU} portalUrl={workspace.portalUrl} />
+      <TaskBoardAppBridge token={token} role={UserRole.IU} />
 
       <RealTime tokenPayload={tokenPayload}>
         <DndWrapper>

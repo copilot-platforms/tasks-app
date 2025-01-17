@@ -10,7 +10,7 @@ import { Skeleton } from '@mui/material'
 import store from '@/redux/store'
 import { selectTaskDetails, setTask } from '@/redux/features/taskDetailsSlice'
 import { UserType } from '@/types/interfaces'
-import { DetailAppBridge } from './DetailAppBridge'
+import { DetailAppBridge } from '@/app/detail/ui/DetailAppBridge'
 
 export const ArchiveWrapper = ({ taskId, userType }: { taskId: string; userType: UserType }) => {
   const { token, activeTask, previewMode } = useSelector(selectTaskBoard)
