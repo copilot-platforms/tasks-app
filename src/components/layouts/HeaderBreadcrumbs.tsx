@@ -39,10 +39,6 @@ export const HeaderBreadcrumbs = ({
   useBreadcrumbs(
     [
       {
-        label: 'Tasks',
-        onClick: () => router.push(getTasksLink(userType) + `?token=${token}`),
-      },
-      {
         label: title,
       },
     ],
