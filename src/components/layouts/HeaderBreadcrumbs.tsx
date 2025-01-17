@@ -29,8 +29,9 @@ export const HeaderBreadcrumbs = ({
 
   const [awake, setAwake] = useState(false)
   setTimeout(() => {
+    console.log('setting timeout')
     setAwake(true)
-  }, 0)
+  }, 2000)
 
   const getTasksLink = (userType: UserType): ValidTasksBoardLink => {
     if (previewMode) return '/client'
