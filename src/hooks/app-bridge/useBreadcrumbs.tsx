@@ -21,8 +21,11 @@ export const useBreadcrumbs = (breadcrumbs: Clickable[], config?: Configurable) 
       })),
     }
     console.log('payload', payload)
-
-    window.parent.postMessage(payload, ensureHttps(config?.portalUrl ?? 'https://dashboard.copilot.com'))
+    try {
+      window.parent.postMessage(payload, ensureHttps(config?.portalUrl ?? 'https://dashboard.copilot.com'))
+    } catch (err) {
+      console.log('there is an error', err)
+    }
 
     const handleMessage = (event: MessageEvent) => {
       if (
