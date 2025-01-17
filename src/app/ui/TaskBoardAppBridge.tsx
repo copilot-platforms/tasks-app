@@ -61,14 +61,7 @@ export const TaskBoardAppBridge = ({ token, role, portalUrl }: TaskBoardAppBridg
         ],
     { portalUrl },
   )
-  useBreadcrumbs(
-    [
-      {
-        label: 'TASKS',
-      },
-    ],
-    { portalUrl },
-  )
+  useBreadcrumbs([], { portalUrl })
 
   return <></>
 }

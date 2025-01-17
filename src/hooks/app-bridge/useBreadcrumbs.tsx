@@ -21,9 +21,7 @@ export const useBreadcrumbs = (breadcrumbs: Clickable[], config?: Configurable) 
       })),
     }
 
-    setTimeout(() => {
-      window.parent.postMessage(payload, ensureHttps(config?.portalUrl ?? 'https://dashboard.copilot.com'))
-    }, 1000)
+    window.parent.postMessage(payload, ensureHttps(config?.portalUrl ?? 'https://dashboard.copilot.com'))
 
     const handleMessage = (event: MessageEvent) => {
       if (
@@ -41,4 +39,17 @@ export const useBreadcrumbs = (breadcrumbs: Clickable[], config?: Configurable) 
       removeEventListener('message', handleMessage)
     }
   }, [breadcrumbs, callbackRefs, config?.portalUrl])
+
+  useEffect(() => {
+    const handleUnload = () => {
+      window.parent.postMessage(
+        { type: 'header.breadcrumbs', items: [] },
+        ensureHttps(config?.portalUrl ?? 'https://dashboard.copilot.com'),
+      )
+    }
+    addEventListener('beforeunload', handleUnload)
+    return () => {
+      removeEventListener('beforeunload', handleUnload)
+    }
+  }, [])
 }
