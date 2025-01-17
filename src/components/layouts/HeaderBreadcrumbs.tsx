@@ -8,6 +8,7 @@ import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { UserType } from '@/types/interfaces'
 import { Stack, Typography } from '@mui/material'
 import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 import { useSelector } from 'react-redux'
 
 type ValidTasksBoardLink = '/' | '/client'
