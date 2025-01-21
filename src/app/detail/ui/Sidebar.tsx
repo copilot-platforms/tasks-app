@@ -132,7 +132,7 @@ export const Sidebar = ({
             setInputStatusValue={setInputStatusValue}
             buttonWidth="100%"
             padding={'3px 8px'}
-            placeholder="Change assignee"
+            placeholder="Set assignee"
             getSelectedValue={(newValue) => {
               const assignee = newValue as IAssigneeCombined
               updateAssigneeValue(assignee)
@@ -182,8 +182,9 @@ export const Sidebar = ({
                 newInputValue,
               )
             }}
+            disabled={disabled}
+            cursor="default"
             filterOption={(x: unknown) => x}
-            disabled={true} //for now, disable re-assignment completely
             responsiveNoHide
           />
         </Box>
@@ -271,7 +272,7 @@ export const Sidebar = ({
               inputStatusValue={inputStatusValue}
               setInputStatusValue={setInputStatusValue}
               buttonWidth="100%"
-              placeholder="Change assignee"
+              placeholder="Set assignee"
               getSelectedValue={(newValue) => {
                 const assignee = newValue as IAssigneeCombined
                 updateAssigneeValue(assignee)
@@ -328,8 +329,8 @@ export const Sidebar = ({
                 )
               }}
               filterOption={(x: unknown) => x}
-              // disabled={disabled}
-              disabled={true} //for now, disable re-assignment completely
+              disabled={disabled}
+              cursor={'default'}
               disableOutline
               responsiveNoHide
             />

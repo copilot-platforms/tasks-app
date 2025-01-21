@@ -17,6 +17,13 @@ export const StyledAutocomplete = styled(Autocomplete, {
     '& .MuiAutocomplete-input': {
       padding: '0px',
       height: '21px',
+      marginLeft: '4px',
+      '&::placeholder': {
+        color: '#9B9FA3',
+        fontSize: '13px',
+        fontWeight: 400,
+        lineHeight: '21px',
+      },
     },
   },
   '& .MuiOutlinedInput-root.Mui-focused': {
