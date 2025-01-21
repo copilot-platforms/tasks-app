@@ -14,6 +14,7 @@ import { StyledHelperText } from '@/components/error/FormHelperText'
 import React from 'react'
 import { ListComponent } from '@/components/inputs/ListComponent'
 import { ModifierArguments } from '@popperjs/core'
+import { Property } from 'csstype'
 
 export enum SelectorType {
   ASSIGNEE_SELECTOR = 'assigneeSelector',
@@ -52,6 +53,7 @@ interface Prop {
   endOptionHref?: string
   listAutoHeightMax?: string
   useClickHandler?: boolean
+  cursor?: Property.Cursor | undefined
 }
 
 export default function Selector({
@@ -81,6 +83,7 @@ export default function Selector({
   endOptionHref,
   listAutoHeightMax,
   useClickHandler,
+  cursor,
 }: Prop) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
@@ -157,7 +160,7 @@ export default function Selector({
             sx={{
               width: { sm: responsiveNoHide ? buttonWidth || '100px' : '36px', md: buttonWidth || '100px' },
               justifyContent: { xs: 'flex-start', sm: 'flex-start' },
-              cursor: disabled ? 'auto' : 'pointer',
+              cursor: disabled ? 'auto' : (cursor ?? 'pointer'),
               borderRadius: '4px',
               padding: '4px 8px',
               ':hover': {
@@ -475,6 +478,7 @@ const SelectorButton = ({
   height,
   error,
   endIcon,
+  cursor,
 }: {
   startIcon?: ReactNode
   buttonContent: ReactNode
@@ -486,6 +490,7 @@ const SelectorButton = ({
   height?: string
   error?: boolean
   endIcon?: ReactNode
+  cursor?: Property.Cursor | undefined
 }) => {
   return (
     <Button
@@ -514,7 +519,7 @@ const SelectorButton = ({
           bgcolor: theme.color.borders.border,
         },
         padding: padding ? padding : { xs: '2px 9px', md: '4px 16px' },
-        cursor: disabled ? 'auto' : 'pointer',
+        cursor: disabled ? 'auto' : (cursor ?? 'pointer'),
         '& .MuiButton-startIcon': {
           '& .MuiAvatar-root': {
             fontSize: '14px',
