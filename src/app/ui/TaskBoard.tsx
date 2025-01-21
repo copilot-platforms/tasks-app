@@ -33,7 +33,7 @@ import { TaskBoardAppBridge } from '@/app/ui/TaskBoardAppBridge'
 
 interface TaskBoardProps {
   mode: UserRole
-  workspace: WorkspaceResponse
+  workspace?: WorkspaceResponse
 }
 export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
   const {
@@ -117,7 +117,7 @@ export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
           <TaskBoardAppBridge
             token={token ?? ''}
             role={UserRole.IU}
-            portalUrl={workspace.portalUrl}
+            portalUrl={workspace?.portalUrl}
             isTaskBoardEmpty={true}
           />
         )}
@@ -132,7 +132,7 @@ export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
   return (
     <>
       <TaskDataFetcher token={token ?? ''} />
-      {mode == UserRole.IU && <TaskBoardAppBridge token={token ?? ''} role={UserRole.IU} portalUrl={workspace.portalUrl} />}
+      {mode == UserRole.IU && <TaskBoardAppBridge token={token ?? ''} role={UserRole.IU} portalUrl={workspace?.portalUrl} />}
       {showHeader && <Header showCreateTaskButton={mode === UserRole.IU || !!previewMode} showMenuBox={!previewMode} />}
       <FilterBar
         mode={mode}
