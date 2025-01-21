@@ -113,8 +113,6 @@ export default async function Main({ searchParams }: { searchParams: { token: st
         <TemplatesFetcher token={token} />
       </Suspense>
 
-      <TaskBoardAppBridge token={token} role={UserRole.IU} />
-
       <RealTime tokenPayload={tokenPayload}>
         <DndWrapper>
           <TaskBoard mode={UserRole.IU} />

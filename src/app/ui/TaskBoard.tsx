@@ -112,8 +112,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
     return (
       <>
         <TaskDataFetcher token={token ?? ''} />
-        <TaskBoardAppBridge token={token ?? ''} role={UserRole.IU} isTaskBoardEmpty={true} />
-
+        {mode === UserRole.IU && <TaskBoardAppBridge token={token ?? ''} role={UserRole.IU} isTaskBoardEmpty={true} />}
         <DashboardEmptyState userType={mode} />
       </>
     )
@@ -123,7 +122,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
 
   return (
     <>
-      <TaskBoardAppBridge token={token ?? ''} role={UserRole.IU} />
+      {mode === UserRole.IU && <TaskBoardAppBridge token={token ?? ''} role={UserRole.IU} />}
 
       <TaskDataFetcher token={token ?? ''} />
       {showHeader && <Header showCreateTaskButton={mode === UserRole.IU || !!previewMode} showMenuBox={!previewMode} />}
