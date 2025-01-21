@@ -77,7 +77,7 @@ export const TaskEditor = ({
 
   const _titleUpdateDebounced = async (title: string) => updateTaskTitle(title)
 
-  const [titleUpdateDebounced, cancelTitleUpdateDebounced] = useDebounceWithCancel(_titleUpdateDebounced)
+  const [titleUpdateDebounced, cancelTitleUpdateDebounced] = useDebounceWithCancel(_titleUpdateDebounced, 1000)
 
   const _detailsUpdateDebounced = async (details: string) => updateTaskDetail(details)
   const detailsUpdateDebounced = useDebounce(_detailsUpdateDebounced)
