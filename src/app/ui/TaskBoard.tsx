@@ -28,11 +28,14 @@ import { clientUpdateTask } from '@/app/detail/[task_id]/[user_type]/actions'
 import { TaskDataFetcher } from '@/app/_fetchers/TaskDataFetcher'
 import { NoFilteredTasksState } from '@/components/layouts/EmptyState/NoFilteredTasksState'
 import { useFilter } from '@/hooks/useFilter'
+import { WorkspaceResponse } from '@/types/common'
+import { TaskBoardAppBridge } from '@/app/ui/TaskBoardAppBridge'
 
 interface TaskBoardProps {
   mode: UserRole
+  workspace: WorkspaceResponse
 }
-export const TaskBoard = ({ mode }: TaskBoardProps) => {
+export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
   const {
     workflowStates,
     tasks,
@@ -110,6 +113,15 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
     return (
       <>
         <TaskDataFetcher token={token ?? ''} />
+        {mode == UserRole.IU && (
+          <TaskBoardAppBridge
+            token={token ?? ''}
+            role={UserRole.IU}
+            portalUrl={workspace.portalUrl}
+            isTaskBoardEmpty={true}
+          />
+        )}
+
         <DashboardEmptyState userType={mode} />
       </>
     )
@@ -120,6 +132,7 @@ export const TaskBoard = ({ mode }: TaskBoardProps) => {
   return (
     <>
       <TaskDataFetcher token={token ?? ''} />
+      {mode == UserRole.IU && <TaskBoardAppBridge token={token ?? ''} role={UserRole.IU} portalUrl={workspace.portalUrl} />}
       {showHeader && <Header showCreateTaskButton={mode === UserRole.IU || !!previewMode} showMenuBox={!previewMode} />}
       <FilterBar
         mode={mode}
