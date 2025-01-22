@@ -36,19 +36,7 @@ interface Prop<T extends keyof SelectorOptionsType> {
   startIcon: ReactNode
   value: unknown
   selectorType: T
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
   options: SelectorOptionsType[T][] | IExtraOption[]
-=======
-  options: SelectorOptionsType[T][]
->>>>>>> 05b1d87c (feat(OUT-1307) :)
-=======
-  options: SelectorOptionsType[T][] | IExtraOption[]
->>>>>>> 766eafb4 (fix(OUT-1307) : options prop in selector component now accepts IExtraOption[] type too.)
-=======
-  options: SelectorOptionsType[T][]
->>>>>>> 51b304fb (feat(OUT-1307) :)
   buttonContent: ReactNode
   inputStatusValue: string
   setInputStatusValue: React.Dispatch<React.SetStateAction<string>>
@@ -74,14 +62,7 @@ interface Prop<T extends keyof SelectorOptionsType> {
   endOptionHref?: string
   listAutoHeightMax?: string
   useClickHandler?: boolean
-<<<<<<< HEAD
   cursor?: Property.Cursor
-=======
-  cursor?: Property.Cursor | undefined
-<<<<<<< HEAD
->>>>>>> 05b1d87c (feat(OUT-1307) :)
-=======
->>>>>>> 51b304fb (feat(OUT-1307) :)
   currentOption?: SelectorOptionsType[T]
 }
 
