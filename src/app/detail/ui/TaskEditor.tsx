@@ -77,7 +77,7 @@ export const TaskEditor = ({
 
   const _titleUpdateDebounced = async (title: string) => updateTaskTitle(title)
 
-  const [titleUpdateDebounced, cancelTitleUpdateDebounced] = useDebounceWithCancel(_titleUpdateDebounced, 1000)
+  const [titleUpdateDebounced, cancelTitleUpdateDebounced] = useDebounceWithCancel(_titleUpdateDebounced, 1500)
 
   const _detailsUpdateDebounced = async (details: string) => updateTaskDetail(details)
   const detailsUpdateDebounced = useDebounce(_detailsUpdateDebounced)
@@ -86,19 +86,20 @@ export const TaskEditor = ({
     setIsUserTyping(false)
   }, [])
 
-  const [debouncedResetTypingFlag, cancelDebouncedResetTypingFlag] = useDebounceWithCancel(resetTypingFlag, 1500)
+  const [debouncedResetTypingFlag, _cancelDebouncedResetTypingFlag] = useDebounceWithCancel(resetTypingFlag, 1500)
+  const [debouncedResetTypingFlagTitle, cancelDebouncedResetTypingFlagTitle] = useDebounceWithCancel(resetTypingFlag, 2500)
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newTitle = e.target.value
     setUpdateTitle(newTitle)
     if (newTitle.trim() == '') {
       cancelTitleUpdateDebounced()
-      cancelDebouncedResetTypingFlag()
+      cancelDebouncedResetTypingFlagTitle()
       return
     }
     setIsUserTyping(true)
     titleUpdateDebounced(newTitle)
-    debouncedResetTypingFlag()
+    debouncedResetTypingFlagTitle()
   }
 
   const handleTitleBlur = () => {

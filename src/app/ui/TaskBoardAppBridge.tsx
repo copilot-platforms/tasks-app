@@ -15,9 +15,10 @@ interface TaskBoardAppBridgeProps {
   token: string
   role: UserRole
   portalUrl?: string
+  isTaskBoardEmpty?: boolean
 }
 
-export const TaskBoardAppBridge = ({ token, role, portalUrl }: TaskBoardAppBridgeProps) => {
+export const TaskBoardAppBridge = ({ token, role, portalUrl, isTaskBoardEmpty = false }: TaskBoardAppBridgeProps) => {
   const router = useRouter()
 
   const [awake, setAwake] = useState(false)
@@ -36,7 +37,7 @@ export const TaskBoardAppBridge = ({ token, role, portalUrl }: TaskBoardAppBridg
   }
 
   usePrimaryCta(
-    role == UserRole.Client
+    role == UserRole.Client || isTaskBoardEmpty
       ? null
       : {
           label: 'Create task',

@@ -112,11 +112,9 @@ export default async function Main({ searchParams }: { searchParams: { token: st
         <TemplatesFetcher token={token} />
       </Suspense>
 
-      <TaskBoardAppBridge token={token} role={UserRole.IU} portalUrl={workspace.portalUrl} />
-
       <RealTime tokenPayload={tokenPayload}>
         <DndWrapper>
-          <TaskBoard mode={UserRole.IU} />
+          <TaskBoard mode={UserRole.IU} workspace={workspace} />
         </DndWrapper>
         <ModalNewTaskForm
           handleCreateMultipleAttachments={async (attachments: CreateAttachmentRequest[]) => {
