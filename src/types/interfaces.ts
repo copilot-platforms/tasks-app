@@ -171,4 +171,5 @@ export const UserTypesName = {
   internalUsers: 'Internal users',
   clients: 'Clients',
   companies: 'Companies',
+  standalone: 'Standalone', // for options in selector component which shall not be grouped
 }
