@@ -53,7 +53,7 @@ interface Prop {
   endOptionHref?: string
   listAutoHeightMax?: string
   useClickHandler?: boolean
-  cursor?: Property.Cursor | undefined
+  cursor?: Property.Cursor
 }
 
 export default function Selector({
@@ -490,7 +490,7 @@ const SelectorButton = ({
   height?: string
   error?: boolean
   endIcon?: ReactNode
-  cursor?: Property.Cursor | undefined
+  cursor?: Property.Cursor
 }) => {
   return (
     <Button
