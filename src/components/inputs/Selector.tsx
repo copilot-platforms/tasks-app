@@ -2,7 +2,7 @@ import { Box, Button, Popper, Stack, Typography } from '@mui/material'
 import { StyledAutocomplete } from '@/components/inputs/Autocomplete'
 import { statusIcons } from '@/utils/iconMatcher'
 import { useFocusableInput } from '@/hooks/useFocusableInput'
-import { HTMLAttributes, ReactNode, useEffect, useState } from 'react'
+import { HTMLAttributes, ReactNode, useEffect, useMemo, useState } from 'react'
 import { StyledTextField } from './TextField'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { IAssigneeCombined, Sizes, IExtraOption, ITemplate, UserTypesName } from '@/types/interfaces'
@@ -21,13 +21,22 @@ export enum SelectorType {
   STATUS_SELECTOR = 'statusSelector',
   TEMPLATE_SELECTOR = 'templateSelected',
 }
+type SelectorOptionsType = {
+  [K in keyof typeof SelectorType as `${(typeof SelectorType)[K]}`]: K extends 'ASSIGNEE_SELECTOR'
+    ? IAssigneeCombined
+    : K extends 'STATUS_SELECTOR'
+      ? WorkflowStateResponse
+      : K extends 'TEMPLATE_SELECTOR'
+        ? ITemplate
+        : never
+}
 
-interface Prop {
+interface Prop<T extends keyof SelectorOptionsType> {
   getSelectedValue: (value: unknown) => void
   startIcon: ReactNode
   value: unknown
-  selectorType: SelectorType
-  options: unknown[]
+  selectorType: T
+  options: SelectorOptionsType[T][] | IExtraOption[]
   buttonContent: ReactNode
   inputStatusValue: string
   setInputStatusValue: React.Dispatch<React.SetStateAction<string>>
@@ -54,9 +63,10 @@ interface Prop {
   listAutoHeightMax?: string
   useClickHandler?: boolean
   cursor?: Property.Cursor
+  currentOption?: SelectorOptionsType[T]
 }
 
-export default function Selector({
+export default function Selector<T extends keyof SelectorOptionsType>({
   getSelectedValue,
   startIcon,
   value,
@@ -84,7 +94,8 @@ export default function Selector({
   listAutoHeightMax,
   useClickHandler,
   cursor,
-}: Prop) {
+  currentOption,
+}: Prop<T>) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
   const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
@@ -97,6 +108,16 @@ export default function Selector({
   const id = open ? 'autocomplete-popper' : ''
 
   const setSelectorRef = useFocusableInput(open)
+
+  const processedOptions = useMemo(() => {
+    if (!currentOption) return options
+    const filteredOptions = options.filter((option) => option.id !== currentOption.id)
+    return [currentOption, ...filteredOptions]
+  }, [currentOption, options])
+
+  const standaloneOptionIds = useMemo(() => {
+    return currentOption ? new Set([currentOption.id]) : new Set()
+  }, [currentOption])
 
   function detectSelectorType(option: unknown) {
     if (selectorType === SelectorType.ASSIGNEE_SELECTOR) {
@@ -218,7 +239,7 @@ export default function Selector({
           openOnFocus
           onKeyDown={handleKeyDown}
           ListboxProps={{ sx: { maxHeight: { xs: '175px', sm: '291px' }, padding: '0px 0px 8px 0px' } }}
-          options={extraOption ? [extraOption, ...options] : options}
+          options={extraOption ? [extraOption, ...processedOptions] : processedOptions}
           value={value}
           onChange={(_, newValue: unknown) => {
             if (newValue && !useClickHandler) {
@@ -229,9 +250,12 @@ export default function Selector({
           }}
           ListboxComponent={ListWithEndOption}
           getOptionLabel={(option: unknown) => detectSelectorType(option)}
-          groupBy={(option: unknown) =>
-            selectorType === SelectorType.ASSIGNEE_SELECTOR ? UserTypesName[(option as IAssigneeCombined).type] : ''
-          }
+          groupBy={(option: unknown) => {
+            if (standaloneOptionIds.has((option as SelectorOptionsType[typeof selectorType]).id)) {
+              return UserTypesName['standalone']
+            }
+            return selectorType === SelectorType.ASSIGNEE_SELECTOR ? UserTypesName[(option as IAssigneeCombined).type] : ''
+          }}
           slotProps={{
             paper: {
               sx: {
@@ -258,30 +282,37 @@ export default function Selector({
           }}
           filterOptions={filterOption}
           renderGroup={(params) => {
+            if (!params.children) return <></>
+
             const hasNoAssignee =
               Array.isArray(params?.children) &&
               params?.children?.some((child) => child?.props?.props?.key === 'No assignee')
-            if (!params.children) return <></>
-
-            return hasNoAssignee ? (
-              <Box key={params.key}> {params.children}</Box>
-            ) : (
-              <Box key={params.key} component="li">
-                <Stack direction="row" alignItems="center" columnGap={2}>
-                  <Typography
-                    variant={'sm'}
-                    sx={{
-                      color: (theme) => theme.color.gray[500],
-                      marginLeft: '18px',
-                      padding: '2px 0px',
-                      lineHeight: '24px',
-                    }}
-                  >
-                    {params.group}
-                  </Typography>
-                </Stack>
-                {params.children}
-              </Box>
+            if (params.group === UserTypesName['standalone']) {
+              return params.children
+            }
+            return (
+              <>
+                {hasNoAssignee ? (
+                  <Box key={params.key}>{params.children}</Box>
+                ) : (
+                  <Box key={params.key} component="li">
+                    <Stack direction="row" alignItems="center" columnGap={2}>
+                      <Typography
+                        variant={'sm'}
+                        sx={{
+                          color: (theme) => theme.color.gray[500],
+                          marginLeft: '18px',
+                          padding: '2px 0px',
+                          lineHeight: '24px',
+                        }}
+                      >
+                        {params.group}
+                      </Typography>
+                    </Stack>
+                    {params.children}
+                  </Box>
+                )}
+              </>
             )
           }}
           inputValue={inputStatusValue}
