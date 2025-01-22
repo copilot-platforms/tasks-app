@@ -37,10 +37,14 @@ interface Prop<T extends keyof SelectorOptionsType> {
   value: unknown
   selectorType: T
 <<<<<<< HEAD
+<<<<<<< HEAD
   options: SelectorOptionsType[T][] | IExtraOption[]
 =======
   options: SelectorOptionsType[T][]
 >>>>>>> 05b1d87c (feat(OUT-1307) :)
+=======
+  options: SelectorOptionsType[T][] | IExtraOption[]
+>>>>>>> 766eafb4 (fix(OUT-1307) : options prop in selector component now accepts IExtraOption[] type too.)
   buttonContent: ReactNode
   inputStatusValue: string
   setInputStatusValue: React.Dispatch<React.SetStateAction<string>>
