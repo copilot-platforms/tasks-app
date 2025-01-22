@@ -186,6 +186,7 @@ export const Sidebar = ({
             cursor="default"
             filterOption={(x: unknown) => x}
             responsiveNoHide
+            currentOption={assigneeValue}
           />
         </Box>
         <Box sx={{}}>
@@ -333,6 +334,7 @@ export const Sidebar = ({
               cursor={'default'}
               disableOutline
               responsiveNoHide
+              currentOption={assigneeValue}
             />
           </Box>
         </Stack>
