@@ -36,7 +36,7 @@ interface Prop<T extends keyof SelectorOptionsType> {
   startIcon: ReactNode
   value: unknown
   selectorType: T
-  options: SelectorOptionsType[T][]
+  options: SelectorOptionsType[T][] | IExtraOption[]
   buttonContent: ReactNode
   inputStatusValue: string
   setInputStatusValue: React.Dispatch<React.SetStateAction<string>>
