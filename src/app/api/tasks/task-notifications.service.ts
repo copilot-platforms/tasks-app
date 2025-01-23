@@ -125,7 +125,10 @@ export class TaskNotificationsService extends BaseService {
     }
   }
 
-  private async handleTaskCompletionNotifications(_prevTask: TaskWithWorkflowState, updatedTask: TaskWithWorkflowState) {
+  private handleTaskCompletionNotifications = async (
+    _prevTask: TaskWithWorkflowState,
+    updatedTask: TaskWithWorkflowState,
+  ) => {
     let shouldCreateNotification = true
     // Don't send task notifications if the IU created the task themselves
     if (updatedTask.createdById === this.user.internalUserId) {
@@ -154,7 +157,7 @@ export class TaskNotificationsService extends BaseService {
     }
   }
 
-  private async handleIncompleteTaskReassignment(prevTask: Task, updatedTask: TaskWithWorkflowState) {
+  private handleIncompleteTaskReassignment = async (prevTask: Task, updatedTask: TaskWithWorkflowState) => {
     // Step 1: Handle notifications removal from previous user
     if (prevTask.assigneeId && prevTask.assigneeType) {
       const assigneeType = prevTask.assigneeType
@@ -185,7 +188,7 @@ export class TaskNotificationsService extends BaseService {
     await this.sendTaskCreateNotifications(updatedTask, isReassigned)
   }
 
-  private async handleTaskCompleted(updatedTask: Task) {
+  private handleTaskCompleted = async (updatedTask: Task) => {
     const copilot = new CopilotAPI(this.user.token)
     if (updatedTask.assigneeType === AssigneeType.company) {
       const { recipientIds } = await this.notificationService.getNotificationParties(
@@ -211,7 +214,7 @@ export class TaskNotificationsService extends BaseService {
     }
   }
 
-  private async sendUserTaskNotification(task: Task, isReassigned = false) {
+  private sendUserTaskNotification = async (task: Task, isReassigned = false) => {
     const notificationType = (() => {
       if (!isReassigned) return NotificationTaskActions.Assigned
       // TODO: Implement proper copies for every reassignment
@@ -270,7 +273,7 @@ export class TaskNotificationsService extends BaseService {
     }
   }
 
-  private async handleTaskArchiveToggle(prevTask: TaskWithWorkflowState, updatedTask: TaskWithWorkflowState) {
+  private handleTaskArchiveToggle = async (prevTask: TaskWithWorkflowState, updatedTask: TaskWithWorkflowState) => {
     // Since we patch only one field at a time, we aren't at risk of
     // having both isArchived changed and assigneeId changed. AssigneeId of prev or updated will be same
     if (!prevTask.assigneeId) {
