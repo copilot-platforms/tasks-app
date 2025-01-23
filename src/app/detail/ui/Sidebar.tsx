@@ -13,7 +13,7 @@ import { StyledBox, StyledModal } from './styledComponent'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { createDateFromFormattedDateString, formatDate } from '@/utils/dateHelper'
-import { selectTaskDetails, setShowConfirmAssignModal, setShowSidebar } from '@/redux/features/taskDetailsSlice'
+import { selectTaskDetails, toggleShowConfirmAssignModal, setShowSidebar } from '@/redux/features/taskDetailsSlice'
 import { ToggleButtonContainer } from './ToggleButtonContainer'
 import { NoAssignee } from '@/utils/noAssignee'
 import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
@@ -88,6 +88,17 @@ export const Sidebar = ({
   const windowWidth = useWindowWidth()
   const isMobile = windowWidth < 600 && windowWidth !== 0
 
+  const handleAssigneeChange = (assigneeValue: IAssigneeCombined) => {
+    updateAssigneeValue(assigneeValue)
+    const assigneeType = getAssigneeTypeCorrected(assigneeValue)
+    updateAssignee(assigneeType, assigneeValue?.id)
+  }
+
+  const handleConfirmAssigneeChange = (assigneeValue: IAssigneeCombined) => {
+    handleAssigneeChange(assigneeValue)
+    store.dispatch(toggleShowConfirmAssignModal())
+  }
+
   useEffect(() => {
     if (isMobile) {
       store.dispatch(setShowSidebar(false))
@@ -137,11 +148,9 @@ export const Sidebar = ({
             placeholder="Set assignee"
             getSelectedValue={(newValue) => {
               const assignee = newValue as IAssigneeCombined
-              // updateAssigneeValue(assignee)
-              // const assigneeType = getAssigneeTypeCorrected(assignee)
-              // updateAssignee(assigneeType, assignee?.id) //Conditionally open modal or just perform the action (commented part) without the modal based on the reassignment logic in the future.
+              // handleAssigneeChange(assignee) Conditionally open modal or just perform the action (commented part) without the modal based on the reassignment logic in the future.
               setSelectedAssignee(assignee)
-              store.dispatch(setShowConfirmAssignModal())
+              store.dispatch(toggleShowConfirmAssignModal())
             }}
             startIcon={
               (assigneeValue as IAssigneeCombined)?.name == 'No assignee' ? (
@@ -210,22 +219,19 @@ export const Sidebar = ({
         </Box>
         <StyledModal
           open={showConfirmAssignModal}
-          onClose={() => store.dispatch(setShowConfirmAssignModal())}
-          aria-labelledby="delete-task-modal"
-          aria-describedby="delete-task"
+          onClose={() => store.dispatch(toggleShowConfirmAssignModal())}
+          aria-labelledby="confirm-reassignment-modal"
+          aria-describedby="confirm-reassignment"
         >
           <ConfirmUI
             handleCancel={() => {
               setSelectedAssignee(undefined)
-              store.dispatch(setShowConfirmAssignModal())
+              store.dispatch(toggleShowConfirmAssignModal())
             }}
             handleConfirm={() => {
-              updateAssigneeValue(selectedAssignee)
               if (selectedAssignee) {
-                const assigneeType = getAssigneeTypeCorrected(selectedAssignee)
-                updateAssignee(assigneeType, selectedAssignee?.id)
+                handleConfirmAssigneeChange(selectedAssignee)
               }
-              store.dispatch(setShowConfirmAssignModal())
             }}
             buttonText="Reassign"
             description={`You're about to reassign this task from ${getAssigneeName(assigneeValue)} to ${getAssigneeName(selectedAssignee)}. This will give ${getAssigneeName(selectedAssignee)} access to all task comments and history.`}
@@ -304,11 +310,9 @@ export const Sidebar = ({
               placeholder="Set assignee"
               getSelectedValue={(newValue) => {
                 const assignee = newValue as IAssigneeCombined
-                // updateAssigneeValue(assignee)
-                // const assigneeType = getAssigneeTypeCorrected(assignee)
-                // updateAssignee(assigneeType, assignee?.id)  //Conditionally open modal or just perform the action (commented part) without the modal based on the reassignment logic in the future.
+                handleAssigneeChange(assignee) //Conditionally open modal or just perform the action (commented part) without the modal based on the reassignment logic in the future.
                 setSelectedAssignee(assignee)
-                store.dispatch(setShowConfirmAssignModal())
+                store.dispatch(toggleShowConfirmAssignModal())
               }}
               startIcon={
                 (assigneeValue as IAssigneeCombined)?.name == 'No assignee' ? (
@@ -397,22 +401,19 @@ export const Sidebar = ({
       </AppMargin>
       <StyledModal
         open={showConfirmAssignModal}
-        onClose={() => store.dispatch(setShowConfirmAssignModal())}
-        aria-labelledby="delete-task-modal"
-        aria-describedby="delete-task"
+        onClose={() => store.dispatch(toggleShowConfirmAssignModal())}
+        aria-labelledby="confirm-reassignment-modal"
+        aria-describedby="confirm-reassignment"
       >
         <ConfirmUI
           handleCancel={() => {
             setSelectedAssignee(undefined)
-            store.dispatch(setShowConfirmAssignModal())
+            store.dispatch(toggleShowConfirmAssignModal())
           }}
           handleConfirm={() => {
-            updateAssigneeValue(selectedAssignee)
             if (selectedAssignee) {
-              const assigneeType = getAssigneeTypeCorrected(selectedAssignee)
-              updateAssignee(assigneeType, selectedAssignee?.id)
+              handleConfirmAssigneeChange(selectedAssignee)
             }
-            store.dispatch(setShowConfirmAssignModal())
           }}
           buttonText="Reassign"
           description={`You're about to reassign this task from ${getAssigneeName(assigneeValue)} to ${getAssigneeName(selectedAssignee)}. This will give ${getAssigneeName(selectedAssignee)} access to all task comments and history.`}
