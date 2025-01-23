@@ -8,6 +8,7 @@ interface IInitialState {
   showSidebar: boolean
   assigneeSuggestions: IAssigneeSuggestions[]
   task: TaskResponse | undefined
+  showConfirmAssignModal: boolean
 }
 
 const initialState: IInitialState = {
@@ -15,6 +16,7 @@ const initialState: IInitialState = {
   showSidebar: true,
   assigneeSuggestions: [],
   task: undefined,
+  showConfirmAssignModal: false,
 }
 
 const taskDetailsSlice = createSlice({
@@ -33,11 +35,15 @@ const taskDetailsSlice = createSlice({
     setTask: (state, action: { payload: TaskResponse }) => {
       state.task = action.payload
     },
+    setShowConfirmAssignModal: (state) => {
+      state.showConfirmAssignModal = !state.showConfirmAssignModal
+    },
   },
 })
 
 export const selectTaskDetails = (state: RootState) => state.taskDetail
 
-export const { setShowConfirmDeleteModal, setShowSidebar, setAssigneeSuggestion, setTask } = taskDetailsSlice.actions
+export const { setShowConfirmDeleteModal, setShowSidebar, setAssigneeSuggestion, setTask, setShowConfirmAssignModal } =
+  taskDetailsSlice.actions
 
 export default taskDetailsSlice.reducer
