@@ -3,29 +3,29 @@
 import { StyledBox } from '@/app/detail/ui/styledComponent'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { Box, Stack, Typography, styled } from '@mui/material'
-import { SecondaryBtn } from '../buttons/SecondaryBtn'
-import { PrimaryBtn } from '../buttons/PrimaryBtn'
+import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
+import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 
-interface Prop {
+interface ConfirmUIProps {
   handleCancel: () => void
   handleConfirm: () => void
   buttonText: string
-  title?: string
-  description?: string
+  title: string
+  description: string
 }
 
 export const ConfirmUI = ({
   handleCancel,
   handleConfirm,
   buttonText,
-  title,
+  title = 'Are you sure?',
   description = `This action can't be undone.`,
-}: Prop) => {
+}: ConfirmUIProps) => {
   return (
     <UIContainer sx={{ width: { xs: '80%', sm: '540px' } }}>
       <StyledBox>
         <Stack direction="column" rowGap={4} sx={{ padding: '12px 12px 12px 20px' }}>
-          <Typography variant="lg">{title ? title : `Are you sure?`}</Typography>
+          <Typography variant="lg">{title}</Typography>
         </Stack>
       </StyledBox>
       <StyledBox>
@@ -58,7 +58,7 @@ const UIContainer = styled(Box)(({ theme }) => ({
   left: '50%',
   transform: 'translate(-50%, -50%)',
   borderRadius: '4px',
-  backgroundColor: '#ffffff',
+  backgroundColor: theme.color.base.white,
   boxShadow: '0px 16px 70px 0px rgba(0, 0, 0, 0.50)',
   border: `1px solid ${theme.color.borders.border2}`,
 }))

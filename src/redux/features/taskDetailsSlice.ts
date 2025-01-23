@@ -35,7 +35,7 @@ const taskDetailsSlice = createSlice({
     setTask: (state, action: { payload: TaskResponse }) => {
       state.task = action.payload
     },
-    setShowConfirmAssignModal: (state) => {
+    toggleShowConfirmAssignModal: (state) => {
       state.showConfirmAssignModal = !state.showConfirmAssignModal
     },
   },
@@ -43,7 +43,7 @@ const taskDetailsSlice = createSlice({
 
 export const selectTaskDetails = (state: RootState) => state.taskDetail
 
-export const { setShowConfirmDeleteModal, setShowSidebar, setAssigneeSuggestion, setTask, setShowConfirmAssignModal } =
+export const { setShowConfirmDeleteModal, setShowSidebar, setAssigneeSuggestion, setTask, toggleShowConfirmAssignModal } =
   taskDetailsSlice.actions
 
 export default taskDetailsSlice.reducer

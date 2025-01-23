@@ -60,7 +60,7 @@ const UIContainer = styled(Box)(({ theme }) => ({
   left: '50%',
   transform: 'translate(-50%, -50%)',
   borderRadius: '4px',
-  backgroundColor: '#ffffff',
+  backgroundColor: theme.color.base.white,
   boxShadow: '0px 16px 70px 0px rgba(0, 0, 0, 0.50)',
   border: `1px solid ${theme.color.borders.border2}`,
 }))
