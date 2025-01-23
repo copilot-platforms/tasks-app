@@ -27,6 +27,7 @@ import { DateStringSchema } from '@/types/date'
 import { useWindowWidth } from '@/hooks/useWindowWidth'
 import store from '@/redux/store'
 import { ConfirmUI } from '@/components/layouts/ConfirmUI'
+import { ShouldConfirmBeforeReassignment } from '@/utils/shouldConfirmBeforeReassign'
 
 const StyledText = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[500],
@@ -148,9 +149,13 @@ export const Sidebar = ({
             placeholder="Set assignee"
             getSelectedValue={(newValue) => {
               const assignee = newValue as IAssigneeCombined
-              // handleAssigneeChange(assignee) Conditionally open modal or just perform the action (commented part) without the modal based on the reassignment logic in the future.
-              setSelectedAssignee(assignee)
-              store.dispatch(toggleShowConfirmAssignModal())
+              const shouldShowConfirmModal = ShouldConfirmBeforeReassignment(assigneeValue, assignee)
+              if (shouldShowConfirmModal) {
+                setSelectedAssignee(assignee)
+                store.dispatch(toggleShowConfirmAssignModal())
+              } else {
+                handleAssigneeChange(assignee)
+              }
             }}
             startIcon={
               (assigneeValue as IAssigneeCombined)?.name == 'No assignee' ? (
@@ -310,9 +315,13 @@ export const Sidebar = ({
               placeholder="Set assignee"
               getSelectedValue={(newValue) => {
                 const assignee = newValue as IAssigneeCombined
-                handleAssigneeChange(assignee) //Conditionally open modal or just perform the action (commented part) without the modal based on the reassignment logic in the future.
-                setSelectedAssignee(assignee)
-                store.dispatch(toggleShowConfirmAssignModal())
+                const shouldShowConfirmModal = ShouldConfirmBeforeReassignment(assigneeValue, assignee)
+                if (shouldShowConfirmModal) {
+                  setSelectedAssignee(assignee)
+                  store.dispatch(toggleShowConfirmAssignModal())
+                } else {
+                  handleAssigneeChange(assignee)
+                }
               }}
               startIcon={
                 (assigneeValue as IAssigneeCombined)?.name == 'No assignee' ? (
