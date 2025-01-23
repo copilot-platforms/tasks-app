@@ -22,7 +22,7 @@ export enum SelectorType {
   TEMPLATE_SELECTOR = 'templateSelected',
 }
 type SelectorOptionsType = {
-  [K in keyof typeof SelectorType as `${(typeof SelectorType)[K]}`]: K extends 'ASSIGNEE_SELECTOR'
+  [K in keyof typeof SelectorType as (typeof SelectorType)[K]]: K extends 'ASSIGNEE_SELECTOR'
     ? IAssigneeCombined
     : K extends 'STATUS_SELECTOR'
       ? WorkflowStateResponse
@@ -63,7 +63,7 @@ interface Prop<T extends keyof SelectorOptionsType> {
   listAutoHeightMax?: string
   useClickHandler?: boolean
   cursor?: Property.Cursor
-  currentOption?: SelectorOptionsType[T]
+  currentOption?: SelectorOptionsType[T] //option which shall be at the top of the selector without any grouping
 }
 
 export default function Selector<T extends keyof SelectorOptionsType>({
@@ -113,11 +113,11 @@ export default function Selector<T extends keyof SelectorOptionsType>({
     if (!currentOption) return options
     const filteredOptions = options.filter((option) => option.id !== currentOption.id)
     return [currentOption, ...filteredOptions]
-  }, [currentOption, options])
+  }, [currentOption, options]) // bring currentOption to the top of the selector options.
 
   const standaloneOptionIds = useMemo(() => {
     return currentOption ? new Set([currentOption.id]) : new Set()
-  }, [currentOption])
+  }, [currentOption]) //differentiate currentOption from the rest of the option to remove any kind of grouping.
 
   function detectSelectorType(option: unknown) {
     if (selectorType === SelectorType.ASSIGNEE_SELECTOR) {
