@@ -15,7 +15,7 @@ import { UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { createDateFromFormattedDateString, formatDate } from '@/utils/dateHelper'
 import { selectTaskDetails, toggleShowConfirmAssignModal, setShowSidebar } from '@/redux/features/taskDetailsSlice'
 import { ToggleButtonContainer } from './ToggleButtonContainer'
-import { NoAssignee } from '@/utils/noAssignee'
+import { NoAssignee, NoAssigneeExtraOptions, NoDataFoundOption } from '@/utils/noAssignee'
 import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { AssigneePlaceholder } from '@/icons'
@@ -28,6 +28,7 @@ import { useWindowWidth } from '@/hooks/useWindowWidth'
 import store from '@/redux/store'
 import { ConfirmUI } from '@/components/layouts/ConfirmUI'
 import { ShouldConfirmBeforeReassignment } from '@/utils/shouldConfirmBeforeReassign'
+import { MiniLoader } from '@/components/atoms/MiniLoader'
 
 const StyledText = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[500],
@@ -164,7 +165,7 @@ export const Sidebar = ({
                 <CopilotAvatar currentAssignee={assigneeValue} />
               )
             }
-            options={loading ? [] : filteredAssignees}
+            options={loading ? [] : filteredAssignees.length ? filteredAssignees : [NoDataFoundOption]}
             value={assigneeValue?.name == 'No assignee' ? null : assigneeValue}
             selectorType={SelectorType.ASSIGNEE_SELECTOR}
             buttonHeight="auto"
@@ -198,6 +199,22 @@ export const Sidebar = ({
                 setFilteredAssignees,
                 z.string().parse(token),
                 newInputValue,
+              )
+            }}
+            extraOption={NoAssigneeExtraOptions}
+            extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
+              return (
+                <>
+                  {/* <ExtraOptionRendererAssignee
+                    props={props}
+                    onClick={(e) => {
+                      updateAssigneeValue({ id: '', name: 'No assignee' })
+                      setAnchorEl(anchorEl ? null : e.currentTarget)
+                      updateAssignee(null, null)
+                    }}
+                  /> */}
+                  {loading && <MiniLoader />}
+                </>
               )
             }}
             disabled={disabled}
@@ -330,26 +347,26 @@ export const Sidebar = ({
                   <CopilotAvatar currentAssignee={assigneeValue} />
                 )
               }
-              options={loading ? [] : filteredAssignees}
+              options={loading ? [] : filteredAssignees.length ? filteredAssignees : [NoDataFoundOption]}
               value={assigneeValue?.name == 'No assignee' ? null : assigneeValue}
               selectorType={SelectorType.ASSIGNEE_SELECTOR}
               //****Disabling re-assignment completely for now***
-              // extraOption={NoAssigneeExtraOptions}
-              // extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
-              //   return (
-              //     <>
-              //       <ExtraOptionRendererAssignee
-              //         props={props}
-              //         onClick={(e) => {
-              //           updateAssigneeValue({ id: '', name: 'No assignee' })
-              //           setAnchorEl(anchorEl ? null : e.currentTarget)
-              //           updateAssignee(null, null)
-              //         }}
-              //       />
-              //       {loading && <MiniLoader />}
-              //     </>
-              //   )
-              // }}
+              extraOption={NoAssigneeExtraOptions}
+              extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
+                return (
+                  <>
+                    {/* <ExtraOptionRendererAssignee
+                      props={props}
+                      onClick={(e) => {
+                        updateAssigneeValue({ id: '', name: 'No assignee' })
+                        setAnchorEl(anchorEl ? null : e.currentTarget)
+                        updateAssignee(null, null)
+                      }}
+                    /> */}
+                    {loading && <MiniLoader />}
+                  </>
+                )
+              }}
               buttonContent={
                 <Typography variant="md" lineHeight="22px" sx={{ color: (theme) => theme.color.gray[600] }}>
                   {(assigneeValue as IAssigneeCombined)?.name == 'No assignee'
