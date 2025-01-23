@@ -1,4 +1,5 @@
 import { NotificationCreatedResponseSchema } from '@/types/common'
+import { TaskWithWorkflowState } from '@/types/db'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { BaseService } from '@api/core/services/base.service'
 import { NotificationTaskActions } from '@api/core/types/tasks'
@@ -6,7 +7,7 @@ import { NotificationService } from '@api/notification/notification.service'
 import { AssigneeType, StateType, Task, WorkflowState } from '@prisma/client'
 
 export class TaskNotificationsService extends BaseService {
-  async removeDeletedTaskNotifications(task: Task & { workflowState: WorkflowState }) {
+  async removeDeletedTaskNotifications(task: TaskWithWorkflowState) {
     const notificationsService = new NotificationService(this.user)
     if (task?.assigneeType && task.workflowState.type !== NotificationTaskActions.Completed) {
       const handleNotificationRead = {
@@ -18,7 +19,7 @@ export class TaskNotificationsService extends BaseService {
     }
   }
 
-  async sendTaskCreateNotifications(task: Task & { workflowState: WorkflowState }, isReassigned = false) {
+  async sendTaskCreateNotifications(task: TaskWithWorkflowState, isReassigned = false) {
     // If task is unassigned, there's nobody to send notifications to
     if (!task.assigneeId) return
 
@@ -35,56 +36,40 @@ export class TaskNotificationsService extends BaseService {
     await sendTaskNotifications(task, notificationService, isReassigned)
   }
 
-  async sendTaskUpdateNotifications(
-    prevTask: Task & { workflowState: WorkflowState },
-    updatedTask: Task & { workflowState: WorkflowState },
-  ) {
+  async sendTaskUpdateNotifications(prevTask: TaskWithWorkflowState, updatedTask: TaskWithWorkflowState) {
+    /*
+     * Cases:
+     * 1. Task is archived / unarchived
+     * 2. Assignee ID is changed for incomplete task -> Mark as read for previous recipients and trigger new notifications for new assignee
+     * 3. Assignee ID is changed for completed task -> Do nothing
+     * 4. Task was changed from incomplete to complete state -> delete all notifications for all users
+     * 5. Task was changed from complete to incomplete state -> recreate those notifications
+     */
     const notificationService = new NotificationService(this.user)
 
-    // Handle archive status update.
-    // If task is moved to archived -> Mark as read notifications
-    // If task is moved to uarchived -> Add appropriate notification
+    // Case 1
+    // -- Handle archive status update.
+    // -- If task is moved to archived -> Mark as read notifications
+    // -- If task is moved to uarchived -> Add appropriate notification
     if (prevTask.isArchived !== updatedTask.isArchived) {
       return await this.handleTaskArchiveToggle(notificationService, prevTask, updatedTask)
     }
 
-    if (prevTask.workflowStateId === updatedTask.workflowStateId) return
-    /*
-     * Cases:
-     * 1. Assignee ID is changed for incomplete task -> Mark as read for previous recipients and trigger new notifications for new assignee
-     * 2. Assignee ID is changed for completed task -> Do nothing
-     * 3. Task was changed from incomplete to complete state -> delete all notifications for all users
-     * 4. Task was changed from complete to incomplete state -> recreate those notifications
-     */
+    // Return if not workflowState / assignee updated
+    const isReassigned = updatedTask.assigneeId && prevTask.assigneeId !== updatedTask.assigneeId
+    if (prevTask.workflowStateId === updatedTask.workflowStateId && !isReassigned) return
 
-    // Case 1
-    // --- Handle previous assignee notification "Mark as read" if it is updated
-    if (prevTask.assigneeId != updatedTask.assigneeId && updatedTask.workflowState.type !== StateType.completed) {
-      // If task is reassigned from a client, mark prev client notification as read
-      if (prevTask.assigneeType === AssigneeType.client) {
-        await notificationService.markClientNotificationAsRead(prevTask)
-      }
-      // If task is reassigned from a company, fetch all company members and mark all of those notifications read
-      if (prevTask.assigneeType === AssigneeType.company) {
-        await notificationService.markAsReadForAllRecipients(prevTask)
-      }
-
-      // If task reassigned from another user to self IU, don't send any notifications
-      if (prevTask.assigneeId !== updatedTask.assigneeId && updatedTask.assigneeId === this.user.internalUserId) {
-        return
-      }
-
-      // Handle new assignee notification creation
-      // If task goes from unassigned to assigned, or from one assignee to another
-      if (updatedTask.assigneeId) {
-        const isReassigned =
-          prevTask.assigneeId !== updatedTask.assigneeId && !!prevTask.assigneeId && !!updatedTask.assigneeId
-        await this.sendTaskCreateNotifications(updatedTask, isReassigned)
-      }
+    // Case 2
+    // -- Handle previous assignee notification "Mark as read" if it is updated
+    if (prevTask.assigneeId !== updatedTask.assigneeId && updatedTask.workflowState.type !== StateType.completed) {
+      return await this.handleIncompleteTaskReassignment(notificationService, prevTask, updatedTask)
     }
 
     // Case 3
-    // --- If task was previously in another state, and is moved to a 'completed' type WorkflowState by IU
+    // -- Do nothing :)
+
+    // Case 4
+    // -- If task was previously in another state, and is moved to a 'completed' type WorkflowState by IU
     let shouldCreateNotification = true
     if (
       prevTask?.workflowState?.type !== StateType.completed &&
@@ -95,7 +80,6 @@ export class TaskNotificationsService extends BaseService {
       if (updatedTask.createdById === this.user.internalUserId) {
         shouldCreateNotification = false
       }
-
       if (updatedTask.assigneeType === AssigneeType.internalUser) {
         shouldCreateNotification &&
           (await notificationService.create(NotificationTaskActions.CompletedByIU, updatedTask, { disableEmail: true }))
@@ -119,8 +103,8 @@ export class TaskNotificationsService extends BaseService {
       }
     }
 
-    // Case 4
-    // --- Handle task moved from completed to incomplete IU logic
+    // Case 5
+    // -- Handle task moved from completed to incomplete IU logic
     const isSelfAssignedIU =
       updatedTask.assigneeType === AssigneeType.internalUser && updatedTask.assigneeId === this.user.internalUserId
     if (
@@ -136,14 +120,10 @@ export class TaskNotificationsService extends BaseService {
   }
 
   async sendClientUpdateTaskNotifications(
-    prevTask: Task & { workflowState: WorkflowState },
-    updatedTask: Task & { workflowState: WorkflowState },
+    prevTask: TaskWithWorkflowState,
+    updatedTask: TaskWithWorkflowState,
     updatedWorkflowState: WorkflowState | null,
   ) {
-    // --------------------------
-    // --- Notifications Logic
-    // --------------------------
-
     // Cases:
     // 1. Task has been moved back to a non-complete state from completed for client task
     // 2. Task has been moved back to a non-complete state from completed for company task
@@ -165,6 +145,41 @@ export class TaskNotificationsService extends BaseService {
     if (updatedWorkflowState?.type === StateType.completed && prevTask.workflowState.type !== StateType.completed) {
       await this.handleTaskCompleted(notificationService, updatedTask)
     }
+  }
+
+  private async handleIncompleteTaskReassignment(
+    notificationService: NotificationService,
+    prevTask: Task,
+    updatedTask: TaskWithWorkflowState,
+  ) {
+    // Step 1: Handle notifications removal from previous user
+    if (prevTask.assigneeId && prevTask.assigneeType) {
+      const assigneeType = prevTask.assigneeType
+      // -- If task is reassigned from client, delete past in-product notification
+      if (assigneeType === AssigneeType.internalUser) {
+        await notificationService.deleteInternalUserNotificationForTask(prevTask.id)
+      }
+      // -- If task is reassigned from a client, mark prev client notification as read (not delete)
+      if (assigneeType === AssigneeType.client) {
+        await notificationService.markClientNotificationAsRead(prevTask)
+      }
+      // -- If task is reassigned from a company, fetch all company members and mark all of those notifications read
+      if (assigneeType === AssigneeType.company) {
+        await notificationService.markAsReadForAllRecipients(prevTask)
+      }
+    }
+    // Step 2: Handle new assignee notification creation
+    if (!updatedTask.assigneeId) {
+      return // No one to send notifications to if task is reassigned to "No assignee"
+    }
+    // -- If task reassigned to self IU, don't send any notifications
+    if (updatedTask.assigneeId === this.user.internalUserId) {
+      return
+    }
+    // -- If task goes from unassigned to assigned task is createed
+    // -- If task goes from one assignee to next task is reassigned
+    const isReassigned = !!prevTask.assigneeId
+    await this.sendTaskCreateNotifications(updatedTask, isReassigned)
   }
 
   private async handleTaskCompleted(notificationService: NotificationService, updatedTask: Task) {
@@ -249,8 +264,8 @@ export class TaskNotificationsService extends BaseService {
 
   private async handleTaskArchiveToggle(
     notificationService: NotificationService,
-    prevTask: Task & { workflowState: WorkflowState },
-    updatedTask: Task & { workflowState: WorkflowState },
+    prevTask: TaskWithWorkflowState,
+    updatedTask: TaskWithWorkflowState,
   ) {
     // Since we patch only one field at a time, we aren't at risk of
     // having both isArchived changed and assigneeId changed. AssigneeId of prev or updated will be same
