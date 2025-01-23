@@ -111,6 +111,7 @@ export default function Selector<T extends keyof SelectorOptionsType>({
 
   const processedOptions = useMemo(() => {
     if (!currentOption) return options
+    if (!options.some((option) => option === currentOption)) return options
     const filteredOptions = options.filter((option) => option.id !== currentOption.id)
     return [currentOption, ...filteredOptions]
   }, [currentOption, options]) // bring currentOption to the top of the selector options.
