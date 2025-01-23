@@ -9,11 +9,11 @@ import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { useSelector } from 'react-redux'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { StyledBox } from './styledComponent'
+import { StyledBox, StyledModal } from './styledComponent'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { createDateFromFormattedDateString, formatDate } from '@/utils/dateHelper'
-import { selectTaskDetails, setShowSidebar } from '@/redux/features/taskDetailsSlice'
+import { selectTaskDetails, setShowConfirmAssignModal, setShowSidebar } from '@/redux/features/taskDetailsSlice'
 import { ToggleButtonContainer } from './ToggleButtonContainer'
 import { NoAssignee } from '@/utils/noAssignee'
 import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
@@ -26,6 +26,7 @@ import { getAssigneeName, isAssigneeTextMatching } from '@/utils/assignee'
 import { DateStringSchema } from '@/types/date'
 import { useWindowWidth } from '@/hooks/useWindowWidth'
 import store from '@/redux/store'
+import { ConfirmUI } from '@/components/layouts/ConfirmUI'
 
 const StyledText = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[500],
@@ -50,12 +51,13 @@ export const Sidebar = ({
   workflowDisabled?: false
 }) => {
   const { activeTask, token, workflowStates, assignee, previewMode } = useSelector(selectTaskBoard)
-  const { showSidebar } = useSelector(selectTaskDetails)
+  const { showSidebar, showConfirmAssignModal } = useSelector(selectTaskDetails)
   const [filteredAssignees, setFilteredAssignees] = useState(assignee)
   const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
   const [loading, setLoading] = useState(false)
   const [dueDate, setDueDate] = useState<Date | string | undefined>()
   const [inputStatusValue, setInputStatusValue] = useState('')
+  const [selectedAssignee, setSelectedAssignee] = useState<IAssigneeCombined | undefined>(undefined)
 
   const { renderingItem: _statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
     // item: selectedWorkflowState,
@@ -135,9 +137,11 @@ export const Sidebar = ({
             placeholder="Set assignee"
             getSelectedValue={(newValue) => {
               const assignee = newValue as IAssigneeCombined
-              updateAssigneeValue(assignee)
-              const assigneeType = getAssigneeTypeCorrected(assignee)
-              updateAssignee(assigneeType, assignee?.id)
+              // updateAssigneeValue(assignee)
+              // const assigneeType = getAssigneeTypeCorrected(assignee)
+              // updateAssignee(assigneeType, assignee?.id) //Conditionally open modal or just perform the action (commented part) without the modal based on the reassignment logic in the future.
+              setSelectedAssignee(assignee)
+              store.dispatch(setShowConfirmAssignModal())
             }}
             startIcon={
               (assigneeValue as IAssigneeCombined)?.name == 'No assignee' ? (
@@ -204,6 +208,30 @@ export const Sidebar = ({
             padding={'3px 8px'}
           />
         </Box>
+        <StyledModal
+          open={showConfirmAssignModal}
+          onClose={() => store.dispatch(setShowConfirmAssignModal())}
+          aria-labelledby="delete-task-modal"
+          aria-describedby="delete-task"
+        >
+          <ConfirmUI
+            handleCancel={() => {
+              setSelectedAssignee(undefined)
+              store.dispatch(setShowConfirmAssignModal())
+            }}
+            handleConfirm={() => {
+              updateAssigneeValue(selectedAssignee)
+              if (selectedAssignee) {
+                const assigneeType = getAssigneeTypeCorrected(selectedAssignee)
+                updateAssignee(assigneeType, selectedAssignee?.id)
+              }
+              store.dispatch(setShowConfirmAssignModal())
+            }}
+            buttonText="Reassign"
+            description={`You're about to reassign this task from ${getAssigneeName(assigneeValue)} to ${getAssigneeName(selectedAssignee)}. This will give ${getAssigneeName(selectedAssignee)} access to all task comments and history.`}
+            title="Reassign task?"
+          />
+        </StyledModal>
       </Stack>
     )
   }
@@ -276,9 +304,11 @@ export const Sidebar = ({
               placeholder="Set assignee"
               getSelectedValue={(newValue) => {
                 const assignee = newValue as IAssigneeCombined
-                updateAssigneeValue(assignee)
-                const assigneeType = getAssigneeTypeCorrected(assignee)
-                updateAssignee(assigneeType, assignee?.id)
+                // updateAssigneeValue(assignee)
+                // const assigneeType = getAssigneeTypeCorrected(assignee)
+                // updateAssignee(assigneeType, assignee?.id)  //Conditionally open modal or just perform the action (commented part) without the modal based on the reassignment logic in the future.
+                setSelectedAssignee(assignee)
+                store.dispatch(setShowConfirmAssignModal())
               }}
               startIcon={
                 (assigneeValue as IAssigneeCombined)?.name == 'No assignee' ? (
@@ -365,6 +395,30 @@ export const Sidebar = ({
           </Box>
         </Stack>
       </AppMargin>
+      <StyledModal
+        open={showConfirmAssignModal}
+        onClose={() => store.dispatch(setShowConfirmAssignModal())}
+        aria-labelledby="delete-task-modal"
+        aria-describedby="delete-task"
+      >
+        <ConfirmUI
+          handleCancel={() => {
+            setSelectedAssignee(undefined)
+            store.dispatch(setShowConfirmAssignModal())
+          }}
+          handleConfirm={() => {
+            updateAssigneeValue(selectedAssignee)
+            if (selectedAssignee) {
+              const assigneeType = getAssigneeTypeCorrected(selectedAssignee)
+              updateAssignee(assigneeType, selectedAssignee?.id)
+            }
+            store.dispatch(setShowConfirmAssignModal())
+          }}
+          buttonText="Reassign"
+          description={`You're about to reassign this task from ${getAssigneeName(assigneeValue)} to ${getAssigneeName(selectedAssignee)}. This will give ${getAssigneeName(selectedAssignee)} access to all task comments and history.`}
+          title="Reassign task?"
+        />
+      </StyledModal>
     </Box>
   )
 }
