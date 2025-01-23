@@ -212,9 +212,15 @@ export class TaskNotificationsService extends BaseService {
   }
 
   private async sendUserTaskNotification(task: Task, isReassigned = false) {
+    const notificationType = (() => {
+      if (!isReassigned) return NotificationTaskActions.Assigned
+      // TODO: Implement proper copies for every reassignment
+      return NotificationTaskActions.ReassignedToIU
+    })()
+
     const notification = await this.notificationService.create(
-      //! In future when reassignment is supported, change this logic to support reassigned to client as well
-      isReassigned ? NotificationTaskActions.ReassignedToIU : NotificationTaskActions.Assigned,
+      // In future when reassignment is supported, change this logic to support reassigned to client as well
+      notificationType,
       task,
       {
         disableEmail: task.assigneeType === AssigneeType.internalUser,
