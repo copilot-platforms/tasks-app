@@ -180,7 +180,7 @@ export class TaskNotificationsService extends BaseService {
     }
     // -- If task reassigned to self IU, don't send any notifications
     if (updatedTask.assigneeId === this.user.internalUserId) {
-      return
+      return // old notifications were removed but new one was not created
     }
     // -- If task goes from unassigned to assigned task is createed
     // -- If task goes from one assignee to next task is reassigned
@@ -215,10 +215,17 @@ export class TaskNotificationsService extends BaseService {
   }
 
   private sendUserTaskNotification = async (task: Task, isReassigned = false) => {
+    if (!task.assigneeType) return
+
     const notificationType = (() => {
       if (!isReassigned) return NotificationTaskActions.Assigned
-      // TODO: Implement proper copies for every reassignment
-      return NotificationTaskActions.ReassignedToIU
+
+      const properCopy = {
+        [AssigneeType.internalUser]: NotificationTaskActions.ReassignedToIU,
+        [AssigneeType.client]: NotificationTaskActions.ReassignedToClient,
+        [AssigneeType.company]: NotificationTaskActions.ReassignedToCompany,
+      }
+      return properCopy[task.assigneeType]
     })()
 
     const notification = await this.notificationService.create(
@@ -239,10 +246,7 @@ export class TaskNotificationsService extends BaseService {
     }
   }
 
-  private sendCompanyTaskNotifications = async (
-    task: Task,
-    _isReassigned = false, // someday this will come in handy
-  ) => {
+  private sendCompanyTaskNotifications = async (task: Task, isReassigned = false) => {
     const copilot = new CopilotAPI(this.user.token)
     const { recipientIds } = await this.notificationService.getNotificationParties(
       copilot,
@@ -250,7 +254,7 @@ export class TaskNotificationsService extends BaseService {
       NotificationTaskActions.AssignedToCompany,
     )
     const notifications = await this.notificationService.createBulkNotification(
-      NotificationTaskActions.AssignedToCompany,
+      isReassigned ? NotificationTaskActions.ReassignedToCompany : NotificationTaskActions.AssignedToCompany,
       task,
       recipientIds,
       { email: true },
