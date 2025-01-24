@@ -64,7 +64,6 @@ export class CopilotAPI {
 
   // Get Token Payload from copilot request token
   async _getTokenPayload(): Promise<Token | null> {
-    console.info('CopilotAPI#getTokenPayload | token =', this.token)
     const getTokenPayload = this.copilot.getTokenPayload
     if (!getTokenPayload) {
       console.error(`CopilotAPI#getTokenPayload | Could not parse token payload for token ${this.token}`)
