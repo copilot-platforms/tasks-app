@@ -2,6 +2,8 @@ export enum NotificationTaskActions {
   Assigned = 'assigned',
   AssignedToCompany = 'assignedToCompany',
   ReassignedToIU = 'reassignedToIu',
+  ReassignedToClient = 'reassignedToClient',
+  ReassignedToCompany = 'reassignedToCompany',
   CompletedByCompanyMember = 'completedByCompanyMember',
   CompletedForCompanyByIU = 'completedForCompanyByIu',
   Completed = 'completed',
