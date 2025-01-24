@@ -172,7 +172,7 @@ export default function Selector<T extends keyof SelectorOptionsType>({
 
   return (
     <Stack direction="column">
-      <Box onClick={handleClick} aria-describedby={id}>
+      <Box onMouseDown={handleClick} aria-describedby={id}>
         {disableOutline ? (
           <Stack
             direction="row"
