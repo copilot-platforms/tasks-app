@@ -66,9 +66,6 @@ export const RealTime = ({
       // Additionally, if user is a client, it can only access tasks assigned to that client or the client's company
       if (userRole === AssigneeType.client) {
         canUserAccessTask = canUserAccessTask && [userId, tokenPayload?.companyId].includes(payload.new.assigneeId)
-        if (!canUserAccessTask) {
-          redirectToBoard()
-        }
       }
       //check if the new task in this event belongs to the same workspaceId
       if (canUserAccessTask && showUnarchived) {
