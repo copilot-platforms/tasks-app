@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard, setActiveTask, setFilteredTasks, setTasks } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
-import { Token } from '@/types/common'
+import { InternalUsersSchema, Token } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { extractImgSrcs, replaceImgSrcs } from '@/utils/signedUrlReplacer'
 import { AssigneeType } from '@prisma/client'
@@ -27,7 +27,7 @@ export const RealTime = ({
   task?: TaskResponse
   tokenPayload: Token
 }) => {
-  const { tasks, token, activeTask } = useSelector(selectTaskBoard)
+  const { tasks, token, activeTask, assignee } = useSelector(selectTaskBoard)
   const { showUnarchived, showArchived } = useSelector(selectTaskBoard)
   const pathname = usePathname()
   const router = useRouter()
@@ -42,11 +42,17 @@ export const RealTime = ({
   if (!userId || !userRole) {
     console.error(`Failed to authenticate a realtime connection for id ${userId} with role ${userRole}`)
   }
+  const user = assignee.find((el) => el.id === userId)
 
   const handleTaskRealTimeUpdates = (payload: RealtimePostgresChangesPayload<RealTimeTaskResponse>) => {
     if (payload.eventType === 'INSERT') {
       // For both user types, filter out just tasks belonging to workspace.
       let canUserAccessTask = payload.new.workspaceId === tokenPayload?.workspaceId
+      // If user is an internal user with client access limitations, they can only access tasks assigned to clients or company they have access to
+      if (user && userRole === AssigneeType.internalUser && InternalUsersSchema.parse(user).isClientAccessLimited) {
+        const assigneeSet = new Set(assignee.map((a) => a.id))
+        canUserAccessTask = canUserAccessTask && (payload.new.assigneeId ? assigneeSet.has(payload.new.assigneeId) : false)
+      }
       // Additionally, if user is a client, it can only access tasks assigned to that client or the client's company
       if (userRole === AssigneeType.client) {
         canUserAccessTask = canUserAccessTask && [userId, tokenPayload?.companyId].includes(payload.new.assigneeId)
@@ -69,8 +75,18 @@ export const RealTime = ({
       const oldTask =
         activeTask && updatedTask.id === activeTask.id ? activeTask : tasks.find((task) => task.id == updatedTask.id)
 
+      //check if the new task in this event belongs to the same workspaceId
       if (payload.new.workspaceId === tokenPayload?.workspaceId) {
-        //check if the new task in this event belongs to the same workspaceId
+        //if the updated task is out of scope for limited access iu
+        if (user && userRole === AssigneeType.internalUser && InternalUsersSchema.parse(user).isClientAccessLimited) {
+          const assigneeSet = new Set(assignee.map((a) => a.id))
+          if (payload.new.assigneeId && !assigneeSet.has(payload.new.assigneeId)) {
+            const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
+            store.dispatch(setTasks(newTaskArr))
+            return
+          }
+        }
+
         //if the task is deleted
         if (updatedTask.deletedAt) {
           const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
