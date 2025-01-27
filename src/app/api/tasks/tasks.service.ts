@@ -133,7 +133,12 @@ export class TasksService extends BaseService {
         return currentInternalUser.companyAccessList?.includes(task.assigneeId)
       }
       const taskClient = clients.data?.find((client) => client.id === task.assigneeId)
+      // Case where client is deleted or a client does not have a companyID(older clients)
+      if (!taskClient || !taskClient.companyId) {
+        return false
+      }
       const taskClientsCompanyId = z.string().parse(taskClient?.companyId)
+
       return currentInternalUser.companyAccessList?.includes(taskClientsCompanyId)
     })
   }
