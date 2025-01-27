@@ -40,7 +40,10 @@ export class NotificationService extends BaseService {
       // NOTE: There are cases where task.assigneeType does not account for IU notification!
       // E.g. When receiving notifications from others completing task that IU created.
       // For now we don't have to store these so this hasn't been accounted for
-      if (task.assigneeType === AssigneeType.internalUser) {
+      const shouldSendIUNotification =
+        task.assigneeType === AssigneeType.internalUser &&
+        (action === NotificationTaskActions.Assigned || action === NotificationTaskActions.ReassignedToIU)
+      if (shouldSendIUNotification) {
         // Notification recipient is IU in this case
         await this.db.internalUserNotification.create({
           data: {
