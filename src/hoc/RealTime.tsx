@@ -51,7 +51,7 @@ export const RealTime = ({
       // If user is an internal user with client access limitations, they can only access tasks assigned to clients or company they have access to
       if (user && userRole === AssigneeType.internalUser && InternalUsersSchema.parse(user).isClientAccessLimited) {
         const assigneeSet = new Set(assignee.map((a) => a.id))
-        canUserAccessTask = canUserAccessTask && (payload.new.assigneeId ? assigneeSet.has(payload.new.assigneeId) : false)
+        canUserAccessTask = canUserAccessTask && (payload.new.assigneeId ? assigneeSet.has(payload.new.assigneeId) : false) //filtering out unassigned tasks with a fallback false value.
       }
       // Additionally, if user is a client, it can only access tasks assigned to that client or the client's company
       if (userRole === AssigneeType.client) {
