@@ -132,7 +132,9 @@ export class TasksService extends BaseService {
         return currentInternalUser.companyAccessList?.includes(task.assigneeId)
       }
       const taskClient = clients.data?.find((client) => client.id === task.assigneeId)
+      console.log('testloghere', taskClient, taskClient?.companyId)
       const taskClientsCompanyId = z.string().parse(taskClient?.companyId)
+      console.log('testloghere2', taskClientsCompanyId)
       return currentInternalUser.companyAccessList?.includes(taskClientsCompanyId)
     })
   }
