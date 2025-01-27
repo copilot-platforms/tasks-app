@@ -47,10 +47,12 @@ export class ActivityLogService extends BaseService {
     const parsedActivityLogs = DBActivityLogArraySchema.parse(activityLogs)
     const copilotService = new CopilotAPI(this.user.token)
 
+    const maxLimitForFiltering = 10_000
+
     const [internalUsers, clientUsers, companies] = await Promise.all([
-      copilotService.getInternalUsers(),
-      copilotService.getClients(),
-      copilotService.getCompanies(),
+      copilotService.getInternalUsers({ limit: maxLimitForFiltering }),
+      copilotService.getClients({ limit: maxLimitForFiltering }),
+      copilotService.getCompanies({ limit: maxLimitForFiltering }),
     ])
 
     let filteredActivityLogs = parsedActivityLogs
@@ -181,11 +183,17 @@ export class ActivityLogService extends BaseService {
       .reverse()
 
     const previousUnaccessibleAssignee = previousAssigneeIds.find((id) => {
-      const otherUser =
-        clientUsers.data?.find((client) => client.id === id) || companies.data?.find((company) => company.id === id)
+      let unaccessibleUser, companyId
 
-      if (otherUser) {
-        const companyId = 'companyId' in otherUser ? otherUser.companyId : id
+      const unaccessibleClient = clientUsers.data?.find((client) => client.id === id)
+      if (unaccessibleClient) {
+        unaccessibleUser = unaccessibleClient
+        companyId = unaccessibleClient.companyId
+      } else {
+        unaccessibleUser = companies.data?.find((company) => company.id === id)
+        companyId = unaccessibleUser?.id
+      }
+      if (companyId) {
         return !currentInternalUser.companyAccessList?.includes(z.string().parse(companyId))
       }
       return false
