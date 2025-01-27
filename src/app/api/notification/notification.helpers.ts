@@ -60,7 +60,7 @@ export const getInProductNotificationDetails = (
 
     [NotificationTaskActions.CompletedByCompanyMember]: {
       title: 'Task was completed',
-      body: `The task ‘${task?.title}’ was completed by ${actionUser} for ${opts?.companyName}. You are receiving this notification because you have access to the client.`,
+      body: `The task ‘${task?.title}’ was completed by ${actionUser} for ${opts?.companyName}.`,
       ctaParams,
     },
     [NotificationTaskActions.CompletedForCompanyByIU]: {
@@ -70,7 +70,7 @@ export const getInProductNotificationDetails = (
     },
     [NotificationTaskActions.Completed]: {
       title: 'Task was completed',
-      body: `The task ‘${task?.title}’ was completed by ${actionUser}. You are receiving this notification because you have access to the client.`,
+      body: `The task ‘${task?.title}’ was completed by ${actionUser}.`,
       ctaParams,
     },
     [NotificationTaskActions.CompletedByIU]: {
