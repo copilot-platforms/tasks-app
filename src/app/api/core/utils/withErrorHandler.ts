@@ -32,7 +32,7 @@ export const withErrorHandler = (handler: RequestHandler): RequestHandler => {
       return await handler(req, params)
     } catch (error: unknown) {
       // Format error in a readable way
-      console.log('error here', error) // tryfix, delete this
+
       let formattedError = error
       if (error instanceof ZodError) {
         formattedError = error.format() as ZodFormattedError<string>
