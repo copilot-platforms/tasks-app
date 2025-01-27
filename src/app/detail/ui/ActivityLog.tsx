@@ -60,7 +60,7 @@ export const ActivityLog = ({ log }: Prop) => {
   }
 
   const logEntities = getLogEntities(log.type)
-
+  console.log(log)
   const activityDescription: { [key in ActivityType]: (...args: string[]) => React.ReactNode } = {
     [ActivityType.TASK_CREATED]: () => (
       <>
@@ -73,7 +73,7 @@ export const ActivityLog = ({ log }: Prop) => {
         <StyledTypography>
           {from && `re`}assigned task {from && `from `}
         </StyledTypography>
-        <BoldTypography> {from && `${from}`}</BoldTypography>
+        {from && <BoldTypography>{from}</BoldTypography>}
         <StyledTypography> to </StyledTypography>
         <BoldTypography>{to}</BoldTypography>
         <DotSeparator />
