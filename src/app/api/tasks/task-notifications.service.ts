@@ -46,7 +46,7 @@ export class TaskNotificationsService extends BaseService {
      * Cases:
      * 1. Task is archived / unarchived
      * 2. Assignee ID is changed for incomplete task -> Mark as read for previous recipients and trigger new notifications for new assignee
-     * 3. Assignee ID is changed for completed task -> Do nothing
+     * 3. Assignee ID is changed for completed task -> If previous assinee was IU, delete in-product notifications for prev assignee
      * 4. Task was changed from incomplete to complete state -> delete all notifications for all users
      * 5. Task was changed from complete to incomplete state -> recreate those notifications
      */
@@ -68,9 +68,15 @@ export class TaskNotificationsService extends BaseService {
     if (prevTask.assigneeId !== updatedTask.assigneeId && updatedTask.workflowState.type !== StateType.completed) {
       return await this.handleIncompleteTaskReassignment(prevTask, updatedTask)
     }
-
     // Case 3
-    // -- Do nothing :)
+    // -- Check if prev assignee was IU. If so, delete any and all past in-product notifications related to this task
+    if (
+      prevTask.assigneeId !== updatedTask.assigneeId &&
+      updatedTask.workflowState.type === StateType.completed &&
+      prevTask.assigneeType === AssigneeType.internalUser
+    ) {
+      await this.notificationService.deleteInternalUserNotificationsForTask(prevTask.id)
+    }
 
     // Case 4
     // -- If task was previously in another state, and is moved to a 'completed' type WorkflowState by IU
