@@ -1,11 +1,17 @@
 import { BaseService } from '@api/core/services/base.service'
 import User from '@api/core/models/User.model'
 import { z } from 'zod'
-import { ActivityType, AssigneeType, Comment } from '@prisma/client'
-import { DBActivityLogArraySchema, DBActivityLogDetails, SchemaByActivityType } from '@api/activity-logs/const'
+import { ActivityLog, ActivityType, AssigneeType, Comment } from '@prisma/client'
+import {
+  DBActivityLogArray,
+  DBActivityLogArraySchema,
+  DBActivityLogDetails,
+  DBActivityLogSchema,
+  SchemaByActivityType,
+} from '@api/activity-logs/const'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { CommentService } from '@api/comment/comment.service'
-import { ClientsResponse, CompaniesResponse, InternalUsersResponse } from '@/types/common'
+import { ClientsResponse, CompaniesResponse, InternalUsers, InternalUsersResponse } from '@/types/common'
 import { LogResponse, LogResponseSchema } from '../schemas/LogResponseSchema'
 import APIError from '@api/core/exceptions/api'
 import httpStatus from 'http-status'
@@ -52,36 +58,12 @@ export class ActivityLogService extends BaseService {
     if (this.user.role == AssigneeType.internalUser) {
       const currentInternalUser = internalUsers.data.find((iu) => iu.id === this.user.internalUserId)
       if (currentInternalUser?.isClientAccessLimited) {
-        const previousAssigneeIds = parsedActivityLogs
-          .filter(
-            (log) =>
-              log.type === 'TASK_ASSIGNED' &&
-              (clientUsers.data?.some((client) => client.id == log.details.oldValue) ||
-                companies.data?.some((company) => company.id == log.details.oldValue)),
-          )
-          .map((log) => log.details.oldValue)
-          .reverse()
-
-        const previousUnaccessibleAssignee = previousAssigneeIds.find((id) => {
-          const otherUser =
-            clientUsers.data?.find((client) => client.id === id) || companies.data?.find((company) => company.id === id)
-
-          if (otherUser) {
-            const companyId = 'companyId' in otherUser ? otherUser.companyId : id
-            return !currentInternalUser.companyAccessList?.includes(z.string().parse(companyId))
-          }
-          return false
-        })
-
-        const latestTaskAssignedIndex = parsedActivityLogs.findLastIndex(
-          (log) => log.type === 'TASK_ASSIGNED' && log.details.oldValue === previousUnaccessibleAssignee,
+        filteredActivityLogs = this.filterActivityLogsForLimitedAccess(
+          parsedActivityLogs,
+          clientUsers,
+          companies,
+          currentInternalUser,
         )
-
-        if (latestTaskAssignedIndex) {
-          filteredActivityLogs = parsedActivityLogs.filter(
-            (log, index) => log.type === 'TASK_CREATED' || index >= latestTaskAssignedIndex,
-          )
-        }
       }
     }
 
@@ -180,5 +162,43 @@ export class ActivityLogService extends BaseService {
       default:
         return payload
     }
+  }
+
+  private filterActivityLogsForLimitedAccess(
+    parsedActivityLogs: DBActivityLogArray,
+    clientUsers: ClientsResponse,
+    companies: CompaniesResponse,
+    currentInternalUser: InternalUsers,
+  ): DBActivityLogArray {
+    const previousAssigneeIds = parsedActivityLogs
+      .filter(
+        (log) =>
+          log.type === 'TASK_ASSIGNED' &&
+          (clientUsers.data?.some((client) => client.id == log.details.oldValue) ||
+            companies.data?.some((company) => company.id == log.details.oldValue)),
+      )
+      .map((log) => log.details.oldValue)
+      .reverse()
+
+    const previousUnaccessibleAssignee = previousAssigneeIds.find((id) => {
+      const otherUser =
+        clientUsers.data?.find((client) => client.id === id) || companies.data?.find((company) => company.id === id)
+
+      if (otherUser) {
+        const companyId = 'companyId' in otherUser ? otherUser.companyId : id
+        return !currentInternalUser.companyAccessList?.includes(z.string().parse(companyId))
+      }
+      return false
+    })
+
+    const latestTaskAssignedIndex = parsedActivityLogs.findLastIndex(
+      (log) => log.type === 'TASK_ASSIGNED' && log.details.oldValue === previousUnaccessibleAssignee,
+    )
+
+    if (latestTaskAssignedIndex) {
+      return parsedActivityLogs.filter((log, index) => log.type === 'TASK_CREATED' || index >= latestTaskAssignedIndex)
+    }
+
+    return parsedActivityLogs
   }
 }

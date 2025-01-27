@@ -32,3 +32,5 @@ export const DBActivityLogSchema = z.object({
 })
 
 export const DBActivityLogArraySchema = z.array(DBActivityLogSchema)
+
+export type DBActivityLogArray = z.infer<typeof DBActivityLogArraySchema>

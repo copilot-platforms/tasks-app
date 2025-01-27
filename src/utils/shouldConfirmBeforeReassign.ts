@@ -13,9 +13,6 @@ export const ShouldConfirmBeforeReassignment = (previousAssignee: IAssigneeCombi
   } // case when previous assignee is an IU with full access to clients.
 
   switch (currentAssigneeType) {
-    case AssigneeType.internalUser:
-      return false // add logic to return true/false for confirming before reassignment for IUs here
-
     case AssigneeType.client:
       return !previousAssigneeCompanyAccessList.includes(z.string().parse(currentAssignee.companyId))
 
