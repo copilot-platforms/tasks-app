@@ -37,14 +37,10 @@ export class NotificationService extends BaseService {
       }
 
       const notification = await copilot.createNotification(notificationDetails)
-      if (
-        [
-          NotificationTaskActions.Completed,
-          NotificationTaskActions.CompletedByIU,
-          NotificationTaskActions.CompletedForCompanyByIU,
-          NotificationTaskActions.CompletedByCompanyMember,
-        ].includes(action)
-      ) {
+      // NOTE: There are cases where task.assigneeType does not account for IU notification!
+      // E.g. When receiving notifications from others completing task that IU created.
+      // For now we don't have to store these so this hasn't been accounted for
+      if (task.assigneeType === AssigneeType.internalUser) {
         // Notification recipient is IU in this case
         await this.db.internalUserNotification.create({
           data: {
@@ -123,7 +119,7 @@ export class NotificationService extends BaseService {
     })
   }
 
-  deleteInternalUserNotificationForTask = async (taskId: string) => {
+  deleteInternalUserNotificationsForTask = async (taskId: string) => {
     const copilot = new CopilotAPI(this.user.token)
     const notifications = await this.db.internalUserNotification.findMany({ where: { taskId } })
     const markAsReadPromises = []

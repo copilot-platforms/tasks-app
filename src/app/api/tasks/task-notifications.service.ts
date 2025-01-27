@@ -163,7 +163,7 @@ export class TaskNotificationsService extends BaseService {
       const assigneeType = prevTask.assigneeType
       // -- If task is reassigned from client, delete past in-product notification
       if (assigneeType === AssigneeType.internalUser) {
-        await this.notificationService.deleteInternalUserNotificationForTask(prevTask.id)
+        await this.notificationService.deleteInternalUserNotificationsForTask(prevTask.id)
       }
       // -- If task is reassigned from a client, mark prev client notification as read (not delete)
       if (assigneeType === AssigneeType.client) {
