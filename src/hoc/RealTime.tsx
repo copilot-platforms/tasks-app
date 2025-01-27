@@ -44,6 +44,16 @@ export const RealTime = ({
   }
   const user = assignee.find((el) => el.id === userId)
 
+  const redirectToBoard = () => {
+    if (pathname.includes('detail')) {
+      if (pathname.includes('cu')) {
+        router.push(`/client?token=${token}`)
+      } else {
+        router.push(`/?token=${token}`)
+      }
+    }
+  }
+
   const handleTaskRealTimeUpdates = (payload: RealtimePostgresChangesPayload<RealTimeTaskResponse>) => {
     if (payload.eventType === 'INSERT') {
       // For both user types, filter out just tasks belonging to workspace.
@@ -56,6 +66,9 @@ export const RealTime = ({
       // Additionally, if user is a client, it can only access tasks assigned to that client or the client's company
       if (userRole === AssigneeType.client) {
         canUserAccessTask = canUserAccessTask && [userId, tokenPayload?.companyId].includes(payload.new.assigneeId)
+        if (!canUserAccessTask) {
+          redirectToBoard()
+        }
       }
       //check if the new task in this event belongs to the same workspaceId
       if (canUserAccessTask && showUnarchived) {
@@ -83,6 +96,7 @@ export const RealTime = ({
           if (payload.new.assigneeId && !assigneeSet.has(payload.new.assigneeId)) {
             const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
             store.dispatch(setTasks(newTaskArr))
+            redirectToBoard()
             return
           }
         }
@@ -93,13 +107,7 @@ export const RealTime = ({
           store.dispatch(setTasks(newTaskArr))
 
           //if a user is in the details page when the task is deleted then we want the user to get redirected to '/' route
-          if (pathname.includes('detail')) {
-            if (pathname.includes('cu')) {
-              router.push(`/client?token=${token}`)
-            } else {
-              router.push(`/?token=${token}`)
-            }
-          }
+          redirectToBoard()
           //if the task is updated
         } else {
           // Address Postgres' TOAST limitation that causes fields like TEXT, BYTEA to be copied as a pointer, instead of copying template field in realtime replica
