@@ -89,6 +89,7 @@ export const RealTime = ({
       if (payload.new.workspaceId === tokenPayload?.workspaceId) {
         //if the updated task is out of scope for limited access iu
         if (user && userRole === AssigneeType.internalUser && InternalUsersSchema.parse(user).isClientAccessLimited) {
+          console.log('true')
           const assigneeSet = new Set(assignee.map((a) => a.id))
           if (payload.new.assigneeId && !assigneeSet.has(payload.new.assigneeId)) {
             const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
