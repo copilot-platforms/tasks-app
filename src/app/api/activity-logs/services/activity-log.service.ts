@@ -183,15 +183,14 @@ export class ActivityLogService extends BaseService {
       .reverse()
 
     const previousUnaccessibleAssignee = previousAssigneeIds.find((id) => {
-      let unaccessibleUser, companyId
+      let companyId
 
       const unaccessibleClient = clientUsers.data?.find((client) => client.id === id)
       if (unaccessibleClient) {
-        unaccessibleUser = unaccessibleClient
         companyId = unaccessibleClient.companyId
       } else {
-        unaccessibleUser = companies.data?.find((company) => company.id === id)
-        companyId = unaccessibleUser?.id
+        const unaccessibleCompany = companies.data?.find((company) => company.id === id)
+        companyId = unaccessibleCompany?.id
       }
       if (companyId) {
         return !currentInternalUser.companyAccessList?.includes(z.string().parse(companyId))
