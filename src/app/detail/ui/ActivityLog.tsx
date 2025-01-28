@@ -60,7 +60,6 @@ export const ActivityLog = ({ log }: Prop) => {
   }
 
   const logEntities = getLogEntities(log.type)
-  console.log(log)
   const activityDescription: { [key in ActivityType]: (...args: string[]) => React.ReactNode } = {
     [ActivityType.TASK_CREATED]: () => (
       <>
