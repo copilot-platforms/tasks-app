@@ -69,9 +69,7 @@ export const ActivityLog = ({ log }: Prop) => {
     ),
     [ActivityType.TASK_ASSIGNED]: (from: string, to: string) => (
       <>
-        <StyledTypography>
-          {from && `re`}assigned task {from && `from `}
-        </StyledTypography>
+        <StyledTypography>reassigned task {from && `from `}</StyledTypography>
         {from && <BoldTypography>{from}</BoldTypography>}
         <StyledTypography> to </StyledTypography>
         <BoldTypography>{to}</BoldTypography>
