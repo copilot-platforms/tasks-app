@@ -29,6 +29,7 @@ import store from '@/redux/store'
 import { ConfirmUI } from '@/components/layouts/ConfirmUI'
 import { ShouldConfirmBeforeReassignment } from '@/utils/shouldConfirmBeforeReassign'
 import { MiniLoader } from '@/components/atoms/MiniLoader'
+import { useSWRConfig } from 'swr'
 
 const StyledText = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[500],
@@ -61,6 +62,8 @@ export const Sidebar = ({
   const [inputStatusValue, setInputStatusValue] = useState('')
   const [selectedAssignee, setSelectedAssignee] = useState<IAssigneeCombined | undefined>(undefined)
 
+  const { mutate } = useSWRConfig()
+
   const { renderingItem: _statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
     // item: selectedWorkflowState,
     item: null,
@@ -92,14 +95,32 @@ export const Sidebar = ({
 
   const handleAssigneeChange = (assigneeValue: IAssigneeCombined) => {
     updateAssigneeValue(assigneeValue)
-    const assigneeType = getAssigneeTypeCorrected(assigneeValue)
-    updateAssignee(assigneeType, assigneeValue?.id)
+    // const assigneeType = getAssigneeTypeCorrected(assigneeValue)
+    // updateAssignee(assigneeType, assigneeValue?.id)
+    handleAssigneeChangeSWR(assigneeValue)
   }
 
   const handleConfirmAssigneeChange = (assigneeValue: IAssigneeCombined) => {
     handleAssigneeChange(assigneeValue)
     store.dispatch(toggleShowConfirmAssignModal())
   }
+
+  const handleAssigneeChangeSWR = async (assignee: IAssigneeCombined) => {
+    try {
+      await mutate(async () => {
+        await fetch(`/api/tasks/${task_id}?token=${token}`, {
+          method: 'PATCH',
+          body: JSON.stringify({
+            assigneeType: getAssigneeTypeCorrected(assignee),
+            assigneeId: assignee.id,
+          }),
+        })
+      })
+      return
+    } catch (error) {
+      console.error('Failed to change assignee:', error)
+    }
+  } //Right now this function is being used instead of server actions. Server actions are of blocking behaviour which causes other consecutive server actions on hold if the previous actions takes time. handling assignee change on server actions takes too much time because of notification if an assignee is a company.
 
   useEffect(() => {
     if (isMobile) {
