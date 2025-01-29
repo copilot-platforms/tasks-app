@@ -76,6 +76,28 @@ export const RealTime = ({
     }
     if (payload.eventType === 'UPDATE') {
       const updatedTask = payload.new
+
+      //if the updated task is out of scope for clients
+      if (user && userRole === AssigneeType.client) {
+        if (updatedTask.assigneeId !== userId && updatedTask.assigneeId !== tokenPayload?.companyId) {
+          const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
+          store.dispatch(setTasks(newTaskArr))
+          redirectToBoard()
+          return
+        }
+      }
+
+      //if the updated task is out of scope for limited access iu
+      if (user && userRole === AssigneeType.internalUser && InternalUsersSchema.parse(user).isClientAccessLimited) {
+        const assigneeSet = new Set(assignee.map((a) => a.id))
+        if (updatedTask.assigneeId && !assigneeSet.has(updatedTask.assigneeId)) {
+          const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
+          store.dispatch(setTasks(newTaskArr))
+          redirectToBoard()
+          return
+        }
+      }
+
       const isCreatedAtGMT = (updatedTask.createdAt as unknown as string).slice(-1).toLowerCase() === 'z'
       if (!isCreatedAtGMT) {
         // DB stores GMT timestamp without 'z', so need to append this manually
@@ -86,19 +108,7 @@ export const RealTime = ({
         activeTask && updatedTask.id === activeTask.id ? activeTask : tasks.find((task) => task.id == updatedTask.id)
 
       //check if the new task in this event belongs to the same workspaceId
-      if (payload.new.workspaceId === tokenPayload?.workspaceId) {
-        //if the updated task is out of scope for limited access iu
-        if (user && userRole === AssigneeType.internalUser && InternalUsersSchema.parse(user).isClientAccessLimited) {
-          console.log('true')
-          const assigneeSet = new Set(assignee.map((a) => a.id))
-          if (payload.new.assigneeId && !assigneeSet.has(payload.new.assigneeId)) {
-            const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
-            store.dispatch(setTasks(newTaskArr))
-            redirectToBoard()
-            return
-          }
-        }
-
+      if (updatedTask.workspaceId === tokenPayload?.workspaceId) {
         //if the task is deleted
         if (updatedTask.deletedAt) {
           const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
@@ -158,12 +168,7 @@ export const RealTime = ({
           event: '*',
           schema: 'public',
           table: 'Tasks',
-          filter:
-            userRole === AssigneeType.internalUser
-              ? `workspaceId=eq.${tokenPayload?.workspaceId}`
-              : // The reason we are explicitly using an assigneeId filter for clients is so they are not streamed
-                // tasks they don't have access to in the first place.
-                `assigneeId=in.(${userId}, ${tokenPayload.companyId})`,
+          filter: `workspaceId=eq.${tokenPayload?.workspaceId}`,
         },
         handleTaskRealTimeUpdates,
       )
