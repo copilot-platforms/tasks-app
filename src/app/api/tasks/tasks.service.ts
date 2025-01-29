@@ -1,3 +1,4 @@
+import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 import { ClientResponse, CompanyResponse, InternalUsers } from '@/types/common'
 import { CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { CopilotAPI } from '@/utils/CopilotAPI'
@@ -21,8 +22,6 @@ type FilterByAssigneeId = {
   assigneeId: string
   assigneeType: AssigneeType
 }
-
-const COPILOT_USER_PAGESIZE = 10_000
 
 export class TasksService extends BaseService {
   /**
@@ -124,7 +123,7 @@ export class TasksService extends BaseService {
     const hasClientTasks = tasks.some(
       (task) => task.assigneeType === AssigneeType.client || task.assigneeType === AssigneeType.company,
     )
-    const clients = hasClientTasks ? await copilot.getClients({ limit: COPILOT_USER_PAGESIZE }) : { data: [] }
+    const clients = hasClientTasks ? await copilot.getClients({ limit: MAX_FETCH_ASSIGNEE_COUNT }) : { data: [] }
 
     return tasks.filter((task) => {
       // Allow IU to access unassigned tasks or tasks assigned to another IU within workspace
