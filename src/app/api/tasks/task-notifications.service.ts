@@ -38,7 +38,7 @@ export class TaskNotificationsService extends BaseService {
     // If new task is assigned to someone (IU / Client / Company), send proper notification + email to them
     const sendTaskNotifications =
       task.assigneeType === AssigneeType.company ? this.sendCompanyTaskNotifications : this.sendUserTaskNotification
-    await sendTaskNotifications(task, isReassigned)
+    return await sendTaskNotifications(task, isReassigned)
   }
 
   async sendTaskUpdateNotifications(prevTask: TaskWithWorkflowState, updatedTask: TaskWithWorkflowState) {
@@ -250,6 +250,8 @@ export class TaskNotificationsService extends BaseService {
     if (task.assigneeType === AssigneeType.client) {
       await this.notificationService.addToClientNotifications(task, NotificationCreatedResponseSchema.parse(notification))
     }
+
+    return notification
   }
 
   private sendCompanyTaskNotifications = async (task: Task, isReassigned = false) => {
@@ -279,7 +281,7 @@ export class TaskNotificationsService extends BaseService {
           ),
         )
       }
-      await Promise.all(notificationPromises)
+      return await Promise.all(notificationPromises)
     }
   }
 
