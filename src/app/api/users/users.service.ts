@@ -11,6 +11,7 @@ import { filterUsersByKeyword } from '@/utils/users'
 import { z } from 'zod'
 import { FilterOptionsKeywords } from '@/types/interfaces'
 import { orderByRecentlyCreatedAt } from '@/utils/ordering'
+import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 
 class UsersService extends BaseService {
   private copilot: CopilotAPI
@@ -26,12 +27,11 @@ class UsersService extends BaseService {
     new PoliciesService(user).authorize(UserAction.Read, Resource.Users)
 
     const listArgs: CopilotListArgs = { limit, nextToken }
-    const maxLimitForFiltering = 10_000
 
     const [ius, clients, companies] = await Promise.all([
       this.copilot.getInternalUsers(listArgs),
-      this.copilot.getClients({ limit: maxLimitForFiltering, nextToken }),
-      this.copilot.getCompanies({ limit: maxLimitForFiltering, nextToken }),
+      this.copilot.getClients({ limit: MAX_FETCH_ASSIGNEE_COUNT, nextToken }),
+      this.copilot.getCompanies({ limit: MAX_FETCH_ASSIGNEE_COUNT, nextToken }),
     ])
 
     // Get current internal user as only IUs are authenticated to access this route
