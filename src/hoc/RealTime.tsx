@@ -55,6 +55,9 @@ export const RealTime = ({
   }
 
   const handleTaskRealTimeUpdates = (payload: RealtimePostgresChangesPayload<RealTimeTaskResponse>) => {
+    console.log('payload', payload)
+    console.log('token', userId, userRole, tokenPayload)
+
     if (payload.eventType === 'INSERT') {
       // For both user types, filter out just tasks belonging to workspace.
       let canUserAccessTask = payload.new.workspaceId === tokenPayload?.workspaceId
@@ -173,6 +176,7 @@ export const RealTime = ({
         handleTaskRealTimeUpdates,
       )
       .subscribe()
+    console.info('Connected to realtime channel', channel)
 
     return () => {
       supabase.removeChannel(channel)
