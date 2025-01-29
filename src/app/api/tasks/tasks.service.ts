@@ -1,4 +1,5 @@
 import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
+import { sendTaskCreateNotifications } from '@/triggers/send-task-create-notifications'
 import { ClientResponse, CompanyResponse, InternalUsers } from '@/types/common'
 import { CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { CopilotAPI } from '@/utils/CopilotAPI'
@@ -15,6 +16,7 @@ import { TaskNotificationsService } from '@api/tasks/task-notifications.service'
 import { getArchivedStatus, getTaskTimestamps } from '@api/tasks/tasks.helpers'
 import { TasksActivityLogger } from '@api/tasks/tasks.logger'
 import { AssigneeType, StateType, Task, WorkflowState } from '@prisma/client'
+import { tasks } from '@trigger.dev/sdk/v3'
 import httpStatus from 'http-status'
 import { z } from 'zod'
 
@@ -179,8 +181,12 @@ export class TasksService extends BaseService {
       }
     }
 
-    const taskNotificationsSevice = new TaskNotificationsService(this.user)
-    await taskNotificationsSevice.sendTaskCreateNotifications(newTask)
+    // const taskNotificationsSevice = new TaskNotificationsService(this.user)
+    // await taskNotificationsSevice.sendTaskCreateNotifications(newTask)
+    console.time('trigger')
+    await tasks.trigger('sendTaskCreateNotifications', { user: this.user, task: newTask })
+    console.timeEnd('trigger')
+
     return newTask
   }
 
