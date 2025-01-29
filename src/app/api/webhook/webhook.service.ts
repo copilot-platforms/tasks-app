@@ -11,6 +11,7 @@ import { getInProductNotificationDetails } from '@api/notification/notification.
 import { NotificationTaskActions } from '@api/core/types/tasks'
 import { NotificationService } from '@api/notification/notification.service'
 import User from '@api/core/models/User.model'
+import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 
 class WebhookService extends BaseService {
   private copilot
@@ -76,7 +77,7 @@ class WebhookService extends BaseService {
     const bottleneck = new Bottleneck({ minTime: 250, maxConcurrent: 2 })
     const createNotificationPromises = []
 
-    const internalUsers = (await this.copilot.getInternalUsers({ limit: 10_000 })).data
+    const internalUsers = (await this.copilot.getInternalUsers({ limit: MAX_FETCH_ASSIGNEE_COUNT })).data
     const existingNotifications = await this.db.clientNotification.findMany({
       where: { clientId: assigneeId },
     })

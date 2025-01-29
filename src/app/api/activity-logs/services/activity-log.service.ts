@@ -11,10 +11,11 @@ import {
 } from '@api/activity-logs/const'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { CommentService } from '@api/comment/comment.service'
-import { ClientsResponse, CompaniesResponse, InternalUsers, InternalUsersResponse } from '@/types/common'
+import { ClientsResponse, CompaniesResponse, CopilotListArgs, InternalUsers, InternalUsersResponse } from '@/types/common'
 import { LogResponse, LogResponseSchema } from '../schemas/LogResponseSchema'
 import APIError from '@api/core/exceptions/api'
 import httpStatus from 'http-status'
+import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 
 export class ActivityLogService extends BaseService {
   constructor(user: User) {
@@ -47,12 +48,11 @@ export class ActivityLogService extends BaseService {
     const parsedActivityLogs = DBActivityLogArraySchema.parse(activityLogs)
     const copilotService = new CopilotAPI(this.user.token)
 
-    const maxLimitForFiltering = 10_000
-
+    const userOpts: CopilotListArgs = { limit: MAX_FETCH_ASSIGNEE_COUNT }
     const [internalUsers, clientUsers, companies] = await Promise.all([
-      copilotService.getInternalUsers({ limit: maxLimitForFiltering }),
-      copilotService.getClients({ limit: maxLimitForFiltering }),
-      copilotService.getCompanies({ limit: maxLimitForFiltering }),
+      copilotService.getInternalUsers(userOpts),
+      copilotService.getClients(userOpts),
+      copilotService.getCompanies(userOpts),
     ])
 
     let filteredActivityLogs = parsedActivityLogs
