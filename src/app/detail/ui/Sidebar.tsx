@@ -107,16 +107,22 @@ export const Sidebar = ({
 
   const handleAssigneeChangeSWR = async (assignee: IAssigneeCombined) => {
     try {
-      await mutate(async () => {
-        await fetch(`/api/tasks/${task_id}?token=${token}`, {
-          method: 'PATCH',
-          body: JSON.stringify({
-            assigneeType: getAssigneeTypeCorrected(assignee),
-            assigneeId: assignee.id,
-          }),
-        })
-      })
-      return
+      await mutate(
+        `/api/tasks/${task_id}`,
+        async () => {
+          const response = await fetch(`/api/tasks/${task_id}?token=${token}`, {
+            method: 'PATCH',
+            body: JSON.stringify({
+              assigneeType: getAssigneeTypeCorrected(assignee),
+              assigneeId: assignee.id,
+            }),
+          })
+          return await response.json()
+        },
+        {
+          revalidate: false,
+        },
+      )
     } catch (error) {
       console.error('Failed to change assignee:', error)
     }
