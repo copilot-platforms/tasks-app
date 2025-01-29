@@ -272,7 +272,16 @@ export const Sidebar = ({
               }
             }}
             buttonText="Reassign"
-            description={`You're about to reassign this task from ${getAssigneeName(assigneeValue)} to ${getAssigneeName(selectedAssignee)}. This will give ${getAssigneeName(selectedAssignee)} access to all task comments and history.`}
+            description={
+              <Typography variant="bodyMd">
+                {`You're about to reassign this task from `}
+                <strong>{getAssigneeName(assigneeValue)}</strong>
+                {` to `}
+                <strong>{getAssigneeName(selectedAssignee)}</strong>.{` This will give `}
+                <strong>{getAssigneeName(selectedAssignee)}</strong>
+                {` access to all task comments and history.`}
+              </Typography>
+            }
             title="Reassign task?"
           />
         </StyledModal>
@@ -458,7 +467,16 @@ export const Sidebar = ({
             }
           }}
           buttonText="Reassign"
-          description={`You're about to reassign this task from ${getAssigneeName(assigneeValue)} to ${getAssigneeName(selectedAssignee)}. This will give ${getAssigneeName(selectedAssignee)} access to all task comments and history.`}
+          description={
+            <Typography variant="bodyMd">
+              {`You're about to reassign this task from `}
+              <strong>{getAssigneeName(assigneeValue)}</strong>
+              {` to `}
+              <strong>{getAssigneeName(selectedAssignee)}</strong>.{` This will give `}
+              <strong>{getAssigneeName(selectedAssignee)}</strong>
+              {` access to all task comments and history.`}
+            </Typography>
+          }
           title="Reassign task?"
         />
       </StyledModal>
