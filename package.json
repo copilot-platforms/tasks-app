@@ -29,7 +29,9 @@
     "test": "jest",
     "loadtest": "tsx ./src/cmd/load-testing",
     "loadtest:delete-clients": "tsx ./src/cmd/load-testing/deleteClients.ts",
-    "seed:activity-logs": "tsx ./src/cmd/fill-activity-logs"
+    "seed:activity-logs": "tsx ./src/cmd/fill-activity-logs",
+    "trigger:dev": "npx trigger.dev@latest dev",
+    "trigger:deploy": "npx trigger.dev@latest deploy"
   },
   "dependencies": {
     "@emotion/react": "^11.11.3",
