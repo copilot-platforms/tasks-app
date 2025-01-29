@@ -62,8 +62,6 @@ export const Sidebar = ({
   const [inputStatusValue, setInputStatusValue] = useState('')
   const [selectedAssignee, setSelectedAssignee] = useState<IAssigneeCombined | undefined>(undefined)
 
-  const { mutate } = useSWRConfig()
-
   const { renderingItem: _statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
     // item: selectedWorkflowState,
     item: null,
@@ -97,7 +95,7 @@ export const Sidebar = ({
     updateAssigneeValue(assigneeValue)
     // const assigneeType = getAssigneeTypeCorrected(assigneeValue)
     // updateAssignee(assigneeType, assigneeValue?.id)
-    handleAssigneeChangeSWR(assigneeValue)
+    handleChangeAssignee(assigneeValue)
   }
 
   const handleConfirmAssigneeChange = (assigneeValue: IAssigneeCombined) => {
@@ -105,24 +103,15 @@ export const Sidebar = ({
     store.dispatch(toggleShowConfirmAssignModal())
   }
 
-  const handleAssigneeChangeSWR = async (assignee: IAssigneeCombined) => {
+  const handleChangeAssignee = async (assignee: IAssigneeCombined) => {
     try {
-      await mutate(
-        `/api/tasks/${task_id}`,
-        async () => {
-          const response = await fetch(`/api/tasks/${task_id}?token=${token}`, {
-            method: 'PATCH',
-            body: JSON.stringify({
-              assigneeType: getAssigneeTypeCorrected(assignee),
-              assigneeId: assignee.id,
-            }),
-          })
-          return await response.json()
-        },
-        {
-          revalidate: false,
-        },
-      )
+      await fetch(`/api/tasks/${task_id}?token=${token}`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          assigneeType: getAssigneeTypeCorrected(assignee),
+          assigneeId: assignee.id,
+        }),
+      })
     } catch (error) {
       console.error('Failed to change assignee:', error)
     }
