@@ -41,6 +41,7 @@
     "@reduxjs/toolkit": "^2.2.3",
     "@sentry/nextjs": "^8",
     "@supabase/supabase-js": "^2.47.5",
+    "@trigger.dev/sdk": "^3.3.12",
     "@types/date-fns": "^2.6.0",
     "@vercel/blob": "^0.23.2",
     "@vercel/postgres": "^0.8.0",
@@ -70,6 +71,7 @@
     "@faker-js/faker": "^8.4.1",
     "@ngrok/ngrok": "^1.4.1",
     "@svgr/webpack": "^8.1.0",
+    "@trigger.dev/build": "^3.3.12",
     "@types/jest": "^29.5.12",
     "@types/jsdom": "^21.1.7",
     "@types/node": "^20",
@@ -92,5 +94,6 @@
       "yarn lint:fix",
       "yarn prettier:fix"
     ]
-  }
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }
