@@ -22,6 +22,8 @@ type FilterByAssigneeId = {
   assigneeType: AssigneeType
 }
 
+const COPILOT_USER_PAGESIZE = 10_000
+
 export class TasksService extends BaseService {
   /**
    * Builds filter for "get" service methods.
@@ -119,8 +121,10 @@ export class TasksService extends BaseService {
     const currentInternalUser = await copilot.getInternalUser(this.user.internalUserId)
     if (!currentInternalUser.isClientAccessLimited) return tasks
 
-    const hasClientTasks = tasks.some((task) => task.assigneeType === AssigneeType.client)
-    const clients = hasClientTasks ? await copilot.getClients() : { data: [] }
+    const hasClientTasks = tasks.some(
+      (task) => task.assigneeType === AssigneeType.client || task.assigneeType === AssigneeType.company,
+    )
+    const clients = hasClientTasks ? await copilot.getClients({ limit: COPILOT_USER_PAGESIZE }) : { data: [] }
 
     return tasks.filter((task) => {
       // Allow IU to access unassigned tasks or tasks assigned to another IU within workspace
