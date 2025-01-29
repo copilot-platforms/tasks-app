@@ -120,9 +120,7 @@ export class TasksService extends BaseService {
     const currentInternalUser = await copilot.getInternalUser(this.user.internalUserId)
     if (!currentInternalUser.isClientAccessLimited) return tasks
 
-    const hasClientTasks = tasks.some(
-      (task) => task.assigneeType === AssigneeType.client || task.assigneeType === AssigneeType.company,
-    )
+    const hasClientTasks = tasks.some((task) => task.assigneeType === AssigneeType.client)
     const clients = hasClientTasks ? await copilot.getClients({ limit: MAX_FETCH_ASSIGNEE_COUNT }) : { data: [] }
 
     return tasks.filter((task) => {
