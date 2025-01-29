@@ -273,14 +273,11 @@ export const Sidebar = ({
             }}
             buttonText="Reassign"
             description={
-              <Typography variant="bodyMd">
-                {`You're about to reassign this task from `}
-                <strong>{getAssigneeName(assigneeValue)}</strong>
-                {` to `}
-                <strong>{getAssigneeName(selectedAssignee)}</strong>.{` This will give `}
-                <strong>{getAssigneeName(selectedAssignee)}</strong>
-                {` access to all task comments and history.`}
-              </Typography>
+              <>
+                You&apos;re about to reassign this task from <strong>{getAssigneeName(assigneeValue)}</strong> to{' '}
+                <strong>{getAssigneeName(selectedAssignee)}</strong>. This will give{' '}
+                <strong>{getAssigneeName(selectedAssignee)}</strong> access to all task comments and history.
+              </>
             }
             title="Reassign task?"
           />
@@ -468,14 +465,11 @@ export const Sidebar = ({
           }}
           buttonText="Reassign"
           description={
-            <Typography variant="bodyMd">
-              {`You're about to reassign this task from `}
-              <strong>{getAssigneeName(assigneeValue)}</strong>
-              {` to `}
-              <strong>{getAssigneeName(selectedAssignee)}</strong>.{` This will give `}
-              <strong>{getAssigneeName(selectedAssignee)}</strong>
-              {` access to all task comments and history.`}
-            </Typography>
+            <>
+              You&apos;re about to reassign this task from <strong>{getAssigneeName(assigneeValue)}</strong> to{' '}
+              <strong>{getAssigneeName(selectedAssignee)}</strong>. This will give{' '}
+              <strong>{getAssigneeName(selectedAssignee)}</strong> access to all task comments and history.
+            </>
           }
           title="Reassign task?"
         />
