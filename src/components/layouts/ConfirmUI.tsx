@@ -1,17 +1,18 @@
 'use client'
 
-import { StyledBox } from '@/app/detail/ui/styledComponent'
+import { StyledBox, TypographyContainer } from '@/app/detail/ui/styledComponent'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { Box, Stack, Typography, styled } from '@mui/material'
 import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
+import { ReactNode } from 'react'
 
 interface ConfirmUIProps {
   handleCancel: () => void
   handleConfirm: () => void
   buttonText: string
   title: string
-  description: string
+  description: ReactNode
 }
 
 export const ConfirmUI = ({
@@ -19,7 +20,7 @@ export const ConfirmUI = ({
   handleConfirm,
   buttonText,
   title = 'Are you sure?',
-  description = `This action can't be undone.`,
+  description = <Typography variant="bodyMd">{`This action can't be undone.`}</Typography>,
 }: ConfirmUIProps) => {
   return (
     <UIContainer sx={{ width: { xs: '80%', sm: '540px' } }}>
@@ -30,7 +31,7 @@ export const ConfirmUI = ({
       </StyledBox>
       <StyledBox>
         <Stack direction="column" rowGap={4} sx={{ padding: '20px' }}>
-          <Typography variant="bodyMd">{description}</Typography>
+          <TypographyContainer direction="row">{description}</TypographyContainer>
         </Stack>
       </StyledBox>
 
