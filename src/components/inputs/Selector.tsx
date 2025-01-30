@@ -326,7 +326,7 @@ export default function Selector<T extends keyof SelectorOptionsType>({
                 placeholder={placeholder}
                 borderColor="#EDEDF0"
                 padding="4px 12px 8px 12px"
-                basePadding="4px 12px 8px 12px"
+                basePadding="8px 12px 8px 12px"
                 sx={{
                   width: '200px',
                   visibility: { xs: 'none', sm: 'visible' },
