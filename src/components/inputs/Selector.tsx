@@ -184,7 +184,7 @@ export default function Selector<T extends keyof SelectorOptionsType>({
               justifyContent: { xs: 'flex-start', sm: 'flex-start' },
               cursor: disabled ? 'auto' : (cursor ?? 'pointer'),
               borderRadius: '4px',
-              padding: '4px 8px',
+              padding: '8px 8px',
               ':hover': {
                 backgroundColor: disabled ? 'none' : (theme) => theme.color.gray[100],
               },
