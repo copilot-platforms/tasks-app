@@ -95,8 +95,8 @@ export default async function TaskDetailPage({
         <EscapeHandler />
         <ResponsiveStack>
           <ToggleController>
-            <StyledBox>
-              {isPreviewMode ? (
+            {isPreviewMode ? (
+              <StyledBox>
                 <AppMargin size={SizeofAppMargin.HEADER} py="17.5px">
                   <Stack direction="row" justifyContent="space-between">
                     <HeaderBreadcrumbs token={token} title={task?.label} userType={params.user_type} />
@@ -108,18 +108,19 @@ export default async function TaskDetailPage({
                     </Stack>
                   </Stack>
                 </AppMargin>
-              ) : (
-                <>
-                  <HeaderBreadcrumbs
-                    token={token}
-                    title={task?.label}
-                    userType={params.user_type}
-                    portalUrl={workspace.portalUrl}
-                  />
-                  <ArchiveWrapper taskId={task_id} userType={user_type} />
-                </>
-              )}
-            </StyledBox>
+              </StyledBox>
+            ) : (
+              <>
+                <HeaderBreadcrumbs
+                  token={token}
+                  title={task?.label}
+                  userType={params.user_type}
+                  portalUrl={workspace.portalUrl}
+                />
+                <ArchiveWrapper taskId={task_id} userType={user_type} />
+              </>
+            )}
+
             <CustomScrollbar style={{ width: '8px' }}>
               <TaskDetailsContainer
                 sx={{
