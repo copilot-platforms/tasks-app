@@ -96,7 +96,13 @@ export const DatePickerComponent = ({
               variant="md"
               mt="2px"
               lineHeight={'22px'}
-              sx={{ textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden', maxWidth: '150px' }}
+              sx={{
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                maxWidth: '150px',
+                userSelect: 'none',
+              }}
             >
               {value ? formatDate(value) : 'No due date'}
             </Typography>

@@ -78,6 +78,7 @@ export const WorkflowStateSelector = ({
                   overflow: 'hidden',
                   display: { xs: responsiveNoHide ? 'block' : 'none', sm: 'block' },
                   lineHeight: '22px',
+                  userSelect: 'none',
                 }}
               >
                 {value?.name as ReactNode}
