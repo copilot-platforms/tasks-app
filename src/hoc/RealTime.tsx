@@ -79,7 +79,8 @@ export const RealTime = ({
 
       //if the updated task is out of scope for clients
       if (user && userRole === AssigneeType.client) {
-        if (updatedTask.assigneeId !== userId && updatedTask.assigneeId !== tokenPayload?.companyId) {
+        const canClientAccessTask = [userId, tokenPayload?.companyId].includes(updatedTask.assigneeId)
+        if (!canClientAccessTask) {
           const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
           store.dispatch(setTasks(newTaskArr))
           redirectToBoard()
