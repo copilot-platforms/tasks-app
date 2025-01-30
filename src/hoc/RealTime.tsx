@@ -98,9 +98,6 @@ export const RealTime = ({
         }
       }
 
-      console.log('payload', payload)
-      console.log('token', userId, userRole, tokenPayload)
-
       const isCreatedAtGMT = (updatedTask.createdAt as unknown as string).slice(-1).toLowerCase() === 'z'
       if (!isCreatedAtGMT) {
         // DB stores GMT timestamp without 'z', so need to append this manually
