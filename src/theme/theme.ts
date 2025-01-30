@@ -4,6 +4,15 @@ import { Inter } from 'next/font/google'
 const inter = Inter({ subsets: ['latin'] })
 
 export const theme = createTheme({
+  components: {
+    MuiTypography: {
+      styleOverrides: {
+        root: {
+          userSelect: 'none', //preventing user to select texts all over the app
+        },
+      },
+    },
+  },
   spacing: 4,
   breakpoints: {
     values: {

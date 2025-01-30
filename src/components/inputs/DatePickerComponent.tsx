@@ -101,7 +101,6 @@ export const DatePickerComponent = ({
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 maxWidth: '150px',
-                userSelect: 'none',
               }}
             >
               {value ? formatDate(value) : 'No due date'}
