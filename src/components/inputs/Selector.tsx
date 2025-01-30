@@ -199,6 +199,7 @@ export default function Selector<T extends keyof SelectorOptionsType>({
                 overflow: 'hidden',
                 maxWidth: '150px',
                 display: { xs: responsiveNoHide ? 'block' : 'none', sm: 'block' },
+                userSelect: 'none',
               }}
             >
               {buttonContent}
