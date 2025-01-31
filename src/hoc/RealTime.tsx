@@ -77,14 +77,15 @@ export const RealTime = ({
 
     if (payload.eventType === 'UPDATE') {
       const updatedTask = payload.new
-      // Verbose short-circuit to return realtime update handler if task is not assigned to current user
-      if (!user || updatedTask.assigneeId !== user.id || updatedTask.assigneeId !== user.companyId) {
-        return
-      }
 
       if (user && userRole === AssigneeType.client) {
-        //if the updated task is out of scope for clients
-        if (updatedTask.assigneeId !== userId && updatedTask.assigneeId !== tokenPayload?.companyId) {
+        // Check if assignee is this client's ID, or it's company's ID
+        if (![userId, tokenPayload?.companyId].includes(updatedTask.assigneeId)) {
+          // Get the previous task from tasks array and check if it was previously assigned to this client
+          const task = tasks.find((task) => task.id === updatedTask.id)
+          if (!task) {
+            return
+          }
           const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
           store.dispatch(setTasks(newTaskArr))
           redirectToBoard()
