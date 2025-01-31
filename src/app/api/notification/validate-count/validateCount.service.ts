@@ -69,22 +69,24 @@ export class ValidateCountService extends NotificationService {
   }
 
   private async removeDuplicateNotifications(clientId: string) {
+    // Get all queries with same taskId and clientId, that have duplicate notifications
     const queryResult = await this.db.$queryRaw`
-        SELECT "taskId", count(*) as "rowCount", max("createdAt") AS "latestCreatedAt"
+        SELECT "taskId", "clientId", count(*) as "rowCount", max("createdAt") AS "latestCreatedAt"
         FROM (
           SELECT "taskId", "clientId", "createdAt"
           FROM "ClientNotifications"
           WHERE "clientId" = ${clientId}::uuid 
             AND "deletedAt" IS NULL
         ) c
-        GROUP BY "taskId"
+        GROUP BY "taskId", "clientId"
         HAVING count(*) > 1
       `
     const duplicateNotifications = z.array(DuplicateNotificationsQuerySchema).parse(queryResult)
     const duplicateNotificationIds = await this.db.clientNotification.findMany({
       where: {
-        OR: duplicateNotifications.map(({ taskId, latestCreatedAt }) => ({
+        OR: duplicateNotifications.map(({ taskId, clientId, latestCreatedAt }) => ({
           taskId,
+          clientId,
           createdAt: {
             not: latestCreatedAt,
           },
