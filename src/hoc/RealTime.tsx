@@ -74,11 +74,16 @@ export const RealTime = ({
         // New payloads listened on the 'INSERT' action in realtime doesn't contain this tz info so the order can mess up
       }
     }
+
     if (payload.eventType === 'UPDATE') {
       const updatedTask = payload.new
+      // Verbose short-circuit to return realtime update handler if task is not assigned to current user
+      if (!user || updatedTask.assigneeId !== user.id || updatedTask.assigneeId !== user.companyId) {
+        return
+      }
 
-      //if the updated task is out of scope for clients
       if (user && userRole === AssigneeType.client) {
+        //if the updated task is out of scope for clients
         if (updatedTask.assigneeId !== userId && updatedTask.assigneeId !== tokenPayload?.companyId) {
           const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
           store.dispatch(setTasks(newTaskArr))
