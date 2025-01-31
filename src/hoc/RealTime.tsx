@@ -74,12 +74,18 @@ export const RealTime = ({
         // New payloads listened on the 'INSERT' action in realtime doesn't contain this tz info so the order can mess up
       }
     }
+
     if (payload.eventType === 'UPDATE') {
       const updatedTask = payload.new
 
-      //if the updated task is out of scope for clients
       if (user && userRole === AssigneeType.client) {
-        if (updatedTask.assigneeId !== userId && updatedTask.assigneeId !== tokenPayload?.companyId) {
+        // Check if assignee is this client's ID, or it's company's ID
+        if (![userId, tokenPayload?.companyId].includes(updatedTask.assigneeId)) {
+          // Get the previous task from tasks array and check if it was previously assigned to this client
+          const task = tasks.find((task) => task.id === updatedTask.id)
+          if (!task) {
+            return
+          }
           const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
           store.dispatch(setTasks(newTaskArr))
           redirectToBoard()
