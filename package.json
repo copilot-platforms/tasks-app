@@ -29,7 +29,8 @@
     "test": "jest",
     "loadtest": "tsx ./src/cmd/load-testing",
     "loadtest:delete-clients": "tsx ./src/cmd/load-testing/deleteClients.ts",
-    "seed:activity-logs": "tsx ./src/cmd/fill-activity-logs"
+    "seed:activity-logs": "tsx ./src/cmd/fill-activity-logs",
+    "delete-duplicate-notifications": "tsx ./src/cmd/delete-duplicate-notifications"
   },
   "dependencies": {
     "@emotion/react": "^11.11.3",
