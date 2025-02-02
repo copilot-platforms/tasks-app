@@ -1,20 +1,19 @@
-import { Box, Button, Popper, Stack, Typography } from '@mui/material'
-import { StyledAutocomplete } from '@/components/inputs/Autocomplete'
-import { statusIcons } from '@/utils/iconMatcher'
-import { useFocusableInput } from '@/hooks/useFocusableInput'
-import { HTMLAttributes, ReactNode, useEffect, useMemo, useState } from 'react'
-import { StyledTextField } from './TextField'
-import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { IAssigneeCombined, Sizes, IExtraOption, ITemplate, UserTypesName } from '@/types/interfaces'
-import { TruncateMaxNumber } from '@/types/constants'
-import { truncateText } from '@/utils/truncateText'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
-import { getAssigneeName } from '@/utils/assignee'
 import { StyledHelperText } from '@/components/error/FormHelperText'
-import React from 'react'
-import { ListComponent } from '@/components/inputs/ListComponent'
+import { StyledAutocomplete } from '@/components/inputs/Autocomplete'
+import { useFocusableInput } from '@/hooks/useFocusableInput'
+import { TruncateMaxNumber } from '@/types/constants'
+import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
+import { IAssigneeCombined, IExtraOption, ITemplate, Sizes, UserTypesName } from '@/types/interfaces'
+import { getAssigneeName } from '@/utils/assignee'
+import { statusIcons } from '@/utils/iconMatcher'
+import { truncateText } from '@/utils/truncateText'
+import { Box, Button, Popper, Stack, Typography } from '@mui/material'
 import { ModifierArguments } from '@popperjs/core'
 import { Property } from 'csstype'
+import React, { HTMLAttributes, ReactNode, useEffect, useMemo, useState } from 'react'
+import ListboxComponent, { type ListboxComponentProps } from './ListBoxComponent'
+import { StyledTextField } from './TextField'
 
 export enum SelectorType {
   ASSIGNEE_SELECTOR = 'assigneeSelector',
@@ -167,7 +166,15 @@ export default function Selector<T extends keyof SelectorOptionsType>({
   }
 
   const ListWithEndOption = (props: JSX.IntrinsicElements['div']) => (
-    <ListComponent {...props} endOption={endOption} endOptionHref={endOptionHref} autoHeightMax={listAutoHeightMax} />
+    <ListboxComponent
+      {...props}
+      role="listbox"
+      autoHeightMax={listAutoHeightMax}
+      endOption={endOption}
+      endOptionHref={endOptionHref}
+    >
+      {props.children}
+    </ListboxComponent>
   )
 
   return (
@@ -240,7 +247,14 @@ export default function Selector<T extends keyof SelectorOptionsType>({
           blurOnSelect={true}
           openOnFocus
           onKeyDown={handleKeyDown}
-          ListboxProps={{ sx: { maxHeight: { xs: '175px', sm: '291px' }, padding: '0px 0px 8px 0px' } }}
+          ListboxProps={
+            {
+              sx: { maxHeight: { xs: '175px', sm: '291px' }, padding: '0px 0px 8px 0px' },
+              endOption: endOption,
+              endOptionHref: endOptionHref,
+              autoHeightMax: listAutoHeightMax,
+            } as unknown as ListboxComponentProps
+          }
           options={extraOption ? [extraOption, ...processedOptions] : processedOptions}
           value={value}
           onChange={(_, newValue: unknown) => {
@@ -250,7 +264,15 @@ export default function Selector<T extends keyof SelectorOptionsType>({
               setInputStatusValue('')
             }
           }}
-          ListboxComponent={ListWithEndOption}
+          ListboxComponent={
+            ListboxComponent as React.ComponentType<
+              React.HTMLAttributes<HTMLElement> & {
+                endOption?: React.ReactNode
+                endOptionHref?: string
+                autoHeightMax?: string
+              }
+            >
+          }
           getOptionLabel={(option: unknown) => detectSelectorType(option)}
           groupBy={(option: unknown) => {
             if (standaloneOptionIds.has((option as SelectorOptionsType[typeof selectorType]).id)) {
