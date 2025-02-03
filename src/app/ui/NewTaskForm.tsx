@@ -394,7 +394,7 @@ const NewTaskFooter = ({
         }}
       >
         <Typography variant="sm">
-          <Box display="flex" gap="4px" alignItems="center">
+          <Box display="flex" gap="4px" alignItems="center" sx={{ color: (theme) => theme.color.gray[600] }}>
             Manage templates
             <ArrowRightIcon />
           </Box>

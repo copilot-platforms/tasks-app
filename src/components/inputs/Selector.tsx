@@ -12,8 +12,8 @@ import { Box, Button, Popper, Stack, Typography } from '@mui/material'
 import { ModifierArguments } from '@popperjs/core'
 import { Property } from 'csstype'
 import React, { HTMLAttributes, ReactNode, useEffect, useMemo, useState } from 'react'
-import ListboxComponent, { type ListboxComponentProps } from './ListBoxComponent'
 import { StyledTextField } from './TextField'
+import ListboxComponent, { ListComponentProps } from '@/components/inputs/ListBoxComponent'
 
 export enum SelectorType {
   ASSIGNEE_SELECTOR = 'assigneeSelector',
@@ -165,17 +165,31 @@ export default function Selector<T extends keyof SelectorOptionsType>({
     }
   }
 
-  const ListWithEndOption = (props: JSX.IntrinsicElements['div']) => (
-    <ListboxComponent
-      {...props}
-      role="listbox"
-      autoHeightMax={listAutoHeightMax}
-      endOption={endOption}
-      endOptionHref={endOptionHref}
-    >
-      {props.children}
-    </ListboxComponent>
-  )
+  const ListWithEndOption = React.forwardRef<
+    HTMLDivElement,
+    JSX.IntrinsicElements['div'] & {
+      endOption?: React.ReactNode
+      endOptionHref?: string
+      autoHeightMax?: string
+    }
+  >((props, ref) => {
+    const { endOption, endOptionHref, autoHeightMax, ...other } = props
+
+    return (
+      <ListboxComponent
+        {...other}
+        ref={ref}
+        role="listbox"
+        autoHeightMax={autoHeightMax}
+        endOption={endOption}
+        endOptionHref={endOptionHref}
+      >
+        {props.children}
+      </ListboxComponent>
+    )
+  })
+
+  ListWithEndOption.displayName = 'ListWithEndOption'
 
   return (
     <Stack direction="column">
@@ -246,6 +260,7 @@ export default function Selector<T extends keyof SelectorOptionsType>({
           }}
           blurOnSelect={true}
           openOnFocus
+          autoFocus={false}
           onKeyDown={handleKeyDown}
           ListboxProps={
             {
@@ -253,7 +268,7 @@ export default function Selector<T extends keyof SelectorOptionsType>({
               endOption: endOption,
               endOptionHref: endOptionHref,
               autoHeightMax: listAutoHeightMax,
-            } as unknown as ListboxComponentProps
+            } as unknown as ListComponentProps
           }
           options={extraOption ? [extraOption, ...processedOptions] : processedOptions}
           value={value}
@@ -264,15 +279,7 @@ export default function Selector<T extends keyof SelectorOptionsType>({
               setInputStatusValue('')
             }
           }}
-          ListboxComponent={
-            ListboxComponent as React.ComponentType<
-              React.HTMLAttributes<HTMLElement> & {
-                endOption?: React.ReactNode
-                endOptionHref?: string
-                autoHeightMax?: string
-              }
-            >
-          }
+          ListboxComponent={ListWithEndOption}
           getOptionLabel={(option: unknown) => detectSelectorType(option)}
           groupBy={(option: unknown) => {
             if (standaloneOptionIds.has((option as SelectorOptionsType[typeof selectorType]).id)) {
@@ -408,7 +415,11 @@ export default function Selector<T extends keyof SelectorOptionsType>({
               <></>
             )
           }}
-          noOptionsText={endOption && <ListWithEndOption />}
+          noOptionsText={
+            endOption && (
+              <ListWithEndOption endOption={endOption} endOptionHref={endOptionHref} autoHeightMax={listAutoHeightMax} />
+            )
+          }
         />
       </Popper>
     </Stack>
@@ -511,6 +522,7 @@ const AssigneeSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTM
           bgcolor: theme.color.background.bgHover,
         },
       })}
+      aria-selected="false"
     >
       <Stack direction="row" alignItems="center" columnGap={3}>
         <CopilotAvatar currentAssignee={assignee} />
