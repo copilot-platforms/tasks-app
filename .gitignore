@@ -45,5 +45,4 @@ next-env.d.ts
 # Test routes
 **/test-route-*
 
-# Trigger
-.trigger/
+.trigger
