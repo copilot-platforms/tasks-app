@@ -14,7 +14,7 @@ import { TaskRow } from '@/components/cards/TaskRow'
 import { UserType, View } from '@/types/interfaces'
 import { updateTask, updateViewModeSettings } from '@/app/actions'
 import { z } from 'zod'
-import { CustomScrollbar } from '@/hoc/CustomScrollbar'
+
 import DashboardEmptyState from '@/components/layouts/EmptyState/DashboardEmptyState'
 import { Header } from '@/components/layouts/Header'
 import { FilterBar } from '@/components/layouts/FilterBar'
@@ -30,6 +30,7 @@ import { NoFilteredTasksState } from '@/components/layouts/EmptyState/NoFiltered
 import { useFilter } from '@/hooks/useFilter'
 import { WorkspaceResponse } from '@/types/common'
 import { TaskBoardAppBridge } from '@/app/ui/TaskBoardAppBridge'
+import CustomScrollBar from '@/hoc/CustomScrollBar'
 
 interface TaskBoardProps {
   mode: UserRole
@@ -170,7 +171,7 @@ export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
                   showAddBtn={mode === UserRole.IU || !!previewMode}
                   showHeader={showHeader}
                 >
-                  <CustomScrollbar style={{ padding: '4px' }}>
+                  <CustomScrollBar>
                     <Stack direction="column" rowGap="6px" sx={{ overflowX: 'auto' }}>
                       {sortTaskByDescendingOrder<TaskResponse>(filterTaskWithWorkflowStateId(list.id)).map((task, index) => {
                         return (
@@ -198,7 +199,7 @@ export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
                         )
                       })}
                     </Stack>
-                  </CustomScrollbar>
+                  </CustomScrollBar>
                 </TaskColumn>
               </DragDropHandler>
             ))}
@@ -214,7 +215,7 @@ export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
             margin: '0 auto',
           }}
         >
-          <CustomScrollbar style={{ width: '8px' }}>
+          <CustomScrollBar>
             {workflowStates.map((list, index) => (
               <DragDropHandler
                 key={list.id}
@@ -258,7 +259,7 @@ export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
                 </TaskRow>
               </DragDropHandler>
             ))}
-          </CustomScrollbar>
+          </CustomScrollBar>
         </Stack>
       )}
       <CustomDragLayer>

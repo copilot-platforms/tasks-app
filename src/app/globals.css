@@ -7,3 +7,35 @@
 a {
   text-decoration: none;
 }
+
+.scrollhost::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollhost-container {
+  position: relative;
+  height: 100%;
+}
+
+.scrollhost {
+  overflow: auto;
+  height: 100%;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  position: relative;
+}
+
+.scroll-thumb {
+  width: 8px;
+  margin-right: 1px;
+  position: absolute;
+  border-radius: 20px;
+  right: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+  transition: background-color 0.15s ease-in-out;
+}
+
+.scroll-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.5);
+}

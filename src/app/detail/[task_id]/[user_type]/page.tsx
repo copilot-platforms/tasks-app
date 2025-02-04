@@ -29,7 +29,7 @@ import { SilentError } from '@/components/templates/SilentError'
 import { apiUrl } from '@/config'
 import { signedUrlTtl } from '@/constants/attachments'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
-import { CustomScrollbar } from '@/hoc/CustomScrollbar'
+import CustomScrollBar from '@/hoc/CustomScrollBar'
 import { RealTime } from '@/hoc/RealTime'
 import { WorkspaceResponse } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
@@ -121,7 +121,7 @@ export default async function TaskDetailPage({
               </>
             )}
 
-            <CustomScrollbar style={{ width: '8px' }}>
+            <CustomScrollBar>
               <TaskDetailsContainer
                 sx={{
                   padding: { xs: '20px 33px 20px 20px', sm: '30px 33px 30px 20px' },
@@ -160,7 +160,7 @@ export default async function TaskDetailPage({
 
                 <ActivityWrapper task_id={task_id} token={token} tokenPayload={tokenPayload} />
               </TaskDetailsContainer>
-            </CustomScrollbar>
+            </CustomScrollBar>
           </ToggleController>
           <Box>
             <Suspense fallback={<SidebarSkeleton />}>
