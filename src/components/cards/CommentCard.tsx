@@ -6,6 +6,7 @@ import { ListBtn } from '@/components/buttons/ListBtn'
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 import { MenuBox } from '@/components/inputs/MenuBox'
 import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
+import SafeHTMLViewer from '@/components/SafeHTMLViewer'
 import { useWindowWidth } from '@/hooks/useWindowWidth'
 import { TrashIcon } from '@/icons'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
@@ -122,12 +123,7 @@ export const CommentCard = ({
           )}
         </Stack>
 
-        <Tapwrite
-          content={(comment.details as { content: string }).content}
-          getContent={() => {}}
-          readonly
-          editorClass="tapwrite-comment"
-        />
+        <SafeHTMLViewer content={(comment.details as { content: string }).content} className="tapwrite-comment" />
 
         {Array.isArray((comment as LogResponse).details?.replies) &&
           ((comment as LogResponse).details.replies as LogResponse[]).map((item: LogResponse) => {
