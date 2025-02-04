@@ -100,7 +100,7 @@ export const DisplaySelector = ({
             }}
           >
             <ListViewIcon />
-            <Typography variant="bodySm" fontSize={'12px'}>
+            <Typography variant="bodySm" fontSize={'12px'} sx={{ userSelect: 'none' }}>
               List
             </Typography>
           </IconContainer>
@@ -113,7 +113,7 @@ export const DisplaySelector = ({
             }}
           >
             <BoardViewIcon />
-            <Typography variant="bodySm" fontSize={'12px'}>
+            <Typography variant="bodySm" fontSize={'12px'} sx={{ userSelect: 'none' }}>
               Board
             </Typography>
           </IconContainer>

@@ -1,3 +1,4 @@
+import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import Bottleneck from 'bottleneck'
 import dotenv from 'dotenv'
@@ -13,7 +14,7 @@ const run = async () => {
   const token = z.string().parse(process.env.LOAD_TESTING_COPILOT_TOKEN)
   const apiKey = z.string().parse(process.env.COPILOT_API_KEY)
   const copilot = new CopilotAPI(token, apiKey)
-  const clients = await copilot.getClients({ limit: 10_000 })
+  const clients = await copilot.getClients({ limit: MAX_FETCH_ASSIGNEE_COUNT })
 
   if (!clients.data) {
     throw new Error('No clients to delete')

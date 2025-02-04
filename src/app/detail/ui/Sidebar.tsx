@@ -9,13 +9,13 @@ import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { useSelector } from 'react-redux'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { StyledBox } from './styledComponent'
+import { StyledBox, StyledModal } from './styledComponent'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { createDateFromFormattedDateString, formatDate } from '@/utils/dateHelper'
-import { selectTaskDetails, setShowSidebar } from '@/redux/features/taskDetailsSlice'
+import { selectTaskDetails, toggleShowConfirmAssignModal, setShowSidebar } from '@/redux/features/taskDetailsSlice'
 import { ToggleButtonContainer } from './ToggleButtonContainer'
-import { NoAssignee } from '@/utils/noAssignee'
+import { NoAssignee, NoAssigneeExtraOptions, NoDataFoundOption } from '@/utils/noAssignee'
 import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { AssigneePlaceholder } from '@/icons'
@@ -26,6 +26,10 @@ import { getAssigneeName, isAssigneeTextMatching } from '@/utils/assignee'
 import { DateStringSchema } from '@/types/date'
 import { useWindowWidth } from '@/hooks/useWindowWidth'
 import store from '@/redux/store'
+import { ConfirmUI } from '@/components/layouts/ConfirmUI'
+import { ShouldConfirmBeforeReassignment } from '@/utils/shouldConfirmBeforeReassign'
+import { MiniLoader } from '@/components/atoms/MiniLoader'
+import { useSWRConfig } from 'swr'
 
 const StyledText = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[500],
@@ -50,12 +54,13 @@ export const Sidebar = ({
   workflowDisabled?: false
 }) => {
   const { activeTask, token, workflowStates, assignee, previewMode } = useSelector(selectTaskBoard)
-  const { showSidebar } = useSelector(selectTaskDetails)
+  const { showSidebar, showConfirmAssignModal } = useSelector(selectTaskDetails)
   const [filteredAssignees, setFilteredAssignees] = useState(assignee)
   const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
   const [loading, setLoading] = useState(false)
   const [dueDate, setDueDate] = useState<Date | string | undefined>()
   const [inputStatusValue, setInputStatusValue] = useState('')
+  const [selectedAssignee, setSelectedAssignee] = useState<IAssigneeCombined | undefined>(undefined)
 
   const { renderingItem: _statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
     // item: selectedWorkflowState,
@@ -85,6 +90,32 @@ export const Sidebar = ({
 
   const windowWidth = useWindowWidth()
   const isMobile = windowWidth < 600 && windowWidth !== 0
+
+  const handleAssigneeChange = (assigneeValue: IAssigneeCombined) => {
+    updateAssigneeValue(assigneeValue)
+    // const assigneeType = getAssigneeTypeCorrected(assigneeValue)
+    // updateAssignee(assigneeType, assigneeValue?.id)
+    handleChangeAssignee(assigneeValue)
+  }
+
+  const handleConfirmAssigneeChange = (assigneeValue: IAssigneeCombined) => {
+    handleAssigneeChange(assigneeValue)
+    store.dispatch(toggleShowConfirmAssignModal())
+  }
+
+  const handleChangeAssignee = async (assignee: IAssigneeCombined) => {
+    try {
+      await fetch(`/api/tasks/${task_id}?token=${token}`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          assigneeType: getAssigneeTypeCorrected(assignee),
+          assigneeId: assignee.id,
+        }),
+      })
+    } catch (error) {
+      console.error('Failed to change assignee:', error)
+    }
+  } //Right now this function is being used instead of server actions. Server actions are of blocking behaviour which causes other consecutive server actions on hold if the previous actions takes time. handling assignee change on server actions takes too much time because of notification if an assignee is a company.
 
   useEffect(() => {
     if (isMobile) {
@@ -132,12 +163,16 @@ export const Sidebar = ({
             setInputStatusValue={setInputStatusValue}
             buttonWidth="100%"
             padding={'3px 8px'}
-            placeholder="Change assignee"
+            placeholder="Set assignee"
             getSelectedValue={(newValue) => {
               const assignee = newValue as IAssigneeCombined
-              updateAssigneeValue(assignee)
-              const assigneeType = getAssigneeTypeCorrected(assignee)
-              updateAssignee(assigneeType, assignee?.id)
+              const shouldShowConfirmModal = ShouldConfirmBeforeReassignment(assigneeValue, assignee)
+              if (shouldShowConfirmModal) {
+                setSelectedAssignee(assignee)
+                store.dispatch(toggleShowConfirmAssignModal())
+              } else {
+                handleAssigneeChange(assignee)
+              }
             }}
             startIcon={
               (assigneeValue as IAssigneeCombined)?.name == 'No assignee' ? (
@@ -146,7 +181,7 @@ export const Sidebar = ({
                 <CopilotAvatar currentAssignee={assigneeValue} />
               )
             }
-            options={loading ? [] : filteredAssignees}
+            options={loading ? [] : filteredAssignees.length ? filteredAssignees : [NoDataFoundOption]}
             value={assigneeValue?.name == 'No assignee' ? null : assigneeValue}
             selectorType={SelectorType.ASSIGNEE_SELECTOR}
             buttonHeight="auto"
@@ -182,9 +217,27 @@ export const Sidebar = ({
                 newInputValue,
               )
             }}
+            extraOption={NoAssigneeExtraOptions}
+            extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
+              return (
+                <>
+                  {/* <ExtraOptionRendererAssignee
+                    props={props}
+                    onClick={(e) => {
+                      updateAssigneeValue({ id: '', name: 'No assignee' })
+                      setAnchorEl(anchorEl ? null : e.currentTarget)
+                      updateAssignee(null, null)
+                    }}
+                  /> */}
+                  {loading && <MiniLoader />}
+                </>
+              )
+            }}
+            disabled={disabled}
+            cursor="default"
             filterOption={(x: unknown) => x}
-            disabled={true} //for now, disable re-assignment completely
             responsiveNoHide
+            currentOption={assigneeValue}
           />
         </Box>
         <Box sx={{}}>
@@ -202,6 +255,33 @@ export const Sidebar = ({
             padding={'3px 8px'}
           />
         </Box>
+        <StyledModal
+          open={showConfirmAssignModal}
+          onClose={() => store.dispatch(toggleShowConfirmAssignModal())}
+          aria-labelledby="confirm-reassignment-modal"
+          aria-describedby="confirm-reassignment"
+        >
+          <ConfirmUI
+            handleCancel={() => {
+              setSelectedAssignee(undefined)
+              store.dispatch(toggleShowConfirmAssignModal())
+            }}
+            handleConfirm={() => {
+              if (selectedAssignee) {
+                handleConfirmAssigneeChange(selectedAssignee)
+              }
+            }}
+            buttonText="Reassign"
+            description={
+              <>
+                You&apos;re about to reassign this task from <strong>{getAssigneeName(assigneeValue)}</strong> to{' '}
+                <strong>{getAssigneeName(selectedAssignee)}</strong>. This will give{' '}
+                <strong>{getAssigneeName(selectedAssignee)}</strong> access to all task comments and history.
+              </>
+            }
+            title="Reassign task?"
+          />
+        </StyledModal>
       </Stack>
     )
   }
@@ -271,12 +351,16 @@ export const Sidebar = ({
               inputStatusValue={inputStatusValue}
               setInputStatusValue={setInputStatusValue}
               buttonWidth="100%"
-              placeholder="Change assignee"
+              placeholder="Set assignee"
               getSelectedValue={(newValue) => {
                 const assignee = newValue as IAssigneeCombined
-                updateAssigneeValue(assignee)
-                const assigneeType = getAssigneeTypeCorrected(assignee)
-                updateAssignee(assigneeType, assignee?.id)
+                const shouldShowConfirmModal = ShouldConfirmBeforeReassignment(assigneeValue, assignee)
+                if (shouldShowConfirmModal) {
+                  setSelectedAssignee(assignee)
+                  store.dispatch(toggleShowConfirmAssignModal())
+                } else {
+                  handleAssigneeChange(assignee)
+                }
               }}
               startIcon={
                 (assigneeValue as IAssigneeCombined)?.name == 'No assignee' ? (
@@ -285,26 +369,26 @@ export const Sidebar = ({
                   <CopilotAvatar currentAssignee={assigneeValue} />
                 )
               }
-              options={loading ? [] : filteredAssignees}
+              options={loading ? [] : filteredAssignees.length ? filteredAssignees : [NoDataFoundOption]}
               value={assigneeValue?.name == 'No assignee' ? null : assigneeValue}
               selectorType={SelectorType.ASSIGNEE_SELECTOR}
               //****Disabling re-assignment completely for now***
-              // extraOption={NoAssigneeExtraOptions}
-              // extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
-              //   return (
-              //     <>
-              //       <ExtraOptionRendererAssignee
-              //         props={props}
-              //         onClick={(e) => {
-              //           updateAssigneeValue({ id: '', name: 'No assignee' })
-              //           setAnchorEl(anchorEl ? null : e.currentTarget)
-              //           updateAssignee(null, null)
-              //         }}
-              //       />
-              //       {loading && <MiniLoader />}
-              //     </>
-              //   )
-              // }}
+              extraOption={NoAssigneeExtraOptions}
+              extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
+                return (
+                  <>
+                    {/* <ExtraOptionRendererAssignee
+                      props={props}
+                      onClick={(e) => {
+                        updateAssigneeValue({ id: '', name: 'No assignee' })
+                        setAnchorEl(anchorEl ? null : e.currentTarget)
+                        updateAssignee(null, null)
+                      }}
+                    /> */}
+                    {loading && <MiniLoader />}
+                  </>
+                )
+              }}
               buttonContent={
                 <Typography variant="md" lineHeight="22px" sx={{ color: (theme) => theme.color.gray[600] }}>
                   {(assigneeValue as IAssigneeCombined)?.name == 'No assignee'
@@ -328,10 +412,11 @@ export const Sidebar = ({
                 )
               }}
               filterOption={(x: unknown) => x}
-              // disabled={disabled}
-              disabled={true} //for now, disable re-assignment completely
+              disabled={disabled}
+              cursor={'default'}
               disableOutline
               responsiveNoHide
+              currentOption={assigneeValue}
             />
           </Box>
         </Stack>
@@ -362,6 +447,33 @@ export const Sidebar = ({
           </Box>
         </Stack>
       </AppMargin>
+      <StyledModal
+        open={showConfirmAssignModal}
+        onClose={() => store.dispatch(toggleShowConfirmAssignModal())}
+        aria-labelledby="confirm-reassignment-modal"
+        aria-describedby="confirm-reassignment"
+      >
+        <ConfirmUI
+          handleCancel={() => {
+            setSelectedAssignee(undefined)
+            store.dispatch(toggleShowConfirmAssignModal())
+          }}
+          handleConfirm={() => {
+            if (selectedAssignee) {
+              handleConfirmAssigneeChange(selectedAssignee)
+            }
+          }}
+          buttonText="Reassign"
+          description={
+            <>
+              You&apos;re about to reassign this task from <strong>{getAssigneeName(assigneeValue)}</strong> to{' '}
+              <strong>{getAssigneeName(selectedAssignee)}</strong>. This will give{' '}
+              <strong>{getAssigneeName(selectedAssignee)}</strong> access to all task comments and history.
+            </>
+          }
+          title="Reassign task?"
+        />
+      </StyledModal>
     </Box>
   )
 }

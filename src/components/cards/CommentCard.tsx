@@ -114,6 +114,8 @@ export const CommentCard = ({
                   isSecondary
                   width={'22px'}
                   height={'22px'}
+                  displayButtonBackground={false}
+                  noHover={false}
                 />
               )}
             </Stack>

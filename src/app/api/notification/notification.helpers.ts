@@ -41,14 +41,26 @@ export const getInProductNotificationDetails = (
       title: 'Task was assigned to your company',
       body: `A new task ‘${task?.title}’ was assigned to your company by ${actionUser}. To see details about the task, navigate to the Tasks App below.`,
     },
+
     [NotificationTaskActions.ReassignedToIU]: {
       title: 'Task was reassigned to you',
       body: `The task ‘${task?.title}’ was reassigned to you by ${actionUser}. To see details about the task, navigate to the Tasks App below.`,
       ctaParams,
     },
+    [NotificationTaskActions.ReassignedToClient]: {
+      title: 'View task',
+      body: `The task ‘${task?.title}’ was reassigned to you by ${actionUser}. To see details about the task open it below.`,
+      ctaParams,
+    },
+    [NotificationTaskActions.ReassignedToCompany]: {
+      title: 'View task',
+      body: `The task ‘${task?.title}’ was reassigned to your company by ${actionUser}. To see details about the task open it below.`,
+      ctaParams,
+    },
+
     [NotificationTaskActions.CompletedByCompanyMember]: {
       title: 'Task was completed',
-      body: `The task ‘${task?.title}’ was completed by ${actionUser} for ${opts?.companyName}. You are receiving this notification because you have access to the client.`,
+      body: `The task ‘${task?.title}’ was completed by ${actionUser} for ${opts?.companyName}.`,
       ctaParams,
     },
     [NotificationTaskActions.CompletedForCompanyByIU]: {
@@ -58,7 +70,7 @@ export const getInProductNotificationDetails = (
     },
     [NotificationTaskActions.Completed]: {
       title: 'Task was completed',
-      body: `The task ‘${task?.title}’ was completed by ${actionUser}. You are receiving this notification because you have access to the client.`,
+      body: `The task ‘${task?.title}’ was completed by ${actionUser}.`,
       ctaParams,
     },
     [NotificationTaskActions.CompletedByIU]: {
@@ -66,6 +78,7 @@ export const getInProductNotificationDetails = (
       body: `The task ‘${task?.title}’ was completed by ${actionUser}.`,
       ctaParams,
     },
+
     [NotificationTaskActions.Commented]: commentDetail,
     [NotificationTaskActions.CommentToCU]: commentDetail,
     [NotificationTaskActions.CommentToIU]: commentDetail,
@@ -141,6 +154,20 @@ export const getEmailDetails = (
       header: 'You were mentioned in a task comment',
       body: `You were mentioned in a comment on task ‘${task?.title}’ by ${actionUser}. To see details about the task, navigate to the Tasks App below. `,
       title: 'View task',
+      ctaParams,
+    },
+    [NotificationTaskActions.ReassignedToClient]: {
+      subject: 'A task was reassigned to you',
+      header: 'A task was reassigned to you',
+      title: 'View task',
+      body: `The task ‘${task?.title}’ was reassigned to you by ${actionUser}. To see details about the task open it below.`,
+      ctaParams,
+    },
+    [NotificationTaskActions.ReassignedToCompany]: {
+      subject: 'A task was reassigned to your company',
+      header: 'A task was reassigned to your company',
+      title: 'View task',
+      body: `The task ‘${task?.title}’ was reassigned to your company by ${actionUser}. To see details about the task open it below.`,
       ctaParams,
     },
   }

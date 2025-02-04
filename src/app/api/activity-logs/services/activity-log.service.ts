@@ -1,14 +1,21 @@
 import { BaseService } from '@api/core/services/base.service'
 import User from '@api/core/models/User.model'
 import { z } from 'zod'
-import { ActivityType, AssigneeType, Comment } from '@prisma/client'
-import { DBActivityLogArraySchema, DBActivityLogDetails, SchemaByActivityType } from '@api/activity-logs/const'
+import { ActivityLog, ActivityType, AssigneeType, Comment } from '@prisma/client'
+import {
+  DBActivityLogArray,
+  DBActivityLogArraySchema,
+  DBActivityLogDetails,
+  DBActivityLogSchema,
+  SchemaByActivityType,
+} from '@api/activity-logs/const'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { CommentService } from '@api/comment/comment.service'
-import { ClientsResponse, CompaniesResponse, InternalUsersResponse } from '@/types/common'
+import { ClientsResponse, CompaniesResponse, CopilotListArgs, InternalUsers, InternalUsersResponse } from '@/types/common'
 import { LogResponse, LogResponseSchema } from '../schemas/LogResponseSchema'
 import APIError from '@api/core/exceptions/api'
 import httpStatus from 'http-status'
+import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 
 export class ActivityLogService extends BaseService {
   constructor(user: User) {
@@ -39,16 +46,30 @@ export class ActivityLogService extends BaseService {
           END;
     `
     const parsedActivityLogs = DBActivityLogArraySchema.parse(activityLogs)
-
     const copilotService = new CopilotAPI(this.user.token)
 
+    const userOpts: CopilotListArgs = { limit: MAX_FETCH_ASSIGNEE_COUNT }
     const [internalUsers, clientUsers, companies] = await Promise.all([
-      copilotService.getInternalUsers(),
-      copilotService.getClients(),
-      copilotService.getCompanies(),
+      copilotService.getInternalUsers(userOpts),
+      copilotService.getClients(userOpts),
+      copilotService.getCompanies(userOpts),
     ])
 
-    const copilotUsers = parsedActivityLogs
+    let filteredActivityLogs = parsedActivityLogs
+
+    if (this.user.role == AssigneeType.internalUser) {
+      const currentInternalUser = internalUsers.data.find((iu) => iu.id === this.user.internalUserId)
+      if (currentInternalUser?.isClientAccessLimited) {
+        filteredActivityLogs = this.filterActivityLogsForLimitedAccess(
+          parsedActivityLogs,
+          clientUsers,
+          companies,
+          currentInternalUser,
+        )
+      }
+    }
+
+    const copilotUsers = filteredActivityLogs
       .map((activityLog) => {
         if (activityLog.userRole === AssigneeType.internalUser) {
           return internalUsers.data.find((iu) => iu.id === activityLog.userId)
@@ -59,7 +80,7 @@ export class ActivityLogService extends BaseService {
       })
       .filter((user): user is NonNullable<typeof user> => user !== undefined)
 
-    const commentIds = parsedActivityLogs
+    const commentIds = filteredActivityLogs
       .filter((activityLog) => activityLog.type === ActivityType.COMMENT_ADDED)
       .map((activityLog) => activityLog.details.id)
       .filter((commentId: unknown): commentId is string => commentId !== null)
@@ -68,7 +89,7 @@ export class ActivityLogService extends BaseService {
     const comments = await commentService.getCommentsByIds(commentIds)
     const allReplies = await commentService.getReplies(commentIds)
 
-    const logResponseData = parsedActivityLogs.map((activityLog) => {
+    const logResponseData = filteredActivityLogs.map((activityLog) => {
       const initiator = copilotUsers.find((iu) => iu.id === activityLog.userId) || null
       return {
         ...activityLog,
@@ -143,5 +164,48 @@ export class ActivityLogService extends BaseService {
       default:
         return payload
     }
+  }
+
+  private filterActivityLogsForLimitedAccess(
+    parsedActivityLogs: DBActivityLogArray,
+    clientUsers: ClientsResponse,
+    companies: CompaniesResponse,
+    currentInternalUser: InternalUsers,
+  ): DBActivityLogArray {
+    const previousAssigneeIds = parsedActivityLogs
+      .filter(
+        (log) =>
+          log.type === 'TASK_ASSIGNED' &&
+          (clientUsers.data?.some((client) => client.id == log.details.oldValue) ||
+            companies.data?.some((company) => company.id == log.details.oldValue)),
+      )
+      .map((log) => log.details.oldValue)
+      .reverse()
+
+    const previousUnaccessibleAssignee = previousAssigneeIds.find((id) => {
+      let companyId
+
+      const unaccessibleClient = clientUsers.data?.find((client) => client.id === id)
+      if (unaccessibleClient) {
+        companyId = unaccessibleClient.companyId
+      } else {
+        const unaccessibleCompany = companies.data?.find((company) => company.id === id)
+        companyId = unaccessibleCompany?.id
+      }
+      if (companyId) {
+        return !currentInternalUser.companyAccessList?.includes(z.string().parse(companyId))
+      }
+      return false
+    })
+
+    const latestTaskAssignedIndex = parsedActivityLogs.findLastIndex(
+      (log) => log.type === 'TASK_ASSIGNED' && log.details.oldValue === previousUnaccessibleAssignee,
+    )
+
+    if (latestTaskAssignedIndex) {
+      return parsedActivityLogs.filter((log, index) => log.type === 'TASK_CREATED' || index >= latestTaskAssignedIndex)
+    }
+
+    return parsedActivityLogs
   }
 }

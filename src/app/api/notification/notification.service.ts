@@ -4,9 +4,8 @@ import { CopilotAPI } from '@/utils/CopilotAPI'
 import APIError from '@api/core/exceptions/api'
 import { BaseService } from '@api/core/services/base.service'
 import { NotificationTaskActions } from '@api/core/types/tasks'
-import { UserRole } from '@api/core/types/user'
 import { getEmailDetails, getInProductNotificationDetails } from '@api/notification/notification.helpers'
-import { AssigneeType, ClientNotification, InternalUserNotification, Task } from '@prisma/client'
+import { AssigneeType, ClientNotification, Task } from '@prisma/client'
 import Bottleneck from 'bottleneck'
 import httpStatus from 'http-status'
 import { z } from 'zod'
@@ -27,6 +26,7 @@ export class NotificationService extends BaseService {
       const inProduct = opts.disableInProduct
         ? undefined
         : getInProductNotificationDetails(actionUser, task, { companyName, commentId: opts?.commentId })[action]
+
       const email = opts.disableEmail ? undefined : getEmailDetails(actionUser, task, { commentId: opts?.commentId })[action]
 
       const notificationDetails = {
@@ -37,14 +37,13 @@ export class NotificationService extends BaseService {
       }
 
       const notification = await copilot.createNotification(notificationDetails)
-      if (
-        [
-          NotificationTaskActions.Completed,
-          NotificationTaskActions.CompletedByIU,
-          NotificationTaskActions.CompletedForCompanyByIU,
-          NotificationTaskActions.CompletedByCompanyMember,
-        ].includes(action)
-      ) {
+      // NOTE: There are cases where task.assigneeType does not account for IU notification!
+      // E.g. When receiving notifications from others completing task that IU created.
+      // For now we don't have to store these so this hasn't been accounted for
+      const shouldSendIUNotification =
+        task.assigneeType === AssigneeType.internalUser &&
+        (action === NotificationTaskActions.Assigned || action === NotificationTaskActions.ReassignedToIU)
+      if (shouldSendIUNotification) {
         // Notification recipient is IU in this case
         await this.db.internalUserNotification.create({
           data: {
@@ -123,7 +122,7 @@ export class NotificationService extends BaseService {
     })
   }
 
-  deleteInternalUserNotificationForTask = async (taskId: string) => {
+  deleteInternalUserNotificationsForTask = async (taskId: string) => {
     const copilot = new CopilotAPI(this.user.token)
     const notifications = await this.db.internalUserNotification.findMany({ where: { taskId } })
     const markAsReadPromises = []

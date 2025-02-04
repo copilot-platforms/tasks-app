@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard, setActiveTask, setFilteredTasks, setTasks } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
-import { Token } from '@/types/common'
+import { InternalUsersSchema, Token } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { extractImgSrcs, replaceImgSrcs } from '@/utils/signedUrlReplacer'
 import { AssigneeType } from '@prisma/client'
@@ -27,7 +27,7 @@ export const RealTime = ({
   task?: TaskResponse
   tokenPayload: Token
 }) => {
-  const { tasks, token, activeTask } = useSelector(selectTaskBoard)
+  const { tasks, token, activeTask, assignee } = useSelector(selectTaskBoard)
   const { showUnarchived, showArchived } = useSelector(selectTaskBoard)
   const pathname = usePathname()
   const router = useRouter()
@@ -42,11 +42,27 @@ export const RealTime = ({
   if (!userId || !userRole) {
     console.error(`Failed to authenticate a realtime connection for id ${userId} with role ${userRole}`)
   }
+  const user = assignee.find((el) => el.id === userId)
+
+  const redirectToBoard = () => {
+    if (pathname.includes('detail')) {
+      if (pathname.includes('cu')) {
+        router.push(`/client?token=${token}`)
+      } else {
+        router.push(`/?token=${token}`)
+      }
+    }
+  }
 
   const handleTaskRealTimeUpdates = (payload: RealtimePostgresChangesPayload<RealTimeTaskResponse>) => {
     if (payload.eventType === 'INSERT') {
       // For both user types, filter out just tasks belonging to workspace.
       let canUserAccessTask = payload.new.workspaceId === tokenPayload?.workspaceId
+      // If user is an internal user with client access limitations, they can only access tasks assigned to clients or company they have access to
+      if (user && userRole === AssigneeType.internalUser && InternalUsersSchema.parse(user).isClientAccessLimited) {
+        const assigneeSet = new Set(assignee.map((a) => a.id))
+        canUserAccessTask = canUserAccessTask && (payload.new.assigneeId ? assigneeSet.has(payload.new.assigneeId) : false) //filtering out unassigned tasks with a fallback false value.
+      }
       // Additionally, if user is a client, it can only access tasks assigned to that client or the client's company
       if (userRole === AssigneeType.client) {
         canUserAccessTask = canUserAccessTask && [userId, tokenPayload?.companyId].includes(payload.new.assigneeId)
@@ -58,8 +74,36 @@ export const RealTime = ({
         // New payloads listened on the 'INSERT' action in realtime doesn't contain this tz info so the order can mess up
       }
     }
+
     if (payload.eventType === 'UPDATE') {
       const updatedTask = payload.new
+
+      if (user && userRole === AssigneeType.client) {
+        // Check if assignee is this client's ID, or it's company's ID
+        if (![userId, tokenPayload?.companyId].includes(updatedTask.assigneeId)) {
+          // Get the previous task from tasks array and check if it was previously assigned to this client
+          const task = tasks.find((task) => task.id === updatedTask.id)
+          if (!task) {
+            return
+          }
+          const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
+          store.dispatch(setTasks(newTaskArr))
+          redirectToBoard()
+          return
+        }
+      }
+
+      //if the updated task is out of scope for limited access iu
+      if (user && userRole === AssigneeType.internalUser && InternalUsersSchema.parse(user).isClientAccessLimited) {
+        const assigneeSet = new Set(assignee.map((a) => a.id))
+        if (updatedTask.assigneeId && !assigneeSet.has(updatedTask.assigneeId)) {
+          const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
+          store.dispatch(setTasks(newTaskArr))
+          redirectToBoard()
+          return
+        }
+      }
+
       const isCreatedAtGMT = (updatedTask.createdAt as unknown as string).slice(-1).toLowerCase() === 'z'
       if (!isCreatedAtGMT) {
         // DB stores GMT timestamp without 'z', so need to append this manually
@@ -69,21 +113,15 @@ export const RealTime = ({
       const oldTask =
         activeTask && updatedTask.id === activeTask.id ? activeTask : tasks.find((task) => task.id == updatedTask.id)
 
-      if (payload.new.workspaceId === tokenPayload?.workspaceId) {
-        //check if the new task in this event belongs to the same workspaceId
+      //check if the new task in this event belongs to the same workspaceId
+      if (updatedTask.workspaceId === tokenPayload?.workspaceId) {
         //if the task is deleted
         if (updatedTask.deletedAt) {
           const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
           store.dispatch(setTasks(newTaskArr))
 
           //if a user is in the details page when the task is deleted then we want the user to get redirected to '/' route
-          if (pathname.includes('detail')) {
-            if (pathname.includes('cu')) {
-              router.push(`/client?token=${token}`)
-            } else {
-              router.push(`/?token=${token}`)
-            }
-          }
+          redirectToBoard()
           //if the task is updated
         } else {
           // Address Postgres' TOAST limitation that causes fields like TEXT, BYTEA to be copied as a pointer, instead of copying template field in realtime replica
@@ -136,16 +174,12 @@ export const RealTime = ({
           event: '*',
           schema: 'public',
           table: 'Tasks',
-          filter:
-            userRole === AssigneeType.internalUser
-              ? `workspaceId=eq.${tokenPayload?.workspaceId}`
-              : // The reason we are explicitly using an assigneeId filter for clients is so they are not streamed
-                // tasks they don't have access to in the first place.
-                `assigneeId=in.(${userId}, ${tokenPayload.companyId})`,
+          filter: `workspaceId=eq.${tokenPayload?.workspaceId}`,
         },
         handleTaskRealTimeUpdates,
       )
       .subscribe()
+    console.info('Connected to realtime channel', channel)
 
     return () => {
       supabase.removeChannel(channel)

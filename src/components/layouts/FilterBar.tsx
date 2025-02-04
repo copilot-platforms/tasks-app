@@ -164,6 +164,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
     <Box
       sx={{
         border: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
+        borderTop: 'none',
       }}
     >
       <Box

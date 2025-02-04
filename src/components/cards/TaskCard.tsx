@@ -44,7 +44,7 @@ export const TaskCard = ({ task, href }: TaskCardProps) => {
       //@ts-expect-error  "type" property has mismatching types in between NoAssignee and IAssigneeCombined
       setCurrentAssignee(currentAssignee ?? NoAssignee)
     }
-  }, [assignee])
+  }, [assignee, task])
 
   return (
     <TaskCardContainer>

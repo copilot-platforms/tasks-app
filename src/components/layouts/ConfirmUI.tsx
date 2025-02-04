@@ -3,31 +3,30 @@
 import { StyledBox } from '@/app/detail/ui/styledComponent'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { Box, Stack, Typography, styled } from '@mui/material'
-import { SecondaryBtn } from '../buttons/SecondaryBtn'
-import { PrimaryBtn } from '../buttons/PrimaryBtn'
+import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
+import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
+import { ReactNode } from 'react'
 
-interface Prop {
+interface ConfirmUIProps {
   handleCancel: () => void
-  handleDelete: () => void
-  bodyTag?: 'task' | 'comment' | 'template'
-  customBody?: string
-  description?: string
+  handleConfirm: () => void
+  buttonText: string
+  title: string
+  description: ReactNode | string
 }
 
-export const ConfirmDeleteUI = ({
+export const ConfirmUI = ({
   handleCancel,
-  handleDelete,
-  bodyTag = 'task',
-  customBody,
+  handleConfirm,
+  buttonText,
+  title = 'Are you sure?',
   description = `This action can't be undone.`,
-}: Prop) => {
+}: ConfirmUIProps) => {
   return (
-    <UIContainer sx={{ width: { xs: '80%', sm: '470px' } }}>
+    <UIContainer sx={{ width: { xs: '80%', sm: '540px' } }}>
       <StyledBox>
         <Stack direction="column" rowGap={4} sx={{ padding: '12px 12px 12px 20px' }}>
-          <Typography variant="lg">
-            {customBody ? customBody : `Are you sure you want to delete this ${bodyTag}?`}
-          </Typography>
+          <Typography variant="lg">{title}</Typography>
         </Stack>
       </StyledBox>
       <StyledBox>
@@ -46,7 +45,7 @@ export const ConfirmDeleteUI = ({
               </Typography>
             }
           />
-          <PrimaryBtn handleClick={() => handleDelete()} buttonText="Delete" buttonBackground="#CC0000" />
+          <PrimaryBtn handleClick={() => handleConfirm()} buttonText={buttonText} />
         </Stack>
       </Stack>
     </UIContainer>

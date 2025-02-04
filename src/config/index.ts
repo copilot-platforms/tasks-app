@@ -1,5 +1,3 @@
-import { z } from 'zod'
-
 export const copilotAPIKey = process.env.COPILOT_API_KEY || ''
 export const tasksAppId = process.env.COPILOT_TASKS_APP_ID || ''
 
@@ -17,3 +15,9 @@ export const cronSecret = process.env.CRON_SECRET || ''
 export const APP_ID = process.env.COPILOT_APP_API_KEY
 
 export const ScrapImageExpiryPeriod = +(process.env.SCRAP_IMAGE_EXPIRY_PERIOD || '604800000')
+
+export const showQueries = (() => {
+  if (isProd) return false
+  if (process.env.PRISMA_SHOW_QUERIES === '0') return false
+  return true
+})()
