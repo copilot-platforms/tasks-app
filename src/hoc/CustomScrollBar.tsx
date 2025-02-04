@@ -5,6 +5,7 @@ import React, { useState, useCallback, ReactNode, useRef, useEffect } from 'reac
 interface CustomScrollBarProps extends React.HTMLAttributes<HTMLDivElement> {
   children: ReactNode
   className?: string
+  role?: string
 }
 
 interface ScrollHostElement extends HTMLDivElement {
@@ -14,9 +15,9 @@ interface ScrollHostElement extends HTMLDivElement {
   clientHeight: number
 }
 
-const SCROLL_BOX_MIN_HEIGHT = 20
+const SCROLL_BOX_MIN_HEIGHT = 30
 
-export const CustomScrollBar: React.FC<CustomScrollBarProps> = ({ children, className = '', ...restProps }) => {
+export const CustomScrollBar: React.FC<CustomScrollBarProps> = ({ children, className = '', role, ...restProps }) => {
   const [showScrollbar, setShowScrollbar] = useState<boolean>(false)
   const [scrollBoxHeight, setScrollBoxHeight] = useState<number>(SCROLL_BOX_MIN_HEIGHT)
   const [scrollBoxTop, setScrollBoxTop] = useState<number>(0)
@@ -27,14 +28,6 @@ export const CustomScrollBar: React.FC<CustomScrollBarProps> = ({ children, clas
   const resizeObserverRef = useRef<ResizeObserver>()
 
   const scrollHostRef = useRef<ScrollHostElement>(null)
-
-  const checkScrollable = useCallback(() => {
-    const scrollHostElement = scrollHostRef.current
-    if (!scrollHostElement) return false
-
-    const { clientHeight, scrollHeight } = scrollHostElement
-    return scrollHeight > clientHeight
-  }, [])
 
   const updateScrollThumbHeight = useCallback(() => {
     const scrollHostElement = scrollHostRef.current
@@ -158,7 +151,7 @@ export const CustomScrollBar: React.FC<CustomScrollBarProps> = ({ children, clas
   const [isHovered, setIsHovered] = useState(false)
   return (
     <div className="scrollhost-container">
-      <div ref={scrollHostRef} className={`scrollhost ${className}`} {...restProps}>
+      <div ref={scrollHostRef} role={role} className={`scrollhost ${className}`} {...restProps}>
         {children}
       </div>
       {isScrollable && (
