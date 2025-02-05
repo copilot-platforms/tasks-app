@@ -95,6 +95,8 @@ export default async function Main({ searchParams }: { searchParams: { token: st
     getWorkspace(token),
   ])
 
+  console.log('yyy', token, tokenPayload, userRole, viewSettings, workflowStates, tasks.length, workspace)
+
   console.info(`app/page.tsx | Serving user ${token} with payload`, tokenPayload)
   return (
     <ClientSideStateUpdate
