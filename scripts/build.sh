@@ -13,7 +13,7 @@ echo "👷 Running build script for environment: $VERCEL_ENV"
 if [ "$VERCEL_ENV" = "production" ]; then
   echo "🚀 Deploying trigger jobs for production environment..."
   yarn trigger:deploy-prod
-elif [ "$VERCEL_ENV" = "production" ]; then
+elif [ "$VERCEL_ENV" = "preview" ]; then
   echo "🚀 Deploying trigger jobs for staging environment..."
   yarn trigger:deploy-staging
 else
