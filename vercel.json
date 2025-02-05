@@ -1,4 +1,5 @@
 {
+  "buildCommand": "./scripts/build.sh",
   "crons": [
     {
       "path": "/api/workers/scrap-medias",
