@@ -1,12 +1,14 @@
+import { z } from 'zod'
+
 export const copilotAPIKey = process.env.COPILOT_API_KEY || ''
 export const tasksAppId = process.env.COPILOT_TASKS_APP_ID || ''
 
 export const apiUrl =
   process.env.VERCEL_ENV === 'production'
-    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    ? `https://${z.string().parse(process.env.VERCEL_PROJECT_PRODUCTION_URL)}`
     : process.env.VERCEL_ENV === 'preview'
-      ? `https://${process.env.VERCEL_BRANCH_URL}`
-      : `http://${process.env.VERCEL_URL}`
+      ? `https://${z.string().parse(process.env.VERCEL_BRANCH_URL)}`
+      : `http://${z.string().parse(process.env.VERCEL_URL)}`
 
 export const isProd = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production'
 export const SentryConfig = {
