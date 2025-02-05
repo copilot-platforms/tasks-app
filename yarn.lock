@@ -3010,20 +3010,20 @@
     "@swc/counter" "^0.1.3"
     tslib "^2.4.0"
 
-"@trigger.dev/build@^3.3.12":
-  version "3.3.12"
-  resolved "https://registry.yarnpkg.com/@trigger.dev/build/-/build-3.3.12.tgz#52bc43759f3fb3d7da48d9dbe32ac554cb536f2d"
-  integrity sha512-nMj153C9Ly/5PAVuSBj/fsQ7HNF2V2UA9bGSarOmDC3xsjdq2a5/6woUgQ8F8XEU22b3n7mqrJb1Vk0mMBtm9A==
+"@trigger.dev/build@^3.3.13":
+  version "3.3.13"
+  resolved "https://registry.yarnpkg.com/@trigger.dev/build/-/build-3.3.13.tgz#35c74aed1e7297cf425d46afb4041c02301dfe73"
+  integrity sha512-2R7FTvo/3XYhc+uB4vm2mzuH5UTP7kq4E9T2jEBQMEfz4KbiIjQwWtak366ApPKYRbBU1+xm0Mfx4EWtAriWhA==
   dependencies:
-    "@trigger.dev/core" "3.3.12"
+    "@trigger.dev/core" "3.3.13"
     pkg-types "^1.1.3"
     tinyglobby "^0.2.2"
     tsconfck "3.1.3"
 
-"@trigger.dev/core@3.3.12":
-  version "3.3.12"
-  resolved "https://registry.yarnpkg.com/@trigger.dev/core/-/core-3.3.12.tgz#344c71b9081b71799e7519f269a608ed54beef7a"
-  integrity sha512-cdOb5Qu59HGgS6mC+FcG/zMWarqoMlk7dCXGTySiC725IRfEbIzmyZ5vpoFALMqXNZeYsxGcZvGaDug6RgfcZA==
+"@trigger.dev/core@3.3.13":
+  version "3.3.13"
+  resolved "https://registry.yarnpkg.com/@trigger.dev/core/-/core-3.3.13.tgz#d12369d76e189295cc360eb8474777007ada607b"
+  integrity sha512-3VU4YMS+RVCkfVXeUKSWlkVszgFK44tIknR9sHLYgetI714L3tgH47XBXJ3+/ZV5Y9Vvv6O6pRIuV7EEhzbexg==
   dependencies:
     "@electric-sql/client" "1.0.0-beta.1"
     "@google-cloud/precise-date" "^4.0.0"
@@ -3040,6 +3040,7 @@
     "@opentelemetry/sdk-trace-node" "1.25.1"
     "@opentelemetry/semantic-conventions" "1.25.1"
     dequal "^2.0.3"
+    eventsource "^3.0.5"
     eventsource-parser "^3.0.0"
     execa "^8.0.1"
     humanize-duration "^3.27.3"
@@ -3051,15 +3052,15 @@
     zod-error "1.5.0"
     zod-validation-error "^1.5.0"
 
-"@trigger.dev/sdk@^3.3.12":
-  version "3.3.12"
-  resolved "https://registry.yarnpkg.com/@trigger.dev/sdk/-/sdk-3.3.12.tgz#66e1d0ad5f168a6a889c82a772d86e3660a091f8"
-  integrity sha512-HcDgdozocrOi8+X0/LQEVrawSBOVfAywFvLXUBULIWrltvuIwsJy6e5rX105SKBsvwq/eBbNvi9u5t6jiyEA+Q==
+"@trigger.dev/sdk@^3.3.13":
+  version "3.3.13"
+  resolved "https://registry.yarnpkg.com/@trigger.dev/sdk/-/sdk-3.3.13.tgz#84aac526f016442df7296c954ce0030c0f310b7d"
+  integrity sha512-iXtHMnzvzmPfBk7+whpWOElBJt6viCoA3r8xgrrrurj8oxjIVe4UvdDiB7wbUJJ44WROWEb0wVKyQut1L/FwQQ==
   dependencies:
     "@opentelemetry/api" "1.9.0"
     "@opentelemetry/api-logs" "0.52.1"
     "@opentelemetry/semantic-conventions" "1.25.1"
-    "@trigger.dev/core" "3.3.12"
+    "@trigger.dev/core" "3.3.13"
     chalk "^5.2.0"
     cronstrue "^2.21.0"
     debug "^4.3.4"
@@ -4881,6 +4882,13 @@ eventsource-parser@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/eventsource-parser/-/eventsource-parser-3.0.0.tgz#9303e303ef807d279ee210a17ce80f16300d9f57"
   integrity sha512-T1C0XCUimhxVQzW4zFipdx0SficT651NnkR0ZSH3yQwh+mFMdLfgjABVi4YtMTtaL4s168593DaoaRLMqryavA==
+
+eventsource@^3.0.5:
+  version "3.0.5"
+  resolved "https://registry.yarnpkg.com/eventsource/-/eventsource-3.0.5.tgz#0cae1eee2d2c75894de8b02a91d84e5c57f0cc5a"
+  integrity sha512-LT/5J605bx5SNyE+ITBDiM3FxffBiq9un7Vx0EwMDM3vg8sWKx/tO2zC+LMqZ+smAM0F2hblaDZUVZF0te2pSw==
+  dependencies:
+    eventsource-parser "^3.0.0"
 
 evt@^2.4.13:
   version "2.5.9"
