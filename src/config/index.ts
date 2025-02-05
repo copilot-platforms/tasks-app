@@ -1,7 +1,13 @@
 export const copilotAPIKey = process.env.COPILOT_API_KEY || ''
 export const tasksAppId = process.env.COPILOT_TASKS_APP_ID || ''
 
-export const apiUrl = `${process.env.VERCEL_ENV === 'development' ? 'http://' : 'https://'}${process.env.VERCEL_URL}`
+export const apiUrl =
+  process.env.VERCEL_ENV === 'production'
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : process.env.VERCEL_ENV === 'preview'
+      ? `https://${process.env.VERCEL_BRANCH_URL}`
+      : `http://${process.env.VERCEL_URL}`
+
 export const isProd = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production'
 export const SentryConfig = {
   DSN: process.env.NEXT_PUBLIC_SENTRY_DSN || '',

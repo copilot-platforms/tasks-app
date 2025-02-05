@@ -179,7 +179,7 @@ export const RealTime = ({
         handleTaskRealTimeUpdates,
       )
       .subscribe()
-    console.info('Connected to realtime channel', channel)
+    // console.info('Connected to realtime channel', channel)
 
     return () => {
       supabase.removeChannel(channel)
