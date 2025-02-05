@@ -18,6 +18,7 @@ import AttachmentLayout from '@/components/AttachmentLayout'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
 import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
 import { StyledModal } from '@/app/detail/ui/styledComponent'
+import SafeHTMLViewer from '@/components/SafeHTMLViewer'
 
 interface Prop {
   task_id: string
@@ -167,18 +168,22 @@ export const TaskEditor = ({
       />
 
       <Box mt="12px" sx={{ height: '100%', width: '100%' }}>
-        <Tapwrite
-          content={updateDetail}
-          getContent={handleDetailChange}
-          readonly={!isEditable}
-          editorClass=""
-          placeholder="Add description..."
-          uploadFn={uploadFn}
-          deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', task_id, null)}
-          attachmentLayout={AttachmentLayout}
-          addAttachmentButton
-          maxUploadLimit={MAX_UPLOAD_LIMIT}
-        />
+        {isEditable ? (
+          <Tapwrite
+            content={updateDetail}
+            getContent={handleDetailChange}
+            readonly={!isEditable}
+            editorClass=""
+            placeholder="Add description..."
+            uploadFn={uploadFn}
+            deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', task_id, null)}
+            attachmentLayout={AttachmentLayout}
+            addAttachmentButton
+            maxUploadLimit={MAX_UPLOAD_LIMIT}
+          />
+        ) : (
+          <SafeHTMLViewer content={updateDetail} />
+        )}
       </Box>
 
       {/* {advancedFeatureFlag && ( */}
