@@ -4,10 +4,6 @@ import { z } from 'zod'
 import { UserType } from '@/types/interfaces'
 
 export const redirectIfTaskCta = (searchParams: Record<string, string>, userType: UserType) => {
-  console.log('apiUrl', apiUrl)
-  console.log('VERCEL_PROJECT_PRODUCTION_URL', process.env.VERCEL_PROJECT_PRODUCTION_URL)
-  console.log('VERCEL_BRANCH_URL', process.env.VERCEL_BRANCH_URL)
-
   const taskId = z.string().safeParse(searchParams.taskId)
   const commentId = z.string().safeParse(searchParams.commentId)
 
