@@ -3,6 +3,14 @@ import { z } from 'zod'
 export const copilotAPIKey = process.env.COPILOT_API_KEY || ''
 export const tasksAppId = process.env.COPILOT_TASKS_APP_ID || ''
 
+console.log(
+  'qqqq',
+  process.env.VERCEL_ENV,
+  process.env.VERCEL_BRANCH_URL,
+  process.env.VERCEL_PROJECT_PRODUCTION_URL,
+  process.env.VERCEL_URL,
+)
+
 export const apiUrl =
   process.env.VERCEL_ENV === 'production'
     ? `https://${z.string().parse(process.env.VERCEL_PROJECT_PRODUCTION_URL)}`
