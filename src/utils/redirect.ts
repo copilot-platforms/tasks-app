@@ -6,7 +6,6 @@ import { z } from 'zod'
 import { UserType } from '@/types/interfaces'
 
 export const redirectIfTaskCta = (searchParams: Record<string, string>, userType: UserType) => {
-  console.log('qqq', apiUrl)
   const taskId = z.string().safeParse(searchParams.taskId)
   const commentId = z.string().safeParse(searchParams.commentId)
 
