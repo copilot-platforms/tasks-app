@@ -1,3 +1,5 @@
+import 'server-only'
+
 import { apiUrl } from '@/config'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
