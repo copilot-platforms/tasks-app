@@ -1,10 +1,4 @@
-# Short-circuit old build command for production for now, since trigger is not set up in `main`
-# Remove this code once `tdb1` branch is promoted to production
-if [ "$VERCEL_GIT_COMMIT_REF" = "main" ]; then
-  echo "Running old build script"
-  next build && yarn prisma migrate deploy && yarn db:grant-supabase-privileges
-  exit 0
-fi
+# Script to build Tasks App on Vercel
 
 echo "👷 Running build script for environment: $VERCEL_ENV"
 # Real script starts here:
@@ -20,8 +14,14 @@ echo "👷 Running build script for environment: $VERCEL_ENV"
     echo "🚀 Deploying trigger jobs for production environment..."
     npx trigger.dev@latest deploy
   elif [ "$VERCEL_ENV" = "preview" ]; then
-    echo "🚀 Deploying trigger jobs for staging environment..."
-    npx trigger.dev@latest deploy -e staging
+    # Check if the branch name contains 'feature' OR 'tdb'
+    # VERCEL_GIT_COMMIT_REF is the branch name in Vercel, e.g. "feature/some-branch"
+    if [[ "$VERCEL_GIT_COMMIT_REF" =~ (feature/|tdb) ]]; then
+      echo "🚀 Deploying trigger jobs for staging environment (branch is '$VERCEL_GIT_COMMIT_REF')..."
+      npx trigger.dev@latest deploy -e staging
+    else
+      echo "🔒 Skip deploying trigger jobs for preview branch '$VERCEL_GIT_COMMIT_REF' as it isn't a feature branch (checking 'feature/' or 'tdb' prefix"
+    fi
   else
     echo "🔒 Skip deploying trigger jobs for dev environment"
   fi
