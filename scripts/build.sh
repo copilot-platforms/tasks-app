@@ -6,32 +6,43 @@ if [ "$VERCEL_GIT_COMMIT_REF" = "main" ]; then
   exit 0
 fi
 
-echo "👷 Running build script for environment: $VERCEL_ENV"
+echo "👷 Running build script for environment (4 jobs in parallel): $VERCEL_ENV"
 # Real script starts here:
 
 # Build and deploy latest trigger jobs to trigger cloud
 # NOTE: In the future we can use Vercel integration for trigger.dev cloud, but this is currently in planning stage only
 # https://feedback.trigger.dev/p/vercel-integration-3
-if [ "$VERCEL_ENV" = "production" ]; then
-  echo "🚀 Deploying trigger jobs for production environment..."
-  npx trigger.dev@latest deploy
-elif [ "$VERCEL_ENV" = "preview" ]; then
-  echo "🚀 Deploying trigger jobs for staging environment..."
-  npx trigger.dev@latest deploy -e staging
-else
-  echo "🔒 Skip deploying trigger jobs for dev environment"
-fi
 
-# Build the latest code for branch
-echo "🛠️ Building Next app"
-next build
+(
+  echo "💼 [1/4] Build and deploy latest trigger jobs"
 
-# Migrate latest changes in prisma schema
-echo "🔧 Applying latest prisma migrations"
-yarn prisma migrate deploy
+  if [ "$VERCEL_ENV" = "production" ]; then
+    echo "🚀 Deploying trigger jobs for production environment..."
+    npx trigger.dev@latest deploy
+  elif [ "$VERCEL_ENV" = "preview" ]; then
+    echo "🚀 Deploying trigger jobs for staging environment..."
+    npx trigger.dev@latest deploy -e staging
+  else
+    echo "🔒 Skip deploying trigger jobs for dev environment"
+  fi
+) &
 
-# Grant anon privileges so realtime channel can work using only Copilot token
-echo "🏃 Running grant-supabase-privileges"
-yarn db:grant-supabase-privileges
+(
+  echo "🔧 [2/4] Applying latest prisma migrations"
+  yarn prisma migrate deploy
+) &
+
+(
+  echo "🛠️ [3/4] Building Next app"
+  yarn next build
+) &
+
+(
+  # Grant anon privileges so realtime channel can work using only Copilot token
+  echo "🏃 [4/4] Running grant-supabase-privileges"
+  yarn db:grant-supabase-privileges
+)
+
+wait
 
 echo "🥳 Deployment completed! 🎉🎉🎉"
