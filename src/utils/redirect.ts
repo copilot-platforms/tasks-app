@@ -8,7 +8,7 @@ import { UserType } from '@/types/interfaces'
 export const redirectIfTaskCta = (searchParams: Record<string, string>, userType: UserType) => {
   const taskId = z.string().safeParse(searchParams.taskId)
   const commentId = z.string().safeParse(searchParams.commentId)
-  console.log(taskId, commentId, apiUrl)
+  console.log(222333, taskId, commentId, apiUrl)
   if (taskId.data) {
     if (commentId.data) {
       redirect(
