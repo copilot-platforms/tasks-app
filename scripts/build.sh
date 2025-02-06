@@ -14,10 +14,10 @@ echo "👷 Running build script for environment: $VERCEL_ENV"
 # https://feedback.trigger.dev/p/vercel-integration-3
 if [ "$VERCEL_ENV" = "production" ]; then
   echo "🚀 Deploying trigger jobs for production environment..."
-  yarn trigger:deploy-prod
+  npx trigger.dev@latest deploy
 elif [ "$VERCEL_ENV" = "preview" ]; then
   echo "🚀 Deploying trigger jobs for staging environment..."
-  yarn trigger:deploy-staging
+  npx trigger.dev@latest deploy -e staging
 else
   echo "🔒 Skip deploying trigger jobs for dev environment"
 fi
