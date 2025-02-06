@@ -1,4 +1,5 @@
 import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
+import { sendTaskCreateNotifications } from '@/jobs/notifications'
 import { ClientResponse, CompanyResponse, InternalUsers } from '@/types/common'
 import { CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { CopilotAPI } from '@/utils/CopilotAPI'
@@ -179,8 +180,9 @@ export class TasksService extends BaseService {
       }
     }
 
-    const taskNotificationsSevice = new TaskNotificationsService(this.user)
-    await taskNotificationsSevice.sendTaskCreateNotifications(newTask)
+    // Send task created notifications to users
+    await sendTaskCreateNotifications.trigger({ user: this.user, task: newTask })
+
     return newTask
   }
 
