@@ -28,6 +28,7 @@
     "postinstall": "prisma generate",
     "test": "jest",
     "trigger:dev": "npx trigger.dev@latest dev",
+    "trigger:deploy-staging": "npx trigger.dev@latest deploy -e staging",
     "loadtest": "tsx ./src/cmd/load-testing",
     "loadtest:delete-clients": "tsx ./src/cmd/load-testing/deleteClients.ts",
     "seed:activity-logs": "tsx ./src/cmd/fill-activity-logs",
