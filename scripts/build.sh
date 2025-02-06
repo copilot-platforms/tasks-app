@@ -10,6 +10,8 @@ echo "👷 Running build script for environment: $VERCEL_ENV"
 # Real script starts here:
 
 # Build and deploy latest trigger jobs to trigger cloud
+# NOTE: In the future we can use Vercel integration for trigger.dev cloud, but this is currently in planning stage only
+# https://feedback.trigger.dev/p/vercel-integration-3
 if [ "$VERCEL_ENV" = "production" ]; then
   echo "🚀 Deploying trigger jobs for production environment..."
   yarn trigger:deploy-prod
