@@ -1,3 +1,4 @@
+import { prismaExtension } from '@trigger.dev/build/extensions/prisma'
 import { defineConfig } from '@trigger.dev/sdk/v3'
 import dotenv from 'dotenv'
 import { z } from 'zod'
@@ -24,4 +25,15 @@ export default defineConfig({
     },
   },
   dirs: ['./src/jobs'],
+  build: {
+    extensions: [
+      prismaExtension({
+        schema: 'prisma/main.prisma',
+      }),
+
+      // Untested, but can automatically sync Vercel env and trigger env using VERCEL_ACCESS_TOKEN, VERCEL_PROJECT_ID and VERCEL_TEAM_ID
+      // import { syncVercelEnvVars } from "@trigger.dev/build/extensions/core";
+      // syncVercelEnvVars(),
+    ],
+  },
 })
