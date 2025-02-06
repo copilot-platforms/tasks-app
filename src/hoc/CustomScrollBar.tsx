@@ -163,6 +163,7 @@ export const CustomScrollBar: React.FC<CustomScrollBarProps> = ({ children, clas
             opacity: showScrollbar || isDragging || isHovered ? 1 : 0,
             transition: isDragging ? 'none' : 'opacity 0.5s ease-in-out',
             display: isScrollable ? 'block' : 'none',
+            cursor: 'default',
           }}
           onMouseDown={handleScrollThumbMouseDown}
           onMouseEnter={() => setIsHovered(true)}
