@@ -12,9 +12,9 @@ import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { getAssigneeName } from '@/utils/assignee'
 import { StyledHelperText } from '@/components/error/FormHelperText'
 import React from 'react'
-import { ListComponent } from '@/components/inputs/ListComponent'
 import { ModifierArguments } from '@popperjs/core'
 import { Property } from 'csstype'
+import ListboxComponent from '@/components/inputs/ListboxComponent'
 
 export enum SelectorType {
   ASSIGNEE_SELECTOR = 'assigneeSelector',
@@ -166,9 +166,17 @@ export default function Selector<T extends keyof SelectorOptionsType>({
     }
   }
 
-  const ListWithEndOption = (props: JSX.IntrinsicElements['div']) => (
-    <ListComponent {...props} endOption={endOption} endOptionHref={endOptionHref} autoHeightMax={listAutoHeightMax} />
-  )
+  const ListWithEndOption = React.forwardRef<HTMLDivElement, JSX.IntrinsicElements['div'] & {}>((props, ref) => {
+    const { ...other } = props
+
+    return (
+      <ListboxComponent {...other} ref={ref} role="listbox" endOption={endOption} endOptionHref={endOptionHref}>
+        {props.children}
+      </ListboxComponent>
+    )
+  })
+
+  ListWithEndOption.displayName = 'ListWithEndOption'
 
   return (
     <Stack direction="column">
@@ -240,7 +248,25 @@ export default function Selector<T extends keyof SelectorOptionsType>({
           blurOnSelect={true}
           openOnFocus
           onKeyDown={handleKeyDown}
-          ListboxProps={{ sx: { maxHeight: { xs: '175px', sm: '291px' }, padding: '0px 0px 8px 0px' } }}
+          autoSelect={false}
+          ListboxProps={{
+            sx: {
+              maxHeight: {
+                xs: '175px',
+                sm: '291px',
+              },
+              '& .MuiAutocomplete-option[aria-selected="true"].Mui-focused': {
+                backgroundColor: (theme) => theme.color.background.bgHover,
+              },
+              '& .MuiAutocomplete-option[aria-selected="true"]': {
+                backgroundColor: (theme) => theme.color.base.white,
+              },
+              '& .MuiAutocomplete-option.Mui-focused': {
+                backgroundColor: (theme) => theme.color.background.bgHover,
+              },
+              padding: '0px',
+            },
+          }}
           options={extraOption ? [extraOption, ...processedOptions] : processedOptions}
           value={value}
           onChange={(_, newValue: unknown) => {
@@ -278,6 +304,10 @@ export default function Selector<T extends keyof SelectorOptionsType>({
                   enabled: true,
                   phase: 'afterWrite',
                   fn: handlePlacementChange,
+                },
+                {
+                  name: 'preventAutoFocus',
+                  enabled: true,
                 },
               ],
             },
@@ -483,9 +513,6 @@ const AssigneeSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTM
           bgcolor: theme.color.base.white,
         },
         '&.MuiAutocomplete-option.Mui-focused': {
-          bgcolor: theme.color.background.bgHover,
-        },
-        '&.MuiAutocomplete-option:hover': {
           bgcolor: theme.color.background.bgHover,
         },
       })}
