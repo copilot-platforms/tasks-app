@@ -2,11 +2,11 @@
 # Remove this code once `tdb1` branch is promoted to production
 if [ "$VERCEL_GIT_COMMIT_REF" = "main" ]; then
   echo "Running old build script"
-  next build && npx prisma migrate deploy && yarn db:grant-supabase-privileges
+  next build && yarn prisma migrate deploy && yarn db:grant-supabase-privileges
   exit 0
 fi
 
-echo "👷 Running build script for environment (4 jobs in parallel): $VERCEL_ENV"
+echo "👷 Running build script for environment: $VERCEL_ENV"
 # Real script starts here:
 
 # Build and deploy latest trigger jobs to trigger cloud
