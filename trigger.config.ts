@@ -28,7 +28,7 @@ export default defineConfig({
   build: {
     extensions: [
       prismaExtension({
-        schema: 'prisma/main.prisma',
+        schema: 'prisma/schema/main.prisma',
       }),
 
       // Untested, but can automatically sync Vercel env and trigger env using VERCEL_ACCESS_TOKEN, VERCEL_PROJECT_ID and VERCEL_TEAM_ID
