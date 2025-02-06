@@ -21,9 +21,10 @@ export const CustomScrollBar: React.FC<CustomScrollBarProps> = ({ children, clas
   const [showScrollbar, setShowScrollbar] = useState<boolean>(false)
   const [scrollBoxHeight, setScrollBoxHeight] = useState<number>(SCROLL_BOX_MIN_HEIGHT)
   const [scrollBoxTop, setScrollBoxTop] = useState<number>(0)
-  const [lastScrollThumbPosition, setScrollThumbPosition] = useState<number>(0)
   const [isDragging, setDragging] = useState<boolean>(false)
   const [isScrollable, setIsScrollable] = useState<boolean>(false)
+  const [dragStartY, setDragStartY] = useState<number>(0)
+  const [startScrollTop, setStartScrollTop] = useState<number>(0)
   const scrollTimeoutRef = useRef<NodeJS.Timeout>()
   const resizeObserverRef = useRef<ResizeObserver>()
 
@@ -47,40 +48,41 @@ export const CustomScrollBar: React.FC<CustomScrollBarProps> = ({ children, clas
     setScrollBoxHeight(scrollThumbHeight)
   }, [])
 
-  const handleDocumentMouseUp = useCallback(
-    (e: MouseEvent) => {
-      if (isDragging) {
-        e.preventDefault()
-        setDragging(false)
-      }
-    },
-    [isDragging],
-  )
+  const handleDocumentMouseUp = useCallback(() => {
+    if (isDragging) {
+      setDragging(false)
+    }
+  }, [isDragging])
 
   const handleDocumentMouseMove = useCallback(
     (e: MouseEvent) => {
       if (isDragging && scrollHostRef.current) {
         e.preventDefault()
-        e.stopPropagation()
         const scrollHostElement = scrollHostRef.current
-        const { scrollHeight, offsetHeight } = scrollHostElement
+        const { scrollHeight, clientHeight } = scrollHostElement
 
-        const deltaY = e.clientY - lastScrollThumbPosition
-        const percentage = deltaY * (scrollHeight / offsetHeight)
+        const deltaY = e.clientY - dragStartY
 
-        setScrollThumbPosition(e.clientY)
-        setScrollBoxTop(Math.min(Math.max(0, scrollBoxTop + deltaY), offsetHeight - scrollBoxHeight))
-        scrollHostElement.scrollTop = Math.min(scrollHostElement.scrollTop + percentage, scrollHeight - offsetHeight)
+        const scrollRatio = (scrollHeight - clientHeight) / (clientHeight - scrollBoxHeight)
+
+        const newScrollTop = Math.max(0, Math.min(startScrollTop + deltaY * scrollRatio, scrollHeight - clientHeight))
+        scrollHostElement.scrollTop = newScrollTop
+        const thumbPosition = (newScrollTop / (scrollHeight - clientHeight)) * (clientHeight - scrollBoxHeight)
+        setScrollBoxTop(thumbPosition)
       }
     },
-    [isDragging, lastScrollThumbPosition, scrollBoxHeight, scrollBoxTop],
+    [isDragging, dragStartY, startScrollTop, scrollBoxHeight],
   )
 
   const handleScrollThumbMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     e.preventDefault()
     e.stopPropagation()
-    setScrollThumbPosition(e.clientY)
-    setDragging(true)
+
+    if (scrollHostRef.current) {
+      setDragStartY(e.clientY)
+      setStartScrollTop(scrollHostRef.current.scrollTop)
+      setDragging(true)
+    }
   }, [])
 
   const handleScroll = useCallback(() => {
@@ -88,7 +90,7 @@ export const CustomScrollBar: React.FC<CustomScrollBarProps> = ({ children, clas
       return
     }
     const scrollHostElement = scrollHostRef.current
-    const { scrollTop, scrollHeight, offsetHeight } = scrollHostElement
+    const { scrollTop, scrollHeight, clientHeight } = scrollHostElement
 
     setShowScrollbar(true)
 
@@ -99,9 +101,8 @@ export const CustomScrollBar: React.FC<CustomScrollBarProps> = ({ children, clas
     scrollTimeoutRef.current = setTimeout(() => {
       setShowScrollbar(false)
     }, 500)
-
-    const newTop = (parseInt(scrollTop.toString(), 10) / parseInt(scrollHeight.toString(), 10)) * offsetHeight
-    setScrollBoxTop(Math.min(newTop, offsetHeight - scrollBoxHeight))
+    const thumbPosition = (scrollTop / (scrollHeight - clientHeight)) * (clientHeight - scrollBoxHeight)
+    setScrollBoxTop(thumbPosition)
 
     updateScrollThumbHeight()
   }, [scrollBoxHeight, updateScrollThumbHeight, isScrollable])
@@ -135,20 +136,19 @@ export const CustomScrollBar: React.FC<CustomScrollBarProps> = ({ children, clas
   }, [handleScroll, updateScrollThumbHeight])
 
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => handleDocumentMouseMove(e)
-    const handleMouseUp = (e: MouseEvent) => handleDocumentMouseUp(e)
-
-    document.addEventListener('mousemove', handleMouseMove)
-    document.addEventListener('mouseup', handleMouseUp)
-    document.addEventListener('mouseleave', handleMouseUp)
+    document.addEventListener('mousemove', handleDocumentMouseMove)
+    document.addEventListener('mouseup', handleDocumentMouseUp)
+    document.addEventListener('mouseleave', handleDocumentMouseUp)
 
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove)
-      document.removeEventListener('mouseup', handleMouseUp)
-      document.removeEventListener('mouseleave', handleMouseUp)
+      document.removeEventListener('mousemove', handleDocumentMouseMove)
+      document.removeEventListener('mouseup', handleDocumentMouseUp)
+      document.removeEventListener('mouseleave', handleDocumentMouseUp)
     }
   }, [handleDocumentMouseMove, handleDocumentMouseUp])
+
   const [isHovered, setIsHovered] = useState(false)
+
   return (
     <div className="scrollhost-container">
       <div ref={scrollHostRef} role={role} className={`scrollhost ${className}`} {...restProps}>
@@ -161,7 +161,7 @@ export const CustomScrollBar: React.FC<CustomScrollBarProps> = ({ children, clas
             height: scrollBoxHeight,
             top: scrollBoxTop,
             opacity: showScrollbar || isDragging || isHovered ? 1 : 0,
-            transition: 'opacity 0.5s ease-in-out',
+            transition: isDragging ? 'none' : 'opacity 0.5s ease-in-out',
             display: isScrollable ? 'block' : 'none',
             cursor: 'default',
           }}

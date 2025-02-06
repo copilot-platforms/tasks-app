@@ -55,7 +55,6 @@
     "p-retry": "^6.2.0",
     "prisma": "^5.19.0",
     "react": "18.3.1",
-    "react-custom-scrollbars": "^4.2.1",
     "react-dnd": "^16.0.1",
     "react-dnd-html5-backend": "^16.0.1",
     "react-dnd-touch-backend": "^16.0.1",
