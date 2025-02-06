@@ -11,6 +11,7 @@ export const redirectIfTaskCta = (searchParams: Record<string, string>, userType
   console.log(222333, taskId, commentId, apiUrl)
   if (taskId.data) {
     if (commentId.data) {
+      console.log('running123')
       redirect(
         `${apiUrl}/detail/${taskId.data}/${userType}?token=${z.string().parse(searchParams.token)}&commentId=${commentId.data}&isRedirect=1`,
       )

@@ -86,7 +86,6 @@ export default async function Main({ searchParams }: { searchParams: { token: st
     return <SilentError message="Please provide a Valid Token" />
   }
 
-  console.log('searchParams123', searchParams)
   // Both clients and IUs can access this page so hardcoding a UserRole will not work
   redirectIfTaskCta(searchParams, userRole)
 
