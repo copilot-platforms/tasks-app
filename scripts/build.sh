@@ -41,7 +41,7 @@ echo "👷 Running build script for environment: $VERCEL_ENV"
   # Grant anon privileges so realtime channel can work using only Copilot token
   echo "🏃 [4/4] Running grant-supabase-privileges"
   yarn db:grant-supabase-privileges
-)
+) &
 
 wait
 
