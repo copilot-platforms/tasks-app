@@ -35,6 +35,7 @@ export class NotificationService extends BaseService {
         // If any of the given action is not present in details obj, that type of notification is not sent
         deliveryTargets: { inProduct, email },
       }
+      console.info('NotificationService#create | Creating single notification:', notificationDetails)
 
       const notification = await copilot.createNotification(notificationDetails)
       // NOTE: There are cases where task.assigneeType does not account for IU notification!
@@ -94,6 +95,8 @@ export class NotificationService extends BaseService {
             recipientId,
             deliveryTargets: { inProduct, email },
           }
+          console.info('NotificationService#bulkCreate | Creating single notification:', notificationDetails)
+
           notifications.push(await copilot.createNotification(notificationDetails))
         } catch (err: unknown) {
           console.error(`Failed to send notifications to ${recipientId}:`, err)
