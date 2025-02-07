@@ -10,7 +10,7 @@ type UpdateTaskNotificationPayload = {
 }
 
 export const sendTaskUpdateNotifications = task({
-  id: 'send-task-create-notifications',
+  id: 'send-task-update-notifications',
   machine: { preset: 'medium-1x' },
 
   run: async (payload: UpdateTaskNotificationPayload, { ctx }) => {
