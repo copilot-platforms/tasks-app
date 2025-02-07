@@ -1,5 +1,5 @@
 import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
-import { sendTaskCreateNotifications, sendTaskUpdateNotifications } from '@/jobs/notifications'
+import { deleteTaskNotifications, sendTaskCreateNotifications, sendTaskUpdateNotifications } from '@/jobs/notifications'
 import { ClientResponse, CompanyResponse, InternalUsers } from '@/types/common'
 import { CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { CopilotAPI } from '@/utils/CopilotAPI'
@@ -289,8 +289,7 @@ export class TasksService extends BaseService {
 
     if (!task) throw new APIError(httpStatus.NOT_FOUND, 'The requested task to delete was not found')
 
-    const taskNotificationsSevice = new TaskNotificationsService(this.user)
-    await taskNotificationsSevice.removeDeletedTaskNotifications(task)
+    await deleteTaskNotifications.trigger({ user: this.user, task })
 
     //delete the associated label
     const labelMappingService = new LabelMappingService(this.user)
