@@ -10,7 +10,7 @@ type DeleteTaskNotificationPayload = {
 
 export const deleteTaskNotifications = task({
   id: 'delete-task-notifications',
-  machine: { preset: 'small-2x' },
+  machine: { preset: 'medium-1x' },
 
   run: async (payload: DeleteTaskNotificationPayload, { ctx }) => {
     logger.log('Deleting task notifications for:', { payload, ctx })
