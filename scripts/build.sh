@@ -13,15 +13,15 @@ echo "👷 Running build script for environment: $VERCEL_ENV"
   if [ "$VERCEL_ENV" = "production" ]; then
     echo "🚀 Deploying trigger jobs for production environment..."
     npx trigger.dev@latest deploy
-  elif [ "$VERCEL_ENV" = "preview" ]; then
+    # elif [ "$VERCEL_ENV" = "preview" ]; then
     # Check if the branch name contains 'feature' OR 'tdb'
     # VERCEL_GIT_COMMIT_REF is the branch name in Vercel, e.g. "feature/some-branch"
-    if [[ "$VERCEL_GIT_COMMIT_REF" =~ (feature/|tdb) ]]; then
-      echo "🚀 Deploying trigger jobs for staging environment (branch is '$VERCEL_GIT_COMMIT_REF')..."
-      npx trigger.dev@latest deploy -e staging
-    else
-      echo "🔒 Skip deploying trigger jobs for preview branch '$VERCEL_GIT_COMMIT_REF' as it isn't a feature branch (checking 'feature/' or 'tdb' prefix"
-    fi
+    # if [[ "$VERCEL_GIT_COMMIT_REF" =~ (feature/|tdb) ]]; then
+    #   echo "🚀 Deploying trigger jobs for staging environment (branch is '$VERCEL_GIT_COMMIT_REF')..."
+    #   npx trigger.dev@latest deploy -e staging
+    # else
+    #   echo "🔒 Skip deploying trigger jobs for preview branch '$VERCEL_GIT_COMMIT_REF' as it isn't a feature branch (checking 'feature/' or 'tdb' prefix"
+    # fi
   else
     echo "🔒 Skip deploying trigger jobs for dev environment"
   fi
