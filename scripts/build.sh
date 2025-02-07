@@ -10,13 +10,13 @@ echo "👷 Running build script for environment: $VERCEL_ENV"
 (
   echo "💼 [1/4] Build and deploy latest trigger jobs"
 
-  if [ "$VERCEL_ENV" = "production" ]; then
+  if [ "$VERCEL_ENV" = "production" ] || [["$VERCEL_GIT_COMMIT_REF" =~ (tdb1) ]]; then
     echo "🚀 Deploying trigger jobs for production environment..."
     npx trigger.dev@latest deploy
   elif [ "$VERCEL_ENV" = "preview" ]; then
     # Check if the branch name contains 'feature' OR 'tdb'
     # VERCEL_GIT_COMMIT_REF is the branch name in Vercel, e.g. "feature/some-branch"
-    if [[ "$VERCEL_GIT_COMMIT_REF" =~ (feature/|tdb) ]]; then
+    if [[ "$VERCEL_GIT_COMMIT_REF" =~ (feature/) ]]; then
       echo "🚀 Deploying trigger jobs for staging environment (branch is '$VERCEL_GIT_COMMIT_REF')..."
       npx trigger.dev@latest deploy -e staging
     else
