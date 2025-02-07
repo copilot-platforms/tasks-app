@@ -20,7 +20,7 @@ export const sendTaskCreateNotifications = task({
     await taskNotificationsSevice.sendTaskCreateNotifications(task)
 
     return {
-      message: `Sent notifications for taskId ${task.id} successfully`,
+      message: `Sent create notifications for taskId ${task.id} successfully`,
     }
   },
 })
