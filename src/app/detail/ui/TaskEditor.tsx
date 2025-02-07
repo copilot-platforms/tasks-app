@@ -169,7 +169,11 @@ export const TaskEditor = ({
       <Box mt="12px" sx={{ height: '100%', width: '100%' }}>
         <Tapwrite
           content={updateDetail}
-          getContent={handleDetailChange}
+          getContent={(content: string) => {
+            if (updateDetail !== '') {
+              handleDetailChange(content)
+            }
+          }}
           readonly={!isEditable}
           editorClass=""
           placeholder="Add description..."
