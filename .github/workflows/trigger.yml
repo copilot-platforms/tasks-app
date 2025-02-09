@@ -3,10 +3,6 @@ name: Deploy with Trigger.dev
 on:
   workflow_dispatch:
     inputs:
-      branch:
-        description: 'Enter the branch name to deploy'
-        required: true
-        default: 'main'
       environment:
         description: 'Select the deployment environment'
         required: true
@@ -22,7 +18,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.inputs.branch }}
+          # Automatically use the branch from "Use workflow from" dropdown
+          ref: ${{ github.ref_name }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
