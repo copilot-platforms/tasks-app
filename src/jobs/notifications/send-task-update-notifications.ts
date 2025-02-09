@@ -12,6 +12,9 @@ type UpdateTaskNotificationPayload = {
 export const sendTaskUpdateNotifications = task({
   id: 'send-task-update-notifications',
   machine: { preset: 'medium-1x' },
+  queue: {
+    concurrencyLimit: 25,
+  },
 
   run: async (payload: UpdateTaskNotificationPayload, { ctx }) => {
     logger.log('Sending task update notifications for:', { payload, ctx })

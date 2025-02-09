@@ -11,6 +11,9 @@ type CreateTaskNotificationPayload = {
 export const sendTaskCreateNotifications = task({
   id: 'send-task-create-notifications',
   machine: { preset: 'medium-1x' },
+  queue: {
+    concurrencyLimit: 25,
+  },
 
   run: async (payload: CreateTaskNotificationPayload, { ctx }) => {
     logger.log('Sending task creation notifications for:', { payload, ctx })
