@@ -19,7 +19,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          # Automatically checkout the same branch/tag from "Use workflow from" dropdown
+          # Automatically use the branch from "Use workflow from" dropdown
           ref: ${{ github.ref_name }}
 
       - name: Setup Node.JS v20
