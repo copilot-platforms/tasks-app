@@ -1,0 +1,33 @@
+name: Deploy with Trigger.dev
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Enter the branch name to deploy'
+        required: true
+        default: 'main'
+      environment:
+        description: 'Select the deployment environment'
+        required: true
+        default: 'staging'
+        options:
+          - prod
+          - staging
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.inputs.branch }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.20.0
+
+      - name: Run deploy command
+        run: npx trigger.dev@3.3.13 deploy -e ${{ github.event.inputs.environment }}
