@@ -143,7 +143,7 @@ export class NotificationService extends BaseService {
     // Hard delete this since we are not marking these as read, but deleting them
     await this.db.$executeRaw`
       DELETE FROM "InternalUserNotifications"
-      WHERE "taskId" = ${taskId}
+      WHERE "taskId" = ${taskId}::uuid
     `
   }
 
