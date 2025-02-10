@@ -12,7 +12,7 @@ type ClientTaskUpdateNotificationPayload = {
 }
 
 export const sendClientUpdateTaskNotifications = task({
-  id: 'delete-task-notifications',
+  id: 'send-client-task-notifications',
   machine: {
     preset: 'medium-1x',
   },
