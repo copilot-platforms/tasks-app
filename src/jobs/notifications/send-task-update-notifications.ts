@@ -1,6 +1,6 @@
-import { TaskNotificationsService } from '@/app/api/tasks/task-notifications.service'
 import { TaskWithWorkflowState } from '@/types/db'
 import User from '@api/core/models/User.model'
+import { TaskNotificationsService } from '@api/tasks/task-notifications.service'
 import { logger, task } from '@trigger.dev/sdk/v3'
 
 type UpdateTaskNotificationPayload = {
