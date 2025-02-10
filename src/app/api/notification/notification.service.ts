@@ -140,7 +140,11 @@ export class NotificationService extends BaseService {
     }
     console.info(`Deleting all notifications triggerd by task ${taskId}`)
     await Promise.all(markAsReadPromises)
-    await this.db.internalUserNotification.deleteMany({ where: { taskId } })
+    // Hard delete this since we are not marking these as read, but deleting them
+    await this.db.$executeRaw`
+      DELETE FROM "InternalUserNotifications"
+      WHERE "taskId" = ${taskId}
+    `
   }
 
   /**
