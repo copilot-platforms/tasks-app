@@ -1,5 +1,6 @@
 import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 import { deleteTaskNotifications, sendTaskCreateNotifications, sendTaskUpdateNotifications } from '@/jobs/notifications'
+import { sendClientUpdateTaskNotifications } from '@/jobs/notifications/send-client-task-update-notifications'
 import { ClientResponse, CompanyResponse, InternalUsers } from '@/types/common'
 import { CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { CopilotAPI } from '@/utils/CopilotAPI'
@@ -443,8 +444,7 @@ export class TasksService extends BaseService {
       await activityLogger.logTaskUpdated(prevTask)
     }
 
-    const taskNotificationsSevice = new TaskNotificationsService(this.user)
-    await taskNotificationsSevice.sendClientUpdateTaskNotifications(prevTask, updatedTask, updatedWorkflowState)
+    await sendClientUpdateTaskNotifications.trigger({ user: this.user, prevTask, updatedTask, updatedWorkflowState })
     return updatedTask
   }
 }
