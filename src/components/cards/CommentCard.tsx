@@ -2,6 +2,7 @@
 
 import { DotSeparator } from '@/app/detail/ui/DotSeparator'
 import { BoldTypography, CommentCardContainer, StyledModal, StyledTypography } from '@/app/detail/ui/styledComponent'
+import AttachmentLayout from '@/components/AttachmentLayout'
 import { ListBtn } from '@/components/buttons/ListBtn'
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 import { MenuBox } from '@/components/inputs/MenuBox'
@@ -127,6 +128,7 @@ export const CommentCard = ({
           getContent={() => {}}
           readonly
           editorClass="tapwrite-comment"
+          attachmentLayout={AttachmentLayout}
         />
 
         {Array.isArray((comment as LogResponse).details?.replies) &&
@@ -150,6 +152,7 @@ export const CommentCard = ({
                   getContent={() => {}}
                   readonly
                   editorClass="tapwrite-comment"
+                  attachmentLayout={AttachmentLayout}
                 />
               </Stack>
             )
@@ -168,6 +171,7 @@ export const CommentCard = ({
                 placeholder="Leave a reply..."
                 suggestions={assigneeSuggestions}
                 editorClass="tapwrite-reply-input"
+                attachmentLayout={AttachmentLayout}
               />
               <InputAdornment
                 position="end"

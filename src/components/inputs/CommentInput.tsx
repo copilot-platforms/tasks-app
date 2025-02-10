@@ -2,11 +2,14 @@
 
 import { CommentCardContainer } from '@/app/detail/ui/styledComponent'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
+import AttachmentLayout from '@/components/AttachmentLayout'
+import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 import { CreateComment } from '@/types/dto/comment.dto'
 import { getMentionsList } from '@/utils/getMentionList'
+import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
 import { ArrowUpward } from '@mui/icons-material'
 import { IconButton, InputAdornment, Stack } from '@mui/material'
 import { useEffect, useState } from 'react'
@@ -23,7 +26,7 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
   const [isListOrMenuActive, setIsListOrMenuActive] = useState(false)
   const { assigneeSuggestions } = useSelector(selectTaskDetails)
   const { tokenPayload } = useSelector(selectAuthDetails)
-  const { assignee } = useSelector(selectTaskBoard)
+  const { assignee, token, activeTask } = useSelector(selectTaskBoard)
   const currentUserId = tokenPayload?.internalUserId ?? tokenPayload?.clientId
   const currentUserDetails = assignee.find((el) => el.id === currentUserId)
 
@@ -77,6 +80,15 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
     }
   }, [detail, isListOrMenuActive]) // Depend on detail to ensure the latest state is captured
 
+  const uploadFn = token
+    ? async (file: File) => {
+        if (activeTask) {
+          const fileUrl = await uploadImageHandler(file, token ?? '', activeTask.workspaceId, task_id)
+          return fileUrl
+        }
+      }
+    : undefined
+
   return (
     <Stack direction="row" columnGap={2} alignItems="flex-start">
       <CopilotAvatar
@@ -99,7 +111,7 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
           content={detail}
           getContent={setDetail}
           placeholder="Leave a comment..."
-          suggestions={assigneeSuggestions}
+          // suggestions={assigneeSuggestions} enable this for mentions
           editorClass="tapwrite-comment-input"
           hardbreak
           onActiveStatusChange={(prop) => {
@@ -113,6 +125,11 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
             display: 'flex',
             flexDirection: 'column',
           }}
+          uploadFn={uploadFn}
+          deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', task_id, null)}
+          attachmentLayout={AttachmentLayout}
+          addAttachmentButton
+          maxUploadLimit={MAX_UPLOAD_LIMIT}
         />
         <InputAdornment
           position="end"
