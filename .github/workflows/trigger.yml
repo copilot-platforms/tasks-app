@@ -5,6 +5,7 @@ on:
     inputs:
       environment:
         description: 'Select the deployment environment'
+        type: 'choice'
         required: true
         default: 'staging'
         options:
