@@ -12,7 +12,7 @@ import { getMentionsList } from '@/utils/getMentionList'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
 import { ArrowUpward } from '@mui/icons-material'
 import { IconButton, InputAdornment, Stack } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
 
@@ -88,7 +88,35 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
         }
       }
     : undefined
+  const [isDragging, setIsDragging] = useState(false)
+  const dragCounter = useRef(0)
 
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    if (!isDragging) {
+      setIsDragging(true)
+    }
+  }
+
+  const handleDragEnter = () => {
+    dragCounter.current += 1
+    if (!isDragging) {
+      setIsDragging(true)
+    }
+  }
+
+  const handleDragLeave = () => {
+    dragCounter.current -= 1
+    if (dragCounter.current === 0) {
+      setIsDragging(false)
+    }
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+    dragCounter.current = 0
+  }
   return (
     <Stack direction="row" columnGap={2} alignItems="flex-start">
       <CopilotAvatar
@@ -103,9 +131,13 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
       />
       <CommentCardContainer
         sx={{
-          backgroundColor: (theme) => `${theme.color.base.white}`,
+          backgroundColor: (theme) => (isDragging ? theme.color.background.bgCommentDrag : theme.color.base.white),
           wordBreak: 'break-word',
         }}
+        onDragOver={handleDragOver}
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
       >
         <Tapwrite
           content={detail}
