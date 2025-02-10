@@ -116,9 +116,6 @@ export class NotificationService extends BaseService {
    * @returns New ClientNotification object
    */
   async addToClientNotifications(task: Task, notification: NotificationCreatedResponse): Promise<ClientNotification> {
-    console.log('ddd task', task)
-    console.log('ddd notification', notification)
-
     return await this.db.clientNotification.create({
       data: {
         clientId: z.string().parse(notification.recipientId),
