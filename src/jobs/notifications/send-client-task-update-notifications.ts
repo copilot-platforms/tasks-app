@@ -8,7 +8,7 @@ type ClientTaskUpdateNotificationPayload = {
   user: User
   prevTask: TaskWithWorkflowState
   updatedTask: TaskWithWorkflowState
-  updatedWorkflowState: WorkflowState
+  updatedWorkflowState: WorkflowState | null
 }
 
 export const sendClientUpdateTaskNotifications = task({
