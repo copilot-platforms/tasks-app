@@ -129,6 +129,13 @@ export const CommentCard = ({
           readonly
           editorClass="tapwrite-comment"
           attachmentLayout={AttachmentLayout}
+          parentContainerStyle={{
+            width: '100%',
+            height: '100%',
+            maxWidth: '566px',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
         />
 
         {Array.isArray((comment as LogResponse).details?.replies) &&
@@ -153,6 +160,13 @@ export const CommentCard = ({
                   readonly
                   editorClass="tapwrite-comment"
                   attachmentLayout={AttachmentLayout}
+                  parentContainerStyle={{
+                    width: '100%',
+                    height: '100%',
+                    maxWidth: '566px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                  }}
                 />
               </Stack>
             )
@@ -172,6 +186,13 @@ export const CommentCard = ({
                 suggestions={assigneeSuggestions}
                 editorClass="tapwrite-reply-input"
                 attachmentLayout={AttachmentLayout}
+                parentContainerStyle={{
+                  width: '100%',
+                  height: '100%',
+                  maxWidth: '566px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                }}
               />
               <InputAdornment
                 position="end"
