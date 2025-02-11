@@ -11,7 +11,7 @@ import { CreateComment } from '@/types/dto/comment.dto'
 import { getMentionsList } from '@/utils/getMentionList'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
 import { ArrowUpward } from '@mui/icons-material'
-import { IconButton, InputAdornment, Stack } from '@mui/material'
+import { Box, IconButton, InputAdornment, Stack } from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
@@ -162,27 +162,31 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
           attachmentLayout={AttachmentLayout}
           addAttachmentButton
           maxUploadLimit={MAX_UPLOAD_LIMIT}
+          endButtons={
+            <Box
+              sx={{
+                alignSelf: 'center',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <IconButton
+                onClick={handleSubmit}
+                sx={{
+                  backgroundColor: '#000',
+                  borderRadius: '4px',
+                  padding: '5px',
+                  '&:hover': { bgcolor: '#000' },
+                  height: '24px',
+                  width: '24px',
+                }}
+              >
+                <ArrowUpward sx={{ color: '#ffffff', fontSize: '18px' }} />
+              </IconButton>
+            </Box>
+          }
         />
-        <InputAdornment
-          position="end"
-          sx={{
-            alignSelf: 'flex-end',
-            display: 'flex',
-            alignItems: 'flex-end',
-          }}
-        >
-          <IconButton
-            onClick={() => handleSubmit()} // Call handleSubmit on button click
-            sx={{
-              backgroundColor: '#000',
-              borderRadius: '4px',
-              padding: '5px',
-              '&:hover': { bgcolor: '#000' },
-            }}
-          >
-            <ArrowUpward sx={{ color: '#ffffff', fontSize: '18px' }} />
-          </IconButton>
-        </InputAdornment>
       </CommentCardContainer>
     </Stack>
   )
