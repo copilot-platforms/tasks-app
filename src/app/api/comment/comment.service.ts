@@ -115,14 +115,19 @@ export class CommentService extends BaseService {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Update, Resource.Comment)
 
+    const filters = { id, workspaceId: this.user.workspaceId, initiatorId: this.user.internalUserId }
+    const prevComment = await this.db.comment.findFirst({
+      where: filters,
+    })
+    if (!prevComment) throw new APIError(httpStatus.NOT_FOUND, 'The comment to update was not found')
+
     const comment = await this.db.comment.update({
-      where: { id },
-      data: {
-        ...data,
-      },
+      where: filters,
+      data,
     })
     const tasksService = new TasksService(this.user)
     await tasksService.setNewLastActivityLogUpdated(comment.taskId)
+    return comment
   }
 
   async getCommentsByIds(commentIds: string[]) {
