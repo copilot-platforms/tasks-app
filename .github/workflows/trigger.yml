@@ -38,6 +38,7 @@ jobs:
 
           # TRIGGER_ACCESS_TOKEN (same for both)
           echo "TRIGGER_ACCESS_TOKEN=${{ secrets.TRIGGER_ACCESS_TOKEN }}" >> $GITHUB_ENV
+          echo "TRIGGER_PROJECT=proj_gaxcpkutbhhxzjvnevvi" >> $GITHUB_ENV
 
       - name: Install build dependencies
         run: yarn add "@trigger.dev/build@3.3.13" "@trigger.dev/sdk@3.3.13"
