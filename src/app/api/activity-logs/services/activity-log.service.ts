@@ -16,6 +16,8 @@ import { LogResponse, LogResponseSchema } from '../schemas/LogResponseSchema'
 import APIError from '@api/core/exceptions/api'
 import httpStatus from 'http-status'
 import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
+import { replaceImageSrc } from '@/utils/signedUrlReplacer'
+import { getSignedUrl } from '@/utils/signUrl'
 
 export class ActivityLogService extends BaseService {
   constructor(user: User) {
@@ -87,6 +89,14 @@ export class ActivityLogService extends BaseService {
 
     const commentService = new CommentService(this.user)
     const comments = await commentService.getCommentsByIds(commentIds)
+    const processedComments = await Promise.all(
+      comments.map(async (comment) => {
+        return {
+          ...comment,
+          content: await replaceImageSrc(comment.content, getSignedUrl),
+        }
+      }),
+    )
     const allReplies = await commentService.getReplies(commentIds)
 
     const logResponseData = filteredActivityLogs.map((activityLog) => {
@@ -97,7 +107,7 @@ export class ActivityLogService extends BaseService {
           activityLog.type,
           activityLog.userRole,
           activityLog.details,
-          comments,
+          processedComments,
           allReplies,
           internalUsers,
           clientUsers,
