@@ -3010,7 +3010,7 @@
     "@swc/counter" "^0.1.3"
     tslib "^2.4.0"
 
-"@trigger.dev/build@^3.3.13":
+"@trigger.dev/build@3.3.13":
   version "3.3.13"
   resolved "https://registry.yarnpkg.com/@trigger.dev/build/-/build-3.3.13.tgz#35c74aed1e7297cf425d46afb4041c02301dfe73"
   integrity sha512-2R7FTvo/3XYhc+uB4vm2mzuH5UTP7kq4E9T2jEBQMEfz4KbiIjQwWtak366ApPKYRbBU1+xm0Mfx4EWtAriWhA==
@@ -3052,7 +3052,7 @@
     zod-error "1.5.0"
     zod-validation-error "^1.5.0"
 
-"@trigger.dev/sdk@^3.3.13":
+"@trigger.dev/sdk@3.3.13":
   version "3.3.13"
   resolved "https://registry.yarnpkg.com/@trigger.dev/sdk/-/sdk-3.3.13.tgz#84aac526f016442df7296c954ce0030c0f310b7d"
   integrity sha512-iXtHMnzvzmPfBk7+whpWOElBJt6viCoA3r8xgrrrurj8oxjIVe4UvdDiB7wbUJJ44WROWEb0wVKyQut1L/FwQQ==
@@ -6950,11 +6950,6 @@ pathe@^2.0.1:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/pathe/-/pathe-2.0.2.tgz#5ed86644376915b3c7ee4d00ac8c348d671da3a5"
   integrity sha512-15Ztpk+nov8DR524R4BF7uEuzESgzUEAV4Ah7CUMNGXdE5ELuvxElxGXndBl32vMSsWa1jpNf22Z+Er3sKwq+w==
-
-performance-now@^2.1.0:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/performance-now/-/performance-now-2.1.0.tgz#6309f4e0e5fa913ec1c69307ae364b4b377c9e7b"
-  integrity sha512-7EAHlyLHI56VEIdK57uwHdHKIaAGbnXPiw0yWbarQZOKaKpvUIgW0jWRVLiatnM+XXlSwsanIBH/hzGMJulMow==
 
 pg-int8@1.0.1:
   version "1.0.1"
