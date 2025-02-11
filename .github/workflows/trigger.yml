@@ -40,7 +40,7 @@ jobs:
           echo "TRIGGER_ACCESS_TOKEN=${{ secrets.TRIGGER_ACCESS_TOKEN }}" >> $GITHUB_ENV
 
       - name: Install packages
-        run: pnpm i
+        run: npm i -g pnpm && pnpm i
 
       - name: Run deploy command
         run: pnpm dlx trigger.dev@latest deploy -e ${{ github.event.inputs.environment }}
