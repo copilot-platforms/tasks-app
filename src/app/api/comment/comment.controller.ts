@@ -34,8 +34,7 @@ export const updateComment = async (req: NextRequest, { params: { id } }: IdPara
   const data = UpdateCommentSchema.parse(await req.json())
 
   const commentService = new CommentService(user)
+  const comment = await commentService.update(id, data)
 
-  const updatedComment = await commentService.update(id, data)
-
-  return NextResponse.json({ comment: updatedComment }, { status: httpStatus.OK })
+  return NextResponse.json({ comment })
 }
