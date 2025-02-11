@@ -153,7 +153,7 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
           parentContainerStyle={{
             width: '100%',
             height: '100%',
-            maxWidth: '600px',
+            maxWidth: '566px',
             display: 'flex',
             flexDirection: 'column',
           }}
