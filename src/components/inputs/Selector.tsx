@@ -2,7 +2,7 @@ import { Box, Button, Popper, Stack, Typography } from '@mui/material'
 import { StyledAutocomplete } from '@/components/inputs/Autocomplete'
 import { statusIcons } from '@/utils/iconMatcher'
 import { useFocusableInput } from '@/hooks/useFocusableInput'
-import { HTMLAttributes, ReactNode, useEffect, useMemo, useState } from 'react'
+import { HTMLAttributes, ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { StyledTextField } from './TextField'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { IAssigneeCombined, Sizes, IExtraOption, ITemplate, UserTypesName } from '@/types/interfaces'
@@ -12,7 +12,7 @@ import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { getAssigneeName } from '@/utils/assignee'
 import { StyledHelperText } from '@/components/error/FormHelperText'
 import React from 'react'
-import { ModifierArguments } from '@popperjs/core'
+import { ModifierArguments, ModifierPhases } from '@popperjs/core'
 import { Property } from 'csstype'
 import ListboxComponent from '@/components/inputs/ListboxComponent'
 
@@ -140,11 +140,30 @@ export default function Selector<T extends keyof SelectorOptionsType>({
 
   const [placement, setPlacement] = useState('')
 
-  const handlePlacementChange = (data: ModifierArguments<any>) => {
-    if (data.state && data.state.placement) {
-      setPlacement(data.state.placement)
-    }
-  }
+  const handlePlacementChange = useCallback(
+    (data: ModifierArguments<any>) => {
+      if (data.state && data.state.placement && data.state.placement !== placement) {
+        setPlacement(data.state.placement)
+      }
+    },
+    [placement],
+  )
+
+  const popperModifiers = useMemo(
+    () => [
+      {
+        name: 'onUpdatePlacement',
+        enabled: true,
+        phase: 'afterWrite' as ModifierPhases,
+        fn: handlePlacementChange,
+      },
+      {
+        name: 'preventAutoFocus',
+        enabled: true,
+      },
+    ],
+    [handlePlacementChange],
+  )
 
   useEffect(() => {
     function closePopper(e: KeyboardEvent) {
@@ -298,18 +317,7 @@ export default function Selector<T extends keyof SelectorOptionsType>({
               },
             },
             popper: {
-              modifiers: [
-                {
-                  name: 'onUpdatePlacement',
-                  enabled: true,
-                  phase: 'afterWrite',
-                  fn: handlePlacementChange,
-                },
-                {
-                  name: 'preventAutoFocus',
-                  enabled: true,
-                },
-              ],
+              modifiers: popperModifiers,
             },
           }}
           filterOptions={filterOption}
