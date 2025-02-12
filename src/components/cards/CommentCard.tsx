@@ -136,22 +136,22 @@ export const CommentCard = ({
 
             {(isHovered || isMobile) && (
               <Stack direction="row" columnGap={2} sx={{ height: '10px' }} alignItems="center">
-                {canEdit && (
-                  <MenuBox
-                    menuContent={
-                      <>
-                        <ListBtn
-                          content="Edit comment"
-                          handleClick={() => {
-                            setIsReadOnly(false)
-                            if (editRef.current) {
-                              editRef.current.focus()
-                            }
-                          }}
-                          icon={<EditIcon />}
-                          contentColor={(theme) => theme.color.text.text}
-                          width="175px"
-                        />
+                <MenuBox
+                  menuContent={
+                    <>
+                      <ListBtn
+                        content="Edit comment"
+                        handleClick={() => {
+                          setIsReadOnly(false)
+                          if (editRef.current) {
+                            editRef.current.focus()
+                          }
+                        }}
+                        icon={<EditIcon />}
+                        contentColor={(theme) => theme.color.text.text}
+                        width="175px"
+                      />
+                      {canEdit && (
                         <ListBtn
                           content="Delete comment"
                           handleClick={() => {
@@ -161,15 +161,15 @@ export const CommentCard = ({
                           contentColor={(theme) => theme.color.error}
                           width="175px"
                         />
-                      </>
-                    }
-                    isSecondary
-                    width={'22px'}
-                    height={'22px'}
-                    displayButtonBackground={false}
-                    noHover={false}
-                  />
-                )}
+                      )}
+                    </>
+                  }
+                  isSecondary
+                  width={'22px'}
+                  height={'22px'}
+                  displayButtonBackground={false}
+                  noHover={false}
+                />
               </Stack>
             )}
           </Stack>
