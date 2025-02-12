@@ -10,6 +10,7 @@ import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 import { CreateComment } from '@/types/dto/comment.dto'
 import { getMentionsList } from '@/utils/getMentionList'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
+import { isTapwriteContentEmpty } from '@/utils/isTapwriteContentEmpty'
 import { ArrowUpward } from '@mui/icons-material'
 import { Box, IconButton, InputAdornment, Stack } from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
@@ -30,12 +31,6 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
   const currentUserId = tokenPayload?.internalUserId ?? tokenPayload?.clientId
   const currentUserDetails = assignee.find((el) => el.id === currentUserId)
 
-  const isContentEmpty = (content: string) => {
-    // Regular expression to match only empty paragraphs, whitespace, or <br> tags
-    const emptyContentRegex = /^(<p>(\s|(<br\s*\/?>))*<\/p>)*$/
-    return emptyContentRegex.test(content)
-  }
-
   const handleSubmit = () => {
     let content = detail
     const END_P = '<p></p>'
@@ -44,7 +39,7 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
       content = content.slice(0, -7)
     }
     // Check if `detail` is effectively empty
-    if (!isContentEmpty(detail)) {
+    if (!isTapwriteContentEmpty(detail)) {
       const commentPayload: CreateComment = {
         content,
         taskId: task_id,
