@@ -169,6 +169,8 @@ export class ActivityLogService extends BaseService {
           ...payload,
           content: comment.content,
           replies,
+          updatedAt: comment.updatedAt,
+          createdAt: comment.createdAt,
         }
 
       default:
