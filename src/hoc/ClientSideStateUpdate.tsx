@@ -41,7 +41,6 @@ export const ClientSideStateUpdate = ({
   templates,
   assigneeSuggestions,
   task,
-  resetActiveTask = false,
 }: {
   children: ReactNode
   workflowStates?: WorkflowStateResponse[]
@@ -53,7 +52,6 @@ export const ClientSideStateUpdate = ({
   templates?: ITemplate[]
   assigneeSuggestions?: IAssigneeSuggestions[]
   task?: TaskResponse
-  resetActiveTask?: boolean
 }) => {
   const { tasks: tasksInStore, viewSettingsTemp } = useSelector(selectTaskBoard)
   useEffect(() => {
@@ -101,11 +99,9 @@ export const ClientSideStateUpdate = ({
       const updatedTasks = tasksInStore.map((t) => (t.id === task.id ? task : t))
       store.dispatch(setTasks(updatedTasks))
       store.dispatch(setActiveTask(task))
-    } //for updating a task in store with respect to task response from db in task details page
-
-    if (resetActiveTask) {
+    } else {
       store.dispatch(setActiveTask(undefined))
-    }
+    } //for updating a task in store with respect to task response from db in task details page
   }, [workflowStates, tasks, token, assignee, viewSettings, tokenPayload, templates, assigneeSuggestions, task])
 
   return children
