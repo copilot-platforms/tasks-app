@@ -100,7 +100,7 @@ export const ClientSideStateUpdate = ({
       store.dispatch(setTasks(updatedTasks))
       store.dispatch(setActiveTask(task))
     } else {
-      store.dispatch(setActiveTask(undefined))
+      store.dispatch(setActiveTask(undefined)) //when navigated elsewhere from details page, removing the previously set ActiveTask
     } //for updating a task in store with respect to task response from db in task details page
   }, [workflowStates, tasks, token, assignee, viewSettings, tokenPayload, templates, assigneeSuggestions, task])
 
