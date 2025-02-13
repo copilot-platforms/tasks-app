@@ -53,7 +53,7 @@ const taskBoardSlice = createSlice({
     setWorkflowStates: (state, action: { payload: WorkflowStateResponse[] }) => {
       state.workflowStates = action.payload
     },
-    setActiveTask: (state, action: { payload: TaskResponse }) => {
+    setActiveTask: (state, action: { payload: TaskResponse | undefined }) => {
       state.activeTask = action.payload
     },
     setTasks: (state, action: { payload: TaskResponse[] }) => {

@@ -103,6 +103,7 @@ export default async function Main({ searchParams }: { searchParams: { token: st
       token={token}
       viewSettings={viewSettings}
       tokenPayload={tokenPayload}
+      resetActiveTask={true}
     >
       {/* Async fetchers */}
       <Suspense fallback={null}>
