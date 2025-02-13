@@ -6,12 +6,14 @@ import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
+import { TaskResponse } from '@/types/dto/tasks.dto'
 
 interface Props {
   token: string
   viewSettings?: CreateViewSettingsDTO
   userType?: UserType
   isPreview?: boolean
+  task?: TaskResponse
 }
 
 const fetchAssignee = async (token: string, userType?: UserType, isPreview?: boolean): Promise<IAssignee> => {
@@ -31,10 +33,10 @@ const fetchAssignee = async (token: string, userType?: UserType, isPreview?: boo
 
   return (await res.json()).users as IAssignee
 }
-export const AssigneeFetcher = async ({ token, userType, viewSettings, isPreview }: Props) => {
+export const AssigneeFetcher = async ({ token, userType, viewSettings, isPreview, task }: Props) => {
   const assignableUsersWithType = addTypeToAssignee(await fetchAssignee(token, userType, isPreview))
   return (
-    <ClientSideStateUpdate assignee={assignableUsersWithType} viewSettings={viewSettings}>
+    <ClientSideStateUpdate assignee={assignableUsersWithType} viewSettings={viewSettings} task={task}>
       {null}
     </ClientSideStateUpdate>
   )

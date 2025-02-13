@@ -4,10 +4,12 @@ import { apiUrl } from '@/config'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import { ReactNode } from 'react'
+import { TaskResponse } from '@/types/dto/tasks.dto'
 
 interface Props {
   token: string
   children: ReactNode
+  task?: TaskResponse
 }
 
 const getAllWorkflowStates = async (token: string): Promise<WorkflowStateResponse[]> => {
@@ -20,8 +22,12 @@ const getAllWorkflowStates = async (token: string): Promise<WorkflowStateRespons
   return data.workflowStates
 }
 
-export const WorkflowStateFetcher = async ({ token, children }: Props) => {
+export const WorkflowStateFetcher = async ({ token, children, task }: Props) => {
   const workflowStates = await getAllWorkflowStates(token)
 
-  return <ClientSideStateUpdate workflowStates={workflowStates}> {children} </ClientSideStateUpdate>
+  return (
+    <ClientSideStateUpdate workflowStates={workflowStates} task={task}>
+      {children}
+    </ClientSideStateUpdate>
+  )
 }
