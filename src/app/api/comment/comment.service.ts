@@ -1,3 +1,4 @@
+import { sendCommentCreateNotifications } from '@/jobs/notifications'
 import { CreateComment, UpdateComment } from '@/types/dto/comment.dto'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { CommentAddedSchema } from '@api/activity-logs/schemas/CommentAddedSchema'
@@ -15,45 +16,6 @@ import httpStatus from 'http-status'
 import { z } from 'zod'
 
 export class CommentService extends BaseService {
-  private async sendCommentCreatedNotifications(task: Task, comment: Comment) {
-    // If task is unassigned, there's nobody to send notifications to
-    if (!task.assigneeId || !task.assigneeType) return
-
-    const notificationService = new NotificationService(this.user)
-    await this.handleCommentNotifications(task, comment, notificationService)
-  }
-
-  private handleCommentNotifications = async (task: Task, comment: Comment, notificationService: NotificationService) => {
-    const copilot = new CopilotAPI(this.user.token)
-    const { recipientIds: clientRecipientIds } = await notificationService.getNotificationParties(
-      copilot,
-      task,
-      NotificationTaskActions.CommentToCU,
-    )
-
-    const filteredCUIds = clientRecipientIds.filter((id: string) => id !== comment.initiatorId)
-    console.info('creating notifications for CUS', filteredCUIds)
-    await notificationService.createBulkNotification(NotificationTaskActions.Commented, task, filteredCUIds, {
-      email: true,
-      disableInProduct: true,
-      commentId: comment.id,
-    })
-
-    const { recipientIds: iuRecipientIds } = await notificationService.getNotificationParties(
-      copilot,
-      task,
-      NotificationTaskActions.CommentToIU,
-    )
-
-    const filteredIUIds = iuRecipientIds.filter((id: string) => id !== comment.initiatorId)
-    console.info('creating notifications for IUs', filteredIUIds)
-    await notificationService.createBulkNotification(NotificationTaskActions.Commented, task, filteredIUIds, {
-      email: false,
-      disableInProduct: false,
-      commentId: comment.id,
-    })
-  }
-
   async create(data: CreateComment) {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Create, Resource.Comment)
@@ -88,9 +50,8 @@ export class CommentService extends BaseService {
       }),
     )
 
-    const sendCommentCreatedNotifications = this.sendCommentCreatedNotifications(task, comment)
-
-    await Promise.all([logActivity, sendCommentCreatedNotifications])
+    await sendCommentCreateNotifications.trigger({ user: this.user, task: task, comment: comment })
+    await logActivity
     // if (data.mentions) {
     //   await notificationService.createBulkNotification(NotificationTaskActions.Mentioned, task, data.mentions, {
     //     commentId: comment.id,
