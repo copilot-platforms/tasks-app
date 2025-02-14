@@ -18,6 +18,7 @@ import AttachmentLayout from '@/components/AttachmentLayout'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
 import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
 import { StyledModal } from '@/app/detail/ui/styledComponent'
+import { ImagePreviewModal } from './ImagePreviewModal'
 
 interface Prop {
   task_id: string
@@ -50,6 +51,12 @@ export const TaskEditor = ({
   const { token, activeTask } = useSelector(selectTaskBoard)
   const [isUserTyping, setIsUserTyping] = useState(false)
   const [activeUploads, setActiveUploads] = useState(0)
+
+  const [isPreviewOpen, setIsPreviewOpen] = useState<boolean>(false)
+  // Active image that is currently opened in preview
+  const [activeImageDetails, setActiveImageDetails] = useState<{ title?: string; src?: string }>({
+    title: 'Meow meow biralo',
+  })
 
   // const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
   //   event.preventDefault()
@@ -178,6 +185,7 @@ export const TaskEditor = ({
           editorClass=""
           placeholder="Add description..."
           uploadFn={uploadFn}
+          handleImageDoubleClick={() => setIsPreviewOpen(true)}
           deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', task_id, null)}
           attachmentLayout={AttachmentLayout}
           addAttachmentButton
@@ -227,6 +235,12 @@ export const TaskEditor = ({
           }}
         />
       </StyledModal>
+      <ImagePreviewModal
+        open={isPreviewOpen}
+        setOpen={setIsPreviewOpen}
+        title={activeImageDetails.title}
+        src={activeImageDetails.src}
+      />
     </>
   )
 }
