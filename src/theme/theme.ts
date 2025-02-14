@@ -77,6 +77,7 @@ export const theme = createTheme({
       borderDisabled: '#EFF1F4',
       border2: '#EDEDF0',
       border3: '#DADBDC',
+      focusBorder: '#053299',
     },
     background: {
       bgCard: '#DFE1E4',

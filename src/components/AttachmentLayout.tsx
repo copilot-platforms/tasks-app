@@ -30,7 +30,10 @@ const AttachmentLayout: React.FC<AttachmentLayoutProps> = ({ selected, src, file
     padding: { sm: '4px 8px', md: '4px 12px 4px 8px' },
     border: (theme) => `1px solid ${theme.color.gray[selected ? 600 : 150]}`,
     background: '#fff',
-
+    outline: 'none',
+    '&:focus': {
+      border: (theme) => `1.5px solid ${theme.color.borders.focusBorder}`,
+    },
     '@media (max-width: 600px)': {
       '&:active': {
         border: (theme) => `1px solid ${theme.color.gray[600]}`,
@@ -118,6 +121,7 @@ const AttachmentLayout: React.FC<AttachmentLayoutProps> = ({ selected, src, file
 
   return (
     <Box
+      tabIndex={0}
       sx={{
         ...containerStyles,
         '&:hover': {
