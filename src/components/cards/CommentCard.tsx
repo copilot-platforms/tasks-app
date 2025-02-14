@@ -19,7 +19,7 @@ import { getTimeDifference } from '@/utils/getTimeDifference'
 import { commentAddedResponseSchema } from '@api/activity-logs/schemas/CommentAddedSchema'
 import { LogResponse } from '@api/activity-logs/schemas/LogResponseSchema'
 import { Avatar, Box, InputAdornment, Stack, styled, Typography } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
 
@@ -74,7 +74,9 @@ export const CommentCard = ({
     const intervalId = setInterval(updateTimeAgo, 60 * 1000)
     return () => clearInterval(intervalId)
   }, [comment.createdAt])
-  const commentUser = assignee.find((el) => el.id === comment?.initiator?.id)
+  const commentUser = useMemo(() => {
+    return assignee.find((el) => el.id === comment?.initiator?.id)
+  }, [assignee, comment?.initiator?.id])
 
   return (
     <CommentCardContainer
