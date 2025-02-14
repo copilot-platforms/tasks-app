@@ -120,3 +120,59 @@ export const StyledModal = styled(Modal)(({ theme }) => ({
     backgroundColor: theme.color.modal.backdrop,
   },
 }))
+
+export const StyledImagePreviewModal = styled(Modal)(() => ({
+  display: 'flex',
+  flexDirection: 'column',
+  backgroundColor: 'rgba(0, 0, 0, 0.75)',
+  width: '100vw',
+  height: '100vh',
+}))
+
+export const StyledImageTopBar = styled(Box)(() => ({
+  backgroundColor: 'rgba(0,0,0,0.60)',
+  color: 'white',
+  display: 'flex',
+  width: '100%',
+  justifyContent: 'space-between',
+  padding: '16px 20px',
+  alignContent: 'center',
+  lineHeight: '24px',
+  fontWeight: 500,
+  '.close-icon-container': {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '5px',
+    backgroundColor: '#0f0f0f',
+    borderRadius: '4px',
+  },
+  '.title-container': {
+    display: 'flex',
+    gap: '6px',
+    alignItems: 'center',
+  },
+  '.download-btn': {
+    padding: '5px',
+    backgroundColor: 'white',
+    borderRadius: '4px',
+  },
+}))
+
+export const StyledImagePreviewWrapper = styled(Box)(() => ({
+  height: '100%',
+  userSelect: 'none',
+  '#react-doc-viewer': {
+    background: 'transparent',
+    height: '100%',
+    '#header-bar': {
+      display: 'none',
+    },
+    '#proxy-renderer': {
+      height: '100%',
+      '#image-renderer': {
+        background: 'rgba(0,0,0,0)',
+      },
+    },
+  },
+}))
