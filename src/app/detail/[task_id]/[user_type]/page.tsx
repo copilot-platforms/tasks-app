@@ -91,6 +91,7 @@ export default async function TaskDetailPage({
 
   return (
     <DetailStateUpdate isRedirect={!!searchParams.isRedirect} token={token} tokenPayload={tokenPayload} task={task}>
+      <AssigneeFetcher token={token} userType={params.user_type} isPreview={!!getPreviewMode(tokenPayload)} />
       <RealTime tokenPayload={tokenPayload}>
         <EscapeHandler />
         <ResponsiveStack>
@@ -164,13 +165,7 @@ export default async function TaskDetailPage({
           </ToggleController>
           <Box>
             <Suspense fallback={<SidebarSkeleton />}>
-              <WorkflowStateFetcher token={token} task={task}>
-                <AssigneeFetcher
-                  token={token}
-                  userType={params.user_type}
-                  isPreview={!!getPreviewMode(tokenPayload)}
-                  task={task}
-                />
+              <WorkflowStateFetcher token={token}>
                 <Sidebar
                   task_id={task_id}
                   selectedAssigneeId={task?.assigneeId}

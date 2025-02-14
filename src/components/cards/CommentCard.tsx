@@ -1,7 +1,7 @@
 'use client'
 
 import { Avatar, Box, InputAdornment, Stack, styled, Typography } from '@mui/material'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
 import { z } from 'zod'
@@ -95,7 +95,7 @@ export const CommentCard = ({
     const intervalId = setInterval(updateTimeAgo, 60 * 1000)
     return () => clearInterval(intervalId)
   }, [comment.createdAt])
-  const commentUser = assignee.find((el) => el.id === comment?.initiator?.id)
+
   const uploadFn = token
     ? async (file: File) => {
         if (activeTask) {
@@ -146,6 +146,10 @@ export const CommentCard = ({
       window.removeEventListener('keydown', handleKeyDown)
     }
   }, [editedContent, isListOrMenuActive, isFocused, isMobile])
+
+  const commentUser = useMemo(() => {
+    return assignee.find((el) => el.id === comment?.initiator?.id)
+  }, [assignee, comment?.initiator?.id])
 
   return (
     <CommentCardContainer
