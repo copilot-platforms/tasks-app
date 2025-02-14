@@ -7,6 +7,7 @@ import AttachmentLayout from '@/components/AttachmentLayout'
 import { ListBtn } from '@/components/buttons/ListBtn'
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
+import { EditCommentButtons } from '@/components/buttonsGroup/EditCommentButtons'
 import { MenuBox } from '@/components/inputs/MenuBox'
 import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
 import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
@@ -193,43 +194,7 @@ export const CommentCard = ({
             display: 'flex',
             flexDirection: 'column',
           }}
-          endButtons={
-            !isReadOnly && (
-              <Stack
-                direction="row"
-                columnGap={'12px'}
-                sx={{
-                  alignSelf: 'center',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Divider orientation="vertical" sx={{ height: '28px' }} />
-                <SecondaryBtn
-                  width={'46px'}
-                  outlined
-                  handleClick={cancelEdit}
-                  buttonContent={
-                    <Typography variant="sm" sx={{ color: (theme) => theme.color.text.text }}>
-                      Cancel
-                    </Typography>
-                  }
-                />
-                <SecondaryBtn
-                  width={'46px'}
-                  handleClick={() => {
-                    handleEdit()
-                  }}
-                  buttonContent={
-                    <Typography variant="sm" sx={{ color: (theme) => theme.color.text.text }}>
-                      Save
-                    </Typography>
-                  }
-                />
-              </Stack>
-            )
-          }
+          endButtons={<EditCommentButtons cancelEdit={cancelEdit} handleEdit={handleEdit} isReadOnly={isReadOnly} />}
         />
 
         {Array.isArray((comment as LogResponse).details?.replies) &&
