@@ -36,6 +36,7 @@
     "delete-duplicate-notifications": "tsx ./src/cmd/delete-duplicate-notifications"
   },
   "dependencies": {
+    "@cyntler/react-doc-viewer": "^1.17.0",
     "@emotion/react": "^11.11.3",
     "@emotion/styled": "^11.11.0",
     "@mui/icons-material": "^5.15.15",
