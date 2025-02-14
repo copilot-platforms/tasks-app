@@ -187,10 +187,11 @@ export const CommentCard = ({
           deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', task_id, null)}
           maxUploadLimit={MAX_UPLOAD_LIMIT}
           attachmentLayout={AttachmentLayout}
+          hardbreak
           parentContainerStyle={{
             width: '100%',
             height: '100%',
-            maxWidth: '566px',
+            maxWidth: '600px',
             display: 'flex',
             flexDirection: 'column',
           }}
