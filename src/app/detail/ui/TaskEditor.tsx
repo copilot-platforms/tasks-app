@@ -19,6 +19,7 @@ import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inli
 import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
 import { StyledModal } from '@/app/detail/ui/styledComponent'
 import { ImagePreviewModal } from './ImagePreviewModal'
+import { getFileNameFromSignedUrl } from '@/utils/signUrl'
 
 interface Prop {
   task_id: string
@@ -52,8 +53,7 @@ export const TaskEditor = ({
   const [isUserTyping, setIsUserTyping] = useState(false)
   const [activeUploads, setActiveUploads] = useState(0)
 
-  const [openPreview, setOpenPreview] = useState<any>(null)
-  const handleImageModalClose = () => setOpenPreview(null)
+  const [openImage, setOpenImage] = useState<string | null>(null)
 
   // const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
   //   event.preventDefault()
@@ -182,7 +182,7 @@ export const TaskEditor = ({
           editorClass=""
           placeholder="Add description..."
           uploadFn={uploadFn}
-          handleImageDoubleClick={(e) => setOpenPreview(e.target)}
+          handleImageDoubleClick={(e) => setOpenImage((e.target as HTMLImageElement).src)}
           deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', task_id, null)}
           attachmentLayout={AttachmentLayout}
           addAttachmentButton
@@ -233,7 +233,7 @@ export const TaskEditor = ({
         />
       </StyledModal>
 
-      <ImagePreviewModal openFile={openPreview} handleClose={handleImageModalClose} />
+      <ImagePreviewModal openImage={openImage} setOpenImage={setOpenImage} />
     </>
   )
 }
