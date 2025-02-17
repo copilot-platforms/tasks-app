@@ -174,5 +174,9 @@ export const StyledImagePreviewWrapper = styled(Box)(() => ({
         background: 'rgba(0,0,0,0)',
       },
     },
+    img: {
+      maxHeight: '80vh',
+      maxWidth: '90vw',
+    },
   },
 }))
