@@ -13,7 +13,6 @@ type DocViewerHeader = (
 ) => ReturnType<IHeaderOverride>
 
 export const ImagePreviewHeader: DocViewerHeader = (state, { handleClose }) => {
-  console.log('url state', state)
   let fileName = getFileNameFromSignedUrl(state.currentDocument?.uri || '')
   if (fileName.length > 37) {
     // Prefixed with uuid & underscore
