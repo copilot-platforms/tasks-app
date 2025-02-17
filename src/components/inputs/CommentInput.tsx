@@ -154,7 +154,7 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
           }}
           uploadFn={uploadFn}
           deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', task_id, null)}
-          attachmentLayout={AttachmentLayout}
+          attachmentLayout={(props) => <AttachmentLayout {...props} isComment={true} />}
           addAttachmentButton
           maxUploadLimit={MAX_UPLOAD_LIMIT}
           endButtons={
