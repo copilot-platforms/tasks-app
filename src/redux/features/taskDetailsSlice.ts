@@ -9,6 +9,8 @@ interface IInitialState {
   assigneeSuggestions: IAssigneeSuggestions[]
   task: TaskResponse | undefined
   showConfirmAssignModal: boolean
+  // URL of an image opened in preview modal for task description / comments
+  openImage: string | null
 }
 
 const initialState: IInitialState = {
@@ -17,6 +19,7 @@ const initialState: IInitialState = {
   assigneeSuggestions: [],
   task: undefined,
   showConfirmAssignModal: false,
+  openImage: null,
 }
 
 const taskDetailsSlice = createSlice({
@@ -38,12 +41,21 @@ const taskDetailsSlice = createSlice({
     toggleShowConfirmAssignModal: (state) => {
       state.showConfirmAssignModal = !state.showConfirmAssignModal
     },
+    setOpenImage: (state, action: { payload: string | null }) => {
+      state.openImage = action.payload
+    },
   },
 })
 
 export const selectTaskDetails = (state: RootState) => state.taskDetail
 
-export const { setShowConfirmDeleteModal, setShowSidebar, setAssigneeSuggestion, setTask, toggleShowConfirmAssignModal } =
-  taskDetailsSlice.actions
+export const {
+  setShowConfirmDeleteModal,
+  setShowSidebar,
+  setAssigneeSuggestion,
+  setTask,
+  toggleShowConfirmAssignModal,
+  setOpenImage,
+} = taskDetailsSlice.actions
 
 export default taskDetailsSlice.reducer

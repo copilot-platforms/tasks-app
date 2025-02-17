@@ -1,7 +1,7 @@
 'use client'
 
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
-import { selectTaskDetails, setShowConfirmDeleteModal } from '@/redux/features/taskDetailsSlice'
+import { selectTaskDetails, setOpenImage, setShowConfirmDeleteModal } from '@/redux/features/taskDetailsSlice'
 import store from '@/redux/store'
 import { Box } from '@mui/material'
 import { MouseEvent, useCallback, useEffect, useState } from 'react'
@@ -47,13 +47,14 @@ export const TaskEditor = ({
 }: Prop) => {
   const [updateTitle, setUpdateTitle] = useState('')
   const [updateDetail, setUpdateDetail] = useState('')
-  const { showConfirmDeleteModal } = useSelector(selectTaskDetails)
+  const { showConfirmDeleteModal, openImage } = useSelector(selectTaskDetails)
   const { token, activeTask } = useSelector(selectTaskBoard)
   const [isUserTyping, setIsUserTyping] = useState(false)
   const [activeUploads, setActiveUploads] = useState(0)
 
-  const [openImage, setOpenImage] = useState<string | null>(null)
-  const handleImagePreview = (e: MouseEvent<unknown>) => setOpenImage((e.target as HTMLImageElement).src)
+  const handleImagePreview = (e: MouseEvent<unknown>) => {
+    store.dispatch(setOpenImage((e.target as HTMLImageElement).src))
+  }
 
   // const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
   //   event.preventDefault()
@@ -234,7 +235,7 @@ export const TaskEditor = ({
         />
       </StyledModal>
 
-      <ImagePreviewModal openImage={openImage} setOpenImage={setOpenImage} />
+      <ImagePreviewModal />
     </>
   )
 }
