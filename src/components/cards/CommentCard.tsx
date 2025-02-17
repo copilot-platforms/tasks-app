@@ -189,7 +189,7 @@ export const CommentCard = ({
           uploadFn={uploadFn}
           deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', task_id, null)}
           maxUploadLimit={MAX_UPLOAD_LIMIT}
-          attachmentLayout={AttachmentLayout}
+          attachmentLayout={(props) => <AttachmentLayout {...props} isComment={true} />}
           hardbreak
           parentContainerStyle={{
             width: '100%',
