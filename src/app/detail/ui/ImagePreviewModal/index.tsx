@@ -1,23 +1,20 @@
 import DocViewer, { DocViewerRenderers } from '@cyntler/react-doc-viewer'
-import { Dispatch, SetStateAction } from 'react'
 
 import '@cyntler/react-doc-viewer/dist/index.css'
 
 import { ImagePreviewHeader } from '@/app/detail/ui/ImagePreviewModal/ImagePreviewHeader'
 import { StyledImagePreviewModal, StyledImagePreviewWrapper } from '@/app/detail/ui/styledComponent'
-import { getFileNameFromSignedUrl } from '@/utils/signUrl'
 import { useDownloadFile } from '@/hooks/useDownload'
+import { selectTaskDetails, setOpenImage } from '@/redux/features/taskDetailsSlice'
+import store from '@/redux/store'
+import { useSelector } from 'react-redux'
 
-interface ImagePreviewModalProps {
-  openImage: string | null
-  setOpenImage: Dispatch<SetStateAction<string | null>>
-}
-
-export const ImagePreviewModal = ({ openImage, setOpenImage }: ImagePreviewModalProps) => {
+export const ImagePreviewModal = () => {
+  const { openImage } = useSelector(selectTaskDetails)
   const docs = [{ uri: openImage || '' }]
   const { handleDownload, isDownloading } = useDownloadFile()
 
-  const handleClose = () => setOpenImage(null)
+  const handleClose = () => store.dispatch(setOpenImage(null))
   const handleBackdropClick = (e: React.MouseEvent<unknown, MouseEvent>) => {
     // 'image-renderer' is the id of transparent backdrop in DocViewer
     if ((e.target as HTMLDivElement | HTMLImageElement).id === 'image-renderer') {
