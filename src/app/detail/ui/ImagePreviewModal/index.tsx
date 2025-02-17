@@ -6,6 +6,7 @@ import '@cyntler/react-doc-viewer/dist/index.css'
 import { ImagePreviewHeader } from '@/app/detail/ui/ImagePreviewModal/ImagePreviewHeader'
 import { StyledImagePreviewModal, StyledImagePreviewWrapper } from '@/app/detail/ui/styledComponent'
 import { getFileNameFromSignedUrl } from '@/utils/signUrl'
+import { useDownloadFile } from '@/hooks/useDownload'
 
 interface ImagePreviewModalProps {
   openImage: string | null
@@ -14,6 +15,7 @@ interface ImagePreviewModalProps {
 
 export const ImagePreviewModal = ({ openImage, setOpenImage }: ImagePreviewModalProps) => {
   const docs = [{ uri: openImage || '' }]
+  const { handleDownload, isDownloading } = useDownloadFile()
 
   const handleClose = () => setOpenImage(null)
   const handleBackdropClick = (e: React.MouseEvent<unknown, MouseEvent>) => {
@@ -21,17 +23,6 @@ export const ImagePreviewModal = ({ openImage, setOpenImage }: ImagePreviewModal
     if ((e.target as HTMLDivElement | HTMLImageElement).id === 'image-renderer') {
       handleClose()
     }
-  }
-
-  const handleDownload = () => {
-    if (!openImage) return
-
-    const link = document.createElement('a')
-    link.href = openImage
-    link.download = getFileNameFromSignedUrl(openImage)
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
   }
 
   return (
@@ -49,7 +40,7 @@ export const ImagePreviewModal = ({ openImage, setOpenImage }: ImagePreviewModal
           config={{
             header: {
               // Currently not supporting previousDocument / nextDocument args (single image preview only)
-              overrideComponent: (state) => ImagePreviewHeader(state, { handleClose, handleDownload }),
+              overrideComponent: (state) => ImagePreviewHeader(state, { handleClose, handleDownload, isDownloading }),
             },
           }}
         />
