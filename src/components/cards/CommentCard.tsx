@@ -23,6 +23,8 @@ import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { setOpenImage } from '@/redux/features/taskDetailsSlice'
 import store from '@/redux/store'
 import { CreateComment, UpdateComment } from '@/types/dto/comment.dto'
+import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
+import { IAssigneeCombined } from '@/types/interfaces'
 import { getAssigneeName } from '@/utils/assignee'
 import { getMentionsList } from '@/utils/getMentionList'
 import { getTimeDifference } from '@/utils/getTimeDifference'
@@ -148,9 +150,7 @@ export const CommentCard = ({
     }
   }, [editedContent, isListOrMenuActive, isFocused, isMobile])
 
-  const commentUser = useMemo(() => {
-    return assignee.find((el) => el.id === comment?.initiator?.id)
-  }, [assignee, comment?.initiator?.id])
+  const commentUser = comment.initiator as unknown as IAssigneeCombined
 
   return (
     <CommentCardContainer
