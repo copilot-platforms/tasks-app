@@ -14,7 +14,6 @@ export const getSignedUrl = async (filePath: string) => {
 export const getFileNameFromSignedUrl = (url: string) => {
   // Aggressive regex that selects string from last '/'' to url param (starting with ?)
   const regex = /.*\/([^\/\?]+)(?:\?.*)?$/
-  console.log('url', url)
   const match = url.match(regex)
   return match ? match[1] : ''
 }
