@@ -17,15 +17,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           # Automatically checkout the same branch/tag from "Use workflow from" dropdown
           ref: ${{ github.ref_name }}
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - name: Setup Node.JS v20
+        uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: '20.x'
 
       # Dynamically set TRIGGER_SECRET_KEY from the correct secrets based on whether 'prod' or 'staging' was chosen.
       - name: Configure environment variables
@@ -38,6 +38,10 @@ jobs:
 
           # TRIGGER_ACCESS_TOKEN (same for both)
           echo "TRIGGER_ACCESS_TOKEN=${{ secrets.TRIGGER_ACCESS_TOKEN }}" >> $GITHUB_ENV
+          echo "TRIGGER_PROJECT=proj_gaxcpkutbhhxzjvnevvi" >> $GITHUB_ENV
+
+      - name: Install build dependencies
+        run: yarn add "@trigger.dev/build@3.3.13" "@trigger.dev/sdk@3.3.13"
 
       - name: Run deploy command
-        run: npx trigger.dev@latest deploy -e ${{ github.event.inputs.environment }}
+        run: npx trigger.dev@3.3.13 deploy -e ${{ github.event.inputs.environment }}

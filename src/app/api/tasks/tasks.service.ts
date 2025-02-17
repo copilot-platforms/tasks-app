@@ -1,4 +1,6 @@
 import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
+import { deleteTaskNotifications, sendTaskCreateNotifications, sendTaskUpdateNotifications } from '@/jobs/notifications'
+import { sendClientUpdateTaskNotifications } from '@/jobs/notifications/send-client-task-update-notifications'
 import { ClientResponse, CompanyResponse, InternalUsers } from '@/types/common'
 import { CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { CopilotAPI } from '@/utils/CopilotAPI'
@@ -179,8 +181,9 @@ export class TasksService extends BaseService {
       }
     }
 
-    const taskNotificationsSevice = new TaskNotificationsService(this.user)
-    await taskNotificationsSevice.sendTaskCreateNotifications(newTask)
+    // Send task created notifications to users
+    await sendTaskCreateNotifications.trigger({ user: this.user, task: newTask })
+
     return newTask
   }
 
@@ -269,8 +272,7 @@ export class TasksService extends BaseService {
       await activityLogger.logTaskUpdated(prevTask)
     }
 
-    const taskNotificationsSevice = new TaskNotificationsService(this.user)
-    await taskNotificationsSevice.sendTaskUpdateNotifications(prevTask, updatedTask)
+    await sendTaskUpdateNotifications.trigger({ prevTask, updatedTask, user: this.user })
 
     return updatedTask
   }
@@ -288,8 +290,7 @@ export class TasksService extends BaseService {
 
     if (!task) throw new APIError(httpStatus.NOT_FOUND, 'The requested task to delete was not found')
 
-    const taskNotificationsSevice = new TaskNotificationsService(this.user)
-    await taskNotificationsSevice.removeDeletedTaskNotifications(task)
+    await deleteTaskNotifications.trigger({ user: this.user, task })
 
     //delete the associated label
     const labelMappingService = new LabelMappingService(this.user)
@@ -443,8 +444,7 @@ export class TasksService extends BaseService {
       await activityLogger.logTaskUpdated(prevTask)
     }
 
-    const taskNotificationsSevice = new TaskNotificationsService(this.user)
-    await taskNotificationsSevice.sendClientUpdateTaskNotifications(prevTask, updatedTask, updatedWorkflowState)
+    await sendClientUpdateTaskNotifications.trigger({ user: this.user, prevTask, updatedTask, updatedWorkflowState })
     return updatedTask
   }
 }

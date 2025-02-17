@@ -35,6 +35,7 @@ export class NotificationService extends BaseService {
         // If any of the given action is not present in details obj, that type of notification is not sent
         deliveryTargets: { inProduct, email },
       }
+      console.info('NotificationService#create | Creating single notification:', notificationDetails)
 
       const notification = await copilot.createNotification(notificationDetails)
       // NOTE: There are cases where task.assigneeType does not account for IU notification!
@@ -94,6 +95,8 @@ export class NotificationService extends BaseService {
             recipientId,
             deliveryTargets: { inProduct, email },
           }
+          console.info('NotificationService#bulkCreate | Creating single notification:', notificationDetails)
+
           notifications.push(await copilot.createNotification(notificationDetails))
         } catch (err: unknown) {
           console.error(`Failed to send notifications to ${recipientId}:`, err)
@@ -137,7 +140,11 @@ export class NotificationService extends BaseService {
     }
     console.info(`Deleting all notifications triggerd by task ${taskId}`)
     await Promise.all(markAsReadPromises)
-    await this.db.internalUserNotification.deleteMany({ where: { taskId } })
+    // Hard delete this since we are not marking these as read, but deleting them
+    await this.db.$executeRaw`
+      DELETE FROM "InternalUserNotifications"
+      WHERE "taskId" = ${taskId}::uuid
+    `
   }
 
   /**
