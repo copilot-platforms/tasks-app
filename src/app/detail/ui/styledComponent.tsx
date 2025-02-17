@@ -136,16 +136,20 @@ export const StyledImageTopBar = styled(Box)(() => ({
   width: '100%',
   justifyContent: 'space-between',
   padding: '16px 20px',
-  alignContent: 'center',
+  alignItems: 'center',
   lineHeight: '24px',
   fontWeight: 500,
   '.close-icon-container': {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: '5px',
+    padding: '7px', // 5 + 2
+    height: '30px',
     backgroundColor: '#0f0f0f',
     borderRadius: '4px',
+    ':hover': {
+      backgroundColor: 'rgb(75, 75, 75)',
+    },
   },
   '.title-container': {
     display: 'flex',
@@ -153,9 +157,10 @@ export const StyledImageTopBar = styled(Box)(() => ({
     alignItems: 'center',
   },
   '.download-btn': {
-    padding: '5px',
+    padding: '7px', // 5 + 2
     backgroundColor: 'white',
     borderRadius: '4px',
+    ':hover': { backgroundColor: 'rgb(248, 249, 250)' },
   },
 }))
 
