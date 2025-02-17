@@ -15,8 +15,9 @@ import { useWindowWidth } from '@/hooks/useWindowWidth'
 import { EditIcon, TrashIcon } from '@/icons'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
-import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 import { CreateComment, UpdateComment } from '@/types/dto/comment.dto'
+import { selectTaskDetails, setOpenImage } from '@/redux/features/taskDetailsSlice'
+import store from '@/redux/store'
 import { getAssigneeName } from '@/utils/assignee'
 import { getMentionsList } from '@/utils/getMentionList'
 import { getTimeDifference } from '@/utils/getTimeDifference'
@@ -66,6 +67,9 @@ export const CommentCard = ({
   const isMobile = windowWidth < 600 && windowWidth !== 0
 
   const [editedContent, setEditedContent] = useState('')
+  const handleImagePreview = (e: React.MouseEvent<unknown>) => {
+    store.dispatch(setOpenImage((e.target as HTMLImageElement).src))
+  }
 
   const handleReplySubmission = () => {
     const replyPayload: CreateComment = {
@@ -196,6 +200,7 @@ export const CommentCard = ({
             flexDirection: 'column',
           }}
           endButtons={<EditCommentButtons cancelEdit={cancelEdit} handleEdit={handleEdit} isReadOnly={isReadOnly} />}
+          handleImageClick={handleImagePreview}
         />
 
         {Array.isArray((comment as LogResponse).details?.replies) &&
