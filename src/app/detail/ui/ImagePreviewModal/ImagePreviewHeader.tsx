@@ -9,10 +9,11 @@ type DocViewerHeader = (
   state: Parameters<IHeaderOverride>[0],
   actions: {
     handleClose: () => unknown
+    handleDownload: () => unknown
   },
 ) => ReturnType<IHeaderOverride>
 
-export const ImagePreviewHeader: DocViewerHeader = (state, { handleClose }) => {
+export const ImagePreviewHeader: DocViewerHeader = (state, { handleClose, handleDownload }) => {
   let fileName = getFileNameFromSignedUrl(state.currentDocument?.uri || '')
   if (fileName.length > 37) {
     // Prefixed with uuid & underscore
@@ -27,7 +28,7 @@ export const ImagePreviewHeader: DocViewerHeader = (state, { handleClose }) => {
         <ImagePreviewIconPNG />
         {fileName}
       </Box>
-      <Box className="download-btn">
+      <Box className="download-btn" onClick={handleDownload}>
         <DownloadIconBlack />
       </Box>
     </StyledImageTopBar>
