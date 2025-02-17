@@ -114,7 +114,7 @@ export const ActivityLog = ({ log }: Prop) => {
     [ActivityType.COMMENT_ADDED]: () => null,
   }
 
-  const activityUser = assignee.find((el) => el.id === log?.initiator?.id)
+  const activityUser = log.initiator as unknown as IAssigneeCombined
 
   return (
     <Stack direction="row" columnGap={4} position="relative">
@@ -125,7 +125,7 @@ export const ActivityLog = ({ log }: Prop) => {
           width="24px"
           height="24px"
           fontSize="13px"
-          currentAssignee={log?.initiator as unknown as IAssigneeCombined}
+          currentAssignee={activityUser}
           sx={{
             border: (theme) => `1.1px solid ${theme.color.gray[200]}`,
           }}
