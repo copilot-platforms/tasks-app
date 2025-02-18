@@ -155,6 +155,7 @@ export const CommentCard = ({
                         icon={<EditIcon />}
                         contentColor={(theme) => theme.color.text.text}
                         width="175px"
+                        height="33px"
                       />
 
                       <ListBtn
@@ -165,6 +166,7 @@ export const CommentCard = ({
                         icon={<TrashIcon />}
                         contentColor={(theme) => theme.color.error}
                         width="175px"
+                        height="33px"
                       />
                     </>
                   }
