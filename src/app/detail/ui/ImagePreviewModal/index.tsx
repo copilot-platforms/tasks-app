@@ -7,7 +7,9 @@ import { StyledImagePreviewModal, StyledImagePreviewWrapper } from '@/app/detail
 import { useDownloadFile } from '@/hooks/useDownload'
 import { selectTaskDetails, setOpenImage } from '@/redux/features/taskDetailsSlice'
 import store from '@/redux/store'
+import { Box } from '@mui/material'
 import { useSelector } from 'react-redux'
+import { ImageRenderer } from './ImageRenderer'
 
 export const ImagePreviewModal = () => {
   const { openImage } = useSelector(selectTaskDetails)
@@ -16,8 +18,7 @@ export const ImagePreviewModal = () => {
 
   const handleClose = () => store.dispatch(setOpenImage(null))
   const handleBackdropClick = (e: React.MouseEvent<unknown, MouseEvent>) => {
-    // 'image-renderer' is the id of transparent backdrop in DocViewer
-    if ((e.target as HTMLDivElement | HTMLImageElement).id === 'image-renderer') {
+    if ((e.target as HTMLDivElement | HTMLImageElement).id === 'custom-image-renderer') {
       handleClose()
     }
   }
@@ -33,7 +34,7 @@ export const ImagePreviewModal = () => {
       <StyledImagePreviewWrapper onClick={handleBackdropClick}>
         <DocViewer
           documents={docs}
-          pluginRenderers={DocViewerRenderers}
+          pluginRenderers={[ImageRenderer]}
           config={{
             header: {
               // Currently not supporting previousDocument / nextDocument args (single image preview only)
