@@ -135,7 +135,7 @@ export const CommentCard = ({
               </StyledTypography>
             </Stack>
 
-            {(isHovered || isMobile) && (
+            {(isHovered || isMobile) && canEdit && (
               <Stack direction="row" columnGap={2} sx={{ height: '10px' }} alignItems="center">
                 <MenuBox
                   menuContent={
@@ -152,17 +152,16 @@ export const CommentCard = ({
                         contentColor={(theme) => theme.color.text.text}
                         width="175px"
                       />
-                      {canEdit && (
-                        <ListBtn
-                          content="Delete comment"
-                          handleClick={() => {
-                            setShowConfirmDeleteModal(true)
-                          }}
-                          icon={<TrashIcon />}
-                          contentColor={(theme) => theme.color.error}
-                          width="175px"
-                        />
-                      )}
+
+                      <ListBtn
+                        content="Delete comment"
+                        handleClick={() => {
+                          setShowConfirmDeleteModal(true)
+                        }}
+                        icon={<TrashIcon />}
+                        contentColor={(theme) => theme.color.error}
+                        width="175px"
+                      />
                     </>
                   }
                   isSecondary
