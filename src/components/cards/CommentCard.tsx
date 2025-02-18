@@ -65,11 +65,12 @@ export const CommentCard = ({
 
   const windowWidth = useWindowWidth()
   const isMobile = windowWidth < 600 && windowWidth !== 0
-
   const handleImagePreview = (e: React.MouseEvent<unknown>) => {
     store.dispatch(setOpenImage((e.target as HTMLImageElement).src))
   }
-  const [editedContent, setEditedContent] = useState((comment.details as { content: string }).content)
+
+  const content = (comment.details as { content: string }).content || ''
+  const [editedContent, setEditedContent] = useState(content)
 
   const handleReplySubmission = () => {
     const replyPayload: CreateComment = {
@@ -101,11 +102,11 @@ export const CommentCard = ({
 
   const cancelEdit = () => {
     setIsReadOnly(true)
-    setEditedContent((comment.details as { content: string }).content)
+    setEditedContent(content)
   }
   const handleEdit = async () => {
     if (isTapwriteContentEmpty(editedContent)) {
-      setEditedContent((comment.details as { content: string }).content)
+      setEditedContent(content)
       setIsReadOnly(true)
       return
     }
