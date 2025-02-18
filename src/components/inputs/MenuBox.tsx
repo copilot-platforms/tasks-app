@@ -77,6 +77,7 @@ export const MenuBox = ({
               boxShadow: '0px 6px 20px 0px rgba(0, 0, 0, 0.12)',
               borderRadius: '4px',
             }}
+            p="2px 0px"
           >
             {menuContent}
           </Box>
