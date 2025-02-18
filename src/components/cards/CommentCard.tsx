@@ -66,10 +66,10 @@ export const CommentCard = ({
   const windowWidth = useWindowWidth()
   const isMobile = windowWidth < 600 && windowWidth !== 0
 
-  const [editedContent, setEditedContent] = useState('')
   const handleImagePreview = (e: React.MouseEvent<unknown>) => {
     store.dispatch(setOpenImage((e.target as HTMLImageElement).src))
   }
+  const [editedContent, setEditedContent] = useState((comment.details as { content: string }).content)
 
   const handleReplySubmission = () => {
     const replyPayload: CreateComment = {
@@ -101,19 +101,22 @@ export const CommentCard = ({
 
   const cancelEdit = () => {
     setIsReadOnly(true)
+    setEditedContent((comment.details as { content: string }).content)
   }
   const handleEdit = async () => {
-    if (!isTapwriteContentEmpty(editedContent)) {
-      const commentId = z.string().parse(comment.details.id)
-      const updateCommentPayload: UpdateComment = {
-        content: editedContent,
-        // mentions : add mentions in the future
-      }
-      token && (await updateComment(token, commentId, updateCommentPayload))
+    if (isTapwriteContentEmpty(editedContent)) {
+      setEditedContent((comment.details as { content: string }).content)
+      setIsReadOnly(true)
+      return
     }
+    const commentId = z.string().parse(comment.details.id)
+    const updateCommentPayload: UpdateComment = {
+      content: editedContent,
+      // mentions : add mentions in the future
+    }
+    token && (await updateComment(token, commentId, updateCommentPayload))
     setIsReadOnly(true)
   }
-
   return (
     <CommentCardContainer
       onMouseEnter={() => setIsHovered(true)}
@@ -180,7 +183,7 @@ export const CommentCard = ({
         )}
 
         <Tapwrite
-          content={(comment.details as { content: string }).content}
+          content={editedContent}
           getContent={setEditedContent}
           readonly={isReadOnly}
           editorRef={editRef}
