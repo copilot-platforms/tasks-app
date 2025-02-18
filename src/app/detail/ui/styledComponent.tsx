@@ -185,3 +185,31 @@ export const StyledImagePreviewWrapper = styled(Box)(() => ({
     },
   },
 }))
+export const StyledImageRenderer = styled(Box)(() => ({
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'center',
+  alignItems: 'center',
+  height: '100%',
+}))
+
+export const StyledZoomControls = styled(Box)(() => ({
+  display: 'flex',
+  gap: '8px',
+  color: 'white',
+  position: 'fixed',
+  bottom: '24px',
+  padding: '8px',
+  background: 'rgba(0, 0, 0, 0.85)',
+  borderRadius: '4px',
+  '.control-btn': {
+    borderRadius: '4px',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: '5px',
+    ':hover': {
+      background: 'rgba(75, 75, 75)',
+    },
+  },
+}))
