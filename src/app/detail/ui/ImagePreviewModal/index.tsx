@@ -17,7 +17,7 @@ export const ImagePreviewModal = () => {
 
   const handleClose = () => store.dispatch(setOpenImage(null))
   const handleBackdropClick = (e: React.MouseEvent<unknown, MouseEvent>) => {
-    if ((e.target as HTMLDivElement | HTMLImageElement).className.includes('react-transform-wrapper')) {
+    if ((e.target as HTMLDivElement | HTMLImageElement)?.className?.includes('react-transform-wrapper')) {
       handleClose()
     }
   }
