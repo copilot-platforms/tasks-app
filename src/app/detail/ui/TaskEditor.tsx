@@ -180,7 +180,7 @@ export const TaskEditor = ({
             }
           }}
           readonly={!isEditable}
-          editorClass=""
+          editorClass="tapwrite-task-editor"
           placeholder="Add description..."
           uploadFn={uploadFn}
           handleImageClick={isEditable ? undefined : handleImagePreview}

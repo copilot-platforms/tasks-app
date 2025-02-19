@@ -12,8 +12,15 @@
   min-height: 2vh;
 }
 
-.tapwrite-task-editor {
-  min-height: 30vh;
+.tapwrite-comment img,
+.tapwrite-task-description img,
+.tapwrite-comment-input img,
+.tapwrite-reply-input img {
+  cursor: pointer;
+}
+
+.tapwrite-task-editor img {
+  cursor: pointer;
 }
 
 .tapwrite-task-description {
