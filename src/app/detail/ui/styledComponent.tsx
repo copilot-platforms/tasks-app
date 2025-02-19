@@ -191,6 +191,10 @@ export const StyledImageRenderer = styled(Box)(() => ({
   justifyContent: 'center',
   alignItems: 'center',
   height: '100%',
+  '.react-transform-wrapper': {
+    width: '100%',
+    height: '100%',
+  },
 }))
 
 export const StyledZoomControls = styled(Box)(() => ({
@@ -202,6 +206,7 @@ export const StyledZoomControls = styled(Box)(() => ({
   padding: '8px',
   background: 'rgba(0, 0, 0, 0.85)',
   borderRadius: '4px',
+  zIndex: '69',
   '.control-btn': {
     borderRadius: '4px',
     display: 'flex',
