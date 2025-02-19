@@ -147,10 +147,13 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
           }}
           parentContainerStyle={{
             width: '100%',
+            maxWidth: '100%',
             height: '100%',
-            maxWidth: '566px',
             display: 'flex',
             flexDirection: 'column',
+            overflow: 'hidden',
+            wordBreak: 'break-word',
+            whiteSpace: 'pre-wrap',
           }}
           uploadFn={uploadFn}
           deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', task_id, null)}

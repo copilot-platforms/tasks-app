@@ -124,6 +124,7 @@ export const CommentCard = ({
       onMouseLeave={() => setIsHovered(false)}
       sx={{
         backgroundColor: (theme) => (isReadOnly ? `${theme.color.gray[100]}` : `${theme.color.base.white}`),
+        overflow: 'hidden',
       }}
     >
       <Stack direction="column" rowGap={'2px'}>
@@ -199,10 +200,12 @@ export const CommentCard = ({
           hardbreak
           parentContainerStyle={{
             width: '100%',
-            height: '100%',
-            maxWidth: '600px',
+            maxWidth: '100%',
             display: 'flex',
             flexDirection: 'column',
+            overflow: 'hidden',
+            wordBreak: 'break-word',
+            whiteSpace: 'pre-wrap',
           }}
           endButtons={<EditCommentButtons cancelEdit={cancelEdit} handleEdit={handleEdit} isReadOnly={isReadOnly} />}
           handleImageClick={handleImagePreview}

@@ -20,6 +20,8 @@ export const EditCommentButtons = ({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
+          wordBreak: 'normal',
+          whiteSpace: 'normal',
         }}
       >
         <Divider orientation="vertical" sx={{ height: '28px' }} />
@@ -28,7 +30,12 @@ export const EditCommentButtons = ({
           outlined
           handleClick={cancelEdit}
           buttonContent={
-            <Typography variant="sm" sx={{ color: (theme) => theme.color.text.text }}>
+            <Typography
+              variant="sm"
+              sx={{
+                color: (theme) => theme.color.text.text,
+              }}
+            >
               Cancel
             </Typography>
           }
