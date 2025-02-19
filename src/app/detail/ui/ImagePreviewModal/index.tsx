@@ -13,7 +13,7 @@ import store from '@/redux/store'
 export const ImagePreviewModal = () => {
   const { openImage } = useSelector(selectTaskDetails)
   const docs = [{ uri: openImage || '' }]
-  const { handleDownload, isDownloading } = useDownloadFile()
+  const { handleDownload } = useDownloadFile()
 
   const handleClose = () => store.dispatch(setOpenImage(null))
   const handleBackdropClick = (e: React.MouseEvent<unknown, MouseEvent>) => {
@@ -37,7 +37,7 @@ export const ImagePreviewModal = () => {
           config={{
             header: {
               // Currently not supporting previousDocument / nextDocument args (single image preview only)
-              overrideComponent: (state) => ImagePreviewHeader(state, { handleClose, handleDownload, isDownloading }),
+              overrideComponent: (state) => ImagePreviewHeader(state, { handleClose, handleDownload }),
             },
           }}
         />
