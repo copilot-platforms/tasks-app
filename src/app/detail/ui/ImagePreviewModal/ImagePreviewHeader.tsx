@@ -35,7 +35,7 @@ export const ImagePreviewHeader: DocViewerHeader = (state, { handleClose }) => {
         <ImagePreviewIconPNG />
         {fileName}
       </Box>
-      <Box className="download-btn" onClick={() => downloadImage()}>
+      <Box className="download-btn" onClick={downloadImage}>
         <DownloadIconBlack />
       </Box>
     </StyledImageTopBar>
