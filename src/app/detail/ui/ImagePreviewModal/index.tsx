@@ -1,15 +1,14 @@
-import DocViewer, { DocViewerRenderers } from '@cyntler/react-doc-viewer'
+import DocViewer from '@cyntler/react-doc-viewer'
+import { useSelector } from 'react-redux'
 
 import '@cyntler/react-doc-viewer/dist/index.css'
 
 import { ImagePreviewHeader } from '@/app/detail/ui/ImagePreviewModal/ImagePreviewHeader'
+import { ImageRenderer } from '@/app/detail/ui/ImagePreviewModal/ImageRenderer'
 import { StyledImagePreviewModal, StyledImagePreviewWrapper } from '@/app/detail/ui/styledComponent'
 import { useDownloadFile } from '@/hooks/useDownload'
 import { selectTaskDetails, setOpenImage } from '@/redux/features/taskDetailsSlice'
 import store from '@/redux/store'
-import { Box } from '@mui/material'
-import { useSelector } from 'react-redux'
-import { ImageRenderer } from './ImageRenderer'
 
 export const ImagePreviewModal = () => {
   const { openImage } = useSelector(selectTaskDetails)
@@ -18,7 +17,7 @@ export const ImagePreviewModal = () => {
 
   const handleClose = () => store.dispatch(setOpenImage(null))
   const handleBackdropClick = (e: React.MouseEvent<unknown, MouseEvent>) => {
-    if ((e.target as HTMLDivElement | HTMLImageElement).id === 'custom-image-renderer') {
+    if ((e.target as HTMLDivElement | HTMLImageElement).className.includes('react-transform-wrapper')) {
       handleClose()
     }
   }
