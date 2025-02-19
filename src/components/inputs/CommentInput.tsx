@@ -31,6 +31,8 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
   const currentUserId = tokenPayload?.internalUserId ?? tokenPayload?.clientId
   const currentUserDetails = assignee.find((el) => el.id === currentUserId)
 
+  const [isFocused, setIsFocused] = useState(false)
+
   const handleSubmit = () => {
     let content = detail
     const END_P = '<p></p>'
@@ -47,13 +49,15 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
       }
       createComment(commentPayload)
       setDetail('') // Clear the input after creating comment
-    } else {
-      console.info('Comment cannot be empty.')
     }
   }
   // useEffect to handle keydown event for Enter key
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (!isFocused) {
+        return
+      }
       if (event.key === 'Enter' && !event.shiftKey && !isListOrMenuActive) {
         event.preventDefault() // Prevent new line in the editor
         handleSubmit()
@@ -73,7 +77,7 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
     return () => {
       window.removeEventListener('keydown', handleKeyDown)
     }
-  }, [detail, isListOrMenuActive]) // Depend on detail to ensure the latest state is captured
+  }, [detail, isListOrMenuActive, isFocused]) // Depend on detail to ensure the latest state is captured
 
   const uploadFn = token
     ? async (file: File) => {
@@ -133,6 +137,8 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
+        onBlur={() => setIsFocused(false)}
+        onFocus={() => setIsFocused(true)}
       >
         <Tapwrite
           content={detail}
