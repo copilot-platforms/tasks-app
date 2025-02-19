@@ -1,3 +1,5 @@
+'use client'
+
 import { DocRenderer } from '@cyntler/react-doc-viewer'
 import { Box } from '@mui/material'
 import { TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch'
@@ -28,12 +30,14 @@ export const ImageRenderer: DocRenderer = ({ mainState: { currentDocument } }) =
 
   return (
     <StyledImageRenderer id="custom-image-renderer">
-      <TransformWrapper initialScale={1} centerOnInit={true} limitToBounds={false}>
+      <TransformWrapper initialScale={1} centerOnInit={true}>
         {({ zoomIn, zoomOut, resetTransform }) => (
           <>
             {/* Pass the functions as props to Controls */}
             <Controls zoomIn={zoomIn} zoomOut={zoomOut} resetTransform={resetTransform} />
             <TransformComponent>
+              {/* Use img tag so as not to size-optimize zoomable image */}
+              {/* eslint-disable-next-line */}
               <img id="image-renderer" src={currentDocument.fileData as string} alt="Image preview" />
             </TransformComponent>
           </>
