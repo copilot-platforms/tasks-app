@@ -2,6 +2,7 @@
 
 import { DocRenderer } from '@cyntler/react-doc-viewer'
 import { Box } from '@mui/material'
+import { useState } from 'react'
 import { TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch'
 
 import { StyledImageRenderer, StyledZoomControls } from '@/app/detail/ui/styledComponent'
@@ -24,6 +25,8 @@ const Controls = ({ zoomIn, zoomOut, resetTransform }: any) => {
 }
 
 export const ImageRenderer: DocRenderer = ({ mainState: { currentDocument } }) => {
+  const [imgLoaded, setImgLoaded] = useState(false)
+
   if (!currentDocument) {
     return <></>
   }
@@ -33,12 +36,21 @@ export const ImageRenderer: DocRenderer = ({ mainState: { currentDocument } }) =
       <TransformWrapper initialScale={1} centerOnInit={true}>
         {({ zoomIn, zoomOut, resetTransform }) => (
           <>
-            {/* Pass the functions as props to Controls */}
             <Controls zoomIn={zoomIn} zoomOut={zoomOut} resetTransform={resetTransform} />
             <TransformComponent>
               {/* Use img tag so as not to size-optimize zoomable image */}
               {/* eslint-disable-next-line */}
-              <img id="image-renderer" src={currentDocument.fileData as string} alt="Image preview" />
+              <img
+                id="image-renderer"
+                src={currentDocument.fileData as string}
+                alt="Image preview"
+                onLoad={() => setImgLoaded(true)}
+                style={{
+                  opacity: imgLoaded ? 1 : 0,
+                  // This transition is not just for show, the image flickers for a split second and this is to hide it
+                  transition: 'opacity 0.5s ease-in-out',
+                }}
+              />
             </TransformComponent>
           </>
         )}
@@ -59,7 +71,5 @@ ImageRenderer.fileTypes = [
   'image/webp',
   'bmp',
   'image/bmp',
-  'svg',
-  'image/svg+xml',
 ]
 ImageRenderer.weight = 1
