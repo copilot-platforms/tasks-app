@@ -1,8 +1,8 @@
-import { Box, Button } from '@mui/material'
+import { IHeaderOverride } from '@cyntler/react-doc-viewer'
+import { Box } from '@mui/material'
 
 import { StyledImageTopBar } from '@/app/detail/ui/styledComponent'
 import { DownloadIconBlack, ImagePreviewIconPNG, ImagePreviewModalCloseIcon } from '@/icons'
-import { IHeaderOverride } from '@cyntler/react-doc-viewer'
 import { getFileNameFromSignedUrl } from '@/utils/signUrl'
 
 type DocViewerHeader = (
@@ -10,11 +10,10 @@ type DocViewerHeader = (
   opts: {
     handleClose: () => unknown
     handleDownload: (src: string, fileName: string) => unknown
-    isDownloading: boolean
   },
 ) => ReturnType<IHeaderOverride>
 
-export const ImagePreviewHeader: DocViewerHeader = (state, { handleClose, handleDownload, isDownloading }) => {
+export const ImagePreviewHeader: DocViewerHeader = (state, { handleClose, handleDownload }) => {
   const imageUrl = state.currentDocument?.uri
   if (!imageUrl) return <></>
 
