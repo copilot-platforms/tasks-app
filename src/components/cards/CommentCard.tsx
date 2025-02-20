@@ -207,7 +207,7 @@ export const CommentCard = ({
             whiteSpace: 'pre-wrap',
           }}
           endButtons={<EditCommentButtons cancelEdit={cancelEdit} handleEdit={handleEdit} isReadOnly={isReadOnly} />}
-          handleImageClick={handleImagePreview}
+          handleImageDoubleClick={handleImagePreview}
         />
 
         {Array.isArray((comment as LogResponse).details?.replies) &&
