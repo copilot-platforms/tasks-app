@@ -1,23 +1,28 @@
 'use client'
 
+import { Avatar, Box, InputAdornment, Stack, styled, Typography } from '@mui/material'
+import { useEffect, useRef, useState } from 'react'
+import { useSelector } from 'react-redux'
+import { Tapwrite } from 'tapwrite'
+import { z } from 'zod'
+
 import { updateComment } from '@/app/detail/[task_id]/[user_type]/actions'
 import { DotSeparator } from '@/app/detail/ui/DotSeparator'
 import { BoldTypography, CommentCardContainer, StyledModal, StyledTypography } from '@/app/detail/ui/styledComponent'
 import AttachmentLayout from '@/components/AttachmentLayout'
 import { ListBtn } from '@/components/buttons/ListBtn'
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
-import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
 import { EditCommentButtons } from '@/components/buttonsGroup/EditCommentButtons'
 import { MenuBox } from '@/components/inputs/MenuBox'
 import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
 import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
 import { useWindowWidth } from '@/hooks/useWindowWidth'
-import { EditIcon, TrashIcon } from '@/icons'
+import { PencilIcon, TrashIcon } from '@/icons'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
-import { CreateComment, UpdateComment } from '@/types/dto/comment.dto'
-import { selectTaskDetails, setOpenImage } from '@/redux/features/taskDetailsSlice'
+import { setOpenImage } from '@/redux/features/taskDetailsSlice'
 import store from '@/redux/store'
+import { CreateComment, UpdateComment } from '@/types/dto/comment.dto'
 import { getAssigneeName } from '@/utils/assignee'
 import { getMentionsList } from '@/utils/getMentionList'
 import { getTimeDifference } from '@/utils/getTimeDifference'
@@ -25,11 +30,6 @@ import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inli
 import { isTapwriteContentEmpty } from '@/utils/isTapwriteContentEmpty'
 import { commentAddedResponseSchema } from '@api/activity-logs/schemas/CommentAddedSchema'
 import { LogResponse } from '@api/activity-logs/schemas/LogResponseSchema'
-import { Avatar, Box, Divider, InputAdornment, Stack, styled, Typography } from '@mui/material'
-import { useEffect, useRef, useState } from 'react'
-import { useSelector } from 'react-redux'
-import { Tapwrite } from 'tapwrite'
-import { z } from 'zod'
 
 const CustomDivider = styled(Box)(({ theme }) => ({
   height: '1px',
@@ -60,7 +60,6 @@ export const CommentCard = ({
   const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState(false)
   const { tokenPayload } = useSelector(selectAuthDetails)
   const canEdit = tokenPayload?.internalUserId == comment?.initiator?.id
-  const { assigneeSuggestions } = useSelector(selectTaskDetails)
   const { assignee, activeTask, token } = useSelector(selectTaskBoard)
 
   const windowWidth = useWindowWidth()
@@ -157,7 +156,7 @@ export const CommentCard = ({
                             editRef.current.focus()
                           }
                         }}
-                        icon={<EditIcon />}
+                        icon={<PencilIcon />}
                         contentColor={(theme) => theme.color.text.text}
                         width="175px"
                         height="33px"
