@@ -5,6 +5,8 @@ import { StyledImageTopBar } from '@/app/detail/ui/styledComponent'
 import { useDownloadFile } from '@/hooks/useDownload'
 import { DownloadIconBlack, ImagePreviewIconPNG, ImagePreviewModalCloseIcon } from '@/icons'
 import { getFileNameFromSignedUrl } from '@/utils/signUrl'
+import { useWindowWidth } from '@/hooks/useWindowWidth'
+import { truncateText } from '@/utils/truncateText'
 
 type DocViewerHeader = (
   state: Parameters<IHeaderOverride>[0],
@@ -15,6 +17,7 @@ type DocViewerHeader = (
 
 export const ImagePreviewHeader: DocViewerHeader = (state, { handleClose }) => {
   const { handleDownload } = useDownloadFile()
+  const width = useWindowWidth()
   const imageUrl = state.currentDocument?.uri
 
   if (!imageUrl) return <></>
@@ -33,7 +36,7 @@ export const ImagePreviewHeader: DocViewerHeader = (state, { handleClose }) => {
       </Box>
       <Box className="title-container">
         <ImagePreviewIconPNG />
-        {fileName}
+        {width < 600 ? truncateText(fileName, 24) : fileName}
       </Box>
       <Box className="download-btn" onClick={downloadImage}>
         <DownloadIconBlack />
