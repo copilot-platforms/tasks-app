@@ -183,8 +183,7 @@ export const TaskEditor = ({
           editorClass="tapwrite-task-editor"
           placeholder="Add description..."
           uploadFn={uploadFn}
-          handleImageClick={isEditable ? undefined : handleImagePreview}
-          handleImageDoubleClick={isEditable ? handleImagePreview : undefined}
+          handleImageDoubleClick={handleImagePreview}
           deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', task_id, null)}
           attachmentLayout={AttachmentLayout}
           addAttachmentButton
