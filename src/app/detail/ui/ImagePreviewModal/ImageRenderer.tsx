@@ -48,7 +48,7 @@ export const ImageRenderer: DocRenderer = ({ mainState: { currentDocument } }) =
                 style={{
                   opacity: imgLoaded ? 1 : 0,
                   // This transition is not just for show, the image flickers for a split second and this is to hide it
-                  transition: 'opacity 0.35s ease-in-out',
+                  transition: 'opacity 0.1s ease-in-out',
                 }}
               />
             </TransformComponent>
