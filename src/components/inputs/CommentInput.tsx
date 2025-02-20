@@ -4,6 +4,7 @@ import { CommentCardContainer } from '@/app/detail/ui/styledComponent'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import AttachmentLayout from '@/components/AttachmentLayout'
 import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
+import { useWindowWidth } from '@/hooks/useWindowWidth'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
@@ -32,6 +33,10 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
   const currentUserDetails = assignee.find((el) => el.id === currentUserId)
 
   const [isFocused, setIsFocused] = useState(false)
+  const windowWidth = useWindowWidth()
+  const isMobile = () => {
+    return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || windowWidth < 600
+  }
 
   const handleSubmit = () => {
     let content = detail
@@ -55,7 +60,7 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (!isFocused) {
+      if (!isFocused || isMobile()) {
         return
       }
       if (event.key === 'Enter' && !event.shiftKey && !isListOrMenuActive) {
@@ -77,7 +82,7 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
     return () => {
       window.removeEventListener('keydown', handleKeyDown)
     }
-  }, [detail, isListOrMenuActive, isFocused]) // Depend on detail to ensure the latest state is captured
+  }, [detail, isListOrMenuActive, isFocused, isMobile]) // Depend on detail to ensure the latest state is captured
 
   const uploadFn = token
     ? async (file: File) => {
