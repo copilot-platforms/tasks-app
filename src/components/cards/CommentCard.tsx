@@ -61,7 +61,6 @@ export const CommentCard = ({
   const { tokenPayload } = useSelector(selectAuthDetails)
   const canEdit = tokenPayload?.internalUserId == comment?.initiator?.id || tokenPayload?.clientId == comment?.initiator?.id
   const canDelete = tokenPayload?.internalUserId == comment?.initiator?.id
-
   const { assignee, activeTask, token } = useSelector(selectTaskBoard)
 
   const [isFocused, setIsFocused] = useState(false)
