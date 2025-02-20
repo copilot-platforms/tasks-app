@@ -59,7 +59,9 @@ export const CommentCard = ({
 
   const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState(false)
   const { tokenPayload } = useSelector(selectAuthDetails)
-  const canEdit = tokenPayload?.internalUserId == comment?.initiator?.id
+  const canEdit = tokenPayload?.internalUserId == comment?.initiator?.id || tokenPayload?.clientId == comment?.initiator?.id
+  const canDelete = tokenPayload?.internalUserId == comment?.initiator?.id
+
   const { assignee, activeTask, token } = useSelector(selectTaskBoard)
 
   const [isFocused, setIsFocused] = useState(false)
@@ -190,17 +192,18 @@ export const CommentCard = ({
                         width="175px"
                         height="33px"
                       />
-
-                      <ListBtn
-                        content="Delete comment"
-                        handleClick={() => {
-                          setShowConfirmDeleteModal(true)
-                        }}
-                        icon={<TrashIcon />}
-                        contentColor={(theme) => theme.color.error}
-                        width="175px"
-                        height="33px"
-                      />
+                      {canDelete && (
+                        <ListBtn
+                          content="Delete comment"
+                          handleClick={() => {
+                            setShowConfirmDeleteModal(true)
+                          }}
+                          icon={<TrashIcon />}
+                          contentColor={(theme) => theme.color.error}
+                          width="175px"
+                          height="33px"
+                        />
+                      )}
                     </>
                   }
                   isSecondary
