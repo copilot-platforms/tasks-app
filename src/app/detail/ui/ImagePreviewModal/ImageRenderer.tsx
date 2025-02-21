@@ -7,19 +7,26 @@ import { TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch'
 
 import { StyledImageRenderer, StyledZoomControls } from '@/app/detail/ui/styledComponent'
 import { ZoomIcon, ZoomInIcon, ZoomOutIcon } from '@/icons'
+import { Tooltip } from '@/components/atoms/Tooltip'
 
 const Controls = ({ zoomIn, zoomOut, resetTransform }: any) => {
   return (
     <StyledZoomControls>
-      <Box className="control-btn" onClick={() => zoomOut()}>
-        <ZoomOutIcon />
-      </Box>
-      <Box className="control-btn" onClick={() => resetTransform()}>
-        <ZoomIcon />
-      </Box>
-      <Box className="control-btn" onClick={() => zoomIn()}>
-        <ZoomInIcon />
-      </Box>
+      <Tooltip title="Zoom out">
+        <Box className="control-btn" onClick={() => zoomOut()}>
+          <ZoomOutIcon />
+        </Box>
+      </Tooltip>
+      <Tooltip title="Reset zoom">
+        <Box className="control-btn" onClick={() => resetTransform()}>
+          <ZoomIcon />
+        </Box>
+      </Tooltip>
+      <Tooltip title="Zoom in">
+        <Box className="control-btn" onClick={() => zoomIn()}>
+          <ZoomInIcon />
+        </Box>
+      </Tooltip>
     </StyledZoomControls>
   )
 }
