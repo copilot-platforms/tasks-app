@@ -2,7 +2,7 @@
 
 import { MoreBtn } from '@/components/buttons/MoreBtn'
 import { Box, ClickAwayListener, Popper } from '@mui/material'
-import { Dispatch, ReactNode, SetStateAction, useState } from 'react'
+import { Dispatch, ReactNode, SetStateAction, useEffect, useState } from 'react'
 
 export const MenuBox = ({
   menuContent,
@@ -15,6 +15,7 @@ export const MenuBox = ({
   height,
   width,
   customIcon,
+  getMenuOpen,
 }: {
   menuContent: ReactNode
   className?: string
@@ -26,6 +27,7 @@ export const MenuBox = ({
   height?: string
   width?: string
   customIcon?: ReactNode
+  getMenuOpen?: (open: boolean) => void
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
@@ -37,6 +39,12 @@ export const MenuBox = ({
   const open = Boolean(anchorEl)
 
   const id = open ? 'menu-box-popper' : undefined
+
+  useEffect(() => {
+    if (getMenuOpen) {
+      getMenuOpen(open)
+    }
+  }, [open])
 
   return (
     <ClickAwayListener

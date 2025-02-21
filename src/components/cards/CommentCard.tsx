@@ -62,6 +62,7 @@ export const CommentCard = ({
   const canEdit = tokenPayload?.internalUserId == comment?.initiator?.id || tokenPayload?.clientId == comment?.initiator?.id
   const canDelete = tokenPayload?.internalUserId == comment?.initiator?.id
   const { assignee, activeTask, token } = useSelector(selectTaskBoard)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   const [isFocused, setIsFocused] = useState(false)
 
@@ -173,9 +174,12 @@ export const CommentCard = ({
               </StyledTypography>
             </Stack>
 
-            {(isHovered || isMobile()) && canEdit && (
+            {(isHovered || isMobile() || isMenuOpen) && canEdit && (
               <Stack direction="row" columnGap={2} sx={{ height: '10px' }} alignItems="center">
                 <MenuBox
+                  getMenuOpen={(open) => {
+                    setIsMenuOpen(open)
+                  }}
                   menuContent={
                     <>
                       <ListBtn
