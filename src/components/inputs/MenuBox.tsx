@@ -79,11 +79,13 @@ export const MenuBox = ({
               },
             },
           ]}
+          sx={(theme) => ({ border: `1px solid ${theme.color.gray[150]}`, borderRadius: '4px', backgroundColor: 'white' })}
         >
           <Box
             sx={{
               boxShadow: '0px 6px 20px 0px rgba(0, 0, 0, 0.12)',
               borderRadius: '4px',
+              backgroundColor: 'transparent',
             }}
             p="2px 0px"
           >
