@@ -2,10 +2,11 @@ import { IHeaderOverride } from '@cyntler/react-doc-viewer'
 import { Box } from '@mui/material'
 
 import { StyledImageTopBar } from '@/app/detail/ui/styledComponent'
+import { Tooltip } from '@/components/atoms/Tooltip'
 import { useDownloadFile } from '@/hooks/useDownload'
+import { useWindowWidth } from '@/hooks/useWindowWidth'
 import { DownloadIconBlack, ImagePreviewIconPNG, ImagePreviewModalCloseIcon } from '@/icons'
 import { getFileNameFromSignedUrl } from '@/utils/signUrl'
-import { useWindowWidth } from '@/hooks/useWindowWidth'
 import { truncateText } from '@/utils/truncateText'
 
 type DocViewerHeader = (
@@ -31,16 +32,20 @@ export const ImagePreviewHeader: DocViewerHeader = (state, { handleClose }) => {
 
   return (
     <StyledImageTopBar>
-      <Box className="close-icon-container" onClick={handleClose}>
-        <ImagePreviewModalCloseIcon />
-      </Box>
+      <Tooltip title="Close">
+        <Box className="close-icon-container" onClick={handleClose}>
+          <ImagePreviewModalCloseIcon />
+        </Box>
+      </Tooltip>
       <Box className="title-container">
         <ImagePreviewIconPNG />
         {width < 600 ? truncateText(fileName, 24) : fileName}
       </Box>
-      <Box className="download-btn" onClick={downloadImage}>
-        <DownloadIconBlack />
-      </Box>
+      <Tooltip title="Download">
+        <Box className="download-btn" onClick={downloadImage}>
+          <DownloadIconBlack />
+        </Box>
+      </Tooltip>
     </StyledImageTopBar>
   )
 }
