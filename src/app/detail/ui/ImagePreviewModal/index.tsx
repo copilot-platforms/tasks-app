@@ -1,4 +1,5 @@
 import DocViewer from '@cyntler/react-doc-viewer'
+import { Box, CircularProgress } from '@mui/material'
 import { useSelector } from 'react-redux'
 
 import '@cyntler/react-doc-viewer/dist/index.css'
@@ -6,7 +7,7 @@ import '@cyntler/react-doc-viewer/dist/index.css'
 import { ImagePreviewHeader } from '@/app/detail/ui/ImagePreviewModal/ImagePreviewHeader'
 import { ImageRenderer } from '@/app/detail/ui/ImagePreviewModal/ImageRenderer'
 import { StyledImagePreviewModal, StyledImagePreviewWrapper } from '@/app/detail/ui/styledComponent'
-import { useDownloadFile } from '@/hooks/useDownload'
+import { MiniLoader } from '@/components/atoms/MiniLoader'
 import { selectTaskDetails, setOpenImage } from '@/redux/features/taskDetailsSlice'
 import store from '@/redux/store'
 
@@ -37,6 +38,21 @@ export const ImagePreviewModal = () => {
             header: {
               // Currently not supporting previousDocument / nextDocument args (single image preview only)
               overrideComponent: (state) => ImagePreviewHeader(state, { handleClose }),
+            },
+            loadingRenderer: {
+              overrideComponent: () => (
+                <Box
+                  sx={{
+                    width: '100%',
+                    height: '100%',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}
+                >
+                  <CircularProgress sx={{ color: 'white' }} size={48} />
+                </Box>
+              ),
             },
           }}
         />
