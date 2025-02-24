@@ -1,7 +1,7 @@
 'use client'
 
 import { MoreBtn } from '@/components/buttons/MoreBtn'
-import { Box, ClickAwayListener, Popper } from '@mui/material'
+import { Box, ClickAwayListener, Grow, Popper } from '@mui/material'
 import { Dispatch, ReactNode, SetStateAction, useEffect, useState } from 'react'
 
 export const MenuBox = ({
@@ -33,7 +33,7 @@ export const MenuBox = ({
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(anchorEl ? null : event.currentTarget)
-    setIsMenuOpen && setIsMenuOpen(Boolean(anchorEl ? null : event.currentTarget))
+    setIsMenuOpen?.(Boolean(anchorEl ? null : event.currentTarget))
   }
 
   const open = Boolean(anchorEl)
@@ -41,16 +41,14 @@ export const MenuBox = ({
   const id = open ? 'menu-box-popper' : undefined
 
   useEffect(() => {
-    if (getMenuOpen) {
-      getMenuOpen(open)
-    }
-  }, [open])
+    getMenuOpen?.(open)
+  }, [open, getMenuOpen])
 
   return (
     <ClickAwayListener
       onClickAway={() => {
         setAnchorEl(null)
-        setIsMenuOpen && setIsMenuOpen(false)
+        setIsMenuOpen?.(false)
       }}
     >
       <Box className="menubox">
@@ -71,6 +69,7 @@ export const MenuBox = ({
           open={open}
           anchorEl={anchorEl}
           placement="bottom-end"
+          transition
           modifiers={[
             {
               name: 'offset',
@@ -79,18 +78,22 @@ export const MenuBox = ({
               },
             },
           ]}
-          sx={(theme) => ({ border: `1px solid ${theme.color.gray[150]}`, borderRadius: '4px', backgroundColor: 'white' })}
         >
-          <Box
-            sx={{
-              boxShadow: '0px 6px 20px 0px rgba(0, 0, 0, 0.12)',
-              borderRadius: '4px',
-              backgroundColor: 'transparent',
-            }}
-            p="2px 0px"
-          >
-            {menuContent}
-          </Box>
+          {({ TransitionProps }) => (
+            <Grow {...TransitionProps} style={{ transformOrigin: 'top right' }}>
+              <Box
+                sx={(theme) => ({
+                  border: `1px solid ${theme.color.gray[150]}`,
+                  borderRadius: '4px',
+                  backgroundColor: 'white',
+                  boxShadow: '0px 6px 20px 0px rgba(0, 0, 0, 0.12)',
+                })}
+                p="2px 0px"
+              >
+                {menuContent}
+              </Box>
+            </Grow>
+          )}
         </Popper>
       </Box>
     </ClickAwayListener>
