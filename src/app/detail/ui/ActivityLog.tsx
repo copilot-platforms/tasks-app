@@ -148,8 +148,8 @@ export const ActivityLog = ({ log }: Prop) => {
             <Typography variant="md" sx={{ fontStyle: 'italic' }}>
               Deleted User
             </Typography>
-          )}
-          {activityDescription[log.type as ActivityType](...logEntities)}
+          )}{' '}
+          {activityDescription[log.type as ActivityType](...logEntities)}{' '}
           <StyledTypography> {getTimeDifference(log.createdAt)}</StyledTypography>
         </TypographyContainer>
       </Stack>
