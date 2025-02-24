@@ -104,7 +104,7 @@ class UsersService extends BaseService {
     }
   }
 
-  async getClient(limit: number = this.DEFAULT_USERS_LIMIT) {
+  async getUsersForClients(limit: number = this.DEFAULT_USERS_LIMIT) {
     const user = this.user
     //Apply custom authorization here. Policy service is not used because this api is for client's task-assignee match function to get clients from same organizations only. Only clients can use this.
     if (user.role !== UserRole.Client) {
@@ -113,7 +113,7 @@ class UsersService extends BaseService {
     const [clients, companies, internalUsers] = await Promise.all([
       this.copilot.getClients({ limit }),
       this.copilot.getCompanies({ limit }),
-      this.copilot.getInternalUsers(),
+      this.copilot.getInternalUsers({ limit }),
     ])
 
     // Filter out companies where isPlaceholder is true if companies.data is not null

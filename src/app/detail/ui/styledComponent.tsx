@@ -1,12 +1,9 @@
 'use client'
 
-import { ListBtn } from '@/components/buttons/ListBtn'
 import { MenuBox } from '@/components/inputs/MenuBox'
-import { EmojiIcon, ReplyIcon, TemplateIcon } from '@/icons'
+import { EmojiIcon, ReplyIcon } from '@/icons'
 import { KeyboardArrowRight } from '@mui/icons-material'
 import { Box, Modal, Stack, Typography, styled } from '@mui/material'
-import Link from 'next/link'
-import { Tapwrite } from 'tapwrite'
 
 export const StyledTypography = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[500],
@@ -15,6 +12,7 @@ export const StyledTypography = styled(Typography)(({ theme }) => ({
 }))
 
 export const BoldTypography = styled(Typography)(({ theme }) => ({
+  display: 'inline',
   color: theme.color.gray[600],
   fontSize: theme.typography.md.fontSize,
   lineHeight: '22px',
@@ -26,9 +24,10 @@ export const AvatarTypography = styled(Typography)(({ theme }) => ({
 }))
 
 export const TypographyContainer = styled(Stack)(({ theme }) => ({
-  display: 'flex',
-  flexWrap: 'wrap',
-  alignItems: 'center',
+  display: 'block',
+  p: {
+    display: 'inline',
+  },
 }))
 
 export const StyledKeyboardIcon = styled(KeyboardArrowRight)(({ theme }) => ({
@@ -118,5 +117,118 @@ export const StyledMenuBox = styled(MenuBox)(({ theme }) => ({
 export const StyledModal = styled(Modal)(({ theme }) => ({
   '& > .MuiBackdrop-root': {
     backgroundColor: theme.color.modal.backdrop,
+  },
+}))
+
+export const StyledImagePreviewModal = styled(Modal)(() => ({
+  display: 'flex',
+  flexDirection: 'column',
+  backgroundColor: 'rgba(0, 0, 0, 0.75)',
+  width: '100vw',
+  height: '100vh',
+}))
+
+export const StyledImageTopBar = styled(Box)(() => ({
+  backgroundColor: 'rgba(0,0,0,0.60)',
+  color: 'white',
+  display: 'flex',
+  width: '100%',
+  justifyContent: 'space-between',
+  padding: '16px 20px',
+  alignItems: 'center',
+  lineHeight: '24px',
+  fontWeight: 500,
+  gap: '12px',
+  '.close-icon-container': {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '7px', // 5 + 2
+    height: '30px',
+    backgroundColor: '#0f0f0f',
+    borderRadius: '4px',
+    ':hover': {
+      backgroundColor: 'rgb(75, 75, 75)',
+    },
+  },
+  '.title-container': {
+    display: 'flex',
+    gap: '6px',
+    alignItems: 'center',
+  },
+  '.download-btn': {
+    padding: '7px', // 5 + 2
+    backgroundColor: 'white',
+    borderRadius: '4px',
+    ':hover': {
+      backgroundColor: 'rgb(248, 249, 250)',
+    },
+  },
+  '@media (max-width: 600px)': {
+    justifyContent: 'flex-start',
+    '.title-container': {
+      marginLeft: '0px',
+      gap: '4px',
+      flexGrow: 1,
+      fontSize: '14px',
+    },
+    '.download-btn': {
+      marginLeft: 'auto',
+    },
+  },
+}))
+
+export const StyledImagePreviewWrapper = styled(Box)(() => ({
+  height: '100%',
+  userSelect: 'none',
+  '#react-doc-viewer': {
+    background: 'transparent',
+    height: '100%',
+    '#header-bar': {
+      display: 'none',
+    },
+    '#proxy-renderer': {
+      height: '100%',
+      '#image-renderer': {
+        background: 'rgba(0,0,0,0)',
+      },
+    },
+    img: {
+      maxHeight: '80vh',
+      maxWidth: '90vw',
+    },
+  },
+}))
+export const StyledImageRenderer = styled(Box)(() => ({
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'center',
+  alignItems: 'center',
+  height: '100%',
+  '.react-transform-wrapper': {
+    width: '100%',
+    height: '100%',
+  },
+}))
+
+export const StyledZoomControls = styled(Box)(() => ({
+  display: 'flex',
+  gap: '8px',
+  color: 'white',
+  position: 'fixed',
+  bottom: '24px',
+  padding: '8px',
+  background: 'rgba(0, 0, 0, 0.85)',
+  borderRadius: '4px',
+  zIndex: '69',
+  '.control-btn': {
+    borderRadius: '4px',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: '5px',
+    ':hover': {
+      background: 'rgba(75, 75, 75)',
+    },
   },
 }))

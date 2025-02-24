@@ -1,6 +1,8 @@
+import { saveAs } from 'file-saver'
+import { useState } from 'react'
+
 import { getFilePathFromUrl } from '@/utils/signedUrlReplacer'
 import { SupabaseActions } from '@/utils/SupabaseActions'
-import { useState } from 'react'
 
 export const useDownloadFile = () => {
   const [isDownloading, setIsDownloading] = useState(false)
@@ -14,16 +16,8 @@ export const useDownloadFile = () => {
       const blobData = await supabaseActions.downloadAttachment(filePath)
 
       if (blobData) {
-        const url = window.URL.createObjectURL(new Blob([blobData]))
-
-        const link = document.createElement('a')
-        link.style.display = 'none'
-        link.href = url
-        link.download = fileName
-
-        link.click()
-
-        window.URL.revokeObjectURL(url)
+        const blob = new Blob([blobData])
+        saveAs(blob, fileName)
       }
     } catch (error) {
       console.error('Download failed:', error)

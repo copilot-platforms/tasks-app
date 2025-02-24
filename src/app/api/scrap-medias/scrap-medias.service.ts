@@ -8,7 +8,7 @@ import { getFilePathFromUrl } from '@/utils/signedUrlReplacer'
 export class ScrapMediaService extends BaseService {
   async createScrapImage(data: ScrapMediaRequest) {
     const policyGate = new PoliciesService(this.user)
-    policyGate.authorize(UserAction.Update, Resource.Tasks)
+    policyGate.authorize(UserAction.Delete, Resource.Attachments)
     const existing = await this.db.scrapMedia.findFirst({
       where: {
         filePath: data.filePath,

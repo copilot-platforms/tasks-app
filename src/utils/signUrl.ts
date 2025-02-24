@@ -10,3 +10,10 @@ export const getSignedUrl = async (filePath: string) => {
 
   return url
 } // used to replace urls for images in task body
+
+export const getFileNameFromSignedUrl = (url: string) => {
+  // Aggressive regex that selects string from last '/'' to url param (starting with ?)
+  const regex = /.*\/([^\/\?]+)(?:\?.*)?$/
+  const match = url.match(regex)
+  return match ? match[1] : ''
+}

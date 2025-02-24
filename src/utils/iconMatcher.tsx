@@ -27,6 +27,22 @@ import {
   DoneIconMedium,
   InreviewIconMedium,
   DefaultFileIcon,
+  PngIconSmall,
+  PdfIconSmall,
+  SvgIconSmall,
+  CsvIconSmall,
+  ZipIconSmall,
+  DocIconSmall,
+  AviIconSmall,
+  JpgIconSmall,
+  MovIconSmall,
+  Mp4IconSmall,
+  XlxIconSmall,
+  IsoIconSmall,
+  TxtIconSmall,
+  GifIconSmall,
+  Mp3IconSmall,
+  DefaultFileIconSmall,
 } from '@/icons'
 import { WorkflowState } from '@/types/dto/workflowStates.dto'
 import { Sizes } from '@/types/interfaces'
@@ -74,4 +90,23 @@ export const attachmentIcons: { [key: string]: ReactNode } = {
   'image/gif': <GifIcon />,
   'audio/mpeg': <Mp3Icon />,
   default: <DefaultFileIcon />,
+}
+
+export const attachmentIconsSmall: { [key: string]: ReactNode } = {
+  'image/png': <PngIconSmall />,
+  'application/pdf': <PdfIconSmall />,
+  'image/svg+xml': <SvgIconSmall />,
+  'text/csv': <CsvIconSmall />,
+  'application/zip': <ZipIconSmall />,
+  'application/msword': <DocIconSmall />,
+  'video/vnd.avi': <AviIconSmall />,
+  'image/jpeg': <JpgIconSmall />,
+  'video/quicktime': <MovIconSmall />,
+  'video/mp4': <Mp4IconSmall />,
+  'application/vnd.ms-excel': <XlxIconSmall />,
+  'application/vnd.efi.iso': <IsoIconSmall />,
+  'text/plain': <TxtIconSmall />,
+  'image/gif': <GifIconSmall />,
+  'audio/mpeg': <Mp3IconSmall />,
+  default: <DefaultFileIconSmall />,
 }

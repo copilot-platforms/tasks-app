@@ -77,11 +77,13 @@ export const theme = createTheme({
       borderDisabled: '#EFF1F4',
       border2: '#EDEDF0',
       border3: '#DADBDC',
+      focusBorder: '#053299',
     },
     background: {
       bgCard: '#DFE1E4',
       bgCallout: '#F8F9FB',
       bgHover: '#F1F3F8',
+      bgCommentDrag: '#E6F0FF',
     },
     error: '#CC0000',
     muiError: '#D32F2F',

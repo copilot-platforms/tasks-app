@@ -86,7 +86,7 @@ export const Sidebar = ({
       updateAssigneeValue(currentAssigneeId ? assignee.find((el) => el.id === currentAssigneeId) : NoAssignee)
       setDueDate(currentTask?.dueDate)
     }
-  }, [activeTask, workflowStates])
+  }, [activeTask, workflowStates, assignee])
 
   const windowWidth = useWindowWidth()
   const isMobile = windowWidth < 600 && windowWidth !== 0

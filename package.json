@@ -36,6 +36,7 @@
     "delete-duplicate-notifications": "tsx ./src/cmd/delete-duplicate-notifications"
   },
   "dependencies": {
+    "@cyntler/react-doc-viewer": "^1.17.0",
     "@emotion/react": "^11.11.3",
     "@emotion/styled": "^11.11.0",
     "@mui/icons-material": "^5.15.15",
@@ -52,6 +53,7 @@
     "bottleneck": "^2.19.5",
     "copilot-node-sdk": "^3.5.0",
     "dayjs": "^1.11.10",
+    "file-saver": "^2.0.5",
     "http-status": "^1.7.4",
     "immutability-helper": "^3.1.1",
     "jsdom": "^25.0.1",
@@ -65,10 +67,11 @@
     "react-dnd-touch-backend": "^16.0.1",
     "react-dom": "^18",
     "react-redux": "^9.1.0",
+    "react-zoom-pan-pinch": "^3.7.0",
     "server-only": "^0.0.1",
     "supabase": "^2.1.1",
     "swr": "^2.2.5",
-    "tapwrite": "1.1.82",
+    "tapwrite": "1.1.89",
     "zod": "^3.23.8"
   },
   "devDependencies": {
@@ -76,6 +79,7 @@
     "@ngrok/ngrok": "^1.4.1",
     "@svgr/webpack": "^8.1.0",
     "@trigger.dev/build": "3.3.13",
+    "@types/file-saver": "^2.0.7",
     "@types/jest": "^29.5.12",
     "@types/jsdom": "^21.1.7",
     "@types/node": "^20",
