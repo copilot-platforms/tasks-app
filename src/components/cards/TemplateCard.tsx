@@ -1,12 +1,11 @@
 'use client'
 
-import { Box, Stack, Typography } from '@mui/material'
-import { ListBtn } from '../buttons/ListBtn'
-import { EditIcon, EllipsisIcon, TemplateIcon, TrashIcon } from '@/icons'
-import { MenuBox } from '../inputs/MenuBox'
-import { useState } from 'react'
 import { StyledMenuBox } from '@/app/detail/ui/styledComponent'
+import { EditIcon, EllipsisIcon, TemplateIcon, TrashIcon } from '@/icons'
 import { truncateText } from '@/utils/truncateText'
+import { Box, Stack, Typography } from '@mui/material'
+import { useState } from 'react'
+import { ListBtn } from '../buttons/ListBtn'
 
 interface TemplateCardProps {
   title: string
