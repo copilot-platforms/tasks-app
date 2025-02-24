@@ -102,7 +102,7 @@ export const CommentCard = ({
   const uploadFn = token
     ? async (file: File) => {
         if (activeTask) {
-          const fileUrl = await uploadImageHandler(file, token ?? '', activeTask.workspaceId, task_id)
+          const fileUrl = await uploadImageHandler(file, token, activeTask.workspaceId, task_id)
           return fileUrl
         }
       }
@@ -234,7 +234,7 @@ export const CommentCard = ({
             readonly={isReadOnly}
             editorRef={editRef}
             editorClass={'tapwrite-comment'}
-            addAttachmentButton={true}
+            addAttachmentButton={!isReadOnly}
             uploadFn={uploadFn}
             deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', task_id, null)}
             maxUploadLimit={MAX_UPLOAD_LIMIT}
