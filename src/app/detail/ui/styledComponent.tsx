@@ -1,12 +1,9 @@
 'use client'
 
-import { ListBtn } from '@/components/buttons/ListBtn'
 import { MenuBox } from '@/components/inputs/MenuBox'
-import { EmojiIcon, ReplyIcon, TemplateIcon } from '@/icons'
+import { EmojiIcon, ReplyIcon } from '@/icons'
 import { KeyboardArrowRight } from '@mui/icons-material'
 import { Box, Modal, Stack, Typography, styled } from '@mui/material'
-import Link from 'next/link'
-import { Tapwrite } from 'tapwrite'
 
 export const StyledTypography = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[500],
@@ -15,6 +12,7 @@ export const StyledTypography = styled(Typography)(({ theme }) => ({
 }))
 
 export const BoldTypography = styled(Typography)(({ theme }) => ({
+  display: 'inline',
   color: theme.color.gray[600],
   fontSize: theme.typography.md.fontSize,
   lineHeight: '22px',
@@ -26,9 +24,10 @@ export const AvatarTypography = styled(Typography)(({ theme }) => ({
 }))
 
 export const TypographyContainer = styled(Stack)(({ theme }) => ({
-  display: 'flex',
-  flexWrap: 'wrap',
-  alignItems: 'center',
+  display: 'block',
+  p: {
+    display: 'inline',
+  },
 }))
 
 export const StyledKeyboardIcon = styled(KeyboardArrowRight)(({ theme }) => ({
