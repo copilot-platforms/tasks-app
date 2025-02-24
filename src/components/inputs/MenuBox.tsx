@@ -1,8 +1,9 @@
 'use client'
 
+import { Dispatch, ReactNode, SetStateAction, useEffect, useState } from 'react'
+
 import { MoreBtn } from '@/components/buttons/MoreBtn'
 import { Box, ClickAwayListener, Grow, Popper } from '@mui/material'
-import { Dispatch, ReactNode, SetStateAction, useEffect, useState } from 'react'
 
 export const MenuBox = ({
   menuContent,
