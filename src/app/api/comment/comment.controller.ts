@@ -4,6 +4,8 @@ import { CommentService } from '@api/comment/comment.service'
 import { CreateCommentSchema, UpdateCommentSchema } from '@/types/dto/comment.dto'
 import httpStatus from 'http-status'
 import { IdParams } from '@api/core/types/api'
+import { getSearchParams } from '@/utils/request'
+import { z } from 'zod'
 
 export const createComment = async (req: NextRequest) => {
   const user = await authenticate(req)
@@ -37,4 +39,16 @@ export const updateComment = async (req: NextRequest, { params: { id } }: IdPara
   const comment = await commentService.update(id, data)
 
   return NextResponse.json({ comment })
+}
+
+export const getFilteredComments = async (req: NextRequest) => {
+  const user = await authenticate(req)
+
+  const { parentId: rawParentId } = getSearchParams(req.nextUrl.searchParams, ['parentId'])
+  const parentId = z.string().uuid().parse(rawParentId)
+
+  const commentService = new CommentService(user)
+  const comments = await commentService.getComments({ parentId })
+
+  return NextResponse.json({ comments })
 }
