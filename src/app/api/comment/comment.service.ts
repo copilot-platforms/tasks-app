@@ -1,19 +1,17 @@
+import { ActivityType, CommentInitiator } from '@prisma/client'
+import httpStatus from 'http-status'
+import { z } from 'zod'
+
 import { sendCommentCreateNotifications } from '@/jobs/notifications'
 import { CreateComment, UpdateComment } from '@/types/dto/comment.dto'
-import { CopilotAPI } from '@/utils/CopilotAPI'
 import { CommentAddedSchema } from '@api/activity-logs/schemas/CommentAddedSchema'
 import { ActivityLogger } from '@api/activity-logs/services/activity-logger.service'
 import APIError from '@api/core/exceptions/api'
 import { BaseService } from '@api/core/services/base.service'
 import { PoliciesService } from '@api/core/services/policies.service'
 import { Resource } from '@api/core/types/api'
-import { NotificationTaskActions } from '@api/core/types/tasks'
 import { UserAction } from '@api/core/types/user'
-import { NotificationService } from '@api/notification/notification.service'
 import { TasksService } from '@api/tasks/tasks.service'
-import { ActivityType, Comment, Task } from '@prisma/client'
-import httpStatus from 'http-status'
-import { z } from 'zod'
 
 export class CommentService extends BaseService {
   async create(data: CreateComment) {
@@ -21,10 +19,12 @@ export class CommentService extends BaseService {
     policyGate.authorize(UserAction.Create, Resource.Comment)
 
     const initiatorId = z.string().parse(this.user.internalUserId || this.user.clientId)
+    const initiatorType = this.user.internalUserId ? CommentInitiator.internalUser : CommentInitiator.client
 
     const task = await this.db.task.findFirst({
       where: {
         id: data.taskId,
+        workspaceId: this.user.workspaceId,
       },
     })
     if (!task) throw new APIError(httpStatus.NOT_FOUND, `Could not find task with id ${data.taskId}`)
@@ -36,22 +36,24 @@ export class CommentService extends BaseService {
         parentId: data.parentId,
         workspaceId: this.user.workspaceId,
         initiatorId,
+        // This is safe to do, since if user doesn't have both iu ID / client ID, they will be filtered out way before
+        initiatorType,
       },
     })
 
     const activityLogger = new ActivityLogger({ taskId: data.taskId, user: this.user })
-    const logActivity = activityLogger.log(
+    await activityLogger.log(
       ActivityType.COMMENT_ADDED,
       CommentAddedSchema.parse({
         id: comment.id,
         content: comment.content,
         initiatorId,
+        initiatorType,
         parentId: comment.parentId,
       }),
     )
 
     await sendCommentCreateNotifications.trigger({ user: this.user, task: task, comment: comment })
-    await logActivity
     // if (data.mentions) {
     //   await notificationService.createBulkNotification(NotificationTaskActions.Mentioned, task, data.mentions, {
     //     commentId: comment.id,
@@ -98,6 +100,16 @@ export class CommentService extends BaseService {
           in: commentIds,
         },
       },
+    })
+  }
+
+  async getComments({ parentId }: { parentId: string }) {
+    return await this.db.comment.findMany({
+      where: {
+        parentId,
+        workspaceId: this.user.workspaceId,
+      },
+      orderBy: { createdAt: 'desc' },
     })
   }
 
