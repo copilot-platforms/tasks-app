@@ -75,11 +75,13 @@ export declare module '@mui/material/styles' {
         borderDisabled: string
         border2: string
         border3: string
+        focusBorder: string
       }
       background: {
         bgCard: string
         bgCallout: string
         bgHover: string
+        bgCommentDrag: string
       }
       error: string
       muiError: string
@@ -159,11 +161,13 @@ export declare module '@mui/material/styles' {
         borderDisabled: React.CSSProperties['color']
         border2: React.CSSProperties['color']
         border3: React.CSSProperties['color']
+        focusBorder: React.CSSProperties['color']
       }
       background: {
         bgCard: React.CSSProperties['color']
         bgCallout: React.CSSProperties['color']
         bgHover: React.CSSProperties['color']
+        bgCommentDrag: React.CSSProperties['color']
       }
       error: React.CSSProperties['color']
       muiError: React.CSSProperties['color']

@@ -1,8 +1,8 @@
 'use client'
 
-import { DownloadBtn, PdfIcon } from '@/icons'
-import { attachmentIcons } from '@/utils/iconMatcher'
-import { Box, Skeleton, Stack, Typography, SxProps, Theme } from '@mui/material'
+import { CrossIconSmall, DownloadBtn, PdfIcon } from '@/icons'
+import { attachmentIcons, attachmentIconsSmall } from '@/utils/iconMatcher'
+import { Box, Skeleton, Stack, Typography, SxProps, Theme, useMediaQuery } from '@mui/material'
 import React from 'react'
 import { IconBtn } from './buttons/IconBtn'
 import { useDownloadFile } from '@/hooks/useDownload'
@@ -14,27 +14,44 @@ interface AttachmentLayoutProps {
   fileSize: string
   fileType: string
   isUploading: boolean
+  onDelete: () => void
+  isEditable: boolean
+  isComment?: boolean
 }
 
-const AttachmentLayout: React.FC<AttachmentLayoutProps> = ({ selected, src, fileName, fileSize, fileType, isUploading }) => {
+const AttachmentLayout: React.FC<AttachmentLayoutProps> = ({
+  selected,
+  src,
+  fileName,
+  fileSize,
+  fileType,
+  isUploading,
+  onDelete,
+  isEditable,
+  isComment,
+}) => {
   const { handleDownload, isDownloading } = useDownloadFile()
-
+  const isXsScreen = useMediaQuery((theme: Theme) => `(max-width:${theme.breakpoints.values.sm}px)`)
   const onDownloadClick = () => {
     handleDownload(src, fileName)
   }
-
   const containerStyles: SxProps<Theme> = {
     maxWidth: '99%',
     borderRadius: '4px',
     margin: '8px auto !important',
-    padding: { sm: '4px 8px', md: '4px 12px 4px 8px' },
+    padding: { xs: '8px 6px 8px 8px', sm: '4px 8px', md: '4px 12px 4px 8px' },
     border: (theme) => `1px solid ${theme.color.gray[selected ? 600 : 150]}`,
     background: '#fff',
-    boxShadow: '0px 3px 4px 0px rgba(16, 17, 19, 0.06), 0px 4px 11px 0px rgba(20, 21, 24, 0.18)',
-
+    outline: 'none',
+    '&:focus': {
+      outline: 'none',
+    },
+    '&:focus-visible': {
+      border: (theme) => `1.5px solid ${theme.color.borders.focusBorder}`,
+    },
     '@media (max-width: 600px)': {
       '&:active': {
-        border: (theme) => `1px solid ${theme.color.gray[600]}`,
+        border: selected ? (theme) => `1px solid ${theme.color.gray[600]}` : 'none',
       },
     },
 
@@ -54,6 +71,11 @@ const AttachmentLayout: React.FC<AttachmentLayoutProps> = ({ selected, src, file
       sm: 0,
     },
     transition: 'opacity 0.2s ease',
+    padding: '4px',
+    ':hover': {
+      background: (theme) => theme.color.gray[100],
+      borderRadius: '2px',
+    },
   }
 
   const renderContent = () => {
@@ -73,12 +95,13 @@ const AttachmentLayout: React.FC<AttachmentLayoutProps> = ({ selected, src, file
         </Stack>
       )
     }
-
     return (
       <Stack justifyContent="space-between" direction="row" alignItems="center" sx={{ width: '100%' }}>
         <Stack direction="row" columnGap="5.5px" alignItems="center" sx={{ flex: 1, overflow: 'hidden', minWidth: 0 }}>
-          {attachmentIcons[fileType] || attachmentIcons['default']}
-          <Stack direction="column" sx={{ flex: 1, minWidth: 0 }}>
+          {isXsScreen
+            ? attachmentIconsSmall[fileType] || attachmentIconsSmall['default']
+            : attachmentIcons[fileType] || attachmentIcons['default']}
+          <Stack direction="column" sx={{ flex: 1, minWidth: 0, minHeight: '100%' }}>
             <Typography
               variant="bodySm"
               sx={{
@@ -92,37 +115,55 @@ const AttachmentLayout: React.FC<AttachmentLayoutProps> = ({ selected, src, file
             >
               {fileName}
             </Typography>
-            <Typography
-              variant="bodySm"
-              sx={{
-                color: (theme) => theme.color.gray[500],
-                fontSize: '12px',
-              }}
-            >
-              {Math.floor(parseFloat(fileSize) / 1024)} KB
-            </Typography>
+            {!isXsScreen && (
+              <Typography
+                variant="bodySm"
+                sx={{
+                  color: (theme) => theme.color.gray[500],
+                  fontSize: '12px',
+                }}
+              >
+                {Math.floor(parseFloat(fileSize) / 1024)} KB
+              </Typography>
+            )}
           </Stack>
         </Stack>
-        <Box
-          className="download-btn"
-          sx={{
-            ...downloadBtnStyles,
-            flexShrink: 0,
-            marginLeft: '8px',
-          }}
-        >
-          <IconBtn buttonBackground="#ffffff" handleClick={onDownloadClick} icon={<DownloadBtn />} />
-        </Box>
+        {isEditable && isComment ? (
+          <Box
+            className="download-btn"
+            sx={{
+              ...downloadBtnStyles,
+              flexShrink: 0,
+              marginLeft: '8px',
+            }}
+            onClick={onDelete}
+          >
+            <CrossIconSmall />
+          </Box>
+        ) : (
+          <Box
+            className="download-btn"
+            sx={{
+              ...downloadBtnStyles,
+              flexShrink: 0,
+              marginLeft: '8px',
+            }}
+            onClick={onDownloadClick}
+          >
+            <DownloadBtn />
+          </Box>
+        )}
       </Stack>
     )
   }
 
   return (
     <Box
+      tabIndex={0}
       sx={{
         ...containerStyles,
         '&:hover': {
-          border: (theme) => `1px solid ${theme.color.gray[selected ? 600 : 300]}`,
+          border: isXsScreen ? 'none' : (theme) => `1px solid ${theme.color.gray[selected ? 600 : 300]}`,
           '& .download-btn': {
             opacity: 1,
           },

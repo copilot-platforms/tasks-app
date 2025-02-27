@@ -16,6 +16,7 @@ import { TitleUpdatedSchema } from '@api/activity-logs/schemas/TitleUpdatedSchem
 import { WorkflowStateUpdatedSchema } from '@api/activity-logs/schemas/WorkflowStateUpdatedSchema'
 import { Stack, Typography } from '@mui/material'
 import { ActivityType } from '@prisma/client'
+import { useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 
 interface Prop {
@@ -25,41 +26,50 @@ interface Prop {
 export const ActivityLog = ({ log }: Prop) => {
   const { assignee, workflowStates } = useSelector(selectTaskBoard)
 
-  const getAssignedToName = (details: TaskAssignedResponse) => {
-    const assignedTo = assignee.find((el) => el.id === details.newValue)
-    const assignedFrom = assignee.find((el) => el.id === details.oldValue)
-    return [getAssigneeName(assignedFrom, ''), getAssigneeName(assignedTo, 'Deleted User')]
-  }
+  const getAssignedToName = useCallback(
+    (details: TaskAssignedResponse) => {
+      const assignedTo = assignee.find((el) => el.id === details.newValue)
+      const assignedFrom = assignee.find((el) => el.id === details.oldValue)
+      return [getAssigneeName(assignedFrom, ''), getAssigneeName(assignedTo, 'Deleted User')]
+    },
+    [assignee],
+  )
 
-  const getLogEntities = (type: ActivityType) => {
-    switch (type) {
-      case ActivityType.WORKFLOW_STATE_UPDATED:
-        const { oldValue, newValue } = WorkflowStateUpdatedSchema.parse(log.details)
-        const getWorkflowStateName = (id: string) => workflowStates.find((state) => state.id === id)?.name || 'Deleted'
-        return [getWorkflowStateName(oldValue), getWorkflowStateName(newValue)]
+  const getLogEntities = useCallback(
+    (type: ActivityType) => {
+      switch (type) {
+        case ActivityType.WORKFLOW_STATE_UPDATED:
+          const { oldValue, newValue } = WorkflowStateUpdatedSchema.parse(log.details)
+          const getWorkflowStateName = (id: string) => workflowStates.find((state) => state.id === id)?.name || 'Deleted'
+          return [getWorkflowStateName(oldValue), getWorkflowStateName(newValue)]
 
-      case ActivityType.TASK_ASSIGNED:
-        const taskAssignees = TaskAssignedResponseSchema.parse(log.details)
-        return getAssignedToName(taskAssignees)
+        case ActivityType.TASK_ASSIGNED:
+          const taskAssignees = TaskAssignedResponseSchema.parse(log.details)
+          return getAssignedToName(taskAssignees)
 
-      case ActivityType.TITLE_UPDATED:
-        const titles = TitleUpdatedSchema.parse(log.details)
-        return [titles.oldValue, titles.newValue]
+        case ActivityType.TITLE_UPDATED:
+          const titles = TitleUpdatedSchema.parse(log.details)
+          return [titles.oldValue, titles.newValue]
 
-      case ActivityType.ARCHIVE_STATE_UPDATED:
-        const archivedStates = ArchivedStateUpdatedSchema.parse(log.details)
-        return [archivedStates.newValue ? 'archived' : 'unarchived']
+        case ActivityType.ARCHIVE_STATE_UPDATED:
+          const archivedStates = ArchivedStateUpdatedSchema.parse(log.details)
+          return [archivedStates.newValue ? 'archived' : 'unarchived']
 
-      case ActivityType.DUE_DATE_CHANGED:
-        const dueDates = DueDateChangedSchema.parse(log.details)
-        return [dueDates.oldValue ?? '', dueDates.newValue ?? '']
+        case ActivityType.DUE_DATE_CHANGED:
+          const dueDates = DueDateChangedSchema.parse(log.details)
+          return [dueDates.oldValue ?? '', dueDates.newValue ?? '']
 
-      default:
-        return []
-    }
-  }
+        default:
+          return []
+      }
+    },
+    [assignee, workflowStates, getAssignedToName],
+  )
 
-  const logEntities = getLogEntities(log.type)
+  const logEntities = useMemo(() => {
+    return getLogEntities(log.type)
+  }, [log.type, assignee, workflowStates])
+
   const activityDescription: { [key in ActivityType]: (...args: string[]) => React.ReactNode } = {
     [ActivityType.TASK_CREATED]: () => (
       <>
@@ -114,7 +124,7 @@ export const ActivityLog = ({ log }: Prop) => {
     [ActivityType.COMMENT_ADDED]: () => null,
   }
 
-  const activityUser = assignee.find((el) => el.id === log?.initiator?.id)
+  const activityUser = log.initiator as unknown as IAssigneeCombined
 
   return (
     <Stack direction="row" columnGap={4} position="relative">
@@ -125,7 +135,7 @@ export const ActivityLog = ({ log }: Prop) => {
           width="24px"
           height="24px"
           fontSize="13px"
-          currentAssignee={log?.initiator as unknown as IAssigneeCombined}
+          currentAssignee={activityUser}
           sx={{
             border: (theme) => `1.1px solid ${theme.color.gray[200]}`,
           }}
@@ -138,8 +148,8 @@ export const ActivityLog = ({ log }: Prop) => {
             <Typography variant="md" sx={{ fontStyle: 'italic' }}>
               Deleted User
             </Typography>
-          )}
-          {activityDescription[log.type as ActivityType](...logEntities)}
+          )}{' '}
+          {activityDescription[log.type as ActivityType](...logEntities)}{' '}
           <StyledTypography> {getTimeDifference(log.createdAt)}</StyledTypography>
         </TypographyContainer>
       </Stack>

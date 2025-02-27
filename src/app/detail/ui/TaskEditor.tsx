@@ -1,23 +1,24 @@
 'use client'
 
-import { StyledTextField } from '@/components/inputs/TextField'
-import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
-import { useDebounce, useDebounceWithCancel } from '@/hooks/useDebounce'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
-import { selectTaskDetails, setShowConfirmDeleteModal } from '@/redux/features/taskDetailsSlice'
+import { selectTaskDetails, setOpenImage, setShowConfirmDeleteModal } from '@/redux/features/taskDetailsSlice'
 import store from '@/redux/store'
-import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
-import { TaskResponse } from '@/types/dto/tasks.dto'
-import { UserType } from '@/types/interfaces'
 import { Box } from '@mui/material'
-import { useCallback, useEffect, useState } from 'react'
+import { MouseEvent, useCallback, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
 
-import AttachmentLayout from '@/components/AttachmentLayout'
-import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
-import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
+import { ImagePreviewModal } from '@/app/detail/ui/ImagePreviewModal'
 import { StyledModal } from '@/app/detail/ui/styledComponent'
+import AttachmentLayout from '@/components/AttachmentLayout'
+import { StyledTextField } from '@/components/inputs/TextField'
+import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
+import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
+import { useDebounce, useDebounceWithCancel } from '@/hooks/useDebounce'
+import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
+import { TaskResponse } from '@/types/dto/tasks.dto'
+import { UserType } from '@/types/interfaces'
+import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
 
 interface Prop {
   task_id: string
@@ -46,10 +47,14 @@ export const TaskEditor = ({
 }: Prop) => {
   const [updateTitle, setUpdateTitle] = useState('')
   const [updateDetail, setUpdateDetail] = useState('')
-  const { showConfirmDeleteModal } = useSelector(selectTaskDetails)
+  const { showConfirmDeleteModal, openImage } = useSelector(selectTaskDetails)
   const { token, activeTask } = useSelector(selectTaskBoard)
   const [isUserTyping, setIsUserTyping] = useState(false)
   const [activeUploads, setActiveUploads] = useState(0)
+
+  const handleImagePreview = (e: MouseEvent<unknown>) => {
+    store.dispatch(setOpenImage((e.target as HTMLImageElement).src))
+  }
 
   // const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
   //   event.preventDefault()
@@ -175,9 +180,10 @@ export const TaskEditor = ({
             }
           }}
           readonly={!isEditable}
-          editorClass=""
+          editorClass="tapwrite-task-editor"
           placeholder="Add description..."
           uploadFn={uploadFn}
+          handleImageDoubleClick={handleImagePreview}
           deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', task_id, null)}
           attachmentLayout={AttachmentLayout}
           addAttachmentButton
@@ -227,6 +233,8 @@ export const TaskEditor = ({
           }}
         />
       </StyledModal>
+
+      <ImagePreviewModal />
     </>
   )
 }

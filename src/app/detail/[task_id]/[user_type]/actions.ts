@@ -3,7 +3,7 @@
 import { advancedFeatureFlag, apiUrl } from '@/config'
 import { ScrapMediaRequest } from '@/types/common'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
-import { CreateComment } from '@/types/dto/comment.dto'
+import { CreateComment, UpdateComment } from '@/types/dto/comment.dto'
 import { UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { revalidateTag } from 'next/cache'
 
@@ -98,6 +98,15 @@ export const postComment = async (token: string, payload: CreateComment) => {
   const data = await res.json()
   return data.comment
   // revalidateTag('getActivities')
+}
+
+export const updateComment = async (token: string, id: string, payload: UpdateComment) => {
+  const res = await fetch(`${apiUrl}/api/comment/${id}?token=${token}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  })
+  const data = await res.json()
+  return data.comment
 }
 
 export const deleteComment = async (token: string, id: string) => {
