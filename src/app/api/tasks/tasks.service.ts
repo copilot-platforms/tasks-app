@@ -368,7 +368,7 @@ export class TasksService extends BaseService {
 
   async setNewLastActivityLogUpdated(taskId: string) {
     await this.db.task.update({
-      where: { id: taskId },
+      where: { id: taskId, workflowStateId: this.user.workspaceId },
       data: { lastActivityLogUpdated: new Date() },
     })
   }
