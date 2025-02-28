@@ -1,6 +1,7 @@
 interface Sortable {
   dueDate?: string
   createdAt: Date
+  id: string
 }
 
 const getTimestamp = (date: string | Date) => new Date(date).getTime()
@@ -18,11 +19,21 @@ export const sortTaskByDescendingOrder = <T extends Sortable>(tasks: T[]): T[] =
         return getTimestamp(a.dueDate) - getTimestamp(b.dueDate)
       } else {
         // If due dates are the same use descending createdAt order
-        return getTimestamp(b.createdAt) - getTimestamp(a.createdAt)
+        if (getTimestamp(a.createdAt) !== getTimestamp(b.createdAt)) {
+          return getTimestamp(b.createdAt) - getTimestamp(a.createdAt)
+        } else {
+          // If createdAt times are also equal, sort by id alphabetically
+          return a.id.localeCompare(b.id)
+        }
       }
     } else {
       // Sort by createdAt in desc order
-      return getTimestamp(b.createdAt) - getTimestamp(a.createdAt)
+      if (getTimestamp(a.createdAt) !== getTimestamp(b.createdAt)) {
+        return getTimestamp(b.createdAt) - getTimestamp(a.createdAt)
+      } else {
+        // If createdAt times are equal, sort by id alphabetically
+        return a.id.localeCompare(b.id)
+      }
     }
   })
 }
