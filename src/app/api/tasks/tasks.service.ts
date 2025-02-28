@@ -367,10 +367,17 @@ export class TasksService extends BaseService {
   }
 
   async setNewLastActivityLogUpdated(taskId: string) {
-    await this.db.task.update({
-      where: { id: taskId, workflowStateId: this.user.workspaceId },
-      data: { lastActivityLogUpdated: new Date() },
-    })
+    // This shouldn't crash our app, just in case
+    try {
+      await this.db.task.update({
+        where: { id: taskId, workspaceId: this.user.workspaceId },
+        data: {
+          lastActivityLogUpdated: new Date(),
+        },
+      })
+    } catch (e) {
+      console.error('TaskService#setNewLastActivityLogUpdated::', e)
+    }
   }
 
   async getIncompleteTasksForCompany(assigneeId: string): Promise<(Task & { workflowState: WorkflowState })[]> {
