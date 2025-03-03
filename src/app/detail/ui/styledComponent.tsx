@@ -232,3 +232,11 @@ export const StyledZoomControls = styled(Box)(() => ({
     },
   },
 }))
+
+export const CustomDivider = styled(Box)(({ theme }) => ({
+  height: '1px',
+  width: 'calc(100% + 20px)',
+  backgroundColor: theme.color.borders.border,
+  marginLeft: '-10px',
+  marginRight: '-10px',
+}))
