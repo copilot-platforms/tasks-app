@@ -23,7 +23,14 @@ export class ActivityLogService extends BaseService {
     super(user)
   }
 
-  async get(taskId: string, opts?: { expandComments?: string[] }) {
+  async get(
+    taskId: string,
+    opts?: {
+      // Parent comment IDs in expandComments array are not limited to fetching just the latest 3 replies,
+      // instead the filter "expands" to fetch all replies in the same ordering
+      expandComments?: string[]
+    },
+  ) {
     const activityLogs = await this.db.$queryRaw`
         select "ActivityLogs".*
         from "ActivityLogs"
@@ -96,8 +103,11 @@ export class ActivityLogService extends BaseService {
         }
       }),
     )
-    const allReplies = await commentService.getReplies(commentIds, opts?.expandComments)
-    const replyCounts = await commentService.getReplyCounts(commentIds)
+
+    const [allReplies, replyCounts] = await Promise.all([
+      commentService.getReplies(commentIds, opts?.expandComments),
+      commentService.getReplyCounts(commentIds),
+    ])
 
     const logResponseData = filteredActivityLogs.map((activityLog) => {
       const initiator = copilotUsers.find((iu) => iu.id === activityLog.userId) || null
