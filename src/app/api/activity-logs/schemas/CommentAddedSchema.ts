@@ -28,3 +28,6 @@ export const commentAddedResponseSchema = z.object({
     }),
   ),
 })
+
+export type CommentAddedResponse = z.infer<typeof commentAddedResponseSchema>
+export type ReplyResponse = CommentAddedResponse['replies'][number]
