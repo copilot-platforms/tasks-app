@@ -129,7 +129,7 @@ export const ActivityWrapper = ({
           return await fetcher(cacheKey)
         },
         {
-          optimisticData: { data: optimisticData },
+          optimisticData: postCommentPayload.parentId ? undefined : { data: optimisticData },
           rollbackOnError: true,
           revalidate: true, // Make sure to revalidate after mutation
         },
