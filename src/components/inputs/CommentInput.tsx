@@ -3,6 +3,7 @@
 import { CommentCardContainer } from '@/app/detail/ui/styledComponent'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import AttachmentLayout from '@/components/AttachmentLayout'
+import { SubmitCommentButtons } from '@/components/buttonsGroup/SubmitCommentButtons'
 import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
 import { useWindowWidth } from '@/hooks/useWindowWidth'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
@@ -159,7 +160,6 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
           parentContainerStyle={{
             width: '100%',
             maxWidth: '100%',
-            height: '100%',
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
@@ -171,30 +171,7 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
           attachmentLayout={(props) => <AttachmentLayout {...props} isComment={true} />}
           addAttachmentButton
           maxUploadLimit={MAX_UPLOAD_LIMIT}
-          endButtons={
-            <Box
-              sx={{
-                alignSelf: 'center',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <IconButton
-                onClick={handleSubmit}
-                sx={{
-                  backgroundColor: '#000',
-                  borderRadius: '4px',
-                  padding: '5px',
-                  '&:hover': { bgcolor: '#000' },
-                  height: '24px',
-                  width: '24px',
-                }}
-              >
-                <ArrowUpward sx={{ color: '#ffffff', fontSize: '18px' }} />
-              </IconButton>
-            </Box>
-          }
+          endButtons={<SubmitCommentButtons handleSubmit={handleSubmit} />}
         />
       </CommentCardContainer>
     </Stack>
