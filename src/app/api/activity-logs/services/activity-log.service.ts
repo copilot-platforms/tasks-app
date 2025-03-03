@@ -97,6 +97,7 @@ export class ActivityLogService extends BaseService {
       }),
     )
     const allReplies = await commentService.getReplies(commentIds, opts?.expandComments)
+    const replyCounts = await commentService.getReplyCounts(commentIds)
 
     const logResponseData = filteredActivityLogs.map((activityLog) => {
       const initiator = copilotUsers.find((iu) => iu.id === activityLog.userId) || null
@@ -108,6 +109,7 @@ export class ActivityLogService extends BaseService {
           activityLog.details,
           processedComments,
           allReplies,
+          replyCounts,
           internalUsers,
           clientUsers,
           companies,
@@ -135,6 +137,7 @@ export class ActivityLogService extends BaseService {
     payload: DBActivityLogDetails,
     comments: Comment[],
     allReplies: Comment[],
+    replyCounts: Record<string, number>,
     internalUsers: InternalUsersResponse,
     clientUsers: ClientsResponse,
     companies: CompaniesResponse,
@@ -168,6 +171,7 @@ export class ActivityLogService extends BaseService {
           ...payload,
           content: comment.content,
           replies,
+          replyCount: replyCounts[comment.id] || 0,
           updatedAt: comment.updatedAt,
           createdAt: comment.createdAt,
         }

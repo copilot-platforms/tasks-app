@@ -114,6 +114,21 @@ export class CommentService extends BaseService {
     })
   }
 
+  async getReplyCounts(commentIds: string[]): Promise<Record<string, number>> {
+    const result = await this.db.comment.groupBy({
+      by: ['parentId'],
+      where: {
+        parentId: { in: commentIds },
+        workspaceId: this.user.workspaceId,
+        deletedAt: null,
+      },
+      _count: { id: true },
+    })
+    const counts: Record<string, number> = {}
+    result.forEach((row) => row.parentId && (counts[row.parentId] = row._count.id))
+    return counts
+  }
+
   async getReplies(commentIds: string[], expandComments: string[] = []) {
     let replies: Comment[] = []
 
@@ -143,7 +158,7 @@ export class CommentService extends BaseService {
           AND "deletedAt" IS NULL
       )
 
-      SELECT "id", "content", "initiatorId", "initiatorType", "parentId", "taskId", "workspaceId", "createdAt", "updatedAt", "deletedAt"
+      SELECT id, content, "initiatorId", "initiatorType", "parentId", "taskId", "workspaceId", "createdAt", "updatedAt", "deletedAt"
       FROM replies
       WHERE rank <= 3;
     `
