@@ -5,6 +5,7 @@ import { apps, default as open } from 'open'
 import { parse } from 'url'
 
 import dotenv from 'dotenv'
+import { DASHBOARD_DOMAIN } from '@/constants/domains'
 dotenv.config()
 
 const port = parseInt(process.env.PORT ?? '3000', 10)
@@ -29,7 +30,7 @@ const createNgrokTunnel = async (port: number): Promise<string> => {
 }
 
 const openDashboard = async (ngrokUrl: string) => {
-  const url = `https://dashboard.copilot.com/dev-mode?url=${encodeURIComponent(ngrokUrl)}`
+  const url = `${DASHBOARD_DOMAIN}/dev-mode?url=${encodeURIComponent(ngrokUrl)}`
   console.info(`> Opening browser at ${url}`)
 
   const browserApp = Array.isArray(apps.browser) ? apps.browser[0] : apps.browser

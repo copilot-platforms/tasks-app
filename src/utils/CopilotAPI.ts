@@ -35,6 +35,7 @@ import Bottleneck from 'bottleneck'
 import type { CopilotAPI as SDK } from 'copilot-node-sdk'
 import { copilotApi } from 'copilot-node-sdk'
 import { z } from 'zod'
+import { API_DOMAIN } from '@/constants/domains'
 
 export class CopilotAPI {
   copilot: SDK
@@ -47,7 +48,7 @@ export class CopilotAPI {
   }
 
   private async manualFetch(route: string, query?: Record<string, string>) {
-    const url = new URL(`https://api.copilot.com/v1/${route}`)
+    const url = new URL(`${API_DOMAIN}/v1/${route}`)
     if (query) {
       for (const key of Object.keys(query)) {
         url.searchParams.set(key, query[key])
