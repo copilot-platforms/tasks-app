@@ -1,9 +1,10 @@
-import { ActivityType, CommentInitiator } from '@prisma/client'
+import { ActivityType, Comment, CommentInitiator, Prisma } from '@prisma/client'
 import httpStatus from 'http-status'
 import { z } from 'zod'
 
 import { sendCommentCreateNotifications } from '@/jobs/notifications'
 import { CreateComment, UpdateComment } from '@/types/dto/comment.dto'
+import { getArrayDifference, getArrayIntersection } from '@/utils/array'
 import { CommentAddedSchema } from '@api/activity-logs/schemas/CommentAddedSchema'
 import { ActivityLogger } from '@api/activity-logs/services/activity-logger.service'
 import APIError from '@api/core/exceptions/api'
@@ -113,12 +114,42 @@ export class CommentService extends BaseService {
     })
   }
 
-  async getReplies(commentIds: string[]) {
-    return await this.db.comment.findMany({
-      where: {
-        parentId: { in: commentIds },
-      },
-      orderBy: { createdAt: 'asc' },
-    })
+  async getReplies(commentIds: string[], expandComments: string[] = []) {
+    let replies: Comment[] = []
+
+    // Exclude any expandComments that aren't in commentIds so user can't inject
+    // random ids to access comments outside of their scope
+    const validExpandComments = expandComments.length ? getArrayIntersection(commentIds, expandComments) : []
+    // Exclude any ids already in expandComments, since this will be used to limit to 3 replies per parent
+    commentIds = validExpandComments.length ? getArrayDifference(commentIds, validExpandComments) : commentIds
+
+    if (validExpandComments.length) {
+      const expandedReplies = await this.db.comment.findMany({
+        where: {
+          parentId: { in: expandComments },
+          workspaceId: this.user.workspaceId,
+        },
+        orderBy: { createdAt: 'desc' },
+      })
+      replies = [...replies, ...expandedReplies]
+    }
+
+    const limitedReplies = await this.db.$queryRaw<Comment[]>`
+      WITH replies AS (
+        SELECT *,
+          ROW_NUMBER() OVER (PARTITION BY "parentId" ORDER BY "createdAt" DESC) AS rank
+        FROM "Comments"
+        WHERE "parentId"::text IN (${Prisma.join(commentIds)})
+          AND "deletedAt" IS NULL
+      )
+
+      SELECT "id", "content", "initiatorId", "initiatorType", "parentId", "taskId", "workspaceId", "createdAt", "updatedAt", "deletedAt"
+      FROM replies
+      WHERE rank <= 3;
+    `
+    // IMPORTANT: If you change the schema of Comments table be sure to add them here too.
+    replies = [...replies, ...limitedReplies]
+
+    return replies
   }
 }
