@@ -1,6 +1,7 @@
 import { Clickable, Configurable, PrimaryCtaPayload } from '@/hooks/app-bridge/types'
 import { ensureHttps } from '@/utils/https'
 import { useEffect } from 'react'
+import { DASHBOARD_DOMAIN } from '@/constants/domains'
 
 export const usePrimaryCta = (primaryCta: Clickable | null, config?: Configurable) => {
   useEffect(() => {
@@ -13,7 +14,7 @@ export const usePrimaryCta = (primaryCta: Clickable | null, config?: Configurabl
           type: 'header.primaryCta',
         }
 
-    window.parent.postMessage(payload, 'https://dashboard.copilot.com')
+    window.parent.postMessage(payload, DASHBOARD_DOMAIN)
     if (config?.portalUrl) {
       window.parent.postMessage(payload, ensureHttps(config.portalUrl))
     }
@@ -33,7 +34,7 @@ export const usePrimaryCta = (primaryCta: Clickable | null, config?: Configurabl
 
   useEffect(() => {
     const handleUnload = () => {
-      window.parent.postMessage({ type: 'header.primaryCta' }, 'https://dashboard.copilot.com')
+      window.parent.postMessage({ type: 'header.primaryCta' }, DASHBOARD_DOMAIN)
       if (config?.portalUrl) {
         window.parent.postMessage({ type: 'header.primaryCta' }, ensureHttps(config.portalUrl))
       }

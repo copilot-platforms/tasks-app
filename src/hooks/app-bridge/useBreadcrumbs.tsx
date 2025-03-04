@@ -1,6 +1,7 @@
 import { BreadcrumbsPayload, Clickable, Configurable } from '@/hooks/app-bridge/types'
 import { ensureHttps } from '@/utils/https'
 import { useEffect, useMemo } from 'react'
+import { DASHBOARD_DOMAIN } from '@/constants/domains'
 
 const getBreadcrumbId = (idx: number) => `header.breadcrumbs.${idx}`
 
@@ -21,7 +22,7 @@ export const useBreadcrumbs = (breadcrumbs: Clickable[], config?: Configurable) 
       })),
     }
 
-    window.parent.postMessage(payload, 'https://dashboard.copilot.com')
+    window.parent.postMessage(payload, DASHBOARD_DOMAIN)
     if (config?.portalUrl) {
       window.parent.postMessage(payload, ensureHttps(config.portalUrl))
     }
