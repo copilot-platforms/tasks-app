@@ -20,9 +20,9 @@ export const Comments = ({ comment, createComment, deleteComment, task_id, stabl
       <VerticalLine />
       <Stack direction="row" columnGap={2} padding={'0px 0px 12px 0px'} width={'100%'}>
         <CopilotAvatar
-          width="24px"
-          height="24px"
-          fontSize="13px"
+          width="22px"
+          height="22px"
+          fontSize="12px"
           currentAssignee={comment.initiator as unknown as IAssigneeCombined}
           sx={{
             border: (theme) => `1.1px solid ${theme.color.gray[200]}`,

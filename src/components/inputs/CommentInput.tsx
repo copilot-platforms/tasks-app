@@ -125,9 +125,9 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
   return (
     <Stack direction="row" columnGap={2} alignItems="flex-start">
       <CopilotAvatar
-        width="24px"
-        height="24px"
-        fontSize="13px"
+        width="22px"
+        height="22px"
+        fontSize="12px"
         currentAssignee={currentUserDetails}
         sx={{
           border: (theme) => `1.1px solid ${theme.color.gray[200]}`,
