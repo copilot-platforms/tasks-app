@@ -5,7 +5,9 @@
 }
 
 .tapwrite-reply-input {
-  min-height: 6vh;
+  width: '100%';
+  flex-grow: 1;
+  min-width: 0;
 }
 
 .tapwrite-comment {

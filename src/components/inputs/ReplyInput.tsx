@@ -96,9 +96,9 @@ export const ReplyInput = ({ task_id, comment, createComment, uploadFn }: ReplyI
         }}
       >
         <CopilotAvatar
-          width="24px"
-          height="24px"
-          fontSize="13px"
+          width="20px"
+          height="20px"
+          fontSize="10px"
           currentAssignee={currentUserDetails}
           sx={{
             border: (theme) => `1.1px solid ${theme.color.gray[200]}`,
@@ -110,6 +110,7 @@ export const ReplyInput = ({ task_id, comment, createComment, uploadFn }: ReplyI
             getContent={setDetail}
             placeholder="Leave a reply..."
             editorClass="tapwrite-reply-input"
+            className={'tapwrite-reply-input'}
             hardbreak
             onActiveStatusChange={(prop) => {
               const { isListActive, isFloatingMenuActive } = prop
@@ -120,10 +121,12 @@ export const ReplyInput = ({ task_id, comment, createComment, uploadFn }: ReplyI
               width: '100%',
               maxWidth: '100%',
               display: 'flex',
-              flexDirection: 'column',
+              flexDirection: 'row',
               overflow: 'hidden',
               wordBreak: 'break-word',
               whiteSpace: 'pre-wrap',
+              alignItems: 'center',
+              marginTop: '-5px',
             }}
             addAttachmentButton
             deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', task_id, null)}
