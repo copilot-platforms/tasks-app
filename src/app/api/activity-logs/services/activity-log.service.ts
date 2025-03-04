@@ -1,30 +1,36 @@
-import { BaseService } from '@api/core/services/base.service'
-import User from '@api/core/models/User.model'
-import { z } from 'zod'
-import { ActivityLog, ActivityType, AssigneeType, Comment } from '@prisma/client'
+import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
+import { ClientsResponse, CompaniesResponse, CopilotListArgs, InternalUsers, InternalUsersResponse } from '@/types/common'
+import { CopilotAPI } from '@/utils/CopilotAPI'
+import { replaceImageSrc } from '@/utils/signedUrlReplacer'
+import { getSignedUrl } from '@/utils/signUrl'
 import {
   DBActivityLogArray,
   DBActivityLogArraySchema,
   DBActivityLogDetails,
-  DBActivityLogSchema,
   SchemaByActivityType,
 } from '@api/activity-logs/const'
-import { CopilotAPI } from '@/utils/CopilotAPI'
+import { LogResponse, LogResponseSchema } from '@api/activity-logs/schemas/LogResponseSchema'
 import { CommentService } from '@api/comment/comment.service'
-import { ClientsResponse, CompaniesResponse, CopilotListArgs, InternalUsers, InternalUsersResponse } from '@/types/common'
-import { LogResponse, LogResponseSchema } from '../schemas/LogResponseSchema'
 import APIError from '@api/core/exceptions/api'
+import User from '@api/core/models/User.model'
+import { BaseService } from '@api/core/services/base.service'
+import { ActivityType, AssigneeType, Comment } from '@prisma/client'
 import httpStatus from 'http-status'
-import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
-import { replaceImageSrc } from '@/utils/signedUrlReplacer'
-import { getSignedUrl } from '@/utils/signUrl'
+import { z } from 'zod'
 
 export class ActivityLogService extends BaseService {
   constructor(user: User) {
     super(user)
   }
 
-  async get(taskId: string) {
+  async get(
+    taskId: string,
+    opts?: {
+      // Parent comment IDs in expandComments array are not limited to fetching just the latest 3 replies,
+      // instead the filter "expands" to fetch all replies in the same ordering
+      expandComments?: string[]
+    },
+  ) {
     const activityLogs = await this.db.$queryRaw`
         select "ActivityLogs".*
         from "ActivityLogs"
@@ -97,7 +103,11 @@ export class ActivityLogService extends BaseService {
         }
       }),
     )
-    const allReplies = await commentService.getReplies(commentIds)
+
+    const [allReplies, replyCounts] = await Promise.all([
+      commentService.getReplies(commentIds, opts?.expandComments),
+      commentService.getReplyCounts(commentIds),
+    ])
 
     const logResponseData = filteredActivityLogs.map((activityLog) => {
       const initiator = copilotUsers.find((iu) => iu.id === activityLog.userId) || null
@@ -109,6 +119,7 @@ export class ActivityLogService extends BaseService {
           activityLog.details,
           processedComments,
           allReplies,
+          replyCounts,
           internalUsers,
           clientUsers,
           companies,
@@ -136,6 +147,7 @@ export class ActivityLogService extends BaseService {
     payload: DBActivityLogDetails,
     comments: Comment[],
     allReplies: Comment[],
+    replyCounts: Record<string, number>,
     internalUsers: InternalUsersResponse,
     clientUsers: ClientsResponse,
     companies: CompaniesResponse,
@@ -169,6 +181,7 @@ export class ActivityLogService extends BaseService {
           ...payload,
           content: comment.content,
           replies,
+          replyCount: replyCounts[comment.id] || 0,
           updatedAt: comment.updatedAt,
           createdAt: comment.createdAt,
         }
