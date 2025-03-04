@@ -5,6 +5,7 @@ import { LogResponse } from '@/app/api/activity-logs/schemas/LogResponseSchema'
 import { deleteComment, updateComment } from '@/app/detail/[task_id]/[user_type]/actions'
 import { DotSeparator } from '@/app/detail/ui/DotSeparator'
 import { BoldTypography, CustomDivider, StyledModal, StyledTypography } from '@/app/detail/ui/styledComponent'
+import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import AttachmentLayout from '@/components/AttachmentLayout'
 import { ListBtn } from '@/components/buttons/ListBtn'
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
@@ -17,6 +18,7 @@ import { PencilIcon, TrashIcon } from '@/icons'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { UpdateComment } from '@/types/dto/comment.dto'
+import { IAssigneeCombined } from '@/types/interfaces'
 import { getTimeDifference } from '@/utils/getTimeDifference'
 import { deleteEditorAttachmentsHandler } from '@/utils/inlineImage'
 import { isTapwriteContentEmpty } from '@/utils/isTapwriteContentEmpty'
@@ -101,6 +103,8 @@ export const ReplyCard = ({
     }
   }, [editedContent, isListOrMenuActive, isFocused, isMobile])
 
+  const replyUser = item.initiator as unknown as IAssigneeCombined
+
   return (
     <>
       <Stack
@@ -113,10 +117,14 @@ export const ReplyCard = ({
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        <Avatar
-          alt={item?.initiator?.givenName}
-          src={item?.initiator?.avatarImageUrl || 'user'}
-          sx={{ width: '20px', height: '20px', fontSize: '14px' }}
+        <CopilotAvatar
+          width="20px"
+          height="20px"
+          fontSize="10px"
+          currentAssignee={replyUser}
+          sx={{
+            border: (theme) => `1.1px solid ${theme.color.gray[200]}`,
+          }}
         />
         <Stack
           direction="column"
