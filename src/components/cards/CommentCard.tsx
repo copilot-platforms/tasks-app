@@ -23,7 +23,7 @@ import { MenuBox } from '@/components/inputs/MenuBox'
 import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
 import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
 import { useWindowWidth } from '@/hooks/useWindowWidth'
-import { PencilIcon, TrashIcon } from '@/icons'
+import { PencilIcon, ReplyIcon, TrashIcon } from '@/icons'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { setOpenImage } from '@/redux/features/taskDetailsSlice'
@@ -40,6 +40,7 @@ import { commentAddedResponseSchema, ReplyResponse } from '@api/activity-logs/sc
 import { LogResponse } from '@api/activity-logs/schemas/LogResponseSchema'
 import { ReplyCard } from '@/components/cards/ReplyCard'
 import { ReplyInput } from '@/components/inputs/ReplyInput'
+import { IconBtn } from '@/components/buttons/IconBtn'
 
 export const CommentCard = ({
   comment,
@@ -52,7 +53,7 @@ export const CommentCard = ({
   deleteComment: (id: string) => void
   task_id: string
 }) => {
-  const [showReply, setShowReply] = useState(true)
+  const [showReply, setShowReply] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
 
   const [timeAgo, setTimeAgo] = useState(getTimeDifference(comment.createdAt))
@@ -141,15 +142,19 @@ export const CommentCard = ({
 
   return (
     <CommentCardContainer
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
       sx={{
         backgroundColor: (theme) => (isReadOnly ? `${theme.color.gray[100]}` : `${theme.color.base.white}`),
         overflow: 'hidden',
       }}
     >
       <Stack direction="column" rowGap={'4px'}>
-        <Stack direction="column" rowGap={'2px'} sx={{ paddingBottom: '4px' }}>
+        <Stack
+          direction="column"
+          rowGap={'2px'}
+          sx={{ paddingBottom: '4px' }}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+        >
           {isReadOnly && (
             <Stack direction="row" justifyContent={'space-between'} alignItems="center">
               <Stack direction="row" columnGap={1} alignItems="center">
@@ -168,6 +173,7 @@ export const CommentCard = ({
 
               {(isHovered || isMobile() || isMenuOpen) && canEdit && (
                 <Stack direction="row" columnGap={2} sx={{ height: '10px' }} alignItems="center">
+                  <ReplyButton handleClick={() => setShowReply((prev) => !prev)} />
                   <MenuBox
                     getMenuOpen={(open) => {
                       setIsMenuOpen(open)
@@ -243,11 +249,21 @@ export const CommentCard = ({
           </Box>
         </Stack>
 
-        <CustomDivider />
+        {((Array.isArray((comment as LogResponse).details?.replies) &&
+          ((comment as LogResponse).details.replies as ReplyResponse[]).length > 0) ||
+          showReply) && <CustomDivider />}
 
         {Array.isArray((comment as LogResponse).details?.replies) &&
           ((comment as LogResponse).details.replies as ReplyResponse[]).map((item: ReplyResponse) => {
-            return <ReplyCard item={item} key={item.id} />
+            return (
+              <ReplyCard
+                item={item}
+                key={item.id}
+                uploadFn={uploadFn}
+                task_id={task_id}
+                handleImagePreview={handleImagePreview}
+              />
+            )
           })}
 
         {(Array.isArray((comment as LogResponse).details?.replies) &&
@@ -272,5 +288,25 @@ export const CommentCard = ({
         />
       </StyledModal>
     </CommentCardContainer>
+  )
+}
+
+const ReplyButton = ({ handleClick }: { handleClick: () => void }) => {
+  return (
+    <Box
+      sx={{
+        padding: '3px',
+        borderRadius: '4px',
+        alignItems: 'center',
+        display: 'flex',
+        ':hover': {
+          backgroundColor: (theme) => theme.color.gray[150],
+        },
+        cursor: 'pointer',
+      }}
+      onClick={handleClick}
+    >
+      <ReplyIcon />
+    </Box>
   )
 }
