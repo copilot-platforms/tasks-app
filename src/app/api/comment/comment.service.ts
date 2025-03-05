@@ -4,7 +4,7 @@ import { z } from 'zod'
 
 import { sendCommentCreateNotifications } from '@/jobs/notifications'
 import { CreateComment, UpdateComment } from '@/types/dto/comment.dto'
-import { getArrayDifference, getArrayIntersection } from '@/utils/array'
+import { getArrayDifference, getArrayIntersection, groupBy } from '@/utils/array'
 import { CommentAddedSchema } from '@api/activity-logs/schemas/CommentAddedSchema'
 import { ActivityLogger } from '@api/activity-logs/services/activity-logger.service'
 import APIError from '@api/core/exceptions/api'
@@ -13,6 +13,8 @@ import { PoliciesService } from '@api/core/services/policies.service'
 import { Resource } from '@api/core/types/api'
 import { UserAction } from '@api/core/types/user'
 import { TasksService } from '@api/tasks/tasks.service'
+import { ClientResponse, ClientsResponse, InternalUsersResponse } from '@/types/common'
+import { IAssigneeCombined } from '@/types/interfaces'
 
 export class CommentService extends BaseService {
   async create(data: CreateComment) {
@@ -42,19 +44,21 @@ export class CommentService extends BaseService {
       },
     })
 
-    const activityLogger = new ActivityLogger({ taskId: data.taskId, user: this.user })
-    await activityLogger.log(
-      ActivityType.COMMENT_ADDED,
-      CommentAddedSchema.parse({
-        id: comment.id,
-        content: comment.content,
-        initiatorId,
-        initiatorType,
-        parentId: comment.parentId,
-      }),
-    )
+    if (!comment.parentId) {
+      const activityLogger = new ActivityLogger({ taskId: data.taskId, user: this.user })
+      await activityLogger.log(
+        ActivityType.COMMENT_ADDED,
+        CommentAddedSchema.parse({
+          id: comment.id,
+          content: comment.content,
+          initiatorId,
+          initiatorType,
+          parentId: comment.parentId,
+        }),
+      )
 
-    await sendCommentCreateNotifications.trigger({ user: this.user, task: task, comment: comment })
+      await sendCommentCreateNotifications.trigger({ user: this.user, task: task, comment: comment })
+    }
     // if (data.mentions) {
     //   await notificationService.createBulkNotification(NotificationTaskActions.Mentioned, task, data.mentions, {
     //     commentId: comment.id,
@@ -100,6 +104,7 @@ export class CommentService extends BaseService {
         id: {
           in: commentIds,
         },
+        deletedAt: undefined,
       },
     })
   }
@@ -127,6 +132,44 @@ export class CommentService extends BaseService {
     const counts: Record<string, number> = {}
     result.forEach((row) => row.parentId && (counts[row.parentId] = row._count.id))
     return counts
+  }
+
+  /**
+   * Gets the first 0 - n number of unique initiators for a comment thread based on the parentIds
+   */
+  async getThreadInitiators(commentIds: string[], internalUsers: InternalUsersResponse, clients: ClientsResponse) {
+    const results = await this.db.$queryRaw<
+      Array<{ parentId: string; initiatorId: string; initiatorType: CommentInitiator }>
+    >`
+      SELECT DISTINCT ON ("parentId", "initiatorId", "initiatorType")
+        "parentId",
+        "initiatorId",
+        "initiatorType"
+      FROM "Comments"
+      WHERE "parentId"::text IN (${Prisma.join(commentIds)})
+        AND "deletedAt" IS NULL
+      ORDER BY "parentId", "initiatorId", "initiatorType", "createdAt" ASC
+    `
+    const initiators: Record<string, unknown[]> = {}
+    // Extract initiator details
+    for (let { parentId, initiatorId, initiatorType } of results) {
+      if (!parentId) continue
+      initiators[parentId] ??= []
+      let user
+      const getUserById = (user: { id: string }) => user.id === initiatorId
+
+      // Get full initiator body. initiatorType was recently implemented, and it will be null for older comments
+      if (initiatorType === CommentInitiator.internalUser) {
+        user = internalUsers.data.find(getUserById)
+      } else if (initiatorType === CommentInitiator.client) {
+        user = clients.data?.find(getUserById)
+      } else {
+        user = internalUsers.data.find(getUserById) || clients.data?.find(getUserById)
+      }
+      // If initiator was deleted, return null to denote deleted user
+      initiators[parentId].push(user || null)
+    }
+    return initiators
   }
 
   async getReplies(commentIds: string[], expandComments: string[] = []) {

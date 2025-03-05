@@ -104,10 +104,12 @@ export class ActivityLogService extends BaseService {
       }),
     )
 
-    const [allReplies, replyCounts] = await Promise.all([
+    const [allReplies, replyCounts, initiators] = await Promise.all([
       commentService.getReplies(commentIds, opts?.expandComments),
       commentService.getReplyCounts(commentIds),
+      commentService.getThreadInitiators(commentIds, internalUsers, clientUsers),
     ])
+    console.log('\n\n\n\n\ninit', initiators)
 
     const logResponseData = filteredActivityLogs.map((activityLog) => {
       const initiator = copilotUsers.find((iu) => iu.id === activityLog.userId) || null
@@ -120,6 +122,7 @@ export class ActivityLogService extends BaseService {
           processedComments,
           allReplies,
           replyCounts,
+          initiators,
           internalUsers,
           clientUsers,
           companies,
@@ -148,6 +151,7 @@ export class ActivityLogService extends BaseService {
     comments: Comment[],
     allReplies: Comment[],
     replyCounts: Record<string, number>,
+    initiators: Record<string, Array<any>>,
     internalUsers: InternalUsersResponse,
     clientUsers: ClientsResponse,
     companies: CompaniesResponse,
@@ -172,16 +176,19 @@ export class ActivityLogService extends BaseService {
           })
           .filter((user): user is NonNullable<typeof user> => user !== undefined)
 
-        replies = replies.map((comment) => ({
-          ...comment,
-          initiator: copilotUsers.find((iu) => iu.id === comment.initiatorId) || null,
-        }))
+        replies = replies
+          .map((comment) => ({
+            ...comment,
+            initiator: copilotUsers.find((iu) => iu.id === comment.initiatorId) || null,
+          }))
+          .reverse()
 
         return {
           ...payload,
           content: comment.content,
           replies,
           replyCount: replyCounts[comment.id] || 0,
+          firstInitiators: initiators?.[comment.id]?.slice(0, 3)?.reverse(),
           updatedAt: comment.updatedAt,
           createdAt: comment.createdAt,
         }
