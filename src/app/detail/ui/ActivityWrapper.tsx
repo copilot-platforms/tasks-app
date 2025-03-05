@@ -18,6 +18,7 @@ import { useSelector } from 'react-redux'
 import useSWR, { useSWRConfig } from 'swr'
 import { z } from 'zod'
 import { TransitionGroup } from 'react-transition-group'
+import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 
 interface OptimisticUpdate {
   tempId: string
@@ -35,10 +36,12 @@ export const ActivityWrapper = ({
   tokenPayload: Token
 }) => {
   const { activeTask } = useSelector(selectTaskBoard)
+  const { expandedComments } = useSelector(selectTaskDetails)
   const task = activeTask
   const [lastUpdated, setLastUpdated] = useState(task?.lastActivityLogUpdated)
   const [optimisticUpdates, setOptimisticUpdates] = useState<OptimisticUpdate[]>([])
-  const cacheKey = `/api/tasks/${task_id}/activity-logs?token=${token}`
+  const expandedCommentsQueryString = expandedComments.map((id) => encodeURIComponent(id)).join(',')
+  const cacheKey = `/api/tasks/${task_id}/activity-logs?token=${token}&expandedComments=${expandedCommentsQueryString}`
   const { data: activities, isLoading } = useSWR(`/api/tasks/${task_id}/activity-logs?token=${token}`, fetcher, {
     refreshInterval: 0,
   })
@@ -53,7 +56,7 @@ export const ActivityWrapper = ({
     if (lastUpdated !== task?.lastActivityLogUpdated) {
       refetchActivityLog()
     }
-  }, [task?.lastActivityLogUpdated])
+  }, [task?.lastActivityLogUpdated, expandedComments])
 
   const currentUserId = tokenPayload.internalUserId ?? tokenPayload.clientId
 

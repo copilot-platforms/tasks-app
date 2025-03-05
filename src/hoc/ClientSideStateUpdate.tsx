@@ -12,7 +12,7 @@ import {
   setViewSettings,
   setWorkflowStates,
 } from '@/redux/features/taskBoardSlice'
-import { setAssigneeSuggestion } from '@/redux/features/taskDetailsSlice'
+import { setAssigneeSuggestion, setExpandedComments } from '@/redux/features/taskDetailsSlice'
 import { setTemplates } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
 import { Token } from '@/types/common'
@@ -41,6 +41,7 @@ export const ClientSideStateUpdate = ({
   templates,
   assigneeSuggestions,
   task,
+  clearExpandedComments,
 }: {
   children: ReactNode
   workflowStates?: WorkflowStateResponse[]
@@ -52,6 +53,7 @@ export const ClientSideStateUpdate = ({
   templates?: ITemplate[]
   assigneeSuggestions?: IAssigneeSuggestions[]
   task?: TaskResponse
+  clearExpandedComments?: boolean
 }) => {
   const { tasks: tasksInStore, viewSettingsTemp } = useSelector(selectTaskBoard)
   useEffect(() => {
@@ -93,6 +95,10 @@ export const ClientSideStateUpdate = ({
 
     if (assigneeSuggestions) {
       store.dispatch(setAssigneeSuggestion(assigneeSuggestions))
+    }
+
+    if (clearExpandedComments) {
+      store.dispatch(setExpandedComments([]))
     }
 
     if (task) {

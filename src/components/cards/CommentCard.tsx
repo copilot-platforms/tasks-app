@@ -1,6 +1,6 @@
 'use client'
 
-import { Avatar, Box, InputAdornment, Stack, styled, Typography } from '@mui/material'
+import { Box, Stack, Typography } from '@mui/material'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
@@ -26,9 +26,9 @@ import { useWindowWidth } from '@/hooks/useWindowWidth'
 import { PencilIcon, ReplyIcon, TrashIcon } from '@/icons'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
-import { setOpenImage } from '@/redux/features/taskDetailsSlice'
+import { setExpandedComments, setOpenImage } from '@/redux/features/taskDetailsSlice'
 import store from '@/redux/store'
-import { CreateComment, UpdateComment } from '@/types/dto/comment.dto'
+import { CommentResponse, CreateComment, UpdateComment } from '@/types/dto/comment.dto'
 import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 import { IAssigneeCombined } from '@/types/interfaces'
 import { getAssigneeName } from '@/utils/assignee'
@@ -36,11 +36,13 @@ import { getMentionsList } from '@/utils/getMentionList'
 import { getTimeDifference } from '@/utils/getTimeDifference'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
 import { isTapwriteContentEmpty } from '@/utils/isTapwriteContentEmpty'
-import { commentAddedResponseSchema, ReplyResponse } from '@api/activity-logs/schemas/CommentAddedSchema'
+import { ReplyResponse } from '@api/activity-logs/schemas/CommentAddedSchema'
 import { LogResponse } from '@api/activity-logs/schemas/LogResponseSchema'
 import { ReplyCard } from '@/components/cards/ReplyCard'
 import { ReplyInput } from '@/components/inputs/ReplyInput'
-import { IconBtn } from '@/components/buttons/IconBtn'
+import useSWR from 'swr'
+import { fetcher } from '@/utils/fetcher'
+import { CollapsibleReplyCard } from '@/components/cards/CollapsibleReplyCard'
 
 export const CommentCard = ({
   comment,
@@ -56,6 +58,8 @@ export const CommentCard = ({
   const [showReply, setShowReply] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
 
+  const [replies, setReplies] = useState(comment.details.replies as ReplyResponse[])
+
   const [timeAgo, setTimeAgo] = useState(getTimeDifference(comment.createdAt))
   const [isReadOnly, setIsReadOnly] = useState<boolean>(true)
   const editRef = useRef<HTMLDivElement>(null)
@@ -65,6 +69,7 @@ export const CommentCard = ({
   const canEdit = tokenPayload?.internalUserId == comment?.initiator?.id || tokenPayload?.clientId == comment?.initiator?.id
   const canDelete = tokenPayload?.internalUserId == comment?.initiator?.id
   const { assignee, activeTask, token } = useSelector(selectTaskBoard)
+  const { expandedComments } = useSelector(selectTaskDetails)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   const [isFocused, setIsFocused] = useState(false)
@@ -139,6 +144,35 @@ export const CommentCard = ({
   }, [editedContent, isListOrMenuActive, isFocused, isMobile])
 
   const commentUser = comment.initiator as unknown as IAssigneeCombined
+  const replyCount = (comment.details as CommentResponse).replyCount
+
+  const cacheKey = `/api/comment/?token=${token}&parentId=${comment.details.id}`
+  const { data: comments, mutate } = useSWR(cacheKey, fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnMount: false,
+    revalidateOnReconnect: false,
+    refreshWhenOffline: false,
+    refreshWhenHidden: false,
+    refreshInterval: 0,
+  })
+  const fetchCommentsWithFullReplies = async () => {
+    try {
+      const updatedComment = await mutate()
+
+      setReplies(updatedComment?.comments || comment.details.replies)
+      store.dispatch(setExpandedComments([...expandedComments, z.string().parse(comment.details.id)]))
+    } catch (error) {
+      console.error('Failed to fetch replies:', error)
+    }
+  }
+
+  useEffect(() => {
+    if (expandedComments.includes(z.string().parse(comment.details.id))) {
+      fetchCommentsWithFullReplies()
+    } else {
+      setReplies(comment.details.replies as ReplyResponse[])
+    }
+  }, [comment])
 
   return (
     <CommentCardContainer
@@ -253,8 +287,16 @@ export const CommentCard = ({
           ((comment as LogResponse).details.replies as ReplyResponse[]).length > 0) ||
           showReply) && <CustomDivider />}
 
+        {replyCount > 3 && !expandedComments.includes(z.string().parse(comment.details.id)) && (
+          <CollapsibleReplyCard
+            lastAssignees={[commentUser, commentUser, commentUser]} //passing 3 static values for now
+            fetchCommentsWithFullReplies={fetchCommentsWithFullReplies}
+            replyCount={replyCount}
+          />
+        )}
+
         {Array.isArray((comment as LogResponse).details?.replies) &&
-          ((comment as LogResponse).details.replies as ReplyResponse[]).map((item: ReplyResponse) => {
+          replies.map((item: ReplyResponse) => {
             return (
               <ReplyCard
                 item={item}
