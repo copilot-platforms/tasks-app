@@ -1,10 +1,7 @@
-import { ActivityType, Comment, CommentInitiator, Prisma } from '@prisma/client'
-import httpStatus from 'http-status'
-import { z } from 'zod'
-
 import { sendCommentCreateNotifications } from '@/jobs/notifications'
 import { CreateComment, UpdateComment } from '@/types/dto/comment.dto'
 import { getArrayDifference, getArrayIntersection } from '@/utils/array'
+import { CopilotAPI } from '@/utils/CopilotAPI'
 import { CommentAddedSchema } from '@api/activity-logs/schemas/CommentAddedSchema'
 import { ActivityLogger } from '@api/activity-logs/services/activity-logger.service'
 import APIError from '@api/core/exceptions/api'
@@ -13,6 +10,9 @@ import { PoliciesService } from '@api/core/services/policies.service'
 import { Resource } from '@api/core/types/api'
 import { UserAction } from '@api/core/types/user'
 import { TasksService } from '@api/tasks/tasks.service'
+import { ActivityType, Comment, CommentInitiator, Prisma } from '@prisma/client'
+import httpStatus from 'http-status'
+import { z } from 'zod'
 
 export class CommentService extends BaseService {
   async create(data: CreateComment) {
@@ -110,7 +110,7 @@ export class CommentService extends BaseService {
         parentId,
         workspaceId: this.user.workspaceId,
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: 'asc' },
     })
   }
 
@@ -166,5 +166,28 @@ export class CommentService extends BaseService {
     replies = [...replies, ...limitedReplies]
 
     return replies
+  }
+
+  async addInitiatorDetails(comments: Comment[]) {
+    if (!comments.length) {
+      return comments
+    }
+
+    const copilot = new CopilotAPI(this.user.token)
+    const internalUsers = await copilot.getInternalUsers()
+    const clients = await copilot.getClients()
+
+    return comments.map((comment) => {
+      let initiator
+      const getUser = (user: { id: string }) => user.id === comment.initiatorId
+      if (comment.initiatorType === CommentInitiator.internalUser) {
+        initiator = internalUsers.data.find(getUser)
+      } else if (comment.initiatorType === CommentInitiator.client) {
+        initiator = clients?.data?.find(getUser)
+      } else {
+        initiator = internalUsers.data.find(getUser) || clients?.data?.find(getUser)
+      }
+      return { ...comment, initiator }
+    })
   }
 }
