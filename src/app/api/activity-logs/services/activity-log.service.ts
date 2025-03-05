@@ -172,10 +172,12 @@ export class ActivityLogService extends BaseService {
           })
           .filter((user): user is NonNullable<typeof user> => user !== undefined)
 
-        replies = replies.map((comment) => ({
-          ...comment,
-          initiator: copilotUsers.find((iu) => iu.id === comment.initiatorId) || null,
-        }))
+        replies = replies
+          .map((comment) => ({
+            ...comment,
+            initiator: copilotUsers.find((iu) => iu.id === comment.initiatorId) || null,
+          }))
+          .reverse()
 
         return {
           ...payload,
