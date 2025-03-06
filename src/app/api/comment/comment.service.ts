@@ -1,4 +1,5 @@
 import { sendCommentCreateNotifications } from '@/jobs/notifications'
+import { ClientsResponse, InitiatedEntity, InternalUsersResponse } from '@/types/common'
 import { CreateComment, UpdateComment } from '@/types/dto/comment.dto'
 import { getArrayDifference, getArrayIntersection } from '@/utils/array'
 import { CopilotAPI } from '@/utils/CopilotAPI'
@@ -13,6 +14,7 @@ import { TasksService } from '@api/tasks/tasks.service'
 import { ActivityType, Comment, CommentInitiator, Prisma } from '@prisma/client'
 import httpStatus from 'http-status'
 import { z } from 'zod'
+import { CommentRepository } from './comment.repository'
 
 export class CommentService extends BaseService {
   async create(data: CreateComment) {
@@ -42,19 +44,21 @@ export class CommentService extends BaseService {
       },
     })
 
-    const activityLogger = new ActivityLogger({ taskId: data.taskId, user: this.user })
-    await activityLogger.log(
-      ActivityType.COMMENT_ADDED,
-      CommentAddedSchema.parse({
-        id: comment.id,
-        content: comment.content,
-        initiatorId,
-        initiatorType,
-        parentId: comment.parentId,
-      }),
-    )
+    if (!comment.parentId) {
+      const activityLogger = new ActivityLogger({ taskId: data.taskId, user: this.user })
+      await activityLogger.log(
+        ActivityType.COMMENT_ADDED,
+        CommentAddedSchema.parse({
+          id: comment.id,
+          content: comment.content,
+          initiatorId,
+          initiatorType,
+          parentId: comment.parentId,
+        }),
+      )
 
-    await sendCommentCreateNotifications.trigger({ user: this.user, task: task, comment: comment })
+      await sendCommentCreateNotifications.trigger({ user: this.user, task: task, comment: comment })
+    }
     // if (data.mentions) {
     //   await notificationService.createBulkNotification(NotificationTaskActions.Mentioned, task, data.mentions, {
     //     commentId: comment.id,
@@ -100,6 +104,7 @@ export class CommentService extends BaseService {
         id: {
           in: commentIds,
         },
+        deletedAt: undefined,
       },
     })
   }
@@ -110,11 +115,13 @@ export class CommentService extends BaseService {
         parentId,
         workspaceId: this.user.workspaceId,
       },
-      orderBy: { createdAt: 'asc' },
+      orderBy: { createdAt: 'desc' },
     })
   }
 
   async getReplyCounts(commentIds: string[]): Promise<Record<string, number>> {
+    if (!commentIds) return {}
+
     const result = await this.db.comment.groupBy({
       by: ['parentId'],
       where: {
@@ -129,7 +136,39 @@ export class CommentService extends BaseService {
     return counts
   }
 
+  /**
+   * Gets the first 0 - n number of unique initiators for a comment thread based on the parentIds
+   */
+  async getThreadInitiators(commentIds: string[], internalUsers: InternalUsersResponse, clients: ClientsResponse) {
+    if (!commentIds.length) return {}
+    const commentRepo = new CommentRepository(this.user)
+    const results = await commentRepo.getFirstCommentInitiators(commentIds)
+
+    const initiators: Record<string, unknown[]> = {}
+    // Extract initiator details
+    for (let { parentId, initiatorId, initiatorType } of results) {
+      if (!parentId) continue
+      initiators[parentId] ??= []
+      let user
+      const getUserById = (user: { id: string }) => user.id === initiatorId
+
+      // Get full initiator body. initiatorType was recently implemented, and it will be null for older comments
+      if (initiatorType === CommentInitiator.internalUser) {
+        user = internalUsers.data.find(getUserById)
+      } else if (initiatorType === CommentInitiator.client) {
+        user = clients.data?.find(getUserById)
+      } else {
+        user = internalUsers.data.find(getUserById) || clients.data?.find(getUserById)
+      }
+      // If initiator was deleted, return null to denote deleted user
+      initiators[parentId].push(user || null)
+    }
+    return initiators
+  }
+
   async getReplies(commentIds: string[], expandComments: string[] = []) {
+    if (!commentIds.length) return []
+
     let replies: Comment[] = []
 
     // Exclude any expandComments that aren't in commentIds so user can't inject
@@ -138,37 +177,19 @@ export class CommentService extends BaseService {
     // Exclude any ids already in expandComments, since this will be used to limit to 3 replies per parent
     commentIds = validExpandComments.length ? getArrayDifference(commentIds, validExpandComments) : commentIds
 
+    const commentRepo = new CommentRepository(this.user)
     if (validExpandComments.length) {
-      const expandedReplies = await this.db.comment.findMany({
-        where: {
-          parentId: { in: expandComments },
-          workspaceId: this.user.workspaceId,
-        },
-        orderBy: { createdAt: 'desc' },
-      })
+      const expandedReplies = await commentRepo.getAllRepliesForParents(expandComments)
       replies = [...replies, ...expandedReplies]
     }
 
-    const limitedReplies = await this.db.$queryRaw<Comment[]>`
-      WITH replies AS (
-        SELECT *,
-          ROW_NUMBER() OVER (PARTITION BY "parentId" ORDER BY "createdAt" DESC) AS rank
-        FROM "Comments"
-        WHERE "parentId"::text IN (${Prisma.join(commentIds)})
-          AND "deletedAt" IS NULL
-      )
-
-      SELECT id, content, "initiatorId", "initiatorType", "parentId", "taskId", "workspaceId", "createdAt", "updatedAt", "deletedAt"
-      FROM replies
-      WHERE rank <= 3;
-    `
-    // IMPORTANT: If you change the schema of Comments table be sure to add them here too.
+    const limitedReplies = await commentRepo.getLimitedRepliesForParents(commentIds)
     replies = [...replies, ...limitedReplies]
 
     return replies
   }
 
-  async addInitiatorDetails(comments: Comment[]) {
+  async addInitiatorDetails(comments: InitiatedEntity[]) {
     if (!comments.length) {
       return comments
     }

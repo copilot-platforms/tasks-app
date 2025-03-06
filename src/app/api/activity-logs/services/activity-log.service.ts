@@ -104,9 +104,10 @@ export class ActivityLogService extends BaseService {
       }),
     )
 
-    const [allReplies, replyCounts] = await Promise.all([
+    const [allReplies, replyCounts, initiators] = await Promise.all([
       commentService.getReplies(commentIds, opts?.expandComments),
       commentService.getReplyCounts(commentIds),
+      commentService.getThreadInitiators(commentIds, internalUsers, clientUsers),
     ])
 
     const logResponseData = filteredActivityLogs.map((activityLog) => {
@@ -120,6 +121,7 @@ export class ActivityLogService extends BaseService {
           processedComments,
           allReplies,
           replyCounts,
+          initiators,
           internalUsers,
           clientUsers,
           companies,
@@ -148,6 +150,7 @@ export class ActivityLogService extends BaseService {
     comments: Comment[],
     allReplies: Comment[],
     replyCounts: Record<string, number>,
+    initiators: Record<string, Array<any>>,
     internalUsers: InternalUsersResponse,
     clientUsers: ClientsResponse,
     companies: CompaniesResponse,
@@ -184,6 +187,7 @@ export class ActivityLogService extends BaseService {
           content: comment.content,
           replies,
           replyCount: replyCounts[comment.id] || 0,
+          firstInitiators: initiators?.[comment.id]?.slice(0, 3),
           updatedAt: comment.updatedAt,
           createdAt: comment.createdAt,
         }
