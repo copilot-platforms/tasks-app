@@ -228,5 +228,5 @@ export type PreviewMode = 'client' | 'company' | null
 
 export interface InitiatedEntity {
   initiatorId: string
-  initiatorType?: CommentInitiator
+  initiatorType: CommentInitiator | null
 }
