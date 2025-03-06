@@ -1,6 +1,7 @@
 import { sendCommentCreateNotifications } from '@/jobs/notifications'
+import { ClientsResponse, InternalUsersResponse } from '@/types/common'
 import { CreateComment, UpdateComment } from '@/types/dto/comment.dto'
-import { getArrayDifference, getArrayIntersection, groupBy } from '@/utils/array'
+import { getArrayDifference, getArrayIntersection } from '@/utils/array'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { CommentAddedSchema } from '@api/activity-logs/schemas/CommentAddedSchema'
 import { ActivityLogger } from '@api/activity-logs/services/activity-logger.service'
@@ -10,8 +11,6 @@ import { PoliciesService } from '@api/core/services/policies.service'
 import { Resource } from '@api/core/types/api'
 import { UserAction } from '@api/core/types/user'
 import { TasksService } from '@api/tasks/tasks.service'
-import { ClientResponse, ClientsResponse, InternalUsersResponse } from '@/types/common'
-import { IAssigneeCombined } from '@/types/interfaces'
 import { ActivityType, Comment, CommentInitiator, Prisma } from '@prisma/client'
 import httpStatus from 'http-status'
 import { z } from 'zod'
@@ -120,6 +119,8 @@ export class CommentService extends BaseService {
   }
 
   async getReplyCounts(commentIds: string[]): Promise<Record<string, number>> {
+    if (!commentIds) return {}
+
     const result = await this.db.comment.groupBy({
       by: ['parentId'],
       where: {
@@ -138,6 +139,8 @@ export class CommentService extends BaseService {
    * Gets the first 0 - n number of unique initiators for a comment thread based on the parentIds
    */
   async getThreadInitiators(commentIds: string[], internalUsers: InternalUsersResponse, clients: ClientsResponse) {
+    if (!commentIds.length) return []
+
     const results = await this.db.$queryRaw<
       Array<{ parentId: string; initiatorId: string; initiatorType: CommentInitiator }>
     >`
@@ -173,6 +176,8 @@ export class CommentService extends BaseService {
   }
 
   async getReplies(commentIds: string[], expandComments: string[] = []) {
+    if (!commentIds.length) return []
+
     let replies: Comment[] = []
 
     // Exclude any expandComments that aren't in commentIds so user can't inject
