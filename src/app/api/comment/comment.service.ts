@@ -174,12 +174,12 @@ export class CommentService extends BaseService {
     }
 
     const copilot = new CopilotAPI(this.user.token)
-    const internalUsers = await copilot.getInternalUsers()
-    const clients = await copilot.getClients()
+    const [internalUsers, clients] = await Promise.all([copilot.getInternalUsers(), copilot.getClients()])
 
     return comments.map((comment) => {
       let initiator
       const getUser = (user: { id: string }) => user.id === comment.initiatorId
+
       if (comment.initiatorType === CommentInitiator.internalUser) {
         initiator = internalUsers.data.find(getUser)
       } else if (comment.initiatorType === CommentInitiator.client) {
