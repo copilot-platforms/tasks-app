@@ -132,9 +132,9 @@ export const ActivityLog = ({ log }: Prop) => {
 
       <Stack direction="row" columnGap={4} padding={'11px 0px 11px 0px'} width={'100%'}>
         <CopilotAvatar
-          width="24px"
-          height="24px"
-          fontSize="13px"
+          width="22px"
+          height="22px"
+          fontSize="12px"
           currentAssignee={activityUser}
           sx={{
             border: (theme) => `1.1px solid ${theme.color.gray[200]}`,
