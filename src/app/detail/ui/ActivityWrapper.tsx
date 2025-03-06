@@ -41,7 +41,7 @@ export const ActivityWrapper = ({
   const [lastUpdated, setLastUpdated] = useState(task?.lastActivityLogUpdated)
   const [optimisticUpdates, setOptimisticUpdates] = useState<OptimisticUpdate[]>([])
   const expandedCommentsQueryString = expandedComments.map((id) => encodeURIComponent(id)).join(',')
-  const cacheKey = `/api/tasks/${task_id}/activity-logs?token=${token}&expandedComments=${expandedCommentsQueryString}`
+  const cacheKey = `/api/tasks/${task_id}/activity-logs?token=${token}`
   const { data: activities, isLoading } = useSWR(`/api/tasks/${task_id}/activity-logs?token=${token}`, fetcher, {
     refreshInterval: 0,
   })
@@ -56,7 +56,7 @@ export const ActivityWrapper = ({
     if (lastUpdated !== task?.lastActivityLogUpdated) {
       refetchActivityLog()
     }
-  }, [task?.lastActivityLogUpdated, expandedComments])
+  }, [task?.lastActivityLogUpdated])
 
   const currentUserId = tokenPayload.internalUserId ?? tokenPayload.clientId
 

@@ -289,7 +289,7 @@ export const CommentCard = ({
 
         {replyCount > 3 && !expandedComments.includes(z.string().parse(comment.details.id)) && (
           <CollapsibleReplyCard
-            lastAssignees={[commentUser, commentUser, commentUser]} //passing 3 static values for now
+            lastAssignees={comment.details.firstInitiators as IAssigneeCombined[]}
             fetchCommentsWithFullReplies={fetchCommentsWithFullReplies}
             replyCount={replyCount}
           />
