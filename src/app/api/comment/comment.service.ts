@@ -144,14 +144,21 @@ export class CommentService extends BaseService {
     const results = await this.db.$queryRaw<
       Array<{ parentId: string; initiatorId: string; initiatorType: CommentInitiator }>
     >`
-      SELECT DISTINCT ON ("parentId", "initiatorId", "initiatorType")
-        "parentId",
-        "initiatorId",
-        "initiatorType"
-      FROM "Comments"
-      WHERE "parentId"::text IN (${Prisma.join(commentIds)})
-        AND "deletedAt" IS NULL
-      ORDER BY "parentId", "initiatorId", "initiatorType", "createdAt" ASC
+      WITH ranked_comments AS (
+        SELECT "parentId", "initiatorId", "initiatorType",
+          -- Use DENSE_RANK to ensure ranking is based on earliest time based on createdAt
+          DENSE_RANK() OVER (
+            PARTITION BY "parentId" ORDER BY MIN("createdAt") ASC
+          ) AS rank_num
+        FROM "Comments"
+        WHERE "parentId"::text IN (${Prisma.join(commentIds)})
+          AND "deletedAt" IS NULL
+        -- Ensures one initiatorId appears only ONCE per parentId (hopefully)
+        GROUP BY "parentId", "initiatorId", "initiatorType"
+      )
+      SELECT "parentId", "initiatorId", "initiatorType"
+      FROM ranked_comments
+      WHERE rank_num <= 3;
     `
     const initiators: Record<string, unknown[]> = {}
     // Extract initiator details
