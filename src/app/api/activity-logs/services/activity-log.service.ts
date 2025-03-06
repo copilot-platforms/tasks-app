@@ -109,7 +109,6 @@ export class ActivityLogService extends BaseService {
       commentService.getReplyCounts(commentIds),
       commentService.getThreadInitiators(commentIds, internalUsers, clientUsers),
     ])
-    console.log('\n\n\n\n\ninit', initiators)
 
     const logResponseData = filteredActivityLogs.map((activityLog) => {
       const initiator = copilotUsers.find((iu) => iu.id === activityLog.userId) || null
