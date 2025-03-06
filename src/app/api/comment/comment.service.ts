@@ -139,7 +139,7 @@ export class CommentService extends BaseService {
    * Gets the first 0 - n number of unique initiators for a comment thread based on the parentIds
    */
   async getThreadInitiators(commentIds: string[], internalUsers: InternalUsersResponse, clients: ClientsResponse) {
-    if (!commentIds.length) return []
+    if (!commentIds.length) return {}
 
     const results = await this.db.$queryRaw<
       Array<{ parentId: string; initiatorId: string; initiatorType: CommentInitiator }>
