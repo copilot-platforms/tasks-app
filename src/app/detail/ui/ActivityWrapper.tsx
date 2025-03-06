@@ -19,6 +19,8 @@ import useSWR, { useSWRConfig } from 'swr'
 import { z } from 'zod'
 import { TransitionGroup } from 'react-transition-group'
 import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
+import { ReplyResponse } from '@/app/api/activity-logs/schemas/CommentAddedSchema'
+import { checkOptimisticStableId } from '@/utils/checkOptimisticStableId'
 
 interface OptimisticUpdate {
   tempId: string
@@ -68,17 +70,6 @@ export const ActivityWrapper = ({
     return z.union([InternalUsersSchema, ClientResponseSchema]).parse(assignee.find((el) => el.id === currentUserId))
   }, [assignee, currentUserId])
 
-  const getStableId = (log: LogResponse) => {
-    if (log.type === ActivityType.COMMENT_ADDED) {
-      const matchingUpdate = optimisticUpdates.find(
-        (update) => update.tempId === log.id || (log.details.id && update.serverId === log.details.id),
-      )
-      if (matchingUpdate) {
-        return matchingUpdate?.tempId
-      }
-    }
-    return log.id
-  }
   // Handle comment creation
   const handleCreateComment = async (postCommentPayload: CreateComment) => {
     const tempId = generateRandomString('temp-comment')
@@ -91,35 +82,85 @@ export const ActivityWrapper = ({
       },
     ])
 
-    const tempLog: LogResponse = {
-      id: tempId,
-      type: ActivityType.COMMENT_ADDED,
-      details: {
-        content: postCommentPayload.content,
-        id: tempId,
-      },
-      taskId: task_id,
-      userId: currentUserId as string,
-      userRole: 'internalUser',
-      workspaceId: '',
-      initiator: {
-        status: '',
-        id: currentUserDetails?.id as string,
-        givenName: currentUserDetails?.givenName || '',
-        familyName: currentUserDetails?.familyName || '',
-        email: currentUserDetails?.email || '',
-        companyId: '',
-        avatarImageUrl: currentUserDetails?.avatarImageUrl || null,
-        customFields: {},
-        fallbackColor: currentUserDetails?.fallbackColor || null,
-        createdAt: currentUserDetails?.createdAt || new Date().toISOString(),
-        isClientAccessLimited: false,
-        companyAccessList: null,
-      },
-      createdAt: new Date().toISOString(),
+    const tempLog: LogResponse | ReplyResponse = postCommentPayload.parentId
+      ? {
+          id: tempId,
+          content: postCommentPayload.content,
+          taskId: task_id,
+          parentId: postCommentPayload.parentId,
+          workspaceId: '',
+          initiatorId: currentUserDetails?.id as string,
+          initiator: {
+            status: '',
+            id: currentUserDetails?.id as string,
+            givenName: currentUserDetails?.givenName || '',
+            familyName: currentUserDetails?.familyName || '',
+            email: currentUserDetails?.email || '',
+            companyId: '',
+            avatarImageUrl: currentUserDetails?.avatarImageUrl || null,
+            customFields: {},
+            fallbackColor: currentUserDetails?.fallbackColor || null,
+            createdAt: currentUserDetails?.createdAt || new Date().toISOString(),
+            isClientAccessLimited: false,
+            companyAccessList: null,
+          },
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }
+      : {
+          id: tempId,
+          type: ActivityType.COMMENT_ADDED,
+          details: {
+            content: postCommentPayload.content,
+            id: tempId,
+          },
+          taskId: task_id,
+          userId: currentUserId as string,
+          userRole: 'internalUser',
+          workspaceId: '',
+          initiator: {
+            status: '',
+            id: currentUserDetails?.id as string,
+            givenName: currentUserDetails?.givenName || '',
+            familyName: currentUserDetails?.familyName || '',
+            email: currentUserDetails?.email || '',
+            companyId: '',
+            avatarImageUrl: currentUserDetails?.avatarImageUrl || null,
+            customFields: {},
+            fallbackColor: currentUserDetails?.fallbackColor || null,
+            createdAt: currentUserDetails?.createdAt || new Date().toISOString(),
+            isClientAccessLimited: false,
+            companyAccessList: null,
+          },
+          createdAt: new Date().toISOString(),
+        }
+
+    let optimisticData
+    if (postCommentPayload.parentId) {
+      optimisticData = activities
+        ? activities.data.map((comment: LogResponse) => {
+            if (comment.details.id === postCommentPayload.parentId) {
+              const updatedReplies = [
+                ...(comment.details.replies as ReplyResponse[]),
+                { ...tempLog, parentId: postCommentPayload.parentId },
+              ]
+
+              return {
+                ...comment,
+                replies: updatedReplies,
+                details: {
+                  ...comment.details,
+                  replies: updatedReplies,
+                },
+              }
+            }
+            return comment
+          })
+        : []
+    } else {
+      optimisticData = activities ? [...activities.data, tempLog] : [tempLog]
     }
 
-    const optimisticData = activities ? [...activities.data, tempLog] : [tempLog]
     try {
       mutate(
         cacheKey,
@@ -133,7 +174,7 @@ export const ActivityWrapper = ({
           return await fetcher(cacheKey)
         },
         {
-          optimisticData: postCommentPayload.parentId ? undefined : { data: optimisticData },
+          optimisticData: { data: optimisticData },
           rollbackOnError: true,
           revalidate: true, // Make sure to revalidate after mutation
         },
@@ -182,7 +223,7 @@ export const ActivityWrapper = ({
           <Stack direction="column" alignItems="left" rowGap={2}>
             <TransitionGroup>
               {activities?.data?.map((item: LogResponse, index: number) => (
-                <Collapse key={getStableId(item)}>
+                <Collapse key={checkOptimisticStableId(item, optimisticUpdates)}>
                   <Box
                     key={index}
                     sx={{
@@ -196,6 +237,7 @@ export const ActivityWrapper = ({
                         deleteComment={(commentId) => handleDeleteComment(commentId, item.id)}
                         task_id={task_id}
                         stableId={item.id}
+                        optimisticUpdates={optimisticUpdates}
                       />
                     ) : (
                       <ActivityLog log={item} />

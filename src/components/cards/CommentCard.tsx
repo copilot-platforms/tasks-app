@@ -1,6 +1,6 @@
 'use client'
 
-import { Box, Stack, Typography } from '@mui/material'
+import { Box, Collapse, Stack, Typography } from '@mui/material'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
@@ -43,21 +43,24 @@ import { ReplyInput } from '@/components/inputs/ReplyInput'
 import useSWR from 'swr'
 import { fetcher } from '@/utils/fetcher'
 import { CollapsibleReplyCard } from '@/components/cards/CollapsibleReplyCard'
+import { TransitionGroup } from 'react-transition-group'
+import { checkOptimisticStableId, OptimisticUpdate } from '@/utils/checkOptimisticStableId'
 
 export const CommentCard = ({
   comment,
   createComment,
   deleteComment,
   task_id,
+  optimisticUpdates,
 }: {
   comment: LogResponse
   createComment: (postCommentPayload: CreateComment) => void
   deleteComment: (id: string) => void
   task_id: string
+  optimisticUpdates: OptimisticUpdate[]
 }) => {
   const [showReply, setShowReply] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
-
   const [replies, setReplies] = useState(comment.details.replies as ReplyResponse[])
 
   const [timeAgo, setTimeAgo] = useState(getTimeDifference(comment.createdAt))
@@ -154,6 +157,7 @@ export const CommentCard = ({
     refreshWhenOffline: false,
     refreshWhenHidden: false,
     refreshInterval: 0,
+    optimisticData: optimisticUpdates.filter((update) => update.tempId),
   })
   const fetchCommentsWithFullReplies = async () => {
     try {
@@ -167,13 +171,19 @@ export const CommentCard = ({
   }
 
   useEffect(() => {
-    if (expandedComments.includes(z.string().parse(comment.details.id))) {
-      fetchCommentsWithFullReplies()
+    const replies = comment.details.replies as ReplyResponse[]
+    if (expandedComments.length && expandedComments.includes(z.string().parse(comment.details.id))) {
+      const lastReply = replies[replies.length - 1]
+      if (lastReply && lastReply.id.includes('temp-comment')) {
+        setReplies((prev) => [...prev, lastReply])
+        return
+      } else {
+        fetchCommentsWithFullReplies()
+      }
     } else {
-      setReplies((comment.details.replies as ReplyResponse[]) || [])
+      setReplies(replies)
     }
   }, [comment])
-
   return (
     <CommentCardContainer
       sx={{
@@ -282,11 +292,9 @@ export const CommentCard = ({
             />
           </Box>
         </Stack>
-
         {((Array.isArray((comment as LogResponse).details?.replies) &&
           ((comment as LogResponse).details.replies as ReplyResponse[]).length > 0) ||
           showReply) && <CustomDivider />}
-
         {replyCount > 3 && !expandedComments.includes(z.string().parse(comment.details.id)) && (
           <CollapsibleReplyCard
             lastAssignees={comment.details.firstInitiators as IAssigneeCombined[]}
@@ -294,20 +302,22 @@ export const CommentCard = ({
             replyCount={replyCount}
           />
         )}
-
-        {Array.isArray((comment as LogResponse).details?.replies) &&
-          replies.map((item: ReplyResponse) => {
-            return (
-              <ReplyCard
-                item={item}
-                key={item.id}
-                uploadFn={uploadFn}
-                task_id={task_id}
-                handleImagePreview={handleImagePreview}
-              />
-            )
-          })}
-
+        <TransitionGroup>
+          {Array.isArray((comment as LogResponse).details?.replies) &&
+            replies.map((item: ReplyResponse) => {
+              return (
+                <Collapse key={checkOptimisticStableId(item, optimisticUpdates)}>
+                  <ReplyCard
+                    item={item}
+                    key={item.id}
+                    uploadFn={uploadFn}
+                    task_id={task_id}
+                    handleImagePreview={handleImagePreview}
+                  />
+                </Collapse>
+              )
+            })}
+        </TransitionGroup>
         {(Array.isArray((comment as LogResponse).details?.replies) &&
           ((comment as LogResponse).details.replies as LogResponse[]).length > 0) ||
         showReply ? (
