@@ -1,5 +1,5 @@
-import { Prisma, PrismaClient, StateType, WorkflowState } from '@prisma/client'
-import { DefaultArgs } from '@prisma/client/runtime/library'
+import { getSignedUrl } from '@/utils/signUrl'
+import { Comment } from '@prisma/client'
 
 export async function replaceImageSrc(htmlString: string, getSignedUrl: (filePath: string) => Promise<string | undefined>) {
   const imgTagRegex = /<img\s+[^>]*src="([^"]+)"[^>]*>/g //expression used to match all img tags in provided HTML string.
@@ -56,3 +56,13 @@ export const replaceImgSrcs = (body: string, newSrcs: string[], oldSrcs: string[
   })
   return updatedBody
 }
+
+export const signMediaForComments = async (comments: Comment[]) =>
+  await Promise.all(
+    comments.map(async (comment) => {
+      return {
+        ...comment,
+        content: await replaceImageSrc(comment.content, getSignedUrl),
+      }
+    }),
+  )

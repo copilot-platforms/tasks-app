@@ -1,5 +1,7 @@
 import { CreateCommentSchema, UpdateCommentSchema } from '@/types/dto/comment.dto'
 import { getSearchParams } from '@/utils/request'
+import { replaceImageSrc, signMediaForComments } from '@/utils/signedUrlReplacer'
+import { getSignedUrl } from '@/utils/signUrl'
 import { CommentService } from '@api/comment/comment.service'
 import { IdParams } from '@api/core/types/api'
 import authenticate from '@api/core/utils/authenticate'
@@ -43,7 +45,9 @@ export const getFilteredComments = async (req: NextRequest) => {
   const parentId = z.string().uuid().parse(rawParentId)
   const commentService = new CommentService(user)
   const comments = await commentService.getComments({ parentId })
+  const signedComments = await signMediaForComments(comments)
+
   return NextResponse.json({
-    comments: await commentService.addInitiatorDetails(comments),
+    comments: await commentService.addInitiatorDetails(signedComments),
   })
 }

@@ -1,7 +1,7 @@
 import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 import { ClientsResponse, CompaniesResponse, CopilotListArgs, InternalUsers, InternalUsersResponse } from '@/types/common'
 import { CopilotAPI } from '@/utils/CopilotAPI'
-import { replaceImageSrc } from '@/utils/signedUrlReplacer'
+import { replaceImageSrc, signMediaForComments } from '@/utils/signedUrlReplacer'
 import { getSignedUrl } from '@/utils/signUrl'
 import {
   DBActivityLogArray,
@@ -95,20 +95,14 @@ export class ActivityLogService extends BaseService {
 
     const commentService = new CommentService(this.user)
     const comments = await commentService.getCommentsByIds(commentIds)
-    const processedComments = await Promise.all(
-      comments.map(async (comment) => {
-        return {
-          ...comment,
-          content: await replaceImageSrc(comment.content, getSignedUrl),
-        }
-      }),
-    )
+    const signedComments = await signMediaForComments(comments)
 
     const [allReplies, replyCounts, initiators] = await Promise.all([
       commentService.getReplies(commentIds, opts?.expandComments),
       commentService.getReplyCounts(commentIds),
       commentService.getThreadInitiators(commentIds, internalUsers, clientUsers),
     ])
+    const signedReplies = await signMediaForComments(allReplies)
 
     const logResponseData = filteredActivityLogs.map((activityLog) => {
       const initiator = copilotUsers.find((iu) => iu.id === activityLog.userId) || null
@@ -118,8 +112,8 @@ export class ActivityLogService extends BaseService {
           activityLog.type,
           activityLog.userRole,
           activityLog.details,
-          processedComments,
-          allReplies,
+          signedComments,
+          signedReplies,
           replyCounts,
           initiators,
           internalUsers,
