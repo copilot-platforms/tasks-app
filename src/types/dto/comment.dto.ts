@@ -10,10 +10,16 @@ export const CreateCommentSchema = z.object({
 
 export type CreateComment = z.infer<typeof CreateCommentSchema>
 
-export const UpdateCommentSchema = z.object({
-  content: z.string(),
-  mentions: z.string().array().optional(),
-})
+export const UpdateCommentSchema = z
+  .object({
+    content: z.string().optional(),
+    mentions: z.string().array().optional(),
+    deletedAt: z.null().optional(),
+  })
+  .refine(({ content, deletedAt }) => deletedAt !== undefined || content !== undefined, {
+    message: 'Content must be present to update comment',
+    path: ['content'],
+  })
 
 export type UpdateComment = z.infer<typeof UpdateCommentSchema>
 

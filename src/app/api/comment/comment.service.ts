@@ -72,7 +72,20 @@ export class CommentService extends BaseService {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Delete, Resource.Comment)
 
+    const replyCounts = await this.getReplyCounts([id])
     const comment = await this.db.comment.delete({ where: { id } })
+
+    // Delete corresponding activity log as well, so as to remove comment from UI
+    // If activity log exists but comment has a `deletedAt`, show "Comment was deleted" card instead
+    if (!replyCounts[id]) {
+      // If there are 0 replies, key won't be in object
+      // Can't use `delete` only here, but only one activity log will have details.id with commentId
+      await this.db.activityLog.deleteMany({
+        where: {
+          details: { path: ['id'], equals: id },
+        },
+      })
+    }
 
     const tasksService = new TasksService(this.user)
     await tasksService.setNewLastActivityLogUpdated(comment.taskId)
@@ -83,7 +96,7 @@ export class CommentService extends BaseService {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Update, Resource.Comment)
 
-    const filters = { id, workspaceId: this.user.workspaceId, initiatorId: this.user.internalUserId }
+    const filters = { id, workspaceId: this.user.workspaceId, initiatorId: this.user.internalUserId, deletedAt: undefined }
     const prevComment = await this.db.comment.findFirst({
       where: filters,
     })
@@ -101,10 +114,8 @@ export class CommentService extends BaseService {
   async getCommentsByIds(commentIds: string[]) {
     return await this.db.comment.findMany({
       where: {
-        id: {
-          in: commentIds,
-        },
-        deletedAt: undefined,
+        id: { in: commentIds },
+        deletedAt: undefined, // Also get deleted comments (to show if comment parent was deleted)
       },
     })
   }
@@ -115,10 +126,14 @@ export class CommentService extends BaseService {
         parentId,
         workspaceId: this.user.workspaceId,
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: 'asc' },
     })
   }
 
+  /**
+   * Returns an object with parentId as key and array of reply comments containing that comment as parentId
+   * as value
+   */
   async getReplyCounts(commentIds: string[]): Promise<Record<string, number>> {
     if (!commentIds) return {}
 
@@ -182,7 +197,6 @@ export class CommentService extends BaseService {
       const expandedReplies = await commentRepo.getAllRepliesForParents(expandComments)
       replies = [...replies, ...expandedReplies]
     }
-
     const limitedReplies = await commentRepo.getLimitedRepliesForParents(commentIds)
     replies = [...replies, ...limitedReplies]
 

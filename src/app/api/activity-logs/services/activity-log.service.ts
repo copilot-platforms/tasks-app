@@ -1,8 +1,7 @@
 import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 import { ClientsResponse, CompaniesResponse, CopilotListArgs, InternalUsers, InternalUsersResponse } from '@/types/common'
 import { CopilotAPI } from '@/utils/CopilotAPI'
-import { replaceImageSrc, signMediaForComments } from '@/utils/signedUrlReplacer'
-import { getSignedUrl } from '@/utils/signUrl'
+import { signMediaForComments } from '@/utils/signedUrlReplacer'
 import {
   DBActivityLogArray,
   DBActivityLogArraySchema,
@@ -14,7 +13,7 @@ import { CommentService } from '@api/comment/comment.service'
 import APIError from '@api/core/exceptions/api'
 import User from '@api/core/models/User.model'
 import { BaseService } from '@api/core/services/base.service'
-import { ActivityType, AssigneeType, Comment } from '@prisma/client'
+import { ActivityType, AssigneeType, Comment, CommentInitiator } from '@prisma/client'
 import httpStatus from 'http-status'
 import { z } from 'zod'
 
@@ -37,12 +36,13 @@ export class ActivityLogService extends BaseService {
                  left join public."Comments" C
                            on "ActivityLogs"."taskId" = C."taskId" AND ("ActivityLogs".details::JSON ->> 'id')::text = C.id::text
         where "ActivityLogs"."taskId" = ${z.string().uuid().parse(taskId)}::uuid
+          AND "ActivityLogs"."deletedAt" IS NULL
           AND (
             "ActivityLogs".type <> ${ActivityType.COMMENT_ADDED}::"ActivityType"
             OR
             (
                 "ActivityLogs".type = ${ActivityType.COMMENT_ADDED}::"ActivityType" 
-                AND C."deletedAt" IS NULL AND C."parentId" IS NULL
+                AND C."parentId" IS NULL
             )
           )
         ORDER BY "ActivityLogs"."createdAt",
@@ -160,10 +160,10 @@ export class ActivityLogService extends BaseService {
 
         const copilotUsers = replies
           .map((reply) => {
-            if (userRole === AssigneeType.internalUser) {
+            if (reply.initiatorType === CommentInitiator.internalUser) {
               return internalUsers.data.find((iu) => iu.id === reply.initiatorId)
             }
-            if (userRole === AssigneeType.client) {
+            if (reply.initiatorType === CommentInitiator.client) {
               return clientUsers.data?.find((client) => client.id === reply.initiatorId)
             }
           })
@@ -178,12 +178,13 @@ export class ActivityLogService extends BaseService {
 
         return {
           ...payload,
-          content: comment.content,
+          content: comment.deletedAt ? '' : comment.content,
           replies,
           replyCount: replyCounts[comment.id] || 0,
           firstInitiators: initiators?.[comment.id]?.slice(0, 3),
           updatedAt: comment.updatedAt,
           createdAt: comment.createdAt,
+          deletedAt: comment.deletedAt,
         }
 
       default:
