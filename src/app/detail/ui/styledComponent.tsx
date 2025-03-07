@@ -16,6 +16,7 @@ export const BoldTypography = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[600],
   fontSize: theme.typography.md.fontSize,
   lineHeight: '22px',
+  fontWeight: 500,
 }))
 
 export const AvatarTypography = styled(Typography)(({ theme }) => ({

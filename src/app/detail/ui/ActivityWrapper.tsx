@@ -96,6 +96,7 @@ export const ActivityWrapper = ({
       type: ActivityType.COMMENT_ADDED,
       details: {
         content: postCommentPayload.content,
+        id: tempId,
       },
       taskId: task_id,
       userId: currentUserId as string,

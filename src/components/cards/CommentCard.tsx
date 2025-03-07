@@ -159,7 +159,7 @@ export const CommentCard = ({
     try {
       const updatedComment = await mutate()
 
-      setReplies(updatedComment?.comments || comment.details.replies)
+      setReplies(updatedComment?.comments || comment.details.replies || [])
       store.dispatch(setExpandedComments([...expandedComments, z.string().parse(comment.details.id)]))
     } catch (error) {
       console.error('Failed to fetch replies:', error)
@@ -170,7 +170,7 @@ export const CommentCard = ({
     if (expandedComments.includes(z.string().parse(comment.details.id))) {
       fetchCommentsWithFullReplies()
     } else {
-      setReplies(comment.details.replies as ReplyResponse[])
+      setReplies((comment.details.replies as ReplyResponse[]) || [])
     }
   }, [comment])
 
