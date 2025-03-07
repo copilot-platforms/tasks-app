@@ -215,48 +215,51 @@ export const CommentCard = ({
                 </StyledTypography>
               </Stack>
 
-              {(isHovered || isMobile() || isMenuOpen) && canEdit && (
+              {(isHovered || isMobile() || isMenuOpen) && (
                 <Stack direction="row" columnGap={2} sx={{ height: '10px' }} alignItems="center">
                   <ReplyButton handleClick={() => setShowReply((prev) => !prev)} />
-                  <MenuBox
-                    getMenuOpen={(open) => {
-                      setIsMenuOpen(open)
-                    }}
-                    menuContent={
-                      <>
-                        <ListBtn
-                          content="Edit comment"
-                          handleClick={() => {
-                            setIsReadOnly(false)
-                            if (editRef.current) {
-                              editRef.current.focus()
-                            }
-                          }}
-                          icon={<PencilIcon />}
-                          contentColor={(theme) => theme.color.text.text}
-                          width="175px"
-                          height="33px"
-                        />
-                        {canDelete && (
+                  {canEdit && (
+                    <MenuBox
+                      getMenuOpen={(open) => {
+                        setIsMenuOpen(open)
+                      }}
+                      menuContent={
+                        <>
                           <ListBtn
-                            content="Delete comment"
+                            content="Edit comment"
                             handleClick={() => {
-                              setShowConfirmDeleteModal(true)
+                              setIsReadOnly(false)
+                              if (editRef.current) {
+                                editRef.current.focus()
+                              }
                             }}
-                            icon={<TrashIcon />}
-                            contentColor={(theme) => theme.color.error}
+                            icon={<PencilIcon />}
+                            contentColor={(theme) => theme.color.text.text}
                             width="175px"
                             height="33px"
                           />
-                        )}
-                      </>
-                    }
-                    isSecondary
-                    width={'22px'}
-                    height={'22px'}
-                    displayButtonBackground={false}
-                    noHover={false}
-                  />
+
+                          {canDelete && (
+                            <ListBtn
+                              content="Delete comment"
+                              handleClick={() => {
+                                setShowConfirmDeleteModal(true)
+                              }}
+                              icon={<TrashIcon />}
+                              contentColor={(theme) => theme.color.error}
+                              width="175px"
+                              height="33px"
+                            />
+                          )}
+                        </>
+                      }
+                      isSecondary
+                      width={'22px'}
+                      height={'22px'}
+                      displayButtonBackground={false}
+                      noHover={false}
+                    />
+                  )}
                 </Stack>
               )}
             </Stack>

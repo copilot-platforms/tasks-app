@@ -113,6 +113,7 @@ export const ActivityWrapper = ({
           details: {
             content: postCommentPayload.content,
             id: tempId,
+            replies: [],
           },
           taskId: task_id,
           userId: currentUserId as string,
