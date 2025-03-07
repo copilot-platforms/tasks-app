@@ -25,6 +25,7 @@ export const CommentResponseSchema: z.ZodType = z.lazy(() =>
     content: z.string(),
     parentId: z.string().uuid().nullable(),
     attachments: z.array(AttachmentResponseSchema),
+    replyCount: z.number(),
     children: z.array(z.lazy(() => CommentResponseSchema)).default([]),
   }),
 )

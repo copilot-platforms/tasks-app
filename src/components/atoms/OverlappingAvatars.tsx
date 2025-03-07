@@ -1,0 +1,95 @@
+import { NoAssigneeAvatar, NoAssigneeAvatarSmall, NoAssigneeAvatarLarge } from '@/icons'
+import { copilotTheme } from '@/theme/copilot'
+import { IAssigneeCombined } from '@/types/interfaces'
+import { getAssigneeName } from '@/utils/assignee'
+import { Avatar, SxProps } from '@mui/material'
+
+type OverlappingAvatarsProps = {
+  assignees: (IAssigneeCombined | null)[]
+  width?: string
+  height?: string
+  fontSize?: string
+  sx?: SxProps
+  size?: 'small' | 'large' | 'default'
+  alt?: string
+}
+
+export const OverlappingAvatars: React.FC<OverlappingAvatarsProps> = ({
+  assignees,
+  width = '20px',
+  height = '20px',
+  fontSize = '14px',
+  sx,
+  size,
+}) => {
+  const avatarSx: SxProps = {
+    ...sx,
+    width,
+    height,
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize,
+    '.MuiAvatar-img': {
+      objectFit: 'cover',
+    },
+    position: 'relative',
+    zIndex: 1,
+    '&:not(:last-child)': {
+      marginRight: `-${Number(width.replace('px', '')) / 2}px`,
+    },
+  }
+
+  const renderAvatar = (assignee: IAssigneeCombined | null, index: number) => {
+    const avatarVariant: 'circular' | 'rounded' | 'square' = assignee?.type === 'companies' ? 'rounded' : 'circular'
+
+    if (!assignee || (assignee?.name || assignee?.givenName) === 'No assignee') {
+      if (size === 'small') return <NoAssigneeAvatarSmall key={index} />
+      if (size === 'large') return <NoAssigneeAvatarLarge key={index} />
+      return <NoAssigneeAvatar key={index} />
+    }
+
+    if (assignee?.iconImageUrl || assignee?.avatarImageUrl) {
+      return (
+        <Avatar
+          key={index}
+          alt={getAssigneeName(assignee)}
+          src={assignee?.iconImageUrl || assignee?.avatarImageUrl}
+          sx={{
+            ...avatarSx,
+            zIndex: assignees.length + index,
+            border: (theme) => `1.1px solid ${theme.color.gray[200]}`,
+          }}
+          variant={avatarVariant}
+        />
+      )
+    }
+
+    return (
+      <Avatar
+        key={index}
+        alt={getAssigneeName(assignee)}
+        sx={{
+          ...avatarSx,
+          bgcolor: assignee?.fallbackColor || copilotTheme.colors.green,
+          zIndex: assignees.length - index,
+          marginLeft: `-${Number(width.replace('px', '')) / 2}px`,
+        }}
+        variant={avatarVariant}
+      >
+        {getAssigneeName(assignee)[0].toUpperCase()}
+      </Avatar>
+    )
+  }
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        width: 'fit-content',
+      }}
+    >
+      {assignees.slice(0, 3).map(renderAvatar)}
+    </div>
+  )
+}
