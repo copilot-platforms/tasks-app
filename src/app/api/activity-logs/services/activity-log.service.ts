@@ -1,8 +1,7 @@
 import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 import { ClientsResponse, CompaniesResponse, CopilotListArgs, InternalUsers, InternalUsersResponse } from '@/types/common'
 import { CopilotAPI } from '@/utils/CopilotAPI'
-import { replaceImageSrc, signMediaForComments } from '@/utils/signedUrlReplacer'
-import { getSignedUrl } from '@/utils/signUrl'
+import { signMediaForComments } from '@/utils/signedUrlReplacer'
 import {
   DBActivityLogArray,
   DBActivityLogArraySchema,
@@ -37,12 +36,13 @@ export class ActivityLogService extends BaseService {
                  left join public."Comments" C
                            on "ActivityLogs"."taskId" = C."taskId" AND ("ActivityLogs".details::JSON ->> 'id')::text = C.id::text
         where "ActivityLogs"."taskId" = ${z.string().uuid().parse(taskId)}::uuid
+          AND "ActivityLogs"."deletedAt" IS NULL
           AND (
             "ActivityLogs".type <> ${ActivityType.COMMENT_ADDED}::"ActivityType"
             OR
             (
                 "ActivityLogs".type = ${ActivityType.COMMENT_ADDED}::"ActivityType" 
-                AND C."deletedAt" IS NULL AND C."parentId" IS NULL
+                AND C."parentId" IS NULL
             )
           )
         ORDER BY "ActivityLogs"."createdAt",
@@ -184,6 +184,7 @@ export class ActivityLogService extends BaseService {
           firstInitiators: initiators?.[comment.id]?.slice(0, 3),
           updatedAt: comment.updatedAt,
           createdAt: comment.createdAt,
+          deletedAt: comment.deletedAt,
         }
 
       default:

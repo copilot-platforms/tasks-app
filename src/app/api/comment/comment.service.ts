@@ -72,7 +72,20 @@ export class CommentService extends BaseService {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Delete, Resource.Comment)
 
+    const replyCounts = await this.getReplyCounts([id])
     const comment = await this.db.comment.delete({ where: { id } })
+
+    // Delete corresponding activity log as well, so as to remove comment from UI
+    // If activity log exists but comment has a `deletedAt`, show "Comment was deleted" card instead
+    if (!replyCounts[id]) {
+      // If there are 0 replies, key won't be in object
+      // Can't use `delete` only here, but only one activity log will have details.id with commentId
+      await this.db.activityLog.deleteMany({
+        where: {
+          details: { path: ['id'], equals: id },
+        },
+      })
+    }
 
     const tasksService = new TasksService(this.user)
     await tasksService.setNewLastActivityLogUpdated(comment.taskId)
