@@ -178,7 +178,7 @@ export class ActivityLogService extends BaseService {
 
         return {
           ...payload,
-          content: comment.content,
+          content: comment.deletedAt ? '' : comment.content,
           replies,
           replyCount: replyCounts[comment.id] || 0,
           firstInitiators: initiators?.[comment.id]?.slice(0, 3),
