@@ -5,16 +5,18 @@ import { IAssigneeCombined } from '@/types/interfaces'
 import { LogResponse } from '@api/activity-logs/schemas/LogResponseSchema'
 import { Stack } from '@mui/material'
 import { VerticalLine } from './styledComponent'
+import { OptimisticUpdate } from '@/utils/checkOptimisticStableId'
 
 interface Prop {
   comment: LogResponse
   createComment: (postCommentPayload: CreateComment) => void
-  deleteComment: (id: string) => void
+  deleteComment: (id: string, replyId?: string) => void
   task_id: string
   stableId: string
+  optimisticUpdates: OptimisticUpdate[]
 }
 
-export const Comments = ({ comment, createComment, deleteComment, task_id, stableId }: Prop) => {
+export const Comments = ({ comment, createComment, deleteComment, task_id, stableId, optimisticUpdates }: Prop) => {
   return (
     <Stack id={stableId} direction="row" columnGap={2} position="relative">
       <VerticalLine />
@@ -31,7 +33,13 @@ export const Comments = ({ comment, createComment, deleteComment, task_id, stabl
           size="large"
         />
 
-        <CommentCard comment={comment} createComment={createComment} deleteComment={deleteComment} task_id={task_id} />
+        <CommentCard
+          comment={comment}
+          createComment={createComment}
+          deleteComment={deleteComment}
+          task_id={task_id}
+          optimisticUpdates={optimisticUpdates}
+        />
       </Stack>
     </Stack>
   )

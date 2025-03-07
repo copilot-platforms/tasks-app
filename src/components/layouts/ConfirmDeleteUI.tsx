@@ -9,7 +9,7 @@ import { PrimaryBtn } from '../buttons/PrimaryBtn'
 interface Prop {
   handleCancel: () => void
   handleDelete: () => void
-  bodyTag?: 'task' | 'comment' | 'template'
+  bodyTag?: 'task' | 'comment' | 'template' | 'message'
   customBody?: string
   description?: string
 }
@@ -24,6 +24,7 @@ export const ConfirmDeleteUI = ({
   const getHeaderMessage = () => {
     if (customBody) return customBody
     if (bodyTag === 'comment') return 'Delete comment?'
+    if (bodyTag === 'message') return 'Delete message'
     return `Are you sure you want to delete this ${bodyTag}?`
   }
 

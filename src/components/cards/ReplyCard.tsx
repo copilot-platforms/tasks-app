@@ -8,7 +8,6 @@ import { BoldTypography, CustomDivider, StyledModal, StyledTypography } from '@/
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import AttachmentLayout from '@/components/AttachmentLayout'
 import { ListBtn } from '@/components/buttons/ListBtn'
-import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 import { EditCommentButtons } from '@/components/buttonsGroup/EditCommentButtons'
 import { MenuBox } from '@/components/inputs/MenuBox'
 import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
@@ -33,11 +32,13 @@ export const ReplyCard = ({
   uploadFn,
   task_id,
   handleImagePreview,
+  deleteReply,
 }: {
   item: ReplyResponse
   uploadFn: ((file: File) => Promise<string | undefined>) | undefined
   task_id: string
   handleImagePreview: (e: React.MouseEvent<unknown>) => void
+  deleteReply: (id: string, replyId: string) => void
 }) => {
   const [isReadOnly, setIsReadOnly] = useState<boolean>(true)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -233,10 +234,11 @@ export const ReplyCard = ({
           <ConfirmDeleteUI
             handleCancel={() => setShowConfirmDeleteModal(false)}
             handleDelete={() => {
-              deleteComment(token ?? '', item.id as string)
+              deleteReply(item.id as string, item.id)
               setShowConfirmDeleteModal(false)
             }}
-            bodyTag="comment"
+            bodyTag="message"
+            description="Are you sure you want to delete this message?"
           />
         </StyledModal>
       </Stack>

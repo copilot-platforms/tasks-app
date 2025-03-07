@@ -52,7 +52,7 @@ export const ReplyInput = ({ task_id, comment, createComment, uploadFn }: ReplyI
   }, [comment, detail, task_id])
 
   useEffect(() => {
-    if (pendingReplies.length > 0 && comment.details.id) {
+    if (pendingReplies.length > 0 && !comment.details.id.includes('temp-comment')) {
       const { content, taskId } = pendingReplies[0]
       createComment({
         content,
