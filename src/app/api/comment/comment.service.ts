@@ -96,7 +96,7 @@ export class CommentService extends BaseService {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Update, Resource.Comment)
 
-    const filters = { id, workspaceId: this.user.workspaceId, initiatorId: this.user.internalUserId }
+    const filters = { id, workspaceId: this.user.workspaceId, initiatorId: this.user.internalUserId, deletedAt: undefined }
     const prevComment = await this.db.comment.findFirst({
       where: filters,
     })
