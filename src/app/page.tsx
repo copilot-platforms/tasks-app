@@ -101,6 +101,7 @@ export default async function Main({ searchParams }: { searchParams: { token: st
       token={token}
       viewSettings={viewSettings}
       tokenPayload={tokenPayload}
+      clearExpandedComments={true}
     >
       {/* Async fetchers */}
       <Suspense fallback={null}>

@@ -18,6 +18,7 @@ import { useSelector } from 'react-redux'
 import useSWR, { useSWRConfig } from 'swr'
 import { z } from 'zod'
 import { TransitionGroup } from 'react-transition-group'
+import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 
 interface OptimisticUpdate {
   tempId: string
@@ -35,9 +36,11 @@ export const ActivityWrapper = ({
   tokenPayload: Token
 }) => {
   const { activeTask } = useSelector(selectTaskBoard)
+  const { expandedComments } = useSelector(selectTaskDetails)
   const task = activeTask
   const [lastUpdated, setLastUpdated] = useState(task?.lastActivityLogUpdated)
   const [optimisticUpdates, setOptimisticUpdates] = useState<OptimisticUpdate[]>([])
+  const expandedCommentsQueryString = expandedComments.map((id) => encodeURIComponent(id)).join(',')
   const cacheKey = `/api/tasks/${task_id}/activity-logs?token=${token}`
   const { data: activities, isLoading } = useSWR(`/api/tasks/${task_id}/activity-logs?token=${token}`, fetcher, {
     refreshInterval: 0,
@@ -93,6 +96,7 @@ export const ActivityWrapper = ({
       type: ActivityType.COMMENT_ADDED,
       details: {
         content: postCommentPayload.content,
+        id: tempId,
       },
       taskId: task_id,
       userId: currentUserId as string,

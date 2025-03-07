@@ -65,6 +65,7 @@ export declare module '@mui/material/styles' {
         textSecondary: string
         textDisabled: string
         textPlaceholder: string
+        textPrimary: string
       }
       modal: {
         backdrop: string
@@ -151,6 +152,7 @@ export declare module '@mui/material/styles' {
         textSecondary: React.CSSProperties['color']
         textDisabled: React.CSSProperties['color']
         textPlaceholder: React.CSSProperties['color']
+        textPrimary: React.CSSProperties['color']
       }
       modal: {
         backdrop: React.CSSProperties['color']
