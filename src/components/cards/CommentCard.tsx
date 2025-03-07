@@ -55,7 +55,7 @@ export const CommentCard = ({
 }: {
   comment: LogResponse
   createComment: (postCommentPayload: CreateComment) => void
-  deleteComment: (id: string) => void
+  deleteComment: (id: string, replyId?: string) => void
   task_id: string
   optimisticUpdates: OptimisticUpdate[]
 }) => {
@@ -164,14 +164,14 @@ export const CommentCard = ({
       const updatedComment = await mutate()
 
       setReplies(updatedComment?.comments || comment.details.replies || [])
-      store.dispatch(setExpandedComments([...expandedComments, z.string().parse(comment.details.id)]))
+      store.dispatch(setExpandedComments([...expandedComments, z.string().parse(comment.details.id ?? '')]))
     } catch (error) {
       console.error('Failed to fetch replies:', error)
     }
   }
 
   useEffect(() => {
-    const replies = comment.details.replies as ReplyResponse[]
+    const replies = (comment.details.replies as ReplyResponse[]) || []
     if (expandedComments.length && expandedComments.includes(z.string().parse(comment.details.id))) {
       const lastReply = replies[replies.length - 1]
       if (lastReply && lastReply.id.includes('temp-comment')) {
@@ -309,10 +309,10 @@ export const CommentCard = ({
                 <Collapse key={checkOptimisticStableId(item, optimisticUpdates)}>
                   <ReplyCard
                     item={item}
-                    key={item.id}
                     uploadFn={uploadFn}
                     task_id={task_id}
                     handleImagePreview={handleImagePreview}
+                    deleteReply={deleteComment}
                   />
                 </Collapse>
               )

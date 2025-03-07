@@ -10,7 +10,7 @@ import { OptimisticUpdate } from '@/utils/checkOptimisticStableId'
 interface Prop {
   comment: LogResponse
   createComment: (postCommentPayload: CreateComment) => void
-  deleteComment: (id: string) => void
+  deleteComment: (id: string, replyId?: string) => void
   task_id: string
   stableId: string
   optimisticUpdates: OptimisticUpdate[]
