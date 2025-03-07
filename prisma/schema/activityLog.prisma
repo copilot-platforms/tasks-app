@@ -19,6 +19,7 @@ model ActivityLog {
   userRole    AssigneeType
   createdAt   DateTime     @default(now()) @db.Timestamptz()
   updatedAt   DateTime     @updatedAt @ignore @db.Timestamptz()
+  deletedAt   DateTime?
 
   @@index([createdAt])
   @@index([taskId], name: "IX_ActivityLogs_taskId")
