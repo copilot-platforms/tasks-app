@@ -237,7 +237,8 @@ export const ReplyCard = ({
               deleteReply(item.id as string, item.id)
               setShowConfirmDeleteModal(false)
             }}
-            bodyTag="comment"
+            bodyTag="message"
+            description="Are you sure you want to delete this message?"
           />
         </StyledModal>
       </Stack>
