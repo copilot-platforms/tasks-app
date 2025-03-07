@@ -13,7 +13,7 @@ import { CommentService } from '@api/comment/comment.service'
 import APIError from '@api/core/exceptions/api'
 import User from '@api/core/models/User.model'
 import { BaseService } from '@api/core/services/base.service'
-import { ActivityType, AssigneeType, Comment } from '@prisma/client'
+import { ActivityType, AssigneeType, Comment, CommentInitiator } from '@prisma/client'
 import httpStatus from 'http-status'
 import { z } from 'zod'
 
@@ -160,10 +160,10 @@ export class ActivityLogService extends BaseService {
 
         const copilotUsers = replies
           .map((reply) => {
-            if (userRole === AssigneeType.internalUser) {
+            if (reply.initiatorType === CommentInitiator.internalUser) {
               return internalUsers.data.find((iu) => iu.id === reply.initiatorId)
             }
-            if (userRole === AssigneeType.client) {
+            if (reply.initiatorType === CommentInitiator.client) {
               return clientUsers.data?.find((client) => client.id === reply.initiatorId)
             }
           })
