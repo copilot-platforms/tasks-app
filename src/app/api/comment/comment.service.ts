@@ -114,10 +114,8 @@ export class CommentService extends BaseService {
   async getCommentsByIds(commentIds: string[]) {
     return await this.db.comment.findMany({
       where: {
-        id: {
-          in: commentIds,
-        },
-        deletedAt: undefined,
+        id: { in: commentIds },
+        deletedAt: undefined, // Also get deleted comments (to show if comment parent was deleted)
       },
     })
   }
@@ -128,10 +126,14 @@ export class CommentService extends BaseService {
         parentId,
         workspaceId: this.user.workspaceId,
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: 'asc' },
     })
   }
 
+  /**
+   * Returns an object with parentId as key and array of reply comments containing that comment as parentId
+   * as value
+   */
   async getReplyCounts(commentIds: string[]): Promise<Record<string, number>> {
     if (!commentIds) return {}
 
@@ -195,7 +197,6 @@ export class CommentService extends BaseService {
       const expandedReplies = await commentRepo.getAllRepliesForParents(expandComments)
       replies = [...replies, ...expandedReplies]
     }
-
     const limitedReplies = await commentRepo.getLimitedRepliesForParents(commentIds)
     replies = [...replies, ...limitedReplies]
 
