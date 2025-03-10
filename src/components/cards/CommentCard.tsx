@@ -193,7 +193,14 @@ export const CommentCard = ({
       <Stack direction="column" rowGap={'4px'}>
         {comment.details.deletedAt ? (
           <Stack sx={{ paddingBottom: '4px' }}>
-            <Typography variant="bodyMd">This message was deleted</Typography>
+            <Typography
+              variant="bodyMd"
+              sx={{
+                color: (theme) => theme.color.text.text,
+              }}
+            >
+              This message was deleted
+            </Typography>
           </Stack>
         ) : (
           <Stack
