@@ -6,11 +6,12 @@ import { LogResponse } from '@api/activity-logs/schemas/LogResponseSchema'
 import { Stack } from '@mui/material'
 import { VerticalLine } from './styledComponent'
 import { OptimisticUpdate } from '@/utils/checkOptimisticStableId'
+import { TrashIcon2 } from '@/icons'
 
 interface Prop {
   comment: LogResponse
   createComment: (postCommentPayload: CreateComment) => void
-  deleteComment: (id: string, replyId?: string) => void
+  deleteComment: (id: string, replyId?: string, softDelete?: boolean) => void
   task_id: string
   stableId: string
   optimisticUpdates: OptimisticUpdate[]
@@ -31,6 +32,7 @@ export const Comments = ({ comment, createComment, deleteComment, task_id, stabl
             marginTop: '5px',
           }}
           size="large"
+          icon={comment.details.deletedAt ? <TrashIcon2 /> : undefined}
         />
 
         <CommentCard

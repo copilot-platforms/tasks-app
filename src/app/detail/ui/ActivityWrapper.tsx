@@ -187,7 +187,7 @@ export const ActivityWrapper = ({
   }
 
   // Handle comment deletion
-  const handleDeleteComment = async (commentId: string, logId: string, replyId?: string) => {
+  const handleDeleteComment = async (commentId: string, logId: string, replyId?: string, softDelete?: boolean) => {
     let optimisticData
     if (replyId) {
       optimisticData = activities
@@ -208,7 +208,24 @@ export const ActivityWrapper = ({
           })
         : []
     } else {
-      optimisticData = activities ? activities.data.filter((comment: LogResponse) => comment.id !== logId) : []
+      if (softDelete) {
+        optimisticData = activities
+          ? activities.data.map((comment: LogResponse) => {
+              if (comment.id === logId) {
+                return {
+                  ...comment,
+                  details: {
+                    ...comment.details,
+                    deletedAt: new Date().toISOString(),
+                  },
+                }
+              }
+              return comment
+            })
+          : []
+      } else {
+        optimisticData = activities ? activities.data.filter((comment: LogResponse) => comment.id !== logId) : []
+      }
     }
 
     try {
@@ -256,7 +273,9 @@ export const ActivityWrapper = ({
                       <Comments
                         comment={item}
                         createComment={handleCreateComment}
-                        deleteComment={(commentId, replyId) => handleDeleteComment(commentId, item.id, replyId)}
+                        deleteComment={(commentId, replyId, softDelete) =>
+                          handleDeleteComment(commentId, item.id, replyId, softDelete)
+                        }
                         task_id={task_id}
                         stableId={item.id}
                         optimisticUpdates={optimisticUpdates}
