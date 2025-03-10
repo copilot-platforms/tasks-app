@@ -15,6 +15,7 @@ import { ActivityType, Comment, CommentInitiator, Prisma } from '@prisma/client'
 import httpStatus from 'http-status'
 import { z } from 'zod'
 import { CommentRepository } from './comment.repository'
+import { sendReplyCreateNotifications } from '@/jobs/notifications/send-reply-create-notifications'
 
 export class CommentService extends BaseService {
   async create(data: CreateComment) {
@@ -56,16 +57,18 @@ export class CommentService extends BaseService {
           parentId: comment.parentId,
         }),
       )
-
-      await sendCommentCreateNotifications.trigger({ user: this.user, task: task, comment: comment })
+      await sendCommentCreateNotifications.trigger({ user: this.user, task, comment })
+    } else {
+      await sendReplyCreateNotifications.trigger({ user: this.user, task, comment })
     }
+
+    return comment
+
     // if (data.mentions) {
     //   await notificationService.createBulkNotification(NotificationTaskActions.Mentioned, task, data.mentions, {
     //     commentId: comment.id,
     //   })
     // }
-
-    return comment
   }
 
   async delete(id: string) {
@@ -154,20 +157,35 @@ export class CommentService extends BaseService {
   /**
    * Gets the first 0 - n number of unique initiators for a comment thread based on the parentIds
    */
-  async getThreadInitiators(commentIds: string[], internalUsers: InternalUsersResponse, clients: ClientsResponse) {
+  async getThreadInitiators(
+    commentIds: string[],
+    internalUsers: InternalUsersResponse,
+    clients: ClientsResponse,
+    opts: {
+      limit?: number
+      onlyIds?: boolean
+    } = { limit: 3, onlyIds: false },
+  ) {
     if (!commentIds.length) return {}
     const commentRepo = new CommentRepository(this.user)
-    const results = await commentRepo.getFirstCommentInitiators(commentIds)
+    const results = await commentRepo.getFirstCommentInitiators(commentIds, opts.limit)
 
     const initiators: Record<string, unknown[]> = {}
     // Extract initiator details
     for (let { parentId, initiatorId, initiatorType } of results) {
       if (!parentId) continue
       initiators[parentId] ??= []
+      // If we are in onlyIds mode, append userId only, instead of full user details
+      if (opts.onlyIds) {
+        initiators[parentId].push(initiatorId)
+        continue
+      }
+
       let user
       const getUserById = (user: { id: string }) => user.id === initiatorId
-
-      // Get full initiator body. initiatorType was recently implemented, and it will be null for older comments
+      // Get full initiator body from Copilot API
+      // NOTE: initiatorType was recently implemented, and it will be null for older comments.
+      // for replies it is safe to assume every reply will have a initiatorType since it was implemented in the same milestone
       if (initiatorType === CommentInitiator.internalUser) {
         user = internalUsers.data.find(getUserById)
       } else if (initiatorType === CommentInitiator.client) {
@@ -178,6 +196,7 @@ export class CommentService extends BaseService {
       // If initiator was deleted, return null to denote deleted user
       initiators[parentId].push(user || null)
     }
+
     return initiators
   }
 
