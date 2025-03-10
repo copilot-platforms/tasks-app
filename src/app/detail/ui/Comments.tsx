@@ -5,7 +5,7 @@ import { IAssigneeCombined } from '@/types/interfaces'
 import { LogResponse } from '@api/activity-logs/schemas/LogResponseSchema'
 import { Stack } from '@mui/material'
 import { VerticalLine } from './styledComponent'
-import { OptimisticUpdate } from '@/utils/checkOptimisticStableId'
+import { OptimisticUpdate } from '@/utils/optimisticCommentUtils'
 import { TrashIcon2 } from '@/icons'
 
 interface Prop {

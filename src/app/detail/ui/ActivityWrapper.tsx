@@ -20,7 +20,8 @@ import { z } from 'zod'
 import { TransitionGroup } from 'react-transition-group'
 import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 import { ReplyResponse } from '@/app/api/activity-logs/schemas/CommentAddedSchema'
-import { checkOptimisticStableId } from '@/utils/checkOptimisticStableId'
+import { checkOptimisticStableId, getOptimisticData, getTempLog } from '@/utils/optimisticCommentUtils'
+import { IAssigneeCombined } from '@/types/interfaces'
 
 interface OptimisticUpdate {
   tempId: string
@@ -64,10 +65,7 @@ export const ActivityWrapper = ({
 
   const currentUserDetails = useMemo(() => {
     const currentAssignee = assignee.find((el) => el.id === currentUserId)
-    if (!currentAssignee) {
-      return
-    }
-    return z.union([InternalUsersSchema, ClientResponseSchema]).parse(assignee.find((el) => el.id === currentUserId))
+    return currentAssignee
   }, [assignee, currentUserId])
 
   // Handle comment creation
@@ -82,85 +80,8 @@ export const ActivityWrapper = ({
       },
     ])
 
-    const tempLog: LogResponse | ReplyResponse = postCommentPayload.parentId
-      ? {
-          id: tempId,
-          content: postCommentPayload.content,
-          taskId: task_id,
-          parentId: postCommentPayload.parentId,
-          workspaceId: '',
-          initiatorId: currentUserDetails?.id as string,
-          initiator: {
-            status: '',
-            id: currentUserDetails?.id as string,
-            givenName: currentUserDetails?.givenName || '',
-            familyName: currentUserDetails?.familyName || '',
-            email: currentUserDetails?.email || '',
-            companyId: '',
-            avatarImageUrl: currentUserDetails?.avatarImageUrl || null,
-            customFields: {},
-            fallbackColor: currentUserDetails?.fallbackColor || null,
-            createdAt: currentUserDetails?.createdAt || new Date().toISOString(),
-            isClientAccessLimited: false,
-            companyAccessList: null,
-          },
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        }
-      : {
-          id: tempId,
-          type: ActivityType.COMMENT_ADDED,
-          details: {
-            content: postCommentPayload.content,
-            id: tempId,
-            replies: [],
-          },
-          taskId: task_id,
-          userId: currentUserId as string,
-          userRole: 'internalUser',
-          workspaceId: '',
-          initiator: {
-            status: '',
-            id: currentUserDetails?.id as string,
-            givenName: currentUserDetails?.givenName || '',
-            familyName: currentUserDetails?.familyName || '',
-            email: currentUserDetails?.email || '',
-            companyId: '',
-            avatarImageUrl: currentUserDetails?.avatarImageUrl || null,
-            customFields: {},
-            fallbackColor: currentUserDetails?.fallbackColor || null,
-            createdAt: currentUserDetails?.createdAt || new Date().toISOString(),
-            isClientAccessLimited: false,
-            companyAccessList: null,
-          },
-          createdAt: new Date().toISOString(),
-        }
-
-    let optimisticData
-    if (postCommentPayload.parentId) {
-      optimisticData = activities
-        ? activities.data.map((comment: LogResponse) => {
-            if (comment.details.id === postCommentPayload.parentId) {
-              const updatedReplies = [
-                ...(comment.details.replies as ReplyResponse[]),
-                { ...tempLog, parentId: postCommentPayload.parentId },
-              ]
-
-              return {
-                ...comment,
-                replies: updatedReplies,
-                details: {
-                  ...comment.details,
-                  replies: updatedReplies,
-                },
-              }
-            }
-            return comment
-          })
-        : []
-    } else {
-      optimisticData = activities ? [...activities.data, tempLog] : [tempLog]
-    }
+    const tempLog = getTempLog(tempId, postCommentPayload, task_id, currentUserDetails, currentUserId)
+    const optimisticData = getOptimisticData(postCommentPayload, activities.data, tempLog)
 
     try {
       mutate(
