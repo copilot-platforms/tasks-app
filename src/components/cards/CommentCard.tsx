@@ -55,14 +55,13 @@ export const CommentCard = ({
 }: {
   comment: LogResponse
   createComment: (postCommentPayload: CreateComment) => void
-  deleteComment: (id: string, replyId?: string) => void
+  deleteComment: (id: string, replyId?: string, softDelete?: boolean) => void
   task_id: string
   optimisticUpdates: OptimisticUpdate[]
 }) => {
   const [showReply, setShowReply] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
   const [replies, setReplies] = useState(comment.details.replies as ReplyResponse[])
-
   const [timeAgo, setTimeAgo] = useState(getTimeDifference(comment.createdAt))
   const [isReadOnly, setIsReadOnly] = useState<boolean>(true)
   const editRef = useRef<HTMLDivElement>(null)
@@ -192,109 +191,116 @@ export const CommentCard = ({
       }}
     >
       <Stack direction="column" rowGap={'4px'}>
-        <Stack
-          direction="column"
-          rowGap={'2px'}
-          sx={{ paddingBottom: '4px' }}
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-        >
-          {isReadOnly && (
-            <Stack direction="row" justifyContent={'space-between'} alignItems="center">
-              <Stack direction="row" columnGap={1} alignItems="center">
-                {commentUser ? (
-                  <BoldTypography>{getAssigneeName(commentUser, '')}</BoldTypography>
-                ) : (
-                  <Typography variant="md" sx={{ fontStyle: 'italic' }}>
-                    Deleted User
-                  </Typography>
-                )}
-                <DotSeparator />
-                <StyledTypography sx={{ lineHeight: '22px' }}>
-                  {timeAgo} {comment.details.updatedAt !== comment.details.createdAt ? '(edited)' : ''}
-                </StyledTypography>
-              </Stack>
+        {comment.details.deletedAt ? (
+          <Stack sx={{ paddingBottom: '4px' }}>
+            <Typography variant="bodyMd">This message was deleted</Typography>
+          </Stack>
+        ) : (
+          <Stack
+            direction="column"
+            rowGap={'2px'}
+            sx={{ paddingBottom: '4px' }}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+          >
+            {isReadOnly && (
+              <Stack direction="row" justifyContent={'space-between'} alignItems="center">
+                <Stack direction="row" columnGap={1} alignItems="center">
+                  {commentUser ? (
+                    <BoldTypography>{getAssigneeName(commentUser, '')}</BoldTypography>
+                  ) : (
+                    <Typography variant="md" sx={{ fontStyle: 'italic' }}>
+                      Deleted User
+                    </Typography>
+                  )}
+                  <DotSeparator />
+                  <StyledTypography sx={{ lineHeight: '22px' }}>
+                    {timeAgo} {comment.details.updatedAt !== comment.details.createdAt ? '(edited)' : ''}
+                  </StyledTypography>
+                </Stack>
 
-              {(isHovered || isMobile() || isMenuOpen) && (
-                <Stack direction="row" columnGap={2} sx={{ height: '10px' }} alignItems="center">
-                  <ReplyButton handleClick={() => setShowReply((prev) => !prev)} />
-                  {canEdit && (
-                    <MenuBox
-                      getMenuOpen={(open) => {
-                        setIsMenuOpen(open)
-                      }}
-                      menuContent={
-                        <>
-                          <ListBtn
-                            content="Edit comment"
-                            handleClick={() => {
-                              setIsReadOnly(false)
-                              if (editRef.current) {
-                                editRef.current.focus()
-                              }
-                            }}
-                            icon={<PencilIcon />}
-                            contentColor={(theme) => theme.color.text.text}
-                            width="175px"
-                            height="33px"
-                          />
-
-                          {canDelete && (
+                {(isHovered || isMobile() || isMenuOpen) && (
+                  <Stack direction="row" columnGap={2} sx={{ height: '10px' }} alignItems="center">
+                    <ReplyButton handleClick={() => setShowReply((prev) => !prev)} />
+                    {canEdit && (
+                      <MenuBox
+                        getMenuOpen={(open) => {
+                          setIsMenuOpen(open)
+                        }}
+                        menuContent={
+                          <>
                             <ListBtn
-                              content="Delete comment"
+                              content="Edit comment"
                               handleClick={() => {
-                                setShowConfirmDeleteModal(true)
+                                setIsReadOnly(false)
+                                if (editRef.current) {
+                                  editRef.current.focus()
+                                }
                               }}
-                              icon={<TrashIcon />}
-                              contentColor={(theme) => theme.color.error}
+                              icon={<PencilIcon />}
+                              contentColor={(theme) => theme.color.text.text}
                               width="175px"
                               height="33px"
                             />
-                          )}
-                        </>
-                      }
-                      isSecondary
-                      width={'22px'}
-                      height={'22px'}
-                      displayButtonBackground={false}
-                      noHover={false}
-                    />
-                  )}
-                </Stack>
-              )}
-            </Stack>
-          )}
-          <Box onBlur={() => setIsFocused(false)} onFocus={() => setIsFocused(true)}>
-            <Tapwrite
-              content={editedContent}
-              onActiveStatusChange={(prop) => {
-                const { isListActive, isFloatingMenuActive } = prop
-                setIsListOrMenuActive(isListActive || isFloatingMenuActive)
-              }}
-              getContent={setEditedContent}
-              readonly={isReadOnly}
-              editorRef={editRef}
-              editorClass={'tapwrite-comment'}
-              addAttachmentButton={!isReadOnly}
-              uploadFn={uploadFn}
-              deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', task_id, null)}
-              maxUploadLimit={MAX_UPLOAD_LIMIT}
-              attachmentLayout={(props) => <AttachmentLayout {...props} isComment={true} />}
-              hardbreak
-              parentContainerStyle={{
-                width: '100%',
-                maxWidth: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                overflow: 'hidden',
-                wordBreak: 'break-word',
-                whiteSpace: 'pre-wrap',
-              }}
-              endButtons={<EditCommentButtons cancelEdit={cancelEdit} handleEdit={handleEdit} isReadOnly={isReadOnly} />}
-              handleImageDoubleClick={handleImagePreview}
-            />
-          </Box>
-        </Stack>
+
+                            {canDelete && (
+                              <ListBtn
+                                content="Delete comment"
+                                handleClick={() => {
+                                  setShowConfirmDeleteModal(true)
+                                }}
+                                icon={<TrashIcon />}
+                                contentColor={(theme) => theme.color.error}
+                                width="175px"
+                                height="33px"
+                              />
+                            )}
+                          </>
+                        }
+                        isSecondary
+                        width={'22px'}
+                        height={'22px'}
+                        displayButtonBackground={false}
+                        noHover={false}
+                      />
+                    )}
+                  </Stack>
+                )}
+              </Stack>
+            )}
+            <Box onBlur={() => setIsFocused(false)} onFocus={() => setIsFocused(true)}>
+              <Tapwrite
+                content={editedContent}
+                onActiveStatusChange={(prop) => {
+                  const { isListActive, isFloatingMenuActive } = prop
+                  setIsListOrMenuActive(isListActive || isFloatingMenuActive)
+                }}
+                getContent={setEditedContent}
+                readonly={isReadOnly}
+                editorRef={editRef}
+                editorClass={'tapwrite-comment'}
+                addAttachmentButton={!isReadOnly}
+                uploadFn={uploadFn}
+                deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', task_id, null)}
+                maxUploadLimit={MAX_UPLOAD_LIMIT}
+                attachmentLayout={(props) => <AttachmentLayout {...props} isComment={true} />}
+                hardbreak
+                parentContainerStyle={{
+                  width: '100%',
+                  maxWidth: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  overflow: 'hidden',
+                  wordBreak: 'break-word',
+                  whiteSpace: 'pre-wrap',
+                }}
+                endButtons={<EditCommentButtons cancelEdit={cancelEdit} handleEdit={handleEdit} isReadOnly={isReadOnly} />}
+                handleImageDoubleClick={handleImagePreview}
+              />
+            </Box>
+          </Stack>
+        )}
+
         {((Array.isArray((comment as LogResponse).details?.replies) &&
           ((comment as LogResponse).details.replies as ReplyResponse[]).length > 0) ||
           showReply) && <CustomDivider />}
@@ -336,7 +342,7 @@ export const CommentCard = ({
         <ConfirmDeleteUI
           handleCancel={() => setShowConfirmDeleteModal(false)}
           handleDelete={() => {
-            deleteComment((comment as LogResponse).details.id as string)
+            deleteComment((comment as LogResponse).details.id as string, undefined, replies.length > 0)
             setShowConfirmDeleteModal(false)
           }}
           bodyTag="comment"
