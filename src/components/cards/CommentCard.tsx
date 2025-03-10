@@ -44,7 +44,7 @@ import useSWR from 'swr'
 import { fetcher } from '@/utils/fetcher'
 import { CollapsibleReplyCard } from '@/components/cards/CollapsibleReplyCard'
 import { TransitionGroup } from 'react-transition-group'
-import { checkOptimisticStableId, OptimisticUpdate } from '@/utils/checkOptimisticStableId'
+import { checkOptimisticStableId, OptimisticUpdate } from '@/utils/optimisticCommentUtils'
 
 export const CommentCard = ({
   comment,
