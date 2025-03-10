@@ -4,7 +4,7 @@ import { schedules } from '@trigger.dev/sdk/v3'
 export const keepAlive = schedules.task({
   id: 'keep-alive',
   maxDuration: 10,
-  cron: '* * * * *', // Run every 1 minutes till trigger gets their shiz together
+  cron: '*/2 * * * *',
   run: async () => {
     return { message: 'Worker is warm' }
   },
