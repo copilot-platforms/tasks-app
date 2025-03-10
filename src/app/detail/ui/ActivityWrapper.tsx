@@ -153,9 +153,24 @@ export const ActivityWrapper = ({
       await mutate(
         cacheKey,
         async () => {
-          // Delete the comment from the server
-          await deleteComment(token, commentId)
-          // Return the actual updated data (this will trigger revalidation)
+          let commentIdToDelete = commentId
+          if (commentIdToDelete.includes('temp-comment')) {
+            const maxAttempts = 6
+            for (let attempt = 0; attempt < maxAttempts; attempt++) {
+              const matchedUpdate = optimisticUpdates.find((update) => update.tempId === commentIdToDelete)
+              if (matchedUpdate?.serverId) {
+                commentIdToDelete = matchedUpdate.serverId
+                break
+              }
+              await new Promise((resolve) => setTimeout(resolve, 500))
+            }
+            if (commentIdToDelete.includes('temp-comment')) {
+              console.warn('Comment is still pending server sync. Try again later.')
+              return activities
+            }
+          }
+
+          await deleteComment(token, commentIdToDelete)
           return await fetcher(cacheKey)
         },
         {
