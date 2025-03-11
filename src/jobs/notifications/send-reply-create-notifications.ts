@@ -27,7 +27,6 @@ export const sendReplyCreateNotifications = task({
     if (!comment.parentId) {
       throw new Error('Unable to send reply notifications since parentId does not exist')
     }
-    console.log('user', user)
 
     const commentsRepo = new CommentRepository(user)
     const copilot = new CopilotAPI(user.token)
@@ -38,10 +37,8 @@ export const sendReplyCreateNotifications = task({
       .parse(user.internalUserId || user.clientId)
 
     const deliveryTargets = await getNotificationDetails(copilot, user, comment)
-    console.log('ddd', deliveryTargets)
 
     const notificationPromises: Promise<unknown>[] = []
-
     const queueNotificationPromise = <T>(promise: Promise<T>): void => {
       notificationPromises.push(bottleneck.schedule(() => promise))
     }
@@ -50,7 +47,6 @@ export const sendReplyCreateNotifications = task({
     const threadInitiators = (await commentsRepo.getFirstCommentInitiators([comment.parentId], 10_000)).filter(
       (initiator) => initiator.initiatorId !== senderId,
     )
-    console.log('ti', threadInitiators)
 
     // Queue notifications to every unique reply initiator
     for (let initiator of threadInitiators) {
@@ -65,24 +61,7 @@ export const sendReplyCreateNotifications = task({
       let promise = getInitiatorNotificationPromises(copilot, parentComment, senderId, deliveryTargets)
       // If there is no "initiatorType" for parentComment we have to be slightly creative (coughhackycough)
       if (!promise) {
-        try {
-          await copilot.getInternalUser(parentComment.initiatorId)
-          promise = getInitiatorNotificationPromises(
-            copilot,
-            parentComment,
-            senderId,
-            deliveryTargets,
-            CommentInitiator.internalUser,
-          )
-        } catch (e) {
-          promise = getInitiatorNotificationPromises(
-            copilot,
-            parentComment,
-            senderId,
-            deliveryTargets,
-            CommentInitiator.client,
-          )
-        }
+        promise = getNotificationToUntypedInitiator(copilot, parentComment, senderId, deliveryTargets)
       }
       queueNotificationPromise(promise)
     }
@@ -145,4 +124,31 @@ async function getInitiatorNotificationPromises(
   } else {
     return null
   }
+}
+
+async function getNotificationToUntypedInitiator(
+  copilot: CopilotAPI,
+  parentComment: Comment,
+  senderId: string,
+  deliveryTargets: { inProduct: Record<'title', any>; email: object },
+) {
+  let promise
+  try {
+    await copilot.getInternalUser(parentComment.initiatorId)
+    promise = getInitiatorNotificationPromises(
+      copilot,
+      parentComment,
+      senderId,
+      deliveryTargets,
+      CommentInitiator.internalUser,
+    )
+  } catch (e) {
+    try {
+      promise = getInitiatorNotificationPromises(copilot, parentComment, senderId, deliveryTargets, CommentInitiator.client)
+    } catch (e) {
+      console.error(e)
+      throw new Error('Unable to resolve comment initiator as IU or Client')
+    }
+  }
+  return promise
 }
