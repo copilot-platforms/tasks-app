@@ -54,10 +54,20 @@ export const sendReplyCreateNotifications = task({
       promise && queueNotificationPromise(promise) // It's certain we will get a promise here
     }
 
-    // Queue notification for parent comment initiator, if comment hasn't been deleted yet
     const commentService = new CommentService(user)
     const parentComment = await commentService.getCommentById(comment.parentId)
-    if (parentComment && parentComment.initiatorId !== senderId && !parentComment.deletedAt) {
+    if (!parentComment) return
+
+    // Queue notification for parent comment initiator, if:
+    // - Parent Comment hasn't been deleted yet
+    // - Parent Comment initiatorId isn't this current user
+    // - Parent comment hasn't been already sent a notification through a reply
+    const isParentCommentDeleted = !parentComment.deletedAt
+    const parentInitiatorIsCurrentUser = parentComment.initiatorId === senderId
+    const isNotificationAlreadySent = threadInitiators.some(
+      (initiator) => initiator.initiatorId === parentComment.initiatorId,
+    )
+    if (!isParentCommentDeleted && !parentInitiatorIsCurrentUser && !isNotificationAlreadySent) {
       let promise = getInitiatorNotificationPromises(copilot, parentComment, senderId, deliveryTargets)
       // If there is no "initiatorType" for parentComment we have to be slightly creative (coughhackycough)
       if (!promise) {
