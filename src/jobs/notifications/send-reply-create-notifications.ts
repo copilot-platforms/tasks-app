@@ -1,10 +1,11 @@
 import { CommentService } from '@/app/api/comment/comment.service'
-import User from '@/app/api/core/models/User.model'
-import { NotificationTaskActions } from '@/app/api/core/types/tasks'
-import { getInProductNotificationDetails } from '@/app/api/notification/notification.helpers'
-import { NotificationService } from '@/app/api/notification/notification.service'
+import { getAssigneeName } from '@/utils/assignee'
+import { bottleneck } from '@/utils/bottleneck'
 import { CopilotAPI } from '@/utils/CopilotAPI'
-import { Comment, Task } from '@prisma/client'
+import { CommentRepository } from '@api/comment/comment.repository'
+import User from '@api/core/models/User.model'
+import { TasksService } from '@api/tasks/tasks.service'
+import { Comment, CommentInitiator, Task } from '@prisma/client'
 import { logger, task } from '@trigger.dev/sdk/v3'
 import { z } from 'zod'
 
@@ -26,44 +27,122 @@ export const sendReplyCreateNotifications = task({
     if (!comment.parentId) {
       throw new Error('Unable to send reply notifications since parentId does not exist')
     }
+    console.log('user', user)
 
-    const notificationService = new NotificationService(user)
-    const commentService = new CommentService(user)
+    const commentsRepo = new CommentRepository(user)
     const copilot = new CopilotAPI(user.token)
-    const [internalUsers, clients] = await Promise.all([copilot.getInternalUsers(), copilot.getClients()])
-
-    // Get all initiators involved in thread except the current user
-    const threadInitiators = (
-      await commentService.getThreadInitiators([comment.parentId], internalUsers, clients, {
-        limit: 10_000,
-        onlyIds: true, // Save extra time not hitting copilot API for user information
-      })
-    )[comment.parentId].filter((id): id is string => id !== user.internalUserId && id !== user.clientId)
 
     const senderId = z
       .string()
       .uuid()
       .parse(user.internalUserId || user.clientId)
 
-    await notificationService.createMany(threadInitiators, {
-      senderId,
-      email:
-        user.clientId && !user.internalUserId // Account for preview mode
-          ? {
-              subject: 'reply',
-              header: 'reply',
-              body: `reply`,
-              title: 'reply task',
-              ctaParams: { foo: 'bar' },
-            }
-          : undefined,
-      inProduct: user.internalUserId
-        ? {
-            title: 'reply was assigned to you',
-            body: `meow`,
-            ctaParams: { foo: 'bar' },
-          }
-        : undefined,
-    })
+    const deliveryTargets = await getNotificationDetails(copilot, user, comment)
+    console.log('ddd', deliveryTargets)
+
+    const notificationPromises: Promise<unknown>[] = []
+
+    const queueNotificationPromise = <T>(promise: Promise<T>): void => {
+      notificationPromises.push(bottleneck.schedule(() => promise))
+    }
+
+    // Get all initiators involved in thread except the current user
+    const threadInitiators = (await commentsRepo.getFirstCommentInitiators([comment.parentId], 10_000)).filter(
+      (initiator) => initiator.initiatorId !== senderId,
+    )
+    console.log('ti', threadInitiators)
+
+    // Queue notifications to every unique reply initiator
+    for (let initiator of threadInitiators) {
+      const promise = getInitiatorNotificationPromises(copilot, initiator, senderId, deliveryTargets)
+      promise && queueNotificationPromise(promise) // It's certain we will get a promise here
+    }
+
+    // Queue notification for parent comment initiator, if comment hasn't been deleted yet
+    const commentService = new CommentService(user)
+    const parentComment = await commentService.getCommentById(comment.parentId)
+    if (parentComment && parentComment.initiatorId !== senderId && !parentComment.deletedAt) {
+      let promise = getInitiatorNotificationPromises(copilot, parentComment, senderId, deliveryTargets)
+      // If there is no "initiatorType" for parentComment we have to be slightly creative (coughhackycough)
+      if (!promise) {
+        try {
+          await copilot.getInternalUser(parentComment.initiatorId)
+          promise = getInitiatorNotificationPromises(
+            copilot,
+            parentComment,
+            senderId,
+            deliveryTargets,
+            CommentInitiator.internalUser,
+          )
+        } catch (e) {
+          promise = getInitiatorNotificationPromises(
+            copilot,
+            parentComment,
+            senderId,
+            deliveryTargets,
+            CommentInitiator.client,
+          )
+        }
+      }
+      queueNotificationPromise(promise)
+    }
+
+    await Promise.all(notificationPromises)
   },
 })
+
+async function getNotificationDetails(copilot: CopilotAPI, user: User, comment: Comment) {
+  // Get parent task for title
+  const tasksService = new TasksService(user)
+  const task = await tasksService.getOneTask(comment.taskId)
+  const senderType = user.internalUserId ? CommentInitiator.internalUser : CommentInitiator.client
+  const senderId = z
+    .string()
+    .uuid()
+    .parse(user.internalUserId || user.clientId)
+  const getSenderDetails = senderType === CommentInitiator.internalUser ? copilot.getInternalUser : copilot.getClient
+  const sender = await getSenderDetails(senderId)
+  const senderName = getAssigneeName(sender)
+
+  const ctaParams = { taskId: task.id, commentId: comment.parentId, replyId: comment.id }
+  const deliveryTargets = {
+    inProduct: {
+      title: 'Someone replied to your comment',
+      body: `${senderName} replied to your comment on the task ‘${task.title}’.`,
+      ctaParams,
+    },
+    email: {
+      subject: 'A reply was added',
+      header: `A reply was added by ${senderName}`,
+      title: 'View task',
+      body: `${senderName} replied to a thread on the task '${task.title}'. To view the reply, open the task below.`,
+      ctaParams,
+    },
+  }
+
+  return deliveryTargets
+}
+
+async function getInitiatorNotificationPromises(
+  copilot: CopilotAPI,
+  initiator: { initiatorId: string; initiatorType: CommentInitiator | null },
+  senderId: string,
+  deliveryTargets: { inProduct: Record<'title', any>; email: object },
+  assume?: CommentInitiator,
+) {
+  if (initiator.initiatorType === CommentInitiator.internalUser || assume === CommentInitiator.internalUser) {
+    return copilot.createNotification({
+      senderId,
+      recipientId: initiator.initiatorId,
+      deliveryTargets: { inProduct: deliveryTargets.inProduct },
+    })
+  } else if (initiator.initiatorType === CommentInitiator.client || assume === CommentInitiator.client) {
+    return copilot.createNotification({
+      senderId,
+      recipientId: initiator.initiatorId,
+      deliveryTargets: { email: deliveryTargets.email },
+    })
+  } else {
+    return null
+  }
+}
