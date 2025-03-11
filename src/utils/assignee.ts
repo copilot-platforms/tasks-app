@@ -10,10 +10,12 @@ export const isAssigneeTextMatching = (newInputValue: string, assigneeValue: IAs
   )
 }
 
-export const getAssigneeName = (
-  assigneeValue: IAssigneeCombined | undefined,
-  noAssigneetext: string = 'No assignee',
-): string => {
+interface Assignable {
+  name?: string
+  givenName?: string
+  familyName?: string
+}
+export const getAssigneeName = (assigneeValue: Assignable | undefined, noAssigneetext: string = 'No assignee'): string => {
   return assigneeValue
     ? assigneeValue?.name || `${assigneeValue?.givenName ?? ''} ${assigneeValue?.familyName ?? ''}`.trim()
     : noAssigneetext
