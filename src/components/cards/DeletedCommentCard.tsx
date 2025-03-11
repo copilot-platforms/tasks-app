@@ -9,7 +9,7 @@ export const DeletedCommentCard = () => {
           color: (theme) => theme.color.text.text,
         }}
       >
-        This message was deleted
+        This comment was deleted.
       </Typography>
     </Stack>
   )
