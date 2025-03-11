@@ -22,7 +22,7 @@ import { getTimeDifference } from '@/utils/getTimeDifference'
 import { deleteEditorAttachmentsHandler } from '@/utils/inlineImage'
 import { isTapwriteContentEmpty } from '@/utils/isTapwriteContentEmpty'
 import { Avatar, Box, Stack } from '@mui/material'
-import { useEffect, useRef, useState } from 'react'
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
 import { z } from 'zod'
@@ -33,12 +33,14 @@ export const ReplyCard = ({
   task_id,
   handleImagePreview,
   deleteReply,
+  setDeletedReplies,
 }: {
   item: ReplyResponse
   uploadFn: ((file: File) => Promise<string | undefined>) | undefined
   task_id: string
   handleImagePreview: (e: React.MouseEvent<unknown>) => void
   deleteReply: (id: string, replyId: string) => void
+  setDeletedReplies: Dispatch<SetStateAction<string[]>>
 }) => {
   const [isReadOnly, setIsReadOnly] = useState<boolean>(true)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -234,6 +236,7 @@ export const ReplyCard = ({
           <ConfirmDeleteUI
             handleCancel={() => setShowConfirmDeleteModal(false)}
             handleDelete={() => {
+              setDeletedReplies((prev) => [...prev, item.id])
               deleteReply(item.id as string, item.id)
               setShowConfirmDeleteModal(false)
             }}
