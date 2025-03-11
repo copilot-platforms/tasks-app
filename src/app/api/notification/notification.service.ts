@@ -60,41 +60,6 @@ export class NotificationService extends BaseService {
     }
   }
 
-  /**
-   * Creates multiple notifications given notification details
-   * @param recipientIds The recipient IDs of the notifications
-   * @param details The notification details
-   */
-  async createMany(
-    recipientIds: string[],
-    details: {
-      senderId: string
-      inProduct?: { title: string; body: string; ctaParams?: Record<string, string> }
-      email?: { title: string; subject: string; header: string; body: string; ctaParams?: Record<string, string> }
-    },
-  ) {
-    const copilot = new CopilotAPI(this.user.token)
-    const notificationPromises = []
-    // Make this use bottleneck package
-    console.info('NotificationService#createMany | Creating multiple notifications:', details)
-    for (let recipientId of recipientIds) {
-      try {
-        const notificationDetails = {
-          ...details,
-          recipientId,
-        }
-        notificationPromises.push(
-          bottleneck.schedule(() => {
-            return copilot.createNotification(notificationDetails)
-          }),
-        )
-      } catch (err: unknown) {
-        console.error(`Failed to send notifications to ${recipientId}:`, err)
-      }
-    }
-    return await Promise.all(notificationPromises)
-  }
-
   async createBulkNotification(
     action: NotificationTaskActions,
     task: Task,
