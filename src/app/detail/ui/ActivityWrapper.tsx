@@ -168,7 +168,7 @@ export const ActivityWrapper = ({
               console.warn('Comment is still pending server sync. Try again later.')
               return activities
             }
-          }
+          } //Due to optimistic updates on comment creation applied in our ui, some deleted comments might have tempId which are yet to be replaced by the server id. Although the usecase frequency for this is very very minimal, we are waiting for serverId to replace tempId if the deleted comment has tempId by polling method.
 
           await deleteComment(token, commentIdToDelete)
           return await fetcher(cacheKey)
