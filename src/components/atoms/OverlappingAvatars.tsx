@@ -72,7 +72,6 @@ export const OverlappingAvatars: React.FC<OverlappingAvatarsProps> = ({
           ...avatarSx,
           bgcolor: assignee?.fallbackColor || copilotTheme.colors.green,
           zIndex: assignees.length - index,
-          marginLeft: `-${Number(width.replace('px', '')) / 2}px`,
         }}
         variant={avatarVariant}
       >
