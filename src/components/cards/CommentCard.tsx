@@ -45,6 +45,7 @@ import { fetcher } from '@/utils/fetcher'
 import { CollapsibleReplyCard } from '@/components/cards/CollapsibleReplyCard'
 import { TransitionGroup } from 'react-transition-group'
 import { checkOptimisticStableId, OptimisticUpdate } from '@/utils/optimisticCommentUtils'
+import { DeletedCommentCard } from '@/components/cards/DeletedCommentCard'
 
 export const CommentCard = ({
   comment,
@@ -192,16 +193,7 @@ export const CommentCard = ({
     >
       <Stack direction="column" rowGap={'4px'}>
         {comment.details.deletedAt ? (
-          <Stack sx={{ paddingBottom: '4px' }}>
-            <Typography
-              variant="bodyMd"
-              sx={{
-                color: (theme) => theme.color.text.text,
-              }}
-            >
-              This message was deleted
-            </Typography>
-          </Stack>
+          <DeletedCommentCard />
         ) : (
           <Stack
             direction="column"

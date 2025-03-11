@@ -17,7 +17,7 @@ export interface OptimisticUpdate {
 export const checkOptimisticStableId = (log: LogResponse | ReplyResponse, optimisticUpdates: OptimisticUpdate[]) => {
   const referenceId = 'details' in log ? (log.details.id ?? log.id) : log.id
   const matchingUpdate = optimisticUpdates.find((update) => update.tempId === log.id || update.serverId === referenceId)
-  return matchingUpdate ? matchingUpdate.tempId : log.id
+  return matchingUpdate?.tempId ?? log.id
 }
 
 //generates temp log for optimistic updates of comments/replies.
@@ -92,26 +92,25 @@ export const getOptimisticData = (
 ) => {
   let optimisticData
   if (postCommentPayload.parentId) {
-    optimisticData = activities
-      ? activities.map((comment: LogResponse) => {
-          if (comment.details.id === postCommentPayload.parentId) {
-            const updatedReplies = [
-              ...(comment.details.replies as ReplyResponse[]),
-              { ...tempLog, parentId: postCommentPayload.parentId },
-            ]
+    if (!activities) return []
+    optimisticData = activities.map((comment: LogResponse) => {
+      if (comment.details.id === postCommentPayload.parentId) {
+        const updatedReplies = [
+          ...(comment.details.replies as ReplyResponse[]),
+          { ...tempLog, parentId: postCommentPayload.parentId },
+        ]
 
-            return {
-              ...comment,
-              replies: updatedReplies,
-              details: {
-                ...comment.details,
-                replies: updatedReplies,
-              },
-            }
-          }
-          return comment
-        })
-      : []
+        return {
+          ...comment,
+          replies: updatedReplies,
+          details: {
+            ...comment.details,
+            replies: updatedReplies,
+          },
+        }
+      }
+      return comment
+    })
   } else {
     optimisticData = activities ? [...activities, tempLog] : [tempLog]
   }
