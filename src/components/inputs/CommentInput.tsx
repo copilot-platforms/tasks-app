@@ -27,11 +27,11 @@ interface Prop {
 export const CommentInput = ({ createComment, task_id }: Prop) => {
   const [detail, setDetail] = useState('')
   const [isListOrMenuActive, setIsListOrMenuActive] = useState(false)
-  const { assigneeSuggestions } = useSelector(selectTaskDetails)
   const { tokenPayload } = useSelector(selectAuthDetails)
   const { assignee, token, activeTask } = useSelector(selectTaskBoard)
   const currentUserId = tokenPayload?.internalUserId ?? tokenPayload?.clientId
   const currentUserDetails = assignee.find((el) => el.id === currentUserId)
+  const [isUploading, setIsUploading] = useState(false)
 
   const [isFocused, setIsFocused] = useState(false)
   const windowWidth = useWindowWidth()
@@ -122,6 +122,10 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
     setIsDragging(false)
     dragCounter.current = 0
   }
+
+  const handleUploadStatusChange = (uploading: boolean) => {
+    setIsUploading(uploading)
+  }
   return (
     <Stack direction="row" columnGap={2} alignItems="flex-start">
       <CopilotAvatar
@@ -168,10 +172,12 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
           }}
           uploadFn={uploadFn}
           deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', task_id, null)}
-          attachmentLayout={(props) => <AttachmentLayout {...props} isComment={true} />}
+          attachmentLayout={(props) => (
+            <AttachmentLayout {...props} isComment={true} onUploadStatusChange={handleUploadStatusChange} />
+          )}
           addAttachmentButton
           maxUploadLimit={MAX_UPLOAD_LIMIT}
-          endButtons={<SubmitCommentButtons handleSubmit={handleSubmit} />}
+          endButtons={<SubmitCommentButtons handleSubmit={handleSubmit} disabled={isUploading} />}
         />
       </CommentCardContainer>
     </Stack>

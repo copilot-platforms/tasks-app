@@ -1,7 +1,7 @@
 import { ArrowUpward } from '@mui/icons-material'
 import { Box, IconButton } from '@mui/material'
 
-export const SubmitCommentButtons = ({ handleSubmit }: { handleSubmit: () => void }) => {
+export const SubmitCommentButtons = ({ handleSubmit, disabled }: { handleSubmit: () => void; disabled?: boolean }) => {
   return (
     <Box
       sx={{
@@ -12,7 +12,13 @@ export const SubmitCommentButtons = ({ handleSubmit }: { handleSubmit: () => voi
       }}
     >
       <IconButton
-        onClick={handleSubmit}
+        onClick={
+          disabled
+            ? () => {
+                console.warn('File is currently uploading')
+              }
+            : handleSubmit
+        }
         sx={{
           backgroundColor: '#000',
           borderRadius: '4px',

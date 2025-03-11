@@ -3,7 +3,7 @@
 import { CrossIconSmall, DownloadBtn } from '@/icons'
 import { attachmentIcons, attachmentIconsSmall } from '@/utils/iconMatcher'
 import { Box, Skeleton, Stack, Typography, SxProps, Theme, useMediaQuery } from '@mui/material'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useDownloadFile } from '@/hooks/useDownload'
 
 interface AttachmentLayoutProps {
@@ -16,6 +16,7 @@ interface AttachmentLayoutProps {
   onDelete: () => void
   isEditable: boolean
   isComment?: boolean
+  onUploadStatusChange?: (uploading: boolean) => void
 }
 
 const AttachmentLayout: React.FC<AttachmentLayoutProps> = ({
@@ -28,12 +29,19 @@ const AttachmentLayout: React.FC<AttachmentLayoutProps> = ({
   onDelete,
   isEditable,
   isComment,
+  onUploadStatusChange,
 }) => {
   const { handleDownload, isDownloading } = useDownloadFile()
   const isXsScreen = useMediaQuery((theme: Theme) => `(max-width:${theme.breakpoints.values.sm}px)`)
   const onDownloadClick = () => {
     handleDownload(src, fileName)
   }
+
+  useEffect(() => {
+    if (onUploadStatusChange) {
+      onUploadStatusChange(isUploading)
+    }
+  }, [isUploading, onUploadStatusChange])
 
   const containerStyles: SxProps<Theme> = {
     width: '100%',
