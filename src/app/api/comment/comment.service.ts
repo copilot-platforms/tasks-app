@@ -114,6 +114,29 @@ export class CommentService extends BaseService {
     return comment
   }
 
+  async getCommentById(id: string) {
+    const copilot = new CopilotAPI(this.user.token)
+    const comment = await this.db.comment.findFirst({
+      where: { id, deletedAt: undefined }, // Can also get soft deleted comments
+    })
+    if (!comment) return null
+
+    let initiator
+    if (comment?.initiatorType === CommentInitiator.internalUser) {
+      initiator = await copilot.getInternalUser(comment.initiatorId)
+    } else if (comment?.initiatorType === CommentInitiator.client) {
+      initiator = await copilot.getClient(comment.initiatorId)
+    } else {
+      try {
+        initiator = await copilot.getInternalUser(comment.initiatorId)
+      } catch (e) {
+        initiator = await copilot.getClient(comment.initiatorId)
+      }
+    }
+
+    return { ...comment, initiator }
+  }
+
   async getCommentsByIds(commentIds: string[]) {
     return await this.db.comment.findMany({
       where: {
