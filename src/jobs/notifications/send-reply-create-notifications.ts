@@ -56,24 +56,24 @@ export const sendReplyCreateNotifications = task({
 
     const commentService = new CommentService(user)
     const parentComment = await commentService.getCommentById(comment.parentId)
-    if (!parentComment) return
-
-    // Queue notification for parent comment initiator, if:
-    // - Parent Comment hasn't been deleted yet
-    // - Parent Comment initiatorId isn't this current user
-    // - Parent comment hasn't been already sent a notification through a reply
-    const isParentCommentDeleted = !parentComment.deletedAt
-    const parentInitiatorIsCurrentUser = parentComment.initiatorId === senderId
-    const isNotificationAlreadySent = threadInitiators.some(
-      (initiator) => initiator.initiatorId === parentComment.initiatorId,
-    )
-    if (!isParentCommentDeleted && !parentInitiatorIsCurrentUser && !isNotificationAlreadySent) {
-      let promise = getInitiatorNotificationPromises(copilot, parentComment, senderId, deliveryTargets)
-      // If there is no "initiatorType" for parentComment we have to be slightly creative (coughhackycough)
-      if (!promise) {
-        promise = getNotificationToUntypedInitiator(copilot, parentComment, senderId, deliveryTargets)
+    if (parentComment) {
+      // Queue notification for parent comment initiator, if:
+      // - Parent Comment hasn't been deleted yet
+      // - Parent Comment initiatorId isn't this current user
+      // - Parent comment hasn't been already sent a notification through a reply
+      const isParentCommentDeleted = !parentComment.deletedAt
+      const parentInitiatorIsCurrentUser = parentComment.initiatorId === senderId
+      const isNotificationAlreadySent = threadInitiators.some(
+        (initiator) => initiator.initiatorId === parentComment.initiatorId,
+      )
+      if (!isParentCommentDeleted && !parentInitiatorIsCurrentUser && !isNotificationAlreadySent) {
+        let promise = getInitiatorNotificationPromises(copilot, parentComment, senderId, deliveryTargets)
+        // If there is no "initiatorType" for parentComment we have to be slightly creative (coughhackycough)
+        if (!promise) {
+          promise = getNotificationToUntypedInitiator(copilot, parentComment, senderId, deliveryTargets)
+        }
+        queueNotificationPromise(promise)
       }
-      queueNotificationPromise(promise)
     }
 
     await Promise.all(notificationPromises)
