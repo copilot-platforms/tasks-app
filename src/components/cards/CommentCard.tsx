@@ -77,6 +77,8 @@ export const CommentCard = ({
 
   const [isFocused, setIsFocused] = useState(false)
 
+  const [deletedReplies, setDeletedReplies] = useState<string[]>([])
+
   const windowWidth = useWindowWidth()
   const isMobile = () => {
     return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || windowWidth < 600
@@ -172,14 +174,21 @@ export const CommentCard = ({
 
   useEffect(() => {
     const replies = (comment.details.replies as ReplyResponse[]) || []
+
     if (expandedComments.length && expandedComments.includes(z.string().parse(comment.details.id))) {
       const lastReply = replies[replies.length - 1]
+      if (deletedReplies.length > 0) {
+        const pendingReplyToBeRemoved = deletedReplies[0]
+        console.log(pendingReplyToBeRemoved)
+        setReplies((prev) => prev.filter((reply) => reply.id !== pendingReplyToBeRemoved))
+        setDeletedReplies((prev) => prev.slice(1))
+        return
+      } //handle optimistic updates on reply deletion when view all button is active.
       if (lastReply && lastReply.id.includes('temp-comment')) {
         setReplies((prev) => [...prev, lastReply])
         return
-      } else {
-        fetchCommentsWithFullReplies()
-      }
+      } //handle optimistic updates on reply creation when view all button is active.
+      fetchCommentsWithFullReplies()
     } else {
       setReplies(replies)
     }
@@ -321,6 +330,7 @@ export const CommentCard = ({
                     task_id={task_id}
                     handleImagePreview={handleImagePreview}
                     deleteReply={deleteComment}
+                    setDeletedReplies={setDeletedReplies}
                   />
                 </Collapse>
               )
