@@ -32,6 +32,7 @@ export const ReplyInput = ({ task_id, comment, createComment, uploadFn }: ReplyI
   const isMobile = () => {
     return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || windowWidth < 600
   }
+  const [isUploading, setIsUploading] = useState(false)
   const [isListOrMenuActive, setIsListOrMenuActive] = useState(false)
   const { tokenPayload } = useSelector(selectAuthDetails)
   const currentUserId = tokenPayload?.internalUserId ?? tokenPayload?.clientId
@@ -85,6 +86,9 @@ export const ReplyInput = ({ task_id, comment, createComment, uploadFn }: ReplyI
     }
   }, [detail, isListOrMenuActive, isFocused, isMobile])
 
+  const handleUploadStatusChange = (uploading: boolean) => {
+    setIsUploading(uploading)
+  }
   return (
     <>
       <Stack
@@ -116,7 +120,9 @@ export const ReplyInput = ({ task_id, comment, createComment, uploadFn }: ReplyI
               const { isListActive, isFloatingMenuActive } = prop
               setIsListOrMenuActive(isListActive || isFloatingMenuActive)
             }}
-            attachmentLayout={(props) => <AttachmentLayout {...props} isComment={true} />}
+            attachmentLayout={(props) => (
+              <AttachmentLayout {...props} isComment={true} onUploadStatusChange={handleUploadStatusChange} />
+            )}
             parentContainerStyle={{
               width: '100%',
               maxWidth: '100%',
@@ -132,7 +138,7 @@ export const ReplyInput = ({ task_id, comment, createComment, uploadFn }: ReplyI
             deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', task_id, null)}
             uploadFn={uploadFn}
             maxUploadLimit={MAX_UPLOAD_LIMIT}
-            endButtons={<SubmitCommentButtons handleSubmit={handleReplySubmission} />}
+            endButtons={<SubmitCommentButtons handleSubmit={handleReplySubmission} disabled={isUploading} />}
           />
         </Box>
       </Stack>
