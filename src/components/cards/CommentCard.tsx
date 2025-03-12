@@ -179,7 +179,6 @@ export const CommentCard = ({
       const lastReply = replies[replies.length - 1]
       if (deletedReplies.length > 0) {
         const pendingReplyToBeRemoved = deletedReplies[0]
-        console.log(pendingReplyToBeRemoved)
         setReplies((prev) => prev.filter((reply) => reply.id !== pendingReplyToBeRemoved))
         setDeletedReplies((prev) => prev.slice(1))
         return
