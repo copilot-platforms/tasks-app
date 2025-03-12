@@ -101,11 +101,7 @@ export class CommentService extends BaseService {
   private async deleteEmptyParentActivityLog(parent: Comment) {
     const parentReplyCounts = await this.getReplyCounts([parent.id])
     if (!parentReplyCounts[parent.id]) {
-      await this.db.activityLog.deleteMany({
-        where: {
-          details: { path: ['id'], equals: parent.id },
-        },
-      })
+      await this.deleteRelatedActivityLogs(parent.id)
     }
   }
 
