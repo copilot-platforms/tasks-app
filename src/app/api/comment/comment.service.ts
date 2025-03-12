@@ -82,17 +82,42 @@ export class CommentService extends BaseService {
     // If activity log exists but comment has a `deletedAt`, show "Comment was deleted" card instead
     if (!replyCounts[id]) {
       // If there are 0 replies, key won't be in object
-      // Can't use `delete` only here, but only one activity log will have details.id with commentId
-      await this.db.activityLog.deleteMany({
-        where: {
-          details: { path: ['id'], equals: id },
-        },
-      })
+      await this.deleteRelatedActivityLogs(id)
+    }
+
+    // If parent comment now has no replies and is also deleted, delete parent as well
+    if (comment.parentId) {
+      const parent = await this.db.comment.findFirst({ where: { id: comment.parentId, deletedAt: undefined } })
+      if (parent?.deletedAt) {
+        await this.deleteEmptyParentActivityLog(parent)
+      }
     }
 
     const tasksService = new TasksService(this.user)
     await tasksService.setNewLastActivityLogUpdated(comment.taskId)
     return comment
+  }
+
+  private async deleteEmptyParentActivityLog(parent: Comment) {
+    const parentReplyCounts = await this.getReplyCounts([parent.id])
+    if (!parentReplyCounts[parent.id]) {
+      const activityLog = await this.db.activityLog.findFirstOrThrow({
+        where: {
+          details: { path: ['id'], equals: parent.id },
+        },
+      })
+      console.log(activityLog)
+      await this.db.activityLog.delete({ where: { id: activityLog.id } })
+    }
+  }
+
+  private async deleteRelatedActivityLogs(id: string) {
+    // Can't use `delete` only here, but only one activity log will have details.id with commentId
+    await this.db.activityLog.deleteMany({
+      where: {
+        details: { path: ['id'], equals: id },
+      },
+    })
   }
 
   async update(id: string, data: UpdateComment) {
