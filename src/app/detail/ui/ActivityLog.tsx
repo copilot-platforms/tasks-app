@@ -130,7 +130,7 @@ export const ActivityLog = ({ log }: Prop) => {
     <Stack direction="row" columnGap={4} position="relative">
       <VerticalLine />
 
-      <Stack direction="row" columnGap={4} padding={'11px 0px 11px 0px'} width={'100%'}>
+      <Stack direction="row" columnGap={4} padding={'11px 0px 11px 0px'} width={'100%'} sx={{ alignItems: 'center' }}>
         <CopilotAvatar
           width="22px"
           height="22px"

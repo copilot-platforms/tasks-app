@@ -29,7 +29,7 @@ export const Comments = ({ comment, createComment, deleteComment, task_id, stabl
           currentAssignee={comment.initiator as unknown as IAssigneeCombined}
           sx={{
             border: (theme) => `1.1px solid ${theme.color.gray[200]}`,
-            marginTop: '5px',
+            marginTop: '8px',
           }}
           size="large"
           icon={comment.details.deletedAt ? <TrashIcon2 /> : undefined}

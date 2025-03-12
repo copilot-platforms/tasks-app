@@ -83,6 +83,7 @@ export declare module '@mui/material/styles' {
         bgCallout: string
         bgHover: string
         bgCommentDrag: string
+        avatarBackground: string
       }
       error: string
       muiError: string
@@ -170,6 +171,7 @@ export declare module '@mui/material/styles' {
         bgCallout: React.CSSProperties['color']
         bgHover: React.CSSProperties['color']
         bgCommentDrag: React.CSSProperties['color']
+        avatarBackground: React.CSSProperties['color']
       }
       error: React.CSSProperties['color']
       muiError: React.CSSProperties['color']
