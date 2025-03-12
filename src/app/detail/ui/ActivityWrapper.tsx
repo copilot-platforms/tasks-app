@@ -213,7 +213,7 @@ export const ActivityWrapper = ({
                           handleDeleteComment(commentId, item.id, replyId, softDelete)
                         }
                         task_id={task_id}
-                        stableId={item.id}
+                        stableId={z.string().parse(item.details.id) ?? item.id}
                         optimisticUpdates={optimisticUpdates}
                       />
                     ) : (
