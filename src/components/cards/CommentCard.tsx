@@ -149,7 +149,7 @@ export const CommentCard = ({
   }, [editedContent, isListOrMenuActive, isFocused, isMobile])
 
   const commentUser = comment.initiator as unknown as IAssigneeCombined
-  const replyCount = (comment.details as CommentResponse).replyCount
+  const replyCount = useRef((comment.details as CommentResponse).replyCount) //using ref to record only replyCount value on first mount of the component
 
   const cacheKey = `/api/comment/?token=${token}&parentId=${comment.details.id}`
   const { data: comments, mutate } = useSWR(cacheKey, fetcher, {
@@ -189,7 +189,11 @@ export const CommentCard = ({
       } //handle optimistic updates on reply creation when view all button is active.
       fetchCommentsWithFullReplies()
     } else {
-      setReplies(replies)
+      setReplies((prevReplies) => {
+        const existingReplyIds = new Set(prevReplies.map((r) => r.id))
+        const mergedReplies = [...prevReplies, ...replies.filter((r) => !existingReplyIds.has(r.id))]
+        return mergedReplies //preventing existing replies to be shrinked and kept in the ui because only 3 latest replies are coming from the api on comment.details.replies.
+      })
     }
   }, [comment])
   return (
@@ -311,11 +315,11 @@ export const CommentCard = ({
         {((Array.isArray((comment as LogResponse).details?.replies) &&
           ((comment as LogResponse).details.replies as ReplyResponse[]).length > 0) ||
           showReply) && <CustomDivider />}
-        {replyCount > 3 && !expandedComments.includes(z.string().parse(comment.details.id)) && (
+        {replyCount.current > 3 && !expandedComments.includes(z.string().parse(comment.details.id)) && (
           <CollapsibleReplyCard
             lastAssignees={comment.details.firstInitiators as IAssigneeCombined[]}
             fetchCommentsWithFullReplies={fetchCommentsWithFullReplies}
-            replyCount={replyCount}
+            replyCount={replyCount.current}
           />
         )}
         <TransitionGroup>
