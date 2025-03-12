@@ -128,6 +128,7 @@ export const ReplyCard = ({
           currentAssignee={replyUser}
           sx={{
             border: (theme) => `1.1px solid ${theme.color.gray[200]}`,
+            marginTop: '1px',
           }}
         />
         <Stack

@@ -36,7 +36,6 @@ export const CollapsibleReplyCard = ({
           <DotSeparator />
           <Box
             sx={{
-              padding: '2px 0px',
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
@@ -51,6 +50,7 @@ export const CollapsibleReplyCard = ({
                 },
                 color: (theme) => theme.color.text.textSecondary,
               }}
+              lineHeight="22px"
               variant="md"
             >
               View all
