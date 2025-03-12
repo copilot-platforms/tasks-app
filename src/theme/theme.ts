@@ -85,6 +85,7 @@ export const theme = createTheme({
       bgCallout: '#F8F9FB',
       bgHover: '#F1F3F8',
       bgCommentDrag: '#E6F0FF',
+      avatarBackground: '#E8EBF1',
     },
     error: '#CC0000',
     muiError: '#D32F2F',
