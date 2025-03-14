@@ -2,7 +2,7 @@ import { NoAssigneeAvatar, NoAssigneeAvatarSmall, NoAssigneeAvatarLarge, TrashIc
 import { copilotTheme } from '@/theme/copilot'
 import { IAssigneeCombined } from '@/types/interfaces'
 import { getAssigneeName } from '@/utils/assignee'
-import { Avatar, SxProps, Theme } from '@mui/material'
+import { Avatar, Box, SxProps, Theme } from '@mui/material'
 import { ReactNode } from 'react'
 
 interface CopilotAvatarProps {
@@ -48,7 +48,11 @@ export const CopilotAvatar = ({
     )
   }
   if (!currentAssignee || (currentAssignee?.name || currentAssignee?.givenName) === 'No assignee') {
-    return size == 'small' ? <NoAssigneeAvatarSmall /> : size == 'large' ? <NoAssigneeAvatarLarge /> : <NoAssigneeAvatar />
+    return (
+      <Box sx={{ marginTop: (sx as { marginTop?: string })?.marginTop || '0px' }}>
+        {size == 'small' ? <NoAssigneeAvatarSmall /> : size == 'large' ? <NoAssigneeAvatarLarge /> : <NoAssigneeAvatar />}
+      </Box>
+    )
   }
   if (currentAssignee?.iconImageUrl || currentAssignee?.avatarImageUrl) {
     return (
