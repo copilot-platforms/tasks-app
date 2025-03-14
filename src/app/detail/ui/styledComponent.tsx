@@ -86,7 +86,7 @@ export const StyledReplyIcon = styled(ReplyIcon)(({ theme }) => ({
 }))
 
 export const CommentCardContainer = styled(Stack)(({ theme }) => ({
-  border: `1px solid ${theme.color.borders.border}`,
+  border: `1px solid ${theme.color.gray[150]}`,
   borderRadius: theme.spacing(theme.shape.radius100),
   background: theme.color.base.white,
   padding: '8px',
