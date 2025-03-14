@@ -13,7 +13,7 @@ import { getMentionsList } from '@/utils/getMentionList'
 import { deleteEditorAttachmentsHandler } from '@/utils/inlineImage'
 import { isTapwriteContentEmpty } from '@/utils/isTapwriteContentEmpty'
 import { Avatar, Box, InputAdornment, Stack } from '@mui/material'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
 
@@ -22,9 +22,10 @@ interface ReplyInputProps {
   comment: any
   createComment: (postCommentPayload: CreateComment) => void
   uploadFn: ((file: File) => Promise<string | undefined>) | undefined
+  focusReplyInput: boolean
 }
 
-export const ReplyInput = ({ task_id, comment, createComment, uploadFn }: ReplyInputProps) => {
+export const ReplyInput = ({ task_id, comment, createComment, uploadFn, focusReplyInput }: ReplyInputProps) => {
   const [detail, setDetail] = useState('')
   const [isFocused, setIsFocused] = useState(false)
   const { token, assignee } = useSelector(selectTaskBoard)
@@ -89,6 +90,23 @@ export const ReplyInput = ({ task_id, comment, createComment, uploadFn }: ReplyI
   const handleUploadStatusChange = (uploading: boolean) => {
     setIsUploading(uploading)
   }
+
+  const editorRef = useRef<HTMLDivElement | null>(null)
+  const [isMultiline, setIsMultiline] = useState(false)
+
+  useEffect(() => {
+    if (editorRef.current) {
+      const height = editorRef.current.getBoundingClientRect().height
+      if (height > 40) setIsMultiline(true)
+    }
+  }, [detail, editorRef.current])
+
+  useEffect(() => {
+    if (editorRef.current) {
+      editorRef.current.focus()
+    }
+  }, [focusReplyInput])
+
   return (
     <>
       <Stack
@@ -110,6 +128,7 @@ export const ReplyInput = ({ task_id, comment, createComment, uploadFn }: ReplyI
         />
         <Box onBlur={() => setIsFocused(false)} onFocus={() => setIsFocused(true)} width={'100%'}>
           <Tapwrite
+            editorRef={editorRef}
             content={detail}
             getContent={setDetail}
             placeholder="Leave a reply..."
@@ -127,12 +146,13 @@ export const ReplyInput = ({ task_id, comment, createComment, uploadFn }: ReplyI
               width: '100%',
               maxWidth: '100%',
               display: 'flex',
-              flexDirection: 'row',
+              flexDirection: isMultiline ? 'column' : 'row',
               overflow: 'hidden',
               wordBreak: 'break-word',
               whiteSpace: 'pre-wrap',
-              alignItems: 'center',
+              paddingTop: '5px',
               marginTop: '-5px',
+              flexGrow: 1,
             }}
             addAttachmentButton
             deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', task_id, null)}

@@ -62,6 +62,7 @@ export const CommentCard = ({
   const [timeAgo, setTimeAgo] = useState(getTimeDifference(comment.createdAt))
   const [isReadOnly, setIsReadOnly] = useState<boolean>(true)
   const editRef = useRef<HTMLDivElement>(null)
+  const [focusReplyInput, setFocusedReplyInput] = useState(false)
 
   const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState(false)
   const { tokenPayload } = useSelector(selectAuthDetails)
@@ -224,7 +225,12 @@ export const CommentCard = ({
 
                 {(isHovered || isMobile() || isMenuOpen) && (
                   <Stack direction="row" columnGap={2} sx={{ height: '10px' }} alignItems="center">
-                    <ReplyButton handleClick={() => setShowReply((prev) => !prev)} />
+                    <ReplyButton
+                      handleClick={() => {
+                        setShowReply((prev) => !prev)
+                        setFocusedReplyInput(true)
+                      }}
+                    />
                     {canEdit && (
                       <MenuBox
                         getMenuOpen={(open) => {
@@ -334,7 +340,13 @@ export const CommentCard = ({
         {(Array.isArray((comment as LogResponse).details?.replies) &&
           ((comment as LogResponse).details.replies as LogResponse[]).length > 0) ||
         showReply ? (
-          <ReplyInput comment={comment} task_id={task_id} createComment={createComment} uploadFn={uploadFn} />
+          <ReplyInput
+            comment={comment}
+            task_id={task_id}
+            createComment={createComment}
+            uploadFn={uploadFn}
+            focusReplyInput={focusReplyInput}
+          />
         ) : null}
       </Stack>
       <StyledModal
