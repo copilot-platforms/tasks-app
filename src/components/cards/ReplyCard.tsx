@@ -18,6 +18,7 @@ import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { UpdateComment } from '@/types/dto/comment.dto'
 import { IAssigneeCombined } from '@/types/interfaces'
+import { getAssigneeName } from '@/utils/assignee'
 import { getTimeDifference } from '@/utils/getTimeDifference'
 import { deleteEditorAttachmentsHandler } from '@/utils/inlineImage'
 import { isTapwriteContentEmpty } from '@/utils/isTapwriteContentEmpty'
@@ -144,9 +145,7 @@ export const ReplyCard = ({
         >
           <Stack direction="row" justifyContent={'space-between'} alignItems="center">
             <Stack direction="row" columnGap={1} alignItems={'center'}>
-              <BoldTypography>
-                {item.initiator?.givenName} {item.initiator?.familyName}
-              </BoldTypography>
+              <BoldTypography>{replyUser ? getAssigneeName(replyUser) : 'Deleted User'}</BoldTypography>
               <DotSeparator />
               <StyledTypography>
                 {' '}
