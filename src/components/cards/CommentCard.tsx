@@ -346,6 +346,7 @@ export const CommentCard = ({
             createComment={createComment}
             uploadFn={uploadFn}
             focusReplyInput={focusReplyInput}
+            setFocusReplyInput={setFocusedReplyInput}
           />
         ) : null}
       </Stack>

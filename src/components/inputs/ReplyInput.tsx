@@ -13,7 +13,7 @@ import { getMentionsList } from '@/utils/getMentionList'
 import { deleteEditorAttachmentsHandler } from '@/utils/inlineImage'
 import { isTapwriteContentEmpty } from '@/utils/isTapwriteContentEmpty'
 import { Avatar, Box, InputAdornment, Stack } from '@mui/material'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
 
@@ -23,11 +23,18 @@ interface ReplyInputProps {
   createComment: (postCommentPayload: CreateComment) => void
   uploadFn: ((file: File) => Promise<string | undefined>) | undefined
   focusReplyInput: boolean
+  setFocusReplyInput: Dispatch<SetStateAction<boolean>>
 }
 
-export const ReplyInput = ({ task_id, comment, createComment, uploadFn, focusReplyInput }: ReplyInputProps) => {
+export const ReplyInput = ({
+  task_id,
+  comment,
+  createComment,
+  uploadFn,
+  focusReplyInput,
+  setFocusReplyInput,
+}: ReplyInputProps) => {
   const [detail, setDetail] = useState('')
-  const [isFocused, setIsFocused] = useState(false)
   const { token, assignee } = useSelector(selectTaskBoard)
   const windowWidth = useWindowWidth()
   const isMobile = () => {
@@ -67,7 +74,7 @@ export const ReplyInput = ({ task_id, comment, createComment, uploadFn, focusRep
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (!isFocused || isMobile()) {
+      if (!focusReplyInput || isMobile()) {
         return
       }
       if (event.key === 'Enter' && !event.shiftKey && !isListOrMenuActive) {
@@ -85,7 +92,7 @@ export const ReplyInput = ({ task_id, comment, createComment, uploadFn, focusRep
     return () => {
       window.removeEventListener('keydown', handleKeyDown)
     }
-  }, [detail, isListOrMenuActive, isFocused, isMobile])
+  }, [detail, isListOrMenuActive, focusReplyInput, isMobile])
 
   const handleUploadStatusChange = (uploading: boolean) => {
     setIsUploading(uploading)
@@ -102,10 +109,10 @@ export const ReplyInput = ({ task_id, comment, createComment, uploadFn, focusRep
   }, [detail, editorRef.current])
 
   useEffect(() => {
-    if (editorRef.current) {
+    if (editorRef.current && focusReplyInput) {
       editorRef.current.focus()
     }
-  }, [focusReplyInput])
+  }, [focusReplyInput, editorRef.current])
 
   return (
     <>
@@ -126,7 +133,7 @@ export const ReplyInput = ({ task_id, comment, createComment, uploadFn, focusRep
             border: (theme) => `1.1px solid ${theme.color.gray[200]}`,
           }}
         />
-        <Box onBlur={() => setIsFocused(false)} onFocus={() => setIsFocused(true)} width={'100%'}>
+        <Box onBlur={() => setFocusReplyInput(false)} onFocus={() => setFocusReplyInput(true)} width={'100%'}>
           <Tapwrite
             editorRef={editorRef}
             content={detail}
