@@ -31,7 +31,7 @@ export const CollapsibleReplyCard = ({
 
         <Stack direction={'row'} columnGap={'4px'} sx={{ marginTop: '0px' }}>
           <Typography variant="md" lineHeight="22px">
-            {replyCount - 3} previous replies
+            {replyCount - 3} previous {replyCount - 3 === 1 ? 'reply' : 'replies'}
           </Typography>
           <DotSeparator />
           <Box
