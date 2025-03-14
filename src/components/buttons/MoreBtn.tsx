@@ -65,9 +65,9 @@ export const MoreBtn = ({
       ) : (
         <MoreHoriz
           fontSize="small"
-          sx={{
-            color: '#000000',
-          }}
+          sx={(theme) => ({
+            color: theme.color.gray[500],
+          })}
         />
       )}
     </Stack>
