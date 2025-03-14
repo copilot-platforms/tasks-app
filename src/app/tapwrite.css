@@ -1,7 +1,6 @@
 .tapwrite-comment-input {
-  min-height: 10vh;
+  min-height: 22px;
   /* pb is 26px because size of the arrow button is 24px and text should start wrapping just above the button */
-  padding-bottom: 26px;
 }
 
 .tapwrite-reply-input {
