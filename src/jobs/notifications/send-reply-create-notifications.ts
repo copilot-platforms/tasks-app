@@ -96,14 +96,14 @@ async function getNotificationDetails(copilot: CopilotAPI, user: User, comment: 
   const ctaParams = { taskId: task.id, commentId: comment.parentId, replyId: comment.id }
   const deliveryTargets = {
     inProduct: {
-      title: 'Someone replied to your comment',
+      title: 'Reply was added',
       body: `${senderName} replied to your comment on the task ‘${task.title}’.`,
       ctaParams,
     },
     email: {
       subject: 'A reply was added',
       header: `A reply was added by ${senderName}`,
-      title: 'View task',
+      title: 'View reply',
       body: `${senderName} replied to a thread on the task '${task.title}'. To view the reply, open the task below.`,
       ctaParams,
     },
