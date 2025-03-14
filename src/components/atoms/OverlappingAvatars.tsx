@@ -2,7 +2,7 @@ import { NoAssigneeAvatar, NoAssigneeAvatarSmall, NoAssigneeAvatarLarge } from '
 import { copilotTheme } from '@/theme/copilot'
 import { IAssigneeCombined } from '@/types/interfaces'
 import { getAssigneeName } from '@/utils/assignee'
-import { Avatar, SxProps } from '@mui/material'
+import { Avatar, SxProps, Theme } from '@mui/material'
 
 type OverlappingAvatarsProps = {
   assignees: (IAssigneeCombined | null)[]
@@ -22,12 +22,13 @@ export const OverlappingAvatars: React.FC<OverlappingAvatarsProps> = ({
   sx,
   size,
 }) => {
-  const avatarSx: SxProps = {
+  const avatarSx: SxProps<Theme> = {
     ...sx,
     width,
     height,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: (theme) => theme.color.background.avatarBackground,
     fontSize,
     '.MuiAvatar-img': {
       objectFit: 'cover',
