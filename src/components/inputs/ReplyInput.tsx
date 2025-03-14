@@ -157,8 +157,9 @@ export const ReplyInput = ({
               overflow: 'hidden',
               wordBreak: 'break-word',
               whiteSpace: 'pre-wrap',
-              paddingTop: '5px',
-              marginTop: '-5px',
+              justifyContent: 'center',
+              alignItems: isMultiline ? 'flex-start' : 'center',
+              marginTop: isMultiline ? '0px' : '-5px',
               flexGrow: 1,
             }}
             addAttachmentButton
