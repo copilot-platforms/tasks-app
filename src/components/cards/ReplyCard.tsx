@@ -137,7 +137,7 @@ export const ReplyCard = ({
           width={'100%'}
           sx={{
             paddingBottom: '8px',
-            borderBottom: (theme) => `1px solid ${theme.color.borders.border}`,
+            borderBottom: (theme) => `1px solid ${theme.color.gray[150]}`,
             marginRight: '-10px',
             paddingRight: '10px',
           }}
