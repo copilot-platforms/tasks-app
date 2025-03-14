@@ -61,6 +61,10 @@ export const ReplyCard = ({
     return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || windowWidth < 600
   }
 
+  useEffect(() => {
+    setEditedContent(content)
+  }, [content])
+
   const cancelEdit = () => {
     setIsReadOnly(true)
     setEditedContent(content)
