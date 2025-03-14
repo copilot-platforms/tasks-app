@@ -89,7 +89,6 @@ export const CommentCardContainer = styled(Stack)(({ theme }) => ({
   border: `1px solid ${theme.color.borders.border}`,
   borderRadius: theme.spacing(theme.shape.radius100),
   background: theme.color.base.white,
-  padding: '8px',
   width: '100%',
 }))
 

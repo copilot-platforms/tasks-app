@@ -19,7 +19,7 @@ export const CollapsibleReplyCard = ({
     <>
       <Stack
         sx={{
-          padding: '8px 0px',
+          padding: '8px',
           alignSelf: 'stretch',
           alignItems: 'center',
           display: 'flex',

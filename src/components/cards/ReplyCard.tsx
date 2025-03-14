@@ -115,7 +115,7 @@ export const ReplyCard = ({
         columnGap={2}
         alignItems="flex-start"
         sx={{
-          padding: '8px 0px 0px 0px',
+          padding: '8px 8px 0px 8px',
         }}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}

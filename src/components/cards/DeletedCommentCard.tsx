@@ -2,7 +2,7 @@ import { Stack, Typography } from '@mui/material'
 
 export const DeletedCommentCard = () => {
   return (
-    <Stack sx={{ paddingBottom: '4px' }}>
+    <Stack sx={{ padding: '8px 8px 4px 8px' }}>
       <Typography
         variant="bodyMd"
         sx={{

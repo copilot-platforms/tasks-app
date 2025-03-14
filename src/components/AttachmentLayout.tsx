@@ -108,7 +108,12 @@ const AttachmentLayout: React.FC<AttachmentLayoutProps> = ({
 
     return (
       <Stack justifyContent="space-between" direction="row" alignItems="center" width="100%" sx={{ maxWidth: '100%' }}>
-        <Stack direction="row" columnGap="5.5px" alignItems="center" sx={{ flex: 1, overflow: 'hidden', minWidth: 0 }}>
+        <Stack
+          direction="row"
+          columnGap="5.5px"
+          alignItems="center"
+          sx={{ flex: 1, overflow: 'hidden', minWidth: 0, flexShrink: 1 }}
+        >
           {isXsScreen
             ? attachmentIconsSmall[fileType] || attachmentIconsSmall['default']
             : attachmentIcons[fileType] || attachmentIcons['default']}
@@ -121,7 +126,9 @@ const AttachmentLayout: React.FC<AttachmentLayoutProps> = ({
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 lineHeight: '21px',
-                maxWidth: '100%',
+                maxWidth: 'inherit', // Ensure it doesn't grow beyond the parent
+                width: '100%', // Helps enforce the constraint
+                display: 'block',
               }}
             >
               {fileName}

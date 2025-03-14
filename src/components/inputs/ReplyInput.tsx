@@ -13,7 +13,7 @@ import { getMentionsList } from '@/utils/getMentionList'
 import { deleteEditorAttachmentsHandler } from '@/utils/inlineImage'
 import { isTapwriteContentEmpty } from '@/utils/isTapwriteContentEmpty'
 import { Avatar, Box, InputAdornment, Stack } from '@mui/material'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
 
@@ -89,6 +89,35 @@ export const ReplyInput = ({ task_id, comment, createComment, uploadFn }: ReplyI
   const handleUploadStatusChange = (uploading: boolean) => {
     setIsUploading(uploading)
   }
+
+  const [isDragging, setIsDragging] = useState(false)
+  const dragCounter = useRef(0)
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    if (!isDragging) {
+      setIsDragging(true)
+    }
+  }
+
+  const handleDragEnter = () => {
+    dragCounter.current += 1
+    if (!isDragging) {
+      setIsDragging(true)
+    }
+  }
+
+  const handleDragLeave = () => {
+    dragCounter.current -= 1
+    if (dragCounter.current === 0) {
+      setIsDragging(false)
+    }
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    dragCounter.current = 0
+    setIsDragging(false)
+  }
   return (
     <>
       <Stack
@@ -96,8 +125,15 @@ export const ReplyInput = ({ task_id, comment, createComment, uploadFn }: ReplyI
         columnGap={'8px'}
         width="100%"
         sx={{
-          padding: '8px 0px 0px 0px',
+          padding: '8px',
+          backgroundColor: (theme) => (isDragging ? theme.color.background.bgCommentDrag : 'none'),
+          marginTop: isDragging ? '-1px' : '0',
+          paddingTop: isDragging ? '9px' : '8px',
         }}
+        onDragOver={handleDragOver}
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
       >
         <CopilotAvatar
           width="20px"

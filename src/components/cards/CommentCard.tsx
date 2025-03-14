@@ -206,7 +206,7 @@ export const CommentCard = ({
           <Stack
             direction="column"
             rowGap={'2px'}
-            sx={{ paddingBottom: '4px' }}
+            sx={{ padding: '8px 8px 4px 8px' }}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
           >
