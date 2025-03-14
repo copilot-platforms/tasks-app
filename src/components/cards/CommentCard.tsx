@@ -199,7 +199,7 @@ export const CommentCard = ({
         overflow: 'hidden',
       }}
     >
-      <Stack direction="column" rowGap={'4px'}>
+      <Stack direction="column">
         {comment.details.deletedAt ? (
           <DeletedCommentCard />
         ) : (
@@ -310,7 +310,7 @@ export const CommentCard = ({
 
         {((Array.isArray((comment as LogResponse).details?.replies) &&
           ((comment as LogResponse).details.replies as ReplyResponse[]).length > 0) ||
-          showReply) && <CustomDivider />}
+          showReply) && <CustomDivider sx={{ marginTop: '4px' }} />}
         {replyCount > 3 && !expandedComments.includes(z.string().parse(comment.details.id)) && (
           <CollapsibleReplyCard
             lastAssignees={comment.details.firstInitiators as IAssigneeCombined[]}
