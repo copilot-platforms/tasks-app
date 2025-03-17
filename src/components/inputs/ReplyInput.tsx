@@ -120,6 +120,7 @@ export const ReplyInput = ({
         direction="row"
         columnGap={'8px'}
         width="100%"
+        alignItems="flex-start"
         sx={{
           padding: '8px 0px 0px 0px',
         }}
@@ -131,6 +132,7 @@ export const ReplyInput = ({
           currentAssignee={currentUserDetails}
           sx={{
             border: (theme) => `1.1px solid ${theme.color.gray[200]}`,
+            marginTop: '6px',
           }}
         />
         <Box onBlur={() => setFocusReplyInput(false)} onFocus={() => setFocusReplyInput(true)} width={'100%'}>
@@ -157,9 +159,9 @@ export const ReplyInput = ({
               overflow: 'hidden',
               wordBreak: 'break-word',
               whiteSpace: 'pre-wrap',
-              justifyContent: 'center',
+
               alignItems: isMultiline ? 'flex-start' : 'center',
-              marginTop: isMultiline ? '0px' : '-5px',
+              marginTop: isMultiline ? '5px' : '0px',
               flexGrow: 1,
             }}
             addAttachmentButton
