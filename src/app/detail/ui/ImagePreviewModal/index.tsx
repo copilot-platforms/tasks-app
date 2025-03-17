@@ -29,6 +29,7 @@ export const ImagePreviewModal = () => {
       onClose={handleClose}
       aria-labelledby={'preview-image-modal'}
       aria-describedby="preview-image-modal-popup"
+      disableRestoreFocus
     >
       <StyledImagePreviewWrapper onClick={handleBackdropClick}>
         <DocViewer
