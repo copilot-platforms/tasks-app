@@ -203,7 +203,7 @@ export const CommentCard = ({
           <Stack
             direction="column"
             rowGap={'2px'}
-            sx={{ paddingBottom: '4px' }}
+            sx={{ padding: '8px' }}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
           >
@@ -312,7 +312,7 @@ export const CommentCard = ({
 
         {((Array.isArray((comment as LogResponse).details?.replies) &&
           ((comment as LogResponse).details.replies as ReplyResponse[]).length > 0) ||
-          showReply) && <CustomDivider sx={{ marginTop: '4px' }} />}
+          showReply) && <CustomDivider />}
         {replyCount > 3 && !expandedComments.includes(z.string().parse(comment.details.id)) && (
           <CollapsibleReplyCard
             lastAssignees={comment.details.firstInitiators as IAssigneeCombined[]}

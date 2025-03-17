@@ -119,7 +119,7 @@ export const ReplyCard = ({
         columnGap={2}
         alignItems="flex-start"
         sx={{
-          padding: '8px 0px 0px 0px',
+          padding: '8px',
         }}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
@@ -140,6 +140,7 @@ export const ReplyCard = ({
           rowGap={'2px'}
           width={'100%'}
           sx={{
+            marginBottom: '-8px',
             paddingBottom: '8px',
             borderBottom: (theme) => `1px solid ${theme.color.gray[150]}`,
             marginRight: '-10px',

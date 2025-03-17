@@ -114,6 +114,36 @@ export const ReplyInput = ({
     }
   }, [focusReplyInput, editorRef.current])
 
+  const [isDragging, setIsDragging] = useState(false)
+  const dragCounter = useRef(0)
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    if (!isDragging) {
+      setIsDragging(true)
+    }
+  }
+
+  const handleDragEnter = () => {
+    dragCounter.current += 1
+    if (!isDragging) {
+      setIsDragging(true)
+    }
+  }
+
+  const handleDragLeave = () => {
+    dragCounter.current -= 1
+    if (dragCounter.current === 0) {
+      setIsDragging(false)
+    }
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+    dragCounter.current = 0
+  }
+
   return (
     <>
       <Stack
@@ -122,8 +152,15 @@ export const ReplyInput = ({
         width="100%"
         alignItems="flex-start"
         sx={{
-          padding: '8px 0px 0px 0px',
+          padding: '8px',
+          backgroundColor: (theme) => (isDragging ? theme.color.background.bgCommentDrag : theme.color.gray[100]),
+          wordBreak: 'break-word',
+          paddingInline: '8px',
         }}
+        onDragOver={handleDragOver}
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
       >
         <CopilotAvatar
           width="20px"
@@ -135,7 +172,7 @@ export const ReplyInput = ({
             marginTop: '6px',
           }}
         />
-        <Box onBlur={() => setFocusReplyInput(false)} onFocus={() => setFocusReplyInput(true)} width={'100%'}>
+        <Box sx={{}} onBlur={() => setFocusReplyInput(false)} onFocus={() => setFocusReplyInput(true)} width={'100%'}>
           <Tapwrite
             editorRef={editorRef}
             content={detail}
@@ -159,8 +196,7 @@ export const ReplyInput = ({
               overflow: 'hidden',
               wordBreak: 'break-word',
               whiteSpace: 'pre-wrap',
-
-              alignItems: isMultiline ? 'flex-start' : 'center',
+              alignItems: isMultiline ? 'normal' : 'center',
               marginTop: isMultiline ? '5px' : '0px',
               flexGrow: 1,
             }}

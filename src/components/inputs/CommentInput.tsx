@@ -142,6 +142,7 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
         sx={{
           backgroundColor: (theme) => (isDragging ? theme.color.background.bgCommentDrag : theme.color.base.white),
           wordBreak: 'break-word',
+          padding: '8px',
         }}
         onDragOver={handleDragOver}
         onDragEnter={handleDragEnter}
