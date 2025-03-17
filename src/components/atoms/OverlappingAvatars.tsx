@@ -20,7 +20,7 @@ export const OverlappingAvatars: React.FC<OverlappingAvatarsProps> = ({
   height = '20px',
   fontSize = '14px',
   sx,
-  size,
+  size = 'default',
 }) => {
   const avatarSx: SxProps<Theme> = {
     ...sx,
@@ -43,10 +43,20 @@ export const OverlappingAvatars: React.FC<OverlappingAvatarsProps> = ({
   const renderAvatar = (assignee: IAssigneeCombined | null, index: number) => {
     const avatarVariant: 'circular' | 'rounded' | 'square' = assignee?.type === 'companies' ? 'rounded' : 'circular'
 
-    if (!assignee || (assignee?.name || assignee?.givenName) === 'No assignee') {
-      if (size === 'small') return <NoAssigneeAvatarSmall key={index} />
-      if (size === 'large') return <NoAssigneeAvatarLarge key={index} />
-      return <NoAssigneeAvatar key={index} />
+    if (!assignee || assignee?.name || assignee?.givenName === 'No assignee') {
+      return (
+        <Avatar
+          key={index}
+          sx={{
+            ...avatarSx,
+            border: (theme) => `1.1px solid ${theme.color.gray[200]}`,
+            zIndex: assignees.length + index,
+          }}
+          variant={avatarVariant}
+        >
+          <NoAssigneeAvatar />
+        </Avatar>
+      )
     }
 
     if (assignee?.iconImageUrl || assignee?.avatarImageUrl) {
