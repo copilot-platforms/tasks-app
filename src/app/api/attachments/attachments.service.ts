@@ -1,14 +1,14 @@
+import { supabaseBucket } from '@/config'
+import { signedUrlTtl } from '@/constants/attachments'
+import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
+import APIError from '@api/core/exceptions/api'
 import { BaseService } from '@api/core/services/base.service'
 import { PoliciesService } from '@api/core/services/policies.service'
-import { UserAction } from '@api/core/types/user'
-import { Resource } from '@api/core/types/api'
-import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
-import { z } from 'zod'
-import { supabaseBucket } from '@/config'
-import APIError from '@api/core/exceptions/api'
-import httpStatus from 'http-status'
 import { SupabaseService } from '@api/core/services/supabase.service'
-import { signedUrlTtl } from '@/constants/attachments'
+import { Resource } from '@api/core/types/api'
+import { UserAction } from '@api/core/types/user'
+import httpStatus from 'http-status'
+import { z } from 'zod'
 
 export class AttachmentsService extends BaseService {
   async getAttachments(taskId: string) {
@@ -41,18 +41,18 @@ export class AttachmentsService extends BaseService {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Create, Resource.Attachments)
     const userId = z.string().parse(this.user.internalUserId)
-    const newAttachments = await this.db.$transaction(async (prisma) => {
-      const createPromises = data.map((attachmentData) =>
-        prisma.attachment.create({
-          data: {
-            ...attachmentData,
-            createdById: userId,
-            workspaceId: this.user.workspaceId,
-          },
-        }),
-      )
-      return await Promise.all(createPromises)
-    })
+
+    const createPromises = data.map((attachmentData) =>
+      this.db.attachment.create({
+        data: {
+          ...attachmentData,
+          createdById: userId,
+          workspaceId: this.user.workspaceId,
+        },
+      }),
+    )
+
+    const newAttachments = await Promise.all(createPromises)
     return newAttachments
   }
 
