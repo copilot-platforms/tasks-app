@@ -1,7 +1,7 @@
 import { supabaseBucket } from '@/config'
 import { SupabaseActions } from '@/utils/SupabaseActions'
-import * as crypto from 'crypto'
 import { JSDOM } from 'jsdom'
+import { v4 as uuidv4 } from 'uuid'
 
 /**
  * Extracts the template path from a given url string
@@ -48,7 +48,7 @@ export const copyTemplateMediaToTask = async (workspaceId: string, body: string)
   for (let src of srcArray) {
     const srcSegments = src.split('/')
     const filename = srcSegments[srcSegments.length - 1]
-    const newUniqueFilename = crypto.randomUUID() + filename.slice(36)
+    const newUniqueFilename = uuidv4() + filename.slice(36)
     copyPromises.push(supabase.copyAttachment(src, `${workspaceId}/${newUniqueFilename}`))
   }
 
