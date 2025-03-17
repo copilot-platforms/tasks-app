@@ -1,5 +1,6 @@
 import { supabaseBucket } from '@/config'
 import { SupabaseActions } from '@/utils/SupabaseActions'
+import * as crypto from 'crypto'
 import { JSDOM } from 'jsdom'
 
 /**
