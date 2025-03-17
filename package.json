@@ -73,6 +73,7 @@
     "supabase": "^2.1.1",
     "swr": "^2.2.5",
     "tapwrite": "1.1.91",
+    "uuid": "^11.1.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
