@@ -20,6 +20,7 @@ import { AssigneeType } from '@prisma/client'
 import { useEffect, useState } from 'react'
 import { ArchiveBoxIcon } from '@/icons'
 import { isTaskCompleted } from '@/utils/isTaskCompleted'
+import { useWindowWidth } from '@/hooks/useWindowWidth'
 
 export const ListViewTaskCard = ({
   task,
@@ -33,7 +34,6 @@ export const ListViewTaskCard = ({
   const { assignee, workflowStates } = useSelector(selectTaskBoard)
 
   const [currentAssignee, setCurrentAssignee] = useState<IAssigneeCombined | undefined>(undefined)
-  const [inputStatusValue, setInputStatusValue] = useState('')
 
   useEffect(() => {
     if (assignee.length > 0) {
@@ -41,14 +41,10 @@ export const ListViewTaskCard = ({
       //@ts-expect-error  "type" property has mismatching types in between NoAssignee and IAssigneeCombined
       setCurrentAssignee(currentAssignee ?? NoAssignee)
     }
-  }, [assignee])
+  }, [assignee, task])
 
-  const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
-    item: currentAssignee,
-    type: SelectorType.ASSIGNEE_SELECTOR,
-  })
-
-  const assigneeValue = _assigneeValue as IAssigneeCombined //typecasting
+  const windowWidth = useWindowWidth()
+  const isMobile = windowWidth < 600 && windowWidth !== 0
 
   return (
     <Box
@@ -63,7 +59,7 @@ export const ListViewTaskCard = ({
         },
       }}
     >
-      <Box sx={{ padding: '8.5px 12px 8.5px 20px' }}>
+      <Box sx={{ padding: '8.5px 20px' }}>
         <Stack direction="row" columnGap={'20px'} alignItems="center" justifyContent="space-between">
           <Stack direction="row" alignItems="center" columnGap={'16px'}>
             <Typography
@@ -114,66 +110,42 @@ export const ListViewTaskCard = ({
             </Box>
 
             {currentAssignee ? (
-              <Selector
-                inputStatusValue={inputStatusValue}
-                setInputStatusValue={setInputStatusValue}
-                placeholder="Change assignee"
-                disableOutline
-                disabled
-                buttonWidth="150px"
-                getSelectedValue={(_newValue) => {
-                  const newValue = _newValue as IAssigneeCombined
-                  updateAssigneeValue(newValue)
-                  const assigneeType = newValue.type ? AssigneeType[newValue.type as AssigneeType] : null
-                  if (updateTask) {
-                    updateTask({
-                      payload: {
-                        assigneeType: assigneeType,
-                        assigneeId: newValue?.id,
-                      },
-                    })
-                  }
+              <Stack
+                direction="row"
+                alignItems="center"
+                columnGap="7px"
+                justifyContent="flex-start"
+                sx={{
+                  padding: '8px',
                 }}
-                startIcon={
-                  <CopilotAvatar currentAssignee={assigneeValue as IAssigneeCombined} alt={getAssigneeName(assigneeValue)} />
-                }
-                options={assignee}
-                value={assigneeValue}
-                selectorType={SelectorType.ASSIGNEE_SELECTOR}
-                extraOption={NoAssigneeExtraOptions}
-                extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
-                  return (
-                    <ExtraOptionRendererAssignee
-                      props={props}
-                      onClick={(e) => {
-                        updateAssigneeValue({ id: '', name: 'No assignee' })
-                        setAnchorEl(anchorEl ? null : e.currentTarget)
-                        if (updateTask) {
-                          updateTask({
-                            payload: {
-                              assigneeType: null,
-                              assigneeId: null,
-                            },
-                          })
-                        }
-                      }}
-                    />
-                  )
-                }}
-                buttonContent={
+              >
+                <CopilotAvatar currentAssignee={currentAssignee as IAssigneeCombined} />
+                {!isMobile && (
                   <Typography
                     variant="bodySm"
-                    lineHeight="20px"
+                    fontSize="12px"
                     sx={{
-                      color: (theme) => theme.color.gray[600],
+                      color: (theme) => theme.color.gray[500],
+                      width: '110px',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
                     }}
                   >
-                    {getAssigneeName(assigneeValue)}
+                    {getAssigneeName(currentAssignee)}
                   </Typography>
-                }
-              />
+                )}
+              </Stack>
             ) : (
-              <Stack direction="row" justifyContent="space-between" alignItems="center" columnGap={'4px'}>
+              <Stack
+                direction="row"
+                alignItems="center"
+                columnGap="7px"
+                justifyContent="flex-start"
+                sx={{
+                  padding: '8px',
+                }}
+              >
                 <Skeleton variant="circular" width={20} height={20} />
                 <Skeleton variant="rectangular" width="100px" height="12px" />
               </Stack>
