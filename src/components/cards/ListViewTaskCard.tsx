@@ -44,7 +44,7 @@ export const ListViewTaskCard = ({
   }, [assignee, task])
 
   const windowWidth = useWindowWidth()
-  const isMobile = windowWidth < 600 && windowWidth !== 0
+  const isDesktop = windowWidth > 960 && windowWidth !== 0
 
   return (
     <Box
@@ -120,7 +120,7 @@ export const ListViewTaskCard = ({
                 }}
               >
                 <CopilotAvatar currentAssignee={currentAssignee as IAssigneeCombined} />
-                {!isMobile && (
+                {isDesktop && (
                   <Typography
                     variant="bodySm"
                     fontSize="12px"
