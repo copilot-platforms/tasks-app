@@ -60,15 +60,21 @@ export const ListViewTaskCard = ({
       }}
     >
       <Box sx={{ padding: '8.5px 20px' }}>
-        <Stack direction="row" columnGap={'20px'} alignItems="center" justifyContent="space-between">
-          <Stack direction="row" alignItems="center" columnGap={'16px'}>
+        <Stack direction="row" sx={{ gap: { xs: '10px', sm: '20px' } }} alignItems="center" justifyContent="space-between">
+          <Stack direction="row" alignItems="center" sx={{ gap: { xs: '8px', sm: '16px' } }}>
             <Typography
               variant="sm"
               fontWeight={400}
               sx={{
                 color: (theme) => theme.color.gray[500],
                 flexGrow: 0,
-                minWidth: '75px',
+                maxWidth: {
+                  xs: '60px',
+                  sm: '100%',
+                },
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
                 lineHeight: '21px',
               }}
             >
@@ -82,6 +88,10 @@ export const ListViewTaskCard = ({
                     lineHeight: '21px',
                     wordBreak: 'break-word',
                     flexGrow: 1,
+                    maxWidth: { xs: `calc(100vw - 225px)`, sm: `calc(100vw - 350px)`, md: `calc(100vw - 400px)` },
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
                   }}
                 >
                   {task?.title}
@@ -94,14 +104,15 @@ export const ListViewTaskCard = ({
               </Stack>
             </Box>
           </Stack>
-          <Stack direction="row" alignItems="center" columnGap={'20px'}>
+          <Stack direction="row" alignItems="center" sx={{ gap: { xs: '10px', sm: '20px' } }}>
             <Box
               sx={{
-                display: 'flex',
-                maxWidth: '80px',
-                flexDirection: 'row',
-                alignItems: 'flex-end',
-                justifyContent: 'flex-end',
+                display: 'block',
+                maxWidth: {
+                  xs: '66px',
+                  sm: '100%',
+                },
+                overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
               }}
