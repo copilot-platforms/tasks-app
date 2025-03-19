@@ -61,6 +61,7 @@ export const ReplyCard = ({
     return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || windowWidth < 600
   }
 
+  const isXxs = windowWidth < 375 && windowWidth !== 0
   useEffect(() => {
     setEditedContent(content)
   }, [content])
@@ -147,17 +148,28 @@ export const ReplyCard = ({
             paddingRight: '10px',
           }}
         >
-          <Stack direction="row" justifyContent={'space-between'} alignItems="center">
-            <Stack direction="row" columnGap={1} alignItems={'center'}>
-              <BoldTypography>{replyUser ? getAssigneeName(replyUser) : 'Deleted User'}</BoldTypography>
-              <DotSeparator />
-              <StyledTypography>
-                {' '}
-                {getTimeDifference(item.createdAt)} {item.updatedAt !== item.createdAt ? '(edited)' : ''}
-              </StyledTypography>
+          <Stack direction="row" justifyContent={'space-between'} alignItems="flex-end">
+            <Stack direction="row" columnGap={1} alignItems={'center'} sx={{ display: 'flex', flexWrap: 'wrap' }}>
+              <BoldTypography
+                sx={{
+                  maxWidth: { xs: isXxs ? '100px' : '225px', sm: '300px', sd: '375px', md: '500px' },
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {replyUser ? getAssigneeName(replyUser) : 'Deleted User'}
+              </BoldTypography>
+              <Stack direction="row" columnGap={1} alignItems={'center'}>
+                <DotSeparator />
+                <StyledTypography>
+                  {' '}
+                  {getTimeDifference(item.createdAt)} {item.updatedAt !== item.createdAt ? '(edited)' : ''}
+                </StyledTypography>
+              </Stack>
             </Stack>
             {(isHovered || isMobile() || isMenuOpen) && canEdit && isReadOnly && (
-              <Stack direction="row" columnGap={2} sx={{ height: '10px' }} alignItems="center">
+              <Stack direction="row" columnGap={2} sx={{ height: '10px' }} alignItems="flex-end">
                 <MenuBox
                   getMenuOpen={(open) => {
                     setIsMenuOpen(open)
