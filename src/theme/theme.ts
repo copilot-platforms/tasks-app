@@ -12,9 +12,6 @@ export const theme = createTheme({
       sd: 735,
       md: 960,
       lg: 1280,
-      xl: 1536,
-      xxl: 1750,
-      xxxl: 2000,
     },
   },
   shape: {
