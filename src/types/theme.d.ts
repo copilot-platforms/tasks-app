@@ -10,6 +10,9 @@ export declare module '@mui/material/styles' {
         sd: number
         md: number
         lg: number
+        xl: number
+        xxl: number
+        xxxl: number
       }
     }
     shape: {
@@ -98,6 +101,9 @@ export declare module '@mui/material/styles' {
         sd: number
         md: number
         lg: number
+        xl: number
+        xxl: number
+        xxxl: number
       }
     }
     shape: {
