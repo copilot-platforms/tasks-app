@@ -12,7 +12,7 @@ import { AssigneeType } from '@prisma/client'
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
 import { usePathname, useRouter } from 'next/navigation'
 import { ReactNode, useEffect } from 'react'
-import { useSelector } from 'react-redux'
+import { shallowEqual, useSelector } from 'react-redux'
 
 interface RealTimeTaskResponse extends TaskResponse {
   deletedAt: string
@@ -149,7 +149,9 @@ export const RealTime = ({
             return
           }
           const newTaskArr = [...tasks.filter((task) => task.id !== updatedTask.id), updatedTask]
-          store.dispatch(setTasks(newTaskArr))
+          if (!shallowEqual(tasks, newTaskArr)) {
+            store.dispatch(setTasks(newTaskArr))
+          }
           if (activeTask && activeTask.id === updatedTask.id) {
             store.dispatch(setActiveTask(updatedTask))
           }
