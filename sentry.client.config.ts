@@ -30,5 +30,7 @@ if (dsn) {
         blockAllMedia: true,
       }),
     ],
+
+    ignoreErrors: [/fetch failed/i],
   })
 }
