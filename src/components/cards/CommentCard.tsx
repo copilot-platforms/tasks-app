@@ -80,6 +80,9 @@ export const CommentCard = ({
   const isMobile = () => {
     return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || windowWidth < 600
   }
+
+  const isXxs = windowWidth < 375 && windowWidth !== 0
+
   const handleImagePreview = (e: React.MouseEvent<unknown>) => {
     store.dispatch(setOpenImage((e.target as HTMLImageElement).src))
   }
@@ -208,23 +211,43 @@ export const CommentCard = ({
             onMouseLeave={() => setIsHovered(false)}
           >
             {isReadOnly && (
-              <Stack direction="row" justifyContent={'space-between'} alignItems="center">
-                <Stack direction="row" columnGap={1} alignItems="center">
+              <Stack direction="row" justifyContent={'space-between'} alignItems="flex-end">
+                <Stack direction="row" columnGap={1} alignItems="center" sx={{ display: 'flex', flexWrap: 'wrap' }}>
                   {commentUser ? (
-                    <BoldTypography>{getAssigneeName(commentUser, '')}</BoldTypography>
+                    <BoldTypography
+                      sx={{
+                        maxWidth: { xs: isXxs ? '100px' : '225px', sm: '300px', sd: '380px', md: '520px' },
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {getAssigneeName(commentUser, '')}
+                    </BoldTypography>
                   ) : (
-                    <Typography variant="md" sx={{ fontStyle: 'italic' }}>
+                    <Typography
+                      variant="md"
+                      sx={{
+                        fontStyle: 'italic',
+                        maxWidth: { xs: isXxs ? '150px' : '225px', sm: '300px', sd: '375px', md: '500px' },
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
                       Deleted User
                     </Typography>
                   )}
-                  <DotSeparator />
-                  <StyledTypography sx={{ lineHeight: '22px' }}>
-                    {timeAgo} {comment.details.updatedAt !== comment.details.createdAt ? '(edited)' : ''}
-                  </StyledTypography>
+                  <Stack direction="row" columnGap={1} alignItems={'center'}>
+                    <DotSeparator />
+                    <StyledTypography sx={{ lineHeight: '22px' }}>
+                      {timeAgo} {comment.details.updatedAt !== comment.details.createdAt ? '(edited)' : ''}
+                    </StyledTypography>
+                  </Stack>
                 </Stack>
 
                 {(isHovered || isMobile() || isMenuOpen) && (
-                  <Stack direction="row" columnGap={2} sx={{ height: '10px' }} alignItems="center">
+                  <Stack direction="row" columnGap={2} sx={{ height: '10px' }} alignItems="flex-end">
                     <ReplyButton
                       handleClick={() => {
                         setShowReply((prev) => !prev)
