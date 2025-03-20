@@ -88,7 +88,7 @@ export const ListViewTaskCard = ({
                     lineHeight: '21px',
                     wordBreak: 'break-word',
                     flexGrow: 1,
-                    maxWidth: { xs: `calc(100vw - 225px)`, sm: `calc(100vw - 350px)`, md: `calc(100vw - 400px)` },
+                    maxWidth: { xs: `calc(100vw - 240px)`, sm: `calc(100vw - 365px)`, md: `calc(100vw - 420px)` },
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
