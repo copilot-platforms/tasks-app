@@ -2,8 +2,8 @@ import {
   AviIcon,
   CsvIcon,
   DocIcon,
-  DoneIcon,
-  InprogressIcon,
+  CompletedIcon,
+  InProgressIcon,
   XlxIcon,
   InreviewIcon,
   JpgIcon,
@@ -19,12 +19,9 @@ import {
   GifIcon,
   Mp3Icon,
   TodoIconSmall,
-  InprogressIconSmall,
-  DoneIconSmall,
+  InProgressIconSmall,
+  CompletedIconSmall,
   InreviewIconSmall,
-  TodoIconMedium,
-  InprogressIconMedium,
-  DoneIconMedium,
   InreviewIconMedium,
   DefaultFileIcon,
   PngIconSmall,
@@ -49,26 +46,19 @@ import { Sizes } from '@/types/interfaces'
 
 import { ReactNode } from 'react'
 
-export const statusIcons: { [key in Sizes]: { [key in WorkflowState]: ReactNode } } = {
-  large: {
+export const statusIcons: { [key in Exclude<Sizes, Sizes.LARGE>]: { [key in WorkflowState]: ReactNode } } = {
+  medium: {
     backlog: <TodoIcon />,
     unstarted: <TodoIcon />,
-    started: <InprogressIcon />,
-    completed: <DoneIcon />,
-    cancelled: <InreviewIcon />,
-  },
-  medium: {
-    backlog: <TodoIconMedium />,
-    unstarted: <TodoIconMedium />,
-    started: <InprogressIconMedium />,
-    completed: <DoneIconMedium />,
+    started: <InProgressIcon />,
+    completed: <CompletedIcon />,
     cancelled: <InreviewIconMedium />,
   },
   small: {
     backlog: <TodoIconSmall />,
     unstarted: <TodoIconSmall />,
-    started: <InprogressIconSmall />,
-    completed: <DoneIconSmall />,
+    started: <InProgressIconSmall />,
+    completed: <CompletedIconSmall />,
     cancelled: <InreviewIconSmall />,
   },
 }

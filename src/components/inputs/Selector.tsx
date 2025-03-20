@@ -509,7 +509,7 @@ const StatusSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTMLL
       }}
     >
       <Stack direction="row" alignItems="center" columnGap={3}>
-        <Box>{statusIcons[Sizes.LARGE][(option as WorkflowStateResponse).type]}</Box>
+        <Box>{statusIcons[Sizes.MEDIUM][(option as WorkflowStateResponse).type]}</Box>
         <Typography variant="sm" fontWeight={400}>
           {(option as WorkflowStateResponse).name as string}
         </Typography>

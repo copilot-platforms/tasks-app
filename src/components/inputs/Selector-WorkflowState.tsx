@@ -21,7 +21,7 @@ export const WorkflowStateSelector = ({
   getValue: (value: WorkflowStateResponse) => void
   disableOutline?: boolean
   responsiveNoHide?: boolean
-  size?: Sizes
+  size?: Exclude<Sizes, Sizes.LARGE>
   padding?: string
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
@@ -69,7 +69,7 @@ export const WorkflowStateSelector = ({
                 cursor: disabled ? 'auto' : 'default',
               }}
             >
-              <Box>{statusIcons[Sizes.LARGE][value?.type]}</Box>
+              <Box>{statusIcons[Sizes.MEDIUM][value?.type]}</Box>
               <Typography
                 variant="md"
                 sx={{
@@ -128,6 +128,8 @@ export const WorkflowStateSelector = ({
                   key={key}
                   columnGap="12px"
                   sx={{
+                    alignItems: 'center',
+                    justifyContent: 'flex-start',
                     padding: '4px 8px',
                     width: '180px',
                     ':hover': {
