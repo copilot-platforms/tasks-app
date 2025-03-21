@@ -64,6 +64,7 @@ interface Prop<T extends keyof SelectorOptionsType> {
   useClickHandler?: boolean
   cursor?: Property.Cursor
   currentOption?: SelectorOptionsType[T] //option which shall be at the top of the selector without any grouping
+  errorPlaceholder?: string
 }
 
 export default function Selector<T extends keyof SelectorOptionsType>({
@@ -95,6 +96,7 @@ export default function Selector<T extends keyof SelectorOptionsType>({
   useClickHandler,
   cursor,
   currentOption,
+  errorPlaceholder = 'Required',
 }: Prop<T>) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
@@ -258,7 +260,7 @@ export default function Selector<T extends keyof SelectorOptionsType>({
               error={error}
               endIcon={endIcon}
             />
-            {error && <StyledHelperText> Required</StyledHelperText>}
+            {error && errorPlaceholder && <StyledHelperText> Required</StyledHelperText>}
           </>
         )}
       </Box>
