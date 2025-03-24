@@ -22,7 +22,7 @@ export const getTasks = async (req: NextRequest) => {
   const tasks = await tasksService.getAllTasks({
     showUnarchived: getBooleanQuery(showUnarchived, true),
     showArchived: getBooleanQuery(showArchived, false),
-    parentId: z.string().uuid().nullable().parse(parentId),
+    parentId,
   })
 
   return NextResponse.json({ tasks })
