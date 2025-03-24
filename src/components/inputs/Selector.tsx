@@ -37,7 +37,7 @@ interface Prop<T extends keyof SelectorOptionsType> {
   value: unknown
   selectorType: T
   options: SelectorOptionsType[T][] | IExtraOption[]
-  buttonContent: ReactNode
+  buttonContent?: ReactNode
   inputStatusValue: string
   setInputStatusValue: React.Dispatch<React.SetStateAction<string>>
   disabled?: boolean
@@ -227,26 +227,28 @@ export default function Selector<T extends keyof SelectorOptionsType>({
               justifyContent: { xs: 'flex-start', sm: 'flex-start' },
               cursor: disabled ? 'auto' : (cursor ?? 'pointer'),
               borderRadius: '4px',
-              padding: '8px 8px',
+              padding: padding ? padding : '8px 8px',
               ':hover': {
                 backgroundColor: disabled ? 'none' : (theme) => theme.color.gray[100],
               },
             }}
           >
             <Box>{startIcon}</Box>
-            <Typography
-              variant="bodySm"
-              sx={{
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                maxWidth: '150px',
-                display: { xs: responsiveNoHide ? 'block' : 'none', sm: 'block' },
-                userSelect: 'none',
-              }}
-            >
-              {buttonContent}
-            </Typography>
+            {buttonContent && (
+              <Typography
+                variant="bodySm"
+                sx={{
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  maxWidth: '150px',
+                  display: { xs: responsiveNoHide ? 'block' : 'none', sm: 'block' },
+                  userSelect: 'none',
+                }}
+              >
+                {buttonContent}
+              </Typography>
+            )}
           </Stack>
         ) : (
           <>

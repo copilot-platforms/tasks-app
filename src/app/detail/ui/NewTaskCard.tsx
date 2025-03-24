@@ -1,6 +1,8 @@
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { MiniLoader } from '@/components/atoms/MiniLoader'
 import AttachmentLayout from '@/components/AttachmentLayout'
+import { IconBtn } from '@/components/buttons/IconBtn'
+import { ManageTemplatesEndOption } from '@/components/buttons/ManageTemplatesEndOptions'
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
 import { DatePickerComponent } from '@/components/inputs/DatePickerComponent'
@@ -9,18 +11,20 @@ import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowStat
 import { StyledTextField } from '@/components/inputs/TextField'
 import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
-import { AssigneePlaceholderSmall } from '@/icons'
+import { AssigneePlaceholderSmall, TempalteIconMd, TemplateIconSm } from '@/icons'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { selectCreateTemplate } from '@/redux/features/templateSlice'
 import { DateString } from '@/types/date'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { CreateTaskErrors, HandleSelectorComponentModes, IAssigneeCombined } from '@/types/interfaces'
+import { CreateTaskErrors, HandleSelectorComponentModes, IAssigneeCombined, ITemplate } from '@/types/interfaces'
 import { getAssigneeName } from '@/utils/assignee'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
 import { NoAssigneeExtraOptions } from '@/utils/noAssignee'
+import { trimAllTags } from '@/utils/trimTags'
 import { setDebouncedFilteredAssignees } from '@/utils/users'
 import { Box, Stack, Typography } from '@mui/material'
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
 import { string, z } from 'zod'
@@ -40,8 +44,11 @@ interface SubTaskFields {
 
 export const NewTaskCard = ({ handleClose }: { handleClose: () => void }) => {
   const { workflowStates, assignee, token, filterOptions, previewMode } = useSelector(selectTaskBoard)
+  const { templates } = useSelector(selectCreateTemplate)
   const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
   const [loading, setLoading] = useState(false)
+
+  const [isEditorReadonly, setIsEditorReadonly] = useState(false)
 
   const { tokenPayload } = useSelector(selectAuthDetails)
   const [subTaskFields, setSubTaskFields] = useState<SubTaskFields>({
@@ -99,10 +106,79 @@ export const NewTaskCard = ({ handleClose }: { handleClose: () => void }) => {
   })
   const assigneeValue = _assigneeValue as IAssigneeCombined
 
+  const { renderingItem: _templateValue, updateRenderingItem: updateTemplateValue } = useHandleSelectorComponent({
+    item: undefined,
+    type: SelectorType.TEMPLATE_SELECTOR,
+  })
+  const templateValue = _templateValue as ITemplate
+
   const [inputStatusValue, setInputStatusValue] = useState('')
 
   const handleUploadStatusChange = (uploading: boolean) => {
     setIsUploading(uploading)
+  }
+
+  const applyTemplate = useCallback(
+    (id: string, templateTitle: string) => {
+      const controller = new AbortController()
+
+      const fetchTemplate = async () => {
+        try {
+          setIsEditorReadonly?.(true)
+
+          if (!subTaskFields.title.trim()) {
+            setSubTaskFields((prev) => ({
+              ...prev,
+              title: templateTitle,
+            }))
+          } else {
+            setSubTaskFields((prev) => ({
+              ...prev,
+              title: prev.title + ' ' + templateTitle,
+            }))
+          }
+          const resp = await fetch(`/api/tasks/templates/${id}/apply?token=${token}`, {
+            signal: controller.signal,
+          })
+          const { data: template } = await resp.json()
+          setIsEditorReadonly?.(false)
+
+          updateStatusValue(workflowStates.find((state) => state.id === template.workflowStateId))
+          setSubTaskFields((prev) => ({
+            ...prev,
+            workflowStateId: template.description,
+          }))
+          const trimmedAppliedDescription = template.description && trimAllTags(template.description)
+          const trimmedDescription = trimAllTags(subTaskFields.description)
+          if (trimmedAppliedDescription == trimmedDescription || trimmedDescription === '<p></p>') {
+            setSubTaskFields((prev) => ({
+              ...prev,
+              description: template.body,
+            }))
+          } else {
+            setSubTaskFields((prev) => ({
+              ...prev,
+              description: prev.description + template.body,
+            }))
+          }
+        } catch (error) {
+          console.error('error applying template')
+        } finally {
+          setIsEditorReadonly?.(false)
+        }
+      }
+      fetchTemplate()
+      return controller
+    },
+    [token, setIsEditorReadonly, workflowStates, subTaskFields.title, subTaskFields.description],
+  )
+
+  const applyTemplateHandler = (newValue: ITemplate) => {
+    if (!newValue || !token) return
+    const controller = applyTemplate(newValue.id, newValue.title)
+    return () => {
+      controller.abort()
+    }
   }
 
   return (
@@ -120,39 +196,66 @@ export const NewTaskCard = ({ handleClose }: { handleClose: () => void }) => {
     >
       <Stack
         direction="column"
-        sx={{ display: 'flex', padding: '0px 12px 12px', alignItems: 'flex-start', gap: '4px', alignSelf: 'stretch' }}
+        sx={{ display: 'flex', padding: '0px 12px 12px', alignItems: 'center', gap: '4px', alignSelf: 'stretch' }}
       >
-        <StyledTextField
-          type="text"
-          multiline
-          borderLess
-          sx={{
-            width: '100%',
-            '& .MuiInputBase-input': {
-              fontSize: '16px',
-              lineHeight: '24px',
-              color: (theme) => theme.color.gray[600],
-              fontWeight: 500,
-            },
-            '& .MuiInputBase-input.Mui-disabled': {
-              WebkitTextFillColor: (theme) => theme.color.gray[600],
-            },
-            '& .MuiInputBase-root': {
-              padding: '0px 0px',
-            },
-          }}
-          placeholder="Task name"
-          value={subTaskFields.title}
-          onChange={(event) => {
-            handleFieldChange('title', event.target.value)
-          }}
-          inputProps={{ maxLength: 255 }}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault() //prevent users from breaking line
-            }
-          }}
-        />
+        <Stack direction="row" sx={{ display: 'flex', alignItems: 'flex-end', gap: '4px', alignSelf: 'stretch' }}>
+          <StyledTextField
+            type="text"
+            multiline
+            borderLess
+            sx={{
+              width: '100%',
+              '& .MuiInputBase-input': {
+                fontSize: '16px',
+                lineHeight: '24px',
+                color: (theme) => theme.color.gray[600],
+                fontWeight: 500,
+              },
+              '& .MuiInputBase-input.Mui-disabled': {
+                WebkitTextFillColor: (theme) => theme.color.gray[600],
+              },
+              '& .MuiInputBase-root': {
+                padding: '0px 0px',
+              },
+            }}
+            placeholder="Task name"
+            value={subTaskFields.title}
+            onChange={(event) => {
+              handleFieldChange('title', event.target.value)
+            }}
+            inputProps={{ maxLength: 255 }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault() //prevent users from breaking line
+              }
+            }}
+            disabled={isEditorReadonly}
+          />
+
+          <Selector
+            padding="5px"
+            inputStatusValue={inputStatusValue}
+            setInputStatusValue={setInputStatusValue}
+            getSelectedValue={(_newValue) => {
+              const newValue = _newValue as ITemplate
+              updateTemplateValue(newValue)
+              applyTemplateHandler(newValue)
+            }}
+            startIcon={<TempalteIconMd />}
+            options={templates || []}
+            placeholder="Search..."
+            value={templateValue}
+            selectorType={SelectorType.TEMPLATE_SELECTOR}
+            endOption={<ManageTemplatesEndOption />}
+            endOptionHref={`/manage-templates?token=${token}`}
+            listAutoHeightMax="147px"
+            disableOutline
+            responsiveNoHide
+            buttonWidth="auto"
+            useClickHandler
+          />
+        </Stack>
+
         <Box sx={{ height: '100%', width: '100%' }}>
           <Tapwrite
             content={subTaskFields.description}
@@ -166,6 +269,7 @@ export const NewTaskCard = ({ handleClose }: { handleClose: () => void }) => {
             )}
             maxUploadLimit={MAX_UPLOAD_LIMIT}
             parentContainerStyle={{ gap: '0px' }}
+            readonly={isEditorReadonly}
           />
         </Box>
       </Stack>
@@ -308,7 +412,7 @@ export const NewTaskCard = ({ handleClose }: { handleClose: () => void }) => {
               }
             }}
             buttonText="Create"
-            disabled={!subTaskFields.title.trim() || isUploading}
+            disabled={!subTaskFields.title.trim() || isUploading || isEditorReadonly}
           />
         </Stack>
       </Stack>
