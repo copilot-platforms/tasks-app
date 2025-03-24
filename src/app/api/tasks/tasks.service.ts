@@ -2,7 +2,6 @@ import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 import { deleteTaskNotifications, sendTaskCreateNotifications, sendTaskUpdateNotifications } from '@/jobs/notifications'
 import { sendClientUpdateTaskNotifications } from '@/jobs/notifications/send-client-task-update-notifications'
 import { ClientResponse, CompanyResponse, InternalUsers } from '@/types/common'
-import { TaskWithPath } from '@/types/db'
 import { CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { buildLtree, buildLtreeNodeString } from '@/utils/ltree'
@@ -99,6 +98,8 @@ export class TasksService extends BaseService {
     let tasks = await this.db.task.findMany({
       where: {
         ...filters.where,
+        // TODO: Add option to get subtasks very very soon
+        parentId: null,
         isArchived,
       },
       orderBy: [
