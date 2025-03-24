@@ -454,7 +454,7 @@ const NewTaskFooter = ({
                 handleClick={() => handleClose()}
                 buttonContent={
                   <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[700] }}>
-                    Cancel
+                    Discard
                   </Typography>
                 }
               />
