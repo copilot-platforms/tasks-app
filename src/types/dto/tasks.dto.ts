@@ -14,6 +14,7 @@ export const CreateTaskRequestSchema = z.object({
   body: z.string().optional(),
   workflowStateId: z.string().uuid(),
   dueDate: DateStringSchema.nullish(),
+  parentId: z.string().uuid().optional(),
 })
 export type CreateTaskRequest = z.infer<typeof CreateTaskRequestSchema>
 

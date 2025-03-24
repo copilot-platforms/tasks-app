@@ -2,8 +2,10 @@ import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 import { deleteTaskNotifications, sendTaskCreateNotifications, sendTaskUpdateNotifications } from '@/jobs/notifications'
 import { sendClientUpdateTaskNotifications } from '@/jobs/notifications/send-client-task-update-notifications'
 import { ClientResponse, CompanyResponse, InternalUsers } from '@/types/common'
+import { TaskWithPath } from '@/types/db'
 import { CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { CopilotAPI } from '@/utils/CopilotAPI'
+import { buildLtree, buildLtreeNodeString } from '@/utils/ltree'
 import { getFilePathFromUrl, replaceImageSrc } from '@/utils/signedUrlReplacer'
 import { getSignedUrl } from '@/utils/signUrl'
 import { SupabaseActions } from '@/utils/SupabaseActions'
@@ -179,6 +181,8 @@ export class TasksService extends BaseService {
           },
         })
       }
+
+      await this.addPathToTask(newTask)
     }
 
     // Send task created notifications to users
@@ -301,6 +305,27 @@ export class TasksService extends BaseService {
     // ...In case requirements change later again
     // const notificationService = new NotificationService(this.user)
     // await notificationService.deleteInternalUserNotificationForTask(id)
+  }
+
+  private async addPathToTask(task: Task) {
+    let path: string = task.id
+
+    if (task.parentId) {
+      const parentTask = (
+        await this.db.$queryRaw<{ path: string }[] | null>`
+          SELECT "path" FROM "Tasks" WHERE id::text = ${task.parentId}
+        `
+      )?.[0]
+      if (!parentTask) throw new APIError(httpStatus.NOT_FOUND, 'The requested parent task was not found')
+
+      path = buildLtree(parentTask.path, task.id)
+    }
+
+    await this.db.$executeRaw`
+      UPDATE "Tasks"
+      SET path = ${buildLtreeNodeString(path)}::ltree
+      WHERE id::text = ${task.id}
+    `
   }
 
   private async updateTaskIdOfAttachmentsAfterCreation(htmlString: string, task_id: string) {
