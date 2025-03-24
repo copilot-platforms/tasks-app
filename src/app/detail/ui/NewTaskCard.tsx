@@ -1,3 +1,4 @@
+import { handleCreate } from '@/app/actions'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { MiniLoader } from '@/components/atoms/MiniLoader'
 import AttachmentLayout from '@/components/AttachmentLayout'
@@ -16,15 +17,24 @@ import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { selectCreateTemplate } from '@/redux/features/templateSlice'
 import { DateString } from '@/types/date'
+import { CreateTaskRequestSchema } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { CreateTaskErrors, HandleSelectorComponentModes, IAssigneeCombined, ITemplate } from '@/types/interfaces'
+import {
+  AssigneeType,
+  CreateTaskErrors,
+  HandleSelectorComponentModes,
+  IAssigneeCombined,
+  ITemplate,
+} from '@/types/interfaces'
 import { getAssigneeName } from '@/utils/assignee'
+import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
 import { NoAssigneeExtraOptions } from '@/utils/noAssignee'
 import { trimAllTags } from '@/utils/trimTags'
 import { setDebouncedFilteredAssignees } from '@/utils/users'
 import { Box, Stack, Typography } from '@mui/material'
-import { useCallback, useState } from 'react'
+import dayjs from 'dayjs'
+import { useCallback, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
 import { string, z } from 'zod'
@@ -40,10 +50,11 @@ interface SubTaskFields {
   assigneeId: string | null
   dueDate: DateString | null
   errors: IErrors
+  assigneeType?: AssigneeType | null
 }
 
 export const NewTaskCard = ({ handleClose }: { handleClose: () => void }) => {
-  const { workflowStates, assignee, token, filterOptions, previewMode } = useSelector(selectTaskBoard)
+  const { workflowStates, assignee, token, filterOptions, previewMode, activeTask } = useSelector(selectTaskBoard)
   const { templates } = useSelector(selectCreateTemplate)
   const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
   const [loading, setLoading] = useState(false)
@@ -60,6 +71,7 @@ export const NewTaskCard = ({ handleClose }: { handleClose: () => void }) => {
     errors: {
       [CreateTaskErrors.ASSIGNEE]: false,
     },
+    assigneeType: null,
   })
 
   const [filteredAssignees, setFilteredAssignees] = useState(assignee)
@@ -67,16 +79,14 @@ export const NewTaskCard = ({ handleClose }: { handleClose: () => void }) => {
   const [isUploading, setIsUploading] = useState(false)
 
   const clearSubTaskFields = () => {
-    setSubTaskFields({
+    setSubTaskFields((prev) => ({
+      ...prev,
       title: '',
       description: '',
-      workflowStateId: '',
-      assigneeId: '',
-      dueDate: null,
       errors: {
         [CreateTaskErrors.ASSIGNEE]: false,
       },
-    })
+    }))
   }
 
   const handleFieldChange = (field: keyof SubTaskFields, value: string | DateString | IErrors | null) => {
@@ -92,6 +102,10 @@ export const NewTaskCard = ({ handleClose }: { handleClose: () => void }) => {
       : undefined
 
   const todoWorkflowState = workflowStates.find((el) => el.key === 'todo') || workflowStates[0]
+
+  useEffect(() => {
+    handleFieldChange('workflowStateId', todoWorkflowState.id)
+  }, [todoWorkflowState])
 
   const { renderingItem: _statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
     item: todoWorkflowState,
@@ -178,6 +192,25 @@ export const NewTaskCard = ({ handleClose }: { handleClose: () => void }) => {
     const controller = applyTemplate(newValue.id, newValue.title)
     return () => {
       controller.abort()
+    }
+  }
+
+  const handleTaskCreation = async () => {
+    if (subTaskFields.title && subTaskFields.assigneeId && subTaskFields.assigneeType) {
+      const formattedDueDate = subTaskFields.dueDate && dayjs(new Date(subTaskFields.dueDate)).format('YYYY-MM-DD')
+
+      const payload = {
+        title: subTaskFields.title,
+        body: subTaskFields.description,
+        workflowStateId: subTaskFields.workflowStateId,
+        assigneeType: subTaskFields.assigneeType,
+        assigneeId: subTaskFields.assigneeId,
+        dueDate: formattedDueDate,
+        parentId: activeTask?.id,
+      }
+
+      clearSubTaskFields()
+      await handleCreate(token as string, CreateTaskRequestSchema.parse(payload))
     }
   }
 
@@ -318,7 +351,7 @@ export const NewTaskCard = ({ handleClose }: { handleClose: () => void }) => {
               const newValue = _newValue as IAssigneeCombined
 
               updateAssigneeValue(newValue)
-
+              handleFieldChange('assigneeType', getAssigneeTypeCorrected(newValue))
               handleFieldChange('assigneeId', newValue?.id)
             }}
             startIcon={assigneeValue ? <CopilotAvatar currentAssignee={assigneeValue} /> : <AssigneePlaceholderSmall />}
@@ -403,12 +436,13 @@ export const NewTaskCard = ({ handleClose }: { handleClose: () => void }) => {
             padding={'4px 8px'}
             handleClick={() => {
               const hasAssigneeError = !subTaskFields.assigneeId
+
               if (hasAssigneeError) {
                 handleFieldChange('errors', {
                   assignee: true,
                 })
               } else {
-                // handleCreate()
+                handleTaskCreation()
               }
             }}
             buttonText="Create"
