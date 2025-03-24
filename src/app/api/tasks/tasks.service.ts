@@ -65,7 +65,7 @@ export class TasksService extends BaseService {
     showArchived: boolean
     showUnarchived: boolean
     showIncompleteOnly?: boolean
-    parentId: string | null
+    parentId?: string | null
   }) {
     // Check if given user role is authorized access to this resource
     const policyGate = new PoliciesService(this.user)
