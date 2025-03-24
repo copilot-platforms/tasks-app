@@ -91,7 +91,7 @@ class LoadTester {
     for (let user of users) {
       const data: Omit<
         Task,
-        'id' | 'completedAt' | 'deletedAt' | 'lastActivityLogUpdated' | 'isArchived' | 'lastArchivedDate'
+        'id' | 'completedAt' | 'deletedAt' | 'lastActivityLogUpdated' | 'isArchived' | 'lastArchivedDate' | 'parentId'
       >[] = []
       const currentUser = await authenticateWithToken(this.token, this.apiKey)
       const labelsService = new LabelMappingService(currentUser, this.apiKey)
