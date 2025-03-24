@@ -14,7 +14,6 @@ import { PoliciesService } from '@api/core/services/policies.service'
 import { Resource } from '@api/core/types/api'
 import { UserAction, UserRole } from '@api/core/types/user'
 import { LabelMappingService } from '@api/label-mapping/label-mapping.service'
-import { TaskNotificationsService } from '@api/tasks/task-notifications.service'
 import { getArchivedStatus, getTaskTimestamps } from '@api/tasks/tasks.helpers'
 import { TasksActivityLogger } from '@api/tasks/tasks.logger'
 import { AssigneeType, StateType, Task, WorkflowState } from '@prisma/client'
@@ -314,7 +313,10 @@ export class TasksService extends BaseService {
     if (task.parentId) {
       const parentTask = (
         await this.db.$queryRaw<{ path: string }[] | null>`
-          SELECT "path" FROM "Tasks" WHERE id::text = ${task.parentId}
+          SELECT "path"
+          FROM "Tasks"
+          WHERE id::text = ${task.parentId}
+            AND workspaceId = ${this.user.workspaceId}
         `
       )?.[0]
       if (!parentTask) throw new APIError(httpStatus.NOT_FOUND, 'The requested parent task was not found')
@@ -326,6 +328,7 @@ export class TasksService extends BaseService {
       UPDATE "Tasks"
       SET path = ${buildLtreeNodeString(path)}::ltree
       WHERE id::text = ${task.id}
+        AND workspaceId = ${this.user.workspaceId}
     `
   }
 
