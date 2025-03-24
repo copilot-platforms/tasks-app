@@ -1,22 +1,28 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { TasksService } from '@api/tasks/tasks.service'
 import { CreateTaskRequestSchema, UpdateTaskRequestSchema } from '@/types/dto/tasks.dto'
-import { IdParams } from '@api/core/types/api'
-import httpStatus from 'http-status'
-import authenticate from '@api/core/utils/authenticate'
-import { unstable_noStore as noStore } from 'next/cache'
 import { getBooleanQuery, getSearchParams } from '@/utils/request'
+import { IdParams } from '@api/core/types/api'
+import authenticate from '@api/core/utils/authenticate'
+import { TasksService } from '@api/tasks/tasks.service'
+import httpStatus from 'http-status'
+import { unstable_noStore as noStore } from 'next/cache'
+import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 
 export const getTasks = async (req: NextRequest) => {
   noStore()
   const user = await authenticate(req)
 
-  const { showArchived, showUnarchived } = getSearchParams(req.nextUrl.searchParams, ['showArchived', 'showUnarchived'])
+  const { showArchived, showUnarchived, parentId } = getSearchParams(req.nextUrl.searchParams, [
+    'showArchived',
+    'showUnarchived',
+    'parentId',
+  ])
 
   const tasksService = new TasksService(user)
   const tasks = await tasksService.getAllTasks({
     showUnarchived: getBooleanQuery(showUnarchived, true),
     showArchived: getBooleanQuery(showArchived, false),
+    parentId: z.string().uuid().nullable().parse(parentId),
   })
 
   return NextResponse.json({ tasks })
