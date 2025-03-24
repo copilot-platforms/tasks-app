@@ -16,7 +16,7 @@ import { UserAction, UserRole } from '@api/core/types/user'
 import { LabelMappingService } from '@api/label-mapping/label-mapping.service'
 import { getArchivedStatus, getTaskTimestamps } from '@api/tasks/tasks.helpers'
 import { TasksActivityLogger } from '@api/tasks/tasks.logger'
-import { AssigneeType, StateType, Task, WorkflowState } from '@prisma/client'
+import { AssigneeType, Prisma, StateType, Task, WorkflowState } from '@prisma/client'
 import httpStatus from 'http-status'
 import { z } from 'zod'
 
@@ -36,45 +36,44 @@ export class TasksService extends BaseService {
     const user = this.user
 
     // Default filters
-    let filters = {
-      where: {
-        id,
-        workspaceId: user.workspaceId,
-        OR: undefined as FilterByAssigneeId[] | undefined,
-      },
+    let filters: Prisma.TaskWhereInput = {
+      id,
+      workspaceId: user.workspaceId,
+      OR: undefined as FilterByAssigneeId[] | undefined,
     }
 
     if (user.clientId) {
       filters = {
-        where: {
-          ...filters.where,
-          OR: [{ assigneeId: user.clientId as string, assigneeType: 'client' }],
-        },
+        ...filters,
+        OR: [{ assigneeId: user.clientId as string, assigneeType: 'client' }],
       }
     }
     if (user.clientId && user.companyId) {
       filters = {
-        where: {
-          ...filters.where,
-          OR: [
-            { assigneeId: user.clientId as string, assigneeType: 'client' },
-            { assigneeId: user.companyId, assigneeType: 'company' },
-          ],
-        },
+        ...filters,
+        OR: [
+          { assigneeId: user.clientId as string, assigneeType: 'client' },
+          { assigneeId: user.companyId, assigneeType: 'company' },
+        ],
       }
     }
 
     return filters
   }
 
-  async getAllTasks(queryFilters?: { showArchived: boolean; showUnarchived: boolean; showIncompleteOnly?: boolean }) {
+  async getAllTasks(queryFilters?: {
+    showArchived: boolean
+    showUnarchived: boolean
+    showIncompleteOnly?: boolean
+    parentId: string | null
+  }) {
     // Check if given user role is authorized access to this resource
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Read, Resource.Tasks)
 
     // Build query filters based on role of user. IU can access all tasks related to a workspace
     // while clients can only view the tasks assigned to them or their company
-    const filters = this.buildReadFilters()
+    const filters: Prisma.TaskWhereInput = this.buildReadFilters()
 
     let isArchived: boolean | undefined = false
     // Archived tasks are only accessible to IU
@@ -83,32 +82,24 @@ export class TasksService extends BaseService {
       if (!queryFilters.showArchived && !queryFilters.showUnarchived) {
         return []
       }
-
       isArchived = getArchivedStatus(queryFilters.showArchived, queryFilters.showUnarchived)
     }
 
     if (queryFilters?.showIncompleteOnly) {
-      // @ts-expect-error Injecting a valid workflowState query here
-      filters.where.workflowState = {
+      filters.workflowState = {
         type: { not: StateType.completed },
       }
     }
 
+    // If `parentId` is present, filter by parentId, ELSE return top-level parent comments
+    filters.parentId = queryFilters?.parentId || null
+
     let tasks = await this.db.task.findMany({
       where: {
-        ...filters.where,
-        // TODO: Add option to get subtasks very very soon
-        parentId: null,
+        ...filters,
         isArchived,
       },
-      orderBy: [
-        {
-          dueDate: { sort: 'asc', nulls: 'last' },
-        },
-        {
-          createdAt: 'desc',
-        },
-      ],
+      orderBy: [{ dueDate: { sort: 'asc', nulls: 'last' } }, { createdAt: 'desc' }],
       relationLoadStrategy: 'join',
       include: {
         workflowState: { select: { name: true } },
@@ -200,7 +191,7 @@ export class TasksService extends BaseService {
     const filters = this.buildReadFilters(id)
 
     const task = await this.db.task.findFirst({
-      ...filters,
+      where: filters,
       relationLoadStrategy: 'join',
       include: {
         workflowState: true,
@@ -240,7 +231,7 @@ export class TasksService extends BaseService {
     // Query previous task
     const filters = this.buildReadFilters(id)
     const prevTask = await this.db.task.findFirst({
-      ...filters,
+      where: filters,
       relationLoadStrategy: 'join',
       include: { workflowState: true },
     })
@@ -450,7 +441,7 @@ export class TasksService extends BaseService {
     // Query previous task
     const filters = this.buildReadFilters(id)
     const prevTask = await this.db.task.findFirst({
-      ...filters,
+      where: filters,
       relationLoadStrategy: 'join',
       include: { workflowState: true },
     })
