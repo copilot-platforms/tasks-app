@@ -92,7 +92,7 @@ export class TasksService extends BaseService {
     }
 
     // If `parentId` is present, filter by parentId, ELSE return top-level parent comments
-    filters.parentId = queryFilters?.parentId || null
+    filters.parentId = z.string().nullish().parse(queryFilters?.parentId) || null
 
     let tasks = await this.db.task.findMany({
       where: {
