@@ -161,13 +161,16 @@ export const NewTaskCard = ({ handleClose }: { handleClose: () => void }) => {
       </Stack>
       <Stack
         direction="row"
+        columnGap={'24px'}
+        rowGap={'12px'}
         sx={{
           display: 'flex',
           padding: '0px 12px',
           alignItems: 'center',
-          gap: '24px',
+
           alignSelf: 'stretch',
           justifyContent: 'space-between',
+          flexWrap: 'wrap',
         }}
       >
         <Stack
@@ -177,7 +180,7 @@ export const NewTaskCard = ({ handleClose }: { handleClose: () => void }) => {
             alignItems: 'center',
             gap: '8px',
             alignSelf: 'stretch',
-            justifyContent: 'space-between',
+            flexWrap: 'wrap',
           }}
         >
           <WorkflowStateSelector
@@ -187,9 +190,10 @@ export const NewTaskCard = ({ handleClose }: { handleClose: () => void }) => {
               updateStatusValue(value)
               handleFieldChange('workflowStateId', value.id)
             }}
+            padding={'4px 8px'}
           />
-
           <Selector
+            padding={'4px 8px'}
             inputStatusValue={inputStatusValue}
             setInputStatusValue={setInputStatusValue}
             placeholder="Set assignee"
@@ -245,7 +249,7 @@ export const NewTaskCard = ({ handleClose }: { handleClose: () => void }) => {
 
                   overflow: 'hidden',
                   fontSize: '12px',
-                  maxWidth: { xs: '60px', sm: '100px' },
+                  maxWidth: '100px',
                 }}
               >
                 {getAssigneeName(assigneeValue as IAssigneeCombined, 'Assignee')}
@@ -254,27 +258,35 @@ export const NewTaskCard = ({ handleClose }: { handleClose: () => void }) => {
             error={subTaskFields.errors.assignee}
             errorPlaceholder=""
           />
-          <DatePickerComponent getDate={(value) => handleFieldChange('dueDate', value)} isButton={true} />
+          <DatePickerComponent
+            padding={'4px 8px'}
+            getDate={(value) => handleFieldChange('dueDate', value)}
+            isButton={true}
+          />
         </Stack>
         <Stack
           direction="row"
           sx={{
             display: 'flex',
-
             alignItems: 'center',
+            justifyContent: 'flex-end',
             gap: '16px',
             alignSelf: 'stretch',
+
+            marginLeft: 'auto',
           }}
         >
           <SecondaryBtn
+            padding={'4px 8px'}
             handleClick={handleClose}
             buttonContent={
               <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[700] }}>
-                Cancel
+                Discard
               </Typography>
             }
           />
           <PrimaryBtn
+            padding={'4px 8px'}
             handleClick={() => {
               const hasAssigneeError = !subTaskFields.assigneeId
               if (hasAssigneeError) {
