@@ -19,7 +19,7 @@ import { getAssigneeName } from '@/utils/assignee'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
 import { NoAssigneeExtraOptions } from '@/utils/noAssignee'
 import { setDebouncedFilteredAssignees } from '@/utils/users'
-import { Stack, Typography } from '@mui/material'
+import { Box, Stack, Typography } from '@mui/material'
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
@@ -56,6 +56,8 @@ export const NewTaskCard = ({ handleClose }: { handleClose: () => void }) => {
   })
 
   const [filteredAssignees, setFilteredAssignees] = useState(assignee)
+
+  const [isUploading, setIsUploading] = useState(false)
 
   const clearSubTaskFields = () => {
     setSubTaskFields({
@@ -98,6 +100,10 @@ export const NewTaskCard = ({ handleClose }: { handleClose: () => void }) => {
   const assigneeValue = _assigneeValue as IAssigneeCombined
 
   const [inputStatusValue, setInputStatusValue] = useState('')
+
+  const handleUploadStatusChange = (uploading: boolean) => {
+    setIsUploading(uploading)
+  }
 
   return (
     <Stack
@@ -147,17 +153,21 @@ export const NewTaskCard = ({ handleClose }: { handleClose: () => void }) => {
             }
           }}
         />
-        <Tapwrite
-          content={subTaskFields.description}
-          getContent={(content) => handleFieldChange('description', content)}
-          placeholder="Add description..."
-          editorClass="tapwrite-task-editor"
-          uploadFn={uploadFn}
-          deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', null, null)}
-          attachmentLayout={AttachmentLayout}
-          maxUploadLimit={MAX_UPLOAD_LIMIT}
-          parentContainerStyle={{ gap: '0px' }}
-        />
+        <Box sx={{ height: '100%', width: '100%' }}>
+          <Tapwrite
+            content={subTaskFields.description}
+            getContent={(content) => handleFieldChange('description', content)}
+            placeholder="Add description..."
+            editorClass="tapwrite-task-editor"
+            uploadFn={uploadFn}
+            deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', null, null)}
+            attachmentLayout={(props) => (
+              <AttachmentLayout {...props} isComment={true} onUploadStatusChange={handleUploadStatusChange} />
+            )}
+            maxUploadLimit={MAX_UPLOAD_LIMIT}
+            parentContainerStyle={{ gap: '0px' }}
+          />
+        </Box>
       </Stack>
       <Stack
         direction="row"
@@ -298,7 +308,7 @@ export const NewTaskCard = ({ handleClose }: { handleClose: () => void }) => {
               }
             }}
             buttonText="Create"
-            disabled={!subTaskFields.title.trim()}
+            disabled={!subTaskFields.title.trim() || isUploading}
           />
         </Stack>
       </Stack>
