@@ -307,7 +307,7 @@ export class TasksService extends BaseService {
           SELECT "path"
           FROM "Tasks"
           WHERE id::text = ${task.parentId}
-            AND workspaceId = ${this.user.workspaceId}
+            AND "workspaceId" = ${this.user.workspaceId}
         `
       )?.[0]
       if (!parentTask) throw new APIError(httpStatus.NOT_FOUND, 'The requested parent task was not found')
@@ -319,7 +319,7 @@ export class TasksService extends BaseService {
       UPDATE "Tasks"
       SET path = ${buildLtreeNodeString(path)}::ltree
       WHERE id::text = ${task.id}
-        AND workspaceId = ${this.user.workspaceId}
+        AND "workspaceId" = ${this.user.workspaceId}
     `
   }
 
