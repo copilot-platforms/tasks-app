@@ -7,5 +7,5 @@ export const getSubtaskCount = async (req: NextRequest, { params: { id } }: IdPa
   const user = await authenticate(req)
   const subtaskService = new SubtaskService(user)
   const count = await subtaskService.getSubtaskCounts(id)
-  return NextResponse.json({ count })
+  return NextResponse.json({ count, canCreateSubtask: count < 4 })
 }
