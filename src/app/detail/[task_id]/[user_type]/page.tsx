@@ -20,7 +20,7 @@ import { MenuBoxContainer } from '@/app/detail/ui/MenuBoxContainer'
 import { ResponsiveStack } from '@/app/detail/ui/ResponsiveStack'
 import { Sidebar, SidebarSkeleton } from '@/app/detail/ui/Sidebar'
 import { StyledBox, StyledTiptapDescriptionWrapper, TaskDetailsContainer } from '@/app/detail/ui/styledComponent'
-import { SubtasksWrapper } from '@/app/detail/ui/SubtasksWrapper'
+import { Subtasks } from '@/app/detail/ui/Subtasks'
 import { TaskEditor } from '@/app/detail/ui/TaskEditor'
 import { ToggleButtonContainer } from '@/app/detail/ui/ToggleButtonContainer'
 import { ToggleController } from '@/app/detail/ui/ToggleController'
@@ -158,7 +158,7 @@ export default async function TaskDetailPage({
                     userType={params.user_type}
                   />
                 </StyledTiptapDescriptionWrapper>
-                <SubtasksWrapper />
+                <Subtasks />
                 <ActivityWrapper task_id={task_id} token={token} tokenPayload={tokenPayload} />
               </TaskDetailsContainer>
             </CustomScrollBar>

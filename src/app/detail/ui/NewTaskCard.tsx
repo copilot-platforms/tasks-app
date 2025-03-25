@@ -160,7 +160,7 @@ export const NewTaskCard = ({ handleClose }: { handleClose: () => void }) => {
           updateStatusValue(workflowStates.find((state) => state.id === template.workflowStateId))
           setSubTaskFields((prev) => ({
             ...prev,
-            workflowStateId: template.description,
+            workflowStateId: template.workflowStateId,
           }))
           const trimmedAppliedDescription = template.description && trimAllTags(template.description)
           const trimmedDescription = trimAllTags(subTaskFields.description)
@@ -293,7 +293,7 @@ export const NewTaskCard = ({ handleClose }: { handleClose: () => void }) => {
           <Tapwrite
             content={subTaskFields.description}
             getContent={(content) => handleFieldChange('description', content)}
-            placeholder="Add description..."
+            placeholder="Add description.."
             editorClass="tapwrite-task-editor"
             uploadFn={uploadFn}
             deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', null, null)}
@@ -396,7 +396,7 @@ export const NewTaskCard = ({ handleClose }: { handleClose: () => void }) => {
 
                   overflow: 'hidden',
                   fontSize: '12px',
-                  maxWidth: '100px',
+                  maxWidth: '120px',
                 }}
               >
                 {getAssigneeName(assigneeValue as IAssigneeCombined, 'Assignee')}
