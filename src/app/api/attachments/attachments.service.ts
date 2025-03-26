@@ -41,6 +41,8 @@ export class AttachmentsService extends BaseService {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Create, Resource.Attachments)
     const userId = z.string().parse(this.user.internalUserId)
+    // TODO: @arpandhakal - $transaction here could consume a lot of sequential db connections, better to use Promise.all
+    // and reuse active connections instead.
     const newAttachments = await this.db.$transaction(async (prisma) => {
       const createPromises = data.map((attachmentData) =>
         prisma.attachment.create({

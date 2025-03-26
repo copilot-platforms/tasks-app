@@ -1,9 +1,9 @@
-import { NoAssigneeAvatar, NoAssigneeAvatarSmall, NoAssigneeAvatarLarge } from '@/icons'
+import { NoAssigneeAvatar, NoAssigneeAvatarSmall, NoAssigneeAvatarLarge, TrashIcon } from '@/icons'
 import { copilotTheme } from '@/theme/copilot'
 import { IAssigneeCombined } from '@/types/interfaces'
 import { getAssigneeName } from '@/utils/assignee'
-import { Avatar, SxProps } from '@mui/material'
-import { Theme } from '@mui/material/styles/createTheme'
+import { Avatar, Box, SxProps, Theme } from '@mui/material'
+import { ReactNode } from 'react'
 
 interface CopilotAvatarProps {
   currentAssignee?: IAssigneeCombined
@@ -13,6 +13,7 @@ interface CopilotAvatarProps {
   fontSize?: string
   sx?: SxProps<any>
   size?: 'small' | 'large'
+  icon?: ReactNode
 }
 
 export const CopilotAvatar = ({
@@ -23,13 +24,15 @@ export const CopilotAvatar = ({
   fontSize = '14px',
   sx,
   size,
+  icon,
 }: CopilotAvatarProps) => {
-  const avatarSx: SxProps = {
+  const avatarSx: SxProps<Theme> = {
     ...sx,
     width,
     height,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: (theme) => theme.color.background.avatarBackground,
     fontSize,
     '.MuiAvatar-img': {
       objectFit: 'cover',
@@ -37,8 +40,19 @@ export const CopilotAvatar = ({
   }
   const avatarVariant: 'circular' | 'rounded' | 'square' = currentAssignee?.type === 'companies' ? 'rounded' : 'circular'
 
+  if (icon) {
+    return (
+      <Avatar sx={avatarSx} variant={avatarVariant}>
+        {icon}
+      </Avatar>
+    )
+  }
   if (!currentAssignee || (currentAssignee?.name || currentAssignee?.givenName) === 'No assignee') {
-    return size == 'small' ? <NoAssigneeAvatarSmall /> : size == 'large' ? <NoAssigneeAvatarLarge /> : <NoAssigneeAvatar />
+    return (
+      <Box sx={{ marginTop: (sx as { marginTop?: string })?.marginTop || '0px' }}>
+        {size == 'small' ? <NoAssigneeAvatarSmall /> : size == 'large' ? <NoAssigneeAvatarLarge /> : <NoAssigneeAvatar />}
+      </Box>
+    )
   }
   if (currentAssignee?.iconImageUrl || currentAssignee?.avatarImageUrl) {
     return (

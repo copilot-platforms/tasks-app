@@ -65,6 +65,7 @@ export declare module '@mui/material/styles' {
         textSecondary: string
         textDisabled: string
         textPlaceholder: string
+        textPrimary: string
       }
       modal: {
         backdrop: string
@@ -82,6 +83,7 @@ export declare module '@mui/material/styles' {
         bgCallout: string
         bgHover: string
         bgCommentDrag: string
+        avatarBackground: string
       }
       error: string
       muiError: string
@@ -151,6 +153,7 @@ export declare module '@mui/material/styles' {
         textSecondary: React.CSSProperties['color']
         textDisabled: React.CSSProperties['color']
         textPlaceholder: React.CSSProperties['color']
+        textPrimary: React.CSSProperties['color']
       }
       modal: {
         backdrop: React.CSSProperties['color']
@@ -168,6 +171,7 @@ export declare module '@mui/material/styles' {
         bgCallout: React.CSSProperties['color']
         bgHover: React.CSSProperties['color']
         bgCommentDrag: React.CSSProperties['color']
+        avatarBackground: React.CSSProperties['color']
       }
       error: React.CSSProperties['color']
       muiError: React.CSSProperties['color']

@@ -18,6 +18,10 @@ import { useSelector } from 'react-redux'
 import useSWR, { useSWRConfig } from 'swr'
 import { z } from 'zod'
 import { TransitionGroup } from 'react-transition-group'
+import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
+import { ReplyResponse } from '@/app/api/activity-logs/schemas/CommentAddedSchema'
+import { checkOptimisticStableId, getOptimisticData, getTempLog } from '@/utils/optimisticCommentUtils'
+import { IAssigneeCombined } from '@/types/interfaces'
 
 interface OptimisticUpdate {
   tempId: string
@@ -35,9 +39,11 @@ export const ActivityWrapper = ({
   tokenPayload: Token
 }) => {
   const { activeTask } = useSelector(selectTaskBoard)
+  const { expandedComments } = useSelector(selectTaskDetails)
   const task = activeTask
   const [lastUpdated, setLastUpdated] = useState(task?.lastActivityLogUpdated)
   const [optimisticUpdates, setOptimisticUpdates] = useState<OptimisticUpdate[]>([])
+  const expandedCommentsQueryString = expandedComments.map((id) => encodeURIComponent(id)).join(',')
   const cacheKey = `/api/tasks/${task_id}/activity-logs?token=${token}`
   const { data: activities, isLoading } = useSWR(`/api/tasks/${task_id}/activity-logs?token=${token}`, fetcher, {
     refreshInterval: 0,
@@ -59,23 +65,9 @@ export const ActivityWrapper = ({
 
   const currentUserDetails = useMemo(() => {
     const currentAssignee = assignee.find((el) => el.id === currentUserId)
-    if (!currentAssignee) {
-      return
-    }
-    return z.union([InternalUsersSchema, ClientResponseSchema]).parse(assignee.find((el) => el.id === currentUserId))
+    return currentAssignee
   }, [assignee, currentUserId])
 
-  const getStableId = (log: LogResponse) => {
-    if (log.type === ActivityType.COMMENT_ADDED) {
-      const matchingUpdate = optimisticUpdates.find(
-        (update) => update.tempId === log.id || (log.details.id && update.serverId === log.details.id),
-      )
-      if (matchingUpdate) {
-        return matchingUpdate?.tempId
-      }
-    }
-    return log.id
-  }
   // Handle comment creation
   const handleCreateComment = async (postCommentPayload: CreateComment) => {
     const tempId = generateRandomString('temp-comment')
@@ -88,34 +80,9 @@ export const ActivityWrapper = ({
       },
     ])
 
-    const tempLog: LogResponse = {
-      id: tempId,
-      type: ActivityType.COMMENT_ADDED,
-      details: {
-        content: postCommentPayload.content,
-      },
-      taskId: task_id,
-      userId: currentUserId as string,
-      userRole: 'internalUser',
-      workspaceId: '',
-      initiator: {
-        status: '',
-        id: currentUserDetails?.id as string,
-        givenName: currentUserDetails?.givenName || '',
-        familyName: currentUserDetails?.familyName || '',
-        email: currentUserDetails?.email || '',
-        companyId: '',
-        avatarImageUrl: currentUserDetails?.avatarImageUrl || null,
-        customFields: {},
-        fallbackColor: currentUserDetails?.fallbackColor || null,
-        createdAt: currentUserDetails?.createdAt || new Date().toISOString(),
-        isClientAccessLimited: false,
-        companyAccessList: null,
-      },
-      createdAt: new Date().toISOString(),
-    }
+    const tempLog = getTempLog(tempId, postCommentPayload, task_id, currentUserDetails, currentUserId)
+    const optimisticData = getOptimisticData(postCommentPayload, activities.data, tempLog)
 
-    const optimisticData = activities ? [...activities.data, tempLog] : [tempLog]
     try {
       mutate(
         cacheKey,
@@ -141,16 +108,69 @@ export const ActivityWrapper = ({
   }
 
   // Handle comment deletion
-  const handleDeleteComment = async (commentId: string, logId: string) => {
-    const optimisticData = activities ? activities.data.filter((comment: LogResponse) => comment.id !== logId) : []
+  const handleDeleteComment = async (commentId: string, logId: string, replyId?: string, softDelete?: boolean) => {
+    let optimisticData
+    if (replyId) {
+      optimisticData = activities
+        ? activities.data.map((item: LogResponse) => {
+            if (item.id === logId) {
+              const updatedReplies = (item.details.replies as ReplyResponse[]).filter(
+                (reply: ReplyResponse) => reply.id !== replyId,
+              )
+              return {
+                ...item,
+                details: {
+                  ...item.details,
+                  replies: updatedReplies,
+                },
+              }
+            }
+            return item
+          })
+        : []
+    } else {
+      if (softDelete) {
+        optimisticData = activities
+          ? activities.data.map((comment: LogResponse) => {
+              if (comment.id === logId) {
+                return {
+                  ...comment,
+                  details: {
+                    ...comment.details,
+                    deletedAt: new Date().toISOString(),
+                  },
+                }
+              }
+              return comment
+            })
+          : []
+      } else {
+        optimisticData = activities ? activities.data.filter((comment: LogResponse) => comment.id !== logId) : []
+      }
+    }
 
     try {
       await mutate(
         cacheKey,
         async () => {
-          // Delete the comment from the server
-          await deleteComment(token, commentId)
-          // Return the actual updated data (this will trigger revalidation)
+          let commentIdToDelete = commentId
+          if (commentIdToDelete.includes('temp-comment')) {
+            const maxAttempts = 6
+            for (let attempt = 0; attempt < maxAttempts; attempt++) {
+              const matchedUpdate = optimisticUpdates.find((update) => update.tempId === commentIdToDelete)
+              if (matchedUpdate?.serverId) {
+                commentIdToDelete = matchedUpdate.serverId
+                break
+              }
+              await new Promise((resolve) => setTimeout(resolve, 500))
+            }
+            if (commentIdToDelete.includes('temp-comment')) {
+              console.warn('Comment is still pending server sync. Try again later.')
+              return activities
+            }
+          } //Due to optimistic updates on comment creation applied in our ui, some deleted comments might have tempId which are yet to be replaced by the server id. Although the usecase frequency for this is very very minimal, we are waiting for serverId to replace tempId if the deleted comment has tempId by polling method.
+
+          await deleteComment(token, commentIdToDelete)
           return await fetcher(cacheKey)
         },
         {
@@ -178,7 +198,7 @@ export const ActivityWrapper = ({
           <Stack direction="column" alignItems="left" rowGap={2}>
             <TransitionGroup>
               {activities?.data?.map((item: LogResponse, index: number) => (
-                <Collapse key={getStableId(item)}>
+                <Collapse key={checkOptimisticStableId(item, optimisticUpdates)}>
                   <Box
                     key={index}
                     sx={{
@@ -189,9 +209,12 @@ export const ActivityWrapper = ({
                       <Comments
                         comment={item}
                         createComment={handleCreateComment}
-                        deleteComment={(commentId) => handleDeleteComment(commentId, item.id)}
+                        deleteComment={(commentId, replyId, softDelete) =>
+                          handleDeleteComment(commentId, item.id, replyId, softDelete)
+                        }
                         task_id={task_id}
-                        stableId={item.id}
+                        stableId={z.string().parse(item.details.id) ?? item.id}
+                        optimisticUpdates={optimisticUpdates}
                       />
                     ) : (
                       <ActivityLog log={item} />

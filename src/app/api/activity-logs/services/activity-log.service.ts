@@ -1,42 +1,48 @@
-import { BaseService } from '@api/core/services/base.service'
-import User from '@api/core/models/User.model'
-import { z } from 'zod'
-import { ActivityLog, ActivityType, AssigneeType, Comment } from '@prisma/client'
+import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
+import { ClientsResponse, CompaniesResponse, CopilotListArgs, InternalUsers, InternalUsersResponse } from '@/types/common'
+import { CopilotAPI } from '@/utils/CopilotAPI'
+import { signMediaForComments } from '@/utils/signedUrlReplacer'
 import {
   DBActivityLogArray,
   DBActivityLogArraySchema,
   DBActivityLogDetails,
-  DBActivityLogSchema,
   SchemaByActivityType,
 } from '@api/activity-logs/const'
-import { CopilotAPI } from '@/utils/CopilotAPI'
+import { LogResponse, LogResponseSchema } from '@api/activity-logs/schemas/LogResponseSchema'
 import { CommentService } from '@api/comment/comment.service'
-import { ClientsResponse, CompaniesResponse, CopilotListArgs, InternalUsers, InternalUsersResponse } from '@/types/common'
-import { LogResponse, LogResponseSchema } from '../schemas/LogResponseSchema'
 import APIError from '@api/core/exceptions/api'
+import User from '@api/core/models/User.model'
+import { BaseService } from '@api/core/services/base.service'
+import { ActivityType, AssigneeType, Comment, CommentInitiator } from '@prisma/client'
 import httpStatus from 'http-status'
-import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
-import { replaceImageSrc } from '@/utils/signedUrlReplacer'
-import { getSignedUrl } from '@/utils/signUrl'
+import { z } from 'zod'
 
 export class ActivityLogService extends BaseService {
   constructor(user: User) {
     super(user)
   }
 
-  async get(taskId: string) {
+  async get(
+    taskId: string,
+    opts?: {
+      // Parent comment IDs in expandComments array are not limited to fetching just the latest 3 replies,
+      // instead the filter "expands" to fetch all replies in the same ordering
+      expandComments?: string[]
+    },
+  ) {
     const activityLogs = await this.db.$queryRaw`
         select "ActivityLogs".*
         from "ActivityLogs"
                  left join public."Comments" C
                            on "ActivityLogs"."taskId" = C."taskId" AND ("ActivityLogs".details::JSON ->> 'id')::text = C.id::text
         where "ActivityLogs"."taskId" = ${z.string().uuid().parse(taskId)}::uuid
+          AND "ActivityLogs"."deletedAt" IS NULL
           AND (
             "ActivityLogs".type <> ${ActivityType.COMMENT_ADDED}::"ActivityType"
             OR
             (
                 "ActivityLogs".type = ${ActivityType.COMMENT_ADDED}::"ActivityType" 
-                AND C."deletedAt" IS NULL AND C."parentId" IS NULL
+                AND C."parentId" IS NULL
             )
           )
         ORDER BY "ActivityLogs"."createdAt",
@@ -89,15 +95,14 @@ export class ActivityLogService extends BaseService {
 
     const commentService = new CommentService(this.user)
     const comments = await commentService.getCommentsByIds(commentIds)
-    const processedComments = await Promise.all(
-      comments.map(async (comment) => {
-        return {
-          ...comment,
-          content: await replaceImageSrc(comment.content, getSignedUrl),
-        }
-      }),
-    )
-    const allReplies = await commentService.getReplies(commentIds)
+    const signedComments = await signMediaForComments(comments)
+
+    const [allReplies, replyCounts, initiators] = await Promise.all([
+      commentService.getReplies(commentIds, opts?.expandComments),
+      commentService.getReplyCounts(commentIds),
+      commentService.getThreadInitiators(commentIds, internalUsers, clientUsers),
+    ])
+    const signedReplies = await signMediaForComments(allReplies)
 
     const logResponseData = filteredActivityLogs.map((activityLog) => {
       const initiator = copilotUsers.find((iu) => iu.id === activityLog.userId) || null
@@ -107,8 +112,10 @@ export class ActivityLogService extends BaseService {
           activityLog.type,
           activityLog.userRole,
           activityLog.details,
-          processedComments,
-          allReplies,
+          signedComments,
+          signedReplies,
+          replyCounts,
+          initiators,
           internalUsers,
           clientUsers,
           companies,
@@ -136,6 +143,8 @@ export class ActivityLogService extends BaseService {
     payload: DBActivityLogDetails,
     comments: Comment[],
     allReplies: Comment[],
+    replyCounts: Record<string, number>,
+    initiators: Record<string, Array<any>>,
     internalUsers: InternalUsersResponse,
     clientUsers: ClientsResponse,
     companies: CompaniesResponse,
@@ -151,26 +160,31 @@ export class ActivityLogService extends BaseService {
 
         const copilotUsers = replies
           .map((reply) => {
-            if (userRole === AssigneeType.internalUser) {
+            if (reply.initiatorType === CommentInitiator.internalUser) {
               return internalUsers.data.find((iu) => iu.id === reply.initiatorId)
             }
-            if (userRole === AssigneeType.client) {
+            if (reply.initiatorType === CommentInitiator.client) {
               return clientUsers.data?.find((client) => client.id === reply.initiatorId)
             }
           })
           .filter((user): user is NonNullable<typeof user> => user !== undefined)
 
-        replies = replies.map((comment) => ({
-          ...comment,
-          initiator: copilotUsers.find((iu) => iu.id === comment.initiatorId) || null,
-        }))
+        replies = replies
+          .map((comment) => ({
+            ...comment,
+            initiator: copilotUsers.find((iu) => iu.id === comment.initiatorId) || null,
+          }))
+          .reverse()
 
         return {
           ...payload,
-          content: comment.content,
+          content: comment.deletedAt ? '' : comment.content,
           replies,
+          replyCount: replyCounts[comment.id] || 0,
+          firstInitiators: initiators?.[comment.id]?.slice(0, 3),
           updatedAt: comment.updatedAt,
           createdAt: comment.createdAt,
+          deletedAt: comment.deletedAt,
         }
 
       default:

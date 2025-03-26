@@ -67,6 +67,7 @@ export const theme = createTheme({
       textSecondary: '#6B6F76',
       textDisabled: '#90959D',
       textPlaceholder: '#9B9FA3',
+      textPrimary: '#101828',
     },
     modal: {
       backdrop: 'rgba(15,15,15,0.6)',
@@ -84,6 +85,7 @@ export const theme = createTheme({
       bgCallout: '#F8F9FB',
       bgHover: '#F1F3F8',
       bgCommentDrag: '#E6F0FF',
+      avatarBackground: '#E8EBF1',
     },
     error: '#CC0000',
     muiError: '#D32F2F',

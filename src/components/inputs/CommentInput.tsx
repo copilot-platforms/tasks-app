@@ -3,6 +3,7 @@
 import { CommentCardContainer } from '@/app/detail/ui/styledComponent'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import AttachmentLayout from '@/components/AttachmentLayout'
+import { SubmitCommentButtons } from '@/components/buttonsGroup/SubmitCommentButtons'
 import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
 import { useWindowWidth } from '@/hooks/useWindowWidth'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
@@ -26,11 +27,11 @@ interface Prop {
 export const CommentInput = ({ createComment, task_id }: Prop) => {
   const [detail, setDetail] = useState('')
   const [isListOrMenuActive, setIsListOrMenuActive] = useState(false)
-  const { assigneeSuggestions } = useSelector(selectTaskDetails)
   const { tokenPayload } = useSelector(selectAuthDetails)
   const { assignee, token, activeTask } = useSelector(selectTaskBoard)
   const currentUserId = tokenPayload?.internalUserId ?? tokenPayload?.clientId
   const currentUserDetails = assignee.find((el) => el.id === currentUserId)
+  const [isUploading, setIsUploading] = useState(false)
 
   const [isFocused, setIsFocused] = useState(false)
   const windowWidth = useWindowWidth()
@@ -121,12 +122,16 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
     setIsDragging(false)
     dragCounter.current = 0
   }
+
+  const handleUploadStatusChange = (uploading: boolean) => {
+    setIsUploading(uploading)
+  }
   return (
     <Stack direction="row" columnGap={2} alignItems="flex-start">
       <CopilotAvatar
-        width="24px"
-        height="24px"
-        fontSize="13px"
+        width="22px"
+        height="22px"
+        fontSize="12px"
         currentAssignee={currentUserDetails}
         sx={{
           border: (theme) => `1.1px solid ${theme.color.gray[200]}`,
@@ -137,6 +142,7 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
         sx={{
           backgroundColor: (theme) => (isDragging ? theme.color.background.bgCommentDrag : theme.color.base.white),
           wordBreak: 'break-word',
+          padding: '8px',
         }}
         onDragOver={handleDragOver}
         onDragEnter={handleDragEnter}
@@ -159,7 +165,6 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
           parentContainerStyle={{
             width: '100%',
             maxWidth: '100%',
-            height: '100%',
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
@@ -168,33 +173,12 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
           }}
           uploadFn={uploadFn}
           deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', task_id, null)}
-          attachmentLayout={(props) => <AttachmentLayout {...props} isComment={true} />}
+          attachmentLayout={(props) => (
+            <AttachmentLayout {...props} isComment={true} onUploadStatusChange={handleUploadStatusChange} />
+          )}
           addAttachmentButton
           maxUploadLimit={MAX_UPLOAD_LIMIT}
-          endButtons={
-            <Box
-              sx={{
-                alignSelf: 'center',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <IconButton
-                onClick={handleSubmit}
-                sx={{
-                  backgroundColor: '#000',
-                  borderRadius: '4px',
-                  padding: '5px',
-                  '&:hover': { bgcolor: '#000' },
-                  height: '24px',
-                  width: '24px',
-                }}
-              >
-                <ArrowUpward sx={{ color: '#ffffff', fontSize: '18px' }} />
-              </IconButton>
-            </Box>
-          }
+          endButtons={<SubmitCommentButtons handleSubmit={handleSubmit} disabled={isUploading} />}
         />
       </CommentCardContainer>
     </Stack>

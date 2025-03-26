@@ -1,4 +1,3 @@
-import { CommentService } from '@/app/api/comment/comment.service'
 import User from '@/app/api/core/models/User.model'
 import { NotificationTaskActions } from '@/app/api/core/types/tasks'
 import { NotificationService } from '@/app/api/notification/notification.service'

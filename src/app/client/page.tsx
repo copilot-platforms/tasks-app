@@ -83,6 +83,7 @@ export default async function ClientPage({ searchParams }: { searchParams: { tok
         token={token}
         tokenPayload={tokenPayload}
         viewSettings={viewSettings}
+        clearExpandedComments={true}
       >
         <Suspense fallback={null}>
           <AssigneeFetcher

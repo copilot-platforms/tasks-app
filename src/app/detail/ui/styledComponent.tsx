@@ -16,6 +16,7 @@ export const BoldTypography = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[600],
   fontSize: theme.typography.md.fontSize,
   lineHeight: '22px',
+  fontWeight: 500,
 }))
 
 export const AvatarTypography = styled(Typography)(({ theme }) => ({
@@ -51,7 +52,7 @@ export const StyledTiptapDescriptionWrapper = styled(Box)(({ theme }) => ({
 
 export const VerticalLine = styled('div')(({ theme }) => ({
   position: 'absolute',
-  left: '12px',
+  left: '11px',
   top: '11px',
   bottom: 0,
   width: '1px',
@@ -85,10 +86,9 @@ export const StyledReplyIcon = styled(ReplyIcon)(({ theme }) => ({
 }))
 
 export const CommentCardContainer = styled(Stack)(({ theme }) => ({
-  border: `1px solid ${theme.color.borders.border}`,
+  border: `1px solid ${theme.color.gray[150]}`,
   borderRadius: theme.spacing(theme.shape.radius100),
   background: theme.color.base.white,
-  padding: '8px',
   width: '100%',
 }))
 
@@ -231,4 +231,12 @@ export const StyledZoomControls = styled(Box)(() => ({
       background: 'rgba(75, 75, 75)',
     },
   },
+}))
+
+export const CustomDivider = styled(Box)(({ theme }) => ({
+  height: '1px',
+  width: 'calc(100% + 20px)',
+  backgroundColor: theme.color.gray[150],
+  marginLeft: '-10px',
+  marginRight: '-10px',
 }))

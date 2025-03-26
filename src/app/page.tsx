@@ -67,9 +67,7 @@ export async function getViewSettings(token: string): Promise<CreateViewSettings
   const res = await fetch(`${apiUrl}/api/view-settings?token=${token}`, {
     next: { tags: ['getViewSettings'] },
   })
-  const data = await res.json()
-
-  return data
+  return await res.json()
 }
 
 export default async function Main({ searchParams }: { searchParams: { token: string; taskId?: string } }) {
@@ -103,6 +101,7 @@ export default async function Main({ searchParams }: { searchParams: { token: st
       token={token}
       viewSettings={viewSettings}
       tokenPayload={tokenPayload}
+      clearExpandedComments={true}
     >
       {/* Async fetchers */}
       <Suspense fallback={null}>

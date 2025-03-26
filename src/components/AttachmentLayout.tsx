@@ -1,10 +1,9 @@
 'use client'
 
-import { CrossIconSmall, DownloadBtn, PdfIcon } from '@/icons'
+import { CrossIconSmall, DownloadBtn } from '@/icons'
 import { attachmentIcons, attachmentIconsSmall } from '@/utils/iconMatcher'
 import { Box, Skeleton, Stack, Typography, SxProps, Theme, useMediaQuery } from '@mui/material'
-import React from 'react'
-import { IconBtn } from './buttons/IconBtn'
+import React, { useEffect } from 'react'
 import { useDownloadFile } from '@/hooks/useDownload'
 
 interface AttachmentLayoutProps {
@@ -17,6 +16,7 @@ interface AttachmentLayoutProps {
   onDelete: () => void
   isEditable: boolean
   isComment?: boolean
+  onUploadStatusChange?: (uploading: boolean) => void
 }
 
 const AttachmentLayout: React.FC<AttachmentLayoutProps> = ({
@@ -29,20 +29,30 @@ const AttachmentLayout: React.FC<AttachmentLayoutProps> = ({
   onDelete,
   isEditable,
   isComment,
+  onUploadStatusChange,
 }) => {
   const { handleDownload, isDownloading } = useDownloadFile()
   const isXsScreen = useMediaQuery((theme: Theme) => `(max-width:${theme.breakpoints.values.sm}px)`)
   const onDownloadClick = () => {
     handleDownload(src, fileName)
   }
+
+  useEffect(() => {
+    if (onUploadStatusChange) {
+      onUploadStatusChange(isUploading)
+    }
+  }, [isUploading, onUploadStatusChange])
+
   const containerStyles: SxProps<Theme> = {
-    maxWidth: '99%',
+    width: '100%',
+    maxWidth: '100%',
     borderRadius: '4px',
     margin: '8px auto !important',
     padding: { xs: '8px 6px 8px 8px', sm: '4px 8px', md: '4px 12px 4px 8px' },
     border: (theme) => `1px solid ${theme.color.gray[selected ? 600 : 150]}`,
     background: '#fff',
     outline: 'none',
+    boxSizing: 'border-box',
     '&:focus': {
       outline: 'none',
     },
@@ -81,10 +91,10 @@ const AttachmentLayout: React.FC<AttachmentLayoutProps> = ({
   const renderContent = () => {
     if (isUploading) {
       return (
-        <Stack justifyContent="space-between" direction="row" alignItems="center">
-          <Stack direction="row" columnGap="5.5px" alignItems="center">
+        <Stack justifyContent="space-between" direction="row" alignItems="center" width="100%">
+          <Stack direction="row" columnGap="5.5px" alignItems="center" sx={{ flex: 1, overflow: 'hidden' }}>
             <Skeleton variant="rectangular" width={24} height={24} />
-            <Stack direction="column">
+            <Stack direction="column" sx={{ flex: 1, overflow: 'hidden' }}>
               <Skeleton variant="text" width={120} height={20} />
               <Skeleton variant="text" width={80} height={16} />
             </Stack>
@@ -95,13 +105,14 @@ const AttachmentLayout: React.FC<AttachmentLayoutProps> = ({
         </Stack>
       )
     }
+
     return (
-      <Stack justifyContent="space-between" direction="row" alignItems="center" sx={{ width: '100%' }}>
+      <Stack justifyContent="space-between" direction="row" alignItems="center" width="100%" sx={{ maxWidth: '100%' }}>
         <Stack direction="row" columnGap="5.5px" alignItems="center" sx={{ flex: 1, overflow: 'hidden', minWidth: 0 }}>
           {isXsScreen
             ? attachmentIconsSmall[fileType] || attachmentIconsSmall['default']
             : attachmentIcons[fileType] || attachmentIcons['default']}
-          <Stack direction="column" sx={{ flex: 1, minWidth: 0, minHeight: '100%' }}>
+          <Stack direction="column" sx={{ flex: 1, overflow: 'hidden', minWidth: 0 }}>
             <Typography
               variant="bodySm"
               sx={{
@@ -110,7 +121,7 @@ const AttachmentLayout: React.FC<AttachmentLayoutProps> = ({
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 lineHeight: '21px',
-                width: { xs: '250px', sd: '400px', md: '500px' },
+                maxWidth: '100%',
               }}
             >
               {fileName}
@@ -162,6 +173,9 @@ const AttachmentLayout: React.FC<AttachmentLayoutProps> = ({
       tabIndex={0}
       sx={{
         ...containerStyles,
+        width: '100%',
+        maxWidth: '100%',
+        overflow: 'hidden',
         '&:hover': {
           border: isXsScreen ? 'none' : (theme) => `1px solid ${theme.color.gray[selected ? 600 : 300]}`,
           '& .download-btn': {

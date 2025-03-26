@@ -1,77 +1,88 @@
 'use client'
 
-import { Avatar, Box, InputAdornment, Stack, styled, Typography } from '@mui/material'
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { useSelector } from 'react-redux'
-import { Tapwrite } from 'tapwrite'
-import { z } from 'zod'
-
 import { updateComment } from '@/app/detail/[task_id]/[user_type]/actions'
 import { DotSeparator } from '@/app/detail/ui/DotSeparator'
-import { BoldTypography, CommentCardContainer, StyledModal, StyledTypography } from '@/app/detail/ui/styledComponent'
+import {
+  BoldTypography,
+  CommentCardContainer,
+  CustomDivider,
+  StyledModal,
+  StyledTypography,
+} from '@/app/detail/ui/styledComponent'
 import AttachmentLayout from '@/components/AttachmentLayout'
 import { ListBtn } from '@/components/buttons/ListBtn'
-import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 import { EditCommentButtons } from '@/components/buttonsGroup/EditCommentButtons'
+import { CollapsibleReplyCard } from '@/components/cards/CollapsibleReplyCard'
+import { DeletedCommentCard } from '@/components/cards/DeletedCommentCard'
+import { ReplyCard } from '@/components/cards/ReplyCard'
 import { MenuBox } from '@/components/inputs/MenuBox'
+import { ReplyInput } from '@/components/inputs/ReplyInput'
 import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
 import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
 import { useWindowWidth } from '@/hooks/useWindowWidth'
-import { PencilIcon, TrashIcon } from '@/icons'
+import { PencilIcon, ReplyIcon, TrashIcon } from '@/icons'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
-import { setOpenImage } from '@/redux/features/taskDetailsSlice'
+import { selectTaskDetails, setExpandedComments, setOpenImage } from '@/redux/features/taskDetailsSlice'
 import store from '@/redux/store'
-import { CreateComment, UpdateComment } from '@/types/dto/comment.dto'
-import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
+import { CommentResponse, CreateComment, UpdateComment } from '@/types/dto/comment.dto'
 import { IAssigneeCombined } from '@/types/interfaces'
 import { getAssigneeName } from '@/utils/assignee'
-import { getMentionsList } from '@/utils/getMentionList'
+import { fetcher } from '@/utils/fetcher'
 import { getTimeDifference } from '@/utils/getTimeDifference'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
 import { isTapwriteContentEmpty } from '@/utils/isTapwriteContentEmpty'
-import { commentAddedResponseSchema } from '@api/activity-logs/schemas/CommentAddedSchema'
+import { checkOptimisticStableId, OptimisticUpdate } from '@/utils/optimisticCommentUtils'
+import { ReplyResponse } from '@api/activity-logs/schemas/CommentAddedSchema'
 import { LogResponse } from '@api/activity-logs/schemas/LogResponseSchema'
-
-const CustomDivider = styled(Box)(({ theme }) => ({
-  height: '1px',
-  width: 'calc(100% + 20px)',
-  backgroundColor: theme.color.borders.border,
-  marginLeft: '-10px',
-  marginRight: '-10px',
-}))
+import { Box, Collapse, Stack, Typography } from '@mui/material'
+import { useEffect, useRef, useState } from 'react'
+import { useSelector } from 'react-redux'
+import { TransitionGroup } from 'react-transition-group'
+import useSWR from 'swr'
+import { Tapwrite } from 'tapwrite'
+import { z } from 'zod'
 
 export const CommentCard = ({
   comment,
   createComment,
   deleteComment,
   task_id,
+  optimisticUpdates,
 }: {
   comment: LogResponse
   createComment: (postCommentPayload: CreateComment) => void
-  deleteComment: (id: string) => void
+  deleteComment: (id: string, replyId?: string, softDelete?: boolean) => void
   task_id: string
+  optimisticUpdates: OptimisticUpdate[]
 }) => {
   const [showReply, setShowReply] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
-  const [detail, setDetail] = useState('')
+  const [replies, setReplies] = useState(comment.details.replies as ReplyResponse[])
   const [timeAgo, setTimeAgo] = useState(getTimeDifference(comment.createdAt))
   const [isReadOnly, setIsReadOnly] = useState<boolean>(true)
   const editRef = useRef<HTMLDivElement>(null)
+  const [focusReplyInput, setFocusedReplyInput] = useState(false)
 
   const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState(false)
   const { tokenPayload } = useSelector(selectAuthDetails)
   const canEdit = tokenPayload?.internalUserId == comment?.initiator?.id || tokenPayload?.clientId == comment?.initiator?.id
   const canDelete = tokenPayload?.internalUserId == comment?.initiator?.id
   const { assignee, activeTask, token } = useSelector(selectTaskBoard)
+  const { expandedComments } = useSelector(selectTaskDetails)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   const [isFocused, setIsFocused] = useState(false)
+
+  const [deletedReplies, setDeletedReplies] = useState<string[]>([])
 
   const windowWidth = useWindowWidth()
   const isMobile = () => {
     return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || windowWidth < 600
   }
+
+  const isXxs = windowWidth < 375 && windowWidth !== 0
+
   const handleImagePreview = (e: React.MouseEvent<unknown>) => {
     store.dispatch(setOpenImage((e.target as HTMLImageElement).src))
   }
@@ -79,19 +90,6 @@ export const CommentCard = ({
   const content = (comment.details as { content: string }).content || ''
   const [editedContent, setEditedContent] = useState(content)
   const [isListOrMenuActive, setIsListOrMenuActive] = useState(false)
-
-  const handleReplySubmission = () => {
-    const replyPayload: CreateComment = {
-      content: detail,
-      taskId: task_id,
-      parentId: commentAddedResponseSchema.parse(comment.details).id,
-      mentions: getMentionsList(detail),
-    }
-    if (detail) {
-      createComment(replyPayload)
-      setDetail('')
-    }
-  }
 
   useEffect(() => {
     const updateTimeAgo = () => setTimeAgo(getTimeDifference(comment.createdAt))
@@ -151,178 +149,228 @@ export const CommentCard = ({
   }, [editedContent, isListOrMenuActive, isFocused, isMobile])
 
   const commentUser = comment.initiator as unknown as IAssigneeCombined
+  const replyCount = (comment.details as CommentResponse).replyCount
 
+  const cacheKey = `/api/comment/?token=${token}&parentId=${comment.details.id}`
+  const { data: comments, mutate } = useSWR(cacheKey, fetcher, {
+    revalidateOnFocus: false,
+    revalidateOnMount: false,
+    revalidateOnReconnect: false,
+    refreshWhenOffline: false,
+    refreshWhenHidden: false,
+    refreshInterval: 0,
+    optimisticData: optimisticUpdates.filter((update) => update.tempId),
+  })
+  const fetchCommentsWithFullReplies = async () => {
+    try {
+      const updatedComment = await mutate()
+
+      setReplies(updatedComment?.comments || comment.details.replies || [])
+      store.dispatch(setExpandedComments([...expandedComments, z.string().parse(comment.details.id ?? '')]))
+    } catch (error) {
+      console.error('Failed to fetch replies:', error)
+    }
+  }
+
+  useEffect(() => {
+    const replies = (comment.details.replies as ReplyResponse[]) || []
+
+    if (expandedComments.length && expandedComments.includes(z.string().parse(comment.details.id))) {
+      const lastReply = replies[replies.length - 1]
+      if (deletedReplies.length > 0) {
+        const pendingReplyToBeRemoved = deletedReplies[0]
+        setReplies((prev) => prev.filter((reply) => reply.id !== pendingReplyToBeRemoved))
+        setDeletedReplies((prev) => prev.slice(1))
+        return
+      } //handle optimistic updates on reply deletion when view all button is active.
+      if (lastReply && lastReply.id.includes('temp-comment')) {
+        setReplies((prev) => [...prev, lastReply])
+        return
+      } //handle optimistic updates on reply creation when view all button is active.
+      fetchCommentsWithFullReplies()
+    } else {
+      setReplies(replies)
+    }
+  }, [comment])
   return (
     <CommentCardContainer
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
       sx={{
         backgroundColor: (theme) => (isReadOnly ? `${theme.color.gray[100]}` : `${theme.color.base.white}`),
         overflow: 'hidden',
       }}
     >
-      <Stack direction="column" rowGap={'2px'}>
-        {isReadOnly && (
-          <Stack direction="row" justifyContent={'space-between'} alignItems="center">
-            <Stack direction="row" columnGap={1} alignItems="center">
-              {commentUser ? (
-                <BoldTypography>{getAssigneeName(commentUser, '')}</BoldTypography>
-              ) : (
-                <Typography variant="md" sx={{ fontStyle: 'italic' }}>
-                  Deleted User
-                </Typography>
-              )}
-              <DotSeparator />
-              <StyledTypography sx={{ lineHeight: '22px' }}>
-                {timeAgo} {comment.details.updatedAt !== comment.details.createdAt ? '(edited)' : ''}
-              </StyledTypography>
-            </Stack>
+      <Stack direction="column">
+        {comment.details.deletedAt ? (
+          <DeletedCommentCard />
+        ) : (
+          <Stack
+            direction="column"
+            rowGap={'2px'}
+            sx={{ padding: '8px' }}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+          >
+            {isReadOnly && (
+              <Stack direction="row" justifyContent={'space-between'} alignItems="flex-end">
+                <Stack direction="row" columnGap={1} alignItems="center" sx={{ display: 'flex', flexWrap: 'wrap' }}>
+                  {commentUser ? (
+                    <BoldTypography
+                      sx={{
+                        maxWidth: { xs: isXxs ? '100px' : '225px', sm: '300px', sd: '380px', md: '520px' },
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {getAssigneeName(commentUser, '')}
+                    </BoldTypography>
+                  ) : (
+                    <Typography
+                      variant="md"
+                      sx={{
+                        fontStyle: 'italic',
+                        maxWidth: { xs: isXxs ? '150px' : '225px', sm: '300px', sd: '375px', md: '500px' },
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      Deleted User
+                    </Typography>
+                  )}
+                  <Stack direction="row" columnGap={1} alignItems={'center'}>
+                    <DotSeparator />
+                    <StyledTypography sx={{ lineHeight: '22px' }}>
+                      {timeAgo} {comment.details.updatedAt !== comment.details.createdAt ? '(edited)' : ''}
+                    </StyledTypography>
+                  </Stack>
+                </Stack>
 
-            {(isHovered || isMobile() || isMenuOpen) && canEdit && (
-              <Stack direction="row" columnGap={2} sx={{ height: '10px' }} alignItems="center">
-                <MenuBox
-                  getMenuOpen={(open) => {
-                    setIsMenuOpen(open)
-                  }}
-                  menuContent={
-                    <>
-                      <ListBtn
-                        content="Edit comment"
-                        handleClick={() => {
-                          setIsReadOnly(false)
-                          if (editRef.current) {
-                            editRef.current.focus()
-                          }
+                {(isHovered || isMobile() || isMenuOpen) && (
+                  <Stack direction="row" columnGap={2} sx={{ height: '10px' }} alignItems="flex-end">
+                    <ReplyButton
+                      handleClick={() => {
+                        setShowReply((prev) => !prev)
+                        setFocusedReplyInput(true)
+                      }}
+                    />
+                    {canEdit && (
+                      <MenuBox
+                        getMenuOpen={(open) => {
+                          setIsMenuOpen(open)
                         }}
-                        icon={<PencilIcon />}
-                        contentColor={(theme) => theme.color.text.text}
-                        width="175px"
-                        height="33px"
+                        menuContent={
+                          <>
+                            <ListBtn
+                              content="Edit comment"
+                              handleClick={() => {
+                                setIsReadOnly(false)
+                                if (editRef.current) {
+                                  editRef.current.focus()
+                                }
+                              }}
+                              icon={<PencilIcon />}
+                              contentColor={(theme) => theme.color.text.text}
+                              width="175px"
+                              height="33px"
+                            />
+
+                            {canDelete && (
+                              <ListBtn
+                                content="Delete comment"
+                                handleClick={() => {
+                                  setShowConfirmDeleteModal(true)
+                                }}
+                                icon={<TrashIcon />}
+                                contentColor={(theme) => theme.color.error}
+                                width="175px"
+                                height="33px"
+                              />
+                            )}
+                          </>
+                        }
+                        isSecondary
+                        width={'22px'}
+                        height={'22px'}
+                        displayButtonBackground={false}
+                        noHover={false}
                       />
-                      {canDelete && (
-                        <ListBtn
-                          content="Delete comment"
-                          handleClick={() => {
-                            setShowConfirmDeleteModal(true)
-                          }}
-                          icon={<TrashIcon />}
-                          contentColor={(theme) => theme.color.error}
-                          width="175px"
-                          height="33px"
-                        />
-                      )}
-                    </>
-                  }
-                  isSecondary
-                  width={'22px'}
-                  height={'22px'}
-                  displayButtonBackground={false}
-                  noHover={false}
-                />
+                    )}
+                  </Stack>
+                )}
               </Stack>
             )}
+            <Box onBlur={() => setIsFocused(false)} onFocus={() => setIsFocused(true)}>
+              <Tapwrite
+                content={editedContent}
+                onActiveStatusChange={(prop) => {
+                  const { isListActive, isFloatingMenuActive } = prop
+                  setIsListOrMenuActive(isListActive || isFloatingMenuActive)
+                }}
+                getContent={setEditedContent}
+                readonly={isReadOnly}
+                editorRef={editRef}
+                editorClass={'tapwrite-comment'}
+                addAttachmentButton={!isReadOnly}
+                uploadFn={uploadFn}
+                deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', task_id, null)}
+                maxUploadLimit={MAX_UPLOAD_LIMIT}
+                attachmentLayout={(props) => <AttachmentLayout {...props} isComment={true} />}
+                hardbreak
+                parentContainerStyle={{
+                  width: '100%',
+                  maxWidth: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  overflow: 'hidden',
+                  wordBreak: 'break-word',
+                  whiteSpace: 'pre-wrap',
+                }}
+                endButtons={<EditCommentButtons cancelEdit={cancelEdit} handleEdit={handleEdit} isReadOnly={isReadOnly} />}
+                handleImageDoubleClick={handleImagePreview}
+              />
+            </Box>
           </Stack>
         )}
-        <Box onBlur={() => setIsFocused(false)} onFocus={() => setIsFocused(true)}>
-          <Tapwrite
-            content={editedContent}
-            onActiveStatusChange={(prop) => {
-              const { isListActive, isFloatingMenuActive } = prop
-              setIsListOrMenuActive(isListActive || isFloatingMenuActive)
-            }}
-            getContent={setEditedContent}
-            readonly={isReadOnly}
-            editorRef={editRef}
-            editorClass={'tapwrite-comment'}
-            addAttachmentButton={!isReadOnly}
-            uploadFn={uploadFn}
-            deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', task_id, null)}
-            maxUploadLimit={MAX_UPLOAD_LIMIT}
-            attachmentLayout={(props) => <AttachmentLayout {...props} isComment={true} />}
-            hardbreak
-            parentContainerStyle={{
-              width: '100%',
-              maxWidth: '100%',
-              display: 'flex',
-              flexDirection: 'column',
-              overflow: 'hidden',
-              wordBreak: 'break-word',
-              whiteSpace: 'pre-wrap',
-            }}
-            endButtons={<EditCommentButtons cancelEdit={cancelEdit} handleEdit={handleEdit} isReadOnly={isReadOnly} />}
-            handleImageDoubleClick={handleImagePreview}
+
+        {((Array.isArray((comment as LogResponse).details?.replies) &&
+          ((comment as LogResponse).details.replies as ReplyResponse[]).length > 0) ||
+          showReply) && <CustomDivider />}
+        {replyCount > 3 && !expandedComments.includes(z.string().parse(comment.details.id)) && (
+          <CollapsibleReplyCard
+            lastAssignees={comment.details.firstInitiators as IAssigneeCombined[]}
+            fetchCommentsWithFullReplies={fetchCommentsWithFullReplies}
+            replyCount={replyCount}
           />
-        </Box>
-
-        {Array.isArray((comment as LogResponse).details?.replies) &&
-          ((comment as LogResponse).details.replies as LogResponse[]).map((item: LogResponse) => {
-            return (
-              <Stack direction="column" rowGap={3} key={item.id}>
-                <CustomDivider />
-                <Stack direction="row" columnGap={2} alignItems={'center'}>
-                  <Avatar
-                    alt={item?.initiator?.givenName}
-                    src={item?.initiator?.avatarImageUrl || 'user'}
-                    sx={{ width: '20px', height: '20px', fontSize: '14px' }}
+        )}
+        <TransitionGroup>
+          {Array.isArray((comment as LogResponse).details?.replies) &&
+            replies.map((item: ReplyResponse) => {
+              return (
+                <Collapse key={checkOptimisticStableId(item, optimisticUpdates)}>
+                  <ReplyCard
+                    item={item}
+                    uploadFn={uploadFn}
+                    task_id={task_id}
+                    handleImagePreview={handleImagePreview}
+                    deleteReply={deleteComment}
+                    setDeletedReplies={setDeletedReplies}
                   />
-                  <BoldTypography>
-                    {item.initiator?.givenName} {item.initiator?.familyName}
-                  </BoldTypography>
-                  <StyledTypography> {getTimeDifference(item.createdAt)}</StyledTypography>
-                </Stack>
-                <Tapwrite
-                  content={item.details?.content as string}
-                  getContent={() => {}}
-                  readonly
-                  editorClass="tapwrite-comment"
-                  attachmentLayout={AttachmentLayout}
-                  parentContainerStyle={{
-                    width: '100%',
-                    height: '100%',
-                    maxWidth: '566px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                  }}
-                />
-              </Stack>
-            )
-          })}
-
+                </Collapse>
+              )
+            })}
+        </TransitionGroup>
         {(Array.isArray((comment as LogResponse).details?.replies) &&
           ((comment as LogResponse).details.replies as LogResponse[]).length > 0) ||
         showReply ? (
-          <>
-            <CustomDivider />
-            <Stack direction="row" columnGap={1} alignItems="flex-start">
-              <Avatar alt="user" src={''} sx={{ width: '20px', height: '20px', marginTop: '5px' }} />
-              <Tapwrite
-                content={detail}
-                getContent={setDetail}
-                placeholder="Leave a reply..."
-                // suggestions={assigneeSuggestions}
-                editorClass="tapwrite-reply-input"
-                attachmentLayout={AttachmentLayout}
-                parentContainerStyle={{
-                  width: '100%',
-                  height: '100%',
-                  maxWidth: '566px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                }}
-              />
-              <InputAdornment
-                position="end"
-                sx={{
-                  alignSelf: 'flex-end',
-                  display: 'flex',
-                  alignItems: 'flex-end',
-                  paddingBottom: '10px',
-                }}
-              >
-                <PrimaryBtn buttonText="Reply" handleClick={handleReplySubmission} />
-              </InputAdornment>
-            </Stack>
-          </>
+          <ReplyInput
+            comment={comment}
+            task_id={task_id}
+            createComment={createComment}
+            uploadFn={uploadFn}
+            focusReplyInput={focusReplyInput}
+            setFocusReplyInput={setFocusedReplyInput}
+          />
         ) : null}
       </Stack>
       <StyledModal
@@ -334,12 +382,32 @@ export const CommentCard = ({
         <ConfirmDeleteUI
           handleCancel={() => setShowConfirmDeleteModal(false)}
           handleDelete={() => {
-            deleteComment((comment as LogResponse).details.id as string)
+            deleteComment((comment as LogResponse).details.id as string, undefined, replies.length > 0)
             setShowConfirmDeleteModal(false)
           }}
           bodyTag="comment"
         />
       </StyledModal>
     </CommentCardContainer>
+  )
+}
+
+const ReplyButton = ({ handleClick }: { handleClick: () => void }) => {
+  return (
+    <Box
+      sx={{
+        padding: '3px',
+        borderRadius: '4px',
+        alignItems: 'center',
+        display: 'flex',
+        ':hover': {
+          backgroundColor: (theme) => theme.color.gray[150],
+        },
+        cursor: 'pointer',
+      }}
+      onClick={handleClick}
+    >
+      <ReplyIcon />
+    </Box>
   )
 }
