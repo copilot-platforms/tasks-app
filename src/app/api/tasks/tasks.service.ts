@@ -205,14 +205,17 @@ export class TasksService extends BaseService {
       },
     })
     if (!task) throw new APIError(httpStatus.NOT_FOUND, 'The requested task was not found')
-    const updatedTask = await this.db.task.update({
+    let updatedTask = await this.db.task.update({
       where: { id: task.id },
       data: {
         body: task.body && (await replaceImageSrc(task.body, getSignedUrl)),
       },
     })
+    console.log('\n\n\n\n\nasdf', await this.getSubtaskCounts(task.id))
+    console.log('\n\n\n\n\nasdf', (await this.getSubtaskCounts(task.id)).get(task.id))
+    const subtaskCount = (await this.getSubtaskCounts(task.id)).get(task.id) || 0
 
-    return updatedTask
+    return { ...updatedTask, subtaskCount }
   }
 
   async getTaskAssignee(task: Task): Promise<InternalUsers | ClientResponse | CompanyResponse | undefined> {
@@ -309,11 +312,12 @@ export class TasksService extends BaseService {
    * Returns a Map with taskId as key and immediate subtask count as value.
    * Tasks without subtasks are omitted
    */
-  private async getSubtaskCounts(): Promise<Map<string, number>> {
+  private async getSubtaskCounts(id?: string): Promise<Map<string, number>> {
     const subtaskCountsRaw = await this.db.task.groupBy({
       by: ['parentId'],
       _count: { id: true },
       where: {
+        id,
         workspaceId: this.user.workspaceId,
         parentId: { not: null },
       },
