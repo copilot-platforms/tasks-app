@@ -32,7 +32,7 @@ import { signedUrlTtl } from '@/constants/attachments'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import CustomScrollBar from '@/hoc/CustomScrollBar'
 import { RealTime } from '@/hoc/RealTime'
-import { WorkspaceResponse } from '@/types/common'
+import { SubTasksStatus, WorkspaceResponse } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { UserType } from '@/types/interfaces'
 import { CopilotAPI } from '@/utils/CopilotAPI'
@@ -57,6 +57,12 @@ async function getWorkspace(token: string): Promise<WorkspaceResponse> {
   return await copilot.getWorkspace()
 }
 
+async function getSubTasksStatus(token: string, taskId: string): Promise<SubTasksStatus> {
+  const res = await fetch(`${apiUrl}/api/tasks/${taskId}/subtask-count?token=${token}`, {})
+  const data = await res.json()
+  return data
+}
+
 export default async function TaskDetailPage({
   params,
   searchParams,
@@ -73,10 +79,11 @@ export default async function TaskDetailPage({
 
   const copilotClient = new CopilotAPI(token)
 
-  const [task, tokenPayload, workspace] = await Promise.all([
+  const [task, tokenPayload, workspace, subTaskStatus] = await Promise.all([
     getOneTask(token, task_id),
     copilotClient.getTokenPayload(),
     getWorkspace(token),
+    getSubTasksStatus(token, task_id),
   ])
 
   if (!tokenPayload) {
@@ -158,7 +165,14 @@ export default async function TaskDetailPage({
                     userType={params.user_type}
                   />
                 </StyledTiptapDescriptionWrapper>
-                <Subtasks />
+                {subTaskStatus.canCreateSubtask && (
+                  <Subtasks
+                    task_id={task_id}
+                    token={token}
+                    userType={tokenPayload.internalUserId ? UserRole.IU : UserRole.Client}
+                  />
+                )}
+
                 <ActivityWrapper task_id={task_id} token={token} tokenPayload={tokenPayload} />
               </TaskDetailsContainer>
             </CustomScrollBar>

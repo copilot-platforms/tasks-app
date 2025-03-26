@@ -102,7 +102,7 @@ export class TasksService extends BaseService {
       orderBy: [{ dueDate: { sort: 'asc', nulls: 'last' } }, { createdAt: 'desc' }],
       relationLoadStrategy: 'join',
       include: {
-        workflowState: { select: { name: true } },
+        workflowState: { select: { name: true, type: true } },
       },
     })
 
