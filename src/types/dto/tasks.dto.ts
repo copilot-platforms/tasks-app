@@ -46,6 +46,7 @@ export const TaskResponseSchema = z.object({
   lastActivityLogUpdated: z.date().optional(),
   isArchived: z.boolean().optional(),
   lastArchivedDate: z.string().datetime(),
+  parentId: z.string().optional(),
 })
 
 export type TaskResponse = z.infer<typeof TaskResponseSchema>
