@@ -106,6 +106,13 @@ export class TasksService extends BaseService {
       },
     })
 
+    // Add subtaskCount to each task
+    const subtaskCounts = await this.getSubtaskCounts()
+    tasks = tasks.map((task) => ({
+      ...task,
+      subtaskCount: subtaskCounts.get(task.id) || 0,
+    }))
+
     if (!this.user.internalUserId) {
       return tasks
     }
@@ -296,6 +303,27 @@ export class TasksService extends BaseService {
     // ...In case requirements change later again
     // const notificationService = new NotificationService(this.user)
     // await notificationService.deleteInternalUserNotificationForTask(id)
+  }
+
+  /**
+   * Returns a Map with taskId as key and immediate subtask count as value.
+   * Tasks without subtasks are omitted
+   */
+  private async getSubtaskCounts(): Promise<Map<string, number>> {
+    const subtaskCountsRaw = await this.db.task.groupBy({
+      by: ['parentId'],
+      _count: { id: true },
+      where: {
+        workspaceId: this.user.workspaceId,
+        parentId: { not: null },
+      },
+    })
+    const subtaskCounts = new Map<string, number>(
+      subtaskCountsRaw.map(({ parentId, _count }) => {
+        return [parentId!, _count.id]
+      }),
+    )
+    return subtaskCounts
   }
 
   private async addPathToTask(task: Task) {
