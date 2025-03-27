@@ -297,21 +297,20 @@ export class TasksService extends BaseService {
 
     // Try to delete existing client notification related to this task if exists
     const task = await this.db.task.findFirst({
-      where: { id },
+      where: { id, workspaceId: this.user.workspaceId },
       relationLoadStrategy: 'join',
       include: { workflowState: true },
     })
 
     if (!task) throw new APIError(httpStatus.NOT_FOUND, 'The requested task to delete was not found')
 
-    await deleteTaskNotifications.trigger({ user: this.user, task })
-
     //delete the associated label
     const labelMappingService = new LabelMappingService(this.user)
     await labelMappingService.deleteLabel(task?.label)
 
     await this.db.$transaction(async (tx) => {
-      await tx.task.delete({ where: { id } })
+      await tx.task.delete({ where: { id, workspaceId: this.user.workspaceId } })
+
       if (task.parentId) {
         const subtaskService = new SubtaskService(this.user)
         subtaskService.setTransaction(tx as PrismaClient)
@@ -319,6 +318,9 @@ export class TasksService extends BaseService {
         subtaskService.unsetTransaction()
       }
     })
+
+    await deleteTaskNotifications.trigger({ user: this.user, task })
+
     // Logic to remove internal user notifications when a task is deleted / assignee is deleted
     // ...In case requirements change later again
     // const notificationService = new NotificationService(this.user)
