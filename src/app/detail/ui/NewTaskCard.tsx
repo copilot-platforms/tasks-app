@@ -1,4 +1,3 @@
-import { handleCreate } from '@/app/actions'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { MiniLoader } from '@/components/atoms/MiniLoader'
 import AttachmentLayout from '@/components/AttachmentLayout'
@@ -16,7 +15,7 @@ import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { selectCreateTemplate } from '@/redux/features/templateSlice'
 import { DateString } from '@/types/date'
-import { CreateTaskRequestSchema, TaskResponse } from '@/types/dto/tasks.dto'
+import { AssigneeTypeSchema, CreateTaskRequest } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { AssigneeType, CreateTaskErrors, IAssigneeCombined, ITemplate } from '@/types/interfaces'
 import { getAssigneeName } from '@/utils/assignee'
@@ -25,14 +24,12 @@ import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inli
 import { NoAssigneeExtraOptions } from '@/utils/noAssignee'
 import { trimAllTags } from '@/utils/trimTags'
 import { setDebouncedFilteredAssignees } from '@/utils/users'
-import { el } from '@faker-js/faker'
 import { Box, Stack, Typography } from '@mui/material'
 import dayjs from 'dayjs'
 import { useCallback, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
 import { z } from 'zod'
-import { sortTaskByDescendingOrder } from '@/utils/sortTask'
 
 interface IErrors {
   [CreateTaskErrors.ASSIGNEE]: boolean
@@ -50,12 +47,10 @@ interface SubTaskFields {
 
 export const NewTaskCard = ({
   handleClose,
-
-  mutateSubTasks,
+  handleSubTaskCreation,
 }: {
   handleClose: () => void
-
-  mutateSubTasks: () => void
+  handleSubTaskCreation: (payload: CreateTaskRequest) => void
 }) => {
   const { workflowStates, assignee, token, filterOptions, previewMode, activeTask } = useSelector(selectTaskBoard)
   const { templates } = useSelector(selectCreateTemplate)
@@ -199,26 +194,20 @@ export const NewTaskCard = ({
   }
 
   const handleTaskCreation = async () => {
-    try {
-      if (subTaskFields.title && subTaskFields.assigneeId && subTaskFields.assigneeType) {
-        const formattedDueDate = subTaskFields.dueDate && dayjs(new Date(subTaskFields.dueDate)).format('YYYY-MM-DD')
+    if (subTaskFields.title && subTaskFields.assigneeId && subTaskFields.assigneeType) {
+      const formattedDueDate = subTaskFields.dueDate && dayjs(new Date(subTaskFields.dueDate)).format('YYYY-MM-DD')
 
-        const payload = {
-          title: subTaskFields.title,
-          body: subTaskFields.description,
-          workflowStateId: subTaskFields.workflowStateId,
-          assigneeType: subTaskFields.assigneeType,
-          assigneeId: subTaskFields.assigneeId,
-          dueDate: formattedDueDate,
-          parentId: activeTask?.id,
-        }
-
-        clearSubTaskFields()
-        await handleCreate(token as string, CreateTaskRequestSchema.parse(payload))
-        mutateSubTasks()
+      const payload: CreateTaskRequest = {
+        title: subTaskFields.title,
+        body: subTaskFields.description,
+        workflowStateId: subTaskFields.workflowStateId,
+        assigneeType: AssigneeTypeSchema.parse(subTaskFields.assigneeType),
+        assigneeId: subTaskFields.assigneeId,
+        dueDate: formattedDueDate,
+        parentId: activeTask?.id,
       }
-    } catch (error) {
-      console.error('Failed to create subtask:', error)
+      handleSubTaskCreation(payload)
+      clearSubTaskFields()
     }
   }
 
