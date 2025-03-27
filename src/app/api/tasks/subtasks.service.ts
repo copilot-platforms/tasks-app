@@ -17,4 +17,18 @@ export class SubtaskService extends BaseService {
     }
     return level
   }
+
+  async addSubtaskCount(id: string, increaseBy?: number, txn?: any) {
+    await this.db.task.update({
+      where: { id, workspaceId: this.user.workspaceId },
+      data: { subtaskCount: { increment: increaseBy || 1 } },
+    })
+  }
+
+  async decreaseSubtaskCount(id: string, decreaseBy?: number) {
+    await this.db.task.update({
+      where: { id, workspaceId: this.user.workspaceId },
+      data: { subtaskCount: { decrement: decreaseBy || 1 } },
+    })
+  }
 }
