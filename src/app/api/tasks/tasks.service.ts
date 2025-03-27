@@ -19,6 +19,7 @@ import { TasksActivityLogger } from '@api/tasks/tasks.logger'
 import { AssigneeType, Prisma, StateType, Task, WorkflowState } from '@prisma/client'
 import httpStatus from 'http-status'
 import { z } from 'zod'
+import { SubtaskService } from './subtasks.service'
 
 type FilterByAssigneeId = {
   assigneeId: string
@@ -159,21 +160,39 @@ export class TasksService extends BaseService {
     })
 
     if (newTask) {
-      // @todo move this logic to any pub/sub service like event bus
+      // Add activity logs
       const activityLogger = new TasksActivityLogger(this.user, newTask)
       await activityLogger.logNewTask()
 
-      if (newTask.body) {
-        const newBody = await this.updateTaskIdOfAttachmentsAfterCreation(newTask.body, newTask.id)
-        await this.db.task.update({
-          where: { id: newTask.id },
-          data: {
-            body: newBody,
-          },
-        })
-      }
+      try {
+        if (newTask.body) {
+          const newBody = await this.updateTaskIdOfAttachmentsAfterCreation(newTask.body, newTask.id)
+          // Update task body with replaced attachment sources
+          await this.db.task.update({
+            where: { id: newTask.id },
+            data: {
+              body: newBody,
+            },
+          })
+        }
 
-      await this.addPathToTask(newTask)
+        // Add ltree path for task
+        await this.addPathToTask(newTask)
+
+        // Increment parent task's subtask count, if exists
+        if (newTask.parentId) {
+          const subtaskService = new SubtaskService(this.user)
+          await subtaskService.addSubtaskCount(newTask.parentId)
+        }
+      } catch (e: unknown) {
+        // Manually rollback task creation
+        await this.db.$transaction([
+          this.db.task.delete({ where: { id: newTask.id } }),
+          this.db.activityLog.deleteMany({ where: { id: newTask.id } }),
+        ])
+        console.error('TasksService#createTask | Rolling back task creation', e)
+        throw new APIError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to post-process task, new task was not created.')
+      }
     }
 
     // Send task created notifications to users
@@ -291,7 +310,6 @@ export class TasksService extends BaseService {
     const labelMappingService = new LabelMappingService(this.user)
     await labelMappingService.deleteLabel(task?.label)
 
-    await this.db.task.delete({ where: { id } })
     // Logic to remove internal user notifications when a task is deleted / assignee is deleted
     // ...In case requirements change later again
     // const notificationService = new NotificationService(this.user)
