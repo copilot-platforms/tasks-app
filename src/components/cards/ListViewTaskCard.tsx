@@ -69,7 +69,7 @@ export const ListViewTaskCard = ({
                 color: (theme) => theme.color.gray[500],
                 flexGrow: 0,
                 maxWidth: {
-                  xs: '60px',
+                  xs: '80px',
                   sm: '100%',
                 },
                 overflow: 'hidden',
