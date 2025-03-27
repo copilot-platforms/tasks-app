@@ -230,8 +230,3 @@ export interface InitiatedEntity {
   initiatorId: string
   initiatorType: CommentInitiator | null
 }
-
-export interface SubTasksStatus {
-  count: number
-  canCreateSubtask: boolean
-}

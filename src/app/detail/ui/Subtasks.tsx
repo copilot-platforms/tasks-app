@@ -17,7 +17,6 @@ import { AddBtn } from '@/components/buttons/AddBtn'
 import { CustomLink } from '@/hoc/CustomLink'
 import { getCardHref } from '@/utils/getCardHref'
 import { UserRole } from '@/app/api/core/types/user'
-import { SubTasksStatus } from '@/types/common'
 
 export const Subtasks = ({ task_id, token, userType }: { task_id: string; token: string; userType: UserRole }) => {
   const [openTaskForm, setOpenTaskForm] = useState(false)
