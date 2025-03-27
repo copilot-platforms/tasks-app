@@ -50,3 +50,10 @@ export const TaskResponseSchema = z.object({
 })
 
 export type TaskResponse = z.infer<typeof TaskResponseSchema>
+
+export const SubTaskStatusSchema = z.object({
+  count: z.number(),
+  canCreateSubtask: z.boolean(),
+})
+
+export type SubTaskStatusResponse = z.infer<typeof SubTaskStatusSchema>
