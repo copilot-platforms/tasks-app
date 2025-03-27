@@ -32,8 +32,8 @@ import { signedUrlTtl } from '@/constants/attachments'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import CustomScrollBar from '@/hoc/CustomScrollBar'
 import { RealTime } from '@/hoc/RealTime'
-import { SubTasksStatus, WorkspaceResponse } from '@/types/common'
-import { TaskResponse } from '@/types/dto/tasks.dto'
+import { WorkspaceResponse } from '@/types/common'
+import { SubTaskStatusResponse, TaskResponse } from '@/types/dto/tasks.dto'
 import { UserType } from '@/types/interfaces'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import EscapeHandler from '@/utils/escapeHandler'
@@ -57,7 +57,7 @@ async function getWorkspace(token: string): Promise<WorkspaceResponse> {
   return await copilot.getWorkspace()
 }
 
-async function getSubTasksStatus(token: string, taskId: string): Promise<SubTasksStatus> {
+async function getSubTasksStatus(token: string, taskId: string): Promise<SubTaskStatusResponse> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}/subtask-count?token=${token}`, {})
   const data = await res.json()
   return data
