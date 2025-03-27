@@ -14,12 +14,12 @@ import { PoliciesService } from '@api/core/services/policies.service'
 import { Resource } from '@api/core/types/api'
 import { UserAction, UserRole } from '@api/core/types/user'
 import { LabelMappingService } from '@api/label-mapping/label-mapping.service'
+import { SubtaskService } from '@api/tasks/subtasks.service'
 import { getArchivedStatus, getTaskTimestamps } from '@api/tasks/tasks.helpers'
 import { TasksActivityLogger } from '@api/tasks/tasks.logger'
-import { AssigneeType, Prisma, StateType, Task, WorkflowState } from '@prisma/client'
+import { AssigneeType, Prisma, PrismaClient, StateType, Task, WorkflowState } from '@prisma/client'
 import httpStatus from 'http-status'
 import { z } from 'zod'
-import { SubtaskService } from './subtasks.service'
 
 type FilterByAssigneeId = {
   assigneeId: string
@@ -310,6 +310,15 @@ export class TasksService extends BaseService {
     const labelMappingService = new LabelMappingService(this.user)
     await labelMappingService.deleteLabel(task?.label)
 
+    await this.db.$transaction(async (tx) => {
+      await tx.task.delete({ where: { id } })
+      if (task.parentId) {
+        const subtaskService = new SubtaskService(this.user)
+        subtaskService.setTransaction(tx as PrismaClient)
+        await subtaskService.decreaseSubtaskCount(task.parentId)
+        subtaskService.unsetTransaction()
+      }
+    })
     // Logic to remove internal user notifications when a task is deleted / assignee is deleted
     // ...In case requirements change later again
     // const notificationService = new NotificationService(this.user)
