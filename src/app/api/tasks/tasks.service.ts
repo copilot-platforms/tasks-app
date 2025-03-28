@@ -4,6 +4,7 @@ import { sendClientUpdateTaskNotifications } from '@/jobs/notifications/send-cli
 import { ClientResponse, CompanyResponse, InternalUsers } from '@/types/common'
 import { CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { CopilotAPI } from '@/utils/CopilotAPI'
+import { buildLtree, buildLtreeNodeString } from '@/utils/ltree'
 import { getFilePathFromUrl, replaceImageSrc } from '@/utils/signedUrlReplacer'
 import { getSignedUrl } from '@/utils/signUrl'
 import { SupabaseActions } from '@/utils/SupabaseActions'
@@ -13,10 +14,10 @@ import { PoliciesService } from '@api/core/services/policies.service'
 import { Resource } from '@api/core/types/api'
 import { UserAction, UserRole } from '@api/core/types/user'
 import { LabelMappingService } from '@api/label-mapping/label-mapping.service'
-import { TaskNotificationsService } from '@api/tasks/task-notifications.service'
+import { SubtaskService } from '@api/tasks/subtasks.service'
 import { getArchivedStatus, getTaskTimestamps } from '@api/tasks/tasks.helpers'
 import { TasksActivityLogger } from '@api/tasks/tasks.logger'
-import { AssigneeType, StateType, Task, WorkflowState } from '@prisma/client'
+import { AssigneeType, Prisma, PrismaClient, StateType, Task, WorkflowState } from '@prisma/client'
 import httpStatus from 'http-status'
 import { z } from 'zod'
 
@@ -36,45 +37,44 @@ export class TasksService extends BaseService {
     const user = this.user
 
     // Default filters
-    let filters = {
-      where: {
-        id,
-        workspaceId: user.workspaceId,
-        OR: undefined as FilterByAssigneeId[] | undefined,
-      },
+    let filters: Prisma.TaskWhereInput = {
+      id,
+      workspaceId: user.workspaceId,
+      OR: undefined as FilterByAssigneeId[] | undefined,
     }
 
     if (user.clientId) {
       filters = {
-        where: {
-          ...filters.where,
-          OR: [{ assigneeId: user.clientId as string, assigneeType: 'client' }],
-        },
+        ...filters,
+        OR: [{ assigneeId: user.clientId as string, assigneeType: 'client' }],
       }
     }
     if (user.clientId && user.companyId) {
       filters = {
-        where: {
-          ...filters.where,
-          OR: [
-            { assigneeId: user.clientId as string, assigneeType: 'client' },
-            { assigneeId: user.companyId, assigneeType: 'company' },
-          ],
-        },
+        ...filters,
+        OR: [
+          { assigneeId: user.clientId as string, assigneeType: 'client' },
+          { assigneeId: user.companyId, assigneeType: 'company' },
+        ],
       }
     }
 
     return filters
   }
 
-  async getAllTasks(queryFilters?: { showArchived: boolean; showUnarchived: boolean; showIncompleteOnly?: boolean }) {
+  async getAllTasks(queryFilters?: {
+    showArchived: boolean
+    showUnarchived: boolean
+    showIncompleteOnly?: boolean
+    parentId?: string | null
+  }) {
     // Check if given user role is authorized access to this resource
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Read, Resource.Tasks)
 
     // Build query filters based on role of user. IU can access all tasks related to a workspace
     // while clients can only view the tasks assigned to them or their company
-    const filters = this.buildReadFilters()
+    const filters: Prisma.TaskWhereInput = this.buildReadFilters()
 
     let isArchived: boolean | undefined = false
     // Archived tasks are only accessible to IU
@@ -83,33 +83,27 @@ export class TasksService extends BaseService {
       if (!queryFilters.showArchived && !queryFilters.showUnarchived) {
         return []
       }
-
       isArchived = getArchivedStatus(queryFilters.showArchived, queryFilters.showUnarchived)
     }
 
     if (queryFilters?.showIncompleteOnly) {
-      // @ts-expect-error Injecting a valid workflowState query here
-      filters.where.workflowState = {
+      filters.workflowState = {
         type: { not: StateType.completed },
       }
     }
 
+    // If `parentId` is present, filter by parentId, ELSE return top-level parent comments
+    filters.parentId = z.string().nullish().parse(queryFilters?.parentId) || null
+
     let tasks = await this.db.task.findMany({
       where: {
-        ...filters.where,
+        ...filters,
         isArchived,
       },
-      orderBy: [
-        {
-          dueDate: { sort: 'asc', nulls: 'last' },
-        },
-        {
-          createdAt: 'desc',
-        },
-      ],
+      orderBy: [{ dueDate: { sort: 'asc', nulls: 'last' } }, { createdAt: 'desc' }],
       relationLoadStrategy: 'join',
       include: {
-        workflowState: { select: { name: true } },
+        workflowState: { select: { name: true, type: true } },
       },
     })
 
@@ -166,18 +160,38 @@ export class TasksService extends BaseService {
     })
 
     if (newTask) {
-      // @todo move this logic to any pub/sub service like event bus
+      // Add activity logs
       const activityLogger = new TasksActivityLogger(this.user, newTask)
       await activityLogger.logNewTask()
 
-      if (newTask.body) {
-        const newBody = await this.updateTaskIdOfAttachmentsAfterCreation(newTask.body, newTask.id)
-        await this.db.task.update({
-          where: { id: newTask.id },
-          data: {
-            body: newBody,
-          },
-        })
+      try {
+        if (newTask.body) {
+          const newBody = await this.updateTaskIdOfAttachmentsAfterCreation(newTask.body, newTask.id)
+          // Update task body with replaced attachment sources
+          await this.db.task.update({
+            where: { id: newTask.id },
+            data: {
+              body: newBody,
+            },
+          })
+        }
+
+        // Add ltree path for task
+        await this.addPathToTask(newTask)
+
+        // Increment parent task's subtask count, if exists
+        if (newTask.parentId) {
+          const subtaskService = new SubtaskService(this.user)
+          await subtaskService.addSubtaskCount(newTask.parentId)
+        }
+      } catch (e: unknown) {
+        // Manually rollback task creation
+        await this.db.$transaction([
+          this.db.task.delete({ where: { id: newTask.id } }),
+          this.db.activityLog.deleteMany({ where: { taskId: newTask.id } }),
+        ])
+        console.error('TasksService#createTask | Rolling back task creation', e)
+        throw new APIError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to post-process task, new task was not created.')
       }
     }
 
@@ -196,7 +210,7 @@ export class TasksService extends BaseService {
     const filters = this.buildReadFilters(id)
 
     const task = await this.db.task.findFirst({
-      ...filters,
+      where: filters,
       relationLoadStrategy: 'join',
       include: {
         workflowState: true,
@@ -236,7 +250,7 @@ export class TasksService extends BaseService {
     // Query previous task
     const filters = this.buildReadFilters(id)
     const prevTask = await this.db.task.findFirst({
-      ...filters,
+      where: filters,
       relationLoadStrategy: 'join',
       include: { workflowState: true },
     })
@@ -283,24 +297,59 @@ export class TasksService extends BaseService {
 
     // Try to delete existing client notification related to this task if exists
     const task = await this.db.task.findFirst({
-      where: { id },
+      where: { id, workspaceId: this.user.workspaceId },
       relationLoadStrategy: 'join',
       include: { workflowState: true },
     })
 
     if (!task) throw new APIError(httpStatus.NOT_FOUND, 'The requested task to delete was not found')
 
-    await deleteTaskNotifications.trigger({ user: this.user, task })
-
     //delete the associated label
     const labelMappingService = new LabelMappingService(this.user)
     await labelMappingService.deleteLabel(task?.label)
 
-    await this.db.task.delete({ where: { id } })
+    await this.db.$transaction(async (tx) => {
+      await tx.task.delete({ where: { id, workspaceId: this.user.workspaceId } })
+
+      if (task.parentId) {
+        const subtaskService = new SubtaskService(this.user)
+        subtaskService.setTransaction(tx as PrismaClient)
+        await subtaskService.decreaseSubtaskCount(task.parentId)
+        subtaskService.unsetTransaction()
+      }
+    })
+
+    await deleteTaskNotifications.trigger({ user: this.user, task })
+
     // Logic to remove internal user notifications when a task is deleted / assignee is deleted
     // ...In case requirements change later again
     // const notificationService = new NotificationService(this.user)
     // await notificationService.deleteInternalUserNotificationForTask(id)
+  }
+
+  private async addPathToTask(task: Task) {
+    let path: string = task.id
+
+    if (task.parentId) {
+      const parentTask = (
+        await this.db.$queryRaw<{ path: string }[] | null>`
+          SELECT "path"
+          FROM "Tasks"
+          WHERE id::text = ${task.parentId}
+            AND "workspaceId" = ${this.user.workspaceId}
+        `
+      )?.[0]
+      if (!parentTask) throw new APIError(httpStatus.NOT_FOUND, 'The requested parent task was not found')
+
+      path = buildLtree(parentTask.path, task.id)
+    }
+
+    await this.db.$executeRaw`
+      UPDATE "Tasks"
+      SET path = ${buildLtreeNodeString(path)}::ltree
+      WHERE id::text = ${task.id}
+        AND "workspaceId" = ${this.user.workspaceId}
+    `
   }
 
   private async updateTaskIdOfAttachmentsAfterCreation(htmlString: string, task_id: string) {
@@ -421,7 +470,7 @@ export class TasksService extends BaseService {
     // Query previous task
     const filters = this.buildReadFilters(id)
     const prevTask = await this.db.task.findFirst({
-      ...filters,
+      where: filters,
       relationLoadStrategy: 'join',
       include: { workflowState: true },
     })
