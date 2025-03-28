@@ -188,7 +188,7 @@ export class TasksService extends BaseService {
         // Manually rollback task creation
         await this.db.$transaction([
           this.db.task.delete({ where: { id: newTask.id } }),
-          this.db.activityLog.deleteMany({ where: { id: newTask.id } }),
+          this.db.activityLog.deleteMany({ where: { taskId: newTask.id } }),
         ])
         console.error('TasksService#createTask | Rolling back task creation', e)
         throw new APIError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to post-process task, new task was not created.')
