@@ -120,7 +120,7 @@ export const Subtasks = ({ task_id, token, userType }: { task_id: string; token:
                 }}
                 key={checkOptimisticStableId(item, optimisticUpdates)}
               >
-                <TaskCardList task={item} />
+                <TaskCardList task={item} variant="subtask" />
               </div>
             )
           }
@@ -130,7 +130,7 @@ export const Subtasks = ({ task_id, token, userType }: { task_id: string; token:
               key={checkOptimisticStableId(item, optimisticUpdates)}
               href={{ pathname: getCardHref(item, userType), query: { token } }}
             >
-              <TaskCardList task={item} />
+              <TaskCardList task={item} variant="subtask" />
             </CustomLink>
           )
         })}

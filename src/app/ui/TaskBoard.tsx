@@ -9,9 +9,8 @@ import { useSelector } from 'react-redux'
 import store from '@/redux/store'
 import { selectTaskBoard, updateWorkflowStateIdByTaskId } from '@/redux/features/taskBoardSlice'
 import { TaskResponse } from '@/types/dto/tasks.dto'
-import { ListViewTaskCard } from '@/components/cards/ListViewTaskCard'
 import { TaskRow } from '@/components/cards/TaskRow'
-import { UserType, View } from '@/types/interfaces'
+import { View } from '@/types/interfaces'
 import { updateTask, updateViewModeSettings } from '@/app/actions'
 import { z } from 'zod'
 
@@ -32,6 +31,7 @@ import { WorkspaceResponse } from '@/types/common'
 import { TaskBoardAppBridge } from '@/app/ui/TaskBoardAppBridge'
 import CustomScrollBar from '@/hoc/CustomScrollBar'
 import { getCardHref } from '@/utils/getCardHref'
+import { TaskCardList } from '@/app/detail/ui/TaskCardList'
 
 interface TaskBoardProps {
   mode: UserRole
@@ -244,14 +244,7 @@ export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
                           task={task}
                           draggable // Make ListViewTaskCard draggable
                         >
-                          <ListViewTaskCard
-                            key={task.id}
-                            task={task}
-                            href={{ pathname: getCardHref(task, mode), query: { token } }}
-                            updateTask={({ payload }) => {
-                              updateTask({ token: z.string().parse(token), taskId: task.id, payload })
-                            }}
-                          />
+                          <TaskCardList task={task} variant="task" key={task.id} workflowState={list} />
                         </DragDropHandler>
                       </CustomLink>
                     )
