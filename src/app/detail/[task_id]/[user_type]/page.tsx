@@ -170,6 +170,7 @@ export default async function TaskDetailPage({
                     task_id={task_id}
                     token={token}
                     userType={tokenPayload.internalUserId ? UserRole.IU : UserRole.Client}
+                    canCreateSubtasks={params.user_type === UserType.INTERNAL_USER || !!getPreviewMode(tokenPayload)}
                   />
                 )}
 
