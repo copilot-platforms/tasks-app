@@ -10,9 +10,9 @@ import { DueDateLayout } from '@/components/layouts/DueDateLayout'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { UrlObject } from 'url'
 import { useEffect, useState } from 'react'
-import { ArchiveBoxIcon } from '@/icons'
 import { getAssigneeName } from '@/utils/assignee'
 import { isTaskCompleted } from '@/utils/isTaskCompleted'
+import { TaskMetaItems } from '@/components/atoms/TaskMetaItems'
 
 const TaskCardContainer = styled(Stack)(({ theme }) => ({
   border: `1px solid ${theme.color.borders.border}`,
@@ -51,14 +51,12 @@ export const TaskCard = ({ task, href }: TaskCardProps) => {
       <Stack rowGap={1}>
         <Stack direction="row" justifyContent="space-between">
           <Stack direction="column" rowGap={'4px'}>
-            {task.isArchived && (
-              <Stack direction="row" alignItems={'center'} columnGap={'4px'}>
-                <ArchiveBoxIcon />
-                <Typography variant="bodyXs" sx={{ color: (theme) => theme.color.text.textSecondary }}>
-                  Archived
-                </Typography>
+            {(task.isArchived || task.subtaskCount > 0) && (
+              <Stack direction="row" sx={{ display: 'flex', gap: '12px', flexShrink: 0, alignItems: 'center' }}>
+                <TaskMetaItems task={task} lineHeight="18px" />
               </Stack>
             )}
+
             {currentAssignee ? (
               <Stack direction="row" alignItems="center" columnGap={1}>
                 <CopilotAvatar currentAssignee={currentAssignee as IAssigneeCombined} />
