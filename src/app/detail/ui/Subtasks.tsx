@@ -20,8 +20,7 @@ import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { handleCreate } from '@/app/actions'
 import { checkOptimisticStableId } from '@/utils/optimisticCommentUtils'
 import { sortTaskByDescendingOrder } from '@/utils/sortTask'
-import { ClientResponseSchema, CompanyResponseSchema, InternalUsersSchema } from '@/types/common'
-import { z } from 'zod'
+import { getTempTask } from '@/utils/optimisticTaskUtils'
 
 interface OptimisticUpdate {
   tempId: string
@@ -56,26 +55,15 @@ export const Subtasks = ({ task_id, token, userType }: { task_id: string; token:
         timestamp: Date.now(),
       },
     ])
-    const tempSubtask: TaskResponse = {
-      id: tempId,
-      label: 'temp-label',
-      workspaceId: tokenPayload?.workspaceId || '',
-      assigneeId: payload.assigneeId ?? '',
-      assigneeType: payload.assigneeType,
-      title: payload.title,
-      body: payload.body,
-      workflowStateId: payload.workflowStateId,
-      workflowState: workflowStates.find((ws) => ws.id === payload.workflowStateId)!,
-      createdById: tokenPayload?.internalUserId ?? tokenPayload?.clientId ?? '',
-      assignee: z
-        .union([ClientResponseSchema, InternalUsersSchema, CompanyResponseSchema])
-        .parse(assignee.find((a) => a.id === payload.assigneeId)),
-      createdAt: new Date(),
-      lastArchivedDate: new Date().toISOString(),
-      isArchived: false,
-      parentId: activeTask?.id,
-      dueDate: payload.dueDate ? new Date(payload.dueDate).toISOString() : undefined,
-    }
+    const tempSubtask: TaskResponse = getTempTask(
+      tempId,
+      payload,
+      workflowStates,
+      assignee,
+      tokenPayload?.workspaceId ?? '',
+      tokenPayload?.internalUserId ?? '',
+      task_id,
+    )
     const optimisticData = subTasks?.tasks ? sortTaskByDescendingOrder([...subTasks.tasks, tempSubtask]) : [tempSubtask]
     try {
       mutate(
