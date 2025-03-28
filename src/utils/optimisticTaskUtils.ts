@@ -32,5 +32,6 @@ export const getTempTask = (
     isArchived: false,
     parentId: parentId,
     dueDate: payload.dueDate ? new Date(payload.dueDate).toISOString() : undefined,
+    subtaskCount: 0,
   }
 }

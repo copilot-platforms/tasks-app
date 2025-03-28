@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Box, Stack, Typography } from '@mui/material'
 import { NewTaskCard } from '@/app/detail/ui/NewTaskCard'
 import { GhostBtn } from '@/components/buttons/GhostBtn'
@@ -34,6 +34,8 @@ export const Subtasks = ({ task_id, token, userType }: { task_id: string; token:
   const { tokenPayload } = useSelector(selectAuthDetails)
   const [optimisticUpdates, setOptimisticUpdates] = useState<OptimisticUpdate[]>([]) //might need this server-temp id maps in the future.
 
+  const [currentSubtasksCount, setCurrentSubtasksCount] = useState(activeTask?.subtaskCount)
+
   const handleFormCancel = () => {
     setOpenTaskForm(false)
   }
@@ -45,6 +47,16 @@ export const Subtasks = ({ task_id, token, userType }: { task_id: string; token:
   const { data: subTasks, mutate: mutateList } = useSWR(cacheKey, fetcher, { refreshInterval: 0 })
 
   const { mutate } = useSWRConfig()
+
+  useEffect(() => {
+    const refetchSubtasks = async () => {
+      await mutate(cacheKey)
+      setCurrentSubtasksCount(activeTask?.subtaskCount)
+    }
+    if (currentSubtasksCount !== activeTask?.subtaskCount) {
+      refetchSubtasks()
+    }
+  }, [activeTask?.subtaskCount])
 
   const handleSubTaskCreation = (payload: CreateTaskRequest) => {
     const tempId = generateRandomString('temp-task')
