@@ -1,6 +1,6 @@
 'use client'
 
-import { WorkflowState } from '@/types/dto/workflowStates.dto'
+import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { Box, Stack, Typography } from '@mui/material'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { useSelector } from 'react-redux'
@@ -12,14 +12,16 @@ import { isTaskCompleted } from '@/utils/isTaskCompleted'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { useEffect, useState } from 'react'
 import { NoAssignee } from '@/utils/noAssignee'
+import { TaskMetaItems } from '@/components/atoms/TaskMetaItems'
 
 interface TaskCardListProps {
   task: TaskResponse
+  variant: 'task' | 'subtask' //task variant is used in task board list view, subtask variant is used for sub task list in details page
+  workflowState?: WorkflowStateResponse
 }
 
-export const TaskCardList = ({ task }: TaskCardListProps) => {
+export const TaskCardList = ({ task, variant, workflowState }: TaskCardListProps) => {
   const { assignee, workflowStates } = useSelector(selectTaskBoard)
-
   const [currentAssignee, setCurrentAssignee] = useState<IAssigneeCombined | undefined>(undefined)
 
   useEffect(() => {
@@ -33,9 +35,9 @@ export const TaskCardList = ({ task }: TaskCardListProps) => {
     <Stack
       direction="row"
       sx={{
-        height: '36px',
+        height: variant == 'task' ? '44px' : '36px',
         display: 'flex',
-        padding: '6px 2px 6px 0px',
+        padding: variant == 'task' ? '6px 20px 6px 20px' : '6px 2px 6px 0px',
         alignItems: 'center',
         alignSelf: 'stretch',
         gap: '20px',
@@ -61,16 +63,19 @@ export const TaskCardList = ({ task }: TaskCardListProps) => {
             display: 'flex',
             gap: '2px',
             minWidth: 0,
-            flexGrow: 1,
+            flexGrow: 0,
             flexShrink: 1,
           }}
         >
-          <Box sx={{ padding: '2px 4px' }}>{statusIcons[Sizes.MEDIUM][task.workflowState.type]}</Box>
+          <Box sx={{ padding: '2px 4px' }}>
+            {statusIcons[Sizes.MEDIUM][workflowState ? workflowState.type : task.workflowState.type]}
+          </Box>
 
           <Typography
             variant="bodySm"
             sx={{
-              lineHeight: '21px',
+              lineHeight: variant == 'task' ? '22px' : '21px',
+              fontSize: variant == 'task' ? '14px' : '13px',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
@@ -82,6 +87,11 @@ export const TaskCardList = ({ task }: TaskCardListProps) => {
             {task.title}
           </Typography>
         </Stack>
+        {(task.subtaskCount > 0 || task.isArchived) && (
+          <Stack direction="row" sx={{ display: 'flex', gap: '12px', flexShrink: 0, alignItems: 'center' }}>
+            <TaskMetaItems task={task} lineHeight="21px" />
+          </Stack>
+        )}
       </Stack>
       <Stack
         direction="row"
@@ -89,12 +99,15 @@ export const TaskCardList = ({ task }: TaskCardListProps) => {
           display: 'flex',
           alignItems: 'center',
           gap: '8px',
-          minWidth: '130px',
           marginLeft: 'auto',
           justifyContent: 'flex-end',
         }}
       >
-        {task.dueDate && <DueDateLayout dateString={task.dueDate} isDone={isTaskCompleted(task, workflowStates)} />}
+        {task.dueDate && (
+          <Box sx={{ minWidth: '100px', display: 'flex', justifyContent: 'flex-end' }}>
+            <DueDateLayout dateString={task.dueDate} isDone={isTaskCompleted(task, workflowStates)} />
+          </Box>
+        )}
         <CopilotAvatar currentAssignee={currentAssignee as IAssigneeCombined} />
       </Stack>
     </Stack>

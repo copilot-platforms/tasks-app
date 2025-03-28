@@ -42,7 +42,7 @@ export const TaskRow = ({
                 {taskCount}
               </Typography>
             </Stack>
-            {showAddBtn && <AddBtn handleClick={() => handleAddBtnClicked(workflowStateId)} sx={{ paddingRight: '3px' }} />}
+            {showAddBtn && <AddBtn handleClick={() => handleAddBtnClicked(workflowStateId)} />}
           </Stack>
         </AppMargin>
       </Box>
