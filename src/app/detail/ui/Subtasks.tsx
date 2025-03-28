@@ -28,7 +28,17 @@ interface OptimisticUpdate {
   timestamp: number
 }
 
-export const Subtasks = ({ task_id, token, userType }: { task_id: string; token: string; userType: UserRole }) => {
+export const Subtasks = ({
+  task_id,
+  token,
+  userType,
+  canCreateSubtasks,
+}: {
+  task_id: string
+  token: string
+  userType: UserRole
+  canCreateSubtasks: boolean
+}) => {
   const [openTaskForm, setOpenTaskForm] = useState(false)
   const { workflowStates, assignee, activeTask } = useSelector(selectTaskBoard)
   const { tokenPayload } = useSelector(selectAuthDetails)
@@ -88,8 +98,35 @@ export const Subtasks = ({ task_id, token, userType }: { task_id: string; token:
   }
 
   return (
-    <Stack direction="column" rowGap={'8px'} width="100%" sx={{ padding: '24px 0px 0px' }}>
-      {subTasks && subTasks?.tasks?.length > 0 ? (
+    <Stack
+      direction="column"
+      rowGap={'8px'}
+      width="100%"
+      sx={{ padding: !canCreateSubtasks && subTasks?.tasks?.length == 0 ? '0px' : '24px 0px 0px' }}
+    >
+      {canCreateSubtasks && (
+        <>
+          {subTasks && subTasks?.tasks?.length > 0 ? (
+            <Stack
+              direction="row"
+              sx={{
+                display: 'flex',
+                height: '32px',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                alignSelf: 'stretch',
+              }}
+            >
+              <Typography variant="lg">Subtasks</Typography>
+
+              <AddBtn handleClick={handleFormOpen} />
+            </Stack>
+          ) : (
+            <GhostBtn buttonText="Create subtask" handleClick={handleFormOpen} startIcon={<GrayAddMediumIcon />} />
+          )}
+        </>
+      )}
+      {!canCreateSubtasks && subTasks?.tasks?.length > 0 && (
         <Stack
           direction="row"
           sx={{
@@ -101,11 +138,7 @@ export const Subtasks = ({ task_id, token, userType }: { task_id: string; token:
           }}
         >
           <Typography variant="lg">Subtasks</Typography>
-
-          <AddBtn handleClick={handleFormOpen} />
         </Stack>
-      ) : (
-        <GhostBtn buttonText="Create subtask" handleClick={handleFormOpen} startIcon={<GrayAddMediumIcon />} />
       )}
 
       {openTaskForm && <NewTaskCard handleClose={handleFormCancel} handleSubTaskCreation={handleSubTaskCreation} />}
