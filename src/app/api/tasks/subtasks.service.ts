@@ -40,8 +40,6 @@ export class SubtaskService extends BaseService {
   async softDeleteAllSubtasks(id: string) {
     console.info('SubtasksService#deleteAllSubtasks | Deleting all subtasks for parent with id', id)
 
-    // For some godforsaken reason, this query without string concat doesn't work,
-    // even though it renders the exact same SQL
     const taskLabels = (
       await this.db.$queryRawUnsafe<Array<{ label: string }>>(
         `
@@ -50,9 +48,12 @@ export class SubtaskService extends BaseService {
       WHERE "deletedAt" IS NULL
         AND "workspaceId" = $1
         AND path @ '${buildLtreeNodeString(id)}'`,
+        // Without injecting ltree path like this, Prisma throws an error....
+        // even though the rendered SQL works fine when executed in a query console
         this.user.workspaceId,
       )
     ).map((row) => row.label)
+
     await this.db.task.deleteMany({ where: { label: { in: taskLabels } } })
     await this.db.label.deleteMany({ where: { label: { in: taskLabels } } })
   }
