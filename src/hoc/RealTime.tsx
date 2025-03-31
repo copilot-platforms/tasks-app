@@ -58,6 +58,10 @@ export const RealTime = ({
     if (payload.eventType === 'INSERT') {
       // For both user types, filter out just tasks belonging to workspace.
       let canUserAccessTask = payload.new.workspaceId === tokenPayload?.workspaceId
+
+      if (payload.new.parentId && tasks.find((task) => task.id === payload.new.parentId)) {
+        return //short circuit if the created task is a subtask and its parent id is in the tasks array
+      }
       // If user is an internal user with client access limitations, they can only access tasks assigned to clients or company they have access to
       if (user && userRole === AssigneeType.internalUser && InternalUsersSchema.parse(user).isClientAccessLimited) {
         const assigneeSet = new Set(assignee.map((a) => a.id))
@@ -77,7 +81,9 @@ export const RealTime = ({
 
     if (payload.eventType === 'UPDATE') {
       const updatedTask = payload.new
-
+      if (updatedTask.parentId && tasks.find((task) => task.id === updatedTask.parentId)) {
+        return //short circuit if the updated task is a subtask and its parent id is in the tasks array
+      }
       if (user && userRole === AssigneeType.client) {
         // Check if assignee is this client's ID, or it's company's ID
         if (![userId, tokenPayload?.companyId].includes(updatedTask.assigneeId)) {
