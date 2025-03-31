@@ -343,21 +343,22 @@ export class TasksService extends BaseService {
 
   private getClientOrCompanyAssigneeFilter(): Prisma.TaskWhereInput {
     const parsedClientId = z.string().safeParse(this.user.clientId)
+    if (!parsedClientId.data) return {}
+    const clientId = parsedClientId.data
+
     const parsedCompanyId = z.string().safeParse(this.user.companyId)
-    if (parsedClientId.data && !this.user.companyId) {
+    if (!parsedCompanyId.data) {
       return {
-        OR: [{ assigneeId: this.user.clientId as string, assigneeType: 'client' }],
+        OR: [{ assigneeId: clientId, assigneeType: 'client' }],
       }
     }
-    if (parsedClientId.data && parsedCompanyId.data) {
-      return {
-        OR: [
-          { assigneeId: this.user.clientId as string, assigneeType: 'client' },
-          { assigneeId: this.user.companyId, assigneeType: 'company' },
-        ],
-      }
+
+    return {
+      OR: [
+        { assigneeId: clientId as string, assigneeType: 'client' },
+        { assigneeId: parsedCompanyId.data, assigneeType: 'company' },
+      ],
     }
-    throw new APIError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to query client tasks according to id')
   }
 
   private getParentIdFilter(parentId?: string | null) {
