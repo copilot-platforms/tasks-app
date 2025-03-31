@@ -44,8 +44,6 @@ export const Subtasks = ({
   const { tokenPayload } = useSelector(selectAuthDetails)
   const [optimisticUpdates, setOptimisticUpdates] = useState<OptimisticUpdate[]>([]) //might need this server-temp id maps in the future.
 
-  const [currentSubtasksCount, setCurrentSubtasksCount] = useState(activeTask?.subtaskCount)
-
   const handleFormCancel = () => {
     setOpenTaskForm(false)
   }
@@ -61,9 +59,8 @@ export const Subtasks = ({
   useEffect(() => {
     const refetchSubtasks = async () => {
       await mutate(cacheKey)
-      setCurrentSubtasksCount(activeTask?.subtaskCount)
     }
-    if (currentSubtasksCount !== activeTask?.subtaskCount) {
+    if (activeTask?.subtaskCount !== undefined) {
       refetchSubtasks()
     }
   }, [activeTask?.subtaskCount])
