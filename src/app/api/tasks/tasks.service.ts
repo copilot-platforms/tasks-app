@@ -21,11 +21,6 @@ import { AssigneeType, Prisma, PrismaClient, StateType, Task, WorkflowState } fr
 import httpStatus from 'http-status'
 import { z } from 'zod'
 
-type FilterByAssigneeId = {
-  assigneeId: string
-  assigneeType: AssigneeType
-}
-
 export class TasksService extends BaseService {
   /**
    * Builds filter for "get" service methods.
@@ -33,30 +28,17 @@ export class TasksService extends BaseService {
    * If user is a client, return filter for just the tasks assigned to this clientId.
    * If user is a client and has a companyId, return filter for just the tasks assigned to this clientId `OR` to this companyId
    */
-  private buildReadFilters(id?: string) {
+  private buildTaskPermissions(id?: string) {
     const user = this.user
 
     // Default filters
     let filters: Prisma.TaskWhereInput = {
       id,
       workspaceId: user.workspaceId,
-      OR: undefined as FilterByAssigneeId[] | undefined,
     }
 
     if (user.clientId) {
-      filters = {
-        ...filters,
-        OR: [{ assigneeId: user.clientId as string, assigneeType: 'client' }],
-      }
-    }
-    if (user.clientId && user.companyId) {
-      filters = {
-        ...filters,
-        OR: [
-          { assigneeId: user.clientId as string, assigneeType: 'client' },
-          { assigneeId: user.companyId, assigneeType: 'company' },
-        ],
-      }
+      filters = { ...filters, ...this.getClientOrCompanyAssigneeFilter() }
     }
 
     return filters
@@ -74,7 +56,7 @@ export class TasksService extends BaseService {
 
     // Build query filters based on role of user. IU can access all tasks related to a workspace
     // while clients can only view the tasks assigned to them or their company
-    const filters: Prisma.TaskWhereInput = this.buildReadFilters()
+    const filters: Prisma.TaskWhereInput = this.buildTaskPermissions()
 
     let isArchived: boolean | undefined = false
     // Archived tasks are only accessible to IU
@@ -93,11 +75,43 @@ export class TasksService extends BaseService {
     }
 
     // If `parentId` is present, filter by parentId, ELSE return top-level parent comments
-    filters.parentId = z.string().nullish().parse(queryFilters?.parentId) || null
+    filters.parentId = this.getParentIdFilter(queryFilters?.parentId)
+
+    // NOTE: Terminology:
+    // Disjoint task -> A task where the parent task is not assigned to / inaccessible to the current user,
+    // but the subtask is accessible
+
+    // For disjoint tasks, show this subtask as a root-level task
+    // This n-node matcher matches any task tree chain where previous task's assigneeId is not self's
+    // E.g. A -> B -> C, where A is assigned to user 1, B is assigned to user 2, C is assigned to user 2
+    // For user 2, task B should show up as a parent task in the main task board
+    const disjointTasksFilter: Prisma.TaskWhereInput = (() => {
+      if (this.user.role === UserRole.IU || filters.parentId) {
+        // NOTE: We can implement client access scopes here later
+        return {}
+      }
+      return {
+        OR: [
+          // Parent is not assigned to client
+          {
+            ...this.getClientOrCompanyAssigneeFilter(), // Prevent overwriting of OR statement
+            parent: {
+              AND: [{ assigneeId: { not: this.user.clientId } }, { assigneeId: { not: this.user.companyId } }],
+            },
+          },
+          // Task is a parent / standalone task
+          {
+            ...this.getClientOrCompanyAssigneeFilter(),
+            parentId: null,
+          },
+        ],
+      }
+    })()
 
     let tasks = await this.db.task.findMany({
       where: {
         ...filters,
+        ...disjointTasksFilter,
         isArchived,
       },
       orderBy: [{ dueDate: { sort: 'asc', nulls: 'last' } }, { createdAt: 'desc' }],
@@ -207,7 +221,7 @@ export class TasksService extends BaseService {
 
     // Build query filters based on role of user. IU can access all tasks related to a workspace
     // while clients can only view the tasks assigned to them or their company
-    const filters = this.buildReadFilters(id)
+    const filters = this.buildTaskPermissions(id)
 
     const task = await this.db.task.findFirst({
       where: filters,
@@ -248,7 +262,7 @@ export class TasksService extends BaseService {
     policyGate.authorize(UserAction.Update, Resource.Tasks)
 
     // Query previous task
-    const filters = this.buildReadFilters(id)
+    const filters = this.buildTaskPermissions(id)
     const prevTask = await this.db.task.findFirst({
       where: filters,
       relationLoadStrategy: 'join',
@@ -337,6 +351,40 @@ export class TasksService extends BaseService {
             AND "workspaceId" = ${this.user.workspaceId}
         `
     )?.[0]?.path
+  }
+
+  private getClientOrCompanyAssigneeFilter(): Prisma.TaskWhereInput {
+    const parsedClientId = z.string().safeParse(this.user.clientId)
+    if (!parsedClientId.data) return {}
+
+    const clientId = parsedClientId.data
+    const parsedCompanyId = z.string().safeParse(this.user.companyId)
+
+    if (!parsedCompanyId.data) {
+      return {
+        OR: [{ assigneeId: clientId, assigneeType: 'client' }],
+      }
+    }
+
+    return {
+      OR: [
+        { assigneeId: clientId as string, assigneeType: 'client' },
+        { assigneeId: parsedCompanyId.data, assigneeType: 'company' },
+      ],
+    }
+  }
+
+  private getParentIdFilter(parentId?: string | null) {
+    // If `parentId` is present, filter by parentId
+    if (parentId) {
+      return z.string().uuid().parse(parentId)
+    }
+    // If user is IU, no need to flatten subtasks
+    if (this.user.role === UserRole.IU) {
+      return null
+    }
+    // If user is client, flatten subtasks by not filtering by parentId right now
+    return undefined
   }
 
   private async addPathToTask(task: Task) {
@@ -473,7 +521,7 @@ export class TasksService extends BaseService {
     }
 
     // Query previous task
-    const filters = this.buildReadFilters(id)
+    const filters = this.buildTaskPermissions(id)
     const prevTask = await this.db.task.findFirst({
       where: filters,
       relationLoadStrategy: 'join',
