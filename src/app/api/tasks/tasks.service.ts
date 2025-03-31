@@ -306,17 +306,18 @@ export class TasksService extends BaseService {
 
     //delete the associated label
     const labelMappingService = new LabelMappingService(this.user)
-    await labelMappingService.deleteLabel(task?.label)
-
     await this.db.$transaction(async (tx) => {
+      labelMappingService.setTransaction(tx as PrismaClient)
+      await labelMappingService.deleteLabel(task?.label)
+
       await tx.task.delete({ where: { id, workspaceId: this.user.workspaceId } })
 
+      const subtaskService = new SubtaskService(this.user)
+      subtaskService.setTransaction(tx as PrismaClient)
       if (task.parentId) {
-        const subtaskService = new SubtaskService(this.user)
-        subtaskService.setTransaction(tx as PrismaClient)
         await subtaskService.decreaseSubtaskCount(task.parentId)
-        subtaskService.unsetTransaction()
       }
+      await subtaskService.softDeleteAllSubtasks(task.id)
     })
 
     await deleteTaskNotifications.trigger({ user: this.user, task })
@@ -327,21 +328,25 @@ export class TasksService extends BaseService {
     // await notificationService.deleteInternalUserNotificationForTask(id)
   }
 
-  private async addPathToTask(task: Task) {
-    let path: string = task.id
-
-    if (task.parentId) {
-      const parentTask = (
-        await this.db.$queryRaw<{ path: string }[] | null>`
+  async getPathOfTask(id: string) {
+    return (
+      await this.db.$queryRaw<{ path: string }[] | null>`
           SELECT "path"
           FROM "Tasks"
-          WHERE id::text = ${task.parentId}
+          WHERE id::text = ${id}
             AND "workspaceId" = ${this.user.workspaceId}
         `
-      )?.[0]
-      if (!parentTask) throw new APIError(httpStatus.NOT_FOUND, 'The requested parent task was not found')
+    )?.[0]?.path
+  }
 
-      path = buildLtree(parentTask.path, task.id)
+  private async addPathToTask(task: Task) {
+    let path: string = buildLtreeNodeString(task.id)
+    if (task.parentId) {
+      const parentPath = await this.getPathOfTask(task.parentId)
+      if (!parentPath) {
+        throw new APIError(httpStatus.NOT_FOUND, 'The requested parent task was not found')
+      }
+      path = buildLtree(parentPath, task.id)
     }
 
     await this.db.$executeRaw`
