@@ -77,13 +77,18 @@ export class TasksService extends BaseService {
     // If `parentId` is present, filter by parentId, ELSE return top-level parent comments
     filters.parentId = this.getParentIdFilter(queryFilters?.parentId)
 
-    // Flatten and show as parent for tasks where parent doesn't belong to client, but subtask does
-    // This filter matches any task tree chain where previous task's assigneeId is not self's
+    // NOTE: Terminology:
+    // Disjoint task -> A task where the parent task is not assigned to / inaccessible to the current user,
+    // but the subtask is accessible
+
+    // For disjoint tasks, show this subtask as a root-level task
+    // This n-node matcher matches any task tree chain where previous task's assigneeId is not self's
     // E.g. A -> B -> C, where A is assigned to user 1, B is assigned to user 2, C is assigned to user 2
     // For user 2, task B should show up as a parent task in the main task board
-    const flattenedTasksFilter: Prisma.TaskWhereInput = (() => {
+    const disjointTasksFilter: Prisma.TaskWhereInput = (() => {
       if (this.user.role === UserRole.IU || filters.parentId) {
-        return {} // because { ...({}) } === {}
+        // NOTE: We can implement client access scopes here later
+        return {}
       }
       return {
         OR: [
@@ -106,7 +111,7 @@ export class TasksService extends BaseService {
     let tasks = await this.db.task.findMany({
       where: {
         ...filters,
-        ...flattenedTasksFilter,
+        ...disjointTasksFilter,
         isArchived,
       },
       orderBy: [{ dueDate: { sort: 'asc', nulls: 'last' } }, { createdAt: 'desc' }],
