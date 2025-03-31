@@ -1,3 +1,4 @@
+import { buildLtreeNodeString } from '@/utils/ltree'
 import APIError from '@api/core/exceptions/api'
 import { BaseService } from '@api/core/services/base.service'
 import httpStatus from 'http-status'
@@ -30,5 +31,30 @@ export class SubtaskService extends BaseService {
       where: { id, workspaceId: this.user.workspaceId },
       data: { subtaskCount: { decrement } },
     })
+  }
+
+  /**
+   * Soft-deletes all tasks where children have path derived from parent task's
+   * @param id Parent Task id
+   */
+  async softDeleteAllSubtasks(id: string) {
+    console.info('SubtasksService#deleteAllSubtasks | Deleting all subtasks for parent with id', id)
+
+    const taskLabels = (
+      await this.db.$queryRawUnsafe<Array<{ label: string }>>(
+        `
+      SELECT "label"
+      FROM "Tasks"
+      WHERE "deletedAt" IS NULL
+        AND "workspaceId" = $1
+        AND path @ '${buildLtreeNodeString(id)}'`,
+        // Without injecting ltree path like this, Prisma throws an error....
+        // even though the rendered SQL works fine when executed in a query console
+        this.user.workspaceId,
+      )
+    ).map((row) => row.label)
+
+    await this.db.task.deleteMany({ where: { label: { in: taskLabels } } })
+    await this.db.label.deleteMany({ where: { label: { in: taskLabels } } })
   }
 }
