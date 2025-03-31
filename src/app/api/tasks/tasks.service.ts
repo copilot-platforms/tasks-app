@@ -363,12 +363,15 @@ export class TasksService extends BaseService {
   }
 
   private getParentIdFilter(parentId?: string | null) {
+    // If `parentId` is present, filter by parentId
     if (parentId) {
       return z.string().uuid().parse(parentId)
     }
+    // If user is IU, no need to flatten subtasks
     if (this.user.role === UserRole.IU) {
       return null
     }
+    // If user is client, flatten subtasks by not filtering by parentId right now
     return undefined
   }
 
