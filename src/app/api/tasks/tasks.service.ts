@@ -559,8 +559,8 @@ export class TasksService extends BaseService {
     return taskIds
   }
 
-  private async filterTasksByClientAccess(
-    tasks: Pick<Task, 'id' | 'assigneeId' | 'assigneeType'>[],
+  private async filterTasksByClientAccess<T extends Task[] | Pick<Task, 'id' | 'assigneeId' | 'assigneeType'>[]>(
+    tasks: T,
     currentInternalUser: InternalUsers,
   ) {
     const copilot = new CopilotAPI(this.user.token)
@@ -579,6 +579,6 @@ export class TasksService extends BaseService {
       }
       const taskClientsCompanyId = z.string().parse(taskClient?.companyId)
       return currentInternalUser.companyAccessList?.includes(taskClientsCompanyId)
-    })
+    }) as T
   }
 }
