@@ -130,8 +130,12 @@ export const Subtasks = ({
 
               <AddBtn handleClick={handleFormOpen} />
             </Stack>
-          ) : (
+          ) : subTasks ? (
+            // If subtasks has been loaded but task length is empty, show button
             <GhostBtn buttonText="Create subtask" handleClick={handleFormOpen} startIcon={<GrayAddMediumIcon />} />
+          ) : (
+            // If subtasks list hasn't been rendered
+            <></>
           )}
         </>
       )}
