@@ -1,13 +1,16 @@
 import { ArchiveBoxIcon, SubtaskIcon } from '@/icons'
 import { TaskResponse } from '@/types/dto/tasks.dto'
-import { Stack, Typography } from '@mui/material'
+import { Box, Stack, Typography } from '@mui/material'
 
 export const TaskMetaItems = ({ task, lineHeight }: { task: TaskResponse; lineHeight: string }) => {
   return (
     <>
       {task.isArchived && (
         <Stack direction="row" alignItems={'center'} columnGap={'4px'}>
-          <ArchiveBoxIcon />
+          <Box sx={{ marginTop: '-2px' }}>
+            <ArchiveBoxIcon />
+          </Box>
+
           <Typography
             variant="bodyXs"
             sx={{ color: (theme) => theme.color.text.textSecondary, lineHeight: lineHeight ?? '21px' }}
