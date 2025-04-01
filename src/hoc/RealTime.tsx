@@ -104,7 +104,9 @@ export const RealTime = ({
           const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
           store.dispatch(setTasks(newTaskArr))
           store.dispatch(setAccesibleTaskIds(accesibleTaskIds.filter((id) => id !== updatedTask.id)))
-          redirectToBoard()
+          if (updatedTask.id === activeTask?.id) {
+            redirectToBoard()
+          }
           return
         }
       }
@@ -119,7 +121,9 @@ export const RealTime = ({
           const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
           store.dispatch(setTasks(newTaskArr))
           store.dispatch(setAccesibleTaskIds(accesibleTaskIds.filter((id) => id !== updatedTask.id)))
-          redirectToBoard()
+          if (updatedTask.id === activeTask?.id) {
+            redirectToBoard()
+          }
           return
         }
       }
@@ -145,7 +149,9 @@ export const RealTime = ({
           store.dispatch(setTasks(newTaskArr))
           store.dispatch(setAccesibleTaskIds(accesibleTaskIds.filter((id) => id !== updatedTask.id)))
           //if a user is in the details page when the task is deleted then we want the user to get redirected to '/' route
-          redirectToBoard()
+          if (updatedTask.id === activeTask?.id) {
+            redirectToBoard()
+          }
           //if the task is updated
         } else {
           // Address Postgres' TOAST limitation that causes fields like TEXT, BYTEA to be copied as a pointer, instead of copying template field in realtime replica
