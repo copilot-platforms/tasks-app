@@ -130,27 +130,8 @@ export class TasksService extends BaseService {
     const currentInternalUser = await copilot.getInternalUser(this.user.internalUserId)
     if (!currentInternalUser.isClientAccessLimited) return tasks
 
-    const hasClientTasks = tasks.some((task) => task.assigneeType === AssigneeType.client)
-    const clients = hasClientTasks ? await copilot.getClients({ limit: MAX_FETCH_ASSIGNEE_COUNT }) : { data: [] }
-
-    return tasks.filter((task) => {
-      // Allow IU to access unassigned tasks or tasks assigned to another IU within workspace
-      if (!task.assigneeId || task.assigneeType === AssigneeType.internalUser) return true
-
-      // TODO: Refactor this hacky abomination of code as soon as copilot API natively supports access scopes
-      // Filter out only tasks that belong to a client that has companyId in IU's companyAccessList
-      if (task.assigneeType === AssigneeType.company) {
-        return currentInternalUser.companyAccessList?.includes(task.assigneeId)
-      }
-      const taskClient = clients.data?.find((client) => client.id === task.assigneeId)
-      // Case where client is deleted or a client does not have a companyID(older clients)
-      if (!taskClient || !taskClient.companyId) {
-        return false
-      }
-      const taskClientsCompanyId = z.string().parse(taskClient?.companyId)
-
-      return currentInternalUser.companyAccessList?.includes(taskClientsCompanyId)
-    })
+    const filteredTasks = await this.filterTasksByClientAccess(tasks, currentInternalUser)
+    return filteredTasks
   }
 
   async createTask(data: CreateTaskRequest) {
@@ -555,5 +536,49 @@ export class TasksService extends BaseService {
 
     await sendClientUpdateTaskNotifications.trigger({ user: this.user, prevTask, updatedTask, updatedWorkflowState })
     return updatedTask
+  }
+
+  async getAccesibleTasksIds() {
+    const policyGate = new PoliciesService(this.user)
+    policyGate.authorize(UserAction.Read, Resource.Tasks)
+    const filters: Prisma.TaskWhereInput = this.buildTaskPermissions()
+    const tasks = await this.db.task.findMany({
+      where: filters,
+      select: { id: true, assigneeId: true, assigneeType: true },
+    })
+    if (this.user.clientId) {
+      return tasks.map((task) => task.id)
+    }
+    const copilot = new CopilotAPI(this.user.token)
+    const currentInternalUser = await copilot.getInternalUser(z.string().uuid().parse(this.user.internalUserId))
+    if (!currentInternalUser.isClientAccessLimited) {
+      return tasks.map((task) => task.id)
+    }
+    const filteredTasks = await this.filterTasksByClientAccess(tasks, currentInternalUser)
+    const taskIds = filteredTasks.map((task) => task.id)
+    return taskIds
+  }
+
+  private async filterTasksByClientAccess(
+    tasks: Pick<Task, 'id' | 'assigneeId' | 'assigneeType'>[],
+    currentInternalUser: InternalUsers,
+  ) {
+    const copilot = new CopilotAPI(this.user.token)
+    const hasClientTasks = tasks.some((task) => task.assigneeType === AssigneeType.client)
+    const clients = hasClientTasks ? await copilot.getClients({ limit: MAX_FETCH_ASSIGNEE_COUNT }) : { data: [] }
+
+    return tasks.filter((task) => {
+      if (!task.assigneeId || task.assigneeType === AssigneeType.internalUser) return true
+
+      if (task.assigneeType === AssigneeType.company) {
+        return currentInternalUser.companyAccessList?.includes(task.assigneeId)
+      }
+      const taskClient = clients.data?.find((client) => client.id === task.assigneeId)
+      if (!taskClient || !taskClient.companyId) {
+        return false
+      }
+      const taskClientsCompanyId = z.string().parse(taskClient?.companyId)
+      return currentInternalUser.companyAccessList?.includes(taskClientsCompanyId)
+    })
   }
 }
