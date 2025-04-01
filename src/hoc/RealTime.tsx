@@ -60,9 +60,12 @@ export const RealTime = ({
       // If user is an internal user with client access limitations, they can only access tasks assigned to clients or company they have access to
       if (user && userRole === AssigneeType.internalUser && InternalUsersSchema.parse(user).isClientAccessLimited) {
         const assigneeSet = new Set(assignee.map((a) => a.id))
+        canUserAccessTask = canUserAccessTask && (payload.new.assigneeId ? assigneeSet.has(payload.new.assigneeId) : false) //filtering out unassigned tasks with a fallback false value.
         const isSubtask = payload.new.parentId && accesibleTaskIds.find((id) => id === payload.new.parentId) // dont append task into task list if its a subtask
-        canUserAccessTask =
-          canUserAccessTask && !isSubtask && (payload.new.assigneeId ? assigneeSet.has(payload.new.assigneeId) : false) //filtering out unassigned tasks with a fallback false value.
+        if (canUserAccessTask) {
+          store.dispatch(setAccesibleTaskIds([...accesibleTaskIds, payload.new.id]))
+        }
+        canUserAccessTask = canUserAccessTask && !isSubtask
       }
       if (user && userRole === AssigneeType.internalUser && !InternalUsersSchema.parse(user).isClientAccessLimited) {
         const isSubtask = !!payload.new.parentId
@@ -70,9 +73,13 @@ export const RealTime = ({
       }
       // Additionally, if user is a client, it can only access tasks assigned to that client or the client's company
       if (userRole === AssigneeType.client) {
+        canUserAccessTask = canUserAccessTask && [userId, tokenPayload?.companyId].includes(payload.new.assigneeId)
         const isSubtask = payload.new.parentId && accesibleTaskIds.find((id) => id === payload.new.parentId)
-        canUserAccessTask =
-          canUserAccessTask && !isSubtask && [userId, tokenPayload?.companyId].includes(payload.new.assigneeId)
+        if (canUserAccessTask) {
+          store.dispatch(setAccesibleTaskIds([...accesibleTaskIds, payload.new.id]))
+        }
+
+        canUserAccessTask = canUserAccessTask && !isSubtask
       }
 
       //check if the new task in this event belongs to the same workspaceId
@@ -80,7 +87,6 @@ export const RealTime = ({
         store.dispatch(setTasks([...tasks, { ...payload.new, createdAt: new Date(payload.new.createdAt + 'Z') }]))
         // NOTE: we append a Z here to make JS understand this raw timestamp (in format YYYY-MM-DD:HH:MM:SS.MS) is in UTC timezone
         // New payloads listened on the 'INSERT' action in realtime doesn't contain this tz info so the order can mess up
-        store.dispatch(setAccesibleTaskIds([...accesibleTaskIds, payload.new.id]))
       }
     }
 
