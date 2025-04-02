@@ -1,7 +1,7 @@
 'use client'
 
 import { supabase } from '@/lib/supabase'
-import { selectTaskBoard, setAccesibleTaskIds, setActiveTask, setTasks } from '@/redux/features/taskBoardSlice'
+import { selectTaskBoard, setAccessibleTasks, setActiveTask, setTasks } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
 import { InternalUsersSchema, Token } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
@@ -25,7 +25,7 @@ export const RealTime = ({
   task?: TaskResponse
   tokenPayload: Token
 }) => {
-  const { tasks, token, activeTask, assignee, accesibleTaskIds } = useSelector(selectTaskBoard)
+  const { tasks, token, activeTask, assignee, accessibleTasks } = useSelector(selectTaskBoard)
   const { showUnarchived, showArchived } = useSelector(selectTaskBoard)
   const pathname = usePathname()
   const router = useRouter()
@@ -56,14 +56,22 @@ export const RealTime = ({
     if (payload.eventType === 'INSERT') {
       // For both user types, filter out just tasks belonging to workspace.
       let canUserAccessTask = payload.new.workspaceId === tokenPayload?.workspaceId
-
+      console.log(payload.new.id)
       // If user is an internal user with client access limitations, they can only access tasks assigned to clients or company they have access to
       if (user && userRole === AssigneeType.internalUser && InternalUsersSchema.parse(user).isClientAccessLimited) {
         const assigneeSet = new Set(assignee.map((a) => a.id))
         canUserAccessTask = canUserAccessTask && (payload.new.assigneeId ? assigneeSet.has(payload.new.assigneeId) : false) //filtering out unassigned tasks with a fallback false value.
-        const isSubtask = payload.new.parentId && accesibleTaskIds.find((id) => id === payload.new.parentId) // dont append task into task list if its a subtask
+        const isSubtask = payload.new.parentId && accessibleTasks.find((task) => task.id === payload.new.parentId) // dont append task into task list if its a subtask
         if (canUserAccessTask) {
-          store.dispatch(setAccesibleTaskIds([...accesibleTaskIds, payload.new.id]))
+          store.dispatch(
+            setAccessibleTasks([
+              ...accessibleTasks,
+              {
+                id: payload.new.id,
+                parentId: payload.new.parentId || null,
+              },
+            ]),
+          )
         }
         canUserAccessTask = canUserAccessTask && !isSubtask
       }
@@ -74,9 +82,18 @@ export const RealTime = ({
       // Additionally, if user is a client, it can only access tasks assigned to that client or the client's company
       if (userRole === AssigneeType.client) {
         canUserAccessTask = canUserAccessTask && [userId, tokenPayload?.companyId].includes(payload.new.assigneeId)
-        const isSubtask = payload.new.parentId && accesibleTaskIds.find((id) => id === payload.new.parentId)
+        const isSubtask = payload.new.parentId && accessibleTasks.find((task) => task.id === payload.new.parentId)
         if (canUserAccessTask) {
-          store.dispatch(setAccesibleTaskIds([...accesibleTaskIds, payload.new.id]))
+          store.dispatch(
+            setTasks(
+              tasks.map((task) =>
+                task.id === payload.new.parentId ? { ...task, subtaskCount: task.subtaskCount + 1 } : task,
+              ),
+            ),
+          )
+          store.dispatch(
+            setAccessibleTasks([...accessibleTasks, { id: payload.new.id, parentId: payload.new.parentId || null }]),
+          )
         }
 
         canUserAccessTask = canUserAccessTask && !isSubtask
@@ -96,7 +113,7 @@ export const RealTime = ({
       //   return //short circuit if the updated task is a subtask and its parent id is in the tasks array
       // }
       if (user && userRole === AssigneeType.client) {
-        if (updatedTask.parentId && accesibleTaskIds.includes(updatedTask.parentId)) {
+        if (updatedTask.parentId && accessibleTasks.some((task) => task.id === updatedTask.parentId)) {
           return
         }
         // Check if assignee is this client's ID, or it's company's ID
@@ -109,7 +126,7 @@ export const RealTime = ({
           }
           const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
           store.dispatch(setTasks(newTaskArr))
-          store.dispatch(setAccesibleTaskIds(accesibleTaskIds.filter((id) => id !== updatedTask.id)))
+          store.dispatch(setAccessibleTasks(accessibleTasks.filter((task) => task.id !== updatedTask.id)))
           if (updatedTask.id === activeTask?.id) {
             redirectToBoard()
           }
@@ -119,14 +136,14 @@ export const RealTime = ({
 
       //if the updated task is out of scope for limited access iu
       if (user && userRole === AssigneeType.internalUser && InternalUsersSchema.parse(user).isClientAccessLimited) {
-        if (updatedTask.parentId && accesibleTaskIds.includes(updatedTask.parentId)) {
+        if (updatedTask.parentId && accessibleTasks.some((task) => task.id === updatedTask.parentId)) {
           return
         }
         const assigneeSet = new Set(assignee.map((a) => a.id))
         if (updatedTask.assigneeId && !assigneeSet.has(updatedTask.assigneeId)) {
           const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
           store.dispatch(setTasks(newTaskArr))
-          store.dispatch(setAccesibleTaskIds(accesibleTaskIds.filter((id) => id !== updatedTask.id)))
+          store.dispatch(setAccessibleTasks(accessibleTasks.filter((task) => task.id !== updatedTask.id)))
           if (updatedTask.id === activeTask?.id) {
             redirectToBoard()
           }
@@ -153,7 +170,7 @@ export const RealTime = ({
         if (updatedTask.deletedAt) {
           const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
           store.dispatch(setTasks(newTaskArr))
-          store.dispatch(setAccesibleTaskIds(accesibleTaskIds.filter((id) => id !== updatedTask.id)))
+          store.dispatch(setAccessibleTasks(accessibleTasks.filter((task) => task.id !== updatedTask.id)))
           //if a user is in the details page when the task is deleted then we want the user to get redirected to '/' route
           if (updatedTask.id === activeTask?.id) {
             redirectToBoard()
@@ -184,7 +201,18 @@ export const RealTime = ({
             store.dispatch(setTasks(tasks.filter((el) => el.id !== updatedTask.id)))
             return
           }
-          const newTaskArr = [...tasks.filter((task) => task.id !== updatedTask.id), updatedTask]
+          let newTaskArr
+          if (user && userRole === AssigneeType.internalUser && !InternalUsersSchema.parse(user).isClientAccessLimited) {
+            newTaskArr = [...tasks.filter((task) => task.id !== updatedTask.id), updatedTask]
+          } else {
+            newTaskArr = [
+              ...tasks.filter((task) => task.id !== updatedTask.id),
+              {
+                ...updatedTask,
+                subtaskCount: oldTask ? oldTask.subtaskCount : updatedTask.subtaskCount,
+              },
+            ]
+          }
           if (!shallowEqual(tasks, newTaskArr)) {
             store.dispatch(setTasks(newTaskArr))
           }

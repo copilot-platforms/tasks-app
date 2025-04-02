@@ -6,7 +6,7 @@ import { apiUrl } from '@/config'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import { DndWrapper } from '@/hoc/DndWrapper'
 import { RealTime } from '@/hoc/RealTime'
-import { Token, TokenSchema, WorkspaceResponse } from '@/types/common'
+import { InternalUsers, Token, TokenSchema, WorkspaceResponse } from '@/types/common'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
@@ -21,6 +21,7 @@ import { AssigneeFetcher } from './_fetchers/AssigneeFetcher'
 import { TemplatesFetcher } from './_fetchers/TemplatesFetcher'
 import { ModalNewTaskForm } from './ui/Modal_NewTaskForm'
 import { TaskBoard } from './ui/TaskBoard'
+import { Task } from '@prisma/client'
 
 export async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -33,6 +34,8 @@ export async function getAllWorkflowStates(token: string): Promise<WorkflowState
 
 export async function getAllTasks(
   token: string,
+  accessibleTasks: Pick<Task, 'id' | 'parentId'>[],
+  currentInternalUser?: InternalUsers,
   filters?: { showArchived?: boolean; showUnarchived?: boolean },
 ): Promise<TaskResponse[]> {
   const queryParams = new URLSearchParams({ token })
@@ -47,8 +50,17 @@ export async function getAllTasks(
   })
 
   const data = await res.json()
+  if (currentInternalUser && !currentInternalUser?.isClientAccessLimited) {
+    return data.tasks
+  }
+  const allTasks = data.tasks.map((task: TaskResponse) => {
+    return {
+      ...task,
+      subtaskCount: accessibleTasks.filter((subTask) => subTask.parentId === task.id).length,
+    }
+  })
 
-  return data.tasks
+  return allTasks
 }
 
 export async function getTokenPayload(token: string): Promise<Token> {
@@ -93,11 +105,19 @@ export default async function Main({ searchParams }: { searchParams: { token: st
   redirectIfTaskCta(searchParams, userRole)
 
   const viewSettings = await getViewSettings(token)
-  const [workflowStates, tasks, workspace, accesibleTaskIds] = await Promise.all([
+  const accessibleTasks = await getAccessibleTaskIds(token)
+  const copilot = new CopilotAPI(token)
+  const currentInternalUser = tokenPayload.internalUserId
+    ? await copilot.getInternalUser(tokenPayload.internalUserId)
+    : undefined
+
+  const [workflowStates, tasks, workspace] = await Promise.all([
     getAllWorkflowStates(token),
-    getAllTasks(token, { showArchived: viewSettings.showArchived, showUnarchived: viewSettings.showUnarchived }),
+    getAllTasks(token, accessibleTasks, currentInternalUser, {
+      showArchived: viewSettings.showArchived,
+      showUnarchived: viewSettings.showUnarchived,
+    }),
     getWorkspace(token),
-    getAccessibleTaskIds(token),
   ])
 
   console.info(`app/page.tsx | Serving user ${token} with payload`, tokenPayload)
@@ -109,7 +129,7 @@ export default async function Main({ searchParams }: { searchParams: { token: st
       viewSettings={viewSettings}
       tokenPayload={tokenPayload}
       clearExpandedComments={true}
-      accesibleTaskIds={accesibleTaskIds}
+      accessibleTasks={accessibleTasks}
     >
       {/* Async fetchers */}
       <Suspense fallback={null}>

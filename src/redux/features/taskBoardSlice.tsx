@@ -3,7 +3,7 @@ import { RootState } from '../store'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { FilterByOptions, FilterOptions, IAssigneeCombined, IFilterOptions } from '@/types/interfaces'
-import { ViewMode } from '@prisma/client'
+import { Task, ViewMode } from '@prisma/client'
 import { CreateViewSettingsDTO, FilterOptionsType } from '@/types/dto/viewSettings.dto'
 import { PreviewMode } from '@/types/common'
 
@@ -22,7 +22,7 @@ interface IInitialState {
   isTasksLoading: boolean
   activeTask: TaskResponse | undefined
   previewMode: PreviewMode
-  accesibleTaskIds: string[]
+  accessibleTasks: Pick<Task, 'id' | 'parentId'>[]
 }
 
 const initialState: IInitialState = {
@@ -45,7 +45,7 @@ const initialState: IInitialState = {
   isTasksLoading: true,
   activeTask: undefined,
   previewMode: null,
-  accesibleTaskIds: [],
+  accessibleTasks: [],
 }
 
 const taskBoardSlice = createSlice({
@@ -134,8 +134,8 @@ const taskBoardSlice = createSlice({
     setPreviewMode: (state, action: { payload: PreviewMode }) => {
       state.previewMode = action.payload
     },
-    setAccesibleTaskIds: (state, action: { payload: string[] }) => {
-      state.accesibleTaskIds = action.payload
+    setAccessibleTasks: (state, action: { payload: Pick<Task, 'id' | 'parentId'>[] }) => {
+      state.accessibleTasks = action.payload
     },
   },
 })
@@ -157,7 +157,7 @@ export const {
   setIsTasksLoading,
   setActiveTask,
   setPreviewMode,
-  setAccesibleTaskIds,
+  setAccessibleTasks,
 } = taskBoardSlice.actions
 
 export default taskBoardSlice.reducer

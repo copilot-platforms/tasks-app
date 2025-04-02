@@ -3,7 +3,7 @@
 import { setTokenPayload } from '@/redux/features/authDetailsSlice'
 import {
   selectTaskBoard,
-  setAccesibleTaskIds,
+  setAccessibleTasks,
   setActiveTask,
   setAssigneeList,
   setFilteredAssgineeList,
@@ -23,6 +23,7 @@ import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { IAssigneeCombined, IAssigneeSuggestions, ITemplate } from '@/types/interfaces'
 import { filterOptionsMap } from '@/types/objectMaps'
 import { getPreviewMode, handlePreviewMode } from '@/utils/previewMode'
+import { Task } from '@prisma/client'
 import { ReactNode, useEffect } from 'react'
 import { useSelector } from 'react-redux'
 
@@ -43,7 +44,7 @@ export const ClientSideStateUpdate = ({
   assigneeSuggestions,
   task,
   clearExpandedComments,
-  accesibleTaskIds,
+  accessibleTasks,
 }: {
   children: ReactNode
   workflowStates?: WorkflowStateResponse[]
@@ -56,7 +57,7 @@ export const ClientSideStateUpdate = ({
   assigneeSuggestions?: IAssigneeSuggestions[]
   task?: TaskResponse
   clearExpandedComments?: boolean
-  accesibleTaskIds?: string[]
+  accessibleTasks?: Pick<Task, 'id' | 'parentId'>[]
 }) => {
   const { tasks: tasksInStore, viewSettingsTemp } = useSelector(selectTaskBoard)
   useEffect(() => {
@@ -112,8 +113,8 @@ export const ClientSideStateUpdate = ({
       store.dispatch(setActiveTask(undefined)) //when navigated elsewhere from details page, removing the previously set ActiveTask
     } //for updating a task in store with respect to task response from db in task details page
 
-    if (accesibleTaskIds) {
-      store.dispatch(setAccesibleTaskIds(accesibleTaskIds))
+    if (accessibleTasks) {
+      store.dispatch(setAccessibleTasks(accessibleTasks))
     }
   }, [
     workflowStates,
@@ -125,7 +126,7 @@ export const ClientSideStateUpdate = ({
     templates,
     assigneeSuggestions,
     task,
-    accesibleTaskIds,
+    accessibleTasks,
   ])
 
   return children
