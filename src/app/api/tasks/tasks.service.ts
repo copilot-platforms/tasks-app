@@ -279,8 +279,6 @@ export class TasksService extends BaseService {
       })
 
       // Archive / unarchive all subtasks if parent task is archived / unarchived
-      console.log('\n\n\n\n\nupdates', updatedTask)
-      console.log('\n\n\n\n\ndata', data)
       if (data.isArchived !== undefined) {
         const subtaskService = new SubtaskService(this.user)
         subtaskService.setTransaction(tx as PrismaClient)
