@@ -43,11 +43,11 @@ export class SubtaskService extends BaseService {
     const taskLabels = (
       await this.db.$queryRawUnsafe<Array<{ label: string }>>(
         `
-      SELECT "label"
-      FROM "Tasks"
-      WHERE "deletedAt" IS NULL
-        AND "workspaceId" = $1
-        AND path @ '${buildLtreeNodeString(id)}'`,
+          SELECT "label"
+          FROM "Tasks"
+          WHERE "deletedAt" IS NULL
+            AND "workspaceId" = $1
+            AND path @ '${buildLtreeNodeString(id)}'`,
         // Without injecting ltree path like this, Prisma throws an error....
         // even though the rendered SQL works fine when executed in a query console
         this.user.workspaceId,
@@ -56,5 +56,23 @@ export class SubtaskService extends BaseService {
 
     await this.db.task.deleteMany({ where: { label: { in: taskLabels } } })
     await this.db.label.deleteMany({ where: { label: { in: taskLabels } } })
+  }
+
+  /**
+   * Marks archived / unarhived for all subtasks that are children of parent task
+   */
+  async toggleArchiveForAllSubtasks(id: string, archive: boolean) {
+    console.info('SubtasksService#deleteAllSubtasks | Deleting all subtasks for parent with id', id)
+    await this.db.$executeRawUnsafe(
+      `
+        UPDATE "Tasks"
+        SET "isArchived" = $1, "lastArchivedDate" = ${archive ? 'now()' : 'NULL'}
+        WHERE "deletedAt" IS NULL
+          AND "workspaceId" = $2
+          AND path @ '${buildLtreeNodeString(id)}'
+      `,
+      archive,
+      this.user.workspaceId,
+    )
   }
 }
