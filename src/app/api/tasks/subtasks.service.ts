@@ -66,7 +66,7 @@ export class SubtaskService extends BaseService {
     await this.db.$executeRawUnsafe(
       `
         UPDATE "Tasks"
-        SET "isArchived" = $1, "lastArchivedDate" = ${archive ? 'now()' : 'NULL'}
+        SET "isArchived" = $1, "lastArchivedDate" = ${archive ? 'NOW()' : 'NULL'}
         WHERE "deletedAt" IS NULL
           AND "workspaceId" = $2
           AND path @ '${buildLtreeNodeString(id)}'
