@@ -251,37 +251,51 @@ export class TasksService extends BaseService {
     })
     if (!prevTask) throw new APIError(httpStatus.NOT_FOUND, 'The requested task was not found')
 
-    let label: string = prevTask.label
-    //generate new label if prevTask has no assignee but now assigned to someone
-    if (!prevTask.assigneeId && data.assigneeId) {
-      const labelMappingService = new LabelMappingService(this.user)
-      //delete the existing label
-      await labelMappingService.deleteLabel(prevTask.label)
-      label = z.string().parse(await labelMappingService.getLabel(data.assigneeId, data.assigneeType))
-    }
+    let updatedTask = await this.db.$transaction(async (tx) => {
+      //generate new label if prevTask has no assignee but now assigned to someone
+      let label: string = prevTask.label
+      if (!prevTask.assigneeId && data.assigneeId) {
+        const labelMappingService = new LabelMappingService(this.user)
+        labelMappingService.setTransaction(tx as PrismaClient)
+        //delete the existing label
+        await labelMappingService.deleteLabel(prevTask.label)
+        label = z.string().parse(await labelMappingService.getLabel(data.assigneeId, data.assigneeType))
+      }
 
-    // Set / reset lastArchivedDate if isArchived has been triggered, else remove it from the update query
-    const lastArchivedDate = data.isArchived === true ? new Date() : data.isArchived === false ? null : undefined
+      // Set / reset lastArchivedDate if isArchived has been triggered, else remove it from the update query
+      const lastArchivedDate = data.isArchived === true ? new Date() : data.isArchived === false ? null : undefined
 
-    // Get the updated task
-    const updatedTask = await this.db.task.update({
-      where: { id },
-      data: {
-        ...data,
-        assigneeId: data.assigneeId === '' ? null : data.assigneeId,
-        label,
-        lastArchivedDate,
-        ...(await getTaskTimestamps('update', this.user, data, prevTask)),
-      },
-      include: { workflowState: true },
+      // Get the updated task
+      const updatedTask = await tx.task.update({
+        where: { id },
+        data: {
+          ...data,
+          assigneeId: data.assigneeId === '' ? null : data.assigneeId,
+          label,
+          lastArchivedDate,
+          ...(await getTaskTimestamps('update', this.user, data, prevTask)),
+        },
+        include: { workflowState: true },
+      })
+
+      // Archive / unarchive all subtasks if parent task is archived / unarchived
+      console.log('\n\n\n\n\nupdates', updatedTask)
+      console.log('\n\n\n\n\ndata', data)
+      if (data.isArchived !== undefined) {
+        const subtaskService = new SubtaskService(this.user)
+        subtaskService.setTransaction(tx as PrismaClient)
+        await subtaskService.toggleArchiveForAllSubtasks(id, data.isArchived)
+      }
+
+      return updatedTask
     })
 
     if (updatedTask) {
       const activityLogger = new TasksActivityLogger(this.user, updatedTask)
       await activityLogger.logTaskUpdated(prevTask)
-    }
 
-    await sendTaskUpdateNotifications.trigger({ prevTask, updatedTask, user: this.user })
+      await sendTaskUpdateNotifications.trigger({ prevTask, updatedTask, user: this.user })
+    }
 
     return updatedTask
   }
