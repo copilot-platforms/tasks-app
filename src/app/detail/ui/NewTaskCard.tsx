@@ -84,7 +84,13 @@ export const NewTaskCard = ({
       errors: {
         [CreateTaskErrors.ASSIGNEE]: false,
       },
+      workflowStateId: todoWorkflowState.id,
+      assigneeId: '',
+      assigneeType: null,
+      dueDate: null,
     }))
+    updateAssigneeValue(null)
+    updateStatusValue(todoWorkflowState)
   }
 
   const handleFieldChange = (field: keyof SubTaskFields, value: string | DateString | IErrors | null) => {
@@ -406,6 +412,7 @@ export const NewTaskCard = ({
             padding={'4px 8px'}
             getDate={(value) => handleFieldChange('dueDate', value)}
             isButton={true}
+            dateValue={subTaskFields.dueDate ?? undefined}
           />
         </Stack>
         <Stack
