@@ -238,6 +238,7 @@ export const NewTaskCard = ({
           <StyledTextField
             type="text"
             multiline
+            autoFocus={true}
             borderLess
             sx={{
               width: '100%',
