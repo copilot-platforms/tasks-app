@@ -25,6 +25,7 @@ import { UserRole } from '@api/core/types/user'
 import { z } from 'zod'
 
 import { Suspense } from 'react'
+import { Task } from '@prisma/client'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -36,13 +37,20 @@ async function getAllWorkflowStates(token: string): Promise<WorkflowStateRespons
   return data.workflowStates
 }
 
-async function getAllTasks(token: string): Promise<TaskResponse[]> {
+async function getAllTasks(token: string, accessibleTasks: Pick<Task, 'id' | 'parentId'>[]): Promise<TaskResponse[]> {
   const res = await fetch(`${apiUrl}/api/tasks?token=${token}`, {
     next: { tags: ['getAllTasks-client'] },
   })
 
   const data = await res.json()
-  return data.tasks
+  const allTasks = data.tasks.map((task: TaskResponse) => {
+    return {
+      ...task,
+      subtaskCount: accessibleTasks.filter((subTask) => subTask.parentId === task.id).length,
+    }
+  })
+
+  return allTasks
 }
 
 async function getTokenPayload(token: string): Promise<Token> {
@@ -60,6 +68,7 @@ async function getAccessibleTaskIds(token: string) {
   const res = await fetch(`${apiUrl}/api/tasks/all?token=${token}`)
 
   const data = await res.json()
+
   return data.taskIds
 }
 
@@ -69,13 +78,13 @@ export default async function ClientPage({ searchParams }: { searchParams: { tok
     return <SilentError message="Please provide a Valid Token" />
   }
   redirectIfTaskCta(searchParams, UserType.CLIENT_USER)
-  const [workflowStates, tasks, viewSettings, tokenPayload, workspace, accesibleTaskIds] = await Promise.all([
+  const accessibleTasks = await getAccessibleTaskIds(token)
+  const [workflowStates, tasks, viewSettings, tokenPayload, workspace] = await Promise.all([
     await getAllWorkflowStates(token),
-    await getAllTasks(token),
+    await getAllTasks(token, accessibleTasks),
     getViewSettings(token),
     getTokenPayload(token),
     getWorkspace(token),
-    getAccessibleTaskIds(token),
   ])
 
   const previewMode = getPreviewMode(tokenPayload)
@@ -92,7 +101,7 @@ export default async function ClientPage({ searchParams }: { searchParams: { tok
         tokenPayload={tokenPayload}
         viewSettings={viewSettings}
         clearExpandedComments={true}
-        accesibleTaskIds={accesibleTaskIds}
+        accessibleTasks={accessibleTasks}
       >
         <Suspense fallback={null}>
           <AssigneeFetcher
