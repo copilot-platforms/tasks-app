@@ -81,7 +81,7 @@ export async function getViewSettings(token: string): Promise<CreateViewSettings
   return await res.json()
 }
 
-async function getAccessibleTaskIds(token: string) {
+export async function getAccessibleTasks(token: string) {
   const res = await fetch(`${apiUrl}/api/tasks/all?token=${token}`)
 
   const data = await res.json()
@@ -105,7 +105,7 @@ export default async function Main({ searchParams }: { searchParams: { token: st
   redirectIfTaskCta(searchParams, userRole)
 
   const viewSettings = await getViewSettings(token)
-  const accessibleTasks = await getAccessibleTaskIds(token)
+  const accessibleTasks = await getAccessibleTasks(token)
   const copilot = new CopilotAPI(token)
   const currentInternalUser = tokenPayload.internalUserId
     ? await copilot.getInternalUser(tokenPayload.internalUserId)

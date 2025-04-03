@@ -1,5 +1,5 @@
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
-import { getAllTasks, getAllWorkflowStates, getViewSettings } from '@/app/page'
+import { getAccessibleTasks, getAllTasks, getAllWorkflowStates, getViewSettings } from '@/app/page'
 import { Token } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 
@@ -22,9 +22,10 @@ export const DetailStateUpdate = async ({ isRedirect, token, tokenPayload, task,
 
   // If flow has been redirected from notifications CTA button directly,
   // we must first get context for tasks, workflowStates and viewSettings
+  const accessibleTasks = await getAccessibleTasks(token)
   const [workflowStates, tasks, viewSettings] = await Promise.all([
     getAllWorkflowStates(token),
-    getAllTasks(token),
+    getAllTasks(token, accessibleTasks),
     getViewSettings(token),
   ])
   return (
