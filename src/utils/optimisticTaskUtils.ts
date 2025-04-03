@@ -31,7 +31,7 @@ export const getTempTask = (
     lastArchivedDate: new Date().toISOString(),
     isArchived: false,
     parentId: parentId,
-    dueDate: payload.dueDate ? new Date(payload.dueDate).toISOString() : undefined,
+    dueDate: payload.dueDate ?? undefined,
     subtaskCount: 0,
   }
 }
