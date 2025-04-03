@@ -340,10 +340,12 @@ export const NewTaskCard = ({
               updateStatusValue(value)
               handleFieldChange('workflowStateId', value.id)
             }}
-            padding={'4px 8px'}
+            padding={'0px 4px'}
+            height={'28px'}
+            gap={'6px'}
           />
           <Selector
-            padding={'4px 8px'}
+            padding={'0px 4px'}
             inputStatusValue={inputStatusValue}
             setInputStatusValue={setInputStatusValue}
             placeholder="Set assignee"
@@ -357,7 +359,6 @@ export const NewTaskCard = ({
               handleFieldChange('assigneeType', getAssigneeTypeCorrected(newValue))
               handleFieldChange('assigneeId', newValue?.id)
             }}
-            startIcon={assigneeValue ? <CopilotAvatar currentAssignee={assigneeValue} /> : <AssigneePlaceholderSmall />}
             onClick={() => {
               if (activeDebounceTimeoutId) {
                 clearTimeout(activeDebounceTimeoutId)
@@ -390,26 +391,30 @@ export const NewTaskCard = ({
             filterOption={(x: unknown) => x}
             buttonHeight="auto"
             buttonContent={
-              <Typography
-                variant="bodySm"
-                sx={{
-                  color: (theme) => (assigneeValue ? theme.color.gray[600] : theme.color.gray[550]),
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-
-                  overflow: 'hidden',
-                  fontSize: '12px',
-                  maxWidth: '120px',
-                }}
-              >
-                {getAssigneeName(assigneeValue as IAssigneeCombined, 'Assignee')}
-              </Typography>
+              <Stack direction="row" alignItems={'center'} columnGap={'6px'} height="26px">
+                {assigneeValue ? <CopilotAvatar currentAssignee={assigneeValue} /> : <AssigneePlaceholderSmall />}
+                <Typography
+                  variant="bodySm"
+                  sx={{
+                    color: (theme) => (assigneeValue ? theme.color.gray[600] : theme.color.gray[550]),
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    lineHeight: '22px',
+                    overflow: 'hidden',
+                    fontSize: '12px',
+                    maxWidth: '120px',
+                  }}
+                >
+                  {getAssigneeName(assigneeValue as IAssigneeCombined, 'Assignee')}
+                </Typography>
+              </Stack>
             }
             error={subTaskFields.errors.assignee}
             errorPlaceholder=""
           />
           <DatePickerComponent
-            padding={'4px 8px'}
+            padding={'0px 4px'}
+            height={'28px'}
             getDate={(value) => handleFieldChange('dueDate', value)}
             isButton={true}
             dateValue={subTaskFields.dueDate ?? undefined}
@@ -428,7 +433,7 @@ export const NewTaskCard = ({
           }}
         >
           <SecondaryBtn
-            padding={'4px 8px'}
+            padding={'3px 8px'}
             handleClick={handleClose}
             buttonContent={
               <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[700] }}>
@@ -437,7 +442,7 @@ export const NewTaskCard = ({
             }
           />
           <PrimaryBtn
-            padding={'4px 8px'}
+            padding={'3px 8px'}
             handleClick={() => {
               const hasAssigneeError = !subTaskFields.assigneeId
 

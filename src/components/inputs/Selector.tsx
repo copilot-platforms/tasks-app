@@ -33,7 +33,7 @@ type SelectorOptionsType = {
 
 interface Prop<T extends keyof SelectorOptionsType> {
   getSelectedValue: (value: unknown) => void
-  startIcon: ReactNode
+  startIcon?: ReactNode
   value: unknown
   selectorType: T
   options: SelectorOptionsType[T][] | IExtraOption[]

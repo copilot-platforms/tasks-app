@@ -1,9 +1,9 @@
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { SecondaryBtn } from '../buttons/SecondaryBtn'
+import { Sizes } from '@/types/interfaces'
 import { statusIcons } from '@/utils/iconMatcher'
 import { Box, ClickAwayListener, Popper, Stack, Typography } from '@mui/material'
-import { ReactNode, useState } from 'react'
-import { Sizes } from '@/types/interfaces'
+import React, { ReactNode, useState } from 'react'
+import { SecondaryBtn } from '../buttons/SecondaryBtn'
 
 export const WorkflowStateSelector = ({
   value,
@@ -14,6 +14,8 @@ export const WorkflowStateSelector = ({
   responsiveNoHide,
   size = Sizes.SMALL,
   padding,
+  height,
+  gap,
 }: {
   value: WorkflowStateResponse
   option: WorkflowStateResponse[]
@@ -23,6 +25,8 @@ export const WorkflowStateSelector = ({
   responsiveNoHide?: boolean
   size?: Exclude<Sizes, Sizes.LARGE>
   padding?: string
+  height?: string
+  gap?: string
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const open = Boolean(anchorEl)
@@ -86,18 +90,21 @@ export const WorkflowStateSelector = ({
             </Stack>
           ) : (
             <SecondaryBtn
-              startIcon={statusIcons[size][value?.type]}
               padding={padding}
+              height={height}
               buttonContent={
-                size == Sizes.SMALL ? (
-                  <Typography variant="bodySm" sx={{ color: (theme) => theme.color.gray[600], fontSize: '12px' }}>
-                    {value?.name as ReactNode}
-                  </Typography>
-                ) : (
-                  <Typography variant="md" lineHeight="22px">
-                    {value?.name as ReactNode}
-                  </Typography>
-                )
+                <Stack direction="row" alignItems={'center'} columnGap={gap ?? '8px'}>
+                  {statusIcons[size][value?.type]}
+                  {size == Sizes.SMALL ? (
+                    <Typography variant="bodySm" sx={{ color: (theme) => theme.color.gray[600], fontSize: '12px' }}>
+                      {value?.name as ReactNode}
+                    </Typography>
+                  ) : (
+                    <Typography variant="md" lineHeight="22px">
+                      {value?.name as ReactNode}
+                    </Typography>
+                  )}
+                </Stack>
               }
             />
           )}
