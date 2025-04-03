@@ -427,7 +427,7 @@ export const NewTaskCard = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'flex-end',
-            gap: '16px',
+            gap: '8px',
             alignSelf: 'stretch',
 
             marginLeft: 'auto',
