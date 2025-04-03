@@ -6,7 +6,7 @@ import store from '@/redux/store'
 import { InternalUsersSchema, Token } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { extractImgSrcs, replaceImgSrcs } from '@/utils/signedUrlReplacer'
-import { AssigneeType } from '@prisma/client'
+import { AssigneeType, Task } from '@prisma/client'
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
 import { usePathname, useRouter } from 'next/navigation'
 import { ReactNode, useEffect } from 'react'
@@ -42,14 +42,23 @@ export const RealTime = ({
   }
   const user = assignee.find((el) => el.id === userId)
 
-  const redirectToBoard = () => {
-    if (pathname.includes('detail')) {
-      if (pathname.includes('cu')) {
-        router.push(`/client?token=${token}`)
-      } else {
-        router.push(`/?token=${token}`)
-      }
-    }
+  const redirectToBoard = (updatedTask: RealTimeTaskResponse) => {
+    if (!pathname.includes('detail')) return
+
+    const isClientUser = pathname.includes('cu')
+    const isInternalUser =
+      user && userRole === AssigneeType.internalUser && !InternalUsersSchema.parse(user).isClientAccessLimited
+
+    if (isClientUser) {
+      const isSubtask = updatedTask.parentId && accesibleTaskIds.includes(updatedTask.parentId)
+
+      router.push(isSubtask ? `/detail/${updatedTask.parentId}/cu?token=${token}` : `/client?token=${token}`)
+    } else if (isInternalUser) {
+      router.push(updatedTask.parentId ? `/detail/${updatedTask.parentId}/iu/?token=${token}` : `/?token=${token}`)
+    } else {
+      const isSubtask = updatedTask.parentId && accesibleTaskIds.includes(updatedTask.parentId)
+      router.push(isSubtask ? `/detail/${updatedTask.parentId}/iu?token=${token}` : `/?token=${token}`)
+    } //for limited scope ius
   }
 
   const handleTaskRealTimeUpdates = (payload: RealtimePostgresChangesPayload<RealTimeTaskResponse>) => {
@@ -108,7 +117,7 @@ export const RealTime = ({
           store.dispatch(setTasks(newTaskArr))
           store.dispatch(setAccesibleTaskIds(accesibleTaskIds.filter((id) => id !== updatedTask.id)))
           if (updatedTask.id === activeTask?.id) {
-            redirectToBoard()
+            redirectToBoard(updatedTask)
           }
           return
         }
@@ -122,7 +131,7 @@ export const RealTime = ({
           store.dispatch(setTasks(newTaskArr))
           store.dispatch(setAccesibleTaskIds(accesibleTaskIds.filter((id) => id !== updatedTask.id)))
           if (updatedTask.id === activeTask?.id) {
-            redirectToBoard()
+            redirectToBoard(updatedTask)
           }
           return
         }
@@ -145,7 +154,7 @@ export const RealTime = ({
           store.dispatch(setAccesibleTaskIds(accesibleTaskIds.filter((id) => id !== updatedTask.id)))
           //if a user is in the details page when the task is deleted then we want the user to get redirected to '/' route
           if (updatedTask.id === activeTask?.id) {
-            redirectToBoard()
+            redirectToBoard(updatedTask)
           }
           //if the task is updated
         } else {
