@@ -11,7 +11,7 @@ import { Sizes } from '@/types/interfaces'
 
 interface Prop {
   getDate: (value: string) => void
-  dateValue?: Date
+  dateValue?: Date | string
   isButton?: boolean
   disabled?: boolean
   size?: Sizes
