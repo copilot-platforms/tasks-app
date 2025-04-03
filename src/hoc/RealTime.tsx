@@ -96,9 +96,6 @@ export const RealTime = ({
       //   return //short circuit if the updated task is a subtask and its parent id is in the tasks array
       // }
       if (user && userRole === AssigneeType.client) {
-        if (updatedTask.parentId && accesibleTaskIds.includes(updatedTask.parentId)) {
-          return
-        }
         // Check if assignee is this client's ID, or it's company's ID
         if (![userId, tokenPayload?.companyId].includes(updatedTask.assigneeId)) {
           // Get the previous task from tasks array and check if it was previously assigned to this client
@@ -119,9 +116,6 @@ export const RealTime = ({
 
       //if the updated task is out of scope for limited access iu
       if (user && userRole === AssigneeType.internalUser && InternalUsersSchema.parse(user).isClientAccessLimited) {
-        if (updatedTask.parentId && accesibleTaskIds.includes(updatedTask.parentId)) {
-          return
-        }
         const assigneeSet = new Set(assignee.map((a) => a.id))
         if (updatedTask.assigneeId && !assigneeSet.has(updatedTask.assigneeId)) {
           const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
@@ -130,11 +124,6 @@ export const RealTime = ({
           if (updatedTask.id === activeTask?.id) {
             redirectToBoard()
           }
-          return
-        }
-      }
-      if (user && userRole === AssigneeType.internalUser && !InternalUsersSchema.parse(user).isClientAccessLimited) {
-        if (updatedTask.parentId) {
           return
         }
       }
@@ -185,7 +174,26 @@ export const RealTime = ({
             return
           }
           const newTaskArr = [...tasks.filter((task) => task.id !== updatedTask.id), updatedTask]
-          if (!shallowEqual(tasks, newTaskArr)) {
+          const shouldUpdateTasksOnBoard = () => {
+            if (user && userRole === AssigneeType.internalUser && !InternalUsersSchema.parse(user).isClientAccessLimited) {
+              if (updatedTask.parentId) {
+                return false
+              }
+            }
+            if (user && userRole === AssigneeType.internalUser && InternalUsersSchema.parse(user).isClientAccessLimited) {
+              if (updatedTask.parentId && accesibleTaskIds.includes(updatedTask.parentId)) {
+                return false
+              }
+            }
+            if (user && userRole === AssigneeType.client) {
+              if (updatedTask.parentId && accesibleTaskIds.includes(updatedTask.parentId)) {
+                return false
+              }
+            }
+            return true
+          } // returns false if the currently updatedTask is a subtask
+
+          if (!shallowEqual(tasks, newTaskArr) && shouldUpdateTasksOnBoard()) {
             store.dispatch(setTasks(newTaskArr))
           }
           if (activeTask && activeTask.id === updatedTask.id) {
