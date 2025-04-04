@@ -16,6 +16,7 @@ import { UserType } from '@/types/interfaces'
 import { getDeleteMessage } from '@/utils/dialogMessages'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
 import { Box } from '@mui/material'
+import { useRouter } from 'next/navigation'
 import { MouseEvent, useCallback, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
@@ -72,13 +73,19 @@ export const TaskEditor = ({
 
   useEffect(() => {
     if (!isUserTyping && activeUploads === 0) {
-      const currentTask = activeTask
+      const currentTask = activeTask?.id === task_id ? activeTask : task
+
       if (currentTask) {
         setUpdateTitle(currentTask.title || '')
         setUpdateDetail(currentTask.body ?? '')
       }
     }
   }, [activeTask, task_id, isUserTyping, activeUploads])
+
+  const router = useRouter()
+  useEffect(() => {
+    router.refresh()
+  }, [])
 
   const _titleUpdateDebounced = async (title: string) => updateTaskTitle(title)
 
