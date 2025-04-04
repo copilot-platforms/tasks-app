@@ -11,17 +11,19 @@ export const getTasks = async (req: NextRequest) => {
   noStore()
   const user = await authenticate(req)
 
-  const { showArchived, showUnarchived, parentId } = getSearchParams(req.nextUrl.searchParams, [
+  const { showArchived, showUnarchived, parentId, all } = getSearchParams(req.nextUrl.searchParams, [
     'showArchived',
     'showUnarchived',
     'parentId',
+    'all',
   ])
 
   const tasksService = new TasksService(user)
   const tasks = await tasksService.getAllTasks({
     showUnarchived: getBooleanQuery(showUnarchived, true),
     showArchived: getBooleanQuery(showArchived, false),
-    parentId,
+    parentId: parentId || null,
+    all: !!all,
   })
 
   return NextResponse.json({ tasks })

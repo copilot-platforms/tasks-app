@@ -39,6 +39,7 @@ export class ValidateCountService extends NotificationService {
     const tasks = await tasksService.getAllTasks({
       showArchived: false,
       showUnarchived: true,
+      all: true,
       showIncompleteOnly: true,
     })
     console.info('ValidateCount :: User tasks', tasks.length)
