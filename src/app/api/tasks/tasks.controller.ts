@@ -71,10 +71,3 @@ export const clientUpdateTask = async (req: NextRequest, { params: { id } }: IdP
   const updatedTask = await tasksService.clientUpdateTask(id, workflowStateId)
   return NextResponse.json({ updatedTask })
 }
-
-export const getAccesibleTasksIds = async (req: NextRequest) => {
-  const user = await authenticate(req)
-  const tasksService = new TasksService(user)
-  const taskIds = await tasksService.getAccesibleTasksIds()
-  return NextResponse.json({ taskIds })
-} // returns list of ids of tasks that are accessible to the user irrespective of nesting
