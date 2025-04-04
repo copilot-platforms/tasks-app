@@ -6,7 +6,7 @@ import { AccessibleTasksResponse } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { PropsWithToken } from '@/types/interfaces'
 
-const getAllAccessibleTasks = async (token: string): Promise<TaskResponse[]> => {
+const getAllAccessibleTasks = async (token: string): Promise<AccessibleTasksResponse[]> => {
   const select: (keyof AccessibleTasksResponse)[] = ['id', 'assigneeId', 'assigneeType', 'title', 'body']
 
   const res = await fetch(`${apiUrl}/api/tasks?token=${token}&all=1&select=${select.join(',')}`)
