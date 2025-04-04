@@ -18,6 +18,7 @@ import { SubtaskService } from '@api/tasks/subtasks.service'
 import { getArchivedStatus, getTaskTimestamps } from '@api/tasks/tasks.helpers'
 import { TasksActivityLogger } from '@api/tasks/tasks.logger'
 import { AssigneeType, Prisma, PrismaClient, StateType, Task, WorkflowState } from '@prisma/client'
+import { DefaultArgs } from '@prisma/client/runtime/library'
 import httpStatus from 'http-status'
 import { z } from 'zod'
 
@@ -50,6 +51,7 @@ export class TasksService extends BaseService {
     parentId?: string | null
     all?: boolean
     showIncompleteOnly?: boolean
+    selectColumns?: string[]
   }) {
     // Check if given user role is authorized access to this resource
     const policyGate = new PoliciesService(this.user)
@@ -82,22 +84,40 @@ export class TasksService extends BaseService {
 
     const disjointTasksFilter: Prisma.TaskWhereInput = this.getDisjointTasksFilter(queryFilters.parentId)
 
+    const select = this.getSelectColumns(queryFilters.selectColumns)
+
     // NOTE: Terminology:
     // Disjoint task -> A task where the parent task is not assigned to / inaccessible to the current user,
     // but the subtask is accessible
 
-    let tasks = await this.db.task.findMany({
-      where: {
-        ...filters,
-        ...disjointTasksFilter,
-        isArchived,
-      },
-      orderBy: [{ dueDate: { sort: 'asc', nulls: 'last' } }, { createdAt: 'desc' }],
-      relationLoadStrategy: 'join',
-      include: {
-        workflowState: { select: { name: true, type: true } },
-      },
-    })
+    const where: Prisma.TaskWhereInput = {
+      ...filters,
+      ...disjointTasksFilter,
+      isArchived,
+    }
+
+    const orderBy: Prisma.TaskOrderByWithRelationInput[] = [
+      { dueDate: { sort: 'asc', nulls: 'last' } },
+      { createdAt: 'desc' },
+    ]
+
+    let tasks: Task[] | (Task & { workflowState: WorkflowState })[]
+
+    if (!select) {
+      tasks = await this.db.task.findMany({
+        where,
+        orderBy,
+        relationLoadStrategy: 'join',
+        include: { workflowState: true },
+      })
+    } else {
+      // @ts-expect-error workaround to support ModelSelectInput
+      tasks = await this.db.task.findMany({
+        where,
+        orderBy,
+        select,
+      })
+    }
 
     if (!this.user.internalUserId) {
       return tasks
@@ -343,6 +363,13 @@ export class TasksService extends BaseService {
         { assigneeId: parsedCompanyId.data, assigneeType: 'company' },
       ],
     }
+  }
+
+  private getSelectColumns = (columns?: string[]) => {
+    if (!columns) return undefined
+    const select: Record<string, true> = {}
+    columns.forEach((column) => (select[column] = true))
+    return select
   }
 
   private getDisjointTasksFilter = (parentId?: string | null) => {

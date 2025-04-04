@@ -11,11 +11,12 @@ export const getTasks = async (req: NextRequest) => {
   noStore()
   const user = await authenticate(req)
 
-  const { showArchived, showUnarchived, parentId, all } = getSearchParams(req.nextUrl.searchParams, [
+  const { showArchived, showUnarchived, parentId, all, select } = getSearchParams(req.nextUrl.searchParams, [
     'showArchived',
     'showUnarchived',
     'parentId',
     'all',
+    'select',
   ])
 
   const tasksService = new TasksService(user)
@@ -24,6 +25,7 @@ export const getTasks = async (req: NextRequest) => {
     showArchived: getBooleanQuery(showArchived, false),
     parentId: parentId || null,
     all: !!all,
+    selectColumns: select ? select.split(',') : undefined,
   })
 
   return NextResponse.json({ tasks })

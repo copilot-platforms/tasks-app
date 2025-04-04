@@ -4,6 +4,7 @@ import { setTokenPayload } from '@/redux/features/authDetailsSlice'
 import {
   selectTaskBoard,
   setAccesibleTaskIds,
+  setAccessibleTasks,
   setActiveTask,
   setAssigneeList,
   setFilteredAssgineeList,
@@ -16,7 +17,7 @@ import {
 import { setAssigneeSuggestion, setExpandedComments } from '@/redux/features/taskDetailsSlice'
 import { setTemplates } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
-import { Token } from '@/types/common'
+import { AccessibleTasksResponse, Token } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
@@ -44,6 +45,7 @@ export const ClientSideStateUpdate = ({
   task,
   clearExpandedComments,
   accesibleTaskIds,
+  accessibleTasks,
 }: {
   children: ReactNode
   workflowStates?: WorkflowStateResponse[]
@@ -57,6 +59,7 @@ export const ClientSideStateUpdate = ({
   task?: TaskResponse
   clearExpandedComments?: boolean
   accesibleTaskIds?: string[]
+  accessibleTasks?: AccessibleTasksResponse[]
 }) => {
   const { tasks: tasksInStore, viewSettingsTemp } = useSelector(selectTaskBoard)
   useEffect(() => {
@@ -115,6 +118,10 @@ export const ClientSideStateUpdate = ({
     if (accesibleTaskIds) {
       store.dispatch(setAccesibleTaskIds(accesibleTaskIds))
     }
+
+    if (accessibleTasks) {
+      store.dispatch(setAccessibleTasks(accessibleTasks))
+    }
   }, [
     workflowStates,
     tasks,
@@ -126,6 +133,7 @@ export const ClientSideStateUpdate = ({
     assigneeSuggestions,
     task,
     accesibleTaskIds,
+    accessibleTasks,
   ])
 
   return children

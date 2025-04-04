@@ -1,6 +1,7 @@
 import { UserRole } from '@/app/api/core/types/user'
 import { AssigneeType, CommentInitiator } from '@prisma/client'
 import { z } from 'zod'
+import { TaskResponse } from './dto/tasks.dto'
 
 export const HexColorSchema = z.string().refine((val) => /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/.test(val), {
   message: 'Invalid hex color code',
@@ -230,3 +231,5 @@ export interface InitiatedEntity {
   initiatorId: string
   initiatorType: CommentInitiator | null
 }
+
+export type AccessibleTasksResponse = Pick<TaskResponse, 'id' | 'assigneeId' | 'assigneeType' | 'title' | 'body'>
