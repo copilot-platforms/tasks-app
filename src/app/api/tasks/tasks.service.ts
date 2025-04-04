@@ -18,7 +18,6 @@ import { SubtaskService } from '@api/tasks/subtasks.service'
 import { getArchivedStatus, getTaskTimestamps } from '@api/tasks/tasks.helpers'
 import { TasksActivityLogger } from '@api/tasks/tasks.logger'
 import { AssigneeType, Prisma, PrismaClient, StateType, Task, WorkflowState } from '@prisma/client'
-import { DefaultArgs } from '@prisma/client/runtime/library'
 import httpStatus from 'http-status'
 import { z } from 'zod'
 
