@@ -1,4 +1,5 @@
 export const fetchCache = 'force-no-store'
+export const dynamic = 'force-dynamic'
 
 import { AssigneeFetcher } from '@/app/_fetchers/AssigneeFetcher'
 import { WorkflowStateFetcher } from '@/app/_fetchers/WorkflowStateFetcher'
@@ -22,13 +23,11 @@ import { Sidebar, SidebarSkeleton } from '@/app/detail/ui/Sidebar'
 import { StyledBox, StyledTiptapDescriptionWrapper, TaskDetailsContainer } from '@/app/detail/ui/styledComponent'
 import { Subtasks } from '@/app/detail/ui/Subtasks'
 import { TaskEditor } from '@/app/detail/ui/TaskEditor'
-import { ToggleButtonContainer } from '@/app/detail/ui/ToggleButtonContainer'
 import { ToggleController } from '@/app/detail/ui/ToggleController'
 import { DeletedTaskRedirectPage } from '@/components/layouts/DeletedTaskRedirectPage'
 import { HeaderBreadcrumbs } from '@/components/layouts/HeaderBreadcrumbs'
 import { SilentError } from '@/components/templates/SilentError'
 import { apiUrl } from '@/config'
-import { signedUrlTtl } from '@/constants/attachments'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import CustomScrollBar from '@/hoc/CustomScrollBar'
 import { RealTime } from '@/hoc/RealTime'
@@ -43,9 +42,7 @@ import { Suspense } from 'react'
 import { z } from 'zod'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
-  const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
-    next: { tags: ['getOneTask'], revalidate: signedUrlTtl },
-  })
+  const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, { cache: 'no-store', next: { revalidate: 0 } })
 
   const data = await res.json()
 
