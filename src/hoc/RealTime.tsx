@@ -5,6 +5,7 @@ import { selectTaskBoard, setAccesibleTaskIds, setActiveTask, setTasks } from '@
 import store from '@/redux/store'
 import { InternalUsersSchema, Token } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
+import { RealtimeHandler } from '@/utils/realtime'
 import { extractImgSrcs, replaceImgSrcs } from '@/utils/signedUrlReplacer'
 import { AssigneeType, Task } from '@prisma/client'
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
@@ -12,7 +13,10 @@ import { usePathname, useRouter } from 'next/navigation'
 import { ReactNode, useEffect } from 'react'
 import { shallowEqual, useSelector } from 'react-redux'
 
-interface RealTimeTaskResponse extends TaskResponse {
+export interface RealTimeTaskResponse extends TaskResponse {
+  assigneeId: string
+  assigneeType: AssigneeType
+  parentId: string | null
   deletedAt: string
 }
 
@@ -25,7 +29,7 @@ export const RealTime = ({
   task?: TaskResponse
   tokenPayload: Token
 }) => {
-  const { tasks, token, activeTask, assignee, accesibleTaskIds } = useSelector(selectTaskBoard)
+  const { tasks, accessibleTasks, token, activeTask, assignee, accesibleTaskIds } = useSelector(selectTaskBoard)
   const { showUnarchived, showArchived } = useSelector(selectTaskBoard)
   const pathname = usePathname()
   const router = useRouter()
@@ -62,8 +66,19 @@ export const RealTime = ({
   }
 
   const handleTaskRealTimeUpdates = (payload: RealtimePostgresChangesPayload<RealTimeTaskResponse>) => {
+    if (!user || !userRole) return
+
+    // Handle realtime subtasks in a modular way
+    // TODO: Handle rest of the realtime operations in the same way in a TDB milestone
+    const realtimeHandler = new RealtimeHandler(payload, user, userRole, assignee, tasks, accessibleTasks)
+
+    if (Object.keys(payload.new).includes('parentId') && (payload.new as RealTimeTaskResponse).parentId !== null) {
+      realtimeHandler.handleRealtimeSubtasks()
+    }
+
     if (payload.eventType === 'INSERT') {
       // For both user types, filter out just tasks belonging to workspace.
+      // NOTE: This is not needed any more since we run `eq.${tokenPayload?.workspaceId}` in POSTGRES_CHANGES filter
       let canUserAccessTask = payload.new.workspaceId === tokenPayload?.workspaceId
 
       // If user is an internal user with client access limitations, they can only access tasks assigned to clients or company they have access to

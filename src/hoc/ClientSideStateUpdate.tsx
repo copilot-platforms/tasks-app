@@ -120,7 +120,6 @@ export const ClientSideStateUpdate = ({
     }
 
     if (accessibleTasks) {
-      console.log('xxx', accessibleTasks)
       store.dispatch(setAccessibleTasks(accessibleTasks))
     }
   }, [
