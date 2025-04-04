@@ -44,11 +44,12 @@ export class TasksService extends BaseService {
     return filters
   }
 
-  async getAllTasks(queryFilters?: {
+  async getAllTasks(queryFilters: {
     showArchived: boolean
     showUnarchived: boolean
-    showIncompleteOnly?: boolean
     parentId?: string | null
+    all?: boolean
+    showIncompleteOnly?: boolean
   }) {
     // Check if given user role is authorized access to this resource
     const policyGate = new PoliciesService(this.user)
@@ -59,8 +60,10 @@ export class TasksService extends BaseService {
     const filters: Prisma.TaskWhereInput = this.buildTaskPermissions()
 
     let isArchived: boolean | undefined = false
-    // Archived tasks are only accessible to IU
-    if (queryFilters) {
+    if (queryFilters.all) {
+      isArchived = undefined
+    } else {
+      // Archived tasks are only accessible to IU
       // If both archived filters are explicitly 0 / falsey for IU, shortcircuit and return empty array
       if (!queryFilters.showArchived && !queryFilters.showUnarchived) {
         return []
@@ -68,45 +71,20 @@ export class TasksService extends BaseService {
       isArchived = getArchivedStatus(queryFilters.showArchived, queryFilters.showUnarchived)
     }
 
-    if (queryFilters?.showIncompleteOnly) {
+    if (queryFilters.showIncompleteOnly) {
       filters.workflowState = {
         type: { not: StateType.completed },
       }
     }
 
     // If `parentId` is present, filter by parentId, ELSE return top-level parent comments
-    filters.parentId = this.getParentIdFilter(queryFilters?.parentId)
+    filters.parentId = queryFilters.all ? undefined : this.getParentIdFilter(queryFilters.parentId)
+
+    const disjointTasksFilter: Prisma.TaskWhereInput = this.getDisjointTasksFilter(queryFilters.parentId)
 
     // NOTE: Terminology:
     // Disjoint task -> A task where the parent task is not assigned to / inaccessible to the current user,
     // but the subtask is accessible
-
-    // For disjoint tasks, show this subtask as a root-level task
-    // This n-node matcher matches any task tree chain where previous task's assigneeId is not self's
-    // E.g. A -> B -> C, where A is assigned to user 1, B is assigned to user 2, C is assigned to user 2
-    // For user 2, task B should show up as a parent task in the main task board
-    const disjointTasksFilter: Prisma.TaskWhereInput = (() => {
-      if (this.user.role === UserRole.IU || filters.parentId) {
-        // NOTE: We can implement client access scopes here later
-        return {}
-      }
-      return {
-        OR: [
-          // Parent is not assigned to client
-          {
-            ...this.getClientOrCompanyAssigneeFilter(), // Prevent overwriting of OR statement
-            parent: {
-              AND: [{ assigneeId: { not: this.user.clientId } }, { assigneeId: { not: this.user.companyId } }],
-            },
-          },
-          // Task is a parent / standalone task
-          {
-            ...this.getClientOrCompanyAssigneeFilter(),
-            parentId: null,
-          },
-        ],
-      }
-    })()
 
     let tasks = await this.db.task.findMany({
       where: {
@@ -365,6 +343,36 @@ export class TasksService extends BaseService {
         { assigneeId: parsedCompanyId.data, assigneeType: 'company' },
       ],
     }
+  }
+
+  private getDisjointTasksFilter = (parentId?: string | null) => {
+    // For disjoint tasks, show this subtask as a root-level task
+    // This n-node matcher matches any task tree chain where previous task's assigneeId is not self's
+    // E.g. A -> B -> C, where A is assigned to user 1, B is assigned to user 2, C is assigned to user 2
+    // For user 2, task B should show up as a parent task in the main task board
+    const disjointTasksFilter: Prisma.TaskWhereInput = (() => {
+      if (this.user.role === UserRole.IU || parentId) {
+        // NOTE: We can implement client access scopes here later
+        return {}
+      }
+      return {
+        OR: [
+          // Parent is not assigned to client
+          {
+            ...this.getClientOrCompanyAssigneeFilter(), // Prevent overwriting of OR statement
+            parent: {
+              AND: [{ assigneeId: { not: this.user.clientId } }, { assigneeId: { not: this.user.companyId } }],
+            },
+          },
+          // Task is a parent / standalone task
+          {
+            ...this.getClientOrCompanyAssigneeFilter(),
+            parentId: null,
+          },
+        ],
+      }
+    })()
+    return disjointTasksFilter
   }
 
   private getParentIdFilter(parentId?: string | null) {
