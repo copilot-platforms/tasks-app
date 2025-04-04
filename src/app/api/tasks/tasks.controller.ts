@@ -21,10 +21,19 @@ export const getTasks = async (req: NextRequest) => {
 
   const tasksService = new TasksService(user)
   const tasks = await tasksService.getAllTasks({
+    // Show unarchived tasks in response. Default to true
     showUnarchived: getBooleanQuery(showUnarchived, true),
+
+    // Show archive tasks in response. Default to false
     showArchived: getBooleanQuery(showArchived, false),
+
+    // Show subtasks belonging to a particular task only. `null` returns top-level tasks
     parentId: parentId || null,
+
+    // Show all accessible tasks for a user
     all: !!all,
+
+    // Select only specific columns - useful in optimization
     selectColumns: select ? select.split(',') : undefined,
   })
 
