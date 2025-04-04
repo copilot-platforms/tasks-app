@@ -79,9 +79,13 @@ export class TasksService extends BaseService {
     }
 
     // If `parentId` is present, filter by parentId, ELSE return top-level parent comments
-    filters.parentId = queryFilters.all ? undefined : this.getParentIdFilter(queryFilters.parentId)
+    filters.parentId = queryFilters.all
+      ? undefined // if querying all accessible tasks, parentId filter doesn't make sense
+      : this.getParentIdFilter(queryFilters.parentId)
 
-    const disjointTasksFilter: Prisma.TaskWhereInput = this.getDisjointTasksFilter(queryFilters.parentId)
+    const disjointTasksFilter: Prisma.TaskWhereInput = queryFilters.all
+      ? {} // No need to support disjoint tasks when querying all tasks
+      : this.getDisjointTasksFilter(queryFilters.parentId)
 
     const select = this.getSelectColumns(queryFilters.selectColumns)
 
