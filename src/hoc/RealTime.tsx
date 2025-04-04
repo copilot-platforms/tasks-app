@@ -5,7 +5,7 @@ import { selectTaskBoard, setAccesibleTaskIds, setActiveTask, setTasks } from '@
 import store from '@/redux/store'
 import { InternalUsersSchema, Token } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
-import { RealtimeHandler } from '@/utils/realtime'
+import { RealtimeHandler } from '@/lib/realtime'
 import { extractImgSrcs, replaceImgSrcs } from '@/utils/signedUrlReplacer'
 import { AssigneeType, Task } from '@prisma/client'
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
