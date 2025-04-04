@@ -1,6 +1,11 @@
 export const fetchCache = 'force-no-store'
 
+import { AllTasksFetcher } from '@/app/_fetchers/AllTasksFetcher'
+import { AssigneeFetcher } from '@/app/_fetchers/AssigneeFetcher'
+import { TemplatesFetcher } from '@/app/_fetchers/TemplatesFetcher'
 import { createMultipleAttachments } from '@/app/actions'
+import { ModalNewTaskForm } from '@/app/ui/Modal_NewTaskForm'
+import { TaskBoard } from '@/app/ui/TaskBoard'
 import { SilentError } from '@/components/templates/SilentError'
 import { apiUrl } from '@/config'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
@@ -17,10 +22,6 @@ import { redirectIfTaskCta } from '@/utils/redirect'
 import { UserRole } from '@api/core/types/user'
 import { Suspense } from 'react'
 import { z } from 'zod'
-import { AssigneeFetcher } from './_fetchers/AssigneeFetcher'
-import { TemplatesFetcher } from './_fetchers/TemplatesFetcher'
-import { ModalNewTaskForm } from './ui/Modal_NewTaskForm'
-import { TaskBoard } from './ui/TaskBoard'
 
 export async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -69,11 +70,11 @@ export async function getViewSettings(token: string): Promise<CreateViewSettings
   return await res.json()
 }
 
-async function getAccessibleTaskIds(token: string) {
+async function getAccessibleTasks(token: string) {
   const res = await fetch(`${apiUrl}/api/tasks?token=${token}&all=1`)
 
   const data = await res.json()
-  return data.taskIds
+  return data.tasks
 }
 
 export default async function Main({ searchParams }: { searchParams: { token: string; taskId?: string } }) {
@@ -93,11 +94,10 @@ export default async function Main({ searchParams }: { searchParams: { token: st
   redirectIfTaskCta(searchParams, userRole)
 
   const viewSettings = await getViewSettings(token)
-  const [workflowStates, tasks, workspace, accesibleTaskIds] = await Promise.all([
+  const [workflowStates, tasks, workspace] = await Promise.all([
     getAllWorkflowStates(token),
     getAllTasks(token, { showArchived: viewSettings.showArchived, showUnarchived: viewSettings.showUnarchived }),
     getWorkspace(token),
-    getAccessibleTaskIds(token),
   ])
 
   console.info(`app/page.tsx | Serving user ${token} with payload`, tokenPayload)
@@ -109,7 +109,6 @@ export default async function Main({ searchParams }: { searchParams: { token: st
       viewSettings={viewSettings}
       tokenPayload={tokenPayload}
       clearExpandedComments={true}
-      accesibleTaskIds={accesibleTaskIds}
     >
       {/* Async fetchers */}
       <Suspense fallback={null}>
@@ -117,6 +116,9 @@ export default async function Main({ searchParams }: { searchParams: { token: st
       </Suspense>
       <Suspense fallback={null}>
         <TemplatesFetcher token={token} />
+      </Suspense>
+      <Suspense fallback={null}>
+        <AllTasksFetcher token={token} />
       </Suspense>
 
       <RealTime tokenPayload={tokenPayload}>
