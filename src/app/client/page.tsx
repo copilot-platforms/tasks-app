@@ -57,7 +57,7 @@ async function getWorkspace(token: string): Promise<WorkspaceResponse> {
 }
 
 async function getAccessibleTaskIds(token: string) {
-  const res = await fetch(`${apiUrl}/api/tasks/all?token=${token}`)
+  const res = await fetch(`${apiUrl}/api/tasks?token=${token}&all=1`)
 
   const data = await res.json()
   return data.taskIds

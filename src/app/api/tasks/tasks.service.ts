@@ -558,27 +558,6 @@ export class TasksService extends BaseService {
     return updatedTask
   }
 
-  async getAccesibleTasksIds() {
-    const policyGate = new PoliciesService(this.user)
-    policyGate.authorize(UserAction.Read, Resource.Tasks)
-    const filters: Prisma.TaskWhereInput = this.buildTaskPermissions()
-    const tasks = await this.db.task.findMany({
-      where: filters,
-      select: { id: true, assigneeId: true, assigneeType: true },
-    })
-    if (this.user.clientId) {
-      return tasks.map((task) => task.id)
-    }
-    const copilot = new CopilotAPI(this.user.token)
-    const currentInternalUser = await copilot.getInternalUser(z.string().uuid().parse(this.user.internalUserId))
-    if (!currentInternalUser.isClientAccessLimited) {
-      return tasks.map((task) => task.id)
-    }
-    const filteredTasks = await this.filterTasksByClientAccess(tasks, currentInternalUser)
-    const taskIds = filteredTasks.map((task) => task.id)
-    return taskIds
-  }
-
   private async filterTasksByClientAccess<T extends Task[] | Pick<Task, 'id' | 'assigneeId' | 'assigneeType'>[]>(
     tasks: T,
     currentInternalUser: InternalUsers,
