@@ -1,7 +1,7 @@
-import { z } from 'zod'
-import { UserSchema } from './common'
-import { UpdateTaskRequestSchema } from './dto/tasks.dto'
+import { UserSchema } from '@/types/common'
+import { UpdateTaskRequestSchema } from '@/types/dto/tasks.dto'
 import { PropsWithChildren } from 'react'
+import { z } from 'zod'
 
 export enum TargetMethod {
   EDIT = 'edit',
