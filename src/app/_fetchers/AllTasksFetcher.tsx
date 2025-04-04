@@ -2,8 +2,7 @@ export const fetchCache = 'force-no-store'
 
 import { apiUrl } from '@/config'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
-import { AccessibleTasksResponse } from '@/types/common'
-import { TaskResponse } from '@/types/dto/tasks.dto'
+import { AccessibleTasksResponse } from '@/types/dto/tasks.dto'
 import { PropsWithToken } from '@/types/interfaces'
 
 const getAllAccessibleTasks = async (token: string): Promise<AccessibleTasksResponse[]> => {

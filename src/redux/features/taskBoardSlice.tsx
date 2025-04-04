@@ -1,11 +1,11 @@
-import { AccessibleTasksResponse, PreviewMode } from '@/types/common'
-import { TaskResponse } from '@/types/dto/tasks.dto'
+import { RootState } from '@/redux/store'
+import { PreviewMode } from '@/types/common'
+import { AccessibleTasksResponse, TaskResponse } from '@/types/dto/tasks.dto'
 import { CreateViewSettingsDTO, FilterOptionsType } from '@/types/dto/viewSettings.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { FilterByOptions, FilterOptions, IAssigneeCombined, IFilterOptions } from '@/types/interfaces'
 import { ViewMode } from '@prisma/client'
 import { createSlice } from '@reduxjs/toolkit'
-import { RootState } from '../store'
 
 interface IInitialState {
   workflowStates: WorkflowStateResponse[]
