@@ -69,7 +69,8 @@ export class RealtimeHandler {
     // Check if this new task is a disjoint task by checking if accessible tasks array contains its parent.
     // If it is a disjoint task we need to insert it to the fkin board
     const isParentTaskAccessible = this.accessibleTasks.some((task) => task.id === newTask.parentId)
-    if (!isParentTaskAccessible) {
+    // TODO: can implement flattened disjoint tasks for IU (parent is assigned to limited client / company) here
+    if (this.userRole === AssigneeType.client && !isParentTaskAccessible) {
       store.dispatch(setTasks([newTask, ...this.tasks]))
     }
     // Append this new task to set of accessible tasks
