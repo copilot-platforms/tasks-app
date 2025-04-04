@@ -109,9 +109,11 @@ export const ReplyInput = ({
   }, [detail, editorRef.current])
 
   useEffect(() => {
-    if (editorRef.current && focusReplyInput) {
-      editorRef.current.focus()
-    }
+    setTimeout(() => {
+      if (editorRef.current && focusReplyInput) {
+        editorRef.current.focus()
+      }
+    }, 100)
   }, [focusReplyInput, editorRef.current])
 
   const [isDragging, setIsDragging] = useState(false)
