@@ -115,6 +115,9 @@ export const ClientSideStateUpdate = ({
     if (accesibleTaskIds) {
       store.dispatch(setAccesibleTaskIds(accesibleTaskIds))
     }
+    return () => {
+      store.dispatch(setActiveTask(undefined))
+    } //when component is unmounted, we need to clear the active task.
   }, [
     workflowStates,
     tasks,
