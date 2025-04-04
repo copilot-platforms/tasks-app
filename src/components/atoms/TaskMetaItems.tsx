@@ -1,8 +1,11 @@
 import { ArchiveBoxIcon, SubtaskIcon } from '@/icons'
+import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { Box, Stack, Typography } from '@mui/material'
+import { useSelector } from 'react-redux'
 
 export const TaskMetaItems = ({ task, lineHeight }: { task: TaskResponse; lineHeight: string }) => {
+  const { accessibleTasks } = useSelector(selectTaskBoard)
   return (
     <>
       {task.isArchived && (
@@ -29,7 +32,7 @@ export const TaskMetaItems = ({ task, lineHeight }: { task: TaskResponse; lineHe
               lineHeight: lineHeight ?? '21px',
             }}
           >
-            {task.subtaskCount}
+            {accessibleTasks.filter((t) => t.parentId === task.id).length}
           </Typography>
           <SubtaskIcon />
         </Stack>

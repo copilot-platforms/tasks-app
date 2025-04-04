@@ -59,4 +59,7 @@ export const SubTaskStatusSchema = z.object({
 
 export type SubTaskStatusResponse = z.infer<typeof SubTaskStatusSchema>
 
-export type AccessibleTasksResponse = Pick<TaskResponse, 'id' | 'assigneeId' | 'assigneeType' | 'title' | 'body'>
+export type AccessibleTasksResponse = Pick<
+  TaskResponse,
+  'id' | 'assigneeId' | 'assigneeType' | 'title' | 'body' | 'parentId'
+>
