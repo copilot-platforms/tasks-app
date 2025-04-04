@@ -1,13 +1,5 @@
 'use client'
 
-import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
-import { selectTaskDetails, setOpenImage, setShowConfirmDeleteModal } from '@/redux/features/taskDetailsSlice'
-import store from '@/redux/store'
-import { Box } from '@mui/material'
-import { MouseEvent, useCallback, useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
-import { Tapwrite } from 'tapwrite'
-
 import { ImagePreviewModal } from '@/app/detail/ui/ImagePreviewModal'
 import { StyledModal } from '@/app/detail/ui/styledComponent'
 import AttachmentLayout from '@/components/AttachmentLayout'
@@ -15,10 +7,18 @@ import { StyledTextField } from '@/components/inputs/TextField'
 import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
 import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
 import { useDebounce, useDebounceWithCancel } from '@/hooks/useDebounce'
+import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { selectTaskDetails, setOpenImage, setShowConfirmDeleteModal } from '@/redux/features/taskDetailsSlice'
+import store from '@/redux/store'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { UserType } from '@/types/interfaces'
+import { getDeleteMessage } from '@/utils/dialogMessages'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
+import { Box } from '@mui/material'
+import { MouseEvent, useCallback, useEffect, useState } from 'react'
+import { useSelector } from 'react-redux'
+import { Tapwrite } from 'tapwrite'
 
 interface Prop {
   task_id: string
@@ -231,6 +231,7 @@ export const TaskEditor = ({
             deleteTask()
             store.dispatch(setShowConfirmDeleteModal())
           }}
+          description={getDeleteMessage({ subtaskCount: activeTask?.subtaskCount })}
         />
       </StyledModal>
 

@@ -22,9 +22,9 @@ import { CopilotAPI } from '@/utils/CopilotAPI'
 import { getPreviewMode } from '@/utils/previewMode'
 import { redirectIfTaskCta } from '@/utils/redirect'
 import { UserRole } from '@api/core/types/user'
+import { z } from 'zod'
 
 import { Suspense } from 'react'
-import { z } from 'zod'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -56,18 +56,26 @@ async function getWorkspace(token: string): Promise<WorkspaceResponse> {
   return await copilot.getWorkspace()
 }
 
+async function getAccessibleTaskIds(token: string) {
+  const res = await fetch(`${apiUrl}/api/tasks/all?token=${token}`)
+
+  const data = await res.json()
+  return data.taskIds
+}
+
 export default async function ClientPage({ searchParams }: { searchParams: { token: string } }) {
   const token = searchParams.token
   if (!z.string().safeParse(token).success) {
     return <SilentError message="Please provide a Valid Token" />
   }
   redirectIfTaskCta(searchParams, UserType.CLIENT_USER)
-  const [workflowStates, tasks, viewSettings, tokenPayload, workspace] = await Promise.all([
+  const [workflowStates, tasks, viewSettings, tokenPayload, workspace, accesibleTaskIds] = await Promise.all([
     await getAllWorkflowStates(token),
     await getAllTasks(token),
     getViewSettings(token),
     getTokenPayload(token),
     getWorkspace(token),
+    getAccessibleTaskIds(token),
   ])
 
   const previewMode = getPreviewMode(tokenPayload)
@@ -84,6 +92,7 @@ export default async function ClientPage({ searchParams }: { searchParams: { tok
         tokenPayload={tokenPayload}
         viewSettings={viewSettings}
         clearExpandedComments={true}
+        accesibleTaskIds={accesibleTaskIds}
       >
         <Suspense fallback={null}>
           <AssigneeFetcher

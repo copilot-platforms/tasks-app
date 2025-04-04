@@ -1,7 +1,6 @@
 export const fetchCache = 'force-no-store'
 
 import { createMultipleAttachments } from '@/app/actions'
-import { TaskBoardAppBridge } from '@/app/ui/TaskBoardAppBridge'
 import { SilentError } from '@/components/templates/SilentError'
 import { apiUrl } from '@/config'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
@@ -70,6 +69,13 @@ export async function getViewSettings(token: string): Promise<CreateViewSettings
   return await res.json()
 }
 
+async function getAccessibleTaskIds(token: string) {
+  const res = await fetch(`${apiUrl}/api/tasks/all?token=${token}`)
+
+  const data = await res.json()
+  return data.taskIds
+}
+
 export default async function Main({ searchParams }: { searchParams: { token: string; taskId?: string } }) {
   const token = searchParams.token
 
@@ -87,10 +93,11 @@ export default async function Main({ searchParams }: { searchParams: { token: st
   redirectIfTaskCta(searchParams, userRole)
 
   const viewSettings = await getViewSettings(token)
-  const [workflowStates, tasks, workspace] = await Promise.all([
+  const [workflowStates, tasks, workspace, accesibleTaskIds] = await Promise.all([
     getAllWorkflowStates(token),
     getAllTasks(token, { showArchived: viewSettings.showArchived, showUnarchived: viewSettings.showUnarchived }),
     getWorkspace(token),
+    getAccessibleTaskIds(token),
   ])
 
   console.info(`app/page.tsx | Serving user ${token} with payload`, tokenPayload)
@@ -102,6 +109,7 @@ export default async function Main({ searchParams }: { searchParams: { token: st
       viewSettings={viewSettings}
       tokenPayload={tokenPayload}
       clearExpandedComments={true}
+      accesibleTaskIds={accesibleTaskIds}
     >
       {/* Async fetchers */}
       <Suspense fallback={null}>

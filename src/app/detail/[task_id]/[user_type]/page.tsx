@@ -20,6 +20,7 @@ import { MenuBoxContainer } from '@/app/detail/ui/MenuBoxContainer'
 import { ResponsiveStack } from '@/app/detail/ui/ResponsiveStack'
 import { Sidebar, SidebarSkeleton } from '@/app/detail/ui/Sidebar'
 import { StyledBox, StyledTiptapDescriptionWrapper, TaskDetailsContainer } from '@/app/detail/ui/styledComponent'
+import { Subtasks } from '@/app/detail/ui/Subtasks'
 import { TaskEditor } from '@/app/detail/ui/TaskEditor'
 import { ToggleButtonContainer } from '@/app/detail/ui/ToggleButtonContainer'
 import { ToggleController } from '@/app/detail/ui/ToggleController'
@@ -32,7 +33,7 @@ import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import CustomScrollBar from '@/hoc/CustomScrollBar'
 import { RealTime } from '@/hoc/RealTime'
 import { WorkspaceResponse } from '@/types/common'
-import { TaskResponse } from '@/types/dto/tasks.dto'
+import { SubTaskStatusResponse, TaskResponse } from '@/types/dto/tasks.dto'
 import { UserType } from '@/types/interfaces'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import EscapeHandler from '@/utils/escapeHandler'
@@ -56,6 +57,12 @@ async function getWorkspace(token: string): Promise<WorkspaceResponse> {
   return await copilot.getWorkspace()
 }
 
+async function getSubTasksStatus(token: string, taskId: string): Promise<SubTaskStatusResponse> {
+  const res = await fetch(`${apiUrl}/api/tasks/${taskId}/subtask-count?token=${token}`, {})
+  const data = await res.json()
+  return data
+}
+
 export default async function TaskDetailPage({
   params,
   searchParams,
@@ -72,10 +79,11 @@ export default async function TaskDetailPage({
 
   const copilotClient = new CopilotAPI(token)
 
-  const [task, tokenPayload, workspace] = await Promise.all([
+  const [task, tokenPayload, workspace, subTaskStatus] = await Promise.all([
     getOneTask(token, task_id),
     copilotClient.getTokenPayload(),
     getWorkspace(token),
+    getSubTasksStatus(token, task_id),
   ])
 
   if (!tokenPayload) {
@@ -157,6 +165,14 @@ export default async function TaskDetailPage({
                     userType={params.user_type}
                   />
                 </StyledTiptapDescriptionWrapper>
+                {subTaskStatus.canCreateSubtask && (
+                  <Subtasks
+                    task_id={task_id}
+                    token={token}
+                    userType={tokenPayload.internalUserId ? UserRole.IU : UserRole.Client}
+                    canCreateSubtasks={params.user_type === UserType.INTERNAL_USER || !!getPreviewMode(tokenPayload)}
+                  />
+                )}
 
                 <ActivityWrapper task_id={task_id} token={token} tokenPayload={tokenPayload} />
               </TaskDetailsContainer>

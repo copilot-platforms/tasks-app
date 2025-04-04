@@ -22,6 +22,7 @@ interface IInitialState {
   isTasksLoading: boolean
   activeTask: TaskResponse | undefined
   previewMode: PreviewMode
+  accesibleTaskIds: string[]
 }
 
 const initialState: IInitialState = {
@@ -44,6 +45,7 @@ const initialState: IInitialState = {
   isTasksLoading: true,
   activeTask: undefined,
   previewMode: null,
+  accesibleTaskIds: [],
 }
 
 const taskBoardSlice = createSlice({
@@ -132,6 +134,9 @@ const taskBoardSlice = createSlice({
     setPreviewMode: (state, action: { payload: PreviewMode }) => {
       state.previewMode = action.payload
     },
+    setAccesibleTaskIds: (state, action: { payload: string[] }) => {
+      state.accesibleTaskIds = action.payload
+    },
   },
 })
 
@@ -152,6 +157,7 @@ export const {
   setIsTasksLoading,
   setActiveTask,
   setPreviewMode,
+  setAccesibleTaskIds,
 } = taskBoardSlice.actions
 
 export default taskBoardSlice.reducer

@@ -148,7 +148,7 @@ export const Sidebar = ({
             }}
             responsiveNoHide
             disabled={workflowDisabled}
-            size={Sizes.LARGE}
+            size={Sizes.MEDIUM}
             padding={'3px 8px'}
           />
         </Box>
