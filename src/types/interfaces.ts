@@ -175,6 +175,6 @@ export const UserTypesName = {
   standalone: 'Standalone', // for options in selector component which shall not be grouped
 }
 
-export interface PropsWithToken extends PropsWithChildren {
+export interface PropsWithToken {
   token: string
 }

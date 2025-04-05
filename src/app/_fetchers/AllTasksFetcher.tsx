@@ -4,6 +4,7 @@ import { apiUrl } from '@/config'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import { AccessibleTasksResponse } from '@/types/dto/tasks.dto'
 import { PropsWithToken } from '@/types/interfaces'
+import { PropsWithChildren } from 'react'
 
 const getAllAccessibleTasks = async (token: string): Promise<AccessibleTasksResponse[]> => {
   const select: (keyof AccessibleTasksResponse)[] = ['id', 'assigneeId', 'assigneeType', 'title', 'body', 'parentId']
@@ -13,7 +14,7 @@ const getAllAccessibleTasks = async (token: string): Promise<AccessibleTasksResp
   return tasks
 }
 
-export const AllTasksFetcher = async ({ token, children }: PropsWithToken) => {
+export const AllTasksFetcher = async ({ token, children }: PropsWithChildren & PropsWithToken) => {
   const accessibleTasks = await getAllAccessibleTasks(token)
 
   return <ClientSideStateUpdate accessibleTasks={accessibleTasks}>{children}</ClientSideStateUpdate>
