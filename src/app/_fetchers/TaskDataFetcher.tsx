@@ -1,12 +1,13 @@
 import { selectTaskBoard, setIsTasksLoading, setTasks } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
 import { ArchivedOptionsType } from '@/types/dto/viewSettings.dto'
+import { PropsWithToken } from '@/types/interfaces'
 import { fetcher } from '@/utils/fetcher'
 import { useCallback, useEffect, useRef } from 'react'
 import { useSelector } from 'react-redux'
 import useSWR from 'swr'
 
-export const TaskDataFetcher = ({ token }: { token: string }) => {
+export const TaskDataFetcher = ({ token }: PropsWithToken) => {
   const { showArchived, showUnarchived } = useSelector(selectTaskBoard)
 
   const latestArchivedOptions = useRef({ showArchived, showUnarchived })

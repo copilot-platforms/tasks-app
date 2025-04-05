@@ -11,17 +11,30 @@ export const getTasks = async (req: NextRequest) => {
   noStore()
   const user = await authenticate(req)
 
-  const { showArchived, showUnarchived, parentId } = getSearchParams(req.nextUrl.searchParams, [
+  const { showArchived, showUnarchived, parentId, all, select } = getSearchParams(req.nextUrl.searchParams, [
     'showArchived',
     'showUnarchived',
     'parentId',
+    'all',
+    'select',
   ])
 
   const tasksService = new TasksService(user)
   const tasks = await tasksService.getAllTasks({
+    // Show unarchived tasks in response. Default to true
     showUnarchived: getBooleanQuery(showUnarchived, true),
+
+    // Show archive tasks in response. Default to false
     showArchived: getBooleanQuery(showArchived, false),
-    parentId,
+
+    // Show subtasks belonging to a particular task only. `null` returns top-level tasks
+    parentId: parentId || null,
+
+    // Show all accessible tasks for a user
+    all: !!all,
+
+    // Select only specific columns - useful in optimization
+    selectColumns: select ? select.split(',') : undefined,
   })
 
   return NextResponse.json({ tasks })
@@ -69,10 +82,3 @@ export const clientUpdateTask = async (req: NextRequest, { params: { id } }: IdP
   const updatedTask = await tasksService.clientUpdateTask(id, workflowStateId)
   return NextResponse.json({ updatedTask })
 }
-
-export const getAccesibleTasksIds = async (req: NextRequest) => {
-  const user = await authenticate(req)
-  const tasksService = new TasksService(user)
-  const taskIds = await tasksService.getAccesibleTasksIds()
-  return NextResponse.json({ taskIds })
-} // returns list of ids of tasks that are accessible to the user irrespective of nesting

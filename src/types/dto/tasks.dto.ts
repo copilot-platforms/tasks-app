@@ -46,7 +46,7 @@ export const TaskResponseSchema = z.object({
   lastActivityLogUpdated: z.date().optional(),
   isArchived: z.boolean().optional(),
   lastArchivedDate: z.string().datetime(),
-  parentId: z.string().optional(),
+  parentId: z.string().nullish(),
   subtaskCount: z.number(),
 })
 
@@ -58,3 +58,8 @@ export const SubTaskStatusSchema = z.object({
 })
 
 export type SubTaskStatusResponse = z.infer<typeof SubTaskStatusSchema>
+
+export type AccessibleTasksResponse = Pick<
+  TaskResponse,
+  'id' | 'assigneeId' | 'assigneeType' | 'title' | 'body' | 'parentId'
+>
