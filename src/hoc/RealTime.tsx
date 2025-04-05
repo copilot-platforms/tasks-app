@@ -1,11 +1,11 @@
 'use client'
 
+import { RealtimeHandler } from '@/lib/realtime'
 import { supabase } from '@/lib/supabase'
 import { selectTaskBoard, setAccesibleTaskIds, setActiveTask, setTasks } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
 import { InternalUsersSchema, Token } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
-import { RealtimeHandler } from '@/lib/realtime'
 import { extractImgSrcs, replaceImgSrcs } from '@/utils/signedUrlReplacer'
 import { AssigneeType, Task } from '@prisma/client'
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
@@ -70,10 +70,10 @@ export const RealTime = ({
 
     // Handle realtime subtasks in a modular way
     // TODO: Handle rest of the realtime operations in the same way in a TDB milestone
-    const realtimeHandler = new RealtimeHandler(payload, user, userRole, assignee, tasks, accessibleTasks)
+    const realtimeHandler = new RealtimeHandler(payload, user, userRole)
 
     if (Object.keys(payload.new).includes('parentId') && (payload.new as RealTimeTaskResponse).parentId !== null) {
-      realtimeHandler.handleRealtimeSubtasks()
+      return realtimeHandler.handleRealtimeSubtasks()
     }
 
     if (payload.eventType === 'INSERT') {

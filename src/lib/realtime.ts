@@ -1,8 +1,9 @@
+'use client'
+
 import { RealTimeTaskResponse } from '@/hoc/RealTime'
-import { setAccessibleTasks, setTasks } from '@/redux/features/taskBoardSlice'
+import { selectTaskBoard, setAccessibleTasks, setTasks } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
 import { InternalUsersSchema } from '@/types/common'
-import { AccessibleTasksResponse, TaskResponse } from '@/types/dto/tasks.dto'
 import { IAssigneeCombined } from '@/types/interfaces'
 import { AssigneeType } from '@prisma/client'
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
@@ -13,30 +14,30 @@ export class RealtimeHandler {
     private readonly payload: RealtimePostgresChangesPayload<RealTimeTaskResponse>,
     private readonly user: IAssigneeCombined,
     private readonly userRole: AssigneeType,
-    private readonly assignee: IAssigneeCombined[],
-    private readonly tasks: TaskResponse[],
-    private readonly accessibleTasks: AccessibleTasksResponse[],
   ) {}
 
   /**
    * Filters out tasks this user type does not have access to
    */
   private isTaskAccessible(newTask: RealTimeTaskResponse): boolean {
+    const currentState = store.getState()
+    const { assignee } = selectTaskBoard(currentState)
+
     // Ignore all tasks that belong to client / company in user's limited access array, if IU is ClientAccessLimited
     if (this.userRole === AssigneeType.internalUser) {
       const iu = InternalUsersSchema.parse(this.user)
       if (iu.isClientAccessLimited) {
-        let companyId: string = ''
         const companyAccessList = iu.companyAccessList || []
         if (newTask.assigneeType === AssigneeType.client) {
-          const client = this.assignee.find((user) => user.id === newTask.assigneeId)
+          const client = assignee.find((user) => user.id === newTask.assigneeId)
           if (!client) return false
-          companyId = z.string().uuid().parse(client.companyId)
+          if (!companyAccessList.includes(z.string().parse(client.companyId))) {
+            return false
+          }
         } else if (newTask.assigneeType === AssigneeType.company) {
-          companyId = newTask.assigneeId
-        }
-        if (!companyAccessList.includes(companyId)) {
-          return false
+          if (!companyAccessList.includes(newTask.assigneeId)) {
+            return false
+          }
         }
       }
     } else if (this.userRole === AssigneeType.client) {
@@ -44,6 +45,9 @@ export class RealtimeHandler {
       if (newTask.assigneeId !== this.user.id && newTask.assigneeId !== this.user.companyId) {
         return false
       }
+    } else {
+      console.error("Couldn't validate realtime task access because userRole is not defined")
+      return false
     }
     return true
   }
@@ -66,44 +70,63 @@ export class RealtimeHandler {
    * Handler for subtask insert, for subtasks that are accessible to the current user
    */
   private handleRealtimeSubtaskInsert(newTask: RealTimeTaskResponse) {
+    const currentState = store.getState()
+    const { tasks, accessibleTasks } = selectTaskBoard(currentState)
+
     // Check if this new task is a disjoint task by checking if accessible tasks array contains its parent.
     // If it is a disjoint task we need to insert it to the fkin board
-    const isParentTaskAccessible = this.accessibleTasks.some((task) => task.id === newTask.parentId)
-    // TODO: can implement flattened disjoint tasks for IU (parent is assigned to limited client / company) here
+    const isParentTaskAccessible = accessibleTasks.some((task) => task.id === newTask.parentId)
+    // TODO: @arpandhakal we can implement flattened disjoint tasks for IU (parent is assigned to limited client / company) here
     if (this.userRole === AssigneeType.client && !isParentTaskAccessible) {
-      store.dispatch(setTasks([newTask, ...this.tasks]))
+      store.dispatch(setTasks([...tasks, newTask]))
     }
     // Append this new task to set of accessible tasks
-    store.dispatch(setAccessibleTasks([newTask, ...this.accessibleTasks]))
+    store.dispatch(setAccessibleTasks([...accessibleTasks, newTask]))
   }
 
   /**
    * Handler for subtask update, for subtasks that are accessible to the current user
    */
   private handleRealtimeSubtaskUpdate(newTask: RealTimeTaskResponse) {
-    // We need to handle:
+    const currentState = store.getState()
+    const { tasks, accessibleTasks } = selectTaskBoard(currentState)
+
+    // We need to handle changes for:
     // 1. deletedAt - remove from tasks and accessibleTasks arrays
-    // 2. title & body - update in accessibleTasks (optionally tasks if flattened to tasks board) for realtime search
+    // 2. title & body - realtime updates on search in subtasks
+    // 3. assigneeId - reassignment
+    const isTaskVisibleInBoard = tasks.some((task) => task.id === newTask.id)
+    const filterOutNewTask = <T extends { id: string }>(tasks: T[]): T[] => {
+      return tasks.filter((task) => task.id !== newTask.id)
+    }
+
     if (newTask.deletedAt) {
       // Remove from all tasks and accessibleTasks array, if exists
-      if (this.tasks.some((task) => task.id === newTask.id)) {
-        store.dispatch(setTasks(this.tasks.filter((task) => task.id !== newTask.id)))
+      if (isTaskVisibleInBoard) {
+        store.dispatch(setTasks(filterOutNewTask(tasks)))
       }
-      store.dispatch(setAccessibleTasks(this.accessibleTasks.filter((task) => task.id !== newTask.id)))
+      store.dispatch(setAccessibleTasks(filterOutNewTask(accessibleTasks)))
       return
     }
 
-    if (this.tasks.some((task) => task.id === newTask.id)) {
+    // If task is flattened and visible in board, update its content in tasks array
+    if (isTaskVisibleInBoard) {
       store.dispatch(
         setTasks(
-          this.tasks.map((task) => {
+          tasks.map((task) => {
             return task.id === newTask.id ? { ...newTask, body: newTask.body || task.body } : task
           }),
         ),
       )
     }
-
-    store.dispatch(setAccessibleTasks(this.accessibleTasks))
+    // Update it in accessible tasks
+    store.dispatch(
+      setAccessibleTasks(
+        accessibleTasks.map((task) => {
+          return task.id === newTask.id ? { ...newTask, body: newTask.body || task.body } : task
+        }),
+      ),
+    )
   }
 
   /**
