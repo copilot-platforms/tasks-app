@@ -51,6 +51,8 @@ export const Subtasks = ({
     setOpenTaskForm(!openTaskForm)
   }
 
+  const mode = tokenPayload?.internalUserId ? UserRole.IU : UserRole.Client
+
   const cacheKey = `/api/tasks/?token=${token}&showArchived=1&showUnarchived=1&parentId=${task_id}`
   const { data: subTasks, mutate: mutateList } = useSWR(cacheKey, fetcher, { refreshInterval: 0 })
 
@@ -166,7 +168,7 @@ export const Subtasks = ({
                 }}
                 key={checkOptimisticStableId(item, optimisticUpdates)}
               >
-                <TaskCardList task={item} variant="subtask" />
+                <TaskCardList task={item} variant="subtask" mode={mode} />
               </div>
             )
           }
@@ -176,7 +178,7 @@ export const Subtasks = ({
               key={checkOptimisticStableId(item, optimisticUpdates)}
               href={{ pathname: getCardHref(item, userType), query: { token } }}
             >
-              <TaskCardList task={item} variant="subtask" />
+              <TaskCardList task={item} variant="subtask" mode={mode} />
             </CustomLink>
           )
         })}

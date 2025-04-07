@@ -8,27 +8,30 @@ import { Box, Popper, Stack, Typography } from '@mui/material'
 import { SecondaryBtn } from '../buttons/SecondaryBtn'
 import { useState } from 'react'
 import { Sizes } from '@/types/interfaces'
+import { DueDateLayout } from '@/components/layouts/DueDateLayout'
 
 interface Prop {
   getDate: (value: string) => void
   dateValue?: Date | string
-  isButton?: boolean
   disabled?: boolean
   size?: Sizes
   padding?: string
   height?: string
   gap?: string
+  variant?: 'button' | 'icon' | 'normal'
+  isDone?: boolean
 }
 
 export const DatePickerComponent = ({
   getDate,
   dateValue,
   disabled,
-  isButton = false,
   size = Sizes.SMALL,
   padding,
   height,
   gap,
+  variant = 'normal',
+  isDone,
 }: Prop) => {
   const [value, setValue] = useState(dateValue ? dayjs(dateValue) : null)
 
@@ -61,11 +64,11 @@ export const DatePickerComponent = ({
         aria-describedby={id}
         sx={{
           cursor: disabled ? 'auto' : 'default',
-          padding: isButton ? '0px' : '4px 8px',
+          padding: variant == 'button' || 'icon' ? '0px' : '4px 8px',
           borderRadius: '4px',
         }}
       >
-        {isButton ? (
+        {variant == 'button' ? (
           <SecondaryBtn
             height={height}
             padding={padding}
@@ -94,7 +97,7 @@ export const DatePickerComponent = ({
               </Stack>
             }
           />
-        ) : (
+        ) : variant === 'normal' ? (
           <>
             <Box>
               <CalenderIcon />
@@ -114,6 +117,21 @@ export const DatePickerComponent = ({
               {value ? formatDate(value) : 'No due date'}
             </Typography>
           </>
+        ) : (
+          <Box
+            sx={{
+              padding: padding,
+              borderRadius: '4px',
+              ':hover': {
+                cursor: 'pointer',
+                background: (theme) => theme.color.gray[150],
+              },
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          >
+            <DueDateLayout dateString={value?.format('YYYY-MM-DD') ?? ''} isDone={isDone ?? false} />
+          </Box>
         )}
       </Stack>
       <Popper
