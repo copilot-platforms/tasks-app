@@ -7,7 +7,7 @@ import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { PropsWithToken } from '@/types/interfaces'
 import { PropsWithChildren } from 'react'
 
-interface Props extends PropsWithToken, PropsWithChildren {
+interface WorkflowStateFetcherProps extends PropsWithToken, PropsWithChildren {
   task?: TaskResponse
 }
 
@@ -21,7 +21,7 @@ const getAllWorkflowStates = async (token: string): Promise<WorkflowStateRespons
   return data.workflowStates
 }
 
-export const WorkflowStateFetcher = async ({ token, children, task }: Props) => {
+export const WorkflowStateFetcher = async ({ token, children, task }: WorkflowStateFetcherProps) => {
   const workflowStates = await getAllWorkflowStates(token)
 
   return (
