@@ -1,54 +1,28 @@
 'use client'
 
-import { updateTask } from '@/app/actions'
-import { UserRole } from '@/app/api/core/types/user'
-import { clientUpdateTask, updateAssignee, updateTaskDetail } from '@/app/detail/[task_id]/[user_type]/actions'
-import { StyledModal } from '@/app/detail/ui/styledComponent'
-import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
-import { MiniLoader } from '@/components/atoms/MiniLoader'
-import { TaskMetaItems } from '@/components/atoms/TaskMetaItems'
-import { DatePickerComponent } from '@/components/inputs/DatePickerComponent'
-import Selector, { SelectorType } from '@/components/inputs/Selector'
-import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
-import { ConfirmUI } from '@/components/layouts/ConfirmUI'
-import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
-import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
-import { selectTaskDetails, toggleShowConfirmAssignModal } from '@/redux/features/taskDetailsSlice'
-import store from '@/redux/store'
-import { DateStringSchema } from '@/types/date'
-import { TaskResponse } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { IAssigneeCombined, Sizes } from '@/types/interfaces'
-import { getAssigneeName, isAssigneeTextMatching } from '@/utils/assignee'
-import { createDateFromFormattedDateString, formatDate } from '@/utils/dateHelper'
-import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
-import { isTaskCompleted } from '@/utils/isTaskCompleted'
-import { NoAssignee, NoAssigneeExtraOptions, NoDataFoundOption } from '@/utils/noAssignee'
-import { ShouldConfirmBeforeReassignment } from '@/utils/shouldConfirmBeforeReassign'
-import { setDebouncedFilteredAssignees } from '@/utils/users'
 import { Box, Stack, Typography } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { TaskResponse } from '@/types/dto/tasks.dto'
 import { useSelector } from 'react-redux'
-import { z } from 'zod'
+import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { statusIcons } from '@/utils/iconMatcher'
+import { IAssigneeCombined, Sizes } from '@/types/interfaces'
+import { DueDateLayout } from '@/components/layouts/DueDateLayout'
+import { isTaskCompleted } from '@/utils/isTaskCompleted'
+import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
+import { useEffect, useState } from 'react'
+import { NoAssignee } from '@/utils/noAssignee'
+import { TaskMetaItems } from '@/components/atoms/TaskMetaItems'
 
 interface TaskCardListProps {
   task: TaskResponse
   variant: 'task' | 'subtask' //task variant is used in task board list view, subtask variant is used for sub task list in details page
   workflowState?: WorkflowStateResponse
-  mode: UserRole
-  assignee?: IAssigneeCombined
 }
 
-export const TaskCardList = ({ task, variant, workflowState, mode }: TaskCardListProps) => {
-  const { assignee, workflowStates, previewMode, token } = useSelector(selectTaskBoard)
+export const TaskCardList = ({ task, variant, workflowState }: TaskCardListProps) => {
+  const { assignee, workflowStates } = useSelector(selectTaskBoard)
   const [currentAssignee, setCurrentAssignee] = useState<IAssigneeCombined | undefined>(undefined)
-  const { showConfirmAssignModal } = useSelector(selectTaskDetails)
-
-  const [inputStatusValue, setInputStatusValue] = useState('')
-  const [selectedAssignee, setSelectedAssignee] = useState<IAssigneeCombined | undefined>(undefined)
-  const [loading, setLoading] = useState(false)
-  const [filteredAssignees, setFilteredAssignees] = useState(assignee)
-  const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     if (assignee.length > 0) {
@@ -57,27 +31,6 @@ export const TaskCardList = ({ task, variant, workflowState, mode }: TaskCardLis
       setCurrentAssignee(currentAssignee ?? NoAssignee)
     }
   }, [assignee, task])
-
-  const { renderingItem: _statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
-    // item: selectedWorkflowState,
-    item: workflowState ?? task.workflowState,
-    type: SelectorType.STATUS_SELECTOR,
-  })
-  console.log(task)
-  const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
-    // item: selectedAssigneeId ? assignee.find((el) => el.id === selectedAssigneeId) : NoAssignee,
-    item: currentAssignee,
-    type: SelectorType.ASSIGNEE_SELECTOR,
-  })
-
-  const statusValue = _statusValue as WorkflowStateResponse
-  const assigneeValue = _assigneeValue as IAssigneeCombined
-
-  const handleConfirmAssigneeChange = (assigneeValue: IAssigneeCombined) => {
-    token && updateAssignee(token, task.id, getAssigneeTypeCorrected(assigneeValue), assigneeValue.id)
-    store.dispatch(toggleShowConfirmAssignModal())
-  }
-
   return (
     <Stack
       direction="row"
@@ -114,26 +67,9 @@ export const TaskCardList = ({ task, variant, workflowState, mode }: TaskCardLis
             flexShrink: 1,
           }}
         >
-          <WorkflowStateSelector
-            option={workflowStates}
-            value={statusValue}
-            variant="icon"
-            getValue={(value) => {
-              updateStatusValue(value)
-              if (mode === UserRole.Client && !previewMode) {
-                clientUpdateTask(z.string().parse(token), task.id, value.id)
-              } else {
-                updateTask({
-                  token: z.string().parse(token),
-                  taskId: task.id,
-                  payload: { workflowStateId: value.id },
-                })
-              }
-            }}
-            responsiveNoHide
-            size={Sizes.MEDIUM}
-            padding={'2px 4px'}
-          />
+          <Box sx={{ padding: '2px 4px' }}>
+            {statusIcons[Sizes.MEDIUM][workflowState ? workflowState.type : task.workflowState.type]}
+          </Box>
 
           <Typography
             variant="bodySm"
@@ -168,96 +104,12 @@ export const TaskCardList = ({ task, variant, workflowState, mode }: TaskCardLis
         }}
       >
         {task.dueDate && (
-          <Box sx={{ minWidth: '105px', display: 'flex', justifyContent: 'flex-end' }}>
-            <DatePickerComponent
-              getDate={(date) => {
-                const isoDate = DateStringSchema.parse(formatDate(date))
-                token && updateTaskDetail({ token, taskId: task.id, payload: { dueDate: isoDate } })
-              }}
-              variant="icon"
-              padding="2px 4px"
-              dateValue={task.dueDate ? createDateFromFormattedDateString(z.string().parse(task.dueDate)) : undefined}
-              disabled={mode === UserRole.Client && !previewMode}
-              isDone={isTaskCompleted(task, workflowStates)}
-            />
+          <Box sx={{ minWidth: '100px', display: 'flex', justifyContent: 'flex-end' }}>
+            <DueDateLayout dateString={task.dueDate} isDone={isTaskCompleted(task, workflowStates)} />
           </Box>
         )}
-        <Selector
-          inputStatusValue={inputStatusValue}
-          disableOutline
-          setInputStatusValue={setInputStatusValue}
-          buttonWidth="100%"
-          padding={'2px 4px'}
-          placeholder="Set assignee"
-          getSelectedValue={(newValue) => {
-            const assignee = newValue as IAssigneeCombined
-            const shouldShowConfirmModal = ShouldConfirmBeforeReassignment(assigneeValue, assignee)
-            if (shouldShowConfirmModal) {
-              setSelectedAssignee(assignee)
-              store.dispatch(toggleShowConfirmAssignModal())
-            } else {
-              token && updateAssignee(token, task.id, getAssigneeTypeCorrected(assignee), assignee.id)
-              updateAssigneeValue(assignee)
-            }
-          }}
-          options={loading ? [] : filteredAssignees.length ? filteredAssignees : [NoDataFoundOption]}
-          value={assigneeValue?.name == 'No assignee' ? null : assigneeValue}
-          selectorType={SelectorType.ASSIGNEE_SELECTOR}
-          buttonHeight="auto"
-          buttonContent={<CopilotAvatar currentAssignee={assigneeValue as IAssigneeCombined} />}
-          handleInputChange={async (newInputValue: string) => {
-            if (!newInputValue || isAssigneeTextMatching(newInputValue, assigneeValue)) {
-              setFilteredAssignees(assignee)
-              return
-            }
-
-            setDebouncedFilteredAssignees(
-              activeDebounceTimeoutId,
-              setActiveDebounceTimeoutId,
-              setLoading,
-              setFilteredAssignees,
-              z.string().parse(token),
-              newInputValue,
-            )
-          }}
-          extraOption={NoAssigneeExtraOptions}
-          extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
-            return <>{loading && <MiniLoader />}</>
-          }}
-          disabled={mode === UserRole.Client && !previewMode}
-          cursor="pointer"
-          filterOption={(x: unknown) => x}
-          responsiveNoHide
-          currentOption={assigneeValue}
-        />
+        <CopilotAvatar currentAssignee={currentAssignee as IAssigneeCombined} />
       </Stack>
-      <StyledModal
-        open={showConfirmAssignModal}
-        onClose={() => store.dispatch(toggleShowConfirmAssignModal())}
-        aria-labelledby="confirm-reassignment-modal"
-        aria-describedby="confirm-reassignment"
-      >
-        <ConfirmUI
-          handleCancel={() => {
-            setSelectedAssignee(undefined)
-            store.dispatch(toggleShowConfirmAssignModal())
-          }}
-          handleConfirm={() => {
-            if (selectedAssignee) {
-              handleConfirmAssigneeChange(selectedAssignee)
-            }
-          }}
-          buttonText="Reassign"
-          description={
-            <>
-              You&apos;re about to reassign this task from <strong>{getAssigneeName(assigneeValue)}</strong> to{' '}
-              <strong>{getAssigneeName(selectedAssignee)}</strong>. This will give{' '}
-              <strong>{getAssigneeName(selectedAssignee)}</strong> access to all task comments and history.
-            </>
-          }
-          title="Reassign task?"
-        />
-      </StyledModal>
     </Stack>
   )
 }

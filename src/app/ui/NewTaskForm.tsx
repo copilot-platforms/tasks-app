@@ -232,7 +232,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
             >
               <DatePickerComponent
                 getDate={(value) => store.dispatch(setCreateTaskFields({ targetField: 'dueDate', value: value as string }))}
-                variant="button"
+                isButton={true}
               />
             </Box>
           </Stack>

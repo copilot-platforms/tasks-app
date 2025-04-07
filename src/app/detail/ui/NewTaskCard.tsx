@@ -417,7 +417,7 @@ export const NewTaskCard = ({
             padding={'0px 4px'}
             height={'28px'}
             getDate={(value) => handleFieldChange('dueDate', value)}
-            variant="button"
+            isButton={true}
             dateValue={subTaskFields.dueDate ?? undefined}
           />
         </Stack>

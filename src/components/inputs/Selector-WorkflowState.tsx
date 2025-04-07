@@ -10,7 +10,7 @@ export const WorkflowStateSelector = ({
   option,
   disabled,
   getValue,
-  variant = 'outlined',
+  disableOutline,
   responsiveNoHide,
   size = Sizes.SMALL,
   padding,
@@ -21,7 +21,7 @@ export const WorkflowStateSelector = ({
   option: WorkflowStateResponse[]
   disabled?: boolean
   getValue: (value: WorkflowStateResponse) => void
-  variant?: 'outlined' | 'icon' | 'normal'
+  disableOutline?: boolean
   responsiveNoHide?: boolean
   size?: Exclude<Sizes, Sizes.LARGE>
   padding?: string
@@ -33,8 +33,6 @@ export const WorkflowStateSelector = ({
   const id = open ? 'selector-workflowStateSelector-popper' : ''
 
   const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
-    event.preventDefault()
-    event.stopPropagation()
     if (!disabled) {
       setAnchorEl(anchorEl ? null : event.currentTarget)
     }
@@ -63,7 +61,7 @@ export const WorkflowStateSelector = ({
         }}
       >
         <Box onClick={handleClick} aria-describedby={id}>
-          {variant == 'normal' ? (
+          {disableOutline ? (
             <Stack
               direction="row"
               alignItems="center"
@@ -90,7 +88,7 @@ export const WorkflowStateSelector = ({
                 {value?.name as ReactNode}
               </Typography>
             </Stack>
-          ) : variant === 'outlined' ? (
+          ) : (
             <SecondaryBtn
               padding={padding}
               height={height}
@@ -109,19 +107,6 @@ export const WorkflowStateSelector = ({
                 </Stack>
               }
             />
-          ) : (
-            <Box
-              sx={{
-                padding: padding,
-                borderRadius: '4px',
-                ':hover': {
-                  cursor: 'pointer',
-                  background: (theme) => theme.color.gray[150],
-                },
-              }}
-            >
-              {statusIcons[size][value?.type]}
-            </Box>
           )}
         </Box>
         <Popper

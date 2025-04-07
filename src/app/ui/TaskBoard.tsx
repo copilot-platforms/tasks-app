@@ -244,7 +244,7 @@ export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
                           task={task}
                           draggable // Make ListViewTaskCard draggable
                         >
-                          <TaskCardList task={task} variant="task" key={task.id} workflowState={list} mode={mode} />
+                          <TaskCardList task={task} variant="task" key={task.id} workflowState={list} />
                         </DragDropHandler>
                       </CustomLink>
                     )

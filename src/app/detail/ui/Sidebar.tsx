@@ -250,7 +250,7 @@ export const Sidebar = ({
             }}
             dateValue={dueDate ? createDateFromFormattedDateString(z.string().parse(dueDate)) : undefined}
             disabled={disabled && !previewMode}
-            variant="button"
+            isButton={true}
             size={Sizes.MEDIUM}
             padding={'3px 8px'}
           />
@@ -328,7 +328,7 @@ export const Sidebar = ({
                 updateWorkflowState(value)
               }}
               disabled={workflowDisabled}
-              variant={'normal'}
+              disableOutline
               responsiveNoHide
             />
           </Box>
