@@ -2,7 +2,13 @@
 
 import { RealtimeHandler } from '@/lib/realtime'
 import { supabase } from '@/lib/supabase'
-import { selectTaskBoard, setAccesibleTaskIds, setActiveTask, setTasks } from '@/redux/features/taskBoardSlice'
+import {
+  selectTaskBoard,
+  setAccesibleTaskIds,
+  setAccessibleTasks,
+  setActiveTask,
+  setTasks,
+} from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
 import { InternalUsersSchema, Token } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
@@ -29,7 +35,7 @@ export const RealTime = ({
   task?: TaskResponse
   tokenPayload: Token
 }) => {
-  const { tasks, token, activeTask, assignee, accesibleTaskIds } = useSelector(selectTaskBoard)
+  const { tasks, accessibleTasks, token, activeTask, assignee, accesibleTaskIds } = useSelector(selectTaskBoard)
   const { showUnarchived, showArchived } = useSelector(selectTaskBoard)
   const pathname = usePathname()
   const router = useRouter()
@@ -76,6 +82,7 @@ export const RealTime = ({
       return realtimeHandler.handleRealtimeSubtasks()
     }
 
+    // TODO: Refactor all of this
     if (payload.eventType === 'INSERT') {
       // For both user types, filter out just tasks belonging to workspace.
       // NOTE: This is not needed any more since we run `eq.${tokenPayload?.workspaceId}` in POSTGRES_CHANGES filter
@@ -88,7 +95,9 @@ export const RealTime = ({
         // NOTE: isSubtask will never be true since `handleRealtimeSubtasks` takes care of it elsewhere
         const isSubtask = payload.new.parentId && accesibleTaskIds.find((id) => id === payload.new.parentId) // dont append task into task list if its a subtask
         if (canUserAccessTask) {
+          // @deprecated - use of accessibleTasks is preferred
           store.dispatch(setAccesibleTaskIds([...accesibleTaskIds, payload.new.id]))
+          store.dispatch(setAccessibleTasks([...accessibleTasks, payload.new]))
         }
         canUserAccessTask = canUserAccessTask && !isSubtask
       }
@@ -101,7 +110,9 @@ export const RealTime = ({
         canUserAccessTask = canUserAccessTask && [userId, tokenPayload?.companyId].includes(payload.new.assigneeId)
         const isSubtask = payload.new.parentId && accesibleTaskIds.find((id) => id === payload.new.parentId)
         if (canUserAccessTask) {
+          // @deprecated - use of accessibleTasks is preferred
           store.dispatch(setAccesibleTaskIds([...accesibleTaskIds, payload.new.id]))
+          store.dispatch(setAccessibleTasks([...accessibleTasks, payload.new]))
         }
 
         canUserAccessTask = canUserAccessTask && !isSubtask
@@ -132,6 +143,7 @@ export const RealTime = ({
           const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
           store.dispatch(setTasks(newTaskArr))
           store.dispatch(setAccesibleTaskIds(accesibleTaskIds.filter((id) => id !== updatedTask.id)))
+          store.dispatch(setAccessibleTasks(accessibleTasks.filter((task) => task.id !== updatedTask.id)))
           if (updatedTask.id === activeTask?.id) {
             redirectToBoard(updatedTask)
           }
@@ -146,6 +158,7 @@ export const RealTime = ({
           const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
           store.dispatch(setTasks(newTaskArr))
           store.dispatch(setAccesibleTaskIds(accesibleTaskIds.filter((id) => id !== updatedTask.id)))
+          store.dispatch(setAccessibleTasks(accessibleTasks.filter((task) => task.id !== updatedTask.id)))
           if (updatedTask.id === activeTask?.id) {
             redirectToBoard(updatedTask)
           }
@@ -168,6 +181,7 @@ export const RealTime = ({
           const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
           store.dispatch(setTasks(newTaskArr))
           store.dispatch(setAccesibleTaskIds(accesibleTaskIds.filter((id) => id !== updatedTask.id)))
+          store.dispatch(setAccessibleTasks(accessibleTasks.filter((task) => task.id !== updatedTask.id)))
           //if a user is in the details page when the task is deleted then we want the user to get redirected to '/' route
           if (updatedTask.id === activeTask?.id) {
             redirectToBoard(updatedTask)
