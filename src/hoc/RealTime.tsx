@@ -29,7 +29,7 @@ export const RealTime = ({
   task?: TaskResponse
   tokenPayload: Token
 }) => {
-  const { tasks, accessibleTasks, token, activeTask, assignee, accesibleTaskIds } = useSelector(selectTaskBoard)
+  const { tasks, token, activeTask, assignee, accesibleTaskIds } = useSelector(selectTaskBoard)
   const { showUnarchived, showArchived } = useSelector(selectTaskBoard)
   const pathname = usePathname()
   const router = useRouter()
@@ -85,6 +85,7 @@ export const RealTime = ({
       if (user && userRole === AssigneeType.internalUser && InternalUsersSchema.parse(user).isClientAccessLimited) {
         const assigneeSet = new Set(assignee.map((a) => a.id))
         canUserAccessTask = canUserAccessTask && (payload.new.assigneeId ? assigneeSet.has(payload.new.assigneeId) : false) //filtering out unassigned tasks with a fallback false value.
+        // NOTE: isSubtask will never be true since `handleRealtimeSubtasks` takes care of it elsewhere
         const isSubtask = payload.new.parentId && accesibleTaskIds.find((id) => id === payload.new.parentId) // dont append task into task list if its a subtask
         if (canUserAccessTask) {
           store.dispatch(setAccesibleTaskIds([...accesibleTaskIds, payload.new.id]))

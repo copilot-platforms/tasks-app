@@ -91,17 +91,13 @@ export class RealtimeHandler {
     const currentState = store.getState()
     const { tasks, accessibleTasks } = selectTaskBoard(currentState)
 
-    // We need to handle changes for:
-    // 1. deletedAt - remove from tasks and accessibleTasks arrays
-    // 2. title & body - realtime updates on search in subtasks
-    // 3. assigneeId - reassignment
     const isTaskVisibleInBoard = tasks.some((task) => task.id === newTask.id)
     const filterOutNewTask = <T extends { id: string }>(tasks: T[]): T[] => {
       return tasks.filter((task) => task.id !== newTask.id)
     }
 
+    // Remove from tasks and accessibleTasks array, if task has been deleted.
     if (newTask.deletedAt) {
-      // Remove from all tasks and accessibleTasks array, if exists
       if (isTaskVisibleInBoard) {
         store.dispatch(setTasks(filterOutNewTask(tasks)))
       }
@@ -109,12 +105,15 @@ export class RealtimeHandler {
       return
     }
 
-    // If task is flattened and visible in board, update its content in tasks array
+    // It's possible that a subtask exists in `tasks` because it can be a disjoint task, update it
     if (isTaskVisibleInBoard) {
       store.dispatch(
         setTasks(
           tasks.map((task) => {
-            return task.id === newTask.id ? { ...newTask, body: newTask.body || task.body } : task
+            return task.id === newTask.id
+              ? // Update task - account for TOAST behavior in `body`, and format realtime postgres' timestamp
+                { ...newTask, body: newTask.body || task.body, createdAt: new Date(newTask.createdAt + 'Z') }
+              : task
           }),
         ),
       )
@@ -123,7 +122,10 @@ export class RealtimeHandler {
     store.dispatch(
       setAccessibleTasks(
         accessibleTasks.map((task) => {
-          return task.id === newTask.id ? { ...newTask, body: newTask.body || task.body } : task
+          const { id, title, assigneeId, assigneeType, parentId } = newTask
+          return task.id === newTask.id
+            ? { id, assigneeId, assigneeType, parentId, title, body: newTask.body || task.body }
+            : task
         }),
       ),
     )

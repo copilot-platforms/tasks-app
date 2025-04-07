@@ -136,6 +136,9 @@ const taskBoardSlice = createSlice({
     setPreviewMode: (state, action: { payload: PreviewMode }) => {
       state.previewMode = action.payload
     },
+    /**
+     * @deprecated - Use `accessibleTasks` state instead
+     */
     setAccesibleTaskIds: (state, action: { payload: string[] }) => {
       state.accesibleTaskIds = action.payload
     },
