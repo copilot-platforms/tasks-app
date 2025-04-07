@@ -76,10 +76,6 @@ export class RealtimeHandler {
     // Check if this new task is a disjoint task by checking if accessible tasks array contains its parent.
     // If it is a disjoint task we need to insert it to the fkin board
     const isParentTaskAccessible = accessibleTasks.some((task) => task.id === newTask.parentId)
-    console.log('tasks', tasks)
-    console.log('accessible tasks', accessibleTasks)
-    console.log('new task', newTask)
-    console.log('is accessible task?', isParentTaskAccessible)
 
     // TODO: @arpandhakal we can implement flattened disjoint tasks for IU (parent is assigned to limited client / company) here
     if (this.userRole === AssigneeType.client && !isParentTaskAccessible) {
@@ -100,8 +96,6 @@ export class RealtimeHandler {
     const filterOutNewTask = <T extends { id: string }>(tasks: T[]): T[] => {
       return tasks.filter((task) => task.id !== newTask.id)
     }
-
-    console.log('isTaskVisibleInBoard', isTaskVisibleInBoard)
 
     // Remove from tasks and accessibleTasks array, if task has been deleted.
     if (newTask.deletedAt) {
