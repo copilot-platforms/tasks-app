@@ -408,7 +408,7 @@ const NewTaskFooter = ({
                 {'Apply template'}
               </Typography>
             }
-            disableOutline
+            variant="normal"
             responsiveNoHide
             buttonWidth="auto"
             useClickHandler
