@@ -174,12 +174,7 @@ export const Subtasks = ({
           }
 
           return (
-            <CustomLink
-              key={checkOptimisticStableId(item, optimisticUpdates)}
-              href={{ pathname: getCardHref(item, userType), query: { token } }}
-            >
-              <TaskCardList task={item} variant="subtask" mode={mode} />
-            </CustomLink>
+            <TaskCardList key={checkOptimisticStableId(item, optimisticUpdates)} task={item} variant="subtask" mode={mode} />
           )
         })}
       </Box>

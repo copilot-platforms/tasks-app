@@ -11,6 +11,7 @@ import { DatePickerComponent } from '@/components/inputs/DatePickerComponent'
 import Selector, { SelectorType } from '@/components/inputs/Selector'
 import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
 import { ConfirmUI } from '@/components/layouts/ConfirmUI'
+import { CustomLink } from '@/hoc/CustomLink'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { selectTaskBoard, setConfirmAssigneeModalId } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
@@ -21,6 +22,7 @@ import { IAssigneeCombined, Sizes } from '@/types/interfaces'
 import { getAssigneeName, isAssigneeTextMatching } from '@/utils/assignee'
 import { createDateFromFormattedDateString, formatDate } from '@/utils/dateHelper'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
+import { getCardHref } from '@/utils/getCardHref'
 import { isTaskCompleted } from '@/utils/isTaskCompleted'
 import { NoAssignee, NoAssigneeExtraOptions, NoDataFoundOption } from '@/utils/noAssignee'
 import { ShouldConfirmBeforeReassignment } from '@/utils/shouldConfirmBeforeReassign'
@@ -95,69 +97,83 @@ export const TaskCardList = ({ task, variant, workflowState, mode }: TaskCardLis
     >
       <Stack
         direction="row"
+        alignItems="center"
         sx={{
-          gap: '8px',
           display: 'flex',
-          alignItems: 'center',
-          marginRight: 'auto',
+          gap: '2px',
           minWidth: 0,
           flexGrow: 1,
+          flexShrink: 1,
         }}
       >
-        <Stack
-          direction="row"
-          alignItems="center"
-          sx={{
+        <WorkflowStateSelector
+          option={workflowStates}
+          value={statusValue}
+          variant="icon"
+          getValue={(value) => {
+            updateStatusValue(value)
+            if (mode === UserRole.Client && !previewMode) {
+              clientUpdateTask(z.string().parse(token), task.id, value.id)
+            } else {
+              updateTask({
+                token: z.string().parse(token),
+                taskId: task.id,
+                payload: { workflowStateId: value.id },
+              })
+            }
+          }}
+          responsiveNoHide
+          size={Sizes.MEDIUM}
+          padding={'2px 4px'}
+        />
+        <CustomLink
+          key={task.id}
+          href={{ pathname: getCardHref(task, mode), query: { token } }}
+          style={{
             display: 'flex',
             gap: '2px',
             minWidth: 0,
             flexGrow: 0,
             flexShrink: 1,
+            width: '100%',
           }}
         >
-          <WorkflowStateSelector
-            option={workflowStates}
-            value={statusValue}
-            variant="icon"
-            getValue={(value) => {
-              updateStatusValue(value)
-              if (mode === UserRole.Client && !previewMode) {
-                clientUpdateTask(z.string().parse(token), task.id, value.id)
-              } else {
-                updateTask({
-                  token: z.string().parse(token),
-                  taskId: task.id,
-                  payload: { workflowStateId: value.id },
-                })
-              }
-            }}
-            responsiveNoHide
-            size={Sizes.MEDIUM}
-            padding={'2px 4px'}
-          />
-
-          <Typography
-            variant="bodySm"
+          <Stack
+            direction="row"
             sx={{
-              lineHeight: variant == 'task' ? '22px' : '21px',
-              fontSize: variant == 'task' ? '14px' : '13px',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              flexShrink: 1,
-              flexGrow: 1,
+              gap: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              marginRight: 'auto',
               minWidth: 0,
+              flexGrow: 1,
+              flexShrink: 1,
             }}
           >
-            {task.title}
-          </Typography>
-        </Stack>
-        {(task.subtaskCount > 0 || task.isArchived) && (
-          <Stack direction="row" sx={{ display: 'flex', gap: '12px', flexShrink: 0, alignItems: 'center' }}>
-            <TaskMetaItems task={task} lineHeight="21px" />
+            <Typography
+              variant="bodySm"
+              sx={{
+                lineHeight: variant == 'task' ? '22px' : '21px',
+                fontSize: variant == 'task' ? '14px' : '13px',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                flexShrink: 1,
+                flexGrow: 0,
+                minWidth: 0,
+              }}
+            >
+              {task.title}
+            </Typography>
+            {(task.subtaskCount > 0 || task.isArchived) && (
+              <Stack direction="row" sx={{ display: 'flex', gap: '12px', flexShrink: 0, alignItems: 'center' }}>
+                <TaskMetaItems task={task} lineHeight="21px" />
+              </Stack>
+            )}
           </Stack>
-        )}
+        </CustomLink>
       </Stack>
+
       <Stack
         direction="row"
         sx={{
