@@ -2,9 +2,10 @@ import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 import { deleteTaskNotifications, sendTaskCreateNotifications, sendTaskUpdateNotifications } from '@/jobs/notifications'
 import { sendClientUpdateTaskNotifications } from '@/jobs/notifications/send-client-task-update-notifications'
 import { ClientResponse, CompanyResponse, InternalUsers } from '@/types/common'
+import { AncestorTask } from '@/types/db'
 import { CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { CopilotAPI } from '@/utils/CopilotAPI'
-import { buildLtree, buildLtreeNodeString } from '@/utils/ltree'
+import { buildLtree, buildLtreeNodeString, getIdsFromLtreePath } from '@/utils/ltree'
 import { getFilePathFromUrl, replaceImageSrc } from '@/utils/signedUrlReplacer'
 import { getSignedUrl } from '@/utils/signUrl'
 import { SupabaseActions } from '@/utils/SupabaseActions'
@@ -586,6 +587,32 @@ export class TasksService extends BaseService {
 
     await sendClientUpdateTaskNotifications.trigger({ user: this.user, prevTask, updatedTask, updatedWorkflowState })
     return updatedTask
+  }
+
+  async getTraversalPath(id: string): Promise<any> {
+    const taskWithPath = (
+      await this.db.$queryRaw<{ path: string }[]>`
+      SELECT "path" from "Tasks"
+      WHERE id = ${id}::uuid
+      LIMIT 1
+    `
+    )?.[0]
+    if (!taskWithPath) {
+      throw new APIError(httpStatus.NOT_FOUND, 'The requested task was not found')
+    }
+
+    const parents = getIdsFromLtreePath(taskWithPath.path)
+    const parentTasks = await Promise.all(
+      parents.map((id) =>
+        this.db.task.findFirstOrThrow({
+          where: { id, workspaceId: this.user.workspaceId, assigneeId: { not: null } },
+          select: { title: true, label: true, assigneeId: true, assigneeType: true },
+        }),
+      ) as Promise<AncestorTask>[], // safe casting, trust me
+    )
+
+    const subtaskService = new SubtaskService(this.user)
+    return await subtaskService.getAccessiblePathTasks(parentTasks)
   }
 
   private async filterTasksByClientAccess<T extends Task[] | Pick<Task, 'id' | 'assigneeId' | 'assigneeType'>[]>(
