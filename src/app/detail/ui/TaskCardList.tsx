@@ -12,8 +12,7 @@ import Selector, { SelectorType } from '@/components/inputs/Selector'
 import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
 import { ConfirmUI } from '@/components/layouts/ConfirmUI'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
-import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
-import { selectTaskDetails, toggleShowConfirmAssignModal } from '@/redux/features/taskDetailsSlice'
+import { selectTaskBoard, setConfirmAssigneeModalId } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
 import { DateStringSchema } from '@/types/date'
 import { TaskResponse } from '@/types/dto/tasks.dto'
@@ -40,9 +39,8 @@ interface TaskCardListProps {
 }
 
 export const TaskCardList = ({ task, variant, workflowState, mode }: TaskCardListProps) => {
-  const { assignee, workflowStates, previewMode, token } = useSelector(selectTaskBoard)
+  const { assignee, workflowStates, previewMode, token, confirmAssignModalId } = useSelector(selectTaskBoard)
   const [currentAssignee, setCurrentAssignee] = useState<IAssigneeCombined | undefined>(undefined)
-  const { showConfirmAssignModal } = useSelector(selectTaskDetails)
 
   const [inputStatusValue, setInputStatusValue] = useState('')
   const [selectedAssignee, setSelectedAssignee] = useState<IAssigneeCombined | undefined>(undefined)
@@ -63,7 +61,6 @@ export const TaskCardList = ({ task, variant, workflowState, mode }: TaskCardLis
     item: workflowState ?? task.workflowState,
     type: SelectorType.STATUS_SELECTOR,
   })
-  console.log(task)
   const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
     // item: selectedAssigneeId ? assignee.find((el) => el.id === selectedAssigneeId) : NoAssignee,
     item: currentAssignee,
@@ -75,7 +72,7 @@ export const TaskCardList = ({ task, variant, workflowState, mode }: TaskCardLis
 
   const handleConfirmAssigneeChange = (assigneeValue: IAssigneeCombined) => {
     token && updateAssignee(token, task.id, getAssigneeTypeCorrected(assigneeValue), assigneeValue.id)
-    store.dispatch(toggleShowConfirmAssignModal())
+    store.dispatch(setConfirmAssigneeModalId(undefined))
   }
 
   return (
@@ -84,12 +81,16 @@ export const TaskCardList = ({ task, variant, workflowState, mode }: TaskCardLis
       sx={{
         height: variant == 'task' ? '44px' : '36px',
         display: 'flex',
-        padding: variant == 'task' ? '6px 20px 6px 20px' : '6px 2px 6px 0px',
+        padding: variant == 'task' ? '6px 20px 6px 20px' : '6px 6px 6px 4px',
         alignItems: 'center',
         alignSelf: 'stretch',
         gap: '20px',
         justifyContent: 'flex-end',
         minWidth: 0,
+        ':hover': {
+          cursor: 'pointer',
+          background: (theme) => theme.color.gray[100],
+        },
       }}
     >
       <Stack
@@ -184,17 +185,16 @@ export const TaskCardList = ({ task, variant, workflowState, mode }: TaskCardLis
         )}
         <Selector
           inputStatusValue={inputStatusValue}
-          disableOutline
+          variant="icon"
           setInputStatusValue={setInputStatusValue}
           buttonWidth="100%"
-          padding={'2px 4px'}
           placeholder="Set assignee"
           getSelectedValue={(newValue) => {
             const assignee = newValue as IAssigneeCombined
             const shouldShowConfirmModal = ShouldConfirmBeforeReassignment(assigneeValue, assignee)
             if (shouldShowConfirmModal) {
               setSelectedAssignee(assignee)
-              store.dispatch(toggleShowConfirmAssignModal())
+              store.dispatch(setConfirmAssigneeModalId(task.id))
             } else {
               token && updateAssignee(token, task.id, getAssigneeTypeCorrected(assignee), assignee.id)
               updateAssigneeValue(assignee)
@@ -204,7 +204,22 @@ export const TaskCardList = ({ task, variant, workflowState, mode }: TaskCardLis
           value={assigneeValue?.name == 'No assignee' ? null : assigneeValue}
           selectorType={SelectorType.ASSIGNEE_SELECTOR}
           buttonHeight="auto"
-          buttonContent={<CopilotAvatar currentAssignee={assigneeValue as IAssigneeCombined} />}
+          buttonContent={
+            <Box
+              sx={{
+                padding: '2px 4px',
+                display: 'flex',
+                alignItems: 'center',
+                borderRadius: '4px',
+                ':hover': {
+                  cursor: 'pointer',
+                  background: (theme) => theme.color.gray[150],
+                },
+              }}
+            >
+              <CopilotAvatar currentAssignee={assigneeValue as IAssigneeCombined} />
+            </Box>
+          }
           handleInputChange={async (newInputValue: string) => {
             if (!newInputValue || isAssigneeTextMatching(newInputValue, assigneeValue)) {
               setFilteredAssignees(assignee)
@@ -232,15 +247,15 @@ export const TaskCardList = ({ task, variant, workflowState, mode }: TaskCardLis
         />
       </Stack>
       <StyledModal
-        open={showConfirmAssignModal}
-        onClose={() => store.dispatch(toggleShowConfirmAssignModal())}
+        open={confirmAssignModalId === task.id}
+        onClose={() => store.dispatch(setConfirmAssigneeModalId(undefined))}
         aria-labelledby="confirm-reassignment-modal"
         aria-describedby="confirm-reassignment"
       >
         <ConfirmUI
           handleCancel={() => {
             setSelectedAssignee(undefined)
-            store.dispatch(toggleShowConfirmAssignModal())
+            store.dispatch(setConfirmAssigneeModalId(undefined))
           }}
           handleConfirm={() => {
             if (selectedAssignee) {

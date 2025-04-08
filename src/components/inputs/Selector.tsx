@@ -48,7 +48,7 @@ interface Prop<T extends keyof SelectorOptionsType> {
     anchorEl: null | HTMLElement,
     props?: HTMLAttributes<HTMLLIElement>,
   ) => ReactNode
-  disableOutline?: boolean
+  variant?: 'normal' | 'outlined' | 'icon'
   padding?: string
   buttonWidth?: string
   buttonHeight?: string
@@ -80,7 +80,7 @@ export default function Selector<T extends keyof SelectorOptionsType>({
   setInputStatusValue,
   extraOption,
   extraOptionRenderer,
-  disableOutline,
+  variant = 'outlined',
   padding,
   buttonWidth,
   buttonHeight,
@@ -216,7 +216,7 @@ export default function Selector<T extends keyof SelectorOptionsType>({
   return (
     <Stack direction="column">
       <Box onMouseDown={handleClick} aria-describedby={id}>
-        {disableOutline ? (
+        {variant == 'normal' ? (
           <Stack
             direction="row"
             alignItems="center"
@@ -250,12 +250,11 @@ export default function Selector<T extends keyof SelectorOptionsType>({
               </Typography>
             )}
           </Stack>
-        ) : (
+        ) : variant == 'outlined' ? (
           <>
             <SelectorButton
               startIcon={startIcon}
               buttonContent={buttonContent}
-              outlined={disableOutline}
               disabled={disabled}
               padding={padding}
               height={buttonHeight}
@@ -264,6 +263,8 @@ export default function Selector<T extends keyof SelectorOptionsType>({
             />
             {error && errorPlaceholder && <StyledHelperText> Required</StyledHelperText>}
           </>
+        ) : (
+          <> {buttonContent}</>
         )}
       </Box>
       <Popper
