@@ -24,6 +24,7 @@ interface IInitialState {
   previewMode: PreviewMode
   accesibleTaskIds: string[]
   accessibleTasks: AccessibleTasksResponse[]
+  confirmAssignModalId: string | undefined
 }
 
 const initialState: IInitialState = {
@@ -48,6 +49,7 @@ const initialState: IInitialState = {
   previewMode: null,
   accesibleTaskIds: [],
   accessibleTasks: [],
+  confirmAssignModalId: '',
 }
 
 const taskBoardSlice = createSlice({
@@ -145,6 +147,9 @@ const taskBoardSlice = createSlice({
     setAccessibleTasks: (state, action: { payload: AccessibleTasksResponse[] }) => {
       state.accessibleTasks = action.payload
     },
+    setConfirmAssigneeModalId: (state, action: { payload: string | undefined }) => {
+      state.confirmAssignModalId = action.payload
+    },
   },
 })
 
@@ -167,6 +172,7 @@ export const {
   setPreviewMode,
   setAccesibleTaskIds,
   setAccessibleTasks,
+  setConfirmAssigneeModalId,
 } = taskBoardSlice.actions
 
 export default taskBoardSlice.reducer

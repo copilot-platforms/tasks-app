@@ -286,7 +286,7 @@ export const NewTaskCard = ({
             endOption={<ManageTemplatesEndOption />}
             endOptionHref={`/manage-templates?token=${token}`}
             listAutoHeightMax="147px"
-            disableOutline
+            variant="normal"
             responsiveNoHide
             buttonWidth="auto"
             useClickHandler

@@ -64,7 +64,7 @@ export const DatePickerComponent = ({
         aria-describedby={id}
         sx={{
           cursor: disabled ? 'auto' : 'default',
-          padding: variant == 'button' || 'icon' ? '0px' : '4px 8px',
+          padding: variant == 'button' || variant == 'icon' ? '0px' : '4px 8px',
           borderRadius: '4px',
         }}
       >

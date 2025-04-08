@@ -414,7 +414,7 @@ export const Sidebar = ({
               filterOption={(x: unknown) => x}
               disabled={disabled}
               cursor={'default'}
-              disableOutline
+              variant="normal"
               responsiveNoHide
               currentOption={assigneeValue}
             />
