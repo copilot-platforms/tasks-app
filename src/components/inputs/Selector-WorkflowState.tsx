@@ -33,8 +33,6 @@ export const WorkflowStateSelector = ({
   const id = open ? 'selector-workflowStateSelector-popper' : ''
 
   const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
-    event.preventDefault()
-    event.stopPropagation()
     if (!disabled) {
       setAnchorEl(anchorEl ? null : event.currentTarget)
     }

@@ -236,17 +236,15 @@ export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
                 >
                   {sortTaskByDescendingOrder<TaskResponse>(filterTaskWithWorkflowStateId(list.id)).map((task, index) => {
                     return (
-                      <CustomLink key={task.id} href={{ pathname: getCardHref(task, mode), query: { token } }}>
-                        <DragDropHandler
-                          key={task.id}
-                          accept={'taskCard'}
-                          index={index}
-                          task={task}
-                          draggable // Make ListViewTaskCard draggable
-                        >
-                          <TaskCardList task={task} variant="task" key={task.id} workflowState={list} mode={mode} />
-                        </DragDropHandler>
-                      </CustomLink>
+                      <DragDropHandler
+                        key={task.id}
+                        accept={'taskCard'}
+                        index={index}
+                        task={task}
+                        draggable // Make ListViewTaskCard draggable
+                      >
+                        <TaskCardList task={task} variant="task" key={task.id} workflowState={list} mode={mode} />
+                      </DragDropHandler>
                     )
                   })}
                 </TaskRow>
