@@ -1,4 +1,4 @@
-import { AssigneeType as PrismaAssigneeType } from '@prisma/client'
+import { AssigneeType as PrismaAssigneeType, Task } from '@prisma/client'
 import { z } from 'zod'
 import { WorkflowStateResponseSchema } from './workflowStates.dto'
 import { DateStringSchema } from '@/types/date'
@@ -63,3 +63,8 @@ export type AccessibleTasksResponse = Pick<
   TaskResponse,
   'id' | 'assigneeId' | 'assigneeType' | 'title' | 'body' | 'parentId'
 >
+
+export type AncestorTaskResponse = Pick<Task, 'title' | 'label'> & {
+  assigneeId: string
+  assigneeType: NonNullable<AssigneeType>
+}

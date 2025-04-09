@@ -7,19 +7,19 @@ import { useBreadcrumbs } from '@/hooks/app-bridge/useBreadcrumbs'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { UserType } from '@/types/interfaces'
 import { Stack, Typography } from '@mui/material'
-import { useRouter } from 'next/navigation'
+import { Fragment } from 'react'
 import { useSelector } from 'react-redux'
 
 type ValidTasksBoardLink = '/' | '/client'
 
 export const HeaderBreadcrumbs = ({
   token,
-  title,
+  items,
   userType,
   portalUrl,
 }: {
   token: string | undefined
-  title: string
+  items: string[]
   userType: UserType
   portalUrl?: string
 }) => {
@@ -35,11 +35,7 @@ export const HeaderBreadcrumbs = ({
     return tasksLinks[userType]
   }
   useBreadcrumbs(
-    [
-      {
-        label: title,
-      },
-    ],
+    items.map((label) => ({ label })),
     { portalUrl },
   )
 
@@ -59,15 +55,19 @@ export const HeaderBreadcrumbs = ({
           variant="breadcrumb"
         />
       </CustomLink>
-      <StyledKeyboardIcon />
-      <Typography
-        variant="sm"
-        sx={{
-          fontSize: '13px',
-        }}
-      >
-        {title}
-      </Typography>
+      {items.map((item) => (
+        <Fragment key={item}>
+          <StyledKeyboardIcon />
+          <Typography
+            variant="sm"
+            sx={{
+              fontSize: '13px',
+            }}
+          >
+            {item}
+          </Typography>
+        </Fragment>
+      ))}
     </Stack>
   )
 }
