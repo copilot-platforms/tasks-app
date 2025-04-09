@@ -66,6 +66,7 @@ async function getSubTasksStatus(token: string, taskId: string): Promise<SubTask
 async function getTaskPath(token: string, taskId: string): Promise<AncestorTaskResponse[]> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}/path?token=${token}`)
   const { path } = await res.json()
+  console.log('path', path)
   return path
 }
 

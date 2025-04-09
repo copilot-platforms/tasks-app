@@ -24,6 +24,11 @@ export const HeaderBreadcrumbs = ({
   portalUrl?: string
 }) => {
   const { previewMode } = useSelector(selectTaskBoard)
+  console.log('items', items)
+  console.log(
+    'items breadcrumb',
+    items.map((label) => ({ label })),
+  )
 
   const getTasksLink = (userType: UserType): ValidTasksBoardLink => {
     if (previewMode) return '/client'

@@ -604,7 +604,7 @@ export class TasksService extends BaseService {
     const parentTasks = await Promise.all(
       parents.map((id) =>
         this.db.task.findFirstOrThrow({
-          where: { id, workspaceId: this.user.workspaceId, assigneeId: { not: null } },
+          where: { id, workspaceId: this.user.workspaceId },
           select: { title: true, label: true, assigneeId: true, assigneeType: true },
         }),
       ) as Promise<AncestorTaskResponse>[],

@@ -92,10 +92,12 @@ export class SubtaskService extends BaseService {
     if (this.user.role === UserRole.IU) {
       const copilot = new CopilotAPI(this.user.token)
       const iu = await copilot.getInternalUser(z.string().parse(this.user.internalUserId))
+      console.log('iu', iu)
       if (!iu.isClientAccessLimited) {
         return tasks
       }
       const clients = await copilot.getClients({ limit: 1_000_000 })
+      console.log('tasks', tasks)
       latestAccessibleTaskIndex = tasks.findLastIndex((task) => {
         if (task.assigneeType === AssigneeType.internalUser) return false
         else if (task.assigneeType === AssigneeType.client) {
@@ -118,6 +120,7 @@ export class SubtaskService extends BaseService {
     } else {
       throw new APIError(httpStatus.BAD_REQUEST, 'Failed to parse user role from token')
     }
+    console.log('latestAccessibleTaskIndex', latestAccessibleTaskIndex)
 
     if (latestAccessibleTaskIndex < 0) {
       return tasks
