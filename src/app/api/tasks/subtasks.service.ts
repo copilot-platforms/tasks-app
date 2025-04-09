@@ -1,3 +1,4 @@
+import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { buildLtreeNodeString } from '@/utils/ltree'
 import APIError from '@api/core/exceptions/api'
@@ -88,27 +89,32 @@ export class SubtaskService extends BaseService {
     //  find the last index of the task that is unaccessible to the user
     //  return all tasks starting from index + 1 -> last value of tasks
     let latestAccessibleTaskIndex: number
-    // If user is an internal user with client access limitations, they can only access tasks assigned to clients or company they have access to
+
     if (this.user.role === UserRole.IU) {
       const copilot = new CopilotAPI(this.user.token)
       const iu = await copilot.getInternalUser(z.string().parse(this.user.internalUserId))
       if (!iu.isClientAccessLimited) {
         return tasks
       }
-      const clients = await copilot.getClients({ limit: 1_000_000 })
+
+      // If user is an internal user with client access limitations, they can only access tasks assigned to clients or company they have access to
+      const clients = await copilot.getClients({ limit: MAX_FETCH_ASSIGNEE_COUNT })
+      let companyId: string
       latestAccessibleTaskIndex = tasks.findLastIndex((task) => {
         if (task.assigneeType === AssigneeType.internalUser) return false
+        // Now find the last index of the task that is inaccessible to the user.
+        // We can them return all tasks following this inacessible task
         else if (task.assigneeType === AssigneeType.client) {
           const client = clients.data?.find((client) => client.id === task.assigneeId)
           if (!client || !client.companyId) {
             return true
           }
-          const taskClientsCompanyId = z.string().parse(client?.companyId)
-          return !iu.companyAccessList?.includes(taskClientsCompanyId)
+          companyId = z.string().parse(client?.companyId)
         } else {
           // company
-          return !iu.companyAccessList?.includes(task.assigneeId)
+          companyId = task.assigneeId
         }
+        return !iu.companyAccessList?.includes(companyId)
       })
     } else if (this.user.role === UserRole.Client) {
       // If user is a client, just check index of which task was last assigned to client
