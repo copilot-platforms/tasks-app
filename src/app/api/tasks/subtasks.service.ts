@@ -112,21 +112,12 @@ export class SubtaskService extends BaseService {
       })
     } else if (this.user.role === UserRole.Client) {
       // If user is a client, just check index of which task was last assigned to client
-      console.log('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
-      console.log('tasks', tasks)
-      console.log('client', this.user.clientId)
-      console.log('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
-
       latestAccessibleTaskIndex = tasks.findLastIndex(
         (task) => task.assigneeId !== this.user.clientId && task.assigneeId !== this.user.companyId,
       )
     } else {
       throw new APIError(httpStatus.BAD_REQUEST, 'Failed to parse user role from token')
     }
-    console.log('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
-    console.log('latestAccessibleTaskIndex', latestAccessibleTaskIndex)
-    console.log('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
-
     if (latestAccessibleTaskIndex < 0) {
       return tasks
     }
