@@ -1,24 +1,21 @@
 'use client'
 
+import { handleCreate } from '@/app/(home)/actions'
+import { StyledModal } from '@/app/detail/ui/styledComponent'
 import {
   clearCreateTaskFields,
   selectCreateTask,
-  setShowModal,
   setActiveWorkflowStateId,
-  setCreateTaskFields,
+  setShowModal,
 } from '@/redux/features/createTaskSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
-import { bulkRemoveAttachments } from '@/utils/bulkRemoveAttachments'
-import { useSelector } from 'react-redux'
-import { handleCreate } from '../actions'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { CreateTaskRequestSchema } from '@/types/dto/tasks.dto'
-import { NewTaskForm } from './NewTaskForm'
-import { FilterOptions, ISignedUrlUpload } from '@/types/interfaces'
+import { FilterOptions } from '@/types/interfaces'
 import dayjs from 'dayjs'
-import { useEffect } from 'react'
-import { StyledModal } from '@/app/detail/ui/styledComponent'
+import { useSelector } from 'react-redux'
+import { NewTaskForm } from './NewTaskForm'
 
 export const ModalNewTaskForm = ({
   handleCreateMultipleAttachments,

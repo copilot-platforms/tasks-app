@@ -45,6 +45,7 @@ import { z } from 'zod'
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
     cache: 'no-store',
+    next: { tags: ['getOneTask'] },
   })
 
   const data = await res.json()
@@ -98,122 +99,120 @@ export default async function TaskDetailPage({
   const isPreviewMode = !!getPreviewMode(tokenPayload)
 
   return (
-    <RevalidateOnNavigation>
-      <DetailStateUpdate isRedirect={!!searchParams.isRedirect} token={token} tokenPayload={tokenPayload} task={task}>
-        <RealTime tokenPayload={tokenPayload}>
-          <EscapeHandler />
-          <ResponsiveStack>
-            <ToggleController>
-              {isPreviewMode ? (
-                <StyledBox>
-                  <AppMargin size={SizeofAppMargin.HEADER} py="17.5px">
-                    <Stack direction="row" justifyContent="space-between">
-                      <HeaderBreadcrumbs token={token} title={task?.label} userType={params.user_type} />
+    <DetailStateUpdate isRedirect={!!searchParams.isRedirect} token={token} tokenPayload={tokenPayload} task={task}>
+      <RealTime tokenPayload={tokenPayload}>
+        <EscapeHandler />
+        <ResponsiveStack>
+          <ToggleController>
+            {isPreviewMode ? (
+              <StyledBox>
+                <AppMargin size={SizeofAppMargin.HEADER} py="17.5px">
+                  <Stack direction="row" justifyContent="space-between">
+                    <HeaderBreadcrumbs token={token} title={task?.label} userType={params.user_type} />
+                    <Stack direction="row" alignItems="center" columnGap="8px">
+                      <MenuBoxContainer role={tokenPayload.internalUserId ? UserRole.IU : UserRole.Client} />
                       <Stack direction="row" alignItems="center" columnGap="8px">
-                        <MenuBoxContainer role={tokenPayload.internalUserId ? UserRole.IU : UserRole.Client} />
-                        <Stack direction="row" alignItems="center" columnGap="8px">
-                          <ArchiveWrapper taskId={task_id} userType={user_type} />
-                        </Stack>
+                        <ArchiveWrapper taskId={task_id} userType={user_type} />
                       </Stack>
                     </Stack>
-                  </AppMargin>
-                </StyledBox>
-              ) : (
-                <>
-                  <HeaderBreadcrumbs
-                    token={token}
-                    title={task?.label}
-                    userType={params.user_type}
-                    portalUrl={workspace.portalUrl}
-                  />
-                  <ArchiveWrapper taskId={task_id} userType={user_type} />
-                </>
-              )}
+                  </Stack>
+                </AppMargin>
+              </StyledBox>
+            ) : (
+              <>
+                <HeaderBreadcrumbs
+                  token={token}
+                  title={task?.label}
+                  userType={params.user_type}
+                  portalUrl={workspace.portalUrl}
+                />
+                <ArchiveWrapper taskId={task_id} userType={user_type} />
+              </>
+            )}
 
-              <CustomScrollBar>
-                <TaskDetailsContainer
-                  sx={{
-                    padding: { xs: '20px 33px 20px 20px', sm: '30px 33px 30px 20px' },
-                  }}
-                >
-                  <StyledTiptapDescriptionWrapper>
-                    <LastArchivedField />
-                    <TaskEditor
-                      // attachment={attachments}
-                      task_id={task_id}
-                      task={task}
-                      isEditable={params.user_type === UserType.INTERNAL_USER || !!getPreviewMode(tokenPayload)}
-                      updateTaskDetail={async (detail) => {
-                        'use server'
-                        await updateTaskDetail({ token, taskId: task_id, payload: { body: detail } })
-                      }}
-                      updateTaskTitle={async (title) => {
-                        'use server'
-                        title.trim() != '' && (await updateTaskDetail({ token, taskId: task_id, payload: { title } }))
-                      }}
-                      deleteTask={async () => {
-                        'use server'
-                        await deleteTask(token, task_id)
-                      }}
-                      postAttachment={async (postAttachmentPayload) => {
-                        'use server'
-                        await postAttachment(token, postAttachmentPayload)
-                      }}
-                      deleteAttachment={async (id: string) => {
-                        'use server'
-                        await deleteAttachment(token, id)
-                      }}
-                      userType={params.user_type}
-                    />
-                  </StyledTiptapDescriptionWrapper>
-                  {subTaskStatus.canCreateSubtask && (
-                    <Subtasks
-                      task_id={task_id}
-                      token={token}
-                      userType={tokenPayload.internalUserId ? UserRole.IU : UserRole.Client}
-                      canCreateSubtasks={params.user_type === UserType.INTERNAL_USER || !!getPreviewMode(tokenPayload)}
-                    />
-                  )}
-
-                  <ActivityWrapper task_id={task_id} token={token} tokenPayload={tokenPayload} />
-                </TaskDetailsContainer>
-              </CustomScrollBar>
-            </ToggleController>
-            <Box>
-              <Suspense fallback={<SidebarSkeleton />}>
-                <WorkflowStateFetcher token={token} task={task}>
-                  <AssigneeFetcher
-                    token={token}
-                    userType={params.user_type}
-                    isPreview={!!getPreviewMode(tokenPayload)}
-                    task={task}
-                  />
-                  <Sidebar
+            <CustomScrollBar>
+              <TaskDetailsContainer
+                sx={{
+                  padding: { xs: '20px 33px 20px 20px', sm: '30px 33px 30px 20px' },
+                }}
+              >
+                <StyledTiptapDescriptionWrapper>
+                  <LastArchivedField />
+                  <TaskEditor
+                    // attachment={attachments}
                     task_id={task_id}
-                    selectedAssigneeId={task?.assigneeId}
-                    selectedWorkflowState={task?.workflowState}
-                    updateWorkflowState={async (workflowState) => {
+                    task={task}
+                    isEditable={params.user_type === UserType.INTERNAL_USER || !!getPreviewMode(tokenPayload)}
+                    updateTaskDetail={async (detail) => {
                       'use server'
-                      params.user_type === UserType.CLIENT_USER && !getPreviewMode(tokenPayload)
-                        ? await clientUpdateTask(token, task_id, workflowState.id)
-                        : await updateWorkflowStateIdOfTask(token, task_id, workflowState?.id)
+                      await updateTaskDetail({ token, taskId: task_id, payload: { body: detail } })
                     }}
-                    updateAssignee={async (assigneeType, assigneeId) => {
+                    updateTaskTitle={async (title) => {
                       'use server'
-                      await updateAssignee(token, task_id, assigneeType, assigneeId)
+                      title.trim() != '' && (await updateTaskDetail({ token, taskId: task_id, payload: { title } }))
                     }}
-                    updateTask={async (payload) => {
+                    deleteTask={async () => {
                       'use server'
-                      await updateTaskDetail({ token, taskId: task_id, payload })
+                      await deleteTask(token, task_id)
                     }}
-                    disabled={params.user_type === UserType.CLIENT_USER}
+                    postAttachment={async (postAttachmentPayload) => {
+                      'use server'
+                      await postAttachment(token, postAttachmentPayload)
+                    }}
+                    deleteAttachment={async (id: string) => {
+                      'use server'
+                      await deleteAttachment(token, id)
+                    }}
+                    userType={params.user_type}
                   />
-                </WorkflowStateFetcher>
-              </Suspense>
-            </Box>
-          </ResponsiveStack>
-        </RealTime>
-      </DetailStateUpdate>
-    </RevalidateOnNavigation>
+                </StyledTiptapDescriptionWrapper>
+                {subTaskStatus.canCreateSubtask && (
+                  <Subtasks
+                    task_id={task_id}
+                    token={token}
+                    userType={tokenPayload.internalUserId ? UserRole.IU : UserRole.Client}
+                    canCreateSubtasks={params.user_type === UserType.INTERNAL_USER || !!getPreviewMode(tokenPayload)}
+                  />
+                )}
+
+                <ActivityWrapper task_id={task_id} token={token} tokenPayload={tokenPayload} />
+              </TaskDetailsContainer>
+            </CustomScrollBar>
+          </ToggleController>
+          <Box>
+            <Suspense fallback={<SidebarSkeleton />}>
+              <WorkflowStateFetcher token={token} task={task}>
+                <AssigneeFetcher
+                  token={token}
+                  userType={params.user_type}
+                  isPreview={!!getPreviewMode(tokenPayload)}
+                  task={task}
+                />
+                <Sidebar
+                  task_id={task_id}
+                  selectedAssigneeId={task?.assigneeId}
+                  selectedWorkflowState={task?.workflowState}
+                  updateWorkflowState={async (workflowState) => {
+                    'use server'
+                    params.user_type === UserType.CLIENT_USER && !getPreviewMode(tokenPayload)
+                      ? await clientUpdateTask(token, task_id, workflowState.id)
+                      : await updateWorkflowStateIdOfTask(token, task_id, workflowState?.id)
+                  }}
+                  updateAssignee={async (assigneeType, assigneeId) => {
+                    'use server'
+                    await updateAssignee(token, task_id, assigneeType, assigneeId)
+                  }}
+                  updateTask={async (payload) => {
+                    'use server'
+                    await updateTaskDetail({ token, taskId: task_id, payload })
+                  }}
+                  disabled={params.user_type === UserType.CLIENT_USER}
+                />
+              </WorkflowStateFetcher>
+            </Suspense>
+          </Box>
+        </ResponsiveStack>
+      </RealTime>
+    </DetailStateUpdate>
   )
 }

@@ -5,7 +5,7 @@ import { postScrapMedia } from '@/app/detail/[task_id]/[user_type]/actions'
 import { ScrapMediaRequest } from '@/types/common'
 import { getFilePathFromUrl } from '@/utils/signedUrlReplacer'
 
-import { getSignedUrlFile, getSignedUrlUpload } from '@/app/actions'
+import { getSignedUrlFile, getSignedUrlUpload } from '@/app/(home)/actions'
 
 const buildFilePath = (workspaceId: string, type: 'tasks' | 'templates', entityId: string | null) => {
   if (type === 'tasks') {

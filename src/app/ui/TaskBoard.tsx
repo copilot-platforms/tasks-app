@@ -11,7 +11,7 @@ import { selectTaskBoard, updateWorkflowStateIdByTaskId } from '@/redux/features
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { TaskRow } from '@/components/cards/TaskRow'
 import { View } from '@/types/interfaces'
-import { updateTask, updateViewModeSettings } from '@/app/actions'
+import { updateTask, updateViewModeSettings } from '@/app/(home)/actions'
 import { z } from 'zod'
 
 import DashboardEmptyState from '@/components/layouts/EmptyState/DashboardEmptyState'
