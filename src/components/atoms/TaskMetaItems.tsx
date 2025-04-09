@@ -27,7 +27,7 @@ export const TaskMetaItems = ({ task, lineHeight }: { task: TaskResponse; lineHe
           </Typography>
         </Stack>
       )}
-      {task.subtaskCount > 0 && (
+      {subtaskCount > 0 && (
         <Stack direction="row" alignItems={'center'} columnGap={'4px'}>
           <Typography
             variant="bodySm"
