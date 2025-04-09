@@ -1,7 +1,7 @@
 'use client'
 
 import { RealTimeTaskResponse } from '@/hoc/RealTime'
-import { selectTaskBoard, setAccessibleTasks, setTasks } from '@/redux/features/taskBoardSlice'
+import { selectTaskBoard, setAccessibleTasks, setActiveTask, setTasks } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
 import { InternalUsersSchema } from '@/types/common'
 import { IAssigneeCombined } from '@/types/interfaces'
@@ -90,7 +90,7 @@ export class RealtimeHandler {
    */
   private handleRealtimeSubtaskUpdate(newTask: RealTimeTaskResponse) {
     const currentState = store.getState()
-    const { tasks, accessibleTasks } = selectTaskBoard(currentState)
+    const { tasks, accessibleTasks, activeTask } = selectTaskBoard(currentState)
 
     const isTaskVisibleInBoard = tasks.some((task) => task.id === newTask.id)
     const filterOutNewTask = <T extends { id: string }>(tasks: T[]): T[] => {
@@ -119,6 +119,10 @@ export class RealtimeHandler {
         ),
       )
     }
+
+    if (activeTask && activeTask.id === newTask.id) {
+      store.dispatch(setActiveTask(newTask))
+    } //updating active task if a user is currently in details page of the task being udpated
     // Update it in accessible tasks
     store.dispatch(
       setAccessibleTasks(
