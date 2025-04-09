@@ -13,7 +13,7 @@ import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowStat
 import { ConfirmUI } from '@/components/layouts/ConfirmUI'
 import { CustomLink } from '@/hoc/CustomLink'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
-import { selectTaskBoard, setConfirmAssigneeModalId } from '@/redux/features/taskBoardSlice'
+import { selectTaskBoard, setConfirmAssigneeModalId, setTasks } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
 import { DateStringSchema } from '@/types/date'
 import { TaskResponse } from '@/types/dto/tasks.dto'
@@ -27,7 +27,7 @@ import { isTaskCompleted } from '@/utils/isTaskCompleted'
 import { NoAssignee, NoAssigneeExtraOptions, NoDataFoundOption } from '@/utils/noAssignee'
 import { ShouldConfirmBeforeReassignment } from '@/utils/shouldConfirmBeforeReassign'
 import { setDebouncedFilteredAssignees } from '@/utils/users'
-import { Box, Stack, Typography } from '@mui/material'
+import { Box, Skeleton, Stack, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { z } from 'zod'
@@ -41,7 +41,7 @@ interface TaskCardListProps {
 }
 
 export const TaskCardList = ({ task, variant, workflowState, mode }: TaskCardListProps) => {
-  const { assignee, workflowStates, previewMode, token, confirmAssignModalId } = useSelector(selectTaskBoard)
+  const { assignee, workflowStates, previewMode, token, confirmAssignModalId, tasks } = useSelector(selectTaskBoard)
   const [currentAssignee, setCurrentAssignee] = useState<IAssigneeCombined | undefined>(undefined)
 
   const [inputStatusValue, setInputStatusValue] = useState('')
@@ -112,6 +112,7 @@ export const TaskCardList = ({ task, variant, workflowState, mode }: TaskCardLis
           variant="icon"
           getValue={(value) => {
             updateStatusValue(value)
+            store.dispatch(setTasks(tasks.map((el) => (el.id === task.id ? { ...el, workflowState: value } : el)))) // Optimistic update, rollback case extremely rare here.
             if (mode === UserRole.Client && !previewMode) {
               clientUpdateTask(z.string().parse(token), task.id, value.id)
             } else {
@@ -199,68 +200,85 @@ export const TaskCardList = ({ task, variant, workflowState, mode }: TaskCardLis
             />
           </Box>
         )}
-        <Selector
-          inputStatusValue={inputStatusValue}
-          variant="icon"
-          setInputStatusValue={setInputStatusValue}
-          buttonWidth="100%"
-          placeholder="Set assignee"
-          getSelectedValue={(newValue) => {
-            const assignee = newValue as IAssigneeCombined
-            const shouldShowConfirmModal = ShouldConfirmBeforeReassignment(assigneeValue, assignee)
-            if (shouldShowConfirmModal) {
-              setSelectedAssignee(assignee)
-              store.dispatch(setConfirmAssigneeModalId(task.id))
-            } else {
-              token && updateAssignee(token, task.id, getAssigneeTypeCorrected(assignee), assignee.id)
-              updateAssigneeValue(assignee)
+        {assigneeValue ? (
+          <Selector
+            inputStatusValue={inputStatusValue}
+            variant="icon"
+            setInputStatusValue={setInputStatusValue}
+            buttonWidth="100%"
+            placeholder="Set assignee"
+            getSelectedValue={(newValue) => {
+              const assignee = newValue as IAssigneeCombined
+              const shouldShowConfirmModal = ShouldConfirmBeforeReassignment(assigneeValue, assignee)
+              if (shouldShowConfirmModal) {
+                setSelectedAssignee(assignee)
+                store.dispatch(setConfirmAssigneeModalId(task.id))
+              } else {
+                token && updateAssignee(token, task.id, getAssigneeTypeCorrected(assignee), assignee.id)
+                updateAssigneeValue(assignee)
+              }
+            }}
+            options={loading ? [] : filteredAssignees.length ? filteredAssignees : [NoDataFoundOption]}
+            value={assigneeValue?.name == 'No assignee' ? null : assigneeValue}
+            selectorType={SelectorType.ASSIGNEE_SELECTOR}
+            buttonHeight="auto"
+            buttonContent={
+              <Box
+                sx={{
+                  padding: '2px 4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  borderRadius: '4px',
+                  ':hover': {
+                    cursor: 'pointer',
+                    background: (theme) => theme.color.gray[150],
+                  },
+                }}
+              >
+                <CopilotAvatar currentAssignee={assigneeValue as IAssigneeCombined} />
+              </Box>
             }
-          }}
-          options={loading ? [] : filteredAssignees.length ? filteredAssignees : [NoDataFoundOption]}
-          value={assigneeValue?.name == 'No assignee' ? null : assigneeValue}
-          selectorType={SelectorType.ASSIGNEE_SELECTOR}
-          buttonHeight="auto"
-          buttonContent={
-            <Box
-              sx={{
-                padding: '2px 4px',
-                display: 'flex',
-                alignItems: 'center',
-                borderRadius: '4px',
-                ':hover': {
-                  cursor: 'pointer',
-                  background: (theme) => theme.color.gray[150],
-                },
-              }}
-            >
-              <CopilotAvatar currentAssignee={assigneeValue as IAssigneeCombined} />
-            </Box>
-          }
-          handleInputChange={async (newInputValue: string) => {
-            if (!newInputValue || isAssigneeTextMatching(newInputValue, assigneeValue)) {
-              setFilteredAssignees(assignee)
-              return
-            }
+            handleInputChange={async (newInputValue: string) => {
+              if (!newInputValue || isAssigneeTextMatching(newInputValue, assigneeValue)) {
+                setFilteredAssignees(assignee)
+                return
+              }
 
-            setDebouncedFilteredAssignees(
-              activeDebounceTimeoutId,
-              setActiveDebounceTimeoutId,
-              setLoading,
-              setFilteredAssignees,
-              z.string().parse(token),
-              newInputValue,
-            )
-          }}
-          extraOption={NoAssigneeExtraOptions}
-          extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
-            return <>{loading && <MiniLoader />}</>
-          }}
-          disabled={mode === UserRole.Client && !previewMode}
-          cursor="pointer"
-          filterOption={(x: unknown) => x}
-          responsiveNoHide
-          currentOption={assigneeValue}
-        />
+              setDebouncedFilteredAssignees(
+                activeDebounceTimeoutId,
+                setActiveDebounceTimeoutId,
+                setLoading,
+                setFilteredAssignees,
+                z.string().parse(token),
+                newInputValue,
+              )
+            }}
+            extraOption={NoAssigneeExtraOptions}
+            extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
+              return <>{loading && <MiniLoader />}</>
+            }}
+            disabled={mode === UserRole.Client && !previewMode}
+            cursor="pointer"
+            filterOption={(x: unknown) => x}
+            responsiveNoHide
+            currentOption={assigneeValue}
+          />
+        ) : (
+          <Box
+            sx={{
+              padding: '2px 4px',
+              display: 'flex',
+              alignItems: 'center',
+              borderRadius: '4px',
+              ':hover': {
+                cursor: 'pointer',
+                background: (theme) => theme.color.gray[150],
+              },
+            }}
+          >
+            <Skeleton variant="circular" width={20} height={20} />
+          </Box>
+        )}
       </Stack>
       <StyledModal
         open={confirmAssignModalId === task.id}
