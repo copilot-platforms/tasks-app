@@ -1,11 +1,11 @@
+import { CopilotAPI } from '@/utils/CopilotAPI'
 import { buildLtreeNodeString } from '@/utils/ltree'
 import APIError from '@api/core/exceptions/api'
 import { BaseService } from '@api/core/services/base.service'
+import { UserRole } from '@api/core/types/user'
+import { AssigneeType } from '@prisma/client'
 import httpStatus from 'http-status'
 import { z } from 'zod'
-import { UserRole } from '../core/types/user'
-import { CopilotAPI } from '@/utils/CopilotAPI'
-import { AssigneeType } from '@prisma/client'
 
 interface Assignable {
   assigneeId: string
@@ -84,7 +84,7 @@ export class SubtaskService extends BaseService {
     )
   }
 
-  async getAccessiblePathTasks(tasks: Assignable[]) {
+  async getAccessiblePathTasks<T extends Assignable>(tasks: T[]): Promise<T[]> {
     //  find the last index of the task that is unaccessible to the user
     //  return all tasks starting from index + 1 -> last value of tasks
     let latestAccessibleTaskIndex: number

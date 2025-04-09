@@ -116,12 +116,7 @@ export default async function TaskDetailPage({
               <StyledBox>
                 <AppMargin size={SizeofAppMargin.HEADER} py="17.5px">
                   <Stack direction="row" justifyContent="space-between">
-                    <HeaderBreadcrumbs
-                      token={token}
-                      title={task?.label}
-                      items={breadcrumbItems}
-                      userType={params.user_type}
-                    />
+                    <HeaderBreadcrumbs token={token} items={breadcrumbItems} userType={params.user_type} />
                     <Stack direction="row" alignItems="center" columnGap="8px">
                       <MenuBoxContainer role={tokenPayload.internalUserId ? UserRole.IU : UserRole.Client} />
                       <Stack direction="row" alignItems="center" columnGap="8px">
@@ -135,7 +130,6 @@ export default async function TaskDetailPage({
               <>
                 <HeaderBreadcrumbs
                   token={token}
-                  title={task?.label}
                   items={breadcrumbItems}
                   userType={params.user_type}
                   portalUrl={workspace.portalUrl}
