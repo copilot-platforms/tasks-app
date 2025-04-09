@@ -13,7 +13,12 @@ import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowStat
 import { ConfirmUI } from '@/components/layouts/ConfirmUI'
 import { CustomLink } from '@/hoc/CustomLink'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
-import { selectTaskBoard, setConfirmAssigneeModalId, setTasks } from '@/redux/features/taskBoardSlice'
+import {
+  selectTaskBoard,
+  setConfirmAssigneeModalId,
+  setTasks,
+  updateWorkflowStateIdByTaskId,
+} from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
 import { DateStringSchema } from '@/types/date'
 import { TaskResponse } from '@/types/dto/tasks.dto'
@@ -112,7 +117,9 @@ export const TaskCardList = ({ task, variant, workflowState, mode }: TaskCardLis
           variant="icon"
           getValue={(value) => {
             updateStatusValue(value)
-
+            if (variant === 'task') {
+              store.dispatch(updateWorkflowStateIdByTaskId({ taskId: task.id, targetWorkflowStateId: value.id }))
+            }
             if (mode === UserRole.Client && !previewMode) {
               clientUpdateTask(z.string().parse(token), task.id, value.id)
             } else {
