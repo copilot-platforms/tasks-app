@@ -2,8 +2,7 @@ import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 import { deleteTaskNotifications, sendTaskCreateNotifications, sendTaskUpdateNotifications } from '@/jobs/notifications'
 import { sendClientUpdateTaskNotifications } from '@/jobs/notifications/send-client-task-update-notifications'
 import { ClientResponse, CompanyResponse, InternalUsers } from '@/types/common'
-import { AncestorTask } from '@/types/db'
-import { CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
+import { AncestorTaskResponse, CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { buildLtree, buildLtreeNodeString, getIdsFromLtreePath } from '@/utils/ltree'
 import { getFilePathFromUrl, replaceImageSrc } from '@/utils/signedUrlReplacer'
@@ -589,7 +588,7 @@ export class TasksService extends BaseService {
     return updatedTask
   }
 
-  async getTraversalPath(id: string): Promise<any> {
+  async getTraversalPath(id: string): Promise<AncestorTaskResponse[]> {
     const taskWithPath = (
       await this.db.$queryRaw<{ path: string }[]>`
       SELECT "path" from "Tasks"
@@ -608,7 +607,7 @@ export class TasksService extends BaseService {
           where: { id, workspaceId: this.user.workspaceId, assigneeId: { not: null } },
           select: { title: true, label: true, assigneeId: true, assigneeType: true },
         }),
-      ) as Promise<AncestorTask>[], // safe casting, trust me
+      ) as Promise<AncestorTaskResponse>[],
     )
 
     const subtaskService = new SubtaskService(this.user)
