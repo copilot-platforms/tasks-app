@@ -92,12 +92,10 @@ export class SubtaskService extends BaseService {
     if (this.user.role === UserRole.IU) {
       const copilot = new CopilotAPI(this.user.token)
       const iu = await copilot.getInternalUser(z.string().parse(this.user.internalUserId))
-      console.log('iu', iu)
       if (!iu.isClientAccessLimited) {
         return tasks
       }
       const clients = await copilot.getClients({ limit: 1_000_000 })
-      console.log('tasks', tasks)
       latestAccessibleTaskIndex = tasks.findLastIndex((task) => {
         if (task.assigneeType === AssigneeType.internalUser) return false
         else if (task.assigneeType === AssigneeType.client) {
@@ -114,13 +112,20 @@ export class SubtaskService extends BaseService {
       })
     } else if (this.user.role === UserRole.Client) {
       // If user is a client, just check index of which task was last assigned to client
+      console.log('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
+      console.log('tasks', tasks)
+      console.log('client', this.user.clientId)
+      console.log('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
+
       latestAccessibleTaskIndex = tasks.findLastIndex(
-        (task) => task.assigneeId !== this.user.clientId || task.assigneeId !== this.user.companyId,
+        (task) => task.assigneeId !== this.user.clientId && task.assigneeId !== this.user.companyId,
       )
     } else {
       throw new APIError(httpStatus.BAD_REQUEST, 'Failed to parse user role from token')
     }
+    console.log('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
     console.log('latestAccessibleTaskIndex', latestAccessibleTaskIndex)
+    console.log('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
 
     if (latestAccessibleTaskIndex < 0) {
       return tasks
