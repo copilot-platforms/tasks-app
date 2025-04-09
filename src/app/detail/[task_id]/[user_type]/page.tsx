@@ -32,6 +32,7 @@ import { signedUrlTtl } from '@/constants/attachments'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import CustomScrollBar from '@/hoc/CustomScrollBar'
 import { RealTime } from '@/hoc/RealTime'
+import { Clickable } from '@/hooks/app-bridge/types'
 import { WorkspaceResponse } from '@/types/common'
 import { AncestorTaskResponse, SubTaskStatusResponse, TaskResponse } from '@/types/dto/tasks.dto'
 import { UserType } from '@/types/interfaces'
@@ -105,7 +106,10 @@ export default async function TaskDetailPage({
 
   const isPreviewMode = !!getPreviewMode(tokenPayload)
 
-  const breadcrumbItems = taskPath.map((task) => task.label)
+  const breadcrumbItems: { label: string; href: string }[] = taskPath.map(({ label, id }) => ({
+    label,
+    href: `/detail/${id}/${user_type}?token=${token}`,
+  }))
 
   return (
     <DetailStateUpdate isRedirect={!!searchParams.isRedirect} token={token} tokenPayload={tokenPayload} task={task}>
