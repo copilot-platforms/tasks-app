@@ -3,10 +3,12 @@
 import { StyledKeyboardIcon, StyledTypography } from '@/app/detail/ui/styledComponent'
 import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
 import { CustomLink } from '@/hoc/CustomLink'
+import { Clickable } from '@/hooks/app-bridge/types'
 import { useBreadcrumbs } from '@/hooks/app-bridge/useBreadcrumbs'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { UserType } from '@/types/interfaces'
 import { Stack, Typography } from '@mui/material'
+import { useRouter } from 'next/navigation'
 import { Fragment } from 'react'
 import { useSelector } from 'react-redux'
 
@@ -19,11 +21,12 @@ export const HeaderBreadcrumbs = ({
   portalUrl,
 }: {
   token: string | undefined
-  items: string[]
+  items: { label: string; href?: string }[]
   userType: UserType
   portalUrl?: string
 }) => {
   const { previewMode } = useSelector(selectTaskBoard)
+  const router = useRouter()
   console.log('items', items)
   console.log(
     'items breadcrumb',
@@ -40,7 +43,7 @@ export const HeaderBreadcrumbs = ({
     return tasksLinks[userType]
   }
   useBreadcrumbs(
-    items.map((label) => ({ label })),
+    items.map(({ label, href }) => ({ label, onClick: href ? () => router.push(href) : undefined })),
     { portalUrl },
   )
 
@@ -61,7 +64,7 @@ export const HeaderBreadcrumbs = ({
         />
       </CustomLink>
       {items.map((item) => (
-        <Fragment key={item}>
+        <Fragment key={item.label}>
           <StyledKeyboardIcon />
           <Typography
             variant="sm"
@@ -69,7 +72,7 @@ export const HeaderBreadcrumbs = ({
               fontSize: '13px',
             }}
           >
-            {item}
+            {item.label}
           </Typography>
         </Fragment>
       ))}

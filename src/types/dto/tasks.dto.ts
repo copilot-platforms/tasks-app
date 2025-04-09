@@ -64,7 +64,7 @@ export type AccessibleTasksResponse = Pick<
   'id' | 'assigneeId' | 'assigneeType' | 'title' | 'body' | 'parentId'
 >
 
-export type AncestorTaskResponse = Pick<Task, 'title' | 'label'> & {
+export type AncestorTaskResponse = Pick<Task, 'id' | 'title' | 'label'> & {
   assigneeId: string
   assigneeType: NonNullable<AssigneeType>
 }
