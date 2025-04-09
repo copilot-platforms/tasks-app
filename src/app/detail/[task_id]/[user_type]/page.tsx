@@ -22,7 +22,6 @@ import { Sidebar, SidebarSkeleton } from '@/app/detail/ui/Sidebar'
 import { StyledBox, StyledTiptapDescriptionWrapper, TaskDetailsContainer } from '@/app/detail/ui/styledComponent'
 import { Subtasks } from '@/app/detail/ui/Subtasks'
 import { TaskEditor } from '@/app/detail/ui/TaskEditor'
-import { ToggleButtonContainer } from '@/app/detail/ui/ToggleButtonContainer'
 import { ToggleController } from '@/app/detail/ui/ToggleController'
 import { DeletedTaskRedirectPage } from '@/components/layouts/DeletedTaskRedirectPage'
 import { HeaderBreadcrumbs } from '@/components/layouts/HeaderBreadcrumbs'
@@ -32,7 +31,6 @@ import { signedUrlTtl } from '@/constants/attachments'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import CustomScrollBar from '@/hoc/CustomScrollBar'
 import { RealTime } from '@/hoc/RealTime'
-import { Clickable } from '@/hooks/app-bridge/types'
 import { WorkspaceResponse } from '@/types/common'
 import { AncestorTaskResponse, SubTaskStatusResponse, TaskResponse } from '@/types/dto/tasks.dto'
 import { UserType } from '@/types/interfaces'
@@ -67,7 +65,6 @@ async function getSubTasksStatus(token: string, taskId: string): Promise<SubTask
 async function getTaskPath(token: string, taskId: string): Promise<AncestorTaskResponse[]> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}/path?token=${token}`)
   const { path } = await res.json()
-  console.log('path', path)
   return path
 }
 
