@@ -118,9 +118,6 @@ export class SubtaskService extends BaseService {
     } else {
       throw new APIError(httpStatus.BAD_REQUEST, 'Failed to parse user role from token')
     }
-    if (latestAccessibleTaskIndex < 0) {
-      return tasks
-    }
     return tasks.slice(latestAccessibleTaskIndex + 1)
   }
 }
