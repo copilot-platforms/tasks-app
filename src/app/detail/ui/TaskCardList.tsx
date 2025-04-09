@@ -112,7 +112,7 @@ export const TaskCardList = ({ task, variant, workflowState, mode }: TaskCardLis
           variant="icon"
           getValue={(value) => {
             updateStatusValue(value)
-            store.dispatch(setTasks(tasks.map((el) => (el.id === task.id ? { ...el, workflowState: value } : el)))) // Optimistic update, rollback case extremely rare here.
+
             if (mode === UserRole.Client && !previewMode) {
               clientUpdateTask(z.string().parse(token), task.id, value.id)
             } else {
