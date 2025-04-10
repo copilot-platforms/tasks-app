@@ -15,6 +15,7 @@ import { CustomLink } from '@/hoc/CustomLink'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import {
   selectTaskBoard,
+  setAssigneeCache,
   setConfirmAssigneeModalId,
   setTasks,
   updateWorkflowStateIdByTaskId,
@@ -61,7 +62,7 @@ export const TaskCardList = ({ task, variant, workflowState, mode }: TaskCardLis
     if (assignee.length > 0) {
       const currentAssignee = assignee.find((el) => el.id === task.assigneeId)
       const finalAssignee = currentAssignee ?? NoAssignee
-      //@ts-expect-error  "type" property has mismatching types in between NoAssignee and IAssigneeCombined
+      // @ts-expect-error  "type" property has mismatching types in between NoAssignee and IAssigneeCombined
       store.dispatch(setAssigneeCache({ key: task.id, value: finalAssignee }))
       //@ts-expect-error  "type" property has mismatching types in between NoAssignee and IAssigneeCombined
       setCurrentAssignee(finalAssignee)
