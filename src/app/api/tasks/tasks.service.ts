@@ -85,7 +85,7 @@ export class TasksService extends BaseService {
 
     const disjointTasksFilter: Prisma.TaskWhereInput = queryFilters.all
       ? {} // No need to support disjoint tasks when querying all tasks
-      : this.getDisjointTasksFilter(queryFilters.parentId)
+      : await this.getDisjointTasksFilter(queryFilters.parentId)
 
     const select = this.getSelectColumns(queryFilters.selectColumns)
 
@@ -380,10 +380,47 @@ export class TasksService extends BaseService {
     // This n-node matcher matches any task tree chain where previous task's assigneeId is not self's
     // E.g. A -> B -> C, where A is assigned to user 1, B is assigned to user 2, C is assigned to user 2
     // For user 2, task B should show up as a parent task in the main task board
-    const disjointTasksFilter: Prisma.TaskWhereInput = (() => {
+    const disjointTasksFilter: Promise<Prisma.TaskWhereInput> = (async () => {
       if (this.user.role === UserRole.IU || parentId) {
-        // NOTE: We can implement client access scopes here later
-        return {}
+        if (this.user.internalUserId) {
+          const copilot = new CopilotAPI(this.user.token)
+          const currentInternalUser = await copilot.getInternalUser(this.user.internalUserId)
+          if (!currentInternalUser.isClientAccessLimited) return {}
+          const clients = await copilot.getClients({ limit: MAX_FETCH_ASSIGNEE_COUNT })
+          const clientIds =
+            clients?.data
+              ?.filter((client) => currentInternalUser.companyAccessList?.includes(client.companyId))
+              ?.map((client) => client.id) || []
+
+          const fallbackArray = ['__empty__']
+
+          return {
+            OR: [
+              //Parent is not assigned to the limited scoped IU's and client companies accesible to the IU.
+              {
+                parent: {
+                  AND: [
+                    { assigneeId: { not: currentInternalUser.id } },
+                    {
+                      assigneeId: { notIn: clientIds?.length ? clientIds : fallbackArray },
+                    },
+                    {
+                      assigneeId: {
+                        notIn: currentInternalUser.companyAccessList?.length
+                          ? currentInternalUser.companyAccessList
+                          : fallbackArray,
+                      },
+                    },
+                  ],
+                },
+              },
+              //Task is a parent/ standalone task.
+              {
+                parentId: null,
+              },
+            ],
+          }
+        }
       }
       return {
         OR: [
