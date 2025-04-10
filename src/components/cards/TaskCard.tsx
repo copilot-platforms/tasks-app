@@ -33,18 +33,23 @@ interface TaskCardProps {
   href: string | UrlObject
 }
 
+const assigneeCache = new Map<string, IAssigneeCombined>() //used in memory cache rather than useMemo for cross-view(board and list) caching. The alternate idea would be to include assignee object in the response of getTasks api for each task but that would be a bit expensive.
+
 export const TaskCard = ({ task, href }: TaskCardProps) => {
   const { assignee, workflowStates } = useSelector(selectTaskBoard)
 
-  const [currentAssignee, setCurrentAssignee] = useState<IAssigneeCombined | undefined>(undefined)
+  const [currentAssignee, setCurrentAssignee] = useState<IAssigneeCombined | undefined>(() => {
+    return assigneeCache.get(task.id)
+  })
 
   useEffect(() => {
-    if (assignee.length > 0) {
+    if (!assigneeCache.has(task.id) && assignee.length > 0) {
       const currentAssignee = assignee.find((el) => el.id === task.assigneeId)
-      //@ts-expect-error  "type" property has mismatching types in between NoAssignee and IAssigneeCombined
-      setCurrentAssignee(currentAssignee ?? NoAssignee)
+      const finalAssignee = currentAssignee ?? NoAssignee
+      assigneeCache.set(task.id, finalAssignee as IAssigneeCombined)
+      setCurrentAssignee(finalAssignee as IAssigneeCombined)
     }
-  }, [assignee, task])
+  }, [assignee, task.id, task.assigneeId])
 
   return (
     <TaskCardContainer>
