@@ -1,8 +1,17 @@
+import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
+import { CopilotAPI } from '@/utils/CopilotAPI'
 import { buildLtreeNodeString } from '@/utils/ltree'
 import APIError from '@api/core/exceptions/api'
 import { BaseService } from '@api/core/services/base.service'
+import { UserRole } from '@api/core/types/user'
+import { AssigneeType } from '@prisma/client'
 import httpStatus from 'http-status'
 import { z } from 'zod'
+
+interface Assignable {
+  assigneeId: string
+  assigneeType: AssigneeType
+}
 
 export class SubtaskService extends BaseService {
   async getSubtaskCounts(id: string): Promise<number> {
@@ -74,5 +83,47 @@ export class SubtaskService extends BaseService {
       archive,
       this.user.workspaceId,
     )
+  }
+
+  async getAccessiblePathTasks<T extends Assignable>(tasks: T[]): Promise<T[]> {
+    //  find the last index of the task that is unaccessible to the user
+    //  return all tasks starting from index + 1 -> last value of tasks
+    let latestAccessibleTaskIndex: number
+
+    if (this.user.role === UserRole.IU) {
+      const copilot = new CopilotAPI(this.user.token)
+      const iu = await copilot.getInternalUser(z.string().parse(this.user.internalUserId))
+      if (!iu.isClientAccessLimited) {
+        return tasks
+      }
+
+      // If user is an internal user with client access limitations, they can only access tasks assigned to clients or company they have access to
+      const clients = await copilot.getClients({ limit: MAX_FETCH_ASSIGNEE_COUNT })
+      let companyId: string
+      latestAccessibleTaskIndex = tasks.findLastIndex((task) => {
+        if (task.assigneeType === AssigneeType.internalUser) return false
+        // Now find the last index of the task that is inaccessible to the user.
+        // We can them return all tasks following this inacessible task
+        else if (task.assigneeType === AssigneeType.client) {
+          const client = clients.data?.find((client) => client.id === task.assigneeId)
+          if (!client || !client.companyId) {
+            return true
+          }
+          companyId = z.string().parse(client?.companyId)
+        } else {
+          // company
+          companyId = task.assigneeId
+        }
+        return !iu.companyAccessList?.includes(companyId)
+      })
+    } else if (this.user.role === UserRole.Client) {
+      // If user is a client, just check index of which task was last assigned to client
+      latestAccessibleTaskIndex = tasks.findLastIndex(
+        (task) => task.assigneeId !== this.user.clientId && task.assigneeId !== this.user.companyId,
+      )
+    } else {
+      throw new APIError(httpStatus.BAD_REQUEST, 'Failed to parse user role from token')
+    }
+    return tasks.slice(latestAccessibleTaskIndex + 1)
   }
 }

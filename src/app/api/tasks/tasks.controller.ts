@@ -82,3 +82,10 @@ export const clientUpdateTask = async (req: NextRequest, { params: { id } }: IdP
   const updatedTask = await tasksService.clientUpdateTask(id, workflowStateId)
   return NextResponse.json({ updatedTask })
 }
+
+export const getTaskPath = async (req: NextRequest, { params: { id } }: IdParams) => {
+  const user = await authenticate(req)
+  const tasksService = new TasksService(user)
+  const path = await tasksService.getTraversalPath(id)
+  return NextResponse.json({ path })
+}

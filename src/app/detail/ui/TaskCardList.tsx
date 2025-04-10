@@ -1,28 +1,59 @@
 'use client'
 
-import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { Box, Stack, Typography } from '@mui/material'
-import { TaskResponse } from '@/types/dto/tasks.dto'
-import { useSelector } from 'react-redux'
-import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
-import { statusIcons } from '@/utils/iconMatcher'
-import { IAssigneeCombined, Sizes } from '@/types/interfaces'
-import { DueDateLayout } from '@/components/layouts/DueDateLayout'
-import { isTaskCompleted } from '@/utils/isTaskCompleted'
+import { updateTask } from '@/app/actions'
+import { UserRole } from '@/app/api/core/types/user'
+import { clientUpdateTask, updateAssignee, updateTaskDetail } from '@/app/detail/[task_id]/[user_type]/actions'
+import { StyledModal } from '@/app/detail/ui/styledComponent'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
-import { useEffect, useState } from 'react'
-import { NoAssignee } from '@/utils/noAssignee'
+import { MiniLoader } from '@/components/atoms/MiniLoader'
 import { TaskMetaItems } from '@/components/atoms/TaskMetaItems'
+import { DatePickerComponent } from '@/components/inputs/DatePickerComponent'
+import Selector, { SelectorType } from '@/components/inputs/Selector'
+import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
+import { ConfirmUI } from '@/components/layouts/ConfirmUI'
+import { CustomLink } from '@/hoc/CustomLink'
+import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
+import {
+  selectTaskBoard,
+  setConfirmAssigneeModalId,
+  setTasks,
+  updateWorkflowStateIdByTaskId,
+} from '@/redux/features/taskBoardSlice'
+import store from '@/redux/store'
+import { DateStringSchema } from '@/types/date'
+import { TaskResponse } from '@/types/dto/tasks.dto'
+import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
+import { IAssigneeCombined, Sizes } from '@/types/interfaces'
+import { getAssigneeName, isAssigneeTextMatching } from '@/utils/assignee'
+import { createDateFromFormattedDateString, formatDate } from '@/utils/dateHelper'
+import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
+import { getCardHref } from '@/utils/getCardHref'
+import { isTaskCompleted } from '@/utils/isTaskCompleted'
+import { NoAssignee, NoAssigneeExtraOptions, NoDataFoundOption } from '@/utils/noAssignee'
+import { ShouldConfirmBeforeReassignment } from '@/utils/shouldConfirmBeforeReassign'
+import { setDebouncedFilteredAssignees } from '@/utils/users'
+import { Box, Skeleton, Stack, Typography } from '@mui/material'
+import { useEffect, useState } from 'react'
+import { useSelector } from 'react-redux'
+import { z } from 'zod'
 
 interface TaskCardListProps {
   task: TaskResponse
   variant: 'task' | 'subtask' //task variant is used in task board list view, subtask variant is used for sub task list in details page
   workflowState?: WorkflowStateResponse
+  mode: UserRole
+  assignee?: IAssigneeCombined
 }
 
-export const TaskCardList = ({ task, variant, workflowState }: TaskCardListProps) => {
-  const { assignee, workflowStates } = useSelector(selectTaskBoard)
+export const TaskCardList = ({ task, variant, workflowState, mode }: TaskCardListProps) => {
+  const { assignee, workflowStates, previewMode, token, confirmAssignModalId, tasks } = useSelector(selectTaskBoard)
   const [currentAssignee, setCurrentAssignee] = useState<IAssigneeCombined | undefined>(undefined)
+
+  const [inputStatusValue, setInputStatusValue] = useState('')
+  const [selectedAssignee, setSelectedAssignee] = useState<IAssigneeCombined | undefined>(undefined)
+  const [loading, setLoading] = useState(false)
+  const [filteredAssignees, setFilteredAssignees] = useState(assignee)
+  const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     if (assignee.length > 0) {
@@ -31,68 +62,126 @@ export const TaskCardList = ({ task, variant, workflowState }: TaskCardListProps
       setCurrentAssignee(currentAssignee ?? NoAssignee)
     }
   }, [assignee, task])
+
+  const { renderingItem: _statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
+    // item: selectedWorkflowState,
+    item: workflowState ?? task.workflowState,
+    type: SelectorType.STATUS_SELECTOR,
+  })
+  const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
+    // item: selectedAssigneeId ? assignee.find((el) => el.id === selectedAssigneeId) : NoAssignee,
+    item: currentAssignee,
+    type: SelectorType.ASSIGNEE_SELECTOR,
+  })
+
+  const statusValue = _statusValue as WorkflowStateResponse
+  const assigneeValue = _assigneeValue as IAssigneeCombined
+
+  const handleConfirmAssigneeChange = (assigneeValue: IAssigneeCombined) => {
+    token && updateAssignee(token, task.id, getAssigneeTypeCorrected(assigneeValue), assigneeValue.id)
+    store.dispatch(setConfirmAssigneeModalId(undefined))
+  }
+
   return (
     <Stack
       direction="row"
       sx={{
         height: variant == 'task' ? '44px' : '36px',
         display: 'flex',
-        padding: variant == 'task' ? '6px 20px 6px 20px' : '6px 2px 6px 0px',
+        padding: variant == 'task' ? '6px 20px 6px 20px' : '6px 6px 6px 4px',
         alignItems: 'center',
         alignSelf: 'stretch',
         gap: '20px',
         justifyContent: 'flex-end',
         minWidth: 0,
+        ':hover': {
+          cursor: 'pointer',
+          background: (theme) => theme.color.gray[100],
+        },
       }}
     >
       <Stack
         direction="row"
+        alignItems="center"
         sx={{
-          gap: '8px',
           display: 'flex',
-          alignItems: 'center',
-          marginRight: 'auto',
+          gap: '2px',
           minWidth: 0,
           flexGrow: 1,
+          flexShrink: 1,
         }}
       >
-        <Stack
-          direction="row"
-          alignItems="center"
-          sx={{
+        <WorkflowStateSelector
+          option={workflowStates}
+          value={statusValue}
+          variant="icon"
+          getValue={(value) => {
+            updateStatusValue(value)
+            if (variant === 'task') {
+              store.dispatch(updateWorkflowStateIdByTaskId({ taskId: task.id, targetWorkflowStateId: value.id }))
+            }
+            if (mode === UserRole.Client && !previewMode) {
+              clientUpdateTask(z.string().parse(token), task.id, value.id)
+            } else {
+              updateTask({
+                token: z.string().parse(token),
+                taskId: task.id,
+                payload: { workflowStateId: value.id },
+              })
+            }
+          }}
+          responsiveNoHide
+          size={Sizes.MEDIUM}
+          padding={'2px 4px'}
+        />
+        <CustomLink
+          key={task.id}
+          href={{ pathname: getCardHref(task, mode), query: { token } }}
+          style={{
             display: 'flex',
             gap: '2px',
             minWidth: 0,
             flexGrow: 0,
             flexShrink: 1,
+            width: '100%',
           }}
         >
-          <Box sx={{ padding: '2px 4px' }}>
-            {statusIcons[Sizes.MEDIUM][workflowState ? workflowState.type : task.workflowState.type]}
-          </Box>
-
-          <Typography
-            variant="bodySm"
+          <Stack
+            direction="row"
             sx={{
-              lineHeight: variant == 'task' ? '22px' : '21px',
-              fontSize: variant == 'task' ? '14px' : '13px',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              flexShrink: 1,
-              flexGrow: 1,
+              gap: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              marginRight: 'auto',
               minWidth: 0,
+              flexGrow: 1,
+              flexShrink: 1,
             }}
           >
-            {task.title}
-          </Typography>
-        </Stack>
-        {(task.subtaskCount > 0 || task.isArchived) && (
-          <Stack direction="row" sx={{ display: 'flex', gap: '12px', flexShrink: 0, alignItems: 'center' }}>
-            <TaskMetaItems task={task} lineHeight="21px" />
+            <Typography
+              variant="bodySm"
+              sx={{
+                lineHeight: variant == 'task' ? '22px' : '21px',
+                fontSize: variant == 'task' ? '14px' : '13px',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                flexShrink: 1,
+                flexGrow: 0,
+                minWidth: 0,
+              }}
+            >
+              {task.title}
+            </Typography>
+            {(task.subtaskCount > 0 || task.isArchived) && (
+              <Stack direction="row" sx={{ display: 'flex', gap: '12px', flexShrink: 0, alignItems: 'center' }}>
+                <TaskMetaItems task={task} lineHeight="21px" />
+              </Stack>
+            )}
           </Stack>
-        )}
+        </CustomLink>
       </Stack>
+
       <Stack
         direction="row"
         sx={{
@@ -104,12 +193,127 @@ export const TaskCardList = ({ task, variant, workflowState }: TaskCardListProps
         }}
       >
         {task.dueDate && (
-          <Box sx={{ minWidth: '100px', display: 'flex', justifyContent: 'flex-end' }}>
-            <DueDateLayout dateString={task.dueDate} isDone={isTaskCompleted(task, workflowStates)} />
+          <Box sx={{ minWidth: '105px', display: 'flex', justifyContent: 'flex-end' }}>
+            <DatePickerComponent
+              getDate={(date) => {
+                const isoDate = DateStringSchema.parse(formatDate(date))
+                token && updateTaskDetail({ token, taskId: task.id, payload: { dueDate: isoDate } })
+              }}
+              variant="icon"
+              padding="2px 4px"
+              dateValue={task.dueDate ? createDateFromFormattedDateString(z.string().parse(task.dueDate)) : undefined}
+              disabled={mode === UserRole.Client && !previewMode}
+              isDone={isTaskCompleted(task, workflowStates)}
+            />
           </Box>
         )}
-        <CopilotAvatar currentAssignee={currentAssignee as IAssigneeCombined} />
+        {assigneeValue ? (
+          <Selector
+            inputStatusValue={inputStatusValue}
+            variant="icon"
+            setInputStatusValue={setInputStatusValue}
+            buttonWidth="100%"
+            placeholder="Set assignee"
+            getSelectedValue={(newValue) => {
+              const assignee = newValue as IAssigneeCombined
+              const shouldShowConfirmModal = ShouldConfirmBeforeReassignment(assigneeValue, assignee)
+              if (shouldShowConfirmModal) {
+                setSelectedAssignee(assignee)
+                store.dispatch(setConfirmAssigneeModalId(task.id))
+              } else {
+                token && updateAssignee(token, task.id, getAssigneeTypeCorrected(assignee), assignee.id)
+                updateAssigneeValue(assignee)
+              }
+            }}
+            options={loading ? [] : filteredAssignees.length ? filteredAssignees : [NoDataFoundOption]}
+            value={assigneeValue?.name == 'No assignee' ? null : assigneeValue}
+            selectorType={SelectorType.ASSIGNEE_SELECTOR}
+            buttonHeight="auto"
+            buttonContent={
+              <Box
+                sx={{
+                  padding: '2px 4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  borderRadius: '4px',
+                  ':hover': {
+                    cursor: 'pointer',
+                    background: (theme) => theme.color.gray[150],
+                  },
+                }}
+              >
+                <CopilotAvatar currentAssignee={assigneeValue as IAssigneeCombined} />
+              </Box>
+            }
+            handleInputChange={async (newInputValue: string) => {
+              if (!newInputValue || isAssigneeTextMatching(newInputValue, assigneeValue)) {
+                setFilteredAssignees(assignee)
+                return
+              }
+
+              setDebouncedFilteredAssignees(
+                activeDebounceTimeoutId,
+                setActiveDebounceTimeoutId,
+                setLoading,
+                setFilteredAssignees,
+                z.string().parse(token),
+                newInputValue,
+              )
+            }}
+            extraOption={NoAssigneeExtraOptions}
+            extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
+              return <>{loading && <MiniLoader />}</>
+            }}
+            disabled={mode === UserRole.Client && !previewMode}
+            cursor="pointer"
+            filterOption={(x: unknown) => x}
+            responsiveNoHide
+            currentOption={assigneeValue}
+          />
+        ) : (
+          <Box
+            sx={{
+              padding: '2px 4px',
+              display: 'flex',
+              alignItems: 'center',
+              borderRadius: '4px',
+              ':hover': {
+                cursor: 'pointer',
+                background: (theme) => theme.color.gray[150],
+              },
+            }}
+          >
+            <Skeleton variant="circular" width={20} height={20} />
+          </Box>
+        )}
       </Stack>
+      <StyledModal
+        open={confirmAssignModalId === task.id}
+        onClose={() => store.dispatch(setConfirmAssigneeModalId(undefined))}
+        aria-labelledby="confirm-reassignment-modal"
+        aria-describedby="confirm-reassignment"
+      >
+        <ConfirmUI
+          handleCancel={() => {
+            setSelectedAssignee(undefined)
+            store.dispatch(setConfirmAssigneeModalId(undefined))
+          }}
+          handleConfirm={() => {
+            if (selectedAssignee) {
+              handleConfirmAssigneeChange(selectedAssignee)
+            }
+          }}
+          buttonText="Reassign"
+          description={
+            <>
+              You&apos;re about to reassign this task from <strong>{getAssigneeName(assigneeValue)}</strong> to{' '}
+              <strong>{getAssigneeName(selectedAssignee)}</strong>. This will give{' '}
+              <strong>{getAssigneeName(selectedAssignee)}</strong> access to all task comments and history.
+            </>
+          }
+          title="Reassign task?"
+        />
+      </StyledModal>
     </Stack>
   )
 }

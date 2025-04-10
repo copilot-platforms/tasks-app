@@ -232,7 +232,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
             >
               <DatePickerComponent
                 getDate={(value) => store.dispatch(setCreateTaskFields({ targetField: 'dueDate', value: value as string }))}
-                isButton={true}
+                variant="button"
               />
             </Box>
           </Stack>
@@ -408,7 +408,7 @@ const NewTaskFooter = ({
                 {'Apply template'}
               </Typography>
             }
-            disableOutline
+            variant="normal"
             responsiveNoHide
             buttonWidth="auto"
             useClickHandler

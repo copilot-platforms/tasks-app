@@ -32,7 +32,7 @@ import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import CustomScrollBar from '@/hoc/CustomScrollBar'
 import { RealTime } from '@/hoc/RealTime'
 import { WorkspaceResponse } from '@/types/common'
-import { SubTaskStatusResponse, TaskResponse } from '@/types/dto/tasks.dto'
+import { AncestorTaskResponse, SubTaskStatusResponse, TaskResponse } from '@/types/dto/tasks.dto'
 import { UserType } from '@/types/interfaces'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import EscapeHandler from '@/utils/escapeHandler'
@@ -63,6 +63,12 @@ async function getSubTasksStatus(token: string, taskId: string): Promise<SubTask
   return data
 }
 
+async function getTaskPath(token: string, taskId: string): Promise<AncestorTaskResponse[]> {
+  const res = await fetch(`${apiUrl}/api/tasks/${taskId}/path?token=${token}`)
+  const { path } = await res.json()
+  return path
+}
+
 export default async function TaskDetailPage({
   params,
   searchParams,
@@ -79,11 +85,12 @@ export default async function TaskDetailPage({
 
   const copilotClient = new CopilotAPI(token)
 
-  const [task, tokenPayload, workspace, subTaskStatus] = await Promise.all([
+  const [task, tokenPayload, workspace, subTaskStatus, taskPath] = await Promise.all([
     getOneTask(token, task_id),
     copilotClient.getTokenPayload(),
     getWorkspace(token),
     getSubTasksStatus(token, task_id),
+    getTaskPath(token, task_id),
   ])
 
   if (!tokenPayload) {
@@ -97,6 +104,11 @@ export default async function TaskDetailPage({
 
   const isPreviewMode = !!getPreviewMode(tokenPayload)
 
+  const breadcrumbItems: { label: string; href: string }[] = taskPath.map(({ label, id }) => ({
+    label,
+    href: `/detail/${id}/${user_type}?token=${token}`,
+  }))
+
   return (
     <DetailStateUpdate isRedirect={!!searchParams.isRedirect} token={token} tokenPayload={tokenPayload} task={task}>
       <RealTime tokenPayload={tokenPayload}>
@@ -107,7 +119,7 @@ export default async function TaskDetailPage({
               <StyledBox>
                 <AppMargin size={SizeofAppMargin.HEADER} py="17.5px">
                   <Stack direction="row" justifyContent="space-between">
-                    <HeaderBreadcrumbs token={token} title={task?.label} userType={params.user_type} />
+                    <HeaderBreadcrumbs token={token} items={breadcrumbItems} userType={params.user_type} />
                     <Stack direction="row" alignItems="center" columnGap="8px">
                       <MenuBoxContainer role={tokenPayload.internalUserId ? UserRole.IU : UserRole.Client} />
                       <Stack direction="row" alignItems="center" columnGap="8px">
@@ -121,7 +133,7 @@ export default async function TaskDetailPage({
               <>
                 <HeaderBreadcrumbs
                   token={token}
-                  title={task?.label}
+                  items={breadcrumbItems}
                   userType={params.user_type}
                   portalUrl={workspace.portalUrl}
                 />

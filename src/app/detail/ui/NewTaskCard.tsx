@@ -286,7 +286,7 @@ export const NewTaskCard = ({
             endOption={<ManageTemplatesEndOption />}
             endOptionHref={`/manage-templates?token=${token}`}
             listAutoHeightMax="147px"
-            disableOutline
+            variant="normal"
             responsiveNoHide
             buttonWidth="auto"
             useClickHandler
@@ -417,7 +417,7 @@ export const NewTaskCard = ({
             padding={'0px 4px'}
             height={'28px'}
             getDate={(value) => handleFieldChange('dueDate', value)}
-            isButton={true}
+            variant="button"
             dateValue={subTaskFields.dueDate ?? undefined}
           />
         </Stack>
