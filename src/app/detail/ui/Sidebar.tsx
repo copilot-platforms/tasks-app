@@ -93,29 +93,14 @@ export const Sidebar = ({
 
   const handleAssigneeChange = (assigneeValue: IAssigneeCombined) => {
     updateAssigneeValue(assigneeValue)
-    // const assigneeType = getAssigneeTypeCorrected(assigneeValue)
-    // updateAssignee(assigneeType, assigneeValue?.id)
-    handleChangeAssignee(assigneeValue)
+    const assigneeType = getAssigneeTypeCorrected(assigneeValue)
+    updateAssignee(assigneeType, assigneeValue?.id)
   }
 
   const handleConfirmAssigneeChange = (assigneeValue: IAssigneeCombined) => {
     handleAssigneeChange(assigneeValue)
     store.dispatch(toggleShowConfirmAssignModal())
   }
-
-  const handleChangeAssignee = async (assignee: IAssigneeCombined) => {
-    try {
-      await fetch(`/api/tasks/${task_id}?token=${token}`, {
-        method: 'PATCH',
-        body: JSON.stringify({
-          assigneeType: getAssigneeTypeCorrected(assignee),
-          assigneeId: assignee.id,
-        }),
-      })
-    } catch (error) {
-      console.error('Failed to change assignee:', error)
-    }
-  } //Right now this function is being used instead of server actions. Server actions are of blocking behaviour which causes other consecutive server actions on hold if the previous actions takes time. handling assignee change on server actions takes too much time because of notification if an assignee is a company.
 
   useEffect(() => {
     if (isMobile) {
