@@ -46,8 +46,10 @@ interface TaskCardListProps {
 }
 
 export const TaskCardList = ({ task, variant, workflowState, mode }: TaskCardListProps) => {
-  const { assignee, workflowStates, previewMode, token, confirmAssignModalId, tasks } = useSelector(selectTaskBoard)
-  const [currentAssignee, setCurrentAssignee] = useState<IAssigneeCombined | undefined>(undefined)
+  const { assignee, workflowStates, previewMode, token, confirmAssignModalId, assigneeCache } = useSelector(selectTaskBoard)
+  const [currentAssignee, setCurrentAssignee] = useState<IAssigneeCombined | undefined>(() => {
+    return assigneeCache[task.id]
+  })
 
   const [inputStatusValue, setInputStatusValue] = useState('')
   const [selectedAssignee, setSelectedAssignee] = useState<IAssigneeCombined | undefined>(undefined)
@@ -58,10 +60,13 @@ export const TaskCardList = ({ task, variant, workflowState, mode }: TaskCardLis
   useEffect(() => {
     if (assignee.length > 0) {
       const currentAssignee = assignee.find((el) => el.id === task.assigneeId)
+      const finalAssignee = currentAssignee ?? NoAssignee
       //@ts-expect-error  "type" property has mismatching types in between NoAssignee and IAssigneeCombined
-      setCurrentAssignee(currentAssignee ?? NoAssignee)
+      store.dispatch(setAssigneeCache({ key: task.id, value: finalAssignee }))
+      //@ts-expect-error  "type" property has mismatching types in between NoAssignee and IAssigneeCombined
+      setCurrentAssignee(finalAssignee)
     }
-  }, [assignee, task])
+  }, [assignee, task.id, task.assigneeId])
 
   const { renderingItem: _statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
     // item: selectedWorkflowState,
