@@ -1,6 +1,6 @@
 'use client'
 
-import { updateTask } from '@/app/actions'
+import { updateTask } from '@/app/(home)/actions'
 import { UserRole } from '@/app/api/core/types/user'
 import { clientUpdateTask, updateAssignee, updateTaskDetail } from '@/app/detail/[task_id]/[user_type]/actions'
 import { StyledModal } from '@/app/detail/ui/styledComponent'

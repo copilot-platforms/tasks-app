@@ -27,7 +27,6 @@ import { DeletedTaskRedirectPage } from '@/components/layouts/DeletedTaskRedirec
 import { HeaderBreadcrumbs } from '@/components/layouts/HeaderBreadcrumbs'
 import { SilentError } from '@/components/templates/SilentError'
 import { apiUrl } from '@/config'
-import { signedUrlTtl } from '@/constants/attachments'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import CustomScrollBar from '@/hoc/CustomScrollBar'
 import { RealTime } from '@/hoc/RealTime'
@@ -43,7 +42,8 @@ import { z } from 'zod'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
-    next: { tags: ['getOneTask'], revalidate: signedUrlTtl },
+    cache: 'no-store',
+    next: { tags: ['getOneTask'] },
   })
 
   const data = await res.json()

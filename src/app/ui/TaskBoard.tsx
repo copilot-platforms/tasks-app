@@ -1,6 +1,6 @@
 'use client'
 
-import { updateTask, updateViewModeSettings } from '@/app/actions'
+import { updateTask, updateViewModeSettings } from '@/app/(home)/actions'
 import { TaskCard } from '@/components/cards/TaskCard'
 import { TaskColumn } from '@/components/cards/TaskColumn'
 import { TaskRow } from '@/components/cards/TaskRow'
