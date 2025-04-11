@@ -81,7 +81,7 @@ export class TasksService extends BaseService {
     // If `parentId` is present, filter by parentId, ELSE return top-level parent comments
     filters.parentId = queryFilters.all
       ? undefined // if querying all accessible tasks, parentId filter doesn't make sense
-      : this.getParentIdFilter(queryFilters.parentId)
+      : await this.getParentIdFilter(queryFilters.parentId)
 
     const disjointTasksFilter: Prisma.TaskWhereInput = queryFilters.all
       ? {} // No need to support disjoint tasks when querying all tasks
@@ -402,7 +402,6 @@ export class TasksService extends BaseService {
               {
                 parent: {
                   AND: [
-                    { assigneeId: { not: currentInternalUser.id } },
                     {
                       assigneeId: { notIn: clientIds?.length ? clientIds : fallbackArray },
                     },
@@ -445,13 +444,20 @@ export class TasksService extends BaseService {
     return disjointTasksFilter
   }
 
-  private getParentIdFilter(parentId?: string | null) {
+  private async getParentIdFilter(parentId?: string | null) {
     // If `parentId` is present, filter by parentId
     if (parentId) {
       return z.string().uuid().parse(parentId)
     }
     // If user is IU, no need to flatten subtasks
     if (this.user.role === UserRole.IU) {
+      const copilot = new CopilotAPI(this.user.token)
+      if (this.user.internalUserId) {
+        const currentInternalUser = await copilot.getInternalUser(this.user.internalUserId)
+        if (currentInternalUser.isClientAccessLimited) {
+          return undefined
+        }
+      }
       return null
     }
     // If user is client, flatten subtasks by not filtering by parentId right now
