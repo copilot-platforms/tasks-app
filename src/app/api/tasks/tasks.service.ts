@@ -81,11 +81,11 @@ export class TasksService extends BaseService {
     // If `parentId` is present, filter by parentId, ELSE return top-level parent comments
     filters.parentId = queryFilters.all
       ? undefined // if querying all accessible tasks, parentId filter doesn't make sense
-      : this.getParentIdFilter(queryFilters.parentId)
+      : await this.getParentIdFilter(queryFilters.parentId)
 
     const disjointTasksFilter: Prisma.TaskWhereInput = queryFilters.all
       ? {} // No need to support disjoint tasks when querying all tasks
-      : this.getDisjointTasksFilter(queryFilters.parentId)
+      : await this.getDisjointTasksFilter(queryFilters.parentId)
 
     const select = this.getSelectColumns(queryFilters.selectColumns)
 
@@ -380,10 +380,49 @@ export class TasksService extends BaseService {
     // This n-node matcher matches any task tree chain where previous task's assigneeId is not self's
     // E.g. A -> B -> C, where A is assigned to user 1, B is assigned to user 2, C is assigned to user 2
     // For user 2, task B should show up as a parent task in the main task board
-    const disjointTasksFilter: Prisma.TaskWhereInput = (() => {
+    const disjointTasksFilter: Promise<Prisma.TaskWhereInput> = (async () => {
       if (this.user.role === UserRole.IU || parentId) {
-        // NOTE: We can implement client access scopes here later
-        return {}
+        if (this.user.internalUserId) {
+          const copilot = new CopilotAPI(this.user.token)
+          const currentInternalUser = await copilot.getInternalUser(this.user.internalUserId)
+          if (!currentInternalUser.isClientAccessLimited) return {}
+          const clients = await copilot.getClients({ limit: MAX_FETCH_ASSIGNEE_COUNT })
+          const internalUsers = await copilot.getInternalUsers({ limit: MAX_FETCH_ASSIGNEE_COUNT })
+          const internalUsersIds = internalUsers?.data.map((iu) => iu.id) || []
+          const clientIds =
+            clients?.data
+              ?.filter((client) => currentInternalUser.companyAccessList?.includes(client.companyId))
+              ?.map((client) => client.id) || []
+
+          const fallbackArray = ['__empty__']
+
+          return {
+            OR: [
+              //Parent is not assigned to the limited scoped IU's and client companies accesible to the IU.
+              {
+                parent: {
+                  AND: [
+                    {
+                      assigneeId: { notIn: clientIds?.length ? clientIds : fallbackArray },
+                    },
+                    { assigneeId: { notIn: internalUsersIds?.length ? internalUsersIds : fallbackArray } },
+                    {
+                      assigneeId: {
+                        notIn: currentInternalUser.companyAccessList?.length
+                          ? currentInternalUser.companyAccessList
+                          : fallbackArray,
+                      },
+                    },
+                  ],
+                },
+              },
+              //Task is a parent/ standalone task.
+              {
+                parentId: null,
+              },
+            ],
+          }
+        }
       }
       return {
         OR: [
@@ -405,13 +444,20 @@ export class TasksService extends BaseService {
     return disjointTasksFilter
   }
 
-  private getParentIdFilter(parentId?: string | null) {
+  private async getParentIdFilter(parentId?: string | null) {
     // If `parentId` is present, filter by parentId
     if (parentId) {
       return z.string().uuid().parse(parentId)
     }
     // If user is IU, no need to flatten subtasks
     if (this.user.role === UserRole.IU) {
+      const copilot = new CopilotAPI(this.user.token)
+      if (this.user.internalUserId) {
+        const currentInternalUser = await copilot.getInternalUser(this.user.internalUserId)
+        if (currentInternalUser.isClientAccessLimited) {
+          return undefined
+        }
+      }
       return null
     }
     // If user is client, flatten subtasks by not filtering by parentId right now
