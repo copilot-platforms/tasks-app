@@ -77,7 +77,6 @@ export const RealTime = ({
     // Handle realtime subtasks in a modular way
     // TODO: Handle rest of the realtime operations in the same way in a TDB milestone
     const realtimeHandler = new RealtimeHandler(payload, user, userRole)
-
     if (Object.keys(payload.new).includes('parentId') && (payload.new as RealTimeTaskResponse).parentId !== null) {
       return realtimeHandler.handleRealtimeSubtasks()
     }
@@ -131,6 +130,7 @@ export const RealTime = ({
       // if (updatedTask.parentId && tasks.find((task) => task.id === updatedTask.parentId)) {
       //   return //short circuit if the updated task is a subtask and its parent id is in the tasks array
       // }
+
       if (user && userRole === AssigneeType.client) {
         // Check if assignee is this client's ID, or it's company's ID
         if (![userId, tokenPayload?.companyId].includes(updatedTask.assigneeId)) {
