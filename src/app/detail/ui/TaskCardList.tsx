@@ -17,7 +17,6 @@ import {
   selectTaskBoard,
   setAssigneeCache,
   setConfirmAssigneeModalId,
-  setTasks,
   updateWorkflowStateIdByTaskId,
 } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
@@ -44,9 +43,11 @@ interface TaskCardListProps {
   workflowState?: WorkflowStateResponse
   mode: UserRole
   assignee?: IAssigneeCombined
+  mutator?: () => void //Refactor this later. Mutator is any function that is used to update the state of the parent component
+  // in this case, it is used to update the state of the sub tasks list when assignee changes.
 }
 
-export const TaskCardList = ({ task, variant, workflowState, mode }: TaskCardListProps) => {
+export const TaskCardList = ({ task, variant, workflowState, mode, mutator }: TaskCardListProps) => {
   const { assignee, workflowStates, previewMode, token, confirmAssignModalId, assigneeCache } = useSelector(selectTaskBoard)
   const [currentAssignee, setCurrentAssignee] = useState<IAssigneeCombined | undefined>(() => {
     return assigneeCache[task.id]
@@ -85,6 +86,7 @@ export const TaskCardList = ({ task, variant, workflowState, mode }: TaskCardLis
 
   const handleConfirmAssigneeChange = (assigneeValue: IAssigneeCombined) => {
     token && updateAssignee(token, task.id, getAssigneeTypeCorrected(assigneeValue), assigneeValue.id)
+    mutator && mutator()
     store.dispatch(setConfirmAssigneeModalId(undefined))
   }
 
@@ -229,6 +231,7 @@ export const TaskCardList = ({ task, variant, workflowState, mode }: TaskCardLis
               } else {
                 token && updateAssignee(token, task.id, getAssigneeTypeCorrected(assignee), assignee.id)
                 updateAssigneeValue(assignee)
+                mutator && mutator()
               }
             }}
             options={loading ? [] : filteredAssignees.length ? filteredAssignees : [NoDataFoundOption]}
