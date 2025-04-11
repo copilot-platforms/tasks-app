@@ -29,8 +29,16 @@ model Task {
   ClientNotification       ClientNotification[]
   InternalUserNotification InternalUserNotification[]
 
+  parentId     String? @db.Uuid
+  parent       Task?   @relation("TaskToSubtasks", fields: [parentId], references: [id], onDelete: Cascade)
+  subtasks     Task[]  @relation("TaskToSubtasks")
+  subtaskCount Int     @default(0)
+
+  path Unsupported("ltree")? // Prisma does not have native support for ltrees yet
+
   isArchived       Boolean   @default(false)
   lastArchivedDate DateTime?
 
+  @@index([path], type: Gist)
   @@map("Tasks")
 }

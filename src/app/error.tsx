@@ -3,7 +3,6 @@
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 import { isProd } from '@/config'
 import { Box, Stack } from '@mui/material'
-import React from 'react'
 
 const ClientErrorBoundary = ({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) => {
   const errorMessage =

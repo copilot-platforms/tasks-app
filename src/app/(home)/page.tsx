@@ -1,7 +1,11 @@
 export const fetchCache = 'force-no-store'
 
-import { createMultipleAttachments } from '@/app/actions'
-import { TaskBoardAppBridge } from '@/app/ui/TaskBoardAppBridge'
+import { AllTasksFetcher } from '@/app/_fetchers/AllTasksFetcher'
+import { AssigneeFetcher } from '@/app/_fetchers/AssigneeFetcher'
+import { TemplatesFetcher } from '@/app/_fetchers/TemplatesFetcher'
+import { createMultipleAttachments } from '@/app/(home)/actions'
+import { ModalNewTaskForm } from '@/app/ui/Modal_NewTaskForm'
+import { TaskBoard } from '@/app/ui/TaskBoard'
 import { SilentError } from '@/components/templates/SilentError'
 import { apiUrl } from '@/config'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
@@ -18,10 +22,6 @@ import { redirectIfTaskCta } from '@/utils/redirect'
 import { UserRole } from '@api/core/types/user'
 import { Suspense } from 'react'
 import { z } from 'zod'
-import { AssigneeFetcher } from './_fetchers/AssigneeFetcher'
-import { TemplatesFetcher } from './_fetchers/TemplatesFetcher'
-import { ModalNewTaskForm } from './ui/Modal_NewTaskForm'
-import { TaskBoard } from './ui/TaskBoard'
 
 export async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -70,6 +70,13 @@ export async function getViewSettings(token: string): Promise<CreateViewSettings
   return await res.json()
 }
 
+async function getAccessibleTasks(token: string) {
+  const res = await fetch(`${apiUrl}/api/tasks?token=${token}&all=1`)
+
+  const data = await res.json()
+  return data.tasks
+}
+
 export default async function Main({ searchParams }: { searchParams: { token: string; taskId?: string } }) {
   const token = searchParams.token
 
@@ -109,6 +116,9 @@ export default async function Main({ searchParams }: { searchParams: { token: st
       </Suspense>
       <Suspense fallback={null}>
         <TemplatesFetcher token={token} />
+      </Suspense>
+      <Suspense fallback={null}>
+        <AllTasksFetcher token={token} />
       </Suspense>
 
       <RealTime tokenPayload={tokenPayload}>
