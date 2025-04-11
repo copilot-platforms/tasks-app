@@ -172,7 +172,13 @@ export const Subtasks = ({
           }
 
           return (
-            <TaskCardList key={checkOptimisticStableId(item, optimisticUpdates)} task={item} variant="subtask" mode={mode} />
+            <TaskCardList
+              key={checkOptimisticStableId(item, optimisticUpdates)}
+              task={item}
+              variant="subtask"
+              mode={mode}
+              mutator={async () => await mutate(cacheKey)}
+            />
           )
         })}
       </Box>
