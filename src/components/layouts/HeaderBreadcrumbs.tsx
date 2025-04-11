@@ -37,7 +37,10 @@ export const HeaderBreadcrumbs = ({
     return tasksLinks[userType]
   }
   useBreadcrumbs(
-    items.map(({ label, href }) => ({ label, onClick: href ? () => router.push(href) : undefined })),
+    items.map(({ label, href }, index) => ({
+      label,
+      onClick: index === items.length - 1 ? undefined : href ? () => router.push(href) : undefined,
+    })),
     { portalUrl },
   )
 
