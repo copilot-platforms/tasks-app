@@ -72,7 +72,7 @@ export const TaskEditor = ({
 
   useEffect(() => {
     if (!isUserTyping && activeUploads === 0) {
-      const currentTask = activeTask
+      const currentTask = activeTask?.id === task_id ? activeTask : task
       if (currentTask) {
         setUpdateTitle(currentTask.title || '')
         setUpdateDetail(currentTask.body ?? '')
