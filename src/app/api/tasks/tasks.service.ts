@@ -387,6 +387,8 @@ export class TasksService extends BaseService {
           const currentInternalUser = await copilot.getInternalUser(this.user.internalUserId)
           if (!currentInternalUser.isClientAccessLimited) return {}
           const clients = await copilot.getClients({ limit: MAX_FETCH_ASSIGNEE_COUNT })
+          const internalUsers = await copilot.getInternalUsers({ limit: MAX_FETCH_ASSIGNEE_COUNT })
+          const internalUsersIds = internalUsers?.data.map((iu) => iu.id) || []
           const clientIds =
             clients?.data
               ?.filter((client) => currentInternalUser.companyAccessList?.includes(client.companyId))
@@ -404,6 +406,7 @@ export class TasksService extends BaseService {
                     {
                       assigneeId: { notIn: clientIds?.length ? clientIds : fallbackArray },
                     },
+                    { assigneeId: { notIn: internalUsersIds?.length ? internalUsersIds : fallbackArray } },
                     {
                       assigneeId: {
                         notIn: currentInternalUser.companyAccessList?.length

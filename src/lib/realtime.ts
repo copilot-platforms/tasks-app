@@ -77,7 +77,12 @@ export class RealtimeHandler {
     // If it is a disjoint task we need to insert it to the fkin board
     const isParentTaskAccessible = accessibleTasks.some((task) => task.id === newTask.parentId)
 
-    // TODO: @arpandhakal we can implement flattened disjoint tasks for IU (parent is assigned to limited client / company) here
+    if (this.userRole === AssigneeType.internalUser) {
+      const user = InternalUsersSchema.parse(this.user)
+      if (user.isClientAccessLimited && !isParentTaskAccessible) {
+        store.dispatch(setTasks([...tasks, newTask]))
+      }
+    }
     if (this.userRole === AssigneeType.client && !isParentTaskAccessible) {
       store.dispatch(setTasks([...tasks, newTask]))
     }
@@ -104,6 +109,14 @@ export class RealtimeHandler {
       }
       store.dispatch(setAccessibleTasks(filterOutNewTask(accessibleTasks)))
       return
+    }
+    const isParentTaskAccessible = accessibleTasks.some((task) => task.id === newTask.parentId)
+    if (this.isTaskAccessible(newTask)) {
+      // If task is accessible, add it to the tasks array
+      if (!isTaskVisibleInBoard && !isParentTaskAccessible) {
+        store.dispatch(setTasks([...tasks, newTask]))
+        store.dispatch(setAccessibleTasks([...accessibleTasks, newTask]))
+      }
     }
 
     // It's possible that a subtask exists in `tasks` because it can be a disjoint task, update it
@@ -142,12 +155,18 @@ export class RealtimeHandler {
     if (!this.isValidPayload()) {
       return
     }
+    const currentState = store.getState()
+    const { tasks, accessibleTasks } = selectTaskBoard(currentState)
 
     const newTask = this.payload.new as RealTimeTaskResponse
     // Being a subtask, this surely has a valid non-null parentId
     newTask.parentId = z.string().parse(newTask.parentId)
 
     if (!this.isTaskAccessible(newTask)) {
+      if (tasks.some((task) => task.id === newTask.id)) {
+        store.dispatch(setTasks(tasks.filter((task) => task.id !== newTask.id)))
+        store.dispatch(setAccessibleTasks(accessibleTasks.filter((task) => task.id !== newTask.id)))
+      }
       return
     }
 
