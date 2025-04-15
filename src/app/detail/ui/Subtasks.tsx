@@ -52,7 +52,8 @@ export const Subtasks = ({
   const mode = tokenPayload?.internalUserId ? UserRole.IU : UserRole.Client
 
   const cacheKey = `/api/tasks/?token=${token}&showArchived=1&showUnarchived=1&parentId=${task_id}`
-  const { data: subTasks, mutate: mutateList } = useSWR(cacheKey, fetcher, { refreshInterval: 0 })
+
+  const { data: subTasks } = useSWR(cacheKey, fetcher, { refreshInterval: 0 })
 
   const { mutate } = useSWRConfig()
 
