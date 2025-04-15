@@ -56,19 +56,13 @@ export const RealTime = ({
     if (!pathname.includes('detail')) return
 
     const isClientUser = pathname.includes('cu')
-    const isInternalUser =
-      user && userRole === AssigneeType.internalUser && !InternalUsersSchema.parse(user).isClientAccessLimited
+    const isAccessibleSubtask = updatedTask.parentId && accessibleTasks.some((task) => task.id === updatedTask.parentId)
 
     if (isClientUser) {
-      const isSubtask = updatedTask.parentId && accesibleTaskIds.includes(updatedTask.parentId)
-
-      router.push(isSubtask ? `/detail/${updatedTask.parentId}/cu?token=${token}` : `/client?token=${token}`)
-    } else if (isInternalUser) {
-      router.push(updatedTask.parentId ? `/detail/${updatedTask.parentId}/iu/?token=${token}` : `/?token=${token}`)
+      router.push(isAccessibleSubtask ? `/detail/${updatedTask.parentId}/cu?token=${token}` : `/client?token=${token}`)
     } else {
-      const isSubtask = updatedTask.parentId && accesibleTaskIds.includes(updatedTask.parentId)
-      router.push(isSubtask ? `/detail/${updatedTask.parentId}/iu?token=${token}` : `/?token=${token}`)
-    } //for limited scope ius
+      router.push(isAccessibleSubtask ? `/detail/${updatedTask.parentId}/iu/?token=${token}` : `/?token=${token}`)
+    }
   }
 
   const handleTaskRealTimeUpdates = (payload: RealtimePostgresChangesPayload<RealTimeTaskResponse>) => {
@@ -76,7 +70,7 @@ export const RealTime = ({
 
     // Handle realtime subtasks in a modular way
     // TODO: Handle rest of the realtime operations in the same way in a TDB milestone
-    const realtimeHandler = new RealtimeHandler(payload, user, userRole)
+    const realtimeHandler = new RealtimeHandler(payload, user, userRole, redirectToBoard)
     if (Object.keys(payload.new).includes('parentId') && (payload.new as RealTimeTaskResponse).parentId !== null) {
       return realtimeHandler.handleRealtimeSubtasks()
     }

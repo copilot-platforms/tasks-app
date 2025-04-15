@@ -14,6 +14,7 @@ export class RealtimeHandler {
     private readonly payload: RealtimePostgresChangesPayload<RealTimeTaskResponse>,
     private readonly user: IAssigneeCombined,
     private readonly userRole: AssigneeType,
+    private readonly handleDelete: (newTask: RealTimeTaskResponse) => void,
   ) {}
 
   /**
@@ -108,8 +109,9 @@ export class RealtimeHandler {
         store.dispatch(setTasks(filterOutNewTask(tasks)))
       }
       store.dispatch(setAccessibleTasks(filterOutNewTask(accessibleTasks)))
-      return
+      return this.handleDelete(newTask)
     }
+
     const isParentTaskAccessible = accessibleTasks.some((task) => task.id === newTask.parentId)
     if (this.isTaskAccessible(newTask)) {
       // If task is accessible, add it to the tasks array
