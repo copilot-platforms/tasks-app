@@ -83,9 +83,10 @@ export class TasksService extends BaseService {
       ? undefined // if querying all accessible tasks, parentId filter doesn't make sense
       : await this.getParentIdFilter(queryFilters.parentId)
 
-    const disjointTasksFilter: Prisma.TaskWhereInput = queryFilters.all
-      ? {} // No need to support disjoint tasks when querying all tasks
-      : await this.getDisjointTasksFilter(queryFilters.parentId)
+    const disjointTasksFilter: Prisma.TaskWhereInput =
+      queryFilters.all || queryFilters.parentId
+        ? {} // No need to support disjoint tasks when querying all tasks / subtasks
+        : await this.getDisjointTasksFilter(queryFilters.parentId)
 
     const select = this.getSelectColumns(queryFilters.selectColumns)
 
@@ -424,6 +425,7 @@ export class TasksService extends BaseService {
           }
         }
       }
+
       return {
         OR: [
           // Parent is not assigned to client
