@@ -6,6 +6,7 @@ import { TasksService } from '@api/tasks/tasks.service'
 import httpStatus from 'http-status'
 import { unstable_noStore as noStore } from 'next/cache'
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 
 export const getTasks = async (req: NextRequest) => {
   noStore()
@@ -31,7 +32,7 @@ export const getTasks = async (req: NextRequest) => {
     parentId: parentId || null,
 
     // Show all accessible tasks for a user
-    all: !!all,
+    all: z.coerce.boolean().parse(all),
 
     // Select only specific columns - useful in optimization
     selectColumns: select ? select.split(',') : undefined,
