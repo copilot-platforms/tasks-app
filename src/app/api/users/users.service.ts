@@ -28,18 +28,20 @@ class UsersService extends BaseService {
 
     const listArgs: CopilotListArgs = { limit, nextToken }
 
-    const [ius, clients, companies] = await Promise.all([
+    const [ius, clients, companies, currentWorkspace] = await Promise.all([
       this.copilot.getInternalUsers(listArgs),
       this.copilot.getClients({ limit: MAX_FETCH_ASSIGNEE_COUNT, nextToken }),
       this.copilot.getCompanies({ limit: MAX_FETCH_ASSIGNEE_COUNT, nextToken }),
+      this.copilot.getWorkspace(),
     ])
 
     // Get current internal user as only IUs are authenticated to access this route
-    const currentInternalUser = await this.copilot.getInternalUser(z.string().parse(this.user.internalUserId))
+    const currentInternalUser = ius.data.find((iu) => iu.id === user.internalUserId)
+    if (!currentInternalUser) {
+      throw new APIError(httpStatus.UNAUTHORIZED, 'Only internal users are allowed to access this resource')
+    }
     // Filter out companies where isPlaceholder is true if companies.data is not null
     // Also filter out just companies which are accessible to this IU, since copilot doesn't do that
-    const currentWorkspace = await this.copilot.getWorkspace()
-
     // If current workspace setting does not have companies enabled, don't return any companies
     let filteredCompanies: CompanyResponse[] = []
     if (currentWorkspace.isCompaniesEnabled && companies.data) {
