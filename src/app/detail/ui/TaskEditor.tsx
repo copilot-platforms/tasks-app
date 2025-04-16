@@ -1,5 +1,6 @@
 'use client'
 
+import { revalidateGetOneTask } from '@/app/detail/[task_id]/[user_type]/actions'
 import { ImagePreviewModal } from '@/app/detail/ui/ImagePreviewModal'
 import { StyledModal } from '@/app/detail/ui/styledComponent'
 import AttachmentLayout from '@/components/AttachmentLayout'
@@ -69,6 +70,10 @@ export const TaskEditor = ({
   //     }
   //   }
   // }
+
+  useEffect(() => {
+    revalidateGetOneTask()
+  }, [])
 
   useEffect(() => {
     if (!isUserTyping && activeUploads === 0) {

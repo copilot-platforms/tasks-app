@@ -122,3 +122,7 @@ export const postScrapMedia = async (token: string, payload: ScrapMediaRequest) 
     body: JSON.stringify(payload),
   })
 }
+
+export const revalidateGetOneTask = async () => {
+  revalidateTag('getOneTask')
+}
