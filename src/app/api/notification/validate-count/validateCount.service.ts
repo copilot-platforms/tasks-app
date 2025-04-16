@@ -22,7 +22,7 @@ export class ValidateCountService extends NotificationService {
    */
   async fixClientNotificationCount(clientId: string): Promise<void> {
     const notifications = await this.copilot.getNotifications(clientId, { limit: 1_000_000 })
-    console.info('ValidateCount :: Copilot Notifications', notifications.length)
+    console.info('ValidateCount :: Total Copilot Notifications:', notifications.length)
     await this.validateWithTasks(
       clientId,
       notifications.map((n) => n.id),
@@ -39,7 +39,6 @@ export class ValidateCountService extends NotificationService {
     const tasks = await tasksService.getAllTasks({
       showArchived: false,
       showUnarchived: true,
-      all: true,
       showIncompleteOnly: true,
     })
     console.info('ValidateCount :: User tasks', tasks.length)
