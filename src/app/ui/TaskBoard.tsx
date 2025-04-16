@@ -29,8 +29,10 @@ import CustomScrollBar from '@/hoc/CustomScrollBar'
 import { useFilter } from '@/hooks/useFilter'
 import { WorkspaceResponse } from '@/types/common'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
+import { WorkflowState, WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { getCardHref } from '@/utils/getCardHref'
 import { sortTaskByDescendingOrder } from '@/utils/sortTask'
+import { prioritizeStartedStates } from '@/utils/workflowStates'
 import { UserRole } from '@api/core/types/user'
 
 interface TaskBoardProps {
@@ -216,7 +218,7 @@ export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
           }}
         >
           <CustomScrollBar>
-            {workflowStates.map((list, index) => (
+            {prioritizeStartedStates(workflowStates).map((list, index) => (
               <DragDropHandler
                 key={list.id}
                 accept={'taskCard'}
