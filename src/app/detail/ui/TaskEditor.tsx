@@ -72,7 +72,7 @@ export const TaskEditor = ({
   // }
 
   useEffect(() => {
-    revalidateGetOneTask()
+    revalidateGetOneTask() //cache invalidation on realtime updates
   }, [])
 
   useEffect(() => {
