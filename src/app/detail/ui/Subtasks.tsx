@@ -107,6 +107,28 @@ export const Subtasks = ({
     }
   }
 
+  const handleSubTaskUpdate = async (taskId: string, changes: Partial<TaskResponse>, updater: () => Promise<void>) => {
+    if (!subTasks?.tasks) return
+    const updatedTasks = subTasks.tasks.map((task: TaskResponse) => (task.id === taskId ? { ...task, ...changes } : task))
+
+    try {
+      await mutate(
+        cacheKey,
+        async () => {
+          await updater()
+          return await fetcher(cacheKey)
+        },
+        {
+          optimisticData: { tasks: updatedTasks },
+          rollbackOnError: true,
+          revalidate: true,
+        },
+      )
+    } catch (error) {
+      console.error('Failed to update subtask:', error)
+    }
+  }
+
   return (
     <Stack
       direction="column"
@@ -178,7 +200,7 @@ export const Subtasks = ({
               task={item}
               variant="subtask"
               mode={mode}
-              mutator={async () => await mutate(cacheKey)}
+              handleUpdate={handleSubTaskUpdate}
             />
           )
         })}

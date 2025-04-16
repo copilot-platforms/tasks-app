@@ -35,6 +35,7 @@ import { setDebouncedFilteredAssignees } from '@/utils/users'
 import { Box, Skeleton, Stack, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
+import { ScopedMutator } from 'swr/_internal'
 import { z } from 'zod'
 
 interface TaskCardListProps {
@@ -43,11 +44,10 @@ interface TaskCardListProps {
   workflowState?: WorkflowStateResponse
   mode: UserRole
   assignee?: IAssigneeCombined
-  mutator?: () => void //Refactor this later. Mutator is any function that is used to update the state of the parent component
-  // in this case, it is used to update the state of the sub tasks list when assignee changes.
+  handleUpdate?: (taskId: string, changes: Partial<TaskResponse>, updater: () => Promise<void>) => Promise<void>
 }
 
-export const TaskCardList = ({ task, variant, workflowState, mode, mutator }: TaskCardListProps) => {
+export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate }: TaskCardListProps) => {
   const { assignee, workflowStates, previewMode, token, confirmAssignModalId, assigneeCache } = useSelector(selectTaskBoard)
   const [currentAssignee, setCurrentAssignee] = useState<IAssigneeCombined | undefined>(() => {
     return assigneeCache[task.id]
@@ -85,8 +85,14 @@ export const TaskCardList = ({ task, variant, workflowState, mode, mutator }: Ta
   const assigneeValue = _assigneeValue as IAssigneeCombined
 
   const handleConfirmAssigneeChange = (assigneeValue: IAssigneeCombined) => {
-    token && updateAssignee(token, task.id, getAssigneeTypeCorrected(assigneeValue), assigneeValue.id)
-    mutator && mutator()
+    if (handleUpdate) {
+      token &&
+        handleUpdate(task.id, { assigneeId: assigneeValue.id }, () =>
+          updateAssignee(token, task.id, getAssigneeTypeCorrected(assigneeValue), assigneeValue.id),
+        )
+    } else {
+      token && updateAssignee(token, task.id, getAssigneeTypeCorrected(assigneeValue), assigneeValue.id)
+    }
     store.dispatch(setConfirmAssigneeModalId(undefined))
   }
 
@@ -205,7 +211,14 @@ export const TaskCardList = ({ task, variant, workflowState, mode, mutator }: Ta
             <DatePickerComponent
               getDate={(date) => {
                 const isoDate = DateStringSchema.parse(formatDate(date))
-                token && updateTaskDetail({ token, taskId: task.id, payload: { dueDate: isoDate } })
+                if (handleUpdate) {
+                  token &&
+                    handleUpdate(task.id, { dueDate: isoDate }, () =>
+                      updateTaskDetail({ token, taskId: task.id, payload: { dueDate: isoDate } }),
+                    )
+                } else {
+                  token && updateTaskDetail({ token, taskId: task.id, payload: { dueDate: isoDate } })
+                }
               }}
               variant="icon"
               padding="2px 4px"
@@ -228,9 +241,16 @@ export const TaskCardList = ({ task, variant, workflowState, mode, mutator }: Ta
                 setSelectedAssignee(assignee)
                 store.dispatch(setConfirmAssigneeModalId(task.id))
               } else {
-                token && updateAssignee(token, task.id, getAssigneeTypeCorrected(assignee), assignee.id)
+                if (handleUpdate) {
+                  token &&
+                    handleUpdate(task.id, { assigneeId: assignee.id }, () =>
+                      updateAssignee(token, task.id, getAssigneeTypeCorrected(assignee), assignee.id),
+                    )
+                } else {
+                  token && updateAssignee(token, task.id, getAssigneeTypeCorrected(assignee), assignee.id)
+                }
+
                 updateAssigneeValue(assignee)
-                mutator && mutator()
               }
             }}
             options={loading ? [] : filteredAssignees.length ? filteredAssignees : [NoDataFoundOption]}
