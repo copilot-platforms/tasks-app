@@ -26,7 +26,7 @@ import { trimAllTags } from '@/utils/trimTags'
 import { setDebouncedFilteredAssignees } from '@/utils/users'
 import { Box, Stack, Typography } from '@mui/material'
 import dayjs from 'dayjs'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
 import { z } from 'zod'
@@ -73,6 +73,8 @@ export const NewTaskCard = ({
   })
 
   const [filteredAssignees, setFilteredAssignees] = useState(assignee)
+
+  const inputRef = useRef<HTMLInputElement>(null)
 
   const [isUploading, setIsUploading] = useState(false)
 
@@ -214,6 +216,9 @@ export const NewTaskCard = ({
       }
       handleSubTaskCreation(payload)
       clearSubTaskFields()
+      if (inputRef.current) {
+        inputRef.current.focus()
+      }
     }
   }
 
@@ -236,6 +241,7 @@ export const NewTaskCard = ({
       >
         <Stack direction="row" sx={{ display: 'flex', alignItems: 'flex-end', gap: '4px', alignSelf: 'stretch' }}>
           <StyledTextField
+            inputRef={inputRef}
             type="text"
             multiline
             autoFocus={true}
