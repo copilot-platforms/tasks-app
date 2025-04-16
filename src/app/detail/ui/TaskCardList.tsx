@@ -221,7 +221,6 @@ export const TaskCardList = ({ task, variant, workflowState, mode, mutator }: Ta
             variant="icon"
             setInputStatusValue={setInputStatusValue}
             buttonWidth="100%"
-            placeholder="Set assignee"
             getSelectedValue={(newValue) => {
               const assignee = newValue as IAssigneeCombined
               const shouldShowConfirmModal = ShouldConfirmBeforeReassignment(assigneeValue, assignee)
@@ -245,10 +244,12 @@ export const TaskCardList = ({ task, variant, workflowState, mode, mutator }: Ta
                   display: 'flex',
                   alignItems: 'center',
                   borderRadius: '4px',
-                  ':hover': {
-                    cursor: 'pointer',
-                    background: (theme) => theme.color.gray[150],
-                  },
+                  ...(!(mode === UserRole.Client && !previewMode) && {
+                    ':hover': {
+                      cursor: 'pointer',
+                      background: (theme) => theme.color.gray[150],
+                    },
+                  }),
                 }}
               >
                 <CopilotAvatar currentAssignee={assigneeValue as IAssigneeCombined} />
@@ -286,10 +287,12 @@ export const TaskCardList = ({ task, variant, workflowState, mode, mutator }: Ta
               display: 'flex',
               alignItems: 'center',
               borderRadius: '4px',
-              ':hover': {
-                cursor: 'pointer',
-                background: (theme) => theme.color.gray[150],
-              },
+              ...(!(mode === UserRole.Client && !previewMode) && {
+                ':hover': {
+                  cursor: 'pointer',
+                  background: (theme) => theme.color.gray[150],
+                },
+              }),
             }}
           >
             <Skeleton variant="circular" width={20} height={20} />
