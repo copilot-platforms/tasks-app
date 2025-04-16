@@ -2,7 +2,6 @@ export const fetchCache = 'force-no-store'
 
 import { AllTasksFetcher } from '@/app/_fetchers/AllTasksFetcher'
 import { AssigneeFetcher } from '@/app/_fetchers/AssigneeFetcher'
-import { TemplatesFetcher } from '@/app/_fetchers/TemplatesFetcher'
 import { ValidateNotificationCountFetcher } from '@/app/_fetchers/ValidateNotificationCountFetcher'
 import { createMultipleAttachments } from '@/app/(home)/actions'
 import { getViewSettings } from '@/app/(home)/page'
@@ -92,9 +91,6 @@ export default async function ClientPage({ searchParams }: { searchParams: { tok
             userType={previewMode ? UserType.INTERNAL_USER : UserType.CLIENT_USER}
             isPreview={!!getPreviewMode(tokenPayload)}
           />
-        </Suspense>
-        <Suspense fallback={null}>
-          <TemplatesFetcher token={token} />
         </Suspense>
         <Suspense fallback={null}>
           <AllTasksFetcher token={token} />
