@@ -47,7 +47,7 @@ export const RealTime = ({
       ? AssigneeType.client
       : undefined
 
-  if (!userId || !userRole) {
+  if (!tokenPayload || !userId || !userRole) {
     console.error(`Failed to authenticate a realtime connection for id ${userId} with role ${userRole}`)
   }
   const user = assignee.find((el) => el.id === userId)
@@ -240,6 +240,11 @@ export const RealTime = ({
           }
           if (activeTask && activeTask.id === updatedTask.id) {
             store.dispatch(setActiveTask(updatedTask))
+          }
+
+          // If there are disjoint child tasks floating around in the task board
+          if (tasks.some((task) => task.parentId === updatedTask.id)) {
+            store.dispatch(setTasks(tasks.filter((task) => task.parentId !== updatedTask.id)))
           }
         }
       }
