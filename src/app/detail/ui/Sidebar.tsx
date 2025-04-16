@@ -486,14 +486,14 @@ export const SidebarSkeleton = () => {
         sx={{ flexWrap: 'wrap', padding: '12px 18px' }}
       >
         <Box sx={{ height: '30px', alignItems: 'center', justifyContent: 'center', display: 'flex' }}>
-          <Skeleton variant="rectangular" width={120} height={15} />
+          <Skeleton variant="rectangular" width={140} height={15} />
         </Box>
         <Box sx={{ height: '30px', alignItems: 'center', justifyContent: 'center', display: 'flex' }}>
-          <Skeleton variant="rectangular" width={120} height={15} />
+          <Skeleton variant="rectangular" width={140} height={15} />
         </Box>
 
         <Box sx={{ height: '30px', alignItems: 'center', justifyContent: 'center', display: 'flex' }}>
-          <Skeleton variant="rectangular" width={120} height={15} />
+          <Skeleton variant="rectangular" width={140} height={15} />
         </Box>
       </Stack>
     )
