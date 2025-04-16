@@ -5,7 +5,7 @@ import { generateRandomString, toCamelCase } from '@/utils/string'
 import { PoliciesService } from '@api/core/services/policies.service'
 import { UserAction } from '@api/core/types/user'
 import { WorkflowState } from '@prisma/client'
-import { getWorkflowStatesByWorkspace } from '@/utils/getWorkflowStatesByWorkspace'
+import { getWorkflowStatesByWorkspace } from '@/utils/workflowStates'
 
 class WorkflowStatesService extends BaseService {
   async getAllWorkflowStates() {
