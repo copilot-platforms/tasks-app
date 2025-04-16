@@ -52,6 +52,7 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate 
   const [currentAssignee, setCurrentAssignee] = useState<IAssigneeCombined | undefined>(() => {
     return assigneeCache[task.id]
   })
+  const [currentDueDate, setCurrentDueDate] = useState<string | undefined>(task.dueDate)
 
   const [inputStatusValue, setInputStatusValue] = useState('')
   const [selectedAssignee, setSelectedAssignee] = useState<IAssigneeCombined | undefined>(undefined)
@@ -69,6 +70,10 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate 
       setCurrentAssignee(finalAssignee)
     }
   }, [assignee, task.id, task.assigneeId])
+
+  useEffect(() => {
+    setCurrentDueDate(task.dueDate)
+  }, [task.dueDate])
 
   const { renderingItem: _statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
     // item: selectedWorkflowState,
@@ -219,10 +224,11 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate 
                 } else {
                   token && updateTaskDetail({ token, taskId: task.id, payload: { dueDate: isoDate } })
                 }
+                setCurrentDueDate(isoDate)
               }}
               variant="icon"
               padding="2px 4px"
-              dateValue={task.dueDate ? createDateFromFormattedDateString(z.string().parse(task.dueDate)) : undefined}
+              dateValue={currentDueDate ? createDateFromFormattedDateString(z.string().parse(currentDueDate)) : undefined}
               disabled={mode === UserRole.Client && !previewMode}
               isDone={isTaskCompleted(task, workflowStates)}
             />
