@@ -8,6 +8,7 @@ import { useSelector } from 'react-redux'
 interface KeywordMatchable {
   title?: string
   body?: string
+  label?: string
 }
 
 const FilterFunctions = {
@@ -32,10 +33,20 @@ function filterByKeyword(
 ): TaskResponse[] {
   const keyword = (filterValue as string).toLowerCase()
   const matchKeyword = (task: KeywordMatchable) =>
-    task.title?.toLowerCase().includes(keyword) || task.body?.toLowerCase().includes(keyword) || false
+    // Match title, body or task label (case-insensitive)
+    task.title?.toLowerCase().includes(keyword) ||
+    task.body?.toLowerCase().includes(keyword) ||
+    task.label?.toLowerCase().includes(keyword) ||
+    false
 
   const keywordMatchingParentIds = accessibleTasks?.filter(matchKeyword).map((task) => task.parentId) || []
-  filteredTasks = filteredTasks.filter((task) => matchKeyword(task) || keywordMatchingParentIds.includes(task.id))
+  filteredTasks = filteredTasks.filter((task) => {
+    // Either match parent with keyword, or match child task with keyword and link it to its parentId
+    console.log('xxxtask', matchKeyword(task))
+    console.log('xxxkwmatch', accessibleTasks?.filter(matchKeyword))
+    return matchKeyword(task) || keywordMatchingParentIds.includes(task.id)
+  })
+
   return filteredTasks
 }
 
