@@ -216,9 +216,7 @@ export const NewTaskCard = ({
       }
       handleSubTaskCreation(payload)
       clearSubTaskFields()
-      if (inputRef.current) {
-        inputRef.current.focus()
-      }
+      handleClose()
     }
   }
 
