@@ -141,9 +141,9 @@ export class RealtimeHandler {
     store.dispatch(
       setAccessibleTasks(
         accessibleTasks.map((task) => {
-          const { id, title, assigneeId, assigneeType, parentId } = newTask
+          const { id, title, assigneeId, assigneeType, parentId, label } = newTask
           return task.id === newTask.id
-            ? { id, assigneeId, assigneeType, parentId, title, body: newTask.body || task.body }
+            ? { id, assigneeId, assigneeType, parentId, label, title, body: newTask.body || task.body }
             : task
         }),
       ),
