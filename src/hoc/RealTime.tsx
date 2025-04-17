@@ -1,5 +1,6 @@
 'use client'
 
+import { revalidateAllTasks } from '@/app/(home)/actions'
 import { RealtimeHandler } from '@/lib/realtime'
 import { supabase } from '@/lib/supabase'
 import {
@@ -15,6 +16,7 @@ import { TaskResponse } from '@/types/dto/tasks.dto'
 import { extractImgSrcs, replaceImgSrcs } from '@/utils/signedUrlReplacer'
 import { AssigneeType, Task } from '@prisma/client'
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
+import { revalidateTag } from 'next/cache'
 import { usePathname, useRouter } from 'next/navigation'
 import { ReactNode, useEffect } from 'react'
 import { shallowEqual, useSelector } from 'react-redux'
@@ -145,9 +147,17 @@ export const RealTime = ({
           store.dispatch(setTasks(newTaskArr))
           store.dispatch(setAccesibleTaskIds(accesibleTaskIds.filter((id) => id !== updatedTask.id)))
           store.dispatch(setAccessibleTasks(accessibleTasks.filter((task) => task.id !== updatedTask.id)))
+
           if (updatedTask.id === activeTask?.id) {
-            redirectToBoard(updatedTask)
+            return redirectToBoard(updatedTask)
           }
+
+          // Check if any disjoint children were created
+          const newlyDisjointChildren = accessibleTasks.some((task) => task.parentId === updatedTask.id)
+          if (newlyDisjointChildren) {
+            revalidateAllTasks(userRole)
+          }
+
           return
         }
       }
