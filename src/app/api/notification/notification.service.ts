@@ -265,9 +265,15 @@ export class NotificationService extends BaseService {
       case NotificationTaskActions.CompletedByCompanyMember:
         senderId = z.string().parse(task.assigneeId)
         const internalUsers = await copilot.getInternalUsers()
+        const client =
+          task.assigneeType === AssigneeType.client
+            ? await copilot.getClient(z.string().uuid().parse(task.assigneeId))
+            : undefined
         recipientIds = internalUsers.data
           .filter((iu) =>
-            iu.isClientAccessLimited ? iu.companyAccessList?.includes(z.string().parse(task.assigneeId)) : true,
+            iu.isClientAccessLimited
+              ? iu.companyAccessList?.includes(client?.companyId || z.string().parse(task.assigneeId))
+              : true,
           )
           .map((iu) => iu.id)
         actionTrigger = await getAssignedTo()
