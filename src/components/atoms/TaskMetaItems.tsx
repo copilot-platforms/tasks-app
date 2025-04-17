@@ -39,9 +39,7 @@ export const TaskMetaItems = ({ task, lineHeight }: { task: TaskResponse; lineHe
           >
             {subtaskCount}
           </Typography>
-          <Box sx={{ position: 'relative', top: '-1px' }}>
-            <SubtaskIcon />
-          </Box>
+          <SubtaskIcon />
         </Stack>
       )}
     </>
