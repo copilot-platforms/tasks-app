@@ -195,6 +195,23 @@ export class TaskNotificationsService extends BaseService {
   }
 
   private handleIncompleteTaskReassignment = async (prevTask: Task, updatedTask: TaskWithWorkflowState) => {
+    // Handle case where parent task is reassigned to a client / company, so the disjoint tasks disappear in real time
+    if (
+      (updatedTask.assigneeType === AssigneeType.client || updatedTask.assigneeType === AssigneeType.company) &&
+      !updatedTask.parentId
+    ) {
+      // Remove all notifications for previously disjointed child tasks
+      const childTasks = await this.db.task.findMany({
+        where: { parentId: updatedTask.id, workspaceId: this.user.workspaceId },
+      })
+      if (childTasks.length) {
+        const clientNotificationsForChildren = await this.db.clientNotification.findMany({
+          where: { taskId: { in: childTasks.map((task) => task.id) } },
+          select: { id: true },
+        })
+        await this.notificationService.bulkMarkAsRead(clientNotificationsForChildren.map(({ id }) => id))
+      }
+    }
     // Step 1: Handle notifications removal from previous user
     if (prevTask.assigneeId && prevTask.assigneeType) {
       const assigneeType = prevTask.assigneeType
