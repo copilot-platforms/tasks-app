@@ -7,7 +7,15 @@ import { PropsWithToken } from '@/types/interfaces'
 import { PropsWithChildren } from 'react'
 
 const getAllAccessibleTasks = async (token: string): Promise<AccessibleTasksResponse[]> => {
-  const select: (keyof AccessibleTasksResponse)[] = ['id', 'assigneeId', 'assigneeType', 'title', 'body', 'parentId']
+  const select: (keyof AccessibleTasksResponse)[] = [
+    'id',
+    'assigneeId',
+    'assigneeType',
+    'title',
+    'body',
+    'parentId',
+    'label',
+  ]
 
   const res = await fetch(`${apiUrl}/api/tasks?token=${token}&all=1&select=${select.join(',')}`)
   const { tasks } = await res.json()
