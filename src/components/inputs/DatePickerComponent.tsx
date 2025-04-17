@@ -63,7 +63,7 @@ export const DatePickerComponent = ({
         onClick={handleClick}
         aria-describedby={id}
         sx={{
-          cursor: disabled ? 'auto' : 'default',
+          cursor: disabled ? 'auto' : 'pointer',
           padding: variant == 'button' || variant == 'icon' ? '0px' : '4px 8px',
           borderRadius: '4px',
         }}
@@ -73,25 +73,38 @@ export const DatePickerComponent = ({
             height={height}
             padding={padding}
             buttonContent={
-              <Stack direction="row" alignItems={'center'} columnGap={gap ?? '8px'}>
-                {size == Sizes.SMALL ? <CalenderIconSmall /> : <CalenderIcon />}
-                {size == Sizes.SMALL ? (
+              <Stack direction="row" alignItems="center" columnGap={gap ?? '8px'}>
+                {size === Sizes.SMALL ? <CalenderIconSmall /> : <CalenderIcon />}
+
+                {value ? (
+                  size === Sizes.SMALL ? (
+                    <Typography
+                      variant="bodySm"
+                      sx={{
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        fontSize: '12px',
+                        overflow: 'hidden',
+                        maxWidth: { xs: '100px', sm: 'none' },
+                        color: (theme) => theme.color.gray[600],
+                      }}
+                    >
+                      {formatDate(value)}
+                    </Typography>
+                  ) : (
+                    <Typography variant="md" lineHeight="22px">
+                      {formatDate(value)}
+                    </Typography>
+                  )
+                ) : (
                   <Typography
-                    variant="bodySm"
+                    variant={size === Sizes.SMALL ? 'bodySm' : 'md'}
                     sx={{
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                      fontSize: '12px',
-                      overflow: 'hidden',
-                      maxWidth: { xs: '100px', sm: 'none' },
-                      color: (theme) => (value ? theme.color.gray[600] : theme.color.gray[550]),
+                      fontSize: size === Sizes.SMALL ? '12px' : undefined,
+                      color: (theme) => theme.color.text.textDisabled,
                     }}
                   >
-                    {value ? formatDate(value) : 'Due date'}
-                  </Typography>
-                ) : (
-                  <Typography variant="md" lineHeight="22px">
-                    {value ? formatDate(value) : 'Due date'}
+                    Due date
                   </Typography>
                 )}
               </Stack>
@@ -114,7 +127,7 @@ export const DatePickerComponent = ({
                 userSelect: 'none',
               }}
             >
-              {value ? formatDate(value) : 'No due date'}
+              {value ? formatDate(value) : 'None'}
             </Typography>
           </>
         ) : (

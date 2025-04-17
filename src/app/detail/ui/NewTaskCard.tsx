@@ -403,7 +403,7 @@ export const NewTaskCard = ({
                 <Typography
                   variant="bodySm"
                   sx={{
-                    color: (theme) => (assigneeValue ? theme.color.gray[600] : theme.color.gray[550]),
+                    color: (theme) => (assigneeValue ? theme.color.gray[600] : theme.color.text.textDisabled),
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
                     lineHeight: '22px',

@@ -230,6 +230,7 @@ export default function Selector<T extends keyof SelectorOptionsType>({
               padding: padding ? padding : '8px 8px',
               ':hover': {
                 backgroundColor: disabled ? 'none' : (theme) => theme.color.gray[100],
+                cursor: disabled ? 'auto' : 'pointer',
               },
             }}
           >
