@@ -70,7 +70,7 @@ export const WorkflowStateSelector = ({
               sx={{
                 padding: '4px 8px',
                 justifyContent: { xs: 'end', sm: 'flex-start' },
-                cursor: disabled ? 'auto' : 'default',
+                cursor: disabled ? 'auto' : 'pointer',
               }}
             >
               <Box>{statusIcons[Sizes.MEDIUM][value?.type]}</Box>

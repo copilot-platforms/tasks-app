@@ -206,7 +206,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
                 <Typography
                   variant="bodySm"
                   sx={{
-                    color: (theme) => (tempAssignee ? theme.color.gray[600] : theme.color.gray[550]),
+                    color: (theme) => (tempAssignee ? theme.color.gray[600] : theme.color.text.textDisabled),
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
 
