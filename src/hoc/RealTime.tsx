@@ -113,7 +113,13 @@ export const RealTime = ({
 
       //check if the new task in this event belongs to the same workspaceId
       if (canUserAccessTask && showUnarchived) {
-        store.dispatch(setTasks([...tasks, { ...payload.new, createdAt: new Date(payload.new.createdAt + 'Z') }]))
+        store.dispatch(
+          setTasks([
+            // Remove any previously disjointed tasks from the board
+            ...tasks.filter((task) => task.parentId !== payload.new.id),
+            { ...payload.new, createdAt: new Date(payload.new.createdAt + 'Z') },
+          ]),
+        )
         // NOTE: we append a Z here to make JS understand this raw timestamp (in format YYYY-MM-DD:HH:MM:SS.MS) is in UTC timezone
         // New payloads listened on the 'INSERT' action in realtime doesn't contain this tz info so the order can mess up
       }
@@ -125,6 +131,7 @@ export const RealTime = ({
       //   return //short circuit if the updated task is a subtask and its parent id is in the tasks array
       // }
 
+      // --- Handle unassignment (board + details page)
       if (user && userRole === AssigneeType.client) {
         // Check if assignee is this client's ID, or it's company's ID
         if (![userId, tokenPayload?.companyId].includes(updatedTask.assigneeId)) {
@@ -159,6 +166,7 @@ export const RealTime = ({
           return
         }
       }
+
       const isCreatedAtGMT = (updatedTask.createdAt as unknown as string).slice(-1).toLowerCase() === 'z'
       if (!isCreatedAtGMT) {
         // DB stores GMT timestamp without 'z', so need to append this manually
@@ -227,7 +235,8 @@ export const RealTime = ({
           } // returns false if the currently updatedTask is a subtask
 
           if (!shallowEqual(tasks, newTaskArr) && shouldUpdateTasksOnBoard()) {
-            store.dispatch(setTasks(newTaskArr))
+            // Remove previously disjointed tasks on reassignment
+            store.dispatch(setTasks(newTaskArr.filter((task) => task.parentId !== updatedTask.id)))
           }
           if (activeTask && activeTask.id === updatedTask.id) {
             store.dispatch(setActiveTask(updatedTask))
