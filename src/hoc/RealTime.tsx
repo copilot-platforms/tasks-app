@@ -66,7 +66,6 @@ export const RealTime = ({
   }
 
   const handleTaskRealTimeUpdates = (payload: RealtimePostgresChangesPayload<RealTimeTaskResponse>) => {
-    console.log('xxx', payload)
     if (!user || !userRole) return
 
     // Handle realtime subtasks in a modular way
