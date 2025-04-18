@@ -54,10 +54,12 @@ export const AssigneeFetcher = async ({
   task,
   clientCompanyId,
 }: AssigneeFetcherProps) => {
-  const assignableUsersWithType = addTypeToAssignee(await fetchAssignee(token, userType, isPreview))
-  const assignableUsersWithTypeForLimitedTask = clientCompanyId
-    ? addTypeToAssignee(await fetchAssignee(token, userType, isPreview, clientCompanyId))
-    : []
+  const [assignableUsersWithType, assignableUsersWithTypeForLimitedTask] = await Promise.all([
+    fetchAssignee(token, userType, isPreview).then(addTypeToAssignee),
+    clientCompanyId
+      ? fetchAssignee(token, userType, isPreview, clientCompanyId).then(addTypeToAssignee)
+      : Promise.resolve([]),
+  ])
   return (
     <ClientSideStateUpdate
       assignee={assignableUsersWithType}

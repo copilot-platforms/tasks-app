@@ -14,7 +14,7 @@ import {
   setViewSettings,
   setWorkflowStates,
 } from '@/redux/features/taskBoardSlice'
-import { setAssigneeListForLimitedTask, setAssigneeSuggestion, setExpandedComments } from '@/redux/features/taskDetailsSlice'
+import { setActiveTaskAssignees, setAssigneeSuggestion, setExpandedComments } from '@/redux/features/taskDetailsSlice'
 import { setTemplates } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
 import { Token } from '@/types/common'
@@ -125,11 +125,11 @@ export const ClientSideStateUpdate = ({
       store.dispatch(setAccessibleTasks(accessibleTasks))
     }
     if (assigneeListForLimitedTasks) {
-      store.dispatch(setAssigneeListForLimitedTask(assigneeListForLimitedTasks))
+      store.dispatch(setActiveTaskAssignees(assigneeListForLimitedTasks))
     }
     return () => {
       store.dispatch(setActiveTask(undefined))
-      store.dispatch(setAssigneeListForLimitedTask([]))
+      store.dispatch(setActiveTaskAssignees([]))
     } //when component is unmounted, we need to clear the active task.
   }, [
     workflowStates,
