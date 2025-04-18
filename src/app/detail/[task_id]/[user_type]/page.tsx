@@ -197,6 +197,7 @@ export default async function TaskDetailPage({
                   userType={params.user_type}
                   isPreview={!!getPreviewMode(tokenPayload)}
                   task={task}
+                  clientCompanyId={task.assigneeType !== 'internalUser' ? task.assigneeId : undefined}
                 />
                 <Sidebar
                   task_id={task_id}

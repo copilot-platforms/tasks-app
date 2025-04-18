@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit'
 import { RootState } from '../store'
-import { IAssigneeSuggestions } from '@/types/interfaces'
+import { IAssigneeCombined, IAssigneeSuggestions } from '@/types/interfaces'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 
 interface IInitialState {
@@ -12,6 +12,7 @@ interface IInitialState {
   // URL of an image opened in preview modal for task description / comments
   openImage: string | null
   expandedComments: string[]
+  assigneeListForLimitedTasks: IAssigneeCombined[]
 }
 
 const initialState: IInitialState = {
@@ -22,6 +23,7 @@ const initialState: IInitialState = {
   showConfirmAssignModal: false,
   openImage: null,
   expandedComments: [],
+  assigneeListForLimitedTasks: [],
 }
 
 const taskDetailsSlice = createSlice({
@@ -49,6 +51,9 @@ const taskDetailsSlice = createSlice({
     setExpandedComments: (state, action: { payload: string[] }) => {
       state.expandedComments = action.payload
     },
+    setAssigneeListForLimitedTask: (state, action: { payload: IAssigneeCombined[] }) => {
+      state.assigneeListForLimitedTasks = action.payload
+    },
   },
 })
 
@@ -62,6 +67,7 @@ export const {
   toggleShowConfirmAssignModal,
   setOpenImage,
   setExpandedComments,
+  setAssigneeListForLimitedTask,
 } = taskDetailsSlice.actions
 
 export default taskDetailsSlice.reducer
