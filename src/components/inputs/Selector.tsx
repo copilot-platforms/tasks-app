@@ -33,11 +33,11 @@ type SelectorOptionsType = {
 
 interface Prop<T extends keyof SelectorOptionsType> {
   getSelectedValue: (value: unknown) => void
-  startIcon: ReactNode
+  startIcon?: ReactNode
   value: unknown
   selectorType: T
   options: SelectorOptionsType[T][] | IExtraOption[]
-  buttonContent: ReactNode
+  buttonContent?: ReactNode
   inputStatusValue: string
   setInputStatusValue: React.Dispatch<React.SetStateAction<string>>
   disabled?: boolean
@@ -48,7 +48,7 @@ interface Prop<T extends keyof SelectorOptionsType> {
     anchorEl: null | HTMLElement,
     props?: HTMLAttributes<HTMLLIElement>,
   ) => ReactNode
-  disableOutline?: boolean
+  variant?: 'normal' | 'outlined' | 'icon'
   padding?: string
   buttonWidth?: string
   buttonHeight?: string
@@ -64,6 +64,7 @@ interface Prop<T extends keyof SelectorOptionsType> {
   useClickHandler?: boolean
   cursor?: Property.Cursor
   currentOption?: SelectorOptionsType[T] //option which shall be at the top of the selector without any grouping
+  errorPlaceholder?: string
 }
 
 export default function Selector<T extends keyof SelectorOptionsType>({
@@ -79,7 +80,7 @@ export default function Selector<T extends keyof SelectorOptionsType>({
   setInputStatusValue,
   extraOption,
   extraOptionRenderer,
-  disableOutline,
+  variant = 'outlined',
   padding,
   buttonWidth,
   buttonHeight,
@@ -95,6 +96,7 @@ export default function Selector<T extends keyof SelectorOptionsType>({
   useClickHandler,
   cursor,
   currentOption,
+  errorPlaceholder = 'Required',
 }: Prop<T>) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
@@ -214,7 +216,7 @@ export default function Selector<T extends keyof SelectorOptionsType>({
   return (
     <Stack direction="column">
       <Box onMouseDown={handleClick} aria-describedby={id}>
-        {disableOutline ? (
+        {variant == 'normal' ? (
           <Stack
             direction="row"
             alignItems="center"
@@ -225,41 +227,45 @@ export default function Selector<T extends keyof SelectorOptionsType>({
               justifyContent: { xs: 'flex-start', sm: 'flex-start' },
               cursor: disabled ? 'auto' : (cursor ?? 'pointer'),
               borderRadius: '4px',
-              padding: '8px 8px',
+              padding: padding ? padding : '8px 8px',
               ':hover': {
                 backgroundColor: disabled ? 'none' : (theme) => theme.color.gray[100],
+                cursor: disabled ? 'auto' : 'pointer',
               },
             }}
           >
             <Box>{startIcon}</Box>
-            <Typography
-              variant="bodySm"
-              sx={{
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                maxWidth: '150px',
-                display: { xs: responsiveNoHide ? 'block' : 'none', sm: 'block' },
-                userSelect: 'none',
-              }}
-            >
-              {buttonContent}
-            </Typography>
+            {buttonContent && (
+              <Typography
+                variant="bodySm"
+                sx={{
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  maxWidth: '150px',
+                  display: { xs: responsiveNoHide ? 'block' : 'none', sm: 'block' },
+                  userSelect: 'none',
+                }}
+              >
+                {buttonContent}
+              </Typography>
+            )}
           </Stack>
-        ) : (
+        ) : variant == 'outlined' ? (
           <>
             <SelectorButton
               startIcon={startIcon}
               buttonContent={buttonContent}
-              outlined={disableOutline}
               disabled={disabled}
               padding={padding}
               height={buttonHeight}
               error={error}
               endIcon={endIcon}
             />
-            {error && <StyledHelperText> Required</StyledHelperText>}
+            {error && errorPlaceholder && <StyledHelperText> Required</StyledHelperText>}
           </>
+        ) : (
+          <> {buttonContent}</>
         )}
       </Box>
       <Popper
@@ -509,7 +515,7 @@ const StatusSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTMLL
       }}
     >
       <Stack direction="row" alignItems="center" columnGap={3}>
-        <Box>{statusIcons[Sizes.LARGE][(option as WorkflowStateResponse).type]}</Box>
+        <Box>{statusIcons[Sizes.MEDIUM][(option as WorkflowStateResponse).type]}</Box>
         <Typography variant="sm" fontWeight={400}>
           {(option as WorkflowStateResponse).name as string}
         </Typography>

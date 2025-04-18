@@ -1,28 +1,32 @@
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { SecondaryBtn } from '../buttons/SecondaryBtn'
+import { Sizes } from '@/types/interfaces'
 import { statusIcons } from '@/utils/iconMatcher'
 import { Box, ClickAwayListener, Popper, Stack, Typography } from '@mui/material'
-import { ReactNode, useState } from 'react'
-import { Sizes } from '@/types/interfaces'
+import React, { ReactNode, useState } from 'react'
+import { SecondaryBtn } from '../buttons/SecondaryBtn'
 
 export const WorkflowStateSelector = ({
   value,
   option,
   disabled,
   getValue,
-  disableOutline,
+  variant = 'outlined',
   responsiveNoHide,
   size = Sizes.SMALL,
   padding,
+  height,
+  gap,
 }: {
   value: WorkflowStateResponse
   option: WorkflowStateResponse[]
   disabled?: boolean
   getValue: (value: WorkflowStateResponse) => void
-  disableOutline?: boolean
+  variant?: 'outlined' | 'icon' | 'normal'
   responsiveNoHide?: boolean
-  size?: Sizes
+  size?: Exclude<Sizes, Sizes.LARGE>
   padding?: string
+  height?: string
+  gap?: string
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const open = Boolean(anchorEl)
@@ -57,7 +61,7 @@ export const WorkflowStateSelector = ({
         }}
       >
         <Box onClick={handleClick} aria-describedby={id}>
-          {disableOutline ? (
+          {variant == 'normal' ? (
             <Stack
               direction="row"
               alignItems="center"
@@ -66,10 +70,10 @@ export const WorkflowStateSelector = ({
               sx={{
                 padding: '4px 8px',
                 justifyContent: { xs: 'end', sm: 'flex-start' },
-                cursor: disabled ? 'auto' : 'default',
+                cursor: disabled ? 'auto' : 'pointer',
               }}
             >
-              <Box>{statusIcons[Sizes.LARGE][value?.type]}</Box>
+              <Box>{statusIcons[Sizes.MEDIUM][value?.type]}</Box>
               <Typography
                 variant="md"
                 sx={{
@@ -84,22 +88,38 @@ export const WorkflowStateSelector = ({
                 {value?.name as ReactNode}
               </Typography>
             </Stack>
-          ) : (
+          ) : variant === 'outlined' ? (
             <SecondaryBtn
-              startIcon={statusIcons[size][value?.type]}
               padding={padding}
+              height={height}
               buttonContent={
-                size == Sizes.SMALL ? (
-                  <Typography variant="bodySm" sx={{ color: (theme) => theme.color.gray[600], fontSize: '12px' }}>
-                    {value?.name as ReactNode}
-                  </Typography>
-                ) : (
-                  <Typography variant="md" lineHeight="22px">
-                    {value?.name as ReactNode}
-                  </Typography>
-                )
+                <Stack direction="row" alignItems={'center'} columnGap={gap ?? '8px'}>
+                  {statusIcons[size][value?.type]}
+                  {size == Sizes.SMALL ? (
+                    <Typography variant="bodySm" sx={{ color: (theme) => theme.color.gray[600], fontSize: '12px' }}>
+                      {value?.name as ReactNode}
+                    </Typography>
+                  ) : (
+                    <Typography variant="md" lineHeight="22px">
+                      {value?.name as ReactNode}
+                    </Typography>
+                  )}
+                </Stack>
               }
             />
+          ) : (
+            <Box
+              sx={{
+                padding: padding,
+                borderRadius: '4px',
+                ':hover': {
+                  cursor: 'pointer',
+                  background: (theme) => theme.color.gray[150],
+                },
+              }}
+            >
+              {statusIcons[size][value?.type]}
+            </Box>
           )}
         </Box>
         <Popper
@@ -128,6 +148,8 @@ export const WorkflowStateSelector = ({
                   key={key}
                   columnGap="12px"
                   sx={{
+                    alignItems: 'center',
+                    justifyContent: 'flex-start',
                     padding: '4px 8px',
                     width: '180px',
                     ':hover': {

@@ -70,6 +70,7 @@ const AttachmentLayout: React.FC<AttachmentLayoutProps> = ({
         border: (theme) => `1px solid ${theme.color.gray[selected ? 600 : 300]}`,
         '& .download-btn': {
           opacity: 1,
+          cursor: 'pointer',
         },
       },
     },

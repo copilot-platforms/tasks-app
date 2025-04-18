@@ -25,6 +25,34 @@ export class TaskNotificationsService extends BaseService {
     }
   }
 
+  private async checkParentAccessible(task: TaskWithWorkflowState): Promise<boolean> {
+    if ((task.assigneeType === AssigneeType.client || task.assigneeType === AssigneeType.company) && task.parentId) {
+      if (!task.assigneeId) return false
+
+      const parentTask = await this.db.task.findFirst({
+        where: { id: task.parentId, workspaceId: this.user.workspaceId },
+        select: { assigneeId: true, assigneeType: true },
+      })
+      if (!parentTask) return false
+
+      const copilot = new CopilotAPI(this.user.token)
+      if (task.assigneeType === AssigneeType.client) {
+        const client = await copilot.getClient(task.assigneeId)
+        if (parentTask.assigneeId === client.id || parentTask.assigneeId === client.companyId) {
+          return true
+        }
+      } else {
+        const clients = await copilot.getClients()
+        const companyClientIds =
+          clients.data?.filter((client) => client.companyId === task.assigneeId).map((client) => client.id) || []
+        if (companyClientIds.includes(parentTask.assigneeId || '__empty__')) {
+          return true
+        }
+      }
+    }
+    return false
+  }
+
   async sendTaskCreateNotifications(task: TaskWithWorkflowState, isReassigned = false) {
     // If task is unassigned, there's nobody to send notifications to
     if (!task.assigneeId) return
@@ -34,6 +62,9 @@ export class TaskNotificationsService extends BaseService {
 
     // If task is created as status completed for whatever reason, don't send a notification as well
     if (task.workflowState.type === NotificationTaskActions.Completed) return
+
+    // If task is a subtask for a client/company and isn't visible on task board (is disjoint)
+    if (await this.checkParentAccessible(task)) return
 
     // If new task is assigned to someone (IU / Client / Company), send proper notification + email to them
     const sendTaskNotifications =
@@ -164,6 +195,23 @@ export class TaskNotificationsService extends BaseService {
   }
 
   private handleIncompleteTaskReassignment = async (prevTask: Task, updatedTask: TaskWithWorkflowState) => {
+    // Handle case where parent task is reassigned to a client / company, so the disjoint tasks disappear in real time
+    if (
+      (updatedTask.assigneeType === AssigneeType.client || updatedTask.assigneeType === AssigneeType.company) &&
+      !updatedTask.parentId
+    ) {
+      // Remove all notifications for previously disjointed child tasks
+      const childTasks = await this.db.task.findMany({
+        where: { parentId: updatedTask.id, workspaceId: this.user.workspaceId },
+      })
+      if (childTasks.length) {
+        const clientNotificationsForChildren = await this.db.clientNotification.findMany({
+          where: { taskId: { in: childTasks.map((task) => task.id) } },
+          select: { id: true },
+        })
+        await this.notificationService.bulkMarkAsRead(clientNotificationsForChildren.map(({ id }) => id))
+      }
+    }
     // Step 1: Handle notifications removal from previous user
     if (prevTask.assigneeId && prevTask.assigneeType) {
       const assigneeType = prevTask.assigneeType

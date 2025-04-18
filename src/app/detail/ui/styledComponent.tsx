@@ -53,7 +53,7 @@ export const StyledTiptapDescriptionWrapper = styled(Box)(({ theme }) => ({
 export const VerticalLine = styled('div')(({ theme }) => ({
   position: 'absolute',
   left: '11px',
-  top: '11px',
+  top: '12px',
   bottom: 0,
   width: '1px',
   height: 'calc(100% + 20px)',
@@ -93,7 +93,7 @@ export const CommentCardContainer = styled(Stack)(({ theme }) => ({
 }))
 
 export const TaskDetailsContainer = styled(Box)(({ theme }) => ({
-  maxWidth: '672px',
+  maxWidth: '654px',
   justifyContent: 'center',
   alignItems: 'center',
   width: '100%',
