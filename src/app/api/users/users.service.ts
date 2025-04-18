@@ -80,11 +80,7 @@ class UsersService extends BaseService {
     let filteredIUs = internalUsers
     if (companyId) {
       filteredIUs = filteredIUs.filter((iu) => {
-        if (iu.isClientAccessLimited) {
-          return iu.companyAccessList?.includes(companyId)
-        } else {
-          return true
-        }
+        !iu.isClientAccessLimited || iu.companyAccessList?.includes(companyId)
       })
     }
 

@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
 import { IAssigneeCombined } from '@/types/interfaces'
 import { containsCaseInsensitiveSubstring, startsWithCaseInsensitiveSubstring } from '@/utils/string'
+import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 
 /**
  * Filters an array of Copilot IU / Client / Company to find keyword matching its name fields
@@ -61,7 +62,7 @@ export const setDebouncedFilteredAssignees = (
     const newAssignees = await getAssigneeList(
       z.string().parse(token),
       newInputValue,
-      10000,
+      MAX_FETCH_ASSIGNEE_COUNT,
       '0',
       filterOptions,
       clientCompanyId,
