@@ -1,6 +1,5 @@
 'use client'
 
-import { revalidateAllTasks } from '@/app/(home)/actions'
 import { RealtimeHandler } from '@/lib/realtime'
 import { supabase } from '@/lib/supabase'
 import {
@@ -14,9 +13,8 @@ import store from '@/redux/store'
 import { InternalUsersSchema, Token } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { extractImgSrcs, replaceImgSrcs } from '@/utils/signedUrlReplacer'
-import { AssigneeType, Task } from '@prisma/client'
+import { AssigneeType } from '@prisma/client'
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
-import { revalidateTag } from 'next/cache'
 import { usePathname, useRouter } from 'next/navigation'
 import { ReactNode, useEffect } from 'react'
 import { shallowEqual, useSelector } from 'react-redux'
@@ -68,6 +66,7 @@ export const RealTime = ({
   }
 
   const handleTaskRealTimeUpdates = (payload: RealtimePostgresChangesPayload<RealTimeTaskResponse>) => {
+    console.log('xxx', payload)
     if (!user || !userRole) return
 
     // Handle realtime subtasks in a modular way
@@ -144,18 +143,16 @@ export const RealTime = ({
             return
           }
           const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
+          // Check if any disjoint children were created
+          const newlyDisjointChildren = accessibleTasks.filter((task) => task.parentId === updatedTask.id)
+          newlyDisjointChildren.length && newTaskArr.push(...newlyDisjointChildren)
+
           store.dispatch(setTasks(newTaskArr))
           store.dispatch(setAccesibleTaskIds(accesibleTaskIds.filter((id) => id !== updatedTask.id)))
           store.dispatch(setAccessibleTasks(accessibleTasks.filter((task) => task.id !== updatedTask.id)))
 
           if (updatedTask.id === activeTask?.id) {
             return redirectToBoard(updatedTask)
-          }
-
-          // Check if any disjoint children were created
-          const newlyDisjointChildren = accessibleTasks.some((task) => task.parentId === updatedTask.id)
-          if (newlyDisjointChildren) {
-            revalidateAllTasks(userRole)
           }
 
           return
