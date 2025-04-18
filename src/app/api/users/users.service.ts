@@ -22,7 +22,7 @@ class UsersService extends BaseService {
     this.copilot = new CopilotAPI(this.user.token)
   }
 
-  async getGroupedUsers(limit: number = this.DEFAULT_USERS_LIMIT, nextToken?: string) {
+  async getGroupedUsers(limit: number = this.DEFAULT_USERS_LIMIT, nextToken?: string, clientCompanyId?: string) {
     const user = this.user
     new PoliciesService(user).authorize(UserAction.Read, Resource.Users)
 
@@ -65,10 +65,28 @@ class UsersService extends BaseService {
       currentInternalUser,
       ...orderByRecentlyCreatedAt(ius.data.filter((user) => user.id !== currentInternalUser.id)),
     ] //Always keeping the current user at the first of the list.
+    let companyId
+    if (clientCompanyId) {
+      const matchingClient = accessibleClients.find((client) => client.id === clientCompanyId)
+      if (matchingClient) {
+        companyId = matchingClient.companyId
+      } else {
+        const matchingCompany = filteredCompanies.find((company) => company.id === clientCompanyId)
+        if (matchingCompany) {
+          companyId = matchingCompany.id
+        }
+      }
+    }
+    let filteredIUs = internalUsers
+    if (companyId) {
+      filteredIUs = filteredIUs.filter((iu) => {
+        !iu.isClientAccessLimited || iu.companyAccessList?.includes(companyId)
+      })
+    }
 
     return {
       // CopilotAPI doesn't currently support sorting data, so manually sort them before returning a response
-      internalUsers,
+      internalUsers: filteredIUs,
       clients: orderByRecentlyCreatedAt(accessibleClients),
       companies: orderByRecentlyCreatedAt(filteredCompanies),
     }
@@ -79,12 +97,18 @@ class UsersService extends BaseService {
    * @param keyword
    * @returns
    */
-  async getFilteredUsersStartingWith(keyword: string, userType?: string, limit?: number, nextToken?: string) {
+  async getFilteredUsersStartingWith(
+    keyword: string,
+    userType?: string,
+    limit?: number,
+    nextToken?: string,
+    clientCompanyId?: string,
+  ) {
     const filterByKeyword = (users: FilterableUser[]) => filterUsersByKeyword(users, keyword)
 
     if (userType) {
       if (userType === FilterOptionsKeywords.CLIENTS) {
-        const { clients, companies } = await this.getGroupedUsers(limit || 500, nextToken)
+        const { clients, companies } = await this.getGroupedUsers(limit || 500, nextToken, clientCompanyId)
         return {
           clients: filterByKeyword(clients),
           companies: filterByKeyword(companies),
@@ -92,13 +116,13 @@ class UsersService extends BaseService {
       }
 
       if (userType === FilterOptionsKeywords.TEAM) {
-        const { internalUsers } = await this.getGroupedUsers(limit || 500, nextToken)
+        const { internalUsers } = await this.getGroupedUsers(limit || 500, nextToken, clientCompanyId)
         return {
           internalUsers: filterByKeyword(internalUsers),
         }
       }
     }
-    const { internalUsers, clients, companies } = await this.getGroupedUsers(limit || 500, nextToken)
+    const { internalUsers, clients, companies } = await this.getGroupedUsers(limit || 500, nextToken, clientCompanyId)
     return {
       internalUsers: filterByKeyword(internalUsers),
       clients: filterByKeyword(clients),

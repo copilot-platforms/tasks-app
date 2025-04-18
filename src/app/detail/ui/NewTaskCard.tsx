@@ -13,6 +13,7 @@ import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { AssigneePlaceholderSmall, TempalteIconMd } from '@/icons'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 import { selectCreateTemplate } from '@/redux/features/templateSlice'
 import { DateString } from '@/types/date'
 import { AssigneeTypeSchema, CreateTaskRequest } from '@/types/dto/tasks.dto'
@@ -25,6 +26,7 @@ import { NoAssigneeExtraOptions } from '@/utils/noAssignee'
 import { trimAllTags } from '@/utils/trimTags'
 import { setDebouncedFilteredAssignees } from '@/utils/users'
 import { Box, Stack, Typography } from '@mui/material'
+import { AssigneeType as AssigneeTypeEnum } from '@prisma/client'
 import dayjs from 'dayjs'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
@@ -53,6 +55,8 @@ export const NewTaskCard = ({
   handleSubTaskCreation: (payload: CreateTaskRequest) => void
 }) => {
   const { workflowStates, assignee, token, filterOptions, previewMode, activeTask } = useSelector(selectTaskBoard)
+  const { activeTaskAssignees } = useSelector(selectTaskDetails)
+
   const { templates } = useSelector(selectCreateTemplate)
   const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
   const [loading, setLoading] = useState(false)
@@ -72,7 +76,7 @@ export const NewTaskCard = ({
     assigneeType: null,
   })
 
-  const [filteredAssignees, setFilteredAssignees] = useState(assignee)
+  const [filteredAssignees, setFilteredAssignees] = useState(activeTaskAssignees.length ? activeTaskAssignees : assignee)
 
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -137,6 +141,9 @@ export const NewTaskCard = ({
   const handleUploadStatusChange = (uploading: boolean) => {
     setIsUploading(uploading)
   }
+
+  const clientCompanyId =
+    activeTask && activeTask.assigneeType !== AssigneeTypeEnum.internalUser ? activeTask.assigneeId : undefined
 
   const applyTemplate = useCallback(
     (id: string, templateTitle: string) => {
@@ -325,6 +332,7 @@ export const NewTaskCard = ({
 
           alignSelf: 'stretch',
           justifyContent: 'space-between',
+          filterOptions,
           flexWrap: 'wrap',
         }}
       >
@@ -369,7 +377,7 @@ export const NewTaskCard = ({
                 clearTimeout(activeDebounceTimeoutId)
               }
               setLoading(true)
-              setFilteredAssignees(assignee)
+              setFilteredAssignees(activeTaskAssignees.length ? activeTaskAssignees : assignee)
               setLoading(false)
             }}
             options={loading ? [] : filteredAssignees}
@@ -381,7 +389,7 @@ export const NewTaskCard = ({
             selectorType={SelectorType.ASSIGNEE_SELECTOR}
             handleInputChange={async (newInputValue: string) => {
               if (!newInputValue) {
-                setFilteredAssignees(assignee)
+                setFilteredAssignees(activeTaskAssignees.length ? activeTaskAssignees : assignee)
                 return
               }
               setDebouncedFilteredAssignees(
@@ -391,6 +399,8 @@ export const NewTaskCard = ({
                 setFilteredAssignees,
                 z.string().parse(token),
                 newInputValue,
+                undefined,
+                clientCompanyId,
               )
             }}
             filterOption={(x: unknown) => x}
