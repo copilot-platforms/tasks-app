@@ -46,7 +46,7 @@ export const ClientSideStateUpdate = ({
   clearExpandedComments,
   accesibleTaskIds,
   accessibleTasks,
-  assigneeListForLimitedTasks,
+  activeTaskAssignees,
 }: {
   children: ReactNode
   workflowStates?: WorkflowStateResponse[]
@@ -61,7 +61,7 @@ export const ClientSideStateUpdate = ({
   clearExpandedComments?: boolean
   accesibleTaskIds?: string[]
   accessibleTasks?: TaskResponse[]
-  assigneeListForLimitedTasks?: IAssigneeCombined[]
+  activeTaskAssignees?: IAssigneeCombined[]
 }) => {
   const { tasks: tasksInStore, viewSettingsTemp } = useSelector(selectTaskBoard)
   useEffect(() => {
@@ -124,8 +124,8 @@ export const ClientSideStateUpdate = ({
     if (accessibleTasks) {
       store.dispatch(setAccessibleTasks(accessibleTasks))
     }
-    if (assigneeListForLimitedTasks) {
-      store.dispatch(setActiveTaskAssignees(assigneeListForLimitedTasks))
+    if (activeTaskAssignees) {
+      store.dispatch(setActiveTaskAssignees(activeTaskAssignees))
     }
     return () => {
       store.dispatch(setActiveTask(undefined))
@@ -143,6 +143,7 @@ export const ClientSideStateUpdate = ({
     task,
     accesibleTaskIds,
     accessibleTasks,
+    activeTaskAssignees,
   ])
 
   return children
