@@ -16,9 +16,15 @@ interface AssigneeFetcherProps extends PropsWithToken {
   userType?: UserType
   isPreview?: boolean
   task?: TaskResponse
+  clientCompanyId?: string
 }
 
-const fetchAssignee = async (token: string, userType?: UserType, isPreview?: boolean): Promise<IAssignee> => {
+const fetchAssignee = async (
+  token: string,
+  userType?: UserType,
+  isPreview?: boolean,
+  clientCompanyId?: string,
+): Promise<IAssignee> => {
   if (userType === UserType.CLIENT_USER && !isPreview) {
     const res = await fetchWithRetry(`${apiUrl}/api/users/client?token=${token}&limit=${MAX_FETCH_ASSIGNEE_COUNT}`, {
       next: { tags: ['getAssigneeList'] },
@@ -31,16 +37,34 @@ const fetchAssignee = async (token: string, userType?: UserType, isPreview?: boo
     return data.clients
   }
 
-  const res = await fetch(`${apiUrl}/api/users?token=${token}&limit=${MAX_FETCH_ASSIGNEE_COUNT}`, {
-    next: { tags: ['getAssigneeList'] },
-  })
+  const res = await fetch(
+    `${apiUrl}/api/users?token=${token}&limit=${MAX_FETCH_ASSIGNEE_COUNT}&clientCompanyId=${clientCompanyId}`,
+    {
+      next: { tags: ['getAssigneeList'] },
+    },
+  )
 
   return (await res.json()).users as IAssignee
 }
-export const AssigneeFetcher = async ({ token, userType, viewSettings, isPreview, task }: AssigneeFetcherProps) => {
+export const AssigneeFetcher = async ({
+  token,
+  userType,
+  viewSettings,
+  isPreview,
+  task,
+  clientCompanyId,
+}: AssigneeFetcherProps) => {
   const assignableUsersWithType = addTypeToAssignee(await fetchAssignee(token, userType, isPreview))
+  const assignableUsersWithTypeForLimitedTask = clientCompanyId
+    ? addTypeToAssignee(await fetchAssignee(token, userType, isPreview, clientCompanyId))
+    : []
   return (
-    <ClientSideStateUpdate assignee={assignableUsersWithType} viewSettings={viewSettings} task={task}>
+    <ClientSideStateUpdate
+      assignee={assignableUsersWithType}
+      viewSettings={viewSettings}
+      task={task}
+      assigneeListForLimitedTasks={assignableUsersWithTypeForLimitedTask}
+    >
       {null}
     </ClientSideStateUpdate>
   )

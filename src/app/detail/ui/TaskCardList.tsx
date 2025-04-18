@@ -19,6 +19,7 @@ import {
   setConfirmAssigneeModalId,
   updateWorkflowStateIdByTaskId,
 } from '@/redux/features/taskBoardSlice'
+import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 import store from '@/redux/store'
 import { DateStringSchema } from '@/types/date'
 import { TaskResponse } from '@/types/dto/tasks.dto'
@@ -48,16 +49,20 @@ interface TaskCardListProps {
 }
 
 export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate }: TaskCardListProps) => {
-  const { assignee, workflowStates, previewMode, token, confirmAssignModalId, assigneeCache } = useSelector(selectTaskBoard)
+  const { assignee, workflowStates, previewMode, token, confirmAssignModalId, assigneeCache, activeTask } =
+    useSelector(selectTaskBoard)
+  const { assigneeListForLimitedTasks } = useSelector(selectTaskDetails)
+
   const [currentAssignee, setCurrentAssignee] = useState<IAssigneeCombined | undefined>(() => {
     return assigneeCache[task.id]
   })
   const [currentDueDate, setCurrentDueDate] = useState<string | undefined>(task.dueDate)
-
   const [inputStatusValue, setInputStatusValue] = useState('')
   const [selectedAssignee, setSelectedAssignee] = useState<IAssigneeCombined | undefined>(undefined)
   const [loading, setLoading] = useState(false)
-  const [filteredAssignees, setFilteredAssignees] = useState(assignee)
+  const [filteredAssignees, setFilteredAssignees] = useState(
+    assigneeListForLimitedTasks.length ? assigneeListForLimitedTasks : assignee,
+  )
   const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
@@ -99,6 +104,13 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate 
       token && updateAssignee(token, task.id, getAssigneeTypeCorrected(assigneeValue), assigneeValue.id)
     }
     store.dispatch(setConfirmAssigneeModalId(undefined))
+  }
+
+  const getClientCompanyId = () => {
+    if (variant == 'subtask' && activeTask) {
+      return activeTask.assigneeType !== 'internalUser' ? activeTask.assigneeId : undefined
+    }
+    return undefined
   }
 
   return (
@@ -283,7 +295,7 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate 
             }
             handleInputChange={async (newInputValue: string) => {
               if (!newInputValue || isAssigneeTextMatching(newInputValue, assigneeValue)) {
-                setFilteredAssignees(assignee)
+                setFilteredAssignees(assigneeListForLimitedTasks.length ? assigneeListForLimitedTasks : assignee)
                 return
               }
 
@@ -294,6 +306,8 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate 
                 setFilteredAssignees,
                 z.string().parse(token),
                 newInputValue,
+                undefined,
+                getClientCompanyId(),
               )
             }}
             extraOption={NoAssigneeExtraOptions}
