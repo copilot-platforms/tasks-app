@@ -1,6 +1,6 @@
 import { RootState } from '@/redux/store'
 import { PreviewMode } from '@/types/common'
-import { AccessibleTasksResponse, TaskResponse } from '@/types/dto/tasks.dto'
+import { TaskResponse } from '@/types/dto/tasks.dto'
 import { CreateViewSettingsDTO, FilterOptionsType } from '@/types/dto/viewSettings.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { FilterByOptions, FilterOptions, IAssigneeCombined, IFilterOptions } from '@/types/interfaces'
@@ -23,7 +23,7 @@ interface IInitialState {
   activeTask: TaskResponse | undefined
   previewMode: PreviewMode
   accesibleTaskIds: string[]
-  accessibleTasks: AccessibleTasksResponse[]
+  accessibleTasks: TaskResponse[]
   confirmAssignModalId: string | undefined
   assigneeCache: Record<string, IAssigneeCombined>
 }
@@ -146,7 +146,7 @@ const taskBoardSlice = createSlice({
     setAccesibleTaskIds: (state, action: { payload: string[] }) => {
       state.accesibleTaskIds = action.payload
     },
-    setAccessibleTasks: (state, action: { payload: AccessibleTasksResponse[] }) => {
+    setAccessibleTasks: (state, action: { payload: TaskResponse[] }) => {
       state.accessibleTasks = action.payload
     },
     setConfirmAssigneeModalId: (state, action: { payload: string | undefined }) => {

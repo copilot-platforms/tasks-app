@@ -18,7 +18,7 @@ import { setAssigneeSuggestion, setExpandedComments } from '@/redux/features/tas
 import { setTemplates } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
 import { Token } from '@/types/common'
-import { AccessibleTasksResponse, TaskResponse } from '@/types/dto/tasks.dto'
+import { TaskResponse } from '@/types/dto/tasks.dto'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { IAssigneeCombined, IAssigneeSuggestions, ITemplate } from '@/types/interfaces'
@@ -59,7 +59,7 @@ export const ClientSideStateUpdate = ({
   task?: TaskResponse
   clearExpandedComments?: boolean
   accesibleTaskIds?: string[]
-  accessibleTasks?: AccessibleTasksResponse[]
+  accessibleTasks?: TaskResponse[]
 }) => {
   const { tasks: tasksInStore, viewSettingsTemp } = useSelector(selectTaskBoard)
   useEffect(() => {

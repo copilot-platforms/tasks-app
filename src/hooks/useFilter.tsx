@@ -1,6 +1,6 @@
 import { selectTaskBoard, setFilteredTasks } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
-import { AccessibleTasksResponse, TaskResponse } from '@/types/dto/tasks.dto'
+import { TaskResponse } from '@/types/dto/tasks.dto'
 import { FilterOptions, FilterOptionsKeywords, IFilterOptions } from '@/types/interfaces'
 import { useEffect } from 'react'
 import { useSelector } from 'react-redux'
@@ -29,7 +29,7 @@ function filterByAssignee(filteredTasks: TaskResponse[], filterValue: string | n
 function filterByKeyword(
   filteredTasks: TaskResponse[],
   filterValue: string,
-  accessibleTasks?: AccessibleTasksResponse[],
+  accessibleTasks?: TaskResponse[],
 ): TaskResponse[] {
   const keyword = (filterValue as string).toLowerCase()
   const matchKeyword = (task: KeywordMatchable) =>
@@ -42,8 +42,6 @@ function filterByKeyword(
   const keywordMatchingParentIds = accessibleTasks?.filter(matchKeyword).map((task) => task.parentId) || []
   filteredTasks = filteredTasks.filter((task) => {
     // Either match parent with keyword, or match child task with keyword and link it to its parentId
-    console.log('xxxtask', matchKeyword(task))
-    console.log('xxxkwmatch', accessibleTasks?.filter(matchKeyword))
     return matchKeyword(task) || keywordMatchingParentIds.includes(task.id)
   })
 
