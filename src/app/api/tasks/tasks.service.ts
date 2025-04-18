@@ -383,47 +383,7 @@ export class TasksService extends BaseService {
     // For user 2, task B should show up as a parent task in the main task board
     const disjointTasksFilter: Promise<Prisma.TaskWhereInput> = (async () => {
       if (this.user.role === UserRole.IU || parentId) {
-        if (this.user.internalUserId) {
-          const copilot = new CopilotAPI(this.user.token)
-          const currentInternalUser = await copilot.getInternalUser(this.user.internalUserId)
-          if (!currentInternalUser.isClientAccessLimited) return {}
-          const clients = await copilot.getClients({ limit: MAX_FETCH_ASSIGNEE_COUNT })
-          const internalUsers = await copilot.getInternalUsers({ limit: MAX_FETCH_ASSIGNEE_COUNT })
-          const internalUsersIds = internalUsers?.data.map((iu) => iu.id) || []
-          const clientIds =
-            clients?.data
-              ?.filter((client) => currentInternalUser.companyAccessList?.includes(client.companyId))
-              ?.map((client) => client.id) || []
-
-          const fallbackArray = ['__empty__']
-
-          return {
-            OR: [
-              //Parent is not assigned to the limited scoped IU's and client companies accesible to the IU.
-              {
-                parent: {
-                  AND: [
-                    {
-                      assigneeId: { notIn: clientIds?.length ? clientIds : fallbackArray },
-                    },
-                    { assigneeId: { notIn: internalUsersIds?.length ? internalUsersIds : fallbackArray } },
-                    {
-                      assigneeId: {
-                        notIn: currentInternalUser.companyAccessList?.length
-                          ? currentInternalUser.companyAccessList
-                          : fallbackArray,
-                      },
-                    },
-                  ],
-                },
-              },
-              //Task is a parent/ standalone task.
-              {
-                parentId: null,
-              },
-            ],
-          }
-        }
+        return {}
       }
 
       return {
