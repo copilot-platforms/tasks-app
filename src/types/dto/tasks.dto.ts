@@ -59,11 +59,6 @@ export const SubTaskStatusSchema = z.object({
 
 export type SubTaskStatusResponse = z.infer<typeof SubTaskStatusSchema>
 
-export type AccessibleTasksResponse = Pick<
-  TaskResponse,
-  'id' | 'assigneeId' | 'assigneeType' | 'title' | 'body' | 'parentId' | 'label'
->
-
 export type AncestorTaskResponse = Pick<Task, 'id' | 'title' | 'label'> & {
   assigneeId: string
   assigneeType: NonNullable<AssigneeType>

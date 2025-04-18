@@ -107,19 +107,19 @@ export class TasksService extends BaseService {
 
     let tasks: Task[] | (Task & { workflowState: WorkflowState })[]
 
-    if (!select) {
-      tasks = await this.db.task.findMany({
-        where,
-        orderBy,
-        relationLoadStrategy: 'join',
-        include: { workflowState: true },
-      })
-    } else {
+    if (select) {
       // @ts-expect-error workaround to support ModelSelectInput
       tasks = await this.db.task.findMany({
         where,
         orderBy,
         select,
+      })
+    } else {
+      tasks = await this.db.task.findMany({
+        where,
+        orderBy,
+        relationLoadStrategy: 'join',
+        include: { workflowState: true },
       })
     }
 
