@@ -26,6 +26,7 @@ import { NoAssigneeExtraOptions } from '@/utils/noAssignee'
 import { trimAllTags } from '@/utils/trimTags'
 import { setDebouncedFilteredAssignees } from '@/utils/users'
 import { Box, Stack, Typography } from '@mui/material'
+import { AssigneeType as AssigneeTypeEnum } from '@prisma/client'
 import dayjs from 'dayjs'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
@@ -54,7 +55,7 @@ export const NewTaskCard = ({
   handleSubTaskCreation: (payload: CreateTaskRequest) => void
 }) => {
   const { workflowStates, assignee, token, filterOptions, previewMode, activeTask } = useSelector(selectTaskBoard)
-  const { assigneeListForLimitedTasks } = useSelector(selectTaskDetails)
+  const { activeTaskAssignees } = useSelector(selectTaskDetails)
 
   const { templates } = useSelector(selectCreateTemplate)
   const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
@@ -75,9 +76,7 @@ export const NewTaskCard = ({
     assigneeType: null,
   })
 
-  const [filteredAssignees, setFilteredAssignees] = useState(
-    assigneeListForLimitedTasks.length ? assigneeListForLimitedTasks : assignee,
-  )
+  const [filteredAssignees, setFilteredAssignees] = useState(activeTaskAssignees.length ? activeTaskAssignees : assignee)
 
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -143,7 +142,8 @@ export const NewTaskCard = ({
     setIsUploading(uploading)
   }
 
-  const clientCompanyId = activeTask && activeTask.assigneeType !== 'internalUser' ? activeTask.assigneeId : undefined
+  const clientCompanyId =
+    activeTask && activeTask.assigneeType !== AssigneeTypeEnum.internalUser ? activeTask.assigneeId : undefined
 
   const applyTemplate = useCallback(
     (id: string, templateTitle: string) => {
@@ -377,7 +377,7 @@ export const NewTaskCard = ({
                 clearTimeout(activeDebounceTimeoutId)
               }
               setLoading(true)
-              setFilteredAssignees(assigneeListForLimitedTasks.length ? assigneeListForLimitedTasks : assignee)
+              setFilteredAssignees(activeTaskAssignees.length ? activeTaskAssignees : assignee)
               setLoading(false)
             }}
             options={loading ? [] : filteredAssignees}
@@ -389,7 +389,7 @@ export const NewTaskCard = ({
             selectorType={SelectorType.ASSIGNEE_SELECTOR}
             handleInputChange={async (newInputValue: string) => {
               if (!newInputValue) {
-                setFilteredAssignees(assigneeListForLimitedTasks.length ? assigneeListForLimitedTasks : assignee)
+                setFilteredAssignees(activeTaskAssignees.length ? activeTaskAssignees : assignee)
                 return
               }
               setDebouncedFilteredAssignees(
