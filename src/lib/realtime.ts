@@ -109,6 +109,11 @@ export class RealtimeHandler {
         store.dispatch(setTasks(filterOutNewTask(tasks)))
       }
       store.dispatch(setAccessibleTasks(filterOutNewTask(accessibleTasks)))
+      // If there are disjoint child tasks floating around in the task board - support multiple levels of nesting for the future
+      if (tasks.some((task) => task.parentId === newTask.id)) {
+        store.dispatch(setTasks(tasks.filter((task) => task.parentId !== newTask.id)))
+      }
+
       return this.handleDelete(newTask)
     }
 
@@ -133,10 +138,6 @@ export class RealtimeHandler {
           }),
         ),
       )
-      // If there are disjoint child tasks floating around in the task board - support multiple levels of nesting for the future
-      if (tasks.some((task) => task.parentId === newTask.id)) {
-        store.dispatch(setTasks(tasks.filter((task) => task.parentId !== newTask.id)))
-      }
     }
 
     if (activeTask && activeTask.id === newTask.id) {
