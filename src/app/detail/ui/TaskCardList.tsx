@@ -107,7 +107,7 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate 
       sx={{
         height: variant == 'task' ? '44px' : '36px',
         display: 'flex',
-        padding: variant == 'task' ? '6px 20px 6px 20px' : '6px 6px 6px 4px',
+        padding: variant == 'task' ? '6px 20px 6px 20px' : '6px 0px 6px 0px',
         alignItems: 'center',
         alignSelf: 'stretch',
         gap: '20px',
@@ -266,7 +266,7 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate 
             buttonContent={
               <Box
                 sx={{
-                  padding: '2px 4px',
+                  padding: '2px 2px',
                   display: 'flex',
                   alignItems: 'center',
                   borderRadius: '4px',
