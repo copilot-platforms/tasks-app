@@ -54,11 +54,11 @@ export const ActivityWrapper = ({
   useEffect(() => {
     const refetchActivityLog = async () => {
       await mutate(cacheKey)
-      setLastUpdated(task?.lastActivityLogUpdated)
     }
-    if (lastUpdated !== task?.lastActivityLogUpdated) {
+    if (lastUpdated && lastUpdated !== task?.lastActivityLogUpdated) {
       refetchActivityLog()
     }
+    setLastUpdated(task?.lastActivityLogUpdated)
   }, [task?.lastActivityLogUpdated])
 
   const currentUserId = tokenPayload.internalUserId ?? tokenPayload.clientId
