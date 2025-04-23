@@ -2,6 +2,7 @@ import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 import { deleteTaskNotifications, sendTaskCreateNotifications, sendTaskUpdateNotifications } from '@/jobs/notifications'
 import { sendClientUpdateTaskNotifications } from '@/jobs/notifications/send-client-task-update-notifications'
 import { ClientResponse, CompanyResponse, InternalUsers } from '@/types/common'
+import { TaskWithWorkflowState } from '@/types/db'
 import { AncestorTaskResponse, CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { buildLtree, buildLtreeNodeString, getIdsFromLtreePath } from '@/utils/ltree'
@@ -57,7 +58,9 @@ export class TasksService extends BaseService {
     createdById?: string
     parentId?: string | null
     workflowStateType?: StateType
-  }) {
+    limit?: number
+    lastIdCursor?: string // When this id field cursor is provided, we return data AFTER this id
+  }): Promise<TaskWithWorkflowState[]> {
     // Check if given user role is authorized access to this resource
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Read, Resource.Tasks)
@@ -78,7 +81,7 @@ export class TasksService extends BaseService {
       isArchived = getArchivedStatus(queryFilters.showArchived, queryFilters.showUnarchived)
     }
 
-    if (queryFilters.showIncompleteOnly) {
+    if (queryFilters.showIncompleteOnly && !queryFilters.fromPublicApi) {
       filters.workflowState = {
         type: { not: StateType.completed },
       }
@@ -107,14 +110,22 @@ export class TasksService extends BaseService {
       isArchived,
     }
 
-    const orderBy: Prisma.TaskOrderByWithRelationInput[] = [
-      { dueDate: { sort: 'asc', nulls: 'last' } },
-      { createdAt: 'desc' },
-    ]
+    const orderBy: Prisma.TaskOrderByWithRelationInput[] = [{ createdAt: 'desc' }]
+    if (!queryFilters.fromPublicApi) {
+      // For web, we show dueDate as the primary sort key
+      orderBy.unshift({ dueDate: { sort: 'asc', nulls: 'last' } })
+    }
+
+    const pagination: Prisma.TaskFindManyArgs = {
+      take: queryFilters.limit,
+      cursor: queryFilters.lastIdCursor ? { id: queryFilters.lastIdCursor } : undefined,
+      skip: queryFilters.lastIdCursor ? 1 : undefined,
+    }
 
     const tasks = await this.db.task.findMany({
       where,
       orderBy,
+      ...pagination,
       relationLoadStrategy: 'join',
       include: { workflowState: true },
     })
@@ -636,5 +647,13 @@ export class TasksService extends BaseService {
       const taskClientsCompanyId = z.string().parse(taskClient?.companyId)
       return currentInternalUser.companyAccessList?.includes(taskClientsCompanyId)
     }) as T
+  }
+
+  async hasMoreTasksAfterCursor(id: string): Promise<boolean> {
+    return !!(await this.db.task.findFirst({
+      where: { workspaceId: this.user.workspaceId },
+      cursor: { id },
+      skip: 1,
+    }))
   }
 }
