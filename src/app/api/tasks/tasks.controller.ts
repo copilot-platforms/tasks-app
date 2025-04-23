@@ -12,7 +12,7 @@ export const getTasks = async (req: NextRequest) => {
   noStore()
   const user = await authenticate(req)
 
-  const { showArchived, showUnarchived, parentId, all, select } = getSearchParams(req.nextUrl.searchParams, [
+  const { showArchived, showUnarchived, parentId, all } = getSearchParams(req.nextUrl.searchParams, [
     'showArchived',
     'showUnarchived',
     'parentId',
@@ -33,9 +33,6 @@ export const getTasks = async (req: NextRequest) => {
 
     // Show all accessible tasks for a user
     all: z.coerce.boolean().parse(all),
-
-    // Select only specific columns - useful in optimization
-    selectColumns: select ? select.split(',') : undefined,
   })
 
   return NextResponse.json({ tasks })

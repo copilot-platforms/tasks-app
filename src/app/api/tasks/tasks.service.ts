@@ -45,12 +45,18 @@ export class TasksService extends BaseService {
   }
 
   async getAllTasks(queryFilters: {
-    showArchived: boolean
-    showUnarchived: boolean
-    parentId?: string | null
+    // Global filters
     all?: boolean
     showIncompleteOnly?: boolean
-    selectColumns?: string[]
+    // Public Api filters
+    fromPublicApi?: boolean
+    // Column filters
+    showArchived: boolean
+    showUnarchived: boolean
+    assigneeId?: string
+    createdById?: string
+    parentId?: string | null
+    workflowStateType?: StateType
   }) {
     // Check if given user role is authorized access to this resource
     const policyGate = new PoliciesService(this.user)
@@ -88,8 +94,6 @@ export class TasksService extends BaseService {
         ? {} // No need to support disjoint tasks when querying all tasks / subtasks
         : await this.getDisjointTasksFilter(queryFilters.parentId)
 
-    const select = this.getSelectColumns(queryFilters.selectColumns)
-
     // NOTE: Terminology:
     // Disjoint task -> A task where the parent task is not assigned to / inaccessible to the current user,
     // but the subtask is accessible
@@ -97,6 +101,9 @@ export class TasksService extends BaseService {
     const where: Prisma.TaskWhereInput = {
       ...filters,
       ...disjointTasksFilter,
+      assigneeId: queryFilters.assigneeId,
+      createdById: queryFilters.createdById,
+      workflowState: queryFilters.workflowStateType ? { type: queryFilters.workflowStateType } : undefined,
       isArchived,
     }
 
@@ -105,25 +112,14 @@ export class TasksService extends BaseService {
       { createdAt: 'desc' },
     ]
 
-    let tasks: Task[] | (Task & { workflowState: WorkflowState })[]
+    const tasks = await this.db.task.findMany({
+      where,
+      orderBy,
+      relationLoadStrategy: 'join',
+      include: { workflowState: true },
+    })
 
-    if (select) {
-      // @ts-expect-error workaround to support ModelSelectInput
-      tasks = await this.db.task.findMany({
-        where,
-        orderBy,
-        select,
-      })
-    } else {
-      tasks = await this.db.task.findMany({
-        where,
-        orderBy,
-        relationLoadStrategy: 'join',
-        include: { workflowState: true },
-      })
-    }
-
-    if (!this.user.internalUserId) {
+    if (!this.user.internalUserId || queryFilters.fromPublicApi) {
       return tasks
     }
 
