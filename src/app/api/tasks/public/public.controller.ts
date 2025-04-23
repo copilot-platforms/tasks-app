@@ -6,15 +6,6 @@ import { PublicTaskSerializer } from '@api/tasks/public/public.serializer'
 import { TasksService } from '@api/tasks/tasks.service'
 import { NextRequest, NextResponse } from 'next/server'
 
-type GetAllTasksParams = {
-  params: {
-    assigneeId?: string
-    createdBy?: string
-    parentTaskId?: string
-    status?: string
-  }
-}
-
 export const getAllTasksPublic = async (req: NextRequest) => {
   const user = await authenticate(req)
 
