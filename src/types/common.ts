@@ -1,5 +1,5 @@
 import { UserRole } from '@/app/api/core/types/user'
-import { AssigneeType, CommentInitiator } from '@prisma/client'
+import { CommentInitiator, StateType } from '@prisma/client'
 import { z } from 'zod'
 
 export const HexColorSchema = z.string().refine((val) => /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/.test(val), {
@@ -237,3 +237,5 @@ export const RFC3339DateSchema = z.string().refine((val) => rfc3339Regex.test(va
   message: 'Invalid RFC3339 datetime string',
 })
 export type RFC3339Date = z.infer<typeof RFC3339DateSchema>
+
+export const StateTypeSchema = z.nativeEnum(StateType)
