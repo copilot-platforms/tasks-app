@@ -48,6 +48,19 @@ export class TemplatesService extends BaseService {
     return { ...template, body: replacedBody || template.body }
   }
 
+  async getOneTemplate(id: string) {
+    const policyGate = new PoliciesService(this.user)
+    policyGate.authorize(UserAction.Read, Resource.TaskTemplates)
+
+    const template = await this.db.taskTemplate.findFirst({
+      where: { workspaceId: this.user.workspaceId, id },
+    })
+    if (!template) {
+      throw new APIError(httpStatus.NOT_FOUND, 'Could not find template')
+    }
+    return template
+  }
+
   async createTaskTemplate(payload: CreateTemplateRequest) {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Create, Resource.TaskTemplates)
