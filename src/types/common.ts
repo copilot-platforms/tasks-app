@@ -230,3 +230,10 @@ export interface InitiatedEntity {
   initiatorId: string
   initiatorType: CommentInitiator | null
 }
+
+const rfc3339Regex = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[\+\-]\d{2}:\d{2}))$/
+
+export const RFC3339DateSchema = z.string().refine((val) => rfc3339Regex.test(val), {
+  message: 'Invalid RFC3339 datetime string',
+})
+export type RFC3339Date = z.infer<typeof RFC3339DateSchema>
