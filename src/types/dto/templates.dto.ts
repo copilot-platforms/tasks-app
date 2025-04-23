@@ -14,13 +14,3 @@ export const UpdateTemplateRequestSchema = z.object({
   body: z.string().nullish(),
 })
 export type UpdateTemplateRequest = z.infer<typeof UpdateTemplateRequestSchema>
-
-export const TemplateResponsePublicSchema = z.object({
-  id: z.string().uuid(),
-  object: z.string(),
-  name: z.string(),
-  description: z.string(),
-  createdDate: z.date(),
-})
-
-export type TemplateResponsePublic = z.infer<typeof TemplateResponsePublicSchema>

@@ -1,4 +1,3 @@
-import { TemplateSerializer } from '@/app/api/tasks/templates/template.serializer'
 import { CreateTemplateRequestSchema, UpdateTemplateRequestSchema } from '@/types/dto/templates.dto'
 import { IdParams } from '@api/core/types/api'
 import authenticate from '@api/core/utils/authenticate'
@@ -50,25 +49,4 @@ export const applyTemplate = async (req: NextRequest, { params: { id } }: IdPara
   const data = await templatesService.getAppliedTemplateDescription(id)
 
   return NextResponse.json({ data })
-}
-
-export const getTaskTemplatePublic = async (req: NextRequest, { params: { id } }: IdParams) => {
-  const user = await authenticate(req)
-  const nextToken = req.nextUrl.searchParams.get('nextToken') || undefined
-  const templatesService = new TemplatesService(user)
-  const template = await templatesService.getOneTemplate(id)
-  const templateSerializer = new TemplateSerializer(template)
-  const publicTemplate = templateSerializer.serialize()
-  return NextResponse.json({ data: publicTemplate, nextToken: nextToken })
-}
-
-export const getTaskTemplatesPublic = async (req: NextRequest) => {
-  const user = await authenticate(req)
-  const nextToken = req.nextUrl.searchParams.get('nextToken') || undefined
-
-  const templateService = new TemplatesService(user)
-  const templates = await templateService.getTaskTemplates()
-  const templateSerializer = new TemplateSerializer(templates)
-  const publicTemplates = templateSerializer.serialize()
-  return NextResponse.json({ data: publicTemplates, nextToken: nextToken })
 }
