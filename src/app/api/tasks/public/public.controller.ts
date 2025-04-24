@@ -35,7 +35,6 @@ export const getAllTasksPublic = async (req: NextRequest) => {
   })
 
   const lastTaskId = tasks[tasks.length - 1]?.id
-  // Hacky but works good enough 🤷‍♂️ Life is too short to dwell on an extra LIMIT 1 query
   const hasMoreTasks = lastTaskId ? await tasksService.hasMoreTasksAfterCursor(lastTaskId) : false
   const base64NextToken = hasMoreTasks ? encode(lastTaskId) : undefined
 
