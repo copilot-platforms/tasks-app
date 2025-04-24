@@ -3,9 +3,9 @@ import { z } from 'zod'
 
 export const TemplateResponsePublicSchema = z.object({
   id: z.string().uuid(),
-  object: z.string(),
+  object: z.literal('taskTemplate'),
   name: z.string(),
-  description: z.string(),
+  description: z.string().nullable(),
   createdDate: RFC3339DateSchema,
 })
 
