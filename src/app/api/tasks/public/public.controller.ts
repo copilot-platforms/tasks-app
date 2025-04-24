@@ -7,6 +7,7 @@ import { PublicTaskSerializer } from '@api/tasks/public/public.serializer'
 import { TasksService } from '@api/tasks/tasks.service'
 import { decode, encode } from 'js-base64'
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 
 export const getAllTasksPublic = async (req: NextRequest) => {
   const user = await authenticate(req)
@@ -53,9 +54,8 @@ export const getOneTaskPublic = async (req: NextRequest, { params: { id } }: IdP
 
 export const deleteOneTaskPublic = async (req: NextRequest, { params: { id } }: IdParams) => {
   const recursive = req.nextUrl.searchParams.get('recursive')
-  const parsedRecursive = recursive === 'true'
   const user = await authenticate(req)
   const tasksService = new TasksService(user)
-  const task = await tasksService.deleteOneTask(id, parsedRecursive)
+  const task = await tasksService.deleteOneTask(id, z.coerce.boolean().parse(recursive))
   return NextResponse.json({ ...PublicTaskSerializer.serialize(task) })
 }
