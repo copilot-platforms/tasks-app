@@ -19,6 +19,7 @@ const workflowStateTypeMap: Record<PublicTaskDto['status'], WorkflowState['type'
   inProgress: 'started',
   completed: 'completed',
 })
+
 export class PublicTaskSerializer {
   static serializeUnsafe(task: Task & { workflowState: WorkflowState }): PublicTaskDto {
     return {
@@ -80,7 +81,9 @@ export class PublicTaskSerializer {
     })
   }
 
-  static deserializeUpdatePayload(payload: PublicTaskUpdateDto): UpdateTaskRequest {
+  static async deserializeUpdatePayload(payload: PublicTaskUpdateDto, workspaceId: string): Promise<UpdateTaskRequest> {
+    const workflowStateId = await PublicTaskSerializer.getWorkflowStateIdForStatus(payload.status, workspaceId)
+
     return {
       title: payload.name,
       body: payload.description,
@@ -88,6 +91,7 @@ export class PublicTaskSerializer {
       assigneeType: payload.assigneeType,
       dueDate: payload.dueDate,
       isArchived: payload.status === 'completed',
+      workflowStateId,
     }
   }
 }
