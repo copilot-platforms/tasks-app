@@ -2,6 +2,7 @@ import { IdParams } from '@/app/api/core/types/api'
 import authenticate from '@/app/api/core/utils/authenticate'
 import { PublicTemplateSerializer } from '@/app/api/tasks/templates/public/public.serializer'
 import { TemplatesService } from '@/app/api/tasks/templates/templates.service'
+import { defaultLimit } from '@/constants/public-api'
 import { getSearchParams } from '@/utils/request'
 import { encode, decode } from 'js-base64'
 
@@ -12,7 +13,7 @@ export const getTaskTemplatesPublic = async (req: NextRequest) => {
   const { limit, nextToken } = getSearchParams(req.nextUrl.searchParams, ['limit', 'nextToken'])
   const templateService = new TemplatesService(user)
   const templates = await templateService.getTaskTemplates({
-    limit: Number(limit),
+    limit: limit ? +limit : defaultLimit,
     lastIdCursor: nextToken ? decode(nextToken) : undefined,
   })
   const lastTemplateId = templates[templates.length - 1]?.id
