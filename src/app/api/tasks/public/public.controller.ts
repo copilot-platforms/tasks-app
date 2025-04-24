@@ -4,6 +4,7 @@ import { StateTypeSchema } from '@/types/common'
 import { getSearchParams } from '@/utils/request'
 import { IdParams } from '@api/core/types/api'
 import authenticate from '@api/core/utils/authenticate'
+import { PublicTaskUpdateDtoSchema } from '@api/tasks/public/public.dto'
 import { PublicTaskSerializer } from '@api/tasks/public/public.serializer'
 import { TasksService } from '@api/tasks/tasks.service'
 import { decode, encode } from 'js-base64'
@@ -53,6 +54,16 @@ export const getOneTaskPublic = async (req: NextRequest, { params: { id } }: IdP
   return NextResponse.json({ ...PublicTaskSerializer.serialize(task) })
 }
 
+export const updateTask = async (req: NextRequest, { params: { id } }: IdParams) => {
+  const user = await authenticate(req)
+
+  const data = PublicTaskUpdateDtoSchema.parse(await req.json())
+  const tasksService = new TasksService(user)
+  const updatedTask = await tasksService.updateOneTask(id, data)
+
+  return NextResponse.json({ updatedTask })
+}
+
 export const deleteOneTaskPublic = async (req: NextRequest, { params: { id } }: IdParams) => {
   const recursive = req.nextUrl.searchParams.get('recursive')
   const user = await authenticate(req)
@@ -60,6 +71,7 @@ export const deleteOneTaskPublic = async (req: NextRequest, { params: { id } }: 
   const task = await tasksService.deleteOneTask(id, z.coerce.boolean().parse(recursive))
   return NextResponse.json({ ...PublicTaskSerializer.serialize(task) })
 }
+
 export const createTaskPublic = async (req: NextRequest) => {
   const user = await authenticate(req)
   const data = PublicTaskCreateDtoSchema.parse(await req.json())
