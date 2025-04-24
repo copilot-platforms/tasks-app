@@ -304,7 +304,7 @@ export class TasksService extends BaseService {
     return updatedTask
   }
 
-  async deleteOneTask(id: string) {
+  async deleteOneTask(id: string, recursive: boolean = true) {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Delete, Resource.Tasks)
 
@@ -317,6 +317,12 @@ export class TasksService extends BaseService {
 
     if (!task) throw new APIError(httpStatus.NOT_FOUND, 'The requested task to delete was not found')
 
+    if (!recursive && task) {
+      if (task.subtaskCount > 0) {
+        throw new APIError(httpStatus.CONFLICT, 'Cannot delete task with subtasks. Use recursive delete instead.')
+      }
+    }
+
     //delete the associated label
     const labelMappingService = new LabelMappingService(this.user)
     await this.db.$transaction(async (tx) => {
@@ -324,7 +330,6 @@ export class TasksService extends BaseService {
       await labelMappingService.deleteLabel(task?.label)
 
       await tx.task.delete({ where: { id, workspaceId: this.user.workspaceId } })
-
       const subtaskService = new SubtaskService(this.user)
       subtaskService.setTransaction(tx as PrismaClient)
       if (task.parentId) {
@@ -334,6 +339,8 @@ export class TasksService extends BaseService {
     })
 
     await deleteTaskNotifications.trigger({ user: this.user, task })
+
+    return task
 
     // Logic to remove internal user notifications when a task is deleted / assignee is deleted
     // ...In case requirements change later again
