@@ -54,13 +54,11 @@ export const getOneTaskPublic = async (req: NextRequest, { params: { id } }: IdP
   return NextResponse.json({ ...PublicTaskSerializer.serialize(task) })
 }
 
-export const updateTask = async (req: NextRequest, { params: { id } }: IdParams) => {
+export const updateTaskPublic = async (req: NextRequest, { params: { id } }: IdParams) => {
   const user = await authenticate(req)
-
   const data = PublicTaskUpdateDtoSchema.parse(await req.json())
   const tasksService = new TasksService(user)
   const updatedTask = await tasksService.updateOneTask(id, data)
-
   return NextResponse.json({ updatedTask })
 }
 
