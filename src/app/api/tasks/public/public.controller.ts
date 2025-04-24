@@ -51,15 +51,18 @@ export const getOneTaskPublic = async (req: NextRequest, { params: { id } }: IdP
   const user = await authenticate(req)
   const tasksService = new TasksService(user)
   const task = await tasksService.getOneTask(id)
-  return NextResponse.json({ ...PublicTaskSerializer.serialize(task) })
+  return NextResponse.json(PublicTaskSerializer.serialize(task))
 }
 
 export const updateTaskPublic = async (req: NextRequest, { params: { id } }: IdParams) => {
   const user = await authenticate(req)
   const data = PublicTaskUpdateDtoSchema.parse(await req.json())
+
   const tasksService = new TasksService(user)
-  const updatedTask = await tasksService.updateOneTask(id, PublicTaskSerializer.deserializeUpdatePayload(data))
-  return NextResponse.json(updatedTask)
+  const updatePayload = await PublicTaskSerializer.deserializeUpdatePayload(data, user.workspaceId)
+  const updatedTask = await tasksService.updateOneTask(id, updatePayload)
+
+  return NextResponse.json(PublicTaskSerializer.serialize(updatedTask))
 }
 
 export const deleteOneTaskPublic = async (req: NextRequest, { params: { id } }: IdParams) => {
