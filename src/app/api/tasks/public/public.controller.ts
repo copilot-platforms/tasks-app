@@ -60,3 +60,12 @@ export const createTaskPublic = async (req: NextRequest) => {
   const newTask = await tasksService.createTask(createPayload)
   return NextResponse.json(PublicTaskSerializer.serialize(newTask), { status: 200 })
 }
+
+export const deleteOneTaskPublic = async (req: NextRequest, { params: { id } }: IdParams) => {
+  const recursive = req.nextUrl.searchParams.get('recursive')
+  const parsedRecursive = recursive === 'true'
+  const user = await authenticate(req)
+  const tasksService = new TasksService(user)
+  const task = await tasksService.deleteOneTask(id, parsedRecursive)
+  return NextResponse.json({ ...PublicTaskSerializer.serialize(task) })
+}
