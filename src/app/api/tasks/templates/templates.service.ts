@@ -17,7 +17,7 @@ import httpStatus from 'http-status'
 import { z } from 'zod'
 
 export class TemplatesService extends BaseService {
-  async getTaskTemplates(queryFilters: { limit?: number; lastIdCursor?: string }) {
+  async getTaskTemplates(queryFilters?: { limit?: number; lastIdCursor?: string }) {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Read, Resource.TaskTemplates)
 
@@ -28,11 +28,11 @@ export class TemplatesService extends BaseService {
       orderBy: { updatedAt: 'desc' },
     }
 
-    if (queryFilters.limit) {
+    if (queryFilters?.limit) {
       findOptions.take = queryFilters.limit
     }
 
-    if (queryFilters.lastIdCursor) {
+    if (queryFilters?.lastIdCursor) {
       findOptions.cursor = { id: queryFilters.lastIdCursor }
       findOptions.skip = 1
     }
