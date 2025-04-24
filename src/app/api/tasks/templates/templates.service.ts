@@ -17,7 +17,7 @@ import httpStatus from 'http-status'
 import { z } from 'zod'
 
 export class TemplatesService extends BaseService {
-  async getTaskTemplates(queryFilters?: { limit?: number; lastIdCursor?: string }) {
+  async getTaskTemplates(queryFilters?: { fromPublicApi?: boolean; limit?: number; lastIdCursor?: string }) {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Read, Resource.TaskTemplates)
 
@@ -25,7 +25,7 @@ export class TemplatesService extends BaseService {
       where: { workspaceId: this.user.workspaceId },
       relationLoadStrategy: 'join',
       include: { workflowState: true },
-      orderBy: { updatedAt: 'desc' },
+      orderBy: queryFilters?.fromPublicApi ? { createdAt: 'desc' } : { updatedAt: 'desc' },
     }
 
     if (queryFilters?.limit) {
@@ -207,13 +207,12 @@ export class TemplatesService extends BaseService {
   } // used to replace urls for images in template body
 
   async hasMoreTemplatesAfterCursor(id: string): Promise<boolean> {
-    return !!(
-      await this.db.taskTemplate.findMany({
-        where: { workspaceId: this.user.workspaceId },
-        cursor: { id },
-        orderBy: { updatedAt: 'desc' },
-        skip: 1,
-      })
-    ).length
+    const nextTemplate = await this.db.taskTemplate.findFirst({
+      where: { workspaceId: this.user.workspaceId },
+      cursor: { id },
+      orderBy: { createdAt: 'desc' },
+      skip: 1,
+    })
+    return !!nextTemplate
   }
 }
