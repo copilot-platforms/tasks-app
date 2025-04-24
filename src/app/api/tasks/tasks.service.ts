@@ -317,7 +317,7 @@ export class TasksService extends BaseService {
 
     if (!task) throw new APIError(httpStatus.NOT_FOUND, 'The requested task to delete was not found')
 
-    if (!recursive && task) {
+    if (!recursive) {
       if (task.subtaskCount > 0) {
         throw new APIError(httpStatus.CONFLICT, 'Cannot delete task with subtasks. Use recursive delete instead.')
       }
