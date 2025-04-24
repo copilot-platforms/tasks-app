@@ -281,7 +281,10 @@ export class TasksService extends BaseService {
       }
 
       // Set / reset lastArchivedDate if isArchived has been triggered, else remove it from the update query
-      const lastArchivedDate = data.isArchived === true ? new Date() : data.isArchived === false ? null : undefined
+      let lastArchivedDate: Date | undefined | null = undefined
+      if (data.isArchived && prevTask.isArchived !== data.isArchived) {
+        lastArchivedDate = data.isArchived === true ? new Date() : data.isArchived === false ? null : undefined
+      }
 
       // Get the updated task
       const updatedTask = await tx.task.update({
@@ -297,7 +300,7 @@ export class TasksService extends BaseService {
       })
 
       // Archive / unarchive all subtasks if parent task is archived / unarchived
-      if (data.isArchived !== undefined) {
+      if (prevTask.isArchived !== data.isArchived && data.isArchived !== undefined) {
         const subtaskService = new SubtaskService(this.user)
         subtaskService.setTransaction(tx as PrismaClient)
         await subtaskService.toggleArchiveForAllSubtasks(id, data.isArchived)
