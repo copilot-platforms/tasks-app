@@ -650,10 +650,12 @@ export class TasksService extends BaseService {
   }
 
   async hasMoreTasksAfterCursor(id: string): Promise<boolean> {
-    return !!(await this.db.task.findFirst({
+    const nextTask = await this.db.task.findFirst({
       where: { workspaceId: this.user.workspaceId },
       cursor: { id },
       skip: 1,
-    }))
+      orderBy: { createdAt: 'desc' },
+    })
+    return !!nextTask
   }
 }
