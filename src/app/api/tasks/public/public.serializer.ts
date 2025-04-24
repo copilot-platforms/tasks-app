@@ -4,13 +4,13 @@ import { PublicTaskDto, PublicTaskDtoSchema } from '@api/tasks/public/public.dto
 import { Task, WorkflowState } from '@prisma/client'
 import { z } from 'zod'
 
-const statusMap: Record<WorkflowState['type'], PublicTaskDto['status']> = {
+const statusMap: Record<WorkflowState['type'], PublicTaskDto['status']> = Object.freeze({
   backlog: 'todo',
   unstarted: 'todo',
   started: 'inProgress',
   completed: 'completed',
   cancelled: 'todo',
-}
+})
 
 export class PublicTaskSerializer {
   static serializeUnsafe(task: Task & { workflowState: WorkflowState }): PublicTaskDto {
