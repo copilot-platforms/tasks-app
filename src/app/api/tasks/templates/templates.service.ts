@@ -17,17 +17,27 @@ import httpStatus from 'http-status'
 import { z } from 'zod'
 
 export class TemplatesService extends BaseService {
-  async getTaskTemplates() {
+  async getTaskTemplates(queryFilters: { limit?: number; lastIdCursor?: string }) {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Read, Resource.TaskTemplates)
 
-    let templates = await this.db.taskTemplate.findMany({
+    const findOptions: Prisma.TaskTemplateFindManyArgs = {
       where: { workspaceId: this.user.workspaceId },
       relationLoadStrategy: 'join',
       include: { workflowState: true },
       orderBy: { updatedAt: 'desc' },
-    })
-    return templates
+    }
+
+    if (queryFilters.limit) {
+      findOptions.take = queryFilters.limit
+    }
+
+    if (queryFilters.lastIdCursor) {
+      findOptions.cursor = { id: queryFilters.lastIdCursor }
+      findOptions.skip = 1
+    }
+
+    return this.db.taskTemplate.findMany(findOptions)
   }
 
   async getAppliedTemplateDescription(id: string) {
@@ -195,4 +205,15 @@ export class TemplatesService extends BaseService {
 
     return url
   } // used to replace urls for images in template body
+
+  async hasMoreTemplatesAfterCursor(id: string): Promise<boolean> {
+    return !!(
+      await this.db.taskTemplate.findMany({
+        where: { workspaceId: this.user.workspaceId },
+        cursor: { id },
+        orderBy: { updatedAt: 'desc' },
+        skip: 1,
+      })
+    ).length
+  }
 }
