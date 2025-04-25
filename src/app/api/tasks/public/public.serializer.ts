@@ -1,7 +1,7 @@
 import DBClient from '@/lib/db'
 import { RFC3339DateSchema } from '@/types/common'
 import { CreateTaskRequest, CreateTaskRequestSchema } from '@/types/dto/tasks.dto'
-import { toRFC3339 } from '@/utils/dateHelper'
+import { rfc3339ToDateString, toRFC3339 } from '@/utils/dateHelper'
 import { PublicTaskDto, PublicTaskDtoSchema, PublicTaskCreateDto } from '@api/tasks/public/public.dto'
 import { Task, WorkflowState } from '@prisma/client'
 import { z } from 'zod'
@@ -75,7 +75,7 @@ export class PublicTaskSerializer {
       title: payload.name,
       body: payload.description,
       workflowStateId: workflowStateId,
-      dueDate: payload.dueDate,
+      dueDate: rfc3339ToDateString(payload.dueDate),
       parentId: payload.parentTaskId,
     })
   }

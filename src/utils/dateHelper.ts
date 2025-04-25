@@ -41,3 +41,9 @@ export const toRFC3339 = (datestring: string | Date | null): RFC3339Date | null 
   const iso = date.toISOString()
   return RFC3339DateSchema.parse(iso.replace(/\.\d{3}Z$/, 'Z')) // Remove milliseconds
 }
+
+export const rfc3339ToDateString = (date: string | null | undefined) => {
+  if (date === null) return null
+  if (!date) return undefined
+  return new Date(date).toISOString().slice(0, 10)
+}
