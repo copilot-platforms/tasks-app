@@ -24,6 +24,7 @@ import { redirectIfTaskCta } from '@/utils/redirect'
 import { UserRole } from '@api/core/types/user'
 import { Suspense } from 'react'
 import { z } from 'zod'
+import { TemplatesFetcher } from '@/app/_fetchers/TemplatesFetcher'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -92,6 +93,7 @@ export default async function ClientPage({ searchParams }: { searchParams: { tok
             isPreview={!!getPreviewMode(tokenPayload)}
           />
         </Suspense>
+        <Suspense fallback={null}>{previewMode && <TemplatesFetcher token={token} />}</Suspense>
         <Suspense fallback={null}>
           <AllTasksFetcher token={token} />
         </Suspense>
