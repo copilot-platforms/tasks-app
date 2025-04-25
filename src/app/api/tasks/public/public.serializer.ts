@@ -83,18 +83,12 @@ export class PublicTaskSerializer {
 
   static async deserializeUpdatePayload(payload: PublicTaskUpdateDto, workspaceId: string): Promise<UpdateTaskRequest> {
     const workflowStateId = await PublicTaskSerializer.getWorkflowStateIdForStatus(payload.status, workspaceId)
-    const deserializedDueDate = (() => {
-      if (payload.dueDate === null) return null
-      if (!payload.dueDate) return undefined
-      return new Date(payload.dueDate).toISOString().slice(0, 10)
-    })()
-
     return {
       title: payload.name,
       body: payload.description,
       assigneeId: payload.assigneeId,
       assigneeType: payload.assigneeType,
-      dueDate: deserializedDueDate,
+      dueDate: rfc3339ToDateString(payload.dueDate),
       isArchived: payload.isArchived,
       workflowStateId,
     }
