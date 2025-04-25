@@ -45,7 +45,7 @@ export const PublicTaskUpdateDtoSchema = z.object({
   description: z.string().optional(),
   assigneeId: z.string().uuid().optional(),
   assigneeType: z.nativeEnum(AssigneeType).optional(),
-  dueDate: RFC3339DateSchema.optional(),
+  dueDate: RFC3339DateSchema.nullish(),
   status: z.enum(['todo', 'inProgress', 'completed']).optional(),
   isArchived: z.boolean().optional(),
 })
