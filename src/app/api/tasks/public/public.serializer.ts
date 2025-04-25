@@ -90,7 +90,7 @@ export class PublicTaskSerializer {
       assigneeId: payload.assigneeId,
       assigneeType: payload.assigneeType,
       dueDate: payload.dueDate,
-      isArchived: payload.status === 'completed',
+      isArchived: payload.isArchived,
       workflowStateId,
     }
   }
