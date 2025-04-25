@@ -1,3 +1,4 @@
+import { PublicTaskCreateDtoSchema } from '@/app/api/tasks/public/public.dto'
 import { defaultLimit } from '@/constants/public-api'
 import { StateTypeSchema } from '@/types/common'
 import { getSearchParams } from '@/utils/request'
@@ -58,4 +59,12 @@ export const deleteOneTaskPublic = async (req: NextRequest, { params: { id } }: 
   const tasksService = new TasksService(user)
   const task = await tasksService.deleteOneTask(id, z.coerce.boolean().parse(recursive))
   return NextResponse.json({ ...PublicTaskSerializer.serialize(task) })
+}
+export const createTaskPublic = async (req: NextRequest) => {
+  const user = await authenticate(req)
+  const data = PublicTaskCreateDtoSchema.parse(await req.json())
+  const createPayload = await PublicTaskSerializer.deserializeCreatePayload(data, user.workspaceId)
+  const tasksService = new TasksService(user)
+  const newTask = await tasksService.createTask(createPayload)
+  return NextResponse.json(PublicTaskSerializer.serialize(newTask), { status: 200 })
 }
