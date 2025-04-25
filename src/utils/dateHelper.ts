@@ -43,6 +43,7 @@ export const toRFC3339 = (datestring: string | Date | null): RFC3339Date | null 
 }
 
 export const rfc3339ToDateString = (date: string | null | undefined) => {
-  if (date === null || date === undefined) return date
+  if (date === null) return null
+  if (!date) return undefined
   return new Date(date).toISOString().slice(0, 10)
 }
