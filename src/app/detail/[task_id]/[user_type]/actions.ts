@@ -28,6 +28,7 @@ export const updateTaskDetail = async ({
       isArchived: payload.isArchived,
     }),
   })
+  revalidateTag('getOneTask')
 }
 
 /**
@@ -40,8 +41,7 @@ export const updateWorkflowStateIdOfTask = async (token: string, taskId: string,
       workflowStateId: targetWorkflowStateId,
     }),
   })
-  //revalidation on update assignee is disabled for now since we don't have activity log enabled
-  //this revalidation can be rethought and may not be needed to prevent unexpected flickering
+  revalidateTag('getOneTask')
   // revalidateTag('getActivities')
 }
 
@@ -58,8 +58,7 @@ export const updateAssignee = async (
       assigneeId,
     }),
   })
-  //revalidation on update assignee is disabled for now since we don't have activity log enabled
-  //this revalidation can be rethought and may not be needed to prevent unexpected flickering
+  revalidateTag('getOneTask')
   // revalidateTag('getActivities')
 }
 
@@ -67,6 +66,7 @@ export const clientUpdateTask = async (token: string, taskId: string, targetWork
   await fetch(`${apiUrl}/api/tasks/${taskId}/client?token=${token}&workflowStateId=${targetWorkflowStateId}`, {
     method: 'PATCH',
   })
+  revalidateTag('getOneTask')
 }
 
 export const deleteTask = async (token: string, task_id: string) => {
@@ -121,4 +121,8 @@ export const postScrapMedia = async (token: string, payload: ScrapMediaRequest) 
     method: 'POST',
     body: JSON.stringify(payload),
   })
+}
+
+export const revalidateGetOneTask = async () => {
+  revalidateTag('getOneTask')
 }

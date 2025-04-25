@@ -54,11 +54,11 @@ export const ActivityWrapper = ({
   useEffect(() => {
     const refetchActivityLog = async () => {
       await mutate(cacheKey)
-      setLastUpdated(task?.lastActivityLogUpdated)
     }
-    if (lastUpdated !== task?.lastActivityLogUpdated) {
+    if (lastUpdated && lastUpdated !== task?.lastActivityLogUpdated) {
       refetchActivityLog()
     }
+    setLastUpdated(task?.lastActivityLogUpdated)
   }, [task?.lastActivityLogUpdated])
 
   const currentUserId = tokenPayload.internalUserId ?? tokenPayload.clientId
@@ -186,7 +186,7 @@ export const ActivityWrapper = ({
 
   return (
     <Box width="100%">
-      <Stack direction="column" alignItems="left" p="16px 0px" rowGap={4}>
+      <Stack direction="column" alignItems="left" p="24px 0px" rowGap={'12px'}>
         <Typography variant="lg">Activity</Typography>
         {isLoading ? (
           <Stack direction="column" rowGap={5}>

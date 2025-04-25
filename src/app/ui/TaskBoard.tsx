@@ -1,36 +1,39 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
-import { Box, Stack } from '@mui/material'
+import { updateTask, updateViewModeSettings } from '@/app/(home)/actions'
 import { TaskCard } from '@/components/cards/TaskCard'
 import { TaskColumn } from '@/components/cards/TaskColumn'
-import { DragDropHandler } from '@/hoc/DragDropHandler'
-import { useSelector } from 'react-redux'
-import store from '@/redux/store'
-import { selectTaskBoard, updateWorkflowStateIdByTaskId } from '@/redux/features/taskBoardSlice'
-import { TaskResponse } from '@/types/dto/tasks.dto'
-import { ListViewTaskCard } from '@/components/cards/ListViewTaskCard'
 import { TaskRow } from '@/components/cards/TaskRow'
-import { UserType, View } from '@/types/interfaces'
-import { updateTask, updateViewModeSettings } from '@/app/actions'
+import { DragDropHandler } from '@/hoc/DragDropHandler'
+import { selectTaskBoard, updateWorkflowStateIdByTaskId } from '@/redux/features/taskBoardSlice'
+import store from '@/redux/store'
+import { TaskResponse } from '@/types/dto/tasks.dto'
+import { View } from '@/types/interfaces'
+import { Box, Stack } from '@mui/material'
+import { useCallback, useEffect, useState } from 'react'
+import { useSelector } from 'react-redux'
 import { z } from 'zod'
 
-import DashboardEmptyState from '@/components/layouts/EmptyState/DashboardEmptyState'
-import { Header } from '@/components/layouts/Header'
-import { FilterBar } from '@/components/layouts/FilterBar'
-import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
-import { CustomLink } from '@/hoc/CustomLink'
-import { sortTaskByDescendingOrder } from '@/utils/sortTask'
+import { TaskDataFetcher } from '@/app/_fetchers/TaskDataFetcher'
+import { clientUpdateTask } from '@/app/detail/[task_id]/[user_type]/actions'
+import { TaskCardList } from '@/app/detail/ui/TaskCardList'
+import { TaskBoardAppBridge } from '@/app/ui/TaskBoardAppBridge'
 import { CustomDragLayer } from '@/components/CustomDragLayer'
 import { CardDragLayer } from '@/components/cards/CardDragLayer'
-import { UserRole } from '@api/core/types/user'
-import { clientUpdateTask } from '@/app/detail/[task_id]/[user_type]/actions'
-import { TaskDataFetcher } from '@/app/_fetchers/TaskDataFetcher'
+import DashboardEmptyState from '@/components/layouts/EmptyState/DashboardEmptyState'
 import { NoFilteredTasksState } from '@/components/layouts/EmptyState/NoFilteredTasksState'
+import { FilterBar } from '@/components/layouts/FilterBar'
+import { Header } from '@/components/layouts/Header'
+import { CustomLink } from '@/hoc/CustomLink'
+import CustomScrollBar from '@/hoc/CustomScrollBar'
 import { useFilter } from '@/hooks/useFilter'
 import { WorkspaceResponse } from '@/types/common'
-import { TaskBoardAppBridge } from '@/app/ui/TaskBoardAppBridge'
-import CustomScrollBar from '@/hoc/CustomScrollBar'
+import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
+import { WorkflowState, WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
+import { getCardHref } from '@/utils/getCardHref'
+import { sortTaskByDescendingOrder } from '@/utils/sortTask'
+import { prioritizeStartedStates } from '@/utils/workflowStates'
+import { UserRole } from '@api/core/types/user'
 
 interface TaskBoardProps {
   mode: UserRole
@@ -87,7 +90,6 @@ export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
     showUnarchived: viewSettingsTemp ? viewSettingsTemp.showUnarchived : showUnarchived,
   }
 
-  const getCardHref = (task: { id: string }) => `/detail/${task.id}/${mode === UserRole.IU ? 'iu' : 'cu'}`
   useFilter(viewSettingsTemp ? viewSettingsTemp.filterOptions : filterOptions)
   const userHasNoFilter =
     filterOptions &&
@@ -177,7 +179,7 @@ export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
                         return (
                           <CustomLink
                             key={task.id}
-                            href={{ pathname: getCardHref(task), query: { token } }}
+                            href={{ pathname: getCardHref(task, mode), query: { token } }}
                             style={{ width: 'fit-content' }}
                           >
                             <DragDropHandler
@@ -191,7 +193,7 @@ export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
                                 <TaskCard
                                   task={task}
                                   key={task.id}
-                                  href={{ pathname: getCardHref(task), query: { token } }}
+                                  href={{ pathname: getCardHref(task, mode), query: { token } }}
                                 />
                               </Box>
                             </DragDropHandler>
@@ -216,7 +218,7 @@ export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
           }}
         >
           <CustomScrollBar>
-            {workflowStates.map((list, index) => (
+            {prioritizeStartedStates(workflowStates).map((list, index) => (
               <DragDropHandler
                 key={list.id}
                 accept={'taskCard'}
@@ -236,24 +238,15 @@ export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
                 >
                   {sortTaskByDescendingOrder<TaskResponse>(filterTaskWithWorkflowStateId(list.id)).map((task, index) => {
                     return (
-                      <CustomLink key={task.id} href={{ pathname: getCardHref(task), query: { token } }}>
-                        <DragDropHandler
-                          key={task.id}
-                          accept={'taskCard'}
-                          index={index}
-                          task={task}
-                          draggable // Make ListViewTaskCard draggable
-                        >
-                          <ListViewTaskCard
-                            key={task.id}
-                            task={task}
-                            href={{ pathname: getCardHref(task), query: { token } }}
-                            updateTask={({ payload }) => {
-                              updateTask({ token: z.string().parse(token), taskId: task.id, payload })
-                            }}
-                          />
-                        </DragDropHandler>
-                      </CustomLink>
+                      <DragDropHandler
+                        key={task.id}
+                        accept={'taskCard'}
+                        index={index}
+                        task={task}
+                        draggable // Make ListViewTaskCard draggable
+                      >
+                        <TaskCardList task={task} variant="task" key={task.id} workflowState={list} mode={mode} />
+                      </DragDropHandler>
                     )
                   })}
                 </TaskRow>

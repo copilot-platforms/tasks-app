@@ -1,10 +1,7 @@
 import { apiUrl } from '@/config'
+import { PropsWithToken } from '@/types/interfaces'
 
-interface ValidateNotificationCountFetcherProps {
-  token: string
-}
-
-export const ValidateNotificationCountFetcher = async ({ token }: ValidateNotificationCountFetcherProps) => {
+export const ValidateNotificationCountFetcher = async ({ token }: PropsWithToken) => {
   await fetch(`${apiUrl}/api/notification/validate-count?token=${token}`)
   return <></>
 }
