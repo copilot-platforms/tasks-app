@@ -27,3 +27,16 @@ export const PublicTaskDtoSchema = z.object({
   source: TaskSourceSchema,
 })
 export type PublicTaskDto = z.infer<typeof PublicTaskDtoSchema>
+
+export const PublicTaskCreateDtoSchema = z.object({
+  name: z.string(),
+  description: z.string(),
+  parentTaskId: z.string().uuid().optional(),
+  status: z.enum(['todo', 'inProgress', 'completed']),
+  assigneeId: z.string().uuid(),
+  assigneeType: z.nativeEnum(AssigneeType),
+  dueDate: RFC3339DateSchema.optional(),
+  //TODO : add templateId after it has been implemented for tasks.
+})
+
+export type PublicTaskCreateDto = z.infer<typeof PublicTaskCreateDtoSchema>
