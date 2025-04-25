@@ -19,6 +19,7 @@ import { SubtaskService } from '@api/tasks/subtasks.service'
 import { getArchivedStatus, getTaskTimestamps } from '@api/tasks/tasks.helpers'
 import { TasksActivityLogger } from '@api/tasks/tasks.logger'
 import { AssigneeType, Prisma, PrismaClient, StateType, Task, WorkflowState } from '@prisma/client'
+import dayjs from 'dayjs'
 import httpStatus from 'http-status'
 import { z } from 'zod'
 import { maxSubTaskDepth } from '@/constants/tasks'
@@ -262,6 +263,11 @@ export class TasksService extends BaseService {
 
     // Query previous task
     const filters = this.buildTaskPermissions(id)
+    // Validate updated due date to not be in the past
+    if (data.dueDate && dayjs(new Date(data.dueDate)).isBefore(dayjs())) {
+      throw new APIError(httpStatus.BAD_REQUEST, 'Due date cannot be in the past')
+    }
+
     const prevTask = await this.db.task.findFirst({
       where: filters,
       relationLoadStrategy: 'join',
