@@ -21,6 +21,7 @@ import { TasksActivityLogger } from '@api/tasks/tasks.logger'
 import { AssigneeType, Prisma, PrismaClient, StateType, Task, WorkflowState } from '@prisma/client'
 import httpStatus from 'http-status'
 import { z } from 'zod'
+import { maxSubTaskDepth } from '@/constants/tasks'
 
 export class TasksService extends BaseService {
   /**
@@ -150,7 +151,15 @@ export class TasksService extends BaseService {
     //generate the label
     const labelMappingService = new LabelMappingService(this.user)
     const label = z.string().parse(await labelMappingService.getLabel(data.assigneeId, data.assigneeType))
-
+    if (data.parentId) {
+      const parentPath = await this.getPathOfTask(data.parentId)
+      if (parentPath) {
+        const canCreateSubTask = this.canCreateSubTask(parentPath)
+        if (!canCreateSubTask) {
+          throw new APIError(httpStatus.BAD_REQUEST, 'Reached the maximum subtask depth for this task')
+        }
+      }
+    }
     // Create a new task associated with current workspaceId. Also inject current request user as the creator.
     const newTask = await this.db.task.create({
       data: {
@@ -664,5 +673,16 @@ export class TasksService extends BaseService {
       orderBy: { createdAt: 'desc' },
     })
     return !!nextTask
+  }
+
+  canCreateSubTask(parentPath: string): boolean {
+    //regex to match ltree path format, underscore and no dashes.
+    const uuidRegex = /\b[0-9a-fA-F]{8}_[0-9a-fA-F]{4}_[0-9a-fA-F]{4}_[0-9a-fA-F]{4}_[0-9a-fA-F]{12}\b/g
+
+    const uuids = parentPath.match(uuidRegex)
+
+    if (!uuids) return true
+
+    return uuids.length <= maxSubTaskDepth
   }
 }
