@@ -282,7 +282,7 @@ export class TasksService extends BaseService {
 
       // Set / reset lastArchivedDate if isArchived has been triggered, else remove it from the update query
       let lastArchivedDate: Date | undefined | null = undefined
-      if (data.isArchived && prevTask.isArchived !== data.isArchived) {
+      if (data.isArchived !== undefined && prevTask.isArchived !== data.isArchived) {
         lastArchivedDate = data.isArchived === true ? new Date() : data.isArchived === false ? null : undefined
       }
 
