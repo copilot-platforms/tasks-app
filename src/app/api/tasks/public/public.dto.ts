@@ -29,8 +29,8 @@ export const PublicTaskDtoSchema = z.object({
 export type PublicTaskDto = z.infer<typeof PublicTaskDtoSchema>
 
 export const PublicTaskCreateDtoSchema = z.object({
-  name: z.string(),
-  description: z.string(),
+  name: z.string().min(1).max(255),
+  description: z.string().nullable(),
   parentTaskId: z.string().uuid().optional(),
   status: z.enum(['todo', 'inProgress', 'completed']),
   assigneeId: z.string().uuid(),
