@@ -60,7 +60,7 @@ export class TasksService extends BaseService {
     assigneeId?: string
     createdById?: string
     parentId?: string | null
-    workflowStateType?: StateType
+    workflowState?: { type: StateType }
     limit?: number
     lastIdCursor?: string // When this id field cursor is provided, we return data AFTER this id
   }): Promise<TaskWithWorkflowState[]> {
@@ -109,7 +109,7 @@ export class TasksService extends BaseService {
       ...disjointTasksFilter,
       assigneeId: queryFilters.assigneeId,
       createdById: queryFilters.createdById,
-      workflowState: queryFilters.workflowStateType ? { type: queryFilters.workflowStateType } : undefined,
+      workflowState: queryFilters.workflowState,
       isArchived,
     }
 
@@ -677,9 +677,12 @@ export class TasksService extends BaseService {
     }) as T
   }
 
-  async hasMoreTasksAfterCursor(id: string): Promise<boolean> {
+  async hasMoreTasksAfterCursor(
+    id: string,
+    publicFilters: Partial<Parameters<TasksService['getAllTasks']>[0]>,
+  ): Promise<boolean> {
     const nextTask = await this.db.task.findFirst({
-      where: { workspaceId: this.user.workspaceId },
+      where: { ...publicFilters, workspaceId: this.user.workspaceId },
       cursor: { id },
       skip: 1,
       orderBy: { createdAt: 'desc' },
