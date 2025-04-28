@@ -22,6 +22,7 @@ import { AssigneeType, Prisma, PrismaClient, StateType, Task, WorkflowState } fr
 import httpStatus from 'http-status'
 import { z } from 'zod'
 import { maxSubTaskDepth } from '@/constants/tasks'
+import { isPastDate } from '@/utils/dateHelper'
 
 export class TasksService extends BaseService {
   /**
@@ -157,6 +158,11 @@ export class TasksService extends BaseService {
         throw new APIError(httpStatus.BAD_REQUEST, 'Reached the maximum subtask depth for this task')
       }
     }
+
+    if (data.dueDate && isPastDate(data.dueDate)) {
+      throw new APIError(httpStatus.BAD_REQUEST, 'Due date cannot be in the past')
+    }
+
     // Create a new task associated with current workspaceId. Also inject current request user as the creator.
     const newTask = await this.db.task.create({
       data: {
