@@ -6,7 +6,7 @@ import { PublicTaskCreateDto, PublicTaskDto, PublicTaskDtoSchema, PublicTaskUpda
 import { Task, WorkflowState } from '@prisma/client'
 import { z } from 'zod'
 
-const statusMap: Record<WorkflowState['type'], PublicTaskDto['status']> = Object.freeze({
+export const statusMap: Record<WorkflowState['type'], PublicTaskDto['status']> = Object.freeze({
   backlog: 'todo',
   unstarted: 'todo',
   started: 'inProgress',
@@ -14,7 +14,7 @@ const statusMap: Record<WorkflowState['type'], PublicTaskDto['status']> = Object
   cancelled: 'todo',
 })
 
-const workflowStateTypeMap: Record<PublicTaskDto['status'], WorkflowState['type']> = Object.freeze({
+export const workflowStateTypeMap: Record<PublicTaskDto['status'], WorkflowState['type']> = Object.freeze({
   todo: 'unstarted',
   inProgress: 'started',
   completed: 'completed',
@@ -53,7 +53,7 @@ export class PublicTaskSerializer {
     return z.array(PublicTaskDtoSchema).parse(tasks.map((task) => PublicTaskSerializer.serializeUnsafe(task)))
   }
 
-  private static async getWorkflowStateIdForStatus(
+  static async getWorkflowStateIdForStatus(
     status: PublicTaskDto['status'] | undefined,
     workspaceId: string,
   ): Promise<string | undefined> {
