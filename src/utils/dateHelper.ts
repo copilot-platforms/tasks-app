@@ -1,5 +1,8 @@
+import APIError from '@/app/api/core/exceptions/api'
 import { RFC3339Date, RFC3339DateSchema } from '@/types/common'
 import { DateString } from '@/types/date'
+import dayjs from 'dayjs'
+import httpStatus from 'http-status'
 
 export function formatDate(dateString: string): DateString {
   // Parse the date from the input format
@@ -46,4 +49,8 @@ export const rfc3339ToDateString = (date: string | null | undefined) => {
   if (date === null) return null
   if (!date) return undefined
   return new Date(date).toISOString().slice(0, 10)
+}
+
+export const isPastDate = (date: DateString) => {
+  return dayjs(new Date(date)).isBefore(dayjs())
 }
