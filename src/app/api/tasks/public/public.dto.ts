@@ -4,6 +4,7 @@ import { z } from 'zod'
 
 export const TaskSourceSchema = z.enum(['web', 'api'])
 export type TaskSource = z.infer<typeof TaskSourceSchema>
+export const StatusSchema = z.enum(['todo', 'inProgress', 'completed'])
 
 export const PublicTaskDtoSchema = z.object({
   id: z.string(),
@@ -15,7 +16,7 @@ export const PublicTaskDtoSchema = z.object({
   assigneeType: z.nativeEnum(AssigneeType).nullable(),
   dueDate: RFC3339DateSchema.nullable(),
   label: z.string(),
-  status: z.enum(['todo', 'inProgress', 'completed']),
+  status: StatusSchema,
   completedDate: RFC3339DateSchema.nullable(),
   createdBy: z.string().uuid(),
   createdDate: RFC3339DateSchema,
@@ -32,7 +33,7 @@ export const PublicTaskCreateDtoSchema = z.object({
   name: z.string().min(1).max(255),
   description: z.string().nullable(),
   parentTaskId: z.string().uuid().optional(),
-  status: z.enum(['todo', 'inProgress', 'completed']),
+  status: StatusSchema,
   assigneeId: z.string().uuid(),
   assigneeType: z.nativeEnum(AssigneeType),
   dueDate: RFC3339DateSchema.optional(),
@@ -46,7 +47,7 @@ export const PublicTaskUpdateDtoSchema = z.object({
   assigneeId: z.string().uuid().optional(),
   assigneeType: z.nativeEnum(AssigneeType).optional(),
   dueDate: RFC3339DateSchema.nullish(),
-  status: z.enum(['todo', 'inProgress', 'completed']).optional(),
+  status: StatusSchema.optional(),
   isArchived: z.boolean().optional(),
 })
 export type PublicTaskUpdateDto = z.infer<typeof PublicTaskUpdateDtoSchema>
