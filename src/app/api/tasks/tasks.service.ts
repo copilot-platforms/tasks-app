@@ -1,3 +1,4 @@
+import { maxSubTaskDepth } from '@/constants/tasks'
 import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 import { deleteTaskNotifications, sendTaskCreateNotifications, sendTaskUpdateNotifications } from '@/jobs/notifications'
 import { sendClientUpdateTaskNotifications } from '@/jobs/notifications/send-client-task-update-notifications'
@@ -5,6 +6,7 @@ import { ClientResponse, CompanyResponse, InternalUsers } from '@/types/common'
 import { TaskWithWorkflowState } from '@/types/db'
 import { AncestorTaskResponse, CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { CopilotAPI } from '@/utils/CopilotAPI'
+import { isPastDate } from '@/utils/dateHelper'
 import { buildLtree, buildLtreeNodeString, getIdsFromLtreePath } from '@/utils/ltree'
 import { getFilePathFromUrl, replaceImageSrc } from '@/utils/signedUrlReplacer'
 import { getSignedUrl } from '@/utils/signUrl'
@@ -18,12 +20,10 @@ import { LabelMappingService } from '@api/label-mapping/label-mapping.service'
 import { SubtaskService } from '@api/tasks/subtasks.service'
 import { getArchivedStatus, getTaskTimestamps } from '@api/tasks/tasks.helpers'
 import { TasksActivityLogger } from '@api/tasks/tasks.logger'
-import { AssigneeType, Prisma, PrismaClient, StateType, Task, WorkflowState } from '@prisma/client'
+import { AssigneeType, Prisma, PrismaClient, Source, StateType, Task, WorkflowState } from '@prisma/client'
 import dayjs from 'dayjs'
 import httpStatus from 'http-status'
 import { z } from 'zod'
-import { maxSubTaskDepth } from '@/constants/tasks'
-import { isPastDate } from '@/utils/dateHelper'
 
 export class TasksService extends BaseService {
   /**
@@ -146,7 +146,7 @@ export class TasksService extends BaseService {
     return filteredTasks
   }
 
-  async createTask(data: CreateTaskRequest) {
+  async createTask(data: CreateTaskRequest, opts?: { isPublicApi: boolean }) {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Create, Resource.Tasks)
 
@@ -171,6 +171,7 @@ export class TasksService extends BaseService {
         workspaceId: this.user.workspaceId,
         createdById: this.user.internalUserId as string,
         label: label,
+        source: opts?.isPublicApi ? Source.api : Source.web,
         ...(await getTaskTimestamps('create', this.user, data)),
       },
       include: { workflowState: true },

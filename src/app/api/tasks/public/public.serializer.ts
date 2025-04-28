@@ -41,7 +41,7 @@ export class PublicTaskSerializer {
       archivedDate: toRFC3339(task.lastArchivedDate),
       isDeleted: task.deletedAt ? true : false,
       deletedDate: toRFC3339(task.deletedAt),
-      source: 'web', // Placeholder for now
+      source: task.source,
     }
   }
 

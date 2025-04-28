@@ -61,6 +61,16 @@ export const getOneTaskPublic = async (req: NextRequest, { params: { id } }: IdP
   return NextResponse.json(PublicTaskSerializer.serialize(task))
 }
 
+export const createTaskPublic = async (req: NextRequest) => {
+  const user = await authenticate(req)
+  const data = PublicTaskCreateDtoSchema.parse(await req.json())
+  const createPayload = await PublicTaskSerializer.deserializeCreatePayload(data, user.workspaceId)
+  const tasksService = new TasksService(user)
+  const newTask = await tasksService.createTask(createPayload, { isPublicApi: true })
+
+  return NextResponse.json(PublicTaskSerializer.serialize(newTask), { status: 200 })
+}
+
 export const updateTaskPublic = async (req: NextRequest, { params: { id } }: IdParams) => {
   const user = await authenticate(req)
   const data = PublicTaskUpdateDtoSchema.parse(await req.json())
@@ -78,13 +88,4 @@ export const deleteOneTaskPublic = async (req: NextRequest, { params: { id } }: 
   const tasksService = new TasksService(user)
   const task = await tasksService.deleteOneTask(id, z.coerce.boolean().parse(recursive))
   return NextResponse.json({ ...PublicTaskSerializer.serialize(task) })
-}
-
-export const createTaskPublic = async (req: NextRequest) => {
-  const user = await authenticate(req)
-  const data = PublicTaskCreateDtoSchema.parse(await req.json())
-  const createPayload = await PublicTaskSerializer.deserializeCreatePayload(data, user.workspaceId)
-  const tasksService = new TasksService(user)
-  const newTask = await tasksService.createTask(createPayload)
-  return NextResponse.json(PublicTaskSerializer.serialize(newTask), { status: 200 })
 }
