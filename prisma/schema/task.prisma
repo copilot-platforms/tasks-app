@@ -4,6 +4,11 @@ enum AssigneeType {
   company
 }
 
+enum Source {
+  web
+  api
+}
+
 model Task {
   id              String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   label           String
@@ -38,6 +43,8 @@ model Task {
 
   isArchived       Boolean   @default(false)
   lastArchivedDate DateTime?
+
+  source Source @default(web)
 
   @@index([path], type: Gist)
   @@map("Tasks")
