@@ -68,7 +68,7 @@ export const createTaskPublic = async (req: NextRequest) => {
   const tasksService = new TasksService(user)
   const newTask = await tasksService.createTask(createPayload, { isPublicApi: true })
 
-  return NextResponse.json(PublicTaskSerializer.serialize(newTask), { status: 200 })
+  return NextResponse.json(PublicTaskSerializer.serialize(newTask))
 }
 
 export const updateTaskPublic = async (req: NextRequest, { params: { id } }: IdParams) => {
