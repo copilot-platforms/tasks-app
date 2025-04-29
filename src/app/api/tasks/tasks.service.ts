@@ -5,6 +5,7 @@ import { sendClientUpdateTaskNotifications } from '@/jobs/notifications/send-cli
 import { ClientResponse, CompanyResponse, InternalUsers } from '@/types/common'
 import { TaskWithWorkflowState } from '@/types/db'
 import { AncestorTaskResponse, CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
+import { DISPATCHABLE_EVENT } from '@/types/webhook'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { isPastDate } from '@/utils/dateHelper'
 import { buildLtree, buildLtreeNodeString, getIdsFromLtreePath } from '@/utils/ltree'
@@ -24,6 +25,7 @@ import { AssigneeType, Prisma, PrismaClient, Source, StateType, Task, WorkflowSt
 import dayjs from 'dayjs'
 import httpStatus from 'http-status'
 import { z } from 'zod'
+import { PublicTaskSerializer } from './public/public.serializer'
 
 export class TasksService extends BaseService {
   /**
@@ -213,8 +215,15 @@ export class TasksService extends BaseService {
       }
     }
 
-    // Send task created notifications to users
-    await sendTaskCreateNotifications.trigger({ user: this.user, task: newTask })
+    // Send task created notifications to users + dispatch webhook
+    const copilot = new CopilotAPI(this.user.token)
+    await Promise.all([
+      sendTaskCreateNotifications.trigger({ user: this.user, task: newTask }),
+      copilot.dispatchWebhook(DISPATCHABLE_EVENT.TaskCreated, {
+        payload: PublicTaskSerializer.serialize(newTask),
+        workspaceId: this.user.workspaceId,
+      }),
+    ])
 
     return newTask
   }
