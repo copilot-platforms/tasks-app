@@ -87,8 +87,13 @@ export const dispatchUpdatedWebhookEvent = async (
       event = DISPATCHABLE_EVENT.TaskUpdated
     }
   }
-  if (prevTask.isArchived !== updatedTask.isArchived && updatedTask.isArchived !== undefined) {
-    event = DISPATCHABLE_EVENT.TaskArchived
+
+  if (prevTask.isArchived !== updatedTask.isArchived) {
+    if (updatedTask.isArchived === true) {
+      event = DISPATCHABLE_EVENT.TaskArchived
+    } else {
+      event = DISPATCHABLE_EVENT.TaskUpdated
+    }
   }
 
   if (event) {
