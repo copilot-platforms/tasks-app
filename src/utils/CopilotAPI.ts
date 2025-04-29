@@ -236,9 +236,10 @@ export class CopilotAPI {
     )
   }
 
-  async dispatchWebhook(eventName: DISPATCHABLE_EVENT, { workspaceId, payload }: { workspaceId: string; payload: object }) {
+  async dispatchWebhook(eventName: DISPATCHABLE_EVENT, { workspaceId, payload }: { workspaceId: string; payload?: object }) {
     const url = `${API_DOMAIN}/v1/webhooks/${eventName}`
     console.info('CopilotAPI#dispatchWebhook | Dispatching webhook to ', url)
+
     try {
       await fetch(url, {
         method: 'POST',
@@ -246,7 +247,7 @@ export class CopilotAPI {
           'Content-Type': 'application/json',
           'x-api-key': `${workspaceId}/${apiKey}`,
         },
-        body: JSON.stringify(payload),
+        body: payload ? JSON.stringify(payload) : null,
       })
     } catch (e) {
       console.error(`Failed to dispatch webhook for event ${eventName}`, e)

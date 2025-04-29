@@ -18,14 +18,14 @@ import { PoliciesService } from '@api/core/services/policies.service'
 import { Resource } from '@api/core/types/api'
 import { UserAction, UserRole } from '@api/core/types/user'
 import { LabelMappingService } from '@api/label-mapping/label-mapping.service'
+import { PublicTaskSerializer } from '@api/tasks/public/public.serializer'
 import { SubtaskService } from '@api/tasks/subtasks.service'
-import { getArchivedStatus, getTaskTimestamps } from '@api/tasks/tasks.helpers'
+import { dispatchUpdatedWebhookEvent, getArchivedStatus, getTaskTimestamps } from '@api/tasks/tasks.helpers'
 import { TasksActivityLogger } from '@api/tasks/tasks.logger'
 import { AssigneeType, Prisma, PrismaClient, Source, StateType, Task, WorkflowState } from '@prisma/client'
 import dayjs from 'dayjs'
 import httpStatus from 'http-status'
 import { z } from 'zod'
-import { PublicTaskSerializer } from './public/public.serializer'
 
 export class TasksService extends BaseService {
   /**
@@ -285,6 +285,8 @@ export class TasksService extends BaseService {
     })
     if (!prevTask) throw new APIError(httpStatus.NOT_FOUND, 'The requested task was not found')
 
+    const subtaskService = new SubtaskService(this.user)
+
     let updatedTask = await this.db.$transaction(async (tx) => {
       //generate new label if prevTask has no assignee but now assigned to someone
       let label: string = prevTask.label
@@ -314,22 +316,24 @@ export class TasksService extends BaseService {
         },
         include: { workflowState: true },
       })
-
-      // Archive / unarchive all subtasks if parent task is archived / unarchived
-      if (prevTask.isArchived !== data.isArchived && data.isArchived !== undefined) {
-        const subtaskService = new SubtaskService(this.user)
-        subtaskService.setTransaction(tx as PrismaClient)
-        await subtaskService.toggleArchiveForAllSubtasks(id, data.isArchived)
-      }
+      subtaskService.setTransaction(tx as PrismaClient)
 
       return updatedTask
     })
 
     if (updatedTask) {
-      const activityLogger = new TasksActivityLogger(this.user, updatedTask)
-      await activityLogger.logTaskUpdated(prevTask)
+      // Archive / unarchive all subtasks if parent task is archived / unarchived
+      if (prevTask.isArchived !== data.isArchived && data.isArchived !== undefined) {
+        await subtaskService.toggleArchiveForAllSubtasks(id, data.isArchived)
+      }
 
-      await sendTaskUpdateNotifications.trigger({ prevTask, updatedTask, user: this.user })
+      const activityLogger = new TasksActivityLogger(this.user, updatedTask)
+
+      await Promise.all([
+        activityLogger.logTaskUpdated(prevTask),
+        sendTaskUpdateNotifications.trigger({ prevTask, updatedTask, user: this.user }),
+        dispatchUpdatedWebhookEvent(this.user, prevTask, updatedTask),
+      ])
     }
 
     return updatedTask
@@ -369,7 +373,13 @@ export class TasksService extends BaseService {
       await subtaskService.softDeleteAllSubtasks(task.id)
     })
 
-    await deleteTaskNotifications.trigger({ user: this.user, task })
+    const copilot = new CopilotAPI(this.user.token)
+    await Promise.all([
+      deleteTaskNotifications.trigger({ user: this.user, task }),
+      copilot.dispatchWebhook(DISPATCHABLE_EVENT.TaskDeleted, {
+        workspaceId: this.user.workspaceId,
+      }),
+    ])
 
     return task
 
@@ -409,13 +419,6 @@ export class TasksService extends BaseService {
         { assigneeId: parsedCompanyId.data, assigneeType: 'company' },
       ],
     }
-  }
-
-  private getSelectColumns = (columns?: string[]) => {
-    if (!columns) return undefined
-    const select: Record<string, true> = {}
-    columns.forEach((column) => (select[column] = true))
-    return select
   }
 
   private getDisjointTasksFilter = (parentId?: string | null) => {
