@@ -1,5 +1,6 @@
 import { withRetry } from '@/app/api/core/utils/withRetry'
 import { copilotAPIKey as apiKey, APP_ID } from '@/config'
+import { API_DOMAIN } from '@/constants/domains'
 import {
   ClientRequest,
   ClientResponse,
@@ -31,11 +32,11 @@ import {
   WorkspaceResponse,
   WorkspaceResponseSchema,
 } from '@/types/common'
+import { DISPATCHABLE_EVENT } from '@/types/webhook'
 import Bottleneck from 'bottleneck'
 import type { CopilotAPI as SDK } from 'copilot-node-sdk'
 import { copilotApi } from 'copilot-node-sdk'
 import { z } from 'zod'
-import { API_DOMAIN } from '@/constants/domains'
 
 export class CopilotAPI {
   copilot: SDK
@@ -233,6 +234,23 @@ export class CopilotAPI {
     return notifications.filter(
       (notification) => notification.appId === z.string({ message: 'Missing AppID in environment' }).parse(APP_ID),
     )
+  }
+
+  async dispatchWebhook(eventName: DISPATCHABLE_EVENT, { workspaceId, payload }: { workspaceId: string; payload: object }) {
+    const url = `${API_DOMAIN}/v1/webhooks/${eventName}`
+    console.info('CopilotAPI#dispatchWebhook | Dispatching webhook to ', url)
+    try {
+      await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': `${workspaceId}/${apiKey}`,
+        },
+        body: JSON.stringify(payload),
+      })
+    } catch (e) {
+      console.error(`Failed to dispatch webhook for event ${eventName}`, e)
+    }
   }
 
   private wrapWithRetry<Args extends unknown[], R>(fn: (...args: Args) => Promise<R>): (...args: Args) => Promise<R> {
