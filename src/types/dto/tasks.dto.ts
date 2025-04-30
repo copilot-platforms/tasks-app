@@ -23,7 +23,7 @@ export const UpdateTaskRequestSchema = z.object({
   assigneeId: z.string().nullish(),
   assigneeType: AssigneeTypeSchema,
   title: z.string().optional(),
-  body: z.string().nullish(),
+  body: z.string().optional(),
   workflowStateId: z.string().uuid().optional(),
   dueDate: DateStringSchema.nullish(),
   isArchived: z.boolean().optional(),
