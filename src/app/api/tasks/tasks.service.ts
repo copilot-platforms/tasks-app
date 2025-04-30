@@ -342,7 +342,16 @@ export class TasksService extends BaseService {
   async deleteOneTask(id: string, recursive: boolean = true) {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Delete, Resource.Tasks)
-
+    const deletedBy = this.user.internalUserId
+    if (!deletedBy) {
+      throw new Error('Cannot delete task. could not find user.') //validation for deletedBy
+    }
+    await this.db.task.update({
+      where: { id, workspaceId: this.user.workspaceId },
+      data: {
+        deletedBy: deletedBy,
+      },
+    })
     // Try to delete existing client notification related to this task if exists
     const task = await this.db.task.findFirst({
       where: { id, workspaceId: this.user.workspaceId },
