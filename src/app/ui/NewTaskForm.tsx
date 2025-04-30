@@ -352,6 +352,7 @@ const NewTaskFooter = ({
           store.dispatch(setCreateTaskFields({ targetField: 'workflowStateId', value: template.workflowStateId }))
           store.dispatch(setCreateTaskFields({ targetField: 'activeWorkflowStateId', value: template.workflowStateId }))
           store.dispatch(setAppliedDescription({ description: template.body }))
+          store.dispatch(setCreateTaskFields({ targetField: 'templateId', value: id }))
 
           const trimmedAppliedDescription = appliedDescription && trimAllTags(appliedDescription)
           const trimmedDescription = trimAllTags(description)
