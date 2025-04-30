@@ -170,7 +170,7 @@ export class TasksService extends BaseService {
     let completedByUserType: AssigneeType | null = null
 
     if (data.workflowStateId) {
-      const isCompleted = await this.getCompletedByStatus(data.workflowStateId)
+      const isCompleted = await this.getIsCompletedStatus(data.workflowStateId)
       if (isCompleted) {
         completedBy = z.string().parse(this.user.internalUserId)
         completedByUserType = this.user.role
@@ -287,7 +287,7 @@ export class TasksService extends BaseService {
     let completedBy: string | null = null
     let completedByUserType: AssigneeType | null = null
     if (data.workflowStateId) {
-      const isCompleted = await this.getCompletedByStatus(data.workflowStateId)
+      const isCompleted = await this.getIsCompletedStatus(data.workflowStateId)
       if (isCompleted) {
         completedBy = z.string().parse(this.user.internalUserId)
         completedByUserType = this.user.role
@@ -642,7 +642,7 @@ export class TasksService extends BaseService {
     let completedBy: string | null = null
     let completedByUserType: AssigneeType | null = null
     if (targetWorkflowStateId) {
-      const isCompleted = await this.getCompletedByStatus(targetWorkflowStateId)
+      const isCompleted = await this.getIsCompletedStatus(targetWorkflowStateId)
       if (isCompleted) {
         completedBy = z.string().parse(this.user.clientId)
         completedByUserType = this.user.role
@@ -760,7 +760,7 @@ export class TasksService extends BaseService {
     return uuidLength <= maxSubTaskDepth
   }
 
-  async getCompletedByStatus(workflowStateId: string) {
+  async getIsCompletedStatus(workflowStateId: string) {
     const workflowState = await this.db.workflowState.findFirst({
       where: { id: workflowStateId, workspaceId: this.user.workspaceId },
       select: { type: true },
