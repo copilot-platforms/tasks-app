@@ -166,8 +166,6 @@ export class TasksService extends BaseService {
       throw new APIError(httpStatus.BAD_REQUEST, 'Due date cannot be in the past')
     }
 
-    console.log('\n\n\n\n\n\n\ndata', data)
-
     // Create a new task associated with current workspaceId. Also inject current request user as the creator.
     const newTask = await this.db.task.create({
       data: {
@@ -302,8 +300,10 @@ export class TasksService extends BaseService {
 
       // Set / reset lastArchivedDate if isArchived has been triggered, else remove it from the update query
       let lastArchivedDate: Date | undefined | null = undefined
+      let archivedBy: string | null | undefined = undefined
       if (data.isArchived !== undefined && prevTask.isArchived !== data.isArchived) {
         lastArchivedDate = data.isArchived === true ? new Date() : data.isArchived === false ? null : undefined
+        archivedBy = data.isArchived === true ? this.user.internalUserId : data.isArchived === false ? null : undefined
       }
 
       // Get the updated task
@@ -314,21 +314,21 @@ export class TasksService extends BaseService {
           assigneeId: data.assigneeId === '' ? null : data.assigneeId,
           label,
           lastArchivedDate,
+          archivedBy,
           ...(await getTaskTimestamps('update', this.user, data, prevTask)),
         },
         include: { workflowState: true },
       })
       subtaskService.setTransaction(tx as PrismaClient)
-
-      return updatedTask
-    })
-
-    if (updatedTask) {
       // Archive / unarchive all subtasks if parent task is archived / unarchived
       if (prevTask.isArchived !== data.isArchived && data.isArchived !== undefined) {
         await subtaskService.toggleArchiveForAllSubtasks(id, data.isArchived)
       }
 
+      return updatedTask
+    })
+
+    if (updatedTask) {
       const activityLogger = new TasksActivityLogger(this.user, updatedTask)
 
       await Promise.all([

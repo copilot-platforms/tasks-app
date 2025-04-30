@@ -40,6 +40,7 @@ export class PublicTaskSerializer {
       createdDate: RFC3339DateSchema.parse(toRFC3339(task.createdAt)),
       isArchived: task.isArchived,
       archivedDate: toRFC3339(task.lastArchivedDate),
+      archivedBy: task.archivedBy,
       isDeleted: task.deletedAt ? true : false,
       deletedDate: toRFC3339(task.deletedAt),
       source: task.source,
