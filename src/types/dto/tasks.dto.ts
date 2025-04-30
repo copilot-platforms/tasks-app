@@ -11,7 +11,7 @@ export const CreateTaskRequestSchema = z.object({
   assigneeId: z.string().optional().nullish(),
   assigneeType: AssigneeTypeSchema,
   title: z.string().min(1),
-  body: z.string().nullish(),
+  body: z.string().optional(),
   workflowStateId: z.string().uuid(),
   dueDate: DateStringSchema.nullish(),
   parentId: z.string().uuid().nullish(),
