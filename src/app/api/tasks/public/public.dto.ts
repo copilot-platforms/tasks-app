@@ -26,6 +26,7 @@ export const PublicTaskDtoSchema = z.object({
   isDeleted: z.boolean().nullable(),
   deletedDate: RFC3339DateSchema.nullable(),
   source: TaskSourceSchema,
+  deletedBy: z.string().uuid().nullable(),
 })
 export type PublicTaskDto = z.infer<typeof PublicTaskDtoSchema>
 

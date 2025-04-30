@@ -42,6 +42,7 @@ export class PublicTaskSerializer {
       isDeleted: task.deletedAt ? true : false,
       deletedDate: toRFC3339(task.deletedAt),
       source: task.source,
+      deletedBy: task.deletedBy,
     }
   }
 
