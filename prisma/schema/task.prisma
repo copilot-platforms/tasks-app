@@ -46,6 +46,12 @@ model Task {
 
   source Source @default(web)
 
+  templateId              String? @db.Uuid 
+  completedBy             String? @db.Uuid
+  completedByUserType     AssigneeType? 
+  archivedBy              String? @db.Uuid
+  deletedBy               String? @db.Uuid
+
   @@index([path], type: Gist)
   @@map("Tasks")
 }
