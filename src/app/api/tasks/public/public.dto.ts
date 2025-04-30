@@ -17,6 +17,7 @@ export const PublicTaskDtoSchema = z.object({
   dueDate: RFC3339DateSchema.nullable(),
   label: z.string(),
   status: StatusSchema,
+  templateId: z.string().nullable(),
   completedDate: RFC3339DateSchema.nullable(),
   createdBy: z.string().uuid(),
   createdDate: RFC3339DateSchema,
@@ -38,7 +39,7 @@ export const PublicTaskCreateDtoSchema = z.object({
   assigneeId: z.string().uuid(),
   assigneeType: z.nativeEnum(AssigneeType),
   dueDate: RFC3339DateSchema.optional(),
-  //TODO : add templateId after it has been implemented for tasks.
+  templateId: z.string().uuid().nullish(),
 })
 export type PublicTaskCreateDto = z.infer<typeof PublicTaskCreateDtoSchema>
 
