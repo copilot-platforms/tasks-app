@@ -23,6 +23,7 @@ interface IInitialState {
   errors: IErrors
   appliedTitle: string | null
   appliedDescription: string | null
+  templateId: string | null
 }
 
 const initialState: IInitialState = {
@@ -41,6 +42,7 @@ const initialState: IInitialState = {
   },
   appliedTitle: null,
   appliedDescription: null,
+  templateId: null,
 }
 
 const createTaskSlice = createSlice({
@@ -63,7 +65,7 @@ const createTaskSlice = createSlice({
 
     setCreateTaskFields: (
       state,
-      action: { payload: { targetField: string; value: string | null | CreateAttachmentRequest[] } },
+      action: { payload: { targetField: keyof IInitialState; value: IInitialState[keyof IInitialState] } },
     ) => {
       const { targetField, value } = action.payload
       //@ts-ignore
@@ -75,6 +77,7 @@ const createTaskSlice = createSlice({
       state.title = ''
       state.workflowStateId = ''
       state.description = ''
+      state.templateId = null
       if (!isFilterOn) {
         state.assigneeType = null
         state.assigneeId = null
