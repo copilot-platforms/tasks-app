@@ -45,6 +45,8 @@ export class PublicTaskSerializer {
       deletedDate: toRFC3339(task.deletedAt),
       source: task.source,
       deletedBy: task.deletedBy,
+      completedBy: task.completedBy,
+      completedByUserType: task.completedByUserType,
     }
   }
 
