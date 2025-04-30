@@ -343,15 +343,7 @@ export class TasksService extends BaseService {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Delete, Resource.Tasks)
     const deletedBy = this.user.internalUserId
-    if (!deletedBy) {
-      throw new APIError(httpStatus.BAD_REQUEST, 'Cannot delete task. could not find user.') //validation for deletedBy
-    }
-    await this.db.task.update({
-      where: { id, workspaceId: this.user.workspaceId },
-      data: {
-        deletedBy,
-      },
-    })
+
     // Try to delete existing client notification related to this task if exists
     const task = await this.db.task.findFirst({
       where: { id, workspaceId: this.user.workspaceId },
@@ -369,17 +361,24 @@ export class TasksService extends BaseService {
 
     //delete the associated label
     const labelMappingService = new LabelMappingService(this.user)
-    await this.db.$transaction(async (tx) => {
+
+    const updatedTask = await this.db.$transaction(async (tx) => {
       labelMappingService.setTransaction(tx as PrismaClient)
       await labelMappingService.deleteLabel(task?.label)
 
-      await tx.task.delete({ where: { id, workspaceId: this.user.workspaceId } })
+      const deletedTask = await tx.task.update({
+        where: { id, workspaceId: this.user.workspaceId },
+        relationLoadStrategy: 'join',
+        include: { workflowState: true },
+        data: { deletedAt: new Date(), deletedBy: deletedBy },
+      })
       const subtaskService = new SubtaskService(this.user)
       subtaskService.setTransaction(tx as PrismaClient)
       if (task.parentId) {
         await subtaskService.decreaseSubtaskCount(task.parentId)
       }
       await subtaskService.softDeleteAllSubtasks(task.id)
+      return deletedTask
     })
 
     const copilot = new CopilotAPI(this.user.token)
@@ -390,7 +389,7 @@ export class TasksService extends BaseService {
       }),
     ])
 
-    return task
+    return updatedTask
 
     // Logic to remove internal user notifications when a task is deleted / assignee is deleted
     // ...In case requirements change later again
