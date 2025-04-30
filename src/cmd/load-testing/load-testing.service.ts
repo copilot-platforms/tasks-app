@@ -99,6 +99,11 @@ class LoadTester {
         | 'lastArchivedDate'
         | 'parentId'
         | 'subtaskCount'
+        | 'templateId'
+        | 'completedBy'
+        | 'completedByUserType'
+        | 'archivedBy'
+        | 'deletedBy'
       >[] = []
       const currentUser = await authenticateWithToken(this.token, this.apiKey)
       const labelsService = new LabelMappingService(currentUser, this.apiKey)
