@@ -11,10 +11,11 @@ export const CreateTaskRequestSchema = z.object({
   assigneeId: z.string().optional().nullish(),
   assigneeType: AssigneeTypeSchema,
   title: z.string().min(1),
-  body: z.string().optional(),
+  body: z.string().nullish(),
   workflowStateId: z.string().uuid(),
   dueDate: DateStringSchema.nullish(),
-  parentId: z.string().uuid().optional(),
+  parentId: z.string().uuid().nullish(),
+  templateId: z.string().uuid().nullish(),
 })
 export type CreateTaskRequest = z.infer<typeof CreateTaskRequestSchema>
 

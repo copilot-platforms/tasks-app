@@ -33,6 +33,7 @@ export class PublicTaskSerializer {
       dueDate: toRFC3339(task.dueDate),
       label: task.label,
       status: statusMap[task.workflowState.type],
+      templateId: task.templateId,
       createdBy: task.createdById,
       completedDate: toRFC3339(task.completedAt),
       creatorType: 'internalUser',
@@ -79,6 +80,7 @@ export class PublicTaskSerializer {
       workflowStateId: workflowStateId,
       dueDate: rfc3339ToDateString(payload.dueDate),
       parentId: payload.parentTaskId,
+      templateId: payload.templateId,
     })
   }
 
