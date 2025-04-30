@@ -24,6 +24,7 @@ export const PublicTaskDtoSchema = z.object({
   creatorType: z.literal('internalUser'),
   isArchived: z.boolean(),
   archivedDate: RFC3339DateSchema.nullable(),
+  archivedBy: z.string().uuid().nullable(),
   isDeleted: z.boolean().nullable(),
   deletedDate: RFC3339DateSchema.nullable(),
   source: TaskSourceSchema,
