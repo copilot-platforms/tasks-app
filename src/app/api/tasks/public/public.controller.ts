@@ -77,7 +77,7 @@ export const updateTaskPublic = async (req: NextRequest, { params: { id } }: IdP
 
   const tasksService = new TasksService(user)
   const updatePayload = await PublicTaskSerializer.deserializeUpdatePayload(data, user.workspaceId)
-  const updatedTask = await tasksService.updateOneTask(id, updatePayload)
+  const updatedTask = await tasksService.updateOneTask(id, updatePayload, { isPublicApi: true })
 
   return NextResponse.json(PublicTaskSerializer.serialize(updatedTask))
 }
