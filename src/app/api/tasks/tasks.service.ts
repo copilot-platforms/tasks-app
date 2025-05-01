@@ -166,16 +166,7 @@ export class TasksService extends BaseService {
       throw new APIError(httpStatus.BAD_REQUEST, 'Due date cannot be in the past')
     }
 
-    let completedBy: string | null = null
-    let completedByUserType: AssigneeType | null = null
-
-    if (data.workflowStateId) {
-      const isCompleted = await this.getIsCompletedStatus(data.workflowStateId)
-      if (isCompleted) {
-        completedBy = z.string().parse(this.user.internalUserId)
-        completedByUserType = this.user.role
-      }
-    }
+    const { completedBy, completedByUserType } = await this.getCompletionInfo(data?.workflowStateId)
 
     // Create a new task associated with current workspaceId. Also inject current request user as the creator.
     const newTask = await this.db.task.create({
@@ -284,15 +275,7 @@ export class TasksService extends BaseService {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Update, Resource.Tasks)
 
-    let completedBy: string | null = null
-    let completedByUserType: AssigneeType | null = null
-    if (data.workflowStateId) {
-      const isCompleted = await this.getIsCompletedStatus(data.workflowStateId)
-      if (isCompleted) {
-        completedBy = z.string().parse(this.user.internalUserId)
-        completedByUserType = this.user.role
-      }
-    }
+    const { completedBy, completedByUserType } = await this.getCompletionInfo(data?.workflowStateId)
 
     // Query previous task
     const filters = this.buildTaskPermissions(id)
@@ -639,15 +622,7 @@ export class TasksService extends BaseService {
       throw new APIError(httpStatus.UNAUTHORIZED, 'You are not authorized to perform this action')
     }
 
-    let completedBy: string | null = null
-    let completedByUserType: AssigneeType | null = null
-    if (targetWorkflowStateId) {
-      const isCompleted = await this.getIsCompletedStatus(targetWorkflowStateId)
-      if (isCompleted) {
-        completedBy = z.string().parse(this.user.clientId)
-        completedByUserType = this.user.role
-      }
-    }
+    const { completedBy, completedByUserType } = await this.getCompletionInfo(targetWorkflowStateId)
 
     // Query previous task
     const filters = this.buildTaskPermissions(id)
@@ -760,14 +735,32 @@ export class TasksService extends BaseService {
     return uuidLength <= maxSubTaskDepth
   }
 
-  async getIsCompletedStatus(workflowStateId: string) {
+  private async getCompletionInfo(targetWorkflowStateId?: string | null): Promise<{
+    completedBy: string | null
+    completedByUserType: AssigneeType | null
+  }> {
+    if (!targetWorkflowStateId) {
+      return { completedBy: null, completedByUserType: null }
+    }
+
+    const role = this.user.role
+
     const workflowState = await this.db.workflowState.findFirst({
-      where: { id: workflowStateId, workspaceId: this.user.workspaceId },
+      where: { id: targetWorkflowStateId, workspaceId: this.user.workspaceId },
       select: { type: true },
     })
+
     if (!workflowState) {
       throw new APIError(httpStatus.NOT_FOUND, 'The requested workflow state was not found')
     }
-    return workflowState.type === StateType.completed
+
+    if (workflowState.type === StateType.completed) {
+      return {
+        completedBy: z.string().parse(role === AssigneeType.internalUser ? this.user.internalUserId : this.user.clientId),
+        completedByUserType: role,
+      }
+    }
+
+    return { completedBy: null, completedByUserType: null }
   }
 }
