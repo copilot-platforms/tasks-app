@@ -72,15 +72,20 @@ export const dispatchUpdatedWebhookEvent = async (
   user: User,
   prevTask: Task,
   updatedTask: TaskWithWorkflowState,
+  isPublicApi: boolean,
 ): Promise<void> => {
   let event: DISPATCHABLE_EVENT | undefined
   const copilot = new CopilotAPI(user.token)
 
-  const isDispatchableUpdateChange =
+  let isDispatchableUpdateChange =
     prevTask.assigneeId !== updatedTask.assigneeId ||
     prevTask.title !== updatedTask.title ||
     prevTask.workflowStateId !== updatedTask.workflowStateId ||
     prevTask.dueDate !== updatedTask.dueDate
+
+  if (isPublicApi) {
+    isDispatchableUpdateChange = isDispatchableUpdateChange || prevTask.body !== updatedTask.body
+  }
 
   if (isDispatchableUpdateChange) {
     if (updatedTask.workflowState.type === StateType.completed) {
