@@ -52,6 +52,7 @@ model Task {
   archivedBy              String? @db.Uuid
   deletedBy               String? @db.Uuid
 
+  taskUpdateBacklogs      TaskUpdateBacklog[]
   @@index([path], type: Gist)
   @@map("Tasks")
 }
