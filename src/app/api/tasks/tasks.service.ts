@@ -276,7 +276,7 @@ export class TasksService extends BaseService {
     }
   }
 
-  async updateOneTask(id: string, data: UpdateTaskRequest) {
+  async updateOneTask(id: string, data: UpdateTaskRequest, opts?: { isPublicApi: boolean }) {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Update, Resource.Tasks)
 
@@ -347,8 +347,8 @@ export class TasksService extends BaseService {
       await Promise.all([
         activityLogger.logTaskUpdated(prevTask),
         sendTaskUpdateNotifications.trigger({ prevTask, updatedTask, user: this.user }),
-        dispatchUpdatedWebhookEvent(this.user, prevTask, updatedTask),
-        isBodyChanged ? queueBodyUpdatedWebhook(this.user, updatedTask) : undefined,
+        dispatchUpdatedWebhookEvent(this.user, prevTask, updatedTask, opts?.isPublicApi || false),
+        isBodyChanged && opts?.isPublicApi ? queueBodyUpdatedWebhook(this.user, updatedTask) : undefined,
       ])
     }
 
