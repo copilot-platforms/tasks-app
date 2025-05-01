@@ -1,3 +1,5 @@
+import { queueTaskUpdatedBacklogWebhook } from '@/jobs/webhook-dispatch'
+import DBClient from '@/lib/db'
 import { TaskWithWorkflowState } from '@/types/db'
 import { CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { DISPATCHABLE_EVENT } from '@/types/webhook'
@@ -6,7 +8,7 @@ import User from '@api/core/models/User.model'
 import { TaskTimestamps } from '@api/core/types/tasks'
 import { PublicTaskSerializer } from '@api/tasks/public/public.serializer'
 import WorkflowStatesService from '@api/workflow-states/workflowStates.service'
-import { StateType, Task, WorkflowState } from '@prisma/client'
+import { LogStatus, StateType, Task, WorkflowState } from '@prisma/client'
 
 export const getArchivedStatus = (showArchived: boolean, showUnarchived: boolean): undefined | boolean => {
   if (showArchived && !showUnarchived) {
@@ -101,5 +103,21 @@ export const dispatchUpdatedWebhookEvent = async (
       workspaceId: user.workspaceId,
       payload: PublicTaskSerializer.serialize(updatedTask),
     })
+  }
+}
+
+export const queueBodyUpdatedWebhook = async (user: User, task: TaskWithWorkflowState): Promise<void> => {
+  const db = DBClient.getInstance()
+  const prevBacklogsForTask = await db.taskUpdateBacklog.count({
+    where: {
+      taskId: task.id,
+      status: LogStatus.waiting,
+    },
+  })
+  // Probably not a good idea to do both in parallel
+  await db.taskUpdateBacklog.create({ data: { taskId: task.id } })
+
+  if (!prevBacklogsForTask) {
+    await queueTaskUpdatedBacklogWebhook.trigger({ user, taskId: task.id }, { delay: '10s' })
   }
 }

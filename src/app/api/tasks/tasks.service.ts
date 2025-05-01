@@ -20,7 +20,12 @@ import { UserAction, UserRole } from '@api/core/types/user'
 import { LabelMappingService } from '@api/label-mapping/label-mapping.service'
 import { PublicTaskSerializer } from '@api/tasks/public/public.serializer'
 import { SubtaskService } from '@api/tasks/subtasks.service'
-import { dispatchUpdatedWebhookEvent, getArchivedStatus, getTaskTimestamps } from '@api/tasks/tasks.helpers'
+import {
+  dispatchUpdatedWebhookEvent,
+  getArchivedStatus,
+  getTaskTimestamps,
+  queueBodyUpdatedWebhook,
+} from '@api/tasks/tasks.helpers'
 import { TasksActivityLogger } from '@api/tasks/tasks.logger'
 import { AssigneeType, Prisma, PrismaClient, Source, StateType, Task, WorkflowState } from '@prisma/client'
 import dayjs from 'dayjs'
@@ -338,11 +343,12 @@ export class TasksService extends BaseService {
 
     if (updatedTask) {
       const activityLogger = new TasksActivityLogger(this.user, updatedTask)
-
+      const isBodyChanged = prevTask.body !== updatedTask.body
       await Promise.all([
         activityLogger.logTaskUpdated(prevTask),
         sendTaskUpdateNotifications.trigger({ prevTask, updatedTask, user: this.user }),
         dispatchUpdatedWebhookEvent(this.user, prevTask, updatedTask),
+        isBodyChanged ? queueBodyUpdatedWebhook(this.user, updatedTask) : undefined,
       ])
     }
 
