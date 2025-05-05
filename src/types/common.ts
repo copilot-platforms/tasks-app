@@ -158,6 +158,14 @@ export const InternalUsersResponseSchema = z.object({
 })
 export type InternalUsersResponse = z.infer<typeof InternalUsersResponseSchema>
 
+export const ApiKeyOwnerResponseSchema = InternalUsersSchema.pick({
+  id: true,
+  givenName: true,
+  familyName: true,
+  email: true,
+})
+export type ApiKeyOwnerResponse = z.infer<typeof ApiKeyOwnerResponseSchema>
+
 /**
  * Notification RequestBody schema - accepted by SDK#createNotification
  */
