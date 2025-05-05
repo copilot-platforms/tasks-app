@@ -171,6 +171,10 @@ export class TasksService extends BaseService {
       throw new APIError(httpStatus.BAD_REQUEST, 'Due date cannot be in the past')
     }
 
+    if (data.assigneeId && data.assigneeType) {
+      await this.checkAssigneeType(data.assigneeId, data.assigneeType)
+    }
+
     const { completedBy, completedByUserType } = await this.getCompletionInfo(data?.workflowStateId)
 
     // Create a new task associated with current workspaceId. Also inject current request user as the creator.
@@ -281,6 +285,10 @@ export class TasksService extends BaseService {
     policyGate.authorize(UserAction.Update, Resource.Tasks)
 
     const { completedBy, completedByUserType } = await this.getCompletionInfo(data?.workflowStateId)
+
+    if (data.assigneeId && data.assigneeType) {
+      await this.checkAssigneeType(data.assigneeId, data.assigneeType)
+    }
 
     // Query previous task
     const filters = this.buildTaskPermissions(id)
@@ -768,5 +776,31 @@ export class TasksService extends BaseService {
     }
 
     return { completedBy: null, completedByUserType: null }
+  }
+
+  private async checkAssigneeType(assigneeId: string, assigneeType: AssigneeType): Promise<void> {
+    const copilot = new CopilotAPI(this.user.token)
+
+    let isValid = false
+    switch (assigneeType) {
+      case AssigneeType.internalUser: {
+        const internalUsers = (await copilot.getInternalUsers({ limit: MAX_FETCH_ASSIGNEE_COUNT })).data
+        isValid = internalUsers?.some((user) => user.id === assigneeId) ?? false
+        break
+      }
+      case AssigneeType.client: {
+        const clients = (await copilot.getClients({ limit: MAX_FETCH_ASSIGNEE_COUNT })).data
+        isValid = clients?.some((client) => client.id === assigneeId) ?? false
+        break
+      }
+      default: {
+        const companies = (await copilot.getCompanies({ limit: MAX_FETCH_ASSIGNEE_COUNT })).data
+        isValid = companies?.some((company) => company.id === assigneeId) ?? false
+        break
+      }
+    }
+    if (!isValid) {
+      throw new APIError(httpStatus.BAD_REQUEST, 'Assignee type is not valid for the given Assignee id')
+    }
   }
 }
