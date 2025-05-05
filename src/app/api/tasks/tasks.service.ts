@@ -800,7 +800,7 @@ export class TasksService extends BaseService {
       }
     }
     if (!isValid) {
-      throw new APIError(httpStatus.BAD_REQUEST, 'Assignee type is not valid for the given Assignee id')
+      throw new APIError(httpStatus.BAD_REQUEST, 'Invalid assignee')
     }
   }
 }
