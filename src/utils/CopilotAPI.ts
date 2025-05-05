@@ -2,6 +2,8 @@ import { withRetry } from '@/app/api/core/utils/withRetry'
 import { copilotAPIKey as apiKey, APP_ID } from '@/config'
 import { API_DOMAIN } from '@/constants/domains'
 import {
+  ApiKeyOwnerResponse,
+  ApiKeyOwnerResponseSchema,
   ClientRequest,
   ClientResponse,
   ClientResponseSchema,
@@ -224,6 +226,11 @@ export class CopilotAPI {
     await Promise.all(deletePromises)
   }
 
+  async _getApiKeyOwner(): Promise<ApiKeyOwnerResponse> {
+    const data = await this.manualFetch('me')
+    return ApiKeyOwnerResponseSchema.parse(data)
+  }
+
   async getNotifications(recipientId: string, opts: { limit?: number } = { limit: 100 }) {
     const data = await this.manualFetch('notifications', {
       recipientId,
@@ -276,6 +283,7 @@ export class CopilotAPI {
   getCustomFields = this.wrapWithRetry(this._getCustomFields)
   getInternalUsers = this.wrapWithRetry(this._getInternalUsers)
   getInternalUser = this.wrapWithRetry(this._getInternalUser)
+  getApiKeyOwner = this.wrapWithRetry(this._getApiKeyOwner)
   createNotification = this.wrapWithRetry(this._createNotification)
   markNotificationAsRead = this.wrapWithRetry(this._markNotificationAsRead)
   bulkMarkNotificationsAsRead = this.wrapWithRetry(this._bulkMarkNotificationsAsRead)
