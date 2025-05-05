@@ -34,7 +34,8 @@
     "loadtest:delete-clients": "tsx ./src/cmd/load-testing/deleteClients.ts",
     "seed:activity-logs": "tsx ./src/cmd/fill-activity-logs",
     "cmd:delete-duplicate-notifications": "tsx ./src/cmd/delete-duplicate-notifications",
-    "cmd:backfill-archived-by": "tsx ./src/cmd/backfill-archived-by"
+    "cmd:backfill-archived-by": "tsx ./src/cmd/backfill-archived-by",
+    "cmd:backfill-completed-tasks": "tsx ./src/cmd/backfill-completed-tasks"
   },
   "dependencies": {
     "@cyntler/react-doc-viewer": "^1.17.0",
