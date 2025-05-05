@@ -1,6 +1,11 @@
 import DBClient from '@/lib/db'
 import { RFC3339DateSchema } from '@/types/common'
-import { CreateTaskRequest, CreateTaskRequestSchema, UpdateTaskRequest } from '@/types/dto/tasks.dto'
+import {
+  CreateTaskRequest,
+  CreateTaskRequestSchema,
+  UpdateTaskRequest,
+  UpdateTaskRequestSchema,
+} from '@/types/dto/tasks.dto'
 import { rfc3339ToDateString, toRFC3339 } from '@/utils/dateHelper'
 import { PublicTaskCreateDto, PublicTaskDto, PublicTaskDtoSchema, PublicTaskUpdateDto } from '@api/tasks/public/public.dto'
 import { Task, WorkflowState } from '@prisma/client'
@@ -89,7 +94,7 @@ export class PublicTaskSerializer {
 
   static async deserializeUpdatePayload(payload: PublicTaskUpdateDto, workspaceId: string): Promise<UpdateTaskRequest> {
     const workflowStateId = await PublicTaskSerializer.getWorkflowStateIdForStatus(payload.status, workspaceId)
-    return {
+    return UpdateTaskRequestSchema.parse({
       title: payload.name,
       body: payload.description,
       assigneeId: payload.assigneeId,
@@ -97,6 +102,6 @@ export class PublicTaskSerializer {
       dueDate: rfc3339ToDateString(payload.dueDate),
       isArchived: payload.isArchived,
       workflowStateId,
-    }
+    })
   }
 }
