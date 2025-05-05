@@ -157,6 +157,8 @@ export class TasksService extends BaseService {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Create, Resource.Tasks)
 
+    const copilot = new CopilotAPI(this.user.token)
+
     //generate the label
     const labelMappingService = new LabelMappingService(this.user)
     const label = z.string().parse(await labelMappingService.getLabel(data.assigneeId, data.assigneeType))
@@ -177,12 +179,18 @@ export class TasksService extends BaseService {
 
     const { completedBy, completedByUserType } = await this.getCompletionInfo(data?.workflowStateId)
 
+    // NOTE: This block strictly doesn't allow clients to create tasks
+    let createdById = z.string().parse(this.user.internalUserId)
+    if (opts?.isPublicApi) {
+      createdById = (await copilot.getApiKeyOwner()).id
+    }
+
     // Create a new task associated with current workspaceId. Also inject current request user as the creator.
     const newTask = await this.db.task.create({
       data: {
         ...data,
         workspaceId: this.user.workspaceId,
-        createdById: this.user.internalUserId as string,
+        createdById,
         label: label,
         completedBy,
         completedByUserType,
@@ -229,7 +237,6 @@ export class TasksService extends BaseService {
     }
 
     // Send task created notifications to users + dispatch webhook
-    const copilot = new CopilotAPI(this.user.token)
     await Promise.all([
       sendTaskCreateNotifications.trigger({ user: this.user, task: newTask }),
       copilot.dispatchWebhook(DISPATCHABLE_EVENT.TaskCreated, {
