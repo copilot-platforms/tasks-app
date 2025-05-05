@@ -4,30 +4,45 @@ import { WorkflowStateResponseSchema } from './workflowStates.dto'
 import { DateStringSchema } from '@/types/date'
 import { ClientResponseSchema, CompanyResponseSchema, InternalUsersSchema } from '../common'
 
+const requireAssigneeTypeIfAssigneeId =
+  () => (data: { assigneeId?: string | null; assigneeType?: AssigneeType }, ctx: z.RefinementCtx) => {
+    if (data.assigneeId && !data.assigneeType) {
+      ctx.addIssue({
+        path: ['assigneeType'],
+        message: 'assigneeType is required when assigneeId is provided',
+        code: z.ZodIssueCode.custom,
+      })
+    }
+  }
+
 export const AssigneeTypeSchema = z.nativeEnum(PrismaAssigneeType).nullish()
 export type AssigneeType = z.infer<typeof AssigneeTypeSchema>
 
-export const CreateTaskRequestSchema = z.object({
-  assigneeId: z.string().optional().nullish(),
-  assigneeType: AssigneeTypeSchema,
-  title: z.string().min(1),
-  body: z.string().optional(),
-  workflowStateId: z.string().uuid(),
-  dueDate: DateStringSchema.nullish(),
-  parentId: z.string().uuid().nullish(),
-  templateId: z.string().uuid().nullish(),
-})
+export const CreateTaskRequestSchema = z
+  .object({
+    assigneeId: z.string().optional().nullish(),
+    assigneeType: AssigneeTypeSchema,
+    title: z.string().min(1),
+    body: z.string().optional(),
+    workflowStateId: z.string().uuid(),
+    dueDate: DateStringSchema.nullish(),
+    parentId: z.string().uuid().nullish(),
+    templateId: z.string().uuid().nullish(),
+  })
+  .superRefine(requireAssigneeTypeIfAssigneeId())
 export type CreateTaskRequest = z.infer<typeof CreateTaskRequestSchema>
 
-export const UpdateTaskRequestSchema = z.object({
-  assigneeId: z.string().nullish(),
-  assigneeType: AssigneeTypeSchema,
-  title: z.string().optional(),
-  body: z.string().optional(),
-  workflowStateId: z.string().uuid().optional(),
-  dueDate: DateStringSchema.nullish(),
-  isArchived: z.boolean().optional(),
-})
+export const UpdateTaskRequestSchema = z
+  .object({
+    assigneeId: z.string().nullish(),
+    assigneeType: AssigneeTypeSchema,
+    title: z.string().optional(),
+    body: z.string().optional(),
+    workflowStateId: z.string().uuid().optional(),
+    dueDate: DateStringSchema.nullish(),
+    isArchived: z.boolean().optional(),
+  })
+  .superRefine(requireAssigneeTypeIfAssigneeId())
 export type UpdateTaskRequest = z.infer<typeof UpdateTaskRequestSchema>
 
 export const TaskResponseSchema = z.object({
