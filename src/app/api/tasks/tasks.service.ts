@@ -171,7 +171,7 @@ export class TasksService extends BaseService {
       throw new APIError(httpStatus.BAD_REQUEST, 'Due date cannot be in the past')
     }
 
-    if (data.assigneeId && data.assigneeType) {
+    if (data.assigneeId && data.assigneeType && opts?.isPublicApi) {
       await this.checkAssigneeType(data.assigneeId, data.assigneeType)
     }
 
@@ -286,7 +286,7 @@ export class TasksService extends BaseService {
 
     const { completedBy, completedByUserType } = await this.getCompletionInfo(data?.workflowStateId)
 
-    if (data.assigneeId && data.assigneeType) {
+    if (data.assigneeId && data.assigneeType && opts?.isPublicApi) {
       await this.checkAssigneeType(data.assigneeId, data.assigneeType)
     }
 
