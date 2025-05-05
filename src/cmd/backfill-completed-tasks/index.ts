@@ -17,8 +17,8 @@ export const fillCompletedTasks = async () => {
       },
     })
     if (tasks.length === 0) {
-      console.info('No tasks to backfill')
-      return
+      console.info('No tasks to backfill for completed workflow state:', completedWorkflowState.id)
+      continue
     }
     for (const [index, task] of tasks.entries()) {
       console.info(`🛠️ Backfilling task ${index + 1}/${tasks.length} (${task.id} - ${task.title})...`)
