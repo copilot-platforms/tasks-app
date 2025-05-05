@@ -1,10 +1,10 @@
 import DBClient from '@/lib/db'
-import { AssigneeType } from '@prisma/client'
+import { ActivityType, AssigneeType, StateType } from '@prisma/client'
 
 export const fillCompletedTasks = async () => {
   const db = DBClient.getInstance()
   const completedWorkflowStates = await db.workflowState.findMany({
-    where: { type: 'completed' },
+    where: { type: StateType.completed },
   })
   if (!completedWorkflowStates.length) {
     throw new Error("No 'completed' workflow states found.")
@@ -20,16 +20,25 @@ export const fillCompletedTasks = async () => {
       console.info('No tasks to backfill for completed workflow state:', completedWorkflowState.id)
       continue
     }
+    const activityLogs = await db.activityLog.findMany({
+      where: {
+        taskId: { in: tasks.map((task) => task.id) },
+        type: ActivityType.WORKFLOW_STATE_UPDATED,
+      },
+      orderBy: [{ taskId: 'asc' }, { createdAt: 'desc' }],
+    })
+
+    const activityLogMap = new Map<string, (typeof activityLogs)[0]>()
+    for (const log of activityLogs) {
+      if (!activityLogMap.has(log.taskId)) {
+        activityLogMap.set(log.taskId, log)
+      }
+    }
+
     for (const [index, task] of tasks.entries()) {
       console.info(`🛠️ Backfilling task ${index + 1}/${tasks.length} (${task.id} - ${task.title})...`)
 
-      const latestLog = await db.activityLog.findFirst({
-        where: {
-          taskId: task.id,
-          type: 'WORKFLOW_STATE_UPDATED',
-        },
-        orderBy: { createdAt: 'desc' },
-      })
+      const latestLog = activityLogMap.get(task.id)
 
       const fallbackUserId = task.createdById
       const fallbackUserType = AssigneeType.internalUser
