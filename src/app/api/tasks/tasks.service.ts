@@ -30,7 +30,7 @@ import { TasksActivityLogger } from '@api/tasks/tasks.logger'
 import { AssigneeType, Prisma, PrismaClient, Source, StateType, Task, WorkflowState } from '@prisma/client'
 import dayjs from 'dayjs'
 import httpStatus from 'http-status'
-import { z } from 'zod'
+import { date, z } from 'zod'
 
 export class TasksService extends BaseService {
   /**
@@ -175,6 +175,22 @@ export class TasksService extends BaseService {
 
     if (data.assigneeId && data.assigneeType && opts?.isPublicApi) {
       await this.checkAssigneeType(data.assigneeId, data.assigneeType)
+    }
+
+    if (opts?.isPublicApi && data.templateId) {
+      const template = await this.db.taskTemplate.findFirst({
+        where: {
+          id: data.templateId,
+          workspaceId: this.user.workspaceId,
+        },
+      })
+      if (!template) {
+        throw new APIError(httpStatus.NOT_FOUND, 'The requested template was not found')
+      }
+      if (template.body) {
+        data.body = data.body + template.body
+      }
+      data.title = data.title + ' ' + template.title
     }
 
     const { completedBy, completedByUserType } = await this.getCompletionInfo(data?.workflowStateId)
