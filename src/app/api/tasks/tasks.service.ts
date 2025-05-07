@@ -161,6 +161,11 @@ export class TasksService extends BaseService {
 
     //generate the label
     const labelMappingService = new LabelMappingService(this.user)
+
+    if (data.assigneeId && data.assigneeType && opts?.isPublicApi) {
+      await this.checkAssigneeType(data.assigneeId, data.assigneeType)
+    }
+
     const label = z.string().parse(await labelMappingService.getLabel(data.assigneeId, data.assigneeType))
     if (data.parentId) {
       const canCreateSubTask = await this.canCreateSubTask(data.parentId)
@@ -171,10 +176,6 @@ export class TasksService extends BaseService {
 
     if (data.dueDate && isPastDate(data.dueDate)) {
       throw new APIError(httpStatus.BAD_REQUEST, 'Due date cannot be in the past')
-    }
-
-    if (data.assigneeId && data.assigneeType && opts?.isPublicApi) {
-      await this.checkAssigneeType(data.assigneeId, data.assigneeType)
     }
 
     if (opts?.isPublicApi && data.templateId) {
@@ -823,7 +824,7 @@ export class TasksService extends BaseService {
       }
     }
     if (!isValid) {
-      throw new APIError(httpStatus.BAD_REQUEST, 'Invalid assignee')
+      throw new APIError(httpStatus.BAD_REQUEST, `Invalid assignee id for type : ${assigneeType}`)
     }
   }
 }
