@@ -30,7 +30,7 @@ import { TasksActivityLogger } from '@api/tasks/tasks.logger'
 import { AssigneeType, Prisma, PrismaClient, Source, StateType, Task, WorkflowState } from '@prisma/client'
 import dayjs from 'dayjs'
 import httpStatus from 'http-status'
-import { date, z } from 'zod'
+import { z } from 'zod'
 
 export class TasksService extends BaseService {
   /**
