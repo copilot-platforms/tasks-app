@@ -39,7 +39,6 @@ export const PublicTaskCreateDtoSchema = z.object({
     .string()
     .min(1)
     .max(255)
-
     .refine((name) => name.trim().length > 0, {
       message: 'Required',
     })
