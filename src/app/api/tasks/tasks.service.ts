@@ -161,6 +161,11 @@ export class TasksService extends BaseService {
 
     //generate the label
     const labelMappingService = new LabelMappingService(this.user)
+
+    if (data.assigneeId && data.assigneeType && opts?.isPublicApi) {
+      await this.checkAssigneeType(data.assigneeId, data.assigneeType)
+    }
+
     const label = z.string().parse(await labelMappingService.getLabel(data.assigneeId, data.assigneeType))
     if (data.parentId) {
       const canCreateSubTask = await this.canCreateSubTask(data.parentId)
@@ -173,8 +178,20 @@ export class TasksService extends BaseService {
       throw new APIError(httpStatus.BAD_REQUEST, 'Due date cannot be in the past')
     }
 
-    if (data.assigneeId && data.assigneeType && opts?.isPublicApi) {
-      await this.checkAssigneeType(data.assigneeId, data.assigneeType)
+    if (opts?.isPublicApi && data.templateId) {
+      const template = await this.db.taskTemplate.findFirst({
+        where: {
+          id: data.templateId,
+          workspaceId: this.user.workspaceId,
+        },
+      })
+      if (!template) {
+        throw new APIError(httpStatus.NOT_FOUND, 'The requested template was not found')
+      }
+      if (template.body) {
+        data.body = data.body + template.body
+      }
+      data.title = data.title + ' ' + template.title
     }
 
     const { completedBy, completedByUserType } = await this.getCompletionInfo(data?.workflowStateId)
@@ -416,6 +433,7 @@ export class TasksService extends BaseService {
     await Promise.all([
       deleteTaskNotifications.trigger({ user: this.user, task }),
       copilot.dispatchWebhook(DISPATCHABLE_EVENT.TaskDeleted, {
+        payload: PublicTaskSerializer.serialize(task),
         workspaceId: this.user.workspaceId,
       }),
     ])
@@ -807,7 +825,7 @@ export class TasksService extends BaseService {
       }
     }
     if (!isValid) {
-      throw new APIError(httpStatus.BAD_REQUEST, 'Invalid assignee')
+      throw new APIError(httpStatus.BAD_REQUEST, `Invalid assignee id for type : ${assigneeType}`)
     }
   }
 }
