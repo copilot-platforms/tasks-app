@@ -35,8 +35,16 @@ export const PublicTaskDtoSchema = z.object({
 export type PublicTaskDto = z.infer<typeof PublicTaskDtoSchema>
 
 export const PublicTaskCreateDtoSchema = z.object({
-  name: z.string().min(1).max(255),
-  description: z.string().nullable(),
+  name: z
+    .string()
+    .min(1)
+    .max(255)
+
+    .refine((name) => name.trim().length > 0, {
+      message: 'Required',
+    })
+    .transform((val) => val.trim()),
+  description: z.string().optional(),
   parentTaskId: z.string().uuid().optional(),
   status: StatusSchema,
   assigneeId: z.string().uuid(),
@@ -47,7 +55,14 @@ export const PublicTaskCreateDtoSchema = z.object({
 export type PublicTaskCreateDto = z.infer<typeof PublicTaskCreateDtoSchema>
 
 export const PublicTaskUpdateDtoSchema = z.object({
-  name: z.string().max(255).optional(),
+  name: z
+    .string()
+    .max(255)
+    .optional()
+    .refine((name) => name === undefined || name.trim().length > 0, {
+      message: 'Name must not be empty',
+    })
+    .transform((val) => (val === undefined ? val : val.trim())),
   description: z.string().optional(),
   assigneeId: z.string().uuid().optional(),
   assigneeType: z.nativeEnum(AssigneeType).optional(),
