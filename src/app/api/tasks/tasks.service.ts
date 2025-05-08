@@ -433,7 +433,7 @@ export class TasksService extends BaseService {
     await Promise.all([
       deleteTaskNotifications.trigger({ user: this.user, task }),
       copilot.dispatchWebhook(DISPATCHABLE_EVENT.TaskDeleted, {
-        payload: PublicTaskSerializer.serialize(task),
+        payload: PublicTaskSerializer.serialize(updatedTask),
         workspaceId: this.user.workspaceId,
       }),
     ])
