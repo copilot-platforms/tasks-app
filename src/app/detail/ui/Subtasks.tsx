@@ -64,7 +64,7 @@ export const Subtasks = ({
     if (activeTask?.subtaskCount !== undefined) {
       refetchSubtasks()
     }
-  }, [activeTask?.subtaskCount])
+  }, [activeTask?.subtaskCount, activeTask?.isArchived])
 
   const handleSubTaskCreation = (payload: CreateTaskRequest) => {
     const tempId = generateRandomString('temp-task')

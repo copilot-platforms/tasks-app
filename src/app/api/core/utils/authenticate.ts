@@ -8,7 +8,13 @@ import httpStatus from 'http-status'
 import { withRetry } from './withRetry'
 
 export const _authenticateWithToken = async (token: string, customApiKey?: string): Promise<User> => {
-  const copilotClient = new CopilotAPI(token, customApiKey)
+  let copilotClient: CopilotAPI
+  try {
+    copilotClient = new CopilotAPI(token, customApiKey)
+  } catch (err) {
+    throw new APIError(httpStatus.UNAUTHORIZED, 'Failed to authenticate token')
+  }
+
   const payload = TokenSchema.safeParse(await copilotClient.getTokenPayload())
 
   if (!payload.success) {
