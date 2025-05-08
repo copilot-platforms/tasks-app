@@ -189,7 +189,7 @@ export class TasksService extends BaseService {
         throw new APIError(httpStatus.NOT_FOUND, 'The requested template was not found')
       }
       if (template.body) {
-        data.body = data.body + template.body
+        data.body = (data.body ?? '') + template.body
       }
       data.title = data.title + ' ' + template.title
     }
