@@ -28,6 +28,7 @@ export const CreateTaskRequestSchema = z
     dueDate: DateStringSchema.nullish(),
     parentId: z.string().uuid().nullish(),
     templateId: z.string().uuid().nullish(),
+    createdById: z.string().uuid().optional(),
   })
   .superRefine(requireAssigneeTypeIfAssigneeId())
 export type CreateTaskRequest = z.infer<typeof CreateTaskRequestSchema>
