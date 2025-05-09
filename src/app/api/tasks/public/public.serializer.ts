@@ -122,6 +122,7 @@ export class PublicTaskSerializer {
       dueDate: rfc3339ToDateString(payload.dueDate),
       parentId: payload.parentTaskId,
       templateId: payload.templateId,
+      createdById: payload.createdBy,
     })
   }
 
