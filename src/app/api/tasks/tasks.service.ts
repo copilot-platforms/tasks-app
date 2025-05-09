@@ -198,9 +198,8 @@ export class TasksService extends BaseService {
 
     // NOTE: This block strictly doesn't allow clients to create tasks
     let createdById = z.string().parse(this.user.internalUserId)
-    if (opts?.isPublicApi) {
-      createdById = (await copilot.getApiKeyOwner()).id
-    }
+
+    //todo : implement data.createdBy functionality if it is provided from public api here.
 
     // Create a new task associated with current workspaceId. Also inject current request user as the creator.
     const newTask = await this.db.task.create({
