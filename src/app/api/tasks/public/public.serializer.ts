@@ -1,3 +1,4 @@
+import APIError from '@/app/api/core/exceptions/api'
 import DBClient from '@/lib/db'
 import { RFC3339DateSchema } from '@/types/common'
 import {
@@ -9,6 +10,7 @@ import {
 import { rfc3339ToDateString, toRFC3339 } from '@/utils/dateHelper'
 import { PublicTaskCreateDto, PublicTaskDto, PublicTaskDtoSchema, PublicTaskUpdateDto } from '@api/tasks/public/public.dto'
 import { Task, WorkflowState } from '@prisma/client'
+import httpStatus from 'http-status'
 import { z } from 'zod'
 
 export const statusMap: Record<WorkflowState['type'], PublicTaskDto['status']> = Object.freeze({
@@ -77,14 +79,45 @@ export class PublicTaskSerializer {
     return workflowState?.id
   }
 
+  static async applyTemplateToTaskContent(
+    templateId: string,
+    workspaceId: string,
+    existingTitle: string | null | undefined,
+    existingBody: string | null | undefined,
+  ): Promise<{ title: string; body: string }> {
+    const db = DBClient.getInstance()
+    const template = await db.taskTemplate.findFirst({
+      where: {
+        id: templateId,
+        workspaceId: workspaceId,
+      },
+    })
+
+    if (!template) {
+      throw new APIError(httpStatus.NOT_FOUND, 'The requested template was not found')
+    }
+
+    const title = (existingTitle ?? '') + (existingTitle ? ' ' : '') + template.title
+    const body = (existingBody ?? '') + (existingBody ? ' ' : '') + template.body
+
+    return { title, body }
+  }
+
   static async deserializeCreatePayload(payload: PublicTaskCreateDto, workspaceId: string): Promise<CreateTaskRequest> {
     const workflowStateId = await PublicTaskSerializer.getWorkflowStateIdForStatus(payload.status, workspaceId)
+    let title = payload.name
+    let body = payload.description
+    if (payload.templateId) {
+      const updated = await PublicTaskSerializer.applyTemplateToTaskContent(payload.templateId, workspaceId, title, body)
+      title = updated.title
+      body = updated.body
+    }
 
     return CreateTaskRequestSchema.parse({
       assigneeId: payload.assigneeId,
       assigneeType: payload.assigneeType,
-      title: payload.name,
-      body: payload.description,
+      title,
+      body,
       workflowStateId: workflowStateId,
       dueDate: rfc3339ToDateString(payload.dueDate),
       parentId: payload.parentTaskId,
