@@ -20,19 +20,18 @@ import { MenuBoxContainer } from '@/app/detail/ui/MenuBoxContainer'
 import { ResponsiveStack } from '@/app/detail/ui/ResponsiveStack'
 import { Sidebar, SidebarSkeleton } from '@/app/detail/ui/Sidebar'
 import { StyledBox, StyledTiptapDescriptionWrapper, TaskDetailsContainer } from '@/app/detail/ui/styledComponent'
+import { Subtasks } from '@/app/detail/ui/Subtasks'
 import { TaskEditor } from '@/app/detail/ui/TaskEditor'
-import { ToggleButtonContainer } from '@/app/detail/ui/ToggleButtonContainer'
 import { ToggleController } from '@/app/detail/ui/ToggleController'
 import { DeletedTaskRedirectPage } from '@/components/layouts/DeletedTaskRedirectPage'
 import { HeaderBreadcrumbs } from '@/components/layouts/HeaderBreadcrumbs'
 import { SilentError } from '@/components/templates/SilentError'
 import { apiUrl } from '@/config'
-import { signedUrlTtl } from '@/constants/attachments'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import CustomScrollBar from '@/hoc/CustomScrollBar'
 import { RealTime } from '@/hoc/RealTime'
 import { WorkspaceResponse } from '@/types/common'
-import { TaskResponse } from '@/types/dto/tasks.dto'
+import { AncestorTaskResponse, SubTaskStatusResponse, TaskResponse } from '@/types/dto/tasks.dto'
 import { UserType } from '@/types/interfaces'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import EscapeHandler from '@/utils/escapeHandler'
@@ -43,7 +42,8 @@ import { z } from 'zod'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
-    next: { tags: ['getOneTask'], revalidate: signedUrlTtl },
+    cache: 'no-store',
+    next: { tags: ['getOneTask'] },
   })
 
   const data = await res.json()
@@ -54,6 +54,18 @@ async function getOneTask(token: string, taskId: string): Promise<TaskResponse> 
 async function getWorkspace(token: string): Promise<WorkspaceResponse> {
   const copilot = new CopilotAPI(token)
   return await copilot.getWorkspace()
+}
+
+async function getSubTasksStatus(token: string, taskId: string): Promise<SubTaskStatusResponse> {
+  const res = await fetch(`${apiUrl}/api/tasks/${taskId}/subtask-count?token=${token}`, {})
+  const data = await res.json()
+  return data
+}
+
+async function getTaskPath(token: string, taskId: string): Promise<AncestorTaskResponse[]> {
+  const res = await fetch(`${apiUrl}/api/tasks/${taskId}/path?token=${token}`)
+  const { path } = await res.json()
+  return path
 }
 
 export default async function TaskDetailPage({
@@ -72,10 +84,12 @@ export default async function TaskDetailPage({
 
   const copilotClient = new CopilotAPI(token)
 
-  const [task, tokenPayload, workspace] = await Promise.all([
+  const [task, tokenPayload, workspace, subTaskStatus, taskPath] = await Promise.all([
     getOneTask(token, task_id),
     copilotClient.getTokenPayload(),
     getWorkspace(token),
+    getSubTasksStatus(token, task_id),
+    getTaskPath(token, task_id),
   ])
 
   if (!tokenPayload) {
@@ -89,6 +103,11 @@ export default async function TaskDetailPage({
 
   const isPreviewMode = !!getPreviewMode(tokenPayload)
 
+  const breadcrumbItems: { label: string; href: string }[] = taskPath.map(({ label, id }) => ({
+    label,
+    href: `/detail/${id}/${user_type}?token=${token}`,
+  }))
+
   return (
     <DetailStateUpdate isRedirect={!!searchParams.isRedirect} token={token} tokenPayload={tokenPayload} task={task}>
       <RealTime tokenPayload={tokenPayload}>
@@ -99,7 +118,7 @@ export default async function TaskDetailPage({
               <StyledBox>
                 <AppMargin size={SizeofAppMargin.HEADER} py="17.5px">
                   <Stack direction="row" justifyContent="space-between">
-                    <HeaderBreadcrumbs token={token} title={task?.label} userType={params.user_type} />
+                    <HeaderBreadcrumbs token={token} items={breadcrumbItems} userType={params.user_type} />
                     <Stack direction="row" alignItems="center" columnGap="8px">
                       <MenuBoxContainer role={tokenPayload.internalUserId ? UserRole.IU : UserRole.Client} />
                       <Stack direction="row" alignItems="center" columnGap="8px">
@@ -113,7 +132,7 @@ export default async function TaskDetailPage({
               <>
                 <HeaderBreadcrumbs
                   token={token}
-                  title={task?.label}
+                  items={breadcrumbItems}
                   userType={params.user_type}
                   portalUrl={workspace.portalUrl}
                 />
@@ -157,6 +176,14 @@ export default async function TaskDetailPage({
                     userType={params.user_type}
                   />
                 </StyledTiptapDescriptionWrapper>
+                {subTaskStatus.canCreateSubtask && (
+                  <Subtasks
+                    task_id={task_id}
+                    token={token}
+                    userType={tokenPayload.internalUserId ? UserRole.IU : UserRole.Client}
+                    canCreateSubtasks={params.user_type === UserType.INTERNAL_USER || !!getPreviewMode(tokenPayload)}
+                  />
+                )}
 
                 <ActivityWrapper task_id={task_id} token={token} tokenPayload={tokenPayload} />
               </TaskDetailsContainer>
@@ -170,6 +197,7 @@ export default async function TaskDetailPage({
                   userType={params.user_type}
                   isPreview={!!getPreviewMode(tokenPayload)}
                   task={task}
+                  clientCompanyId={task.assigneeType !== 'internalUser' ? task.assigneeId : undefined}
                 />
                 <Sidebar
                   task_id={task_id}

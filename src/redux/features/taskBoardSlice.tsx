@@ -1,11 +1,11 @@
-import { createSlice } from '@reduxjs/toolkit'
-import { RootState } from '../store'
-import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
+import { RootState } from '@/redux/store'
+import { PreviewMode } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
+import { CreateViewSettingsDTO, FilterOptionsType } from '@/types/dto/viewSettings.dto'
+import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { FilterByOptions, FilterOptions, IAssigneeCombined, IFilterOptions } from '@/types/interfaces'
 import { ViewMode } from '@prisma/client'
-import { CreateViewSettingsDTO, FilterOptionsType } from '@/types/dto/viewSettings.dto'
-import { PreviewMode } from '@/types/common'
+import { createSlice } from '@reduxjs/toolkit'
 
 interface IInitialState {
   workflowStates: WorkflowStateResponse[]
@@ -22,6 +22,10 @@ interface IInitialState {
   isTasksLoading: boolean
   activeTask: TaskResponse | undefined
   previewMode: PreviewMode
+  accesibleTaskIds: string[]
+  accessibleTasks: TaskResponse[]
+  confirmAssignModalId: string | undefined
+  assigneeCache: Record<string, IAssigneeCombined>
 }
 
 const initialState: IInitialState = {
@@ -44,6 +48,10 @@ const initialState: IInitialState = {
   isTasksLoading: true,
   activeTask: undefined,
   previewMode: null,
+  accesibleTaskIds: [],
+  accessibleTasks: [],
+  confirmAssignModalId: '',
+  assigneeCache: {},
 }
 
 const taskBoardSlice = createSlice({
@@ -132,6 +140,21 @@ const taskBoardSlice = createSlice({
     setPreviewMode: (state, action: { payload: PreviewMode }) => {
       state.previewMode = action.payload
     },
+    /**
+     * @deprecated - Use `accessibleTasks` state instead
+     */
+    setAccesibleTaskIds: (state, action: { payload: string[] }) => {
+      state.accesibleTaskIds = action.payload
+    },
+    setAccessibleTasks: (state, action: { payload: TaskResponse[] }) => {
+      state.accessibleTasks = action.payload
+    },
+    setConfirmAssigneeModalId: (state, action: { payload: string | undefined }) => {
+      state.confirmAssignModalId = action.payload
+    },
+    setAssigneeCache: (state, action: { payload: { key: string; value: IAssigneeCombined } }) => {
+      state.assigneeCache[action.payload.key] = action.payload.value
+    }, //used in memory cache rather than useMemo for cross-view(board and list) caching. The alternate idea would be to include assignee object in the response of getTasks api for each task but that would be a bit expensive.
   },
 })
 
@@ -152,6 +175,10 @@ export const {
   setIsTasksLoading,
   setActiveTask,
   setPreviewMode,
+  setAccesibleTaskIds,
+  setAccessibleTasks,
+  setConfirmAssigneeModalId,
+  setAssigneeCache,
 } = taskBoardSlice.actions
 
 export default taskBoardSlice.reducer

@@ -21,7 +21,7 @@ export const ManageTemplateHeader = ({ token }: { token: string }) => {
       <AppMargin size={SizeofAppMargin.HEADER} py="14px">
         <Stack direction="row" justifyContent="space-between" alignItems="center">
           <HeaderBreadcrumbs
-            title="Manage templates"
+            items={[{ label: 'Manage templates' }]}
             token={token}
             // Treat user as IU since only they are allowed to manage templates for now
             userType={UserType.INTERNAL_USER}

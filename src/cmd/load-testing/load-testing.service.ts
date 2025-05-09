@@ -11,7 +11,7 @@ import {
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { getRandomBool, getRandomFutureDate, getRandomFutureDateTime } from '@/utils/random'
 import { faker } from '@faker-js/faker'
-import { AssigneeType, PrismaClient, Task } from '@prisma/client'
+import { AssigneeType, PrismaClient, Source, Task } from '@prisma/client'
 import Bottleneck from 'bottleneck'
 import { z } from 'zod'
 
@@ -91,7 +91,19 @@ class LoadTester {
     for (let user of users) {
       const data: Omit<
         Task,
-        'id' | 'completedAt' | 'deletedAt' | 'lastActivityLogUpdated' | 'isArchived' | 'lastArchivedDate'
+        | 'id'
+        | 'completedAt'
+        | 'deletedAt'
+        | 'lastActivityLogUpdated'
+        | 'isArchived'
+        | 'lastArchivedDate'
+        | 'parentId'
+        | 'subtaskCount'
+        | 'templateId'
+        | 'completedBy'
+        | 'completedByUserType'
+        | 'archivedBy'
+        | 'deletedBy'
       >[] = []
       const currentUser = await authenticateWithToken(this.token, this.apiKey)
       const labelsService = new LabelMappingService(currentUser, this.apiKey)
@@ -118,6 +130,7 @@ class LoadTester {
           assignedAt: getRandomBool() ? getRandomFutureDate() : null,
           createdAt: new Date(),
           dueDate: getRandomBool() ? getRandomFutureDateTime() : null,
+          source: Source.web,
         })
       }
       seedPromises.push(this.bottlenecks.db.schedule(() => this.db.task.createMany({ data })))
