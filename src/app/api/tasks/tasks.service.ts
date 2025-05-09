@@ -264,7 +264,7 @@ export class TasksService extends BaseService {
     return newTask
   }
 
-  async getOneTask(id: string): Promise<Task & { workflowState: WorkflowState }> {
+  async getOneTask(id: string, fromPublicApi?: boolean): Promise<Task & { workflowState: WorkflowState }> {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Read, Resource.Tasks)
 
@@ -272,7 +272,10 @@ export class TasksService extends BaseService {
     // while clients can only view the tasks assigned to them or their company
     const filters = this.buildTaskPermissions(id)
 
-    const task = await this.db.task.findFirst({ where: filters })
+    const where = fromPublicApi ? { ...filters, deletedAt: { not: undefined } } : filters
+
+    const task = await this.db.task.findFirst({ where })
+
     if (!task) throw new APIError(httpStatus.NOT_FOUND, 'The requested task was not found')
 
     const updatedTask = await this.db.task.update({

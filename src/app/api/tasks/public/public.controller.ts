@@ -57,7 +57,7 @@ export const getAllTasksPublic = async (req: NextRequest) => {
 export const getOneTaskPublic = async (req: NextRequest, { params: { id } }: IdParams) => {
   const user = await authenticate(req)
   const tasksService = new TasksService(user)
-  const task = await tasksService.getOneTask(id)
+  const task = await tasksService.getOneTask(id, true) //from public API is true
   return NextResponse.json(PublicTaskSerializer.serialize(task))
 }
 
