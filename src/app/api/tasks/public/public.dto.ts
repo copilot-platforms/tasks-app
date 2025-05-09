@@ -34,23 +34,34 @@ export const PublicTaskDtoSchema = z.object({
 })
 export type PublicTaskDto = z.infer<typeof PublicTaskDtoSchema>
 
-export const PublicTaskCreateDtoSchema = z.object({
-  name: z
-    .string()
-    .min(1)
-    .max(255)
-    .refine((name) => name.trim().length > 0, {
-      message: 'Required',
-    })
-    .transform((val) => val.trim()),
-  description: z.string().optional(),
-  parentTaskId: z.string().uuid().optional(),
-  status: StatusSchema,
-  assigneeId: z.string().uuid(),
-  assigneeType: z.nativeEnum(AssigneeType),
-  dueDate: RFC3339DateSchema.optional(),
-  templateId: z.string().uuid().nullish(),
-})
+export const PublicTaskCreateDtoSchema = z
+  .object({
+    name: z
+      .string()
+      .min(1)
+      .max(255)
+      .refine((name) => name.trim().length > 0, {
+        message: 'Required',
+      })
+      .transform((val) => val.trim())
+      .optional(),
+    description: z.string().optional(),
+    parentTaskId: z.string().uuid().optional(),
+    status: StatusSchema,
+    assigneeId: z.string().uuid(),
+    assigneeType: z.nativeEnum(AssigneeType),
+    dueDate: RFC3339DateSchema.optional(),
+    templateId: z.string().uuid().nullish(),
+  })
+  .superRefine((data, ctx) => {
+    if (!data.templateId && !data.name) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Name is required when templateId is not provided',
+        path: ['name'],
+      })
+    }
+  })
 export type PublicTaskCreateDto = z.infer<typeof PublicTaskCreateDtoSchema>
 
 export const PublicTaskUpdateDtoSchema = z.object({
