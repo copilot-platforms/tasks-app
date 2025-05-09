@@ -52,6 +52,7 @@ export const PublicTaskCreateDtoSchema = z
     assigneeType: z.nativeEnum(AssigneeType),
     dueDate: RFC3339DateSchema.optional(),
     templateId: z.string().uuid().nullish(),
+    createdBy: z.string().uuid().optional(),
   })
   .superRefine((data, ctx) => {
     if (!data.templateId && !data.name) {

@@ -183,7 +183,14 @@ export class TasksService extends BaseService {
     // NOTE: This block strictly doesn't allow clients to create tasks
     let createdById = z.string().parse(this.user.internalUserId)
 
-    //todo : implement data.createdBy functionality if it is provided from public api here.
+    if (data.createdById && opts?.isPublicApi) {
+      const internalUsers = await copilot.getInternalUsers({ limit: MAX_FETCH_ASSIGNEE_COUNT }) // there are 2 of these api running on this same serive. need to think about this later.
+      const createdBy = internalUsers?.data?.find((iu) => iu.id === data.createdById)
+      if (!createdBy) {
+        throw new APIError(httpStatus.BAD_REQUEST, 'The requested user for createdBy was not found')
+      }
+      createdById = createdBy.id
+    }
 
     // Create a new task associated with current workspaceId. Also inject current request user as the creator.
     const newTask = await this.db.task.create({
