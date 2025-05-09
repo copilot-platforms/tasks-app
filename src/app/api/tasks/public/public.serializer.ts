@@ -97,8 +97,8 @@ export class PublicTaskSerializer {
       throw new APIError(httpStatus.NOT_FOUND, 'The requested template was not found')
     }
 
-    const title = (existingTitle ?? '') + (existingTitle ? ' ' : '') + template.title
-    const body = (existingBody ?? '') + (existingBody ? ' ' : '') + template.body
+    const title = (existingTitle ? `${existingTitle} ` : '') + template.title
+    const body = (existingBody ? `${existingBody} ` : '') + template.body
 
     return { title, body }
   }
