@@ -8,6 +8,9 @@ import {
   UpdateTaskRequestSchema,
 } from '@/types/dto/tasks.dto'
 import { rfc3339ToDateString, toRFC3339 } from '@/utils/dateHelper'
+import { copyTemplateMediaToTask } from '@/utils/signedTemplateUrlReplacer'
+import { replaceImageSrc } from '@/utils/signedUrlReplacer'
+import { getSignedUrl } from '@/utils/signUrl'
 import { PublicTaskCreateDto, PublicTaskDto, PublicTaskDtoSchema, PublicTaskUpdateDto } from '@api/tasks/public/public.dto'
 import { Task, WorkflowState } from '@prisma/client'
 import httpStatus from 'http-status'
@@ -92,14 +95,19 @@ export class PublicTaskSerializer {
         workspaceId: workspaceId,
       },
     })
+    let replacedBody
+
+    if (template?.body) {
+      replacedBody = await copyTemplateMediaToTask(workspaceId, template.body)
+      replacedBody = replacedBody && (await replaceImageSrc(replacedBody, getSignedUrl))
+    }
 
     if (!template) {
       throw new APIError(httpStatus.NOT_FOUND, 'The requested template was not found')
     }
 
     const title = (existingTitle ? `${existingTitle} ` : '') + template.title
-    const body = (existingBody ? `${existingBody} ` : '') + template.body
-
+    const body = (existingBody ? `${existingBody} ` : '') + (replacedBody || template.body)
     return { title, body }
   }
 

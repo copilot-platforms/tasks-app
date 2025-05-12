@@ -23,7 +23,8 @@ const extractTemplatePath = (url: string): string | null => {
 export const copyTemplateMediaToTask = async (workspaceId: string, body: string): Promise<string | null> => {
   // Regex to match template img srcs
   // Eg https://abcd.supabase.co/storage/v1/object/sign/media/{workspaceId}/templates/
-  const templateUrlRegex = /^https:\/\/([^\/]+)\.supabase\.co\/storage\/v1\/object\/sign\/media\/([^\/]+)\/templates\//
+  const templateUrlRegex =
+    /^https?:\/\/(?:[^\/]+\.supabase\.co|127\.0\.0\.1:\d+)\/storage\/v1\/object\/sign\/media\/([^\/]+)\/templates\// //accepting local supabase urls too
 
   const dom = new JSDOM(body)
   const document = dom.window.document
