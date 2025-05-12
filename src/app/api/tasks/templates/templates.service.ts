@@ -37,7 +37,16 @@ export class TemplatesService extends BaseService {
       findOptions.skip = 1
     }
 
-    return this.db.taskTemplate.findMany(findOptions)
+    const templates = await this.db.taskTemplate.findMany(findOptions)
+
+    const updatedTemplates = await Promise.all(
+      templates.map(async (template) => ({
+        ...template,
+        body: template.body ? await replaceImageSrc(template.body, getSignedUrl) : null,
+      })),
+    )
+
+    return updatedTemplates
   }
 
   async getAppliedTemplateDescription(id: string) {
