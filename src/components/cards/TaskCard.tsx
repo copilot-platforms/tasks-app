@@ -1,6 +1,6 @@
 'use client'
 
-import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { selectTaskBoard, setAssigneeCache } from '@/redux/features/taskBoardSlice'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { IAssigneeCombined } from '@/types/interfaces'
 import { NoAssignee } from '@/utils/noAssignee'
@@ -10,9 +10,10 @@ import { DueDateLayout } from '@/components/layouts/DueDateLayout'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { UrlObject } from 'url'
 import { useEffect, useState } from 'react'
-import { ArchiveBoxIcon } from '@/icons'
 import { getAssigneeName } from '@/utils/assignee'
 import { isTaskCompleted } from '@/utils/isTaskCompleted'
+import { TaskMetaItems } from '@/components/atoms/TaskMetaItems'
+import store from '@/redux/store'
 
 const TaskCardContainer = styled(Stack)(({ theme }) => ({
   border: `1px solid ${theme.color.borders.border}`,
@@ -34,31 +35,34 @@ interface TaskCardProps {
 }
 
 export const TaskCard = ({ task, href }: TaskCardProps) => {
-  const { assignee, workflowStates } = useSelector(selectTaskBoard)
+  const { assignee, workflowStates, assigneeCache } = useSelector(selectTaskBoard)
 
-  const [currentAssignee, setCurrentAssignee] = useState<IAssigneeCombined | undefined>(undefined)
+  const [currentAssignee, setCurrentAssignee] = useState<IAssigneeCombined | undefined>(() => {
+    return assigneeCache[task.id]
+  })
 
   useEffect(() => {
     if (assignee.length > 0) {
       const currentAssignee = assignee.find((el) => el.id === task.assigneeId)
+      const finalAssignee = currentAssignee ?? NoAssignee
       //@ts-expect-error  "type" property has mismatching types in between NoAssignee and IAssigneeCombined
-      setCurrentAssignee(currentAssignee ?? NoAssignee)
+      store.dispatch(setAssigneeCache({ key: task.id, value: finalAssignee }))
+      //@ts-expect-error  "type" property has mismatching types in between NoAssignee and IAssigneeCombined
+      setCurrentAssignee(finalAssignee)
     }
-  }, [assignee, task])
+  }, [assignee, task.id, task.assigneeId])
 
   return (
     <TaskCardContainer>
       <Stack rowGap={1}>
         <Stack direction="row" justifyContent="space-between">
           <Stack direction="column" rowGap={'4px'}>
-            {task.isArchived && (
-              <Stack direction="row" alignItems={'center'} columnGap={'4px'}>
-                <ArchiveBoxIcon />
-                <Typography variant="bodyXs" sx={{ color: (theme) => theme.color.text.textSecondary }}>
-                  Archived
-                </Typography>
+            {(task.isArchived || task.subtaskCount > 0) && (
+              <Stack direction="row" sx={{ display: 'flex', gap: '12px', flexShrink: 0, alignItems: 'center' }}>
+                <TaskMetaItems task={task} lineHeight="18px" />
               </Stack>
             )}
+
             {currentAssignee ? (
               <Stack direction="row" alignItems="center" columnGap={1}>
                 <CopilotAvatar currentAssignee={currentAssignee as IAssigneeCombined} />

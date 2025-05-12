@@ -1,6 +1,7 @@
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { MiniLoader } from '@/components/atoms/MiniLoader'
 import AttachmentLayout from '@/components/AttachmentLayout'
+import { ManageTemplatesEndOption } from '@/components/buttons/ManageTemplatesEndOptions'
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
 import { DatePickerComponent } from '@/components/inputs/DatePickerComponent'
@@ -10,7 +11,7 @@ import { StyledTextField } from '@/components/inputs/TextField'
 import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
-import { ArrowRightIcon, AssigneePlaceholderSmall, CloseIcon, TemplateIconSm } from '@/icons'
+import { AssigneePlaceholderSmall, CloseIcon, TemplateIconSm } from '@/icons'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import {
   selectCreateTask,
@@ -205,7 +206,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
                 <Typography
                   variant="bodySm"
                   sx={{
-                    color: (theme) => (tempAssignee ? theme.color.gray[600] : theme.color.gray[550]),
+                    color: (theme) => (tempAssignee ? theme.color.gray[600] : theme.color.text.textDisabled),
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
 
@@ -231,7 +232,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
             >
               <DatePickerComponent
                 getDate={(value) => store.dispatch(setCreateTaskFields({ targetField: 'dueDate', value: value as string }))}
-                isButton={true}
+                variant="button"
               />
             </Box>
           </Stack>
@@ -373,35 +374,6 @@ const NewTaskFooter = ({
     },
     [token, setIsEditorReadonly, workflowStates, title, description, appliedDescription, appliedTitle],
   )
-  const ManageTemplatesEndOption = () => {
-    return (
-      <Stack
-        id="manage-templates-btn"
-        key={'Manage templates'}
-        direction="row"
-        pl="16px"
-        py="6px"
-        justifyContent="space-between"
-        sx={{
-          borderTop: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
-          borderBottom: (theme) => `0px solid ${theme.color.borders.borderDisabled}`,
-          cursor: 'pointer',
-          lineHeight: '21px',
-          ':hover': (theme) => ({
-            zIndex: '999',
-            bgcolor: theme.color.background.bgHover,
-          }),
-        }}
-      >
-        <Typography variant="sm">
-          <Box display="flex" gap="4px" alignItems="center" sx={{ color: (theme) => theme.color.gray[600] }}>
-            Manage templates
-            <ArrowRightIcon />
-          </Box>
-        </Typography>
-      </Stack>
-    )
-  }
 
   const applyTemplateHandler = (newValue: ITemplate) => {
     if (!newValue || !token) return
@@ -436,7 +408,7 @@ const NewTaskFooter = ({
                 {'Apply template'}
               </Typography>
             }
-            disableOutline
+            variant="normal"
             responsiveNoHide
             buttonWidth="auto"
             useClickHandler
@@ -454,7 +426,7 @@ const NewTaskFooter = ({
                 handleClick={() => handleClose()}
                 buttonContent={
                   <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[700] }}>
-                    Cancel
+                    Discard
                   </Typography>
                 }
               />

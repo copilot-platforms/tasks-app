@@ -8,12 +8,14 @@ export const PrimaryBtn = ({
   handleClick,
   buttonBackground,
   disabled,
+  padding,
 }: {
   startIcon?: ReactNode
   buttonText: string
   handleClick: () => void
   buttonBackground?: string
   disabled?: boolean
+  padding?: string
 }) => {
   return (
     <Button
@@ -27,6 +29,7 @@ export const PrimaryBtn = ({
         '&:hover': { backgroundColor: buttonBackground || theme.color.gray[600], boxShadow: 'none' },
         borderRadius: '4px',
         cursor: 'pointer',
+        padding: padding ?? 'none',
       })}
       onClick={() => handleClick()}
       disableRipple

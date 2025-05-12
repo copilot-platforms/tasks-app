@@ -1,3 +1,4 @@
+import { StateType } from '@prisma/client'
 import { z } from 'zod'
 
 export const WorkflowStateTypeSchema = z.enum(['backlog', 'unstarted', 'started', 'completed', 'cancelled'])

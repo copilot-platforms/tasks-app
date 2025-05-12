@@ -1,5 +1,5 @@
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
-import { getAllTasks, getAllWorkflowStates, getViewSettings } from '@/app/page'
+import { getAllTasks, getAllWorkflowStates, getViewSettings } from '@/app/(home)/page'
 import { Token } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 

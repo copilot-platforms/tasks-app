@@ -3,6 +3,8 @@
 import { setTokenPayload } from '@/redux/features/authDetailsSlice'
 import {
   selectTaskBoard,
+  setAccesibleTaskIds,
+  setAccessibleTasks,
   setActiveTask,
   setAssigneeList,
   setFilteredAssgineeList,
@@ -12,7 +14,7 @@ import {
   setViewSettings,
   setWorkflowStates,
 } from '@/redux/features/taskBoardSlice'
-import { setAssigneeSuggestion, setExpandedComments } from '@/redux/features/taskDetailsSlice'
+import { setActiveTaskAssignees, setAssigneeSuggestion, setExpandedComments } from '@/redux/features/taskDetailsSlice'
 import { setTemplates } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
 import { Token } from '@/types/common'
@@ -42,6 +44,9 @@ export const ClientSideStateUpdate = ({
   assigneeSuggestions,
   task,
   clearExpandedComments,
+  accesibleTaskIds,
+  accessibleTasks,
+  activeTaskAssignees,
 }: {
   children: ReactNode
   workflowStates?: WorkflowStateResponse[]
@@ -54,6 +59,9 @@ export const ClientSideStateUpdate = ({
   assigneeSuggestions?: IAssigneeSuggestions[]
   task?: TaskResponse
   clearExpandedComments?: boolean
+  accesibleTaskIds?: string[]
+  accessibleTasks?: TaskResponse[]
+  activeTaskAssignees?: IAssigneeCombined[]
 }) => {
   const { tasks: tasksInStore, viewSettingsTemp } = useSelector(selectTaskBoard)
   useEffect(() => {
@@ -108,7 +116,35 @@ export const ClientSideStateUpdate = ({
     } else {
       store.dispatch(setActiveTask(undefined)) //when navigated elsewhere from details page, removing the previously set ActiveTask
     } //for updating a task in store with respect to task response from db in task details page
-  }, [workflowStates, tasks, token, assignee, viewSettings, tokenPayload, templates, assigneeSuggestions, task])
+
+    if (accesibleTaskIds) {
+      store.dispatch(setAccesibleTaskIds(accesibleTaskIds))
+    }
+
+    if (accessibleTasks) {
+      store.dispatch(setAccessibleTasks(accessibleTasks))
+    }
+    if (activeTaskAssignees) {
+      store.dispatch(setActiveTaskAssignees(activeTaskAssignees))
+    }
+    return () => {
+      store.dispatch(setActiveTask(undefined))
+      store.dispatch(setActiveTaskAssignees([]))
+    } //when component is unmounted, we need to clear the active task.
+  }, [
+    workflowStates,
+    tasks,
+    token,
+    assignee,
+    viewSettings,
+    tokenPayload,
+    templates,
+    assigneeSuggestions,
+    task,
+    accesibleTaskIds,
+    accessibleTasks,
+    activeTaskAssignees,
+  ])
 
   return children
 }

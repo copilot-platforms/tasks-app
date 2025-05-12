@@ -1,25 +1,35 @@
 export const fetchCache = 'force-no-store'
 
-import { IAssignee, UserType } from '@/types/interfaces'
 import { apiUrl } from '@/config'
 import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
-import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
-import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { TaskResponse } from '@/types/dto/tasks.dto'
+import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
+import { IAssignee, PropsWithToken, UserType } from '@/types/interfaces'
+import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
+import fetchRetry from 'fetch-retry'
 
-interface Props {
-  token: string
+const fetchWithRetry = fetchRetry(globalThis.fetch)
+
+interface AssigneeFetcherProps extends PropsWithToken {
   viewSettings?: CreateViewSettingsDTO
   userType?: UserType
   isPreview?: boolean
   task?: TaskResponse
+  clientCompanyId?: string
 }
 
-const fetchAssignee = async (token: string, userType?: UserType, isPreview?: boolean): Promise<IAssignee> => {
+const fetchAssignee = async (
+  token: string,
+  userType?: UserType,
+  isPreview?: boolean,
+  clientCompanyId?: string,
+): Promise<IAssignee> => {
   if (userType === UserType.CLIENT_USER && !isPreview) {
-    const res = await fetch(`${apiUrl}/api/users/client?token=${token}&limit=${MAX_FETCH_ASSIGNEE_COUNT}`, {
+    const res = await fetchWithRetry(`${apiUrl}/api/users/client?token=${token}&limit=${MAX_FETCH_ASSIGNEE_COUNT}`, {
       next: { tags: ['getAssigneeList'] },
+      retries: 3,
+      retryDelay: 100,
     })
 
     const data = await res.json()
@@ -27,16 +37,36 @@ const fetchAssignee = async (token: string, userType?: UserType, isPreview?: boo
     return data.clients
   }
 
-  const res = await fetch(`${apiUrl}/api/users?token=${token}&limit=${MAX_FETCH_ASSIGNEE_COUNT}`, {
-    next: { tags: ['getAssigneeList'] },
-  })
+  const res = await fetch(
+    `${apiUrl}/api/users?token=${token}&limit=${MAX_FETCH_ASSIGNEE_COUNT}&clientCompanyId=${clientCompanyId}`,
+    {
+      next: { tags: ['getAssigneeList'] },
+    },
+  )
 
   return (await res.json()).users as IAssignee
 }
-export const AssigneeFetcher = async ({ token, userType, viewSettings, isPreview, task }: Props) => {
-  const assignableUsersWithType = addTypeToAssignee(await fetchAssignee(token, userType, isPreview))
+export const AssigneeFetcher = async ({
+  token,
+  userType,
+  viewSettings,
+  isPreview,
+  task,
+  clientCompanyId,
+}: AssigneeFetcherProps) => {
+  const [assignableUsersWithType, activeTaskAssignees] = await Promise.all([
+    fetchAssignee(token, userType, isPreview).then(addTypeToAssignee),
+    clientCompanyId
+      ? fetchAssignee(token, userType, isPreview, clientCompanyId).then(addTypeToAssignee)
+      : Promise.resolve([]),
+  ])
   return (
-    <ClientSideStateUpdate assignee={assignableUsersWithType} viewSettings={viewSettings} task={task}>
+    <ClientSideStateUpdate
+      assignee={assignableUsersWithType}
+      viewSettings={viewSettings}
+      task={task}
+      activeTaskAssignees={activeTaskAssignees}
+    >
       {null}
     </ClientSideStateUpdate>
   )

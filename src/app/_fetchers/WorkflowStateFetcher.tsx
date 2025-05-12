@@ -1,14 +1,13 @@
 export const fetchCache = 'force-no-store'
 
 import { apiUrl } from '@/config'
-import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
-import { ReactNode } from 'react'
 import { TaskResponse } from '@/types/dto/tasks.dto'
+import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
+import { PropsWithToken } from '@/types/interfaces'
+import { PropsWithChildren } from 'react'
 
-interface Props {
-  token: string
-  children: ReactNode
+interface WorkflowStateFetcherProps extends PropsWithToken, PropsWithChildren {
   task?: TaskResponse
 }
 
@@ -22,7 +21,7 @@ const getAllWorkflowStates = async (token: string): Promise<WorkflowStateRespons
   return data.workflowStates
 }
 
-export const WorkflowStateFetcher = async ({ token, children, task }: Props) => {
+export const WorkflowStateFetcher = async ({ token, children, task }: WorkflowStateFetcherProps) => {
   const workflowStates = await getAllWorkflowStates(token)
 
   return (

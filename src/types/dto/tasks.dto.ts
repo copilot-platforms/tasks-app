@@ -1,4 +1,4 @@
-import { AssigneeType as PrismaAssigneeType } from '@prisma/client'
+import { AssigneeType as PrismaAssigneeType, Task } from '@prisma/client'
 import { z } from 'zod'
 import { WorkflowStateResponseSchema } from './workflowStates.dto'
 import { DateStringSchema } from '@/types/date'
@@ -14,6 +14,7 @@ export const CreateTaskRequestSchema = z.object({
   body: z.string().optional(),
   workflowStateId: z.string().uuid(),
   dueDate: DateStringSchema.nullish(),
+  parentId: z.string().uuid().optional(),
 })
 export type CreateTaskRequest = z.infer<typeof CreateTaskRequestSchema>
 
@@ -45,6 +46,20 @@ export const TaskResponseSchema = z.object({
   lastActivityLogUpdated: z.date().optional(),
   isArchived: z.boolean().optional(),
   lastArchivedDate: z.string().datetime(),
+  parentId: z.string().nullish(),
+  subtaskCount: z.number(),
 })
 
 export type TaskResponse = z.infer<typeof TaskResponseSchema>
+
+export const SubTaskStatusSchema = z.object({
+  count: z.number(),
+  canCreateSubtask: z.boolean(),
+})
+
+export type SubTaskStatusResponse = z.infer<typeof SubTaskStatusSchema>
+
+export type AncestorTaskResponse = Pick<Task, 'id' | 'title' | 'label'> & {
+  assigneeId: string
+  assigneeType: NonNullable<AssigneeType>
+}

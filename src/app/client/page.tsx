@@ -1,10 +1,10 @@
 export const fetchCache = 'force-no-store'
 
+import { AllTasksFetcher } from '@/app/_fetchers/AllTasksFetcher'
 import { AssigneeFetcher } from '@/app/_fetchers/AssigneeFetcher'
-import { TemplatesFetcher } from '@/app/_fetchers/TemplatesFetcher'
 import { ValidateNotificationCountFetcher } from '@/app/_fetchers/ValidateNotificationCountFetcher'
-import { createMultipleAttachments } from '@/app/actions'
-import { getViewSettings } from '@/app/page'
+import { createMultipleAttachments } from '@/app/(home)/actions'
+import { getViewSettings } from '@/app/(home)/page'
 import { ModalNewTaskForm } from '@/app/ui/Modal_NewTaskForm'
 import { TaskBoard } from '@/app/ui/TaskBoard'
 import { TaskBoardAppBridge } from '@/app/ui/TaskBoardAppBridge'
@@ -22,9 +22,9 @@ import { CopilotAPI } from '@/utils/CopilotAPI'
 import { getPreviewMode } from '@/utils/previewMode'
 import { redirectIfTaskCta } from '@/utils/redirect'
 import { UserRole } from '@api/core/types/user'
-
 import { Suspense } from 'react'
 import { z } from 'zod'
+import { TemplatesFetcher } from '@/app/_fetchers/TemplatesFetcher'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -85,6 +85,7 @@ export default async function ClientPage({ searchParams }: { searchParams: { tok
         viewSettings={viewSettings}
         clearExpandedComments={true}
       >
+        {/* Async fetchers */}
         <Suspense fallback={null}>
           <AssigneeFetcher
             token={token}
@@ -92,9 +93,11 @@ export default async function ClientPage({ searchParams }: { searchParams: { tok
             isPreview={!!getPreviewMode(tokenPayload)}
           />
         </Suspense>
+        <Suspense fallback={null}>{previewMode && <TemplatesFetcher token={token} />}</Suspense>
         <Suspense fallback={null}>
-          <TemplatesFetcher token={token} />
+          <AllTasksFetcher token={token} />
         </Suspense>
+
         <TaskBoardAppBridge token={token} role={UserRole.Client} portalUrl={workspace.portalUrl} />
         <RealTime tokenPayload={tokenPayload}>
           <DndWrapper>

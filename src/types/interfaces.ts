@@ -1,6 +1,7 @@
+import { UserSchema } from '@/types/common'
+import { UpdateTaskRequestSchema } from '@/types/dto/tasks.dto'
+import { PropsWithChildren } from 'react'
 import { z } from 'zod'
-import { UserSchema } from './common'
-import { UpdateTaskRequestSchema } from './dto/tasks.dto'
 
 export enum TargetMethod {
   EDIT = 'edit',
@@ -172,4 +173,8 @@ export const UserTypesName = {
   clients: 'Clients',
   companies: 'Companies',
   standalone: 'Standalone', // for options in selector component which shall not be grouped
+}
+
+export interface PropsWithToken {
+  token: string
 }

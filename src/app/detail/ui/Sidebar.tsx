@@ -93,29 +93,14 @@ export const Sidebar = ({
 
   const handleAssigneeChange = (assigneeValue: IAssigneeCombined) => {
     updateAssigneeValue(assigneeValue)
-    // const assigneeType = getAssigneeTypeCorrected(assigneeValue)
-    // updateAssignee(assigneeType, assigneeValue?.id)
-    handleChangeAssignee(assigneeValue)
+    const assigneeType = getAssigneeTypeCorrected(assigneeValue)
+    updateAssignee(assigneeType, assigneeValue?.id)
   }
 
   const handleConfirmAssigneeChange = (assigneeValue: IAssigneeCombined) => {
     handleAssigneeChange(assigneeValue)
     store.dispatch(toggleShowConfirmAssignModal())
   }
-
-  const handleChangeAssignee = async (assignee: IAssigneeCombined) => {
-    try {
-      await fetch(`/api/tasks/${task_id}?token=${token}`, {
-        method: 'PATCH',
-        body: JSON.stringify({
-          assigneeType: getAssigneeTypeCorrected(assignee),
-          assigneeId: assignee.id,
-        }),
-      })
-    } catch (error) {
-      console.error('Failed to change assignee:', error)
-    }
-  } //Right now this function is being used instead of server actions. Server actions are of blocking behaviour which causes other consecutive server actions on hold if the previous actions takes time. handling assignee change on server actions takes too much time because of notification if an assignee is a company.
 
   useEffect(() => {
     if (isMobile) {
@@ -148,7 +133,7 @@ export const Sidebar = ({
             }}
             responsiveNoHide
             disabled={workflowDisabled}
-            size={Sizes.LARGE}
+            size={Sizes.MEDIUM}
             padding={'3px 8px'}
           />
         </Box>
@@ -250,7 +235,7 @@ export const Sidebar = ({
             }}
             dateValue={dueDate ? createDateFromFormattedDateString(z.string().parse(dueDate)) : undefined}
             disabled={disabled && !previewMode}
-            isButton={true}
+            variant="button"
             size={Sizes.MEDIUM}
             padding={'3px 8px'}
           />
@@ -328,7 +313,7 @@ export const Sidebar = ({
                 updateWorkflowState(value)
               }}
               disabled={workflowDisabled}
-              disableOutline
+              variant={'normal'}
               responsiveNoHide
             />
           </Box>
@@ -414,7 +399,7 @@ export const Sidebar = ({
               filterOption={(x: unknown) => x}
               disabled={disabled}
               cursor={'default'}
-              disableOutline
+              variant="normal"
               responsiveNoHide
               currentOption={assigneeValue}
             />
@@ -501,14 +486,14 @@ export const SidebarSkeleton = () => {
         sx={{ flexWrap: 'wrap', padding: '12px 18px' }}
       >
         <Box sx={{ height: '30px', alignItems: 'center', justifyContent: 'center', display: 'flex' }}>
-          <Skeleton variant="rectangular" width={120} height={15} />
+          <Skeleton variant="rectangular" width={140} height={15} />
         </Box>
         <Box sx={{ height: '30px', alignItems: 'center', justifyContent: 'center', display: 'flex' }}>
-          <Skeleton variant="rectangular" width={120} height={15} />
+          <Skeleton variant="rectangular" width={140} height={15} />
         </Box>
 
         <Box sx={{ height: '30px', alignItems: 'center', justifyContent: 'center', display: 'flex' }}>
-          <Skeleton variant="rectangular" width={120} height={15} />
+          <Skeleton variant="rectangular" width={140} height={15} />
         </Box>
       </Stack>
     )
