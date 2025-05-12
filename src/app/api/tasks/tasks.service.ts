@@ -210,7 +210,10 @@ export class TasksService extends BaseService {
     if (newTask) {
       // Add activity logs
       const activityLogger = new TasksActivityLogger(this.user, newTask)
-      await activityLogger.logNewTask()
+      await activityLogger.logNewTask({
+        userId: createdById,
+        role: AssigneeType.internalUser,
+      }) //hardcoding internalUser as role since task can only be created by IUs.
 
       try {
         if (newTask.body) {
