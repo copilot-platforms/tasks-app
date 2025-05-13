@@ -222,7 +222,7 @@ export const ReplyCard = ({
               getContent={setEditedContent}
               readonly={isReadOnly}
               editorRef={editRef}
-              editorClass="tapwrite-comment"
+              editorClass={isReadOnly ? 'tapwrite-comment' : 'tapwrite-comment-editable'}
               addAttachmentButton={!isReadOnly}
               uploadFn={uploadFn}
               deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', task_id, null)}
