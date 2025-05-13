@@ -14,6 +14,9 @@ model Task {
   label           String
   workspaceId     String        @db.VarChar(32)
   assigneeId      String?       @db.Uuid
+  internalUserId  String?
+  clientId        String?
+  companyId       String?
   assigneeType    AssigneeType?
   title           String        @db.VarChar(255)
   body            String?
@@ -46,13 +49,14 @@ model Task {
 
   source Source @default(web)
 
-  templateId              String? @db.Uuid 
-  completedBy             String? @db.Uuid
-  completedByUserType     AssigneeType? 
-  archivedBy              String? @db.Uuid
-  deletedBy               String? @db.Uuid
+  templateId          String?       @db.Uuid
+  completedBy         String?       @db.Uuid
+  completedByUserType AssigneeType?
+  archivedBy          String?       @db.Uuid
+  deletedBy           String?       @db.Uuid
 
-  taskUpdateBacklogs      TaskUpdateBacklog[]
+  taskUpdateBacklogs TaskUpdateBacklog[]
+
   @@index([path], type: Gist)
   @@map("Tasks")
 }
