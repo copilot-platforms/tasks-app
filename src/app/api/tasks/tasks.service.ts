@@ -170,6 +170,18 @@ export class TasksService extends BaseService {
 
     if (opts?.isPublicApi) {
       validatedIds = await this.getUserIds(validatedIds.internalUserId, validatedIds.clientId, validatedIds.companyId)
+
+      //The code below should be removed after we apply the userIds replacement for assigneeId and assigneeType for the webApp too. The method below is a temporary code for maintaining consistency on publicAPI and web app.
+      if (validatedIds.internalUserId) {
+        data.assigneeId = validatedIds.internalUserId
+        data.assigneeType = AssigneeType.internalUser
+      } else if (validatedIds.clientId) {
+        data.assigneeId = validatedIds.clientId
+        data.assigneeType = AssigneeType.client
+      } else if (validatedIds.companyId) {
+        data.assigneeId = validatedIds.companyId
+        data.assigneeType = AssigneeType.company
+      }
     }
 
     const label = z.string().parse(await labelMappingService.getLabel(data.assigneeId, data.assigneeType))
