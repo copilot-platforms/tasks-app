@@ -14,9 +14,9 @@ model Task {
   label           String
   workspaceId     String        @db.VarChar(32)
   assigneeId      String?       @db.Uuid
-  internalUserId  String?
-  clientId        String?
-  companyId       String?
+  internalUserId  String?       @db.Uuid
+  clientId        String?       @db.Uuid
+  companyId       String?       @db.Uuid
   assigneeType    AssigneeType?
   title           String        @db.VarChar(255)
   body            String?
