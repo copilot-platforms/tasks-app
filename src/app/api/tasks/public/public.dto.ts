@@ -12,8 +12,6 @@ export const PublicTaskDtoSchema = z.object({
   name: z.string(),
   description: z.string().nullable(),
   parentTaskId: z.string().uuid().nullable(),
-  assigneeId: z.string().uuid().nullable(),
-  assigneeType: z.nativeEnum(AssigneeType).nullable(),
   dueDate: RFC3339DateSchema.nullable(),
   label: z.string(),
   status: StatusSchema,
@@ -31,6 +29,9 @@ export const PublicTaskDtoSchema = z.object({
   deletedBy: z.string().uuid().nullable(),
   completedBy: z.string().uuid().nullable(),
   completedByUserType: z.nativeEnum(AssigneeType).nullable(),
+  internalUserId: z.string().uuid().nullable(),
+  clientId: z.string().uuid().nullable(),
+  companyId: z.string().uuid().nullable(),
 })
 export type PublicTaskDto = z.infer<typeof PublicTaskDtoSchema>
 
@@ -48,11 +49,12 @@ export const PublicTaskCreateDtoSchema = z
     description: z.string().optional(),
     parentTaskId: z.string().uuid().optional(),
     status: StatusSchema,
-    assigneeId: z.string().uuid(),
-    assigneeType: z.nativeEnum(AssigneeType),
     dueDate: RFC3339DateSchema.optional(),
     templateId: z.string().uuid().nullish(),
     createdBy: z.string().uuid().optional(),
+    internalUserId: z.string().uuid().optional(),
+    clientId: z.string().uuid().optional(),
+    companyId: z.string().uuid().optional(),
   })
   .superRefine((data, ctx) => {
     if (!data.templateId && !data.name) {
@@ -62,6 +64,18 @@ export const PublicTaskCreateDtoSchema = z
         path: ['name'],
       })
     }
+    const hasAnyId = data.internalUserId !== null || data.clientId !== null || data.companyId !== null
+
+    if (!hasAnyId) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'At least one of internalUserId, clientId, or companyId is required',
+        path: ['internalUserId', 'clientId', 'companyId'],
+      })
+    }
+
+    //todo : extra validation required here? eg : should companyId be compulsory if clientId is provided?
+    //todo : extra validation required here. eg : can both internalUserId and (clientId, companyId) be provided?
   })
 export type PublicTaskCreateDto = z.infer<typeof PublicTaskCreateDtoSchema>
 
@@ -75,10 +89,11 @@ export const PublicTaskUpdateDtoSchema = z.object({
     })
     .transform((val) => (val === undefined ? val : val.trim())),
   description: z.string().optional(),
-  assigneeId: z.string().uuid().optional(),
-  assigneeType: z.nativeEnum(AssigneeType).optional(),
   dueDate: RFC3339DateSchema.nullish(),
   status: StatusSchema.optional(),
   isArchived: z.boolean().optional(),
+  internalUserId: z.string().uuid().optional(),
+  clientId: z.string().uuid().optional(),
+  companyId: z.string().uuid().optional(),
 })
 export type PublicTaskUpdateDto = z.infer<typeof PublicTaskUpdateDtoSchema>

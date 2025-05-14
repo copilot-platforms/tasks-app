@@ -162,8 +162,14 @@ export class TasksService extends BaseService {
     //generate the label
     const labelMappingService = new LabelMappingService(this.user)
 
-    if (data.assigneeId && data.assigneeType && opts?.isPublicApi) {
-      await this.checkAssigneeType(data.assigneeId, data.assigneeType)
+    let validatedIds = {
+      internalUserId: data.internalUserId ?? null,
+      clientId: data.clientId ?? null,
+      companyId: data.companyId ?? null,
+    }
+
+    if (opts?.isPublicApi) {
+      validatedIds = await this.getUserIds(validatedIds.internalUserId, validatedIds.clientId, validatedIds.companyId)
     }
 
     const label = z.string().parse(await labelMappingService.getLabel(data.assigneeId, data.assigneeType))
@@ -202,6 +208,7 @@ export class TasksService extends BaseService {
         completedBy,
         completedByUserType,
         source: opts?.isPublicApi ? Source.api : Source.web,
+        ...validatedIds,
         ...(await getTaskTimestamps('create', this.user, data)),
       },
       include: { workflowState: true },
@@ -305,10 +312,19 @@ export class TasksService extends BaseService {
     policyGate.authorize(UserAction.Update, Resource.Tasks)
 
     const { completedBy, completedByUserType } = await this.getCompletionInfo(data?.workflowStateId)
+    const { internalUserId, clientId, companyId, ...dataWithoutUserIds } = data
 
-    if (data.assigneeId && data.assigneeType && opts?.isPublicApi) {
-      await this.checkAssigneeType(data.assigneeId, data.assigneeType)
+    const shouldUpdateUserIds = [internalUserId, clientId, companyId].some((id) => id !== null)
+
+    let validatedIds = {
+      internalUserId: internalUserId ?? null,
+      clientId: clientId ?? null,
+      companyId: companyId ?? null,
     }
+    if (shouldUpdateUserIds && opts?.isPublicApi) {
+      validatedIds = await this.getUserIds(validatedIds.internalUserId, validatedIds.clientId, validatedIds.companyId)
+    }
+    const userAssignmentFields = shouldUpdateUserIds ? validatedIds : {}
 
     // Query previous task
     const filters = this.buildTaskPermissions(id)
@@ -349,13 +365,14 @@ export class TasksService extends BaseService {
       const updatedTask = await tx.task.update({
         where: { id },
         data: {
-          ...data,
+          ...dataWithoutUserIds,
           assigneeId: data.assigneeId === '' ? null : data.assigneeId,
           label,
           lastArchivedDate,
           archivedBy,
           completedBy,
           completedByUserType,
+          ...userAssignmentFields,
           ...(await getTaskTimestamps('update', this.user, data, prevTask)),
         },
         include: { workflowState: true },
@@ -799,29 +816,66 @@ export class TasksService extends BaseService {
     return { completedBy: null, completedByUserType: null }
   }
 
-  private async checkAssigneeType(assigneeId: string, assigneeType: AssigneeType): Promise<void> {
+  private async getUserIds(
+    internalUserId: string | null,
+    clientId: string | null,
+    companyId: string | null,
+  ): Promise<{
+    internalUserId: string | null
+    clientId: string | null
+    companyId: string | null
+  }> {
     const copilot = new CopilotAPI(this.user.token)
 
-    let isValid = false
-    switch (assigneeType) {
-      case AssigneeType.internalUser: {
-        const internalUsers = (await copilot.getInternalUsers({ limit: MAX_FETCH_ASSIGNEE_COUNT })).data
-        isValid = internalUsers?.some((user) => user.id === assigneeId) ?? false
-        break
+    if (internalUserId) {
+      const internalUsers = (await copilot.getInternalUsers({ limit: MAX_FETCH_ASSIGNEE_COUNT })).data
+      const isValid = internalUsers?.some((user) => user.id === internalUserId)
+
+      if (!isValid) {
+        throw new APIError(httpStatus.BAD_REQUEST, `Invalid internalUserId`)
       }
-      case AssigneeType.client: {
-        const clients = (await copilot.getClients({ limit: MAX_FETCH_ASSIGNEE_COUNT })).data
-        isValid = clients?.some((client) => client.id === assigneeId) ?? false
-        break
-      }
-      default: {
-        const companies = (await copilot.getCompanies({ limit: MAX_FETCH_ASSIGNEE_COUNT })).data
-        isValid = companies?.some((company) => company.id === assigneeId) ?? false
-        break
+
+      return {
+        internalUserId,
+        clientId: null,
+        companyId: null,
       }
     }
-    if (!isValid) {
-      throw new APIError(httpStatus.BAD_REQUEST, `Invalid assignee id for type : ${assigneeType}`)
+
+    if (clientId) {
+      const clients = (await copilot.getClients({ limit: MAX_FETCH_ASSIGNEE_COUNT })).data
+      const client = clients?.find((c) => c.id === clientId)
+
+      if (!client) {
+        throw new APIError(httpStatus.BAD_REQUEST, `Invalid clientId`)
+      }
+
+      if (companyId && companyId !== client.companyId) {
+        throw new APIError(httpStatus.BAD_REQUEST, `Invalid company for the provided clientId`)
+      }
+
+      return {
+        internalUserId: null,
+        clientId,
+        companyId: client.companyId,
+      }
     }
+
+    if (companyId) {
+      const companies = (await copilot.getCompanies({ limit: MAX_FETCH_ASSIGNEE_COUNT })).data
+      const isValid = companies?.some((company) => company.id === companyId)
+
+      if (!isValid) {
+        throw new APIError(httpStatus.BAD_REQUEST, `Invalid companyId`)
+      }
+
+      return {
+        internalUserId: null,
+        clientId: null,
+        companyId,
+      }
+    }
+
+    throw new APIError(httpStatus.BAD_REQUEST, `At least one of internalUserId, clientId, or companyId is required`)
   }
 }
