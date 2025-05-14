@@ -104,6 +104,9 @@ class LoadTester {
         | 'completedByUserType'
         | 'archivedBy'
         | 'deletedBy'
+        | 'internalUserId'
+        | 'clientId'
+        | 'companyId'
       >[] = []
       const currentUser = await authenticateWithToken(this.token, this.apiKey)
       const labelsService = new LabelMappingService(currentUser, this.apiKey)
