@@ -13,8 +13,9 @@ import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { AssigneePlaceholderSmall, TempalteIconMd } from '@/icons'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
-import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
+import { selectTaskDetails, setActiveTaskAssignees } from '@/redux/features/taskDetailsSlice'
 import { selectCreateTemplate } from '@/redux/features/templateSlice'
+import store from '@/redux/store'
 import { DateString } from '@/types/date'
 import { AssigneeTypeSchema, CreateTaskRequest } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
@@ -224,6 +225,17 @@ export const NewTaskCard = ({
       handleSubTaskCreation(payload)
       clearSubTaskFields()
       handleClose()
+
+      if (subTaskFields.assigneeType === 'clients' || subTaskFields.assigneeType === 'companies') {
+        const assigneeTypes = new Set(activeTaskAssignees.map((a) => a.type))
+        if (assigneeTypes.has('ius') || assigneeTypes.has('internalUsers')) {
+          store.dispatch(
+            setActiveTaskAssignees(
+              activeTaskAssignees.filter((assignee) => assignee.type === 'clients' || assignee.type === 'companies'),
+            ),
+          )
+        }
+      }
     }
   }
 
