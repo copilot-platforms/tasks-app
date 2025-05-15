@@ -17,17 +17,36 @@ import httpStatus from 'http-status'
 import { z } from 'zod'
 
 export class TemplatesService extends BaseService {
-  async getTaskTemplates() {
+  async getTaskTemplates(queryFilters?: { fromPublicApi?: boolean; limit?: number; lastIdCursor?: string }) {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Read, Resource.TaskTemplates)
 
-    let templates = await this.db.taskTemplate.findMany({
+    const findOptions: Prisma.TaskTemplateFindManyArgs = {
       where: { workspaceId: this.user.workspaceId },
       relationLoadStrategy: 'join',
       include: { workflowState: true },
-      orderBy: { updatedAt: 'desc' },
-    })
-    return templates
+      orderBy: queryFilters?.fromPublicApi ? { createdAt: 'desc' } : { updatedAt: 'desc' },
+    }
+
+    if (queryFilters?.limit) {
+      findOptions.take = queryFilters.limit
+    }
+
+    if (queryFilters?.lastIdCursor) {
+      findOptions.cursor = { id: queryFilters.lastIdCursor }
+      findOptions.skip = 1
+    }
+
+    const templates = await this.db.taskTemplate.findMany(findOptions)
+
+    const updatedTemplates = await Promise.all(
+      templates.map(async (template) => ({
+        ...template,
+        body: template.body ? await replaceImageSrc(template.body, getSignedUrl) : null,
+      })),
+    )
+
+    return updatedTemplates
   }
 
   async getAppliedTemplateDescription(id: string) {
@@ -46,6 +65,19 @@ export class TemplatesService extends BaseService {
       replacedBody = replacedBody && (await replaceImageSrc(replacedBody, getSignedUrl))
     }
     return { ...template, body: replacedBody || template.body }
+  }
+
+  async getOneTemplate(id: string) {
+    const policyGate = new PoliciesService(this.user)
+    policyGate.authorize(UserAction.Read, Resource.TaskTemplates)
+
+    const template = await this.db.taskTemplate.findFirst({
+      where: { workspaceId: this.user.workspaceId, id },
+    })
+    if (!template) {
+      throw new APIError(httpStatus.NOT_FOUND, 'Could not find template')
+    }
+    return template
   }
 
   async createTaskTemplate(payload: CreateTemplateRequest) {
@@ -182,4 +214,14 @@ export class TemplatesService extends BaseService {
 
     return url
   } // used to replace urls for images in template body
+
+  async hasMoreTemplatesAfterCursor(id: string): Promise<boolean> {
+    const nextTemplate = await this.db.taskTemplate.findFirst({
+      where: { workspaceId: this.user.workspaceId },
+      cursor: { id },
+      orderBy: { createdAt: 'desc' },
+      skip: 1,
+    })
+    return !!nextTemplate
+  }
 }

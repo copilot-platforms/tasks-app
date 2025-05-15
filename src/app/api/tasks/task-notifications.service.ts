@@ -87,7 +87,7 @@ export class TaskNotificationsService extends BaseService {
     // -- If task is moved to archived -> Mark as read notifications
     // -- If task is moved to uarchived -> Add appropriate notification
     if (prevTask.isArchived !== updatedTask.isArchived) {
-      return await this.handleTaskArchiveToggle(prevTask, updatedTask)
+      await this.handleTaskArchiveToggle(prevTask, updatedTask)
     }
 
     // Return if not workflowState / assignee updated
@@ -97,8 +97,9 @@ export class TaskNotificationsService extends BaseService {
     // Case 2
     // -- Handle previous assignee notification "Mark as read" if it is updated
     if (prevTask.assigneeId !== updatedTask.assigneeId && updatedTask.workflowState.type !== StateType.completed) {
-      return await this.handleIncompleteTaskReassignment(prevTask, updatedTask)
+      await this.handleIncompleteTaskReassignment(prevTask, updatedTask)
     }
+
     // Case 3
     // -- Check if prev assignee was IU. If so, delete any and all past in-product notifications related to this task
     if (

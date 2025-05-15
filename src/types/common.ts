@@ -1,5 +1,5 @@
 import { UserRole } from '@/app/api/core/types/user'
-import { AssigneeType, CommentInitiator } from '@prisma/client'
+import { CommentInitiator, StateType } from '@prisma/client'
 import { z } from 'zod'
 
 export const HexColorSchema = z.string().refine((val) => /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/.test(val), {
@@ -158,6 +158,14 @@ export const InternalUsersResponseSchema = z.object({
 })
 export type InternalUsersResponse = z.infer<typeof InternalUsersResponseSchema>
 
+export const ApiKeyOwnerResponseSchema = InternalUsersSchema.pick({
+  id: true,
+  givenName: true,
+  familyName: true,
+  email: true,
+})
+export type ApiKeyOwnerResponse = z.infer<typeof ApiKeyOwnerResponseSchema>
+
 /**
  * Notification RequestBody schema - accepted by SDK#createNotification
  */
@@ -230,3 +238,12 @@ export interface InitiatedEntity {
   initiatorId: string
   initiatorType: CommentInitiator | null
 }
+
+const rfc3339Regex = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[\+\-]\d{2}:\d{2}))$/
+
+export const RFC3339DateSchema = z.string().refine((val) => rfc3339Regex.test(val), {
+  message: 'Invalid RFC3339 datetime string',
+})
+export type RFC3339Date = z.infer<typeof RFC3339DateSchema>
+
+export const StateTypeSchema = z.nativeEnum(StateType)

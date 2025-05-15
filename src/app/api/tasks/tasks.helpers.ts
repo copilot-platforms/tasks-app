@@ -1,8 +1,14 @@
+import { queueTaskUpdatedBacklogWebhook } from '@/jobs/webhook-dispatch'
+import DBClient from '@/lib/db'
+import { TaskWithWorkflowState } from '@/types/db'
 import { CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
+import { DISPATCHABLE_EVENT } from '@/types/webhook'
+import { CopilotAPI } from '@/utils/CopilotAPI'
 import User from '@api/core/models/User.model'
 import { TaskTimestamps } from '@api/core/types/tasks'
+import { PublicTaskSerializer } from '@api/tasks/public/public.serializer'
 import WorkflowStatesService from '@api/workflow-states/workflowStates.service'
-import { StateType, Task, WorkflowState } from '@prisma/client'
+import { LogStatus, StateType, Task, WorkflowState } from '@prisma/client'
 
 export const getArchivedStatus = (showArchived: boolean, showUnarchived: boolean): undefined | boolean => {
   if (showArchived && !showUnarchived) {
@@ -59,5 +65,64 @@ export const getTaskTimestamps = async (
       data.workflowStateId === undefined || previousTask.workflowStateId === data.workflowStateId
         ? previousTask.completedAt
         : freshTimestamps.completedAt,
+  }
+}
+
+export const dispatchUpdatedWebhookEvent = async (
+  user: User,
+  prevTask: Task,
+  updatedTask: TaskWithWorkflowState,
+  isPublicApi: boolean,
+): Promise<void> => {
+  let event: DISPATCHABLE_EVENT | undefined
+  const copilot = new CopilotAPI(user.token)
+
+  let isDispatchableUpdateChange =
+    prevTask.assigneeId !== updatedTask.assigneeId ||
+    prevTask.title !== updatedTask.title ||
+    prevTask.workflowStateId !== updatedTask.workflowStateId ||
+    prevTask.dueDate !== updatedTask.dueDate
+
+  if (isPublicApi) {
+    isDispatchableUpdateChange = isDispatchableUpdateChange || prevTask.body !== updatedTask.body
+  }
+
+  if (isDispatchableUpdateChange) {
+    if (updatedTask.workflowState.type === StateType.completed) {
+      event = DISPATCHABLE_EVENT.TaskCompleted
+    } else {
+      event = DISPATCHABLE_EVENT.TaskUpdated
+    }
+  }
+
+  if (prevTask.isArchived !== updatedTask.isArchived) {
+    if (updatedTask.isArchived === true) {
+      event = DISPATCHABLE_EVENT.TaskArchived
+    } else {
+      event = DISPATCHABLE_EVENT.TaskUpdated
+    }
+  }
+
+  if (event) {
+    await copilot.dispatchWebhook(event, {
+      workspaceId: user.workspaceId,
+      payload: PublicTaskSerializer.serialize(updatedTask),
+    })
+  }
+}
+
+export const queueBodyUpdatedWebhook = async (user: User, task: TaskWithWorkflowState): Promise<void> => {
+  const db = DBClient.getInstance()
+  const prevBacklogsForTask = await db.taskUpdateBacklog.count({
+    where: {
+      taskId: task.id,
+      status: LogStatus.waiting,
+    },
+  })
+  // Probably not a good idea to do both in parallel
+  await db.taskUpdateBacklog.create({ data: { taskId: task.id } })
+
+  if (!prevBacklogsForTask) {
+    await queueTaskUpdatedBacklogWebhook.trigger({ user, taskId: task.id }, { delay: '10s' })
   }
 }

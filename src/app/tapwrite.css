@@ -1,5 +1,6 @@
 .tapwrite-comment-input {
   min-height: 22px;
+  cursor: text;
   /* pb is 26px because size of the arrow button is 24px and text should start wrapping just above the button */
 }
 
@@ -12,12 +13,23 @@
 .tapwrite-comment {
   min-height: 2vh;
 }
+.tapwrite-comment-editable {
+  min-height: 2vh;
+  cursor: text;
+}
 
 .tapwrite-comment img,
 .tapwrite-task-description img,
 .tapwrite-comment-input img,
+.tapwrite-reply-input {
+  cursor: text;
+}
 .tapwrite-reply-input img {
   cursor: pointer;
+}
+
+.tapwrite-task-editor {
+  cursor: text;
 }
 
 .tapwrite-task-editor img {
