@@ -35,7 +35,8 @@
     "seed:activity-logs": "tsx ./src/cmd/fill-activity-logs",
     "cmd:delete-duplicate-notifications": "tsx ./src/cmd/delete-duplicate-notifications",
     "cmd:backfill-archived-by": "tsx ./src/cmd/backfill-archived-by",
-    "cmd:backfill-completed-tasks": "tsx ./src/cmd/backfill-completed-tasks"
+    "cmd:backfill-completed-tasks": "tsx ./src/cmd/backfill-completed-tasks",
+    "cmd:backfill-new-user-ids": "tsx ./src/cmd/backfill-new-user-ids"
   },
   "dependencies": {
     "@cyntler/react-doc-viewer": "^1.17.0",
