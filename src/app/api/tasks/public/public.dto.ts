@@ -97,21 +97,46 @@ export const PublicTaskCreateDtoSchema = z
   })
 export type PublicTaskCreateDto = z.infer<typeof PublicTaskCreateDtoSchema>
 
-export const PublicTaskUpdateDtoSchema = z.object({
-  name: z
-    .string()
-    .max(255)
-    .optional()
-    .refine((name) => name === undefined || name.trim().length > 0, {
-      message: 'Name must not be empty',
-    })
-    .transform((val) => (val === undefined ? val : val.trim())),
-  description: z.string().optional(),
-  dueDate: RFC3339DateSchema.nullish(),
-  status: StatusSchema.optional(),
-  isArchived: z.boolean().optional(),
-  internalUserId: z.string().uuid().optional(),
-  clientId: z.string().uuid().optional(),
-  companyId: z.string().uuid().optional(),
-})
+export const PublicTaskUpdateDtoSchema = z
+  .object({
+    name: z
+      .string()
+      .max(255)
+      .optional()
+      .refine((name) => name === undefined || name.trim().length > 0, {
+        message: 'Name must not be empty',
+      })
+      .transform((val) => (val === undefined ? val : val.trim())),
+    description: z.string().optional(),
+    dueDate: RFC3339DateSchema.nullish(),
+    status: StatusSchema.optional(),
+    isArchived: z.boolean().optional(),
+    internalUserId: z.string().uuid().optional(),
+    clientId: z.string().uuid().optional(),
+    companyId: z.string().uuid().optional(),
+  })
+  .superRefine((data, ctx) => {
+    const { internalUserId, clientId, companyId } = data
+
+    const hasInternalUser = Boolean(internalUserId)
+    const hasClient = Boolean(clientId)
+    const hasCompany = Boolean(companyId)
+
+    if (hasInternalUser && (hasClient || hasCompany)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'internalUserId cannot be combined with clientId or companyId',
+        path: ['internalUserId'],
+      })
+    }
+
+    if (hasClient && !hasCompany) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'companyId is required when clientId is provided',
+        path: ['companyId'],
+      })
+    }
+  })
+
 export type PublicTaskUpdateDto = z.infer<typeof PublicTaskUpdateDtoSchema>
