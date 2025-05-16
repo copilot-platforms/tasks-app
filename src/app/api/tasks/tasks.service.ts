@@ -360,12 +360,14 @@ export class TasksService extends BaseService {
     let updatedTask = await this.db.$transaction(async (tx) => {
       //generate new label if prevTask has no assignee but now assigned to someone
       let label: string = prevTask.label
-      if (!prevTask.assigneeId && data.assigneeId) {
+      if (!prevTask.assigneeId && dataWithoutUserIds.assigneeId) {
         const labelMappingService = new LabelMappingService(this.user)
         labelMappingService.setTransaction(tx as PrismaClient)
         //delete the existing label
         await labelMappingService.deleteLabel(prevTask.label)
-        label = z.string().parse(await labelMappingService.getLabel(data.assigneeId, data.assigneeType))
+        label = z
+          .string()
+          .parse(await labelMappingService.getLabel(dataWithoutUserIds.assigneeId, dataWithoutUserIds.assigneeType))
       }
 
       // Set / reset lastArchivedDate if isArchived has been triggered, else remove it from the update query
@@ -381,7 +383,7 @@ export class TasksService extends BaseService {
         where: { id },
         data: {
           ...dataWithoutUserIds,
-          assigneeId: data.assigneeId === '' ? null : data.assigneeId,
+          assigneeId: dataWithoutUserIds.assigneeId === '' ? null : dataWithoutUserIds.assigneeId,
           label,
           lastArchivedDate,
           archivedBy,
