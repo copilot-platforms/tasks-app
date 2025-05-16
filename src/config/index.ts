@@ -28,4 +28,4 @@ export const showQueries = (() => {
   return true
 })()
 
-export const isDualAssigneeMode = +(process.env.FEATURE_DUAL_ASSIGNEE_MODE || 1) //feature flag used here to indicate both userIds and assigneeId/assigneeType being used for tasks app. usersIds are being used for publicAPI whereas assigneeId/assigneeType are being used for web app.
+export const isDualAssigneeMode = !!(process.env.FEATURE_DUAL_ASSIGNEE_MODE || 1) //feature flag used here to indicate both userIds and assigneeId/assigneeType being used for tasks app. usersIds are being used for publicAPI whereas assigneeId/assigneeType are being used for web app.
