@@ -1,3 +1,4 @@
+import { isDualAssigneeMode } from '@/config'
 import { maxSubTaskDepth } from '@/constants/tasks'
 import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 import { deleteTaskNotifications, sendTaskCreateNotifications, sendTaskUpdateNotifications } from '@/jobs/notifications'
@@ -171,20 +172,15 @@ export class TasksService extends BaseService {
     if (opts?.isPublicApi) {
       validatedIds = await this.getUserIds(validatedIds.internalUserId, validatedIds.clientId, validatedIds.companyId)
 
-      //The code below should be removed after we apply the userIds replacement for assigneeId and assigneeType for the webApp too. The method below is a temporary code for maintaining consistency on publicAPI and web app.
-      if (validatedIds.internalUserId) {
-        data.assigneeId = validatedIds.internalUserId
-        data.assigneeType = AssigneeType.internalUser
-      } else if (validatedIds.clientId) {
-        data.assigneeId = validatedIds.clientId
-        data.assigneeType = AssigneeType.client
-      } else if (validatedIds.companyId) {
-        data.assigneeId = validatedIds.companyId
-        data.assigneeType = AssigneeType.company
-      }
+      isDualAssigneeMode && Object.assign(data, this.setAssigneeFromPublicApi(validatedIds))
     }
 
     const label = z.string().parse(await labelMappingService.getLabel(data.assigneeId, data.assigneeType))
+
+    if (isDualAssigneeMode && data.assigneeId && data.assigneeType) {
+      validatedIds = await this.setUserIdsFromWebApi({ id: data.assigneeId, type: data.assigneeType })
+    }
+
     if (data.parentId) {
       const canCreateSubTask = await this.canCreateSubTask(data.parentId)
       if (!canCreateSubTask) {
@@ -326,7 +322,8 @@ export class TasksService extends BaseService {
     const { completedBy, completedByUserType } = await this.getCompletionInfo(data?.workflowStateId)
     const { internalUserId, clientId, companyId, ...dataWithoutUserIds } = data
 
-    const shouldUpdateUserIds = [internalUserId, clientId, companyId].some((id) => id !== null)
+    const shouldUpdateUserIds =
+      [internalUserId, clientId, companyId].some((id) => id !== null) || !!(data.assigneeId && data.assigneeType)
 
     let validatedIds = {
       internalUserId: internalUserId ?? null,
@@ -335,7 +332,13 @@ export class TasksService extends BaseService {
     }
     if (shouldUpdateUserIds && opts?.isPublicApi) {
       validatedIds = await this.getUserIds(validatedIds.internalUserId, validatedIds.clientId, validatedIds.companyId)
+      isDualAssigneeMode && Object.assign(data, this.setAssigneeFromPublicApi(validatedIds))
     }
+
+    if (isDualAssigneeMode && data.assigneeId && data.assigneeType) {
+      validatedIds = await this.setUserIdsFromWebApi({ id: data.assigneeId, type: data.assigneeType })
+    }
+
     const userAssignmentFields = shouldUpdateUserIds ? validatedIds : {}
 
     // Query previous task
@@ -889,5 +892,58 @@ export class TasksService extends BaseService {
     }
 
     throw new APIError(httpStatus.BAD_REQUEST, `At least one of internalUserId, clientId, or companyId is required`)
+  }
+
+  //The function below should be removed after we apply the userIds replacement for assigneeId and assigneeType for the webApp too. The method below is a temporary code for maintaining consistency on publicAPI and web app.
+  private setAssigneeFromPublicApi(validatedUserIds: {
+    internalUserId: string | null
+    clientId: string | null
+    companyId: string | null
+  }): {
+    assigneeId: string | null
+    assigneeType: AssigneeType | null
+  } {
+    const assigneeMap: { id: string | null; type: AssigneeType }[] = [
+      { id: validatedUserIds.internalUserId, type: AssigneeType.internalUser },
+      { id: validatedUserIds.clientId, type: AssigneeType.client },
+      { id: validatedUserIds.companyId, type: AssigneeType.company },
+    ]
+
+    const assignee = assigneeMap.find((entry) => entry.id)
+    return assignee ? { assigneeId: assignee.id, assigneeType: assignee.type } : { assigneeId: null, assigneeType: null }
+  }
+
+  //The function below should be removed after we apply the userIds replacement for assigneeId and assigneeType for the webApp too. The method below is a temporary code for maintaining consistency on publicAPI and web app.
+  private async setUserIdsFromWebApi(assignee: { id: string | null; type: string | null }): Promise<{
+    internalUserId: string | null
+    clientId: string | null
+    companyId: string | null
+  }> {
+    let internalUserId: string | null = null
+    let clientId: string | null = null
+    let companyId: string | null = null
+
+    if (!assignee.id || !assignee.type) {
+      return { internalUserId, clientId, companyId }
+    }
+
+    switch (assignee.type) {
+      case AssigneeType.internalUser:
+        internalUserId = assignee.id
+        break
+
+      case AssigneeType.client:
+        clientId = assignee.id
+        const copilot = new CopilotAPI(this.user.token)
+        const client = await copilot.getClient(assignee.id)
+        companyId = client?.companyId ?? null
+        break
+
+      case AssigneeType.company:
+        companyId = assignee.id
+        break
+    }
+
+    return { internalUserId, clientId, companyId }
   }
 }
