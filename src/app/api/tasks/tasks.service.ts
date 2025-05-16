@@ -332,7 +332,7 @@ export class TasksService extends BaseService {
     }
     if (shouldUpdateUserIds && opts?.isPublicApi) {
       validatedIds = await this.getUserIds(validatedIds.internalUserId, validatedIds.clientId, validatedIds.companyId)
-      isDualAssigneeMode && Object.assign(data, this.setAssigneeFromPublicApi(validatedIds))
+      isDualAssigneeMode && Object.assign(dataWithoutUserIds, this.setAssigneeFromPublicApi(validatedIds))
     }
 
     if (isDualAssigneeMode && data.assigneeId && data.assigneeType) {
