@@ -38,8 +38,6 @@ export class PublicTaskSerializer {
       name: task.title,
       description: task.body || '',
       parentTaskId: task.parentId,
-      assigneeId: task.assigneeId,
-      assigneeType: task.assigneeType,
       dueDate: toRFC3339(task.dueDate),
       label: task.label,
       status: statusMap[task.workflowState.type],
@@ -57,6 +55,9 @@ export class PublicTaskSerializer {
       deletedBy: task.deletedBy,
       completedBy: task.completedBy,
       completedByUserType: task.completedByUserType,
+      internalUserId: task.internalUserId,
+      clientId: task.clientId,
+      companyId: task.companyId,
     }
   }
 
@@ -122,8 +123,6 @@ export class PublicTaskSerializer {
     }
 
     return CreateTaskRequestSchema.parse({
-      assigneeId: payload.assigneeId,
-      assigneeType: payload.assigneeType,
       title,
       body,
       workflowStateId: workflowStateId,
@@ -131,6 +130,9 @@ export class PublicTaskSerializer {
       parentId: payload.parentTaskId,
       templateId: payload.templateId,
       createdById: payload.createdBy,
+      internalUserId: payload.internalUserId ?? null,
+      clientId: payload.clientId ?? null,
+      companyId: payload.companyId ?? null,
     })
   }
 
@@ -139,11 +141,12 @@ export class PublicTaskSerializer {
     return UpdateTaskRequestSchema.parse({
       title: payload.name,
       body: payload.description,
-      assigneeId: payload.assigneeId,
-      assigneeType: payload.assigneeType,
       dueDate: rfc3339ToDateString(payload.dueDate),
       isArchived: payload.isArchived,
       workflowStateId,
+      internalUserId: payload.internalUserId ?? null,
+      clientId: payload.clientId ?? null,
+      companyId: payload.companyId ?? null,
     })
   }
 }
