@@ -860,12 +860,15 @@ export class TasksService extends BaseService {
     if (clientId) {
       const clients = (await copilot.getClients({ limit: MAX_FETCH_ASSIGNEE_COUNT })).data
       const client = clients?.find((c) => c.id === clientId)
+      const isValidCompany = isDualAssigneeMode
+        ? companyId === client?.companyId
+        : typeof companyId === 'string' && client?.companyIds?.includes(companyId)
 
       if (!client) {
         throw new APIError(httpStatus.BAD_REQUEST, `Invalid clientId`)
       }
 
-      if (companyId && companyId !== client.companyId) {
+      if (companyId && !isValidCompany) {
         throw new APIError(httpStatus.BAD_REQUEST, `Invalid company for the provided clientId`)
       }
 
