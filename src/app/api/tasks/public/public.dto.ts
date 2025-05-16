@@ -57,25 +57,43 @@ export const PublicTaskCreateDtoSchema = z
     companyId: z.string().uuid().optional(),
   })
   .superRefine((data, ctx) => {
-    if (!data.templateId && !data.name) {
+    const { internalUserId, clientId, companyId, templateId, name } = data
+
+    if (!templateId && !name) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: 'Name is required when templateId is not provided',
         path: ['name'],
       })
     }
-    const hasAnyId = data.internalUserId !== null || data.clientId !== null || data.companyId !== null
 
-    if (!hasAnyId) {
+    const hasInternalUser = Boolean(internalUserId)
+    const hasClient = Boolean(clientId)
+    const hasCompany = Boolean(companyId)
+
+    if (!hasInternalUser && !hasClient && !hasCompany) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: 'At least one of internalUserId, clientId, or companyId is required',
-        path: ['internalUserId', 'clientId', 'companyId'],
+        path: ['internalUserId'],
       })
     }
 
-    //todo : extra validation required here? eg : should companyId be compulsory if clientId is provided?
-    //todo : extra validation required here. eg : can both internalUserId and (clientId, companyId) be provided?
+    if (hasInternalUser && (hasClient || hasCompany)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'internalUserId cannot be combined with clientId or companyId',
+        path: ['internalUserId'],
+      })
+    } //InternalUserId and (clientId | companyId) must be exclusive.
+
+    if (hasClient && !hasCompany) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'companyId is required when clientId is provided',
+        path: ['companyId'],
+      })
+    } //companyId must be provided when clientId is provided
   })
 export type PublicTaskCreateDto = z.infer<typeof PublicTaskCreateDtoSchema>
 
