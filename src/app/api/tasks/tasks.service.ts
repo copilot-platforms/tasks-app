@@ -170,7 +170,7 @@ export class TasksService extends BaseService {
     }
 
     if (opts?.isPublicApi) {
-      validatedIds = await this.getUserIds(validatedIds.internalUserId, validatedIds.clientId, validatedIds.companyId)
+      validatedIds = await this.validateUserIds(validatedIds.internalUserId, validatedIds.clientId, validatedIds.companyId)
 
       isDualAssigneeMode && Object.assign(data, this.setAssigneeFromPublicApi(validatedIds))
     }
@@ -331,7 +331,7 @@ export class TasksService extends BaseService {
       companyId: companyId ?? null,
     }
     if (shouldUpdateUserIds && opts?.isPublicApi) {
-      validatedIds = await this.getUserIds(validatedIds.internalUserId, validatedIds.clientId, validatedIds.companyId)
+      validatedIds = await this.validateUserIds(validatedIds.internalUserId, validatedIds.clientId, validatedIds.companyId)
       isDualAssigneeMode && Object.assign(dataWithoutUserIds, this.setAssigneeFromPublicApi(validatedIds))
     }
 
@@ -833,7 +833,7 @@ export class TasksService extends BaseService {
     return { completedBy: null, completedByUserType: null }
   }
 
-  private async getUserIds(
+  private async validateUserIds(
     internalUserId: string | null,
     clientId: string | null,
     companyId: string | null,
