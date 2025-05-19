@@ -15,13 +15,45 @@ const requireAssigneeTypeIfAssigneeId =
     }
   }
 
+export const validateUserIds = (
+  data: { internalUserId?: string | null; clientId?: string | null; companyId?: string | null },
+  ctx: z.RefinementCtx,
+) => {
+  const hasInternalUser = Boolean(data.internalUserId)
+  const hasClient = Boolean(data.clientId)
+  const hasCompany = Boolean(data.companyId)
+
+  if (!hasInternalUser && !hasClient && !hasCompany) {
+    console.log('no assignee')
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'At least one of internalUserId, clientId, or companyId is required',
+      path: ['internalUserId'],
+    })
+  } //At least one of internalUserId, clientId, or companyId is required as of now. Tasks might be created without any of these in the future.
+
+  if (hasInternalUser && (hasClient || hasCompany)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'internalUserId cannot be combined with clientId or companyId',
+      path: ['internalUserId'],
+    })
+  }
+
+  if (hasClient && !hasCompany) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'companyId is required when clientId is provided',
+      path: ['companyId'],
+    })
+  }
+}
+
 export const AssigneeTypeSchema = z.nativeEnum(PrismaAssigneeType).nullish()
 export type AssigneeType = z.infer<typeof AssigneeTypeSchema>
 
 export const CreateTaskRequestSchema = z
   .object({
-    assigneeId: z.string().optional().nullish(),
-    assigneeType: AssigneeTypeSchema,
     title: z.string().min(1),
     body: z.string().optional(),
     workflowStateId: z.string().uuid(),
@@ -29,11 +61,11 @@ export const CreateTaskRequestSchema = z
     parentId: z.string().uuid().nullish(),
     templateId: z.string().uuid().nullish(),
     createdById: z.string().uuid().optional(),
-    internalUserId: z.string().uuid().nullish(),
-    clientId: z.string().uuid().nullish(),
-    companyId: z.string().uuid().nullish(),
+    internalUserId: z.string().uuid().nullish().default(null),
+    clientId: z.string().uuid().nullish().default(null),
+    companyId: z.string().uuid().nullish().default(null),
   })
-  .superRefine(requireAssigneeTypeIfAssigneeId())
+  .superRefine(validateUserIds)
 
 export type CreateTaskRequest = z.infer<typeof CreateTaskRequestSchema>
 
