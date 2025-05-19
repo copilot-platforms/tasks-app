@@ -1,6 +1,7 @@
 import { API_DOMAIN } from '@/constants/domains'
 import DBClient from '@/lib/db'
-import { AssigneeType } from '@prisma/client'
+import { AssigneeType, Task } from '@prisma/client'
+import Bottleneck from 'bottleneck'
 import { z } from 'zod'
 
 interface Clientable {
@@ -43,20 +44,17 @@ const getCompanyMap = async (uniqueWorkspaceIds: Array<string>) => {
   return { workspaceClientCompanyIdMap, failedWorkspaces }
 }
 
-const run = async () => {
-  console.log(`backfill-company-id#run | Using clients endpoint:`, COPILOT_CLIENTS_ENDPOINT)
-
+const updateTasks = async (
+  tasks: Task[],
+  workspaceClientCompanyIdMap: Record<string, Record<string, string>>,
+  failedWorkspaces: Array<string>,
+) => {
   const db = DBClient.getInstance()
-  const tasks = await db.task.findMany({
-    where: { assigneeType: { not: null } },
-  })
-
-  const uniqueWorkspaceIds = [...new Set(tasks.map((t) => t.workspaceId))]
-  console.log(`backfill-company-id#run | All workspace ids (${uniqueWorkspaceIds.length})`, uniqueWorkspaceIds)
-  // Map with workspaceId -> clientId -> companyId
-  const { workspaceClientCompanyIdMap, failedWorkspaces } = await getCompanyMap(uniqueWorkspaceIds)
+  const dbBottleneck = new Bottleneck({ minTime: 200, maxConcurrent: 50 })
 
   const failedTasks: Array<string> = []
+  const updatePromises = []
+
   for (let task of tasks) {
     if (failedWorkspaces.includes(task.workspaceId)) {
       failedTasks.push(task.id)
@@ -64,23 +62,50 @@ const run = async () => {
     }
 
     if (task.assigneeType === AssigneeType.internalUser) {
-      await db.task.update({
-        where: { id: task.id },
-        data: { internalUserId: task.assigneeId },
-      })
+      updatePromises.push(
+        db.task.update({
+          where: { id: task.id },
+          data: { internalUserId: task.assigneeId },
+        }),
+      )
     } else if (task.assigneeType === AssigneeType.client) {
       const companyId = workspaceClientCompanyIdMap[task.workspaceId][z.string().uuid().parse(task.assigneeId)]
-      await db.task.update({
-        where: { id: task.id },
-        data: { clientId: task.assigneeId, companyId },
-      })
+      updatePromises.push(
+        db.task.update({
+          where: { id: task.id },
+          data: { clientId: task.assigneeId, companyId },
+        }),
+      )
     } else if (task.assigneeType === AssigneeType.company) {
-      await db.task.update({
-        where: { id: task.id },
-        data: { companyId: task.assigneeId },
-      })
+      updatePromises.push(
+        db.task.update({
+          where: { id: task.id },
+          data: { companyId: task.assigneeId },
+        }),
+      )
     }
   }
+
+  await Promise.all(updatePromises.map((promise) => dbBottleneck.schedule(() => promise)))
+
+  return { failedTasks }
+}
+
+const run = async () => {
+  console.log(`backfill-company-id#run | Using clients endpoint:`, COPILOT_CLIENTS_ENDPOINT)
+
+  const db = DBClient.getInstance()
+  const tasks = await db.task.findMany({
+    where: { assigneeId: { not: null }, assigneeType: { not: null } },
+  })
+
+  const uniqueWorkspaceIds = [...new Set(tasks.map((t) => t.workspaceId))]
+  console.log(`backfill-company-id#run | All workspace ids (${uniqueWorkspaceIds.length})`, uniqueWorkspaceIds)
+  // Map with workspaceId -> clientId -> companyId
+  const { workspaceClientCompanyIdMap, failedWorkspaces } = await getCompanyMap(uniqueWorkspaceIds)
+
+  // Update tasks in db
+  const { failedTasks } = await updateTasks(tasks, workspaceClientCompanyIdMap, failedWorkspaces)
 
   console.log(`Failed workspaces (${failedWorkspaces.length})`, failedWorkspaces)
   console.log(`Failed tasks (${failedTasks.length})`, failedTasks)
