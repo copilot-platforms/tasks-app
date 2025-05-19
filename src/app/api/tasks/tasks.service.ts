@@ -161,28 +161,14 @@ export class TasksService extends BaseService {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Create, Resource.Tasks)
 
+    const { internalUserId, clientId, companyId } = data
+
     const copilot = new CopilotAPI(this.user.token)
 
     //generate the label
     const labelMappingService = new LabelMappingService(this.user)
 
-    let validatedIds = {
-      internalUserId: data.internalUserId ?? null,
-      clientId: data.clientId ?? null,
-      companyId: data.companyId ?? null,
-    }
-
-    if (opts?.isPublicApi) {
-      validatedIds = await this.validateUserIds(validatedIds.internalUserId, validatedIds.clientId, validatedIds.companyId)
-      Object.assign(data, this.setAssigneeFromPublicApi(validatedIds)) //remove this in the future. This is done for syncing assigneeId and assigneeType with userIds. Once assigneeId and assigneeType are removed, this shall be removed.
-    }
-
-    if (data.assigneeId && data.assigneeType) {
-      validatedIds = await this.setUserIdsFromWebApi({
-        id: data.assigneeId,
-        type: data.assigneeType,
-      })
-    } //remove this in the future. This is done for syncing assigneeId and assigneeType with userIds. Once assigneeId and assigneeType are removed, this shall be removed.
+    const validatedIds = await this.validateUserIds(internalUserId, clientId, companyId)
 
     const { assigneeId, assigneeType } = this.getAssigneeFromUserIds({
       internalUserId: validatedIds.internalUserId,
@@ -190,9 +176,7 @@ export class TasksService extends BaseService {
       companyId: validatedIds.companyId,
     })
 
-    const label = z
-      .string()
-      .parse(await labelMappingService.getLabel(data.assigneeId ?? assigneeId, data.assigneeType ?? assigneeType))
+    const label = z.string().parse(await labelMappingService.getLabel(assigneeId, assigneeType))
 
     if (data.parentId) {
       const canCreateSubTask = await this.canCreateSubTask(data.parentId)
