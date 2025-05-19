@@ -1,4 +1,3 @@
-import { isDualAssigneeMode } from '@/config'
 import { maxSubTaskDepth } from '@/constants/tasks'
 import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 import { deleteTaskNotifications, sendTaskCreateNotifications, sendTaskUpdateNotifications } from '@/jobs/notifications'
@@ -172,14 +171,14 @@ export class TasksService extends BaseService {
     if (opts?.isPublicApi) {
       validatedIds = await this.validateUserIds(validatedIds.internalUserId, validatedIds.clientId, validatedIds.companyId)
 
-      isDualAssigneeMode && Object.assign(data, this.setAssigneeFromPublicApi(validatedIds))
+      Object.assign(data, this.setAssigneeFromPublicApi(validatedIds)) //remove this in the future. This is done for syncing assigneeId and assigneeType with userIds. Once assigneeId and assigneeType are removed, this shall be removed.
     }
 
     const label = z.string().parse(await labelMappingService.getLabel(data.assigneeId, data.assigneeType))
 
-    if (isDualAssigneeMode && data.assigneeId && data.assigneeType) {
+    if (data.assigneeId && data.assigneeType) {
       validatedIds = await this.setUserIdsFromWebApi({ id: data.assigneeId, type: data.assigneeType })
-    }
+    } //remove this in the future. This is done for syncing assigneeId and assigneeType with userIds. Once assigneeId and assigneeType are removed, this shall be removed.
 
     if (data.parentId) {
       const canCreateSubTask = await this.canCreateSubTask(data.parentId)
@@ -332,12 +331,12 @@ export class TasksService extends BaseService {
     }
     if (shouldUpdateUserIds && opts?.isPublicApi) {
       validatedIds = await this.validateUserIds(validatedIds.internalUserId, validatedIds.clientId, validatedIds.companyId)
-      isDualAssigneeMode && Object.assign(dataWithoutUserIds, this.setAssigneeFromPublicApi(validatedIds))
+      Object.assign(dataWithoutUserIds, this.setAssigneeFromPublicApi(validatedIds)) //remove this in the future. This is done for syncing assigneeId and assigneeType with userIds. Once assigneeId and assigneeType are removed, this shall be removed.
     }
 
-    if (isDualAssigneeMode && data.assigneeId && data.assigneeType) {
+    if (data.assigneeId && data.assigneeType) {
       validatedIds = await this.setUserIdsFromWebApi({ id: data.assigneeId, type: data.assigneeType })
-    }
+    } //remove this block in the future. This is done for syncing assigneeId and assigneeType with userIds. Once assigneeId and assigneeType are removed, this shall be removed.
 
     const userAssignmentFields = shouldUpdateUserIds ? validatedIds : {}
 
@@ -862,9 +861,7 @@ export class TasksService extends BaseService {
     if (clientId) {
       const clients = (await copilot.getClients({ limit: MAX_FETCH_ASSIGNEE_COUNT })).data
       const client = clients?.find((c) => c.id === clientId)
-      const isValidCompany = isDualAssigneeMode
-        ? companyId === client?.companyId
-        : typeof companyId === 'string' && client?.companyIds?.includes(companyId)
+      const isValidCompany = companyId === client?.companyId //change this to search companyIds array in the future
 
       if (!client) {
         throw new APIError(httpStatus.BAD_REQUEST, `Invalid clientId`)
