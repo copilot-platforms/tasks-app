@@ -57,8 +57,12 @@ export const TaskResponseSchema = z.object({
   id: z.string(),
   label: z.string(),
   workspaceId: z.string(),
+  // REMOVELATER
   assigneeId: z.string().optional(),
   assigneeType: AssigneeTypeSchema,
+  internalUserId: z.string().uuid().optional(),
+  clientId: z.string().uuid().optional(),
+  companyId: z.string().uuid().optional(),
   title: z.string().optional(),
   body: z.string().optional(),
   createdById: z.string(),

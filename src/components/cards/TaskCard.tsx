@@ -14,6 +14,7 @@ import { getAssigneeName } from '@/utils/assignee'
 import { isTaskCompleted } from '@/utils/isTaskCompleted'
 import { TaskMetaItems } from '@/components/atoms/TaskMetaItems'
 import store from '@/redux/store'
+import { checkTaskAssignedTo } from '@/utils/taskBoard'
 
 const TaskCardContainer = styled(Stack)(({ theme }) => ({
   border: `1px solid ${theme.color.borders.border}`,
@@ -43,7 +44,7 @@ export const TaskCard = ({ task, href }: TaskCardProps) => {
 
   useEffect(() => {
     if (assignee.length > 0) {
-      const currentAssignee = assignee.find((el) => el.id === task.assigneeId)
+      const currentAssignee = assignee.find((el) => checkTaskAssignedTo(task, el.id))
       const finalAssignee = currentAssignee ?? NoAssignee
       //@ts-expect-error  "type" property has mismatching types in between NoAssignee and IAssigneeCombined
       store.dispatch(setAssigneeCache({ key: task.id, value: finalAssignee }))
