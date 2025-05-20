@@ -228,7 +228,7 @@ export const NewTaskCard = ({
       clearSubTaskFields()
       handleClose()
 
-      if (subTaskFields.assigneeType === 'clients' || subTaskFields.assigneeType === 'companies') {
+      if (subTaskFields.clientId || subTaskFields.companyId) {
         const assigneeTypes = new Set(activeTaskAssignees.map((a) => a.type))
         if (assigneeTypes.has('ius') || assigneeTypes.has('internalUsers')) {
           store.dispatch(
