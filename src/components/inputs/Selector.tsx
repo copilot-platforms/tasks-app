@@ -143,19 +143,16 @@ export default function Selector<T extends keyof SelectorOptionsType>({
   const [placement, setPlacement] = useState<Placement>('bottom')
   const timeoutRef = useRef<NodeJS.Timeout>()
 
-  const handlePlacementChange = useCallback(
-    (data: ModifierArguments<any>) => {
-      if (data.state?.placement && data.state.placement !== placement) {
-        if (timeoutRef.current) {
-          clearTimeout(timeoutRef.current)
-        }
-        timeoutRef.current = setTimeout(() => {
-          setPlacement(data.state.placement)
-        }, 100)
+  const handlePlacementChange = useCallback((data: ModifierArguments<any>) => {
+    if (data.state?.placement && data.state.placement !== placement) {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
       }
-    },
-    [placement],
-  )
+      timeoutRef.current = setTimeout(() => {
+        setPlacement(data.state.placement)
+      }, 100)
+    }
+  }, [])
 
   useEffect(() => {
     return () => {
