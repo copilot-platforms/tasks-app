@@ -170,15 +170,25 @@ export class TasksService extends BaseService {
 
     if (opts?.isPublicApi) {
       validatedIds = await this.validateUserIds(validatedIds.internalUserId, validatedIds.clientId, validatedIds.companyId)
-
       Object.assign(data, this.setAssigneeFromPublicApi(validatedIds)) //remove this in the future. This is done for syncing assigneeId and assigneeType with userIds. Once assigneeId and assigneeType are removed, this shall be removed.
     }
 
-    const label = z.string().parse(await labelMappingService.getLabel(data.assigneeId, data.assigneeType))
-
     if (data.assigneeId && data.assigneeType) {
-      validatedIds = await this.setUserIdsFromWebApi({ id: data.assigneeId, type: data.assigneeType })
+      validatedIds = await this.setUserIdsFromWebApi({
+        id: data.assigneeId,
+        type: data.assigneeType,
+      })
     } //remove this in the future. This is done for syncing assigneeId and assigneeType with userIds. Once assigneeId and assigneeType are removed, this shall be removed.
+
+    const { assigneeId, assigneeType } = this.getAssigneeFromUserIds({
+      internalUserId: validatedIds.internalUserId,
+      clientId: validatedIds.clientId,
+      companyId: validatedIds.companyId,
+    })
+
+    const label = z
+      .string()
+      .parse(await labelMappingService.getLabel(data.assigneeId ?? assigneeId, data.assigneeType ?? assigneeType))
 
     if (data.parentId) {
       const canCreateSubTask = await this.canCreateSubTask(data.parentId)
@@ -947,5 +957,38 @@ export class TasksService extends BaseService {
     }
 
     return { internalUserId, clientId, companyId }
+  }
+
+  private getAssigneeFromUserIds(userIds: {
+    internalUserId: string | null
+    clientId: string | null
+    companyId: string | null
+  }): { assigneeId: string | null; assigneeType: AssigneeType | null } {
+    const { internalUserId, clientId, companyId } = userIds
+
+    if (internalUserId) {
+      return {
+        assigneeId: internalUserId,
+        assigneeType: AssigneeType.internalUser,
+      }
+    }
+
+    if (clientId) {
+      return {
+        assigneeId: clientId,
+        assigneeType: AssigneeType.client,
+      }
+    }
+
+    if (companyId) {
+      return {
+        assigneeId: companyId,
+        assigneeType: AssigneeType.company,
+      }
+    }
+    return {
+      assigneeId: null,
+      assigneeType: null,
+    }
   }
 }

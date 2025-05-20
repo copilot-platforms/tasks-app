@@ -29,9 +29,9 @@ export const CreateTaskRequestSchema = z
     parentId: z.string().uuid().nullish(),
     templateId: z.string().uuid().nullish(),
     createdById: z.string().uuid().optional(),
-    internalUserId: z.string().uuid().nullable().optional(),
-    clientId: z.string().uuid().nullable().optional(),
-    companyId: z.string().uuid().nullable().optional(),
+    internalUserId: z.string().uuid().nullish(),
+    clientId: z.string().uuid().nullish(),
+    companyId: z.string().uuid().nullish(),
   })
   .superRefine(requireAssigneeTypeIfAssigneeId())
 
@@ -46,9 +46,9 @@ export const UpdateTaskRequestSchema = z
     workflowStateId: z.string().uuid().optional(),
     dueDate: DateStringSchema.nullish(),
     isArchived: z.boolean().optional(),
-    internalUserId: z.string().uuid().nullable().optional(),
-    clientId: z.string().uuid().nullable().optional(),
-    companyId: z.string().uuid().nullable().optional(),
+    internalUserId: z.string().uuid().nullish(),
+    clientId: z.string().uuid().nullish(),
+    companyId: z.string().uuid().nullish(),
   })
   .superRefine(requireAssigneeTypeIfAssigneeId())
 export type UpdateTaskRequest = z.infer<typeof UpdateTaskRequestSchema>

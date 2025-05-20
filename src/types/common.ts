@@ -69,7 +69,7 @@ export const ClientResponseSchema = z.object({
   familyName: z.string(),
   email: z.string(),
   companyId: z.string(),
-  companyIds: z.array(z.string()).optional(),
+  companyIds: z.array(z.string().uuid()).optional(),
   status: z.string(),
   avatarImageUrl: z.string().nullable(),
   customFields: z
