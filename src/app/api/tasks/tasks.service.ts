@@ -165,9 +165,6 @@ export class TasksService extends BaseService {
 
     const copilot = new CopilotAPI(this.user.token)
 
-    //generate the label
-    const labelMappingService = new LabelMappingService(this.user)
-
     const validatedIds = await this.validateUserIds(internalUserId, clientId, companyId)
 
     const { assigneeId, assigneeType } = this.getAssigneeFromUserIds({
@@ -176,6 +173,8 @@ export class TasksService extends BaseService {
       companyId: validatedIds.companyId,
     })
 
+    //generate the label
+    const labelMappingService = new LabelMappingService(this.user)
     const label = z.string().parse(await labelMappingService.getLabel(assigneeId, assigneeType))
 
     if (data.parentId) {
