@@ -24,7 +24,6 @@ export const validateUserIds = (
   const hasCompany = Boolean(data.companyId)
 
   if (!hasInternalUser && !hasClient && !hasCompany) {
-    console.log('no assignee')
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       message: 'At least one of internalUserId, clientId, or companyId is required',
