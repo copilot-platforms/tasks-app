@@ -3,7 +3,8 @@ import { setCreateTaskFields } from '@/redux/features/createTaskSlice'
 import { setCreateTemplateFields } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { IAssigneeCombined, HandleSelectorComponentModes } from '@/types/interfaces'
+import { IAssigneeCombined, HandleSelectorComponentModes, IUserIds, UserIds } from '@/types/interfaces'
+import { userIdFieldMap } from '@/types/objectMaps'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { useEffect, useState } from 'react'
 
@@ -29,12 +30,6 @@ export const useHandleSelectorComponent = ({
       store.dispatch(setCreateTemplateFields({ targetField: 'workflowStateId', value: (item as WorkflowStateResponse)?.id }))
     }
 
-    if (mode === HandleSelectorComponentModes.CreateTaskFieldUpdate && type === SelectorType.ASSIGNEE_SELECTOR) {
-      store.dispatch(setCreateTaskFields({ targetField: 'assigneeId', value: (item as IAssigneeCombined)?.id }) ?? null)
-      store.dispatch(
-        setCreateTaskFields({ targetField: 'assigneeType', value: getAssigneeTypeCorrected(item as IAssigneeCombined) }),
-      )
-    }
     setRenderingItem(item)
   }, [type, item])
 
