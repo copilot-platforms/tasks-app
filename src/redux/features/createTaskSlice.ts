@@ -3,7 +3,7 @@ import { RootState } from '../store'
 import { AssigneeType } from '@prisma/client'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { DateString } from '@/types/date'
-import { CreateTaskErrors } from '@/types/interfaces'
+import { CreateTaskErrors, IUserIds, UserIds } from '@/types/interfaces'
 
 interface IErrors {
   [CreateTaskErrors.TITLE]: boolean
@@ -16,14 +16,13 @@ interface IInitialState {
   title: string
   description: string
   workflowStateId: string
-  assigneeType?: AssigneeType | null
-  assigneeId: string | null
   attachments: CreateAttachmentRequest[]
   dueDate: DateString | null
   errors: IErrors
   appliedTitle: string | null
   appliedDescription: string | null
   templateId: string | null
+  userIds: IUserIds
 }
 
 const initialState: IInitialState = {
@@ -32,8 +31,6 @@ const initialState: IInitialState = {
   title: '',
   workflowStateId: '',
   description: '',
-  assigneeType: null,
-  assigneeId: null,
   attachments: [],
   dueDate: null,
   errors: {
@@ -43,6 +40,11 @@ const initialState: IInitialState = {
   appliedTitle: null,
   appliedDescription: null,
   templateId: null,
+  userIds: {
+    [UserIds.INTERNAL_USER_ID]: null,
+    [UserIds.CLIENT_ID]: null,
+    [UserIds.COMPANY_ID]: null,
+  },
 }
 
 const createTaskSlice = createSlice({
@@ -79,8 +81,11 @@ const createTaskSlice = createSlice({
       state.description = ''
       state.templateId = null
       if (!isFilterOn) {
-        state.assigneeType = null
-        state.assigneeId = null
+        state.userIds = {
+          [UserIds.INTERNAL_USER_ID]: null,
+          [UserIds.CLIENT_ID]: null,
+          [UserIds.COMPANY_ID]: null,
+        }
       }
       state.attachments = []
       state.dueDate = null
