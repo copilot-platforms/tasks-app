@@ -208,6 +208,8 @@ export class TasksService extends BaseService {
         completedBy,
         completedByUserType,
         source: opts?.isPublicApi ? Source.api : Source.web,
+        assigneeId,
+        assigneeType,
         ...validatedIds,
         ...(await getTaskTimestamps('create', this.user, data)),
       },
@@ -896,7 +898,7 @@ export class TasksService extends BaseService {
     throw new APIError(httpStatus.BAD_REQUEST, `At least one of internalUserId, clientId, or companyId is required`)
   }
 
-  //The function below should be removed after we apply the userIds replacement for assigneeId and assigneeType for the webApp too. The method below is a temporary code for maintaining consistency on publicAPI and web app.
+  //The function below should be removed after we apply the userIds replacement for assigneeId and assigneeType for the webApp too. The method below is a temporary code for maintaining consistency on publicAPI and web app. //update : Depricated, remove this while implementing update userIds from web app.
   private setAssigneeFromPublicApi(validatedUserIds: {
     internalUserId: string | null
     clientId: string | null
@@ -915,7 +917,7 @@ export class TasksService extends BaseService {
     return assignee ? { assigneeId: assignee.id, assigneeType: assignee.type } : { assigneeId: null, assigneeType: null }
   }
 
-  //The function below should be removed after we apply the userIds replacement for assigneeId and assigneeType for the webApp too. The method below is a temporary code for maintaining consistency on publicAPI and web app.
+  //The function below should be removed after we apply the userIds replacement for assigneeId and assigneeType for the webApp too. The method below is a temporary code for maintaining consistency on publicAPI and web app. //update : Depricated, remove this while implementing update userIds from web app.
   private async setUserIdsFromWebApi(assignee: { id: string | null; type: string | null }): Promise<{
     internalUserId: string | null
     clientId: string | null
