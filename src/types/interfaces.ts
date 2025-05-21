@@ -74,6 +74,12 @@ export enum HandleSelectorComponentModes {
   //add more modes here if we are to extend useHandleSelectorComponent with more features.
 }
 
+export enum UserIds {
+  INTERNAL_USER_ID = 'internalUserId',
+  CLIENT_ID = 'clientId',
+  COMPANY_ID = 'companyId',
+}
+
 export type IFilterOptions = {
   [key in FilterOptions]: string
 }
@@ -177,4 +183,10 @@ export const UserTypesName = {
 
 export interface PropsWithToken {
   token: string
+}
+
+export interface IUserIds {
+  [UserIds.INTERNAL_USER_ID]: string | null
+  [UserIds.CLIENT_ID]: string | null
+  [UserIds.COMPANY_ID]: string | null
 }
