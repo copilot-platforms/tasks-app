@@ -30,9 +30,11 @@ import {
   HandleSelectorComponentModes,
   IAssigneeCombined,
   ITemplate,
+  IUserIds,
+  UserIds,
 } from '@/types/interfaces'
+import { userIdFieldMap } from '@/types/objectMaps'
 import { getAssigneeName } from '@/utils/assignee'
-import { getUserIdsFromAssigneeType } from '@/utils/getAssigneeTypeCorrected'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
 import { NoAssigneeExtraOptions } from '@/utils/noAssignee'
 import { trimAllTags } from '@/utils/trimTags'
@@ -148,8 +150,18 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
                 const newValue = _newValue as IAssigneeCombined
                 setTempAssignee(newValue)
                 updateAssigneeValue(newValue)
-                const userIds = getUserIdsFromAssigneeType(newValue)
-                store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: userIds }))
+                const activeKey = userIdFieldMap[newValue.type as keyof typeof userIdFieldMap]
+                const newUserIds: IUserIds = {
+                  [UserIds.INTERNAL_USER_ID]: null,
+                  [UserIds.CLIENT_ID]: null,
+                  [UserIds.COMPANY_ID]: null,
+                  [activeKey]: newValue.id,
+                }
+                if (newValue.type === 'clients' && newValue.companyId) {
+                  newUserIds[UserIds.COMPANY_ID] = newValue.companyId
+                } //set companyId if clientId is selected
+
+                store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: newUserIds }))
               }}
               startIcon={tempAssignee ? <CopilotAvatar currentAssignee={tempAssignee} /> : <AssigneePlaceholderSmall />}
               onClick={() => {

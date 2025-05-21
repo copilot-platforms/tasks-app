@@ -20,6 +20,7 @@ import { DateString } from '@/types/date'
 import { CreateTaskRequest } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { CreateTaskErrors, IAssigneeCombined, ITemplate, IUserIds, UserIds } from '@/types/interfaces'
+import { userIdFieldMap } from '@/types/objectMaps'
 import { getAssigneeName } from '@/utils/assignee'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
 import { NoAssigneeExtraOptions } from '@/utils/noAssignee'
@@ -245,12 +246,6 @@ export const NewTaskCard = ({
       }
     }
   }
-
-  const userIdFieldMap = {
-    internalUsers: UserIds.INTERNAL_USER_ID,
-    clients: UserIds.CLIENT_ID,
-    companies: UserIds.COMPANY_ID,
-  } as const
 
   return (
     <Stack
