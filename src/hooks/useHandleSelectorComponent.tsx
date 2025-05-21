@@ -3,7 +3,8 @@ import { setCreateTaskFields } from '@/redux/features/createTaskSlice'
 import { setCreateTemplateFields } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { IAssigneeCombined, HandleSelectorComponentModes } from '@/types/interfaces'
+import { IAssigneeCombined, HandleSelectorComponentModes, IUserIds, UserIds } from '@/types/interfaces'
+import { userIdFieldMap } from '@/types/objectMaps'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { useEffect, useState } from 'react'
 
@@ -30,10 +31,19 @@ export const useHandleSelectorComponent = ({
     }
 
     if (mode === HandleSelectorComponentModes.CreateTaskFieldUpdate && type === SelectorType.ASSIGNEE_SELECTOR) {
-      store.dispatch(setCreateTaskFields({ targetField: 'assigneeId', value: (item as IAssigneeCombined)?.id }) ?? null)
-      store.dispatch(
-        setCreateTaskFields({ targetField: 'assigneeType', value: getAssigneeTypeCorrected(item as IAssigneeCombined) }),
-      )
+      const activeKey = userIdFieldMap[(item as IAssigneeCombined).type as keyof typeof userIdFieldMap]
+      const newUserIds: IUserIds = {
+        [UserIds.INTERNAL_USER_ID]: null,
+        [UserIds.CLIENT_ID]: null,
+        [UserIds.COMPANY_ID]: null,
+        [activeKey]: (item as IAssigneeCombined).id,
+      }
+      if ((item as IAssigneeCombined).type === 'clients' && (item as IAssigneeCombined).companyId) {
+        newUserIds[UserIds.COMPANY_ID] = (item as IAssigneeCombined).companyId ?? null
+      } //set companyId if clientId is selected
+
+      store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: newUserIds }))
+
       store.dispatch(
         setCreateTemplateFields({
           targetField: 'assigneeType',
