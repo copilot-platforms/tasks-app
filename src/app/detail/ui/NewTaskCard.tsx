@@ -19,7 +19,7 @@ import store from '@/redux/store'
 import { DateString } from '@/types/date'
 import { CreateTaskRequest } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { CreateTaskErrors, IAssigneeCombined, ITemplate } from '@/types/interfaces'
+import { CreateTaskErrors, IAssigneeCombined, ITemplate, IUserIds, UserIds } from '@/types/interfaces'
 import { getAssigneeName } from '@/utils/assignee'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
 import { NoAssigneeExtraOptions } from '@/utils/noAssignee'
@@ -41,9 +41,7 @@ interface SubTaskFields {
   title: string
   description: string
   workflowStateId: string
-  internalUserId: string | null
-  clientId: string | null
-  companyId: string | null
+  userIds: IUserIds
   dueDate: DateString | null
   errors: IErrors
 }
@@ -69,9 +67,11 @@ export const NewTaskCard = ({
     title: '',
     description: '',
     workflowStateId: '',
-    internalUserId: null,
-    clientId: null,
-    companyId: null,
+    userIds: {
+      [UserIds.INTERNAL_USER_ID]: null,
+      [UserIds.CLIENT_ID]: null,
+      [UserIds.COMPANY_ID]: null,
+    },
     dueDate: null,
     errors: {
       [CreateTaskErrors.ASSIGNEE]: false,
@@ -101,7 +101,7 @@ export const NewTaskCard = ({
     updateStatusValue(todoWorkflowState)
   }
 
-  const handleFieldChange = (field: keyof SubTaskFields, value: string | DateString | IErrors | null) => {
+  const handleFieldChange = (field: keyof SubTaskFields, value: string | DateString | IErrors | null | IUserIds) => {
     setSubTaskFields((prev) => ({
       ...prev,
       [field]: value,
@@ -211,16 +211,21 @@ export const NewTaskCard = ({
   }
 
   const handleTaskCreation = async () => {
-    if (subTaskFields.title && (subTaskFields.internalUserId || subTaskFields.clientId || subTaskFields.companyId)) {
+    if (
+      subTaskFields.title &&
+      (subTaskFields.userIds[UserIds.INTERNAL_USER_ID] ||
+        subTaskFields.userIds[UserIds.CLIENT_ID] ||
+        subTaskFields.userIds[UserIds.COMPANY_ID])
+    ) {
       const formattedDueDate = subTaskFields.dueDate && dayjs(new Date(subTaskFields.dueDate)).format('YYYY-MM-DD')
 
       const payload: CreateTaskRequest = {
         title: subTaskFields.title,
         body: subTaskFields.description,
         workflowStateId: subTaskFields.workflowStateId,
-        internalUserId: subTaskFields.internalUserId,
-        clientId: subTaskFields.clientId,
-        companyId: subTaskFields.companyId,
+        internalUserId: subTaskFields.userIds[UserIds.INTERNAL_USER_ID],
+        clientId: subTaskFields.userIds[UserIds.CLIENT_ID],
+        companyId: subTaskFields.userIds[UserIds.COMPANY_ID],
         dueDate: formattedDueDate,
         parentId: activeTask?.id,
       }
@@ -228,7 +233,7 @@ export const NewTaskCard = ({
       clearSubTaskFields()
       handleClose()
 
-      if (subTaskFields.clientId || subTaskFields.companyId) {
+      if (subTaskFields.userIds[UserIds.CLIENT_ID] || subTaskFields.userIds[UserIds.COMPANY_ID]) {
         const assigneeTypes = new Set(activeTaskAssignees.map((a) => a.type))
         if (assigneeTypes.has('ius') || assigneeTypes.has('internalUsers')) {
           store.dispatch(
@@ -240,6 +245,12 @@ export const NewTaskCard = ({
       }
     }
   }
+
+  const userIdFieldMap = {
+    internalUsers: UserIds.INTERNAL_USER_ID,
+    clients: UserIds.CLIENT_ID,
+    companies: UserIds.COMPANY_ID,
+  } as const
 
   return (
     <Stack
@@ -383,20 +394,19 @@ export const NewTaskCard = ({
               const newValue = _newValue as IAssigneeCombined
 
               updateAssigneeValue(newValue)
-              // handleFieldChange('assigneeType', getAssigneeTypeCorrected(newValue))
-              if (newValue.type == 'internalUsers') {
-                handleFieldChange('internalUserId', newValue?.id)
-                handleFieldChange('clientId', null)
-                handleFieldChange('companyId', null)
-              } else if (newValue.type == 'clients') {
-                handleFieldChange('clientId', newValue?.id)
-                handleFieldChange('companyId', newValue.companyId ?? null)
-                handleFieldChange('internalUserId', null)
-              } else if (newValue.type == 'companies') {
-                handleFieldChange('companyId', newValue?.id)
-                handleFieldChange('clientId', null)
-                handleFieldChange('internalUserId', null)
-              } //refactor this in upcoming task related UI.
+
+              const activeKey = userIdFieldMap[newValue.type as keyof typeof userIdFieldMap]
+              const newUserIds: IUserIds = {
+                [UserIds.INTERNAL_USER_ID]: null,
+                [UserIds.CLIENT_ID]: null,
+                [UserIds.COMPANY_ID]: null,
+                [activeKey]: newValue.id,
+              }
+              if (newValue.type === 'clients' && newValue.companyId) {
+                newUserIds[UserIds.COMPANY_ID] = newValue.companyId
+              } //set companyId if clientId is selected
+
+              handleFieldChange('userIds', newUserIds)
             }}
             onClick={() => {
               if (activeDebounceTimeoutId) {
@@ -485,7 +495,7 @@ export const NewTaskCard = ({
           <PrimaryBtn
             padding={'3px 8px'}
             handleClick={() => {
-              const hasAssigneeError = !subTaskFields.internalUserId || !subTaskFields.clientId || !subTaskFields.companyId
+              const hasAssigneeError = Object.values(subTaskFields.userIds).every((value) => value === null)
 
               if (hasAssigneeError) {
                 handleFieldChange('errors', {
