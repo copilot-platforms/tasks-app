@@ -293,12 +293,24 @@ export class TasksService extends BaseService {
     // Build query filters based on role of user. IU can access all tasks related to a workspace
     // while clients can only view the tasks assigned to them or their company
     const filters = this.buildTaskPermissions(id)
-
     const where = fromPublicApi ? { ...filters, deletedAt: { not: undefined } } : filters
 
     const task = await this.db.task.findFirst({ where })
-
     if (!task) throw new APIError(httpStatus.NOT_FOUND, 'The requested task was not found')
+
+    if (this.user.internalUserId) {
+      const copilot = new CopilotAPI(this.user.token)
+      const currentInternalUser = await copilot.getInternalUser(this.user.internalUserId)
+      if (currentInternalUser.isClientAccessLimited) {
+        const isLimitedTask = (await this.filterTasksByClientAccess([task], currentInternalUser)).length === 0
+        if (isLimitedTask) {
+          throw new APIError(
+            httpStatus.UNAUTHORIZED,
+            "This task's assignee is not included in your list of accessible clients / companies",
+          )
+        }
+      }
+    }
 
     const updatedTask = await this.db.task.update({
       where: { id: task.id },
