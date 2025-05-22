@@ -289,12 +289,14 @@ export class TasksService extends BaseService {
     // Build query filters based on role of user. IU can access all tasks related to a workspace
     // while clients can only view the tasks assigned to them or their company
     const filters = this.buildTaskPermissions(id)
-
     const where = fromPublicApi ? { ...filters, deletedAt: { not: undefined } } : filters
 
     const task = await this.db.task.findFirst({ where })
-
     if (!task) throw new APIError(httpStatus.NOT_FOUND, 'The requested task was not found')
+
+    if (this.user.internalUserId) {
+      await this.checkClientAccessForTask(task, this.user.internalUserId)
+    }
 
     const updatedTask = await this.db.task.update({
       where: { id: task.id },
@@ -767,27 +769,32 @@ export class TasksService extends BaseService {
     return await subtaskService.getAccessiblePathTasks(parentTasks)
   }
 
-  private async filterTasksByClientAccess<T extends Task[] | Pick<Task, 'id' | 'assigneeId' | 'assigneeType'>[]>(
-    tasks: T,
-    currentInternalUser: InternalUsers,
-  ) {
+  private async checkClientAccessForTask(task: Task, internalUserId: string) {
     const copilot = new CopilotAPI(this.user.token)
-    const hasClientTasks = tasks.some((task) => task.assigneeType === AssigneeType.client)
-    const clients = hasClientTasks ? await copilot.getClients({ limit: MAX_FETCH_ASSIGNEE_COUNT }) : { data: [] }
+    const currentInternalUser = await copilot.getInternalUser(internalUserId)
+    if (!currentInternalUser.isClientAccessLimited) return
+
+    const isLimitedTask = !(await this.filterTasksByClientAccess([task], currentInternalUser)).length
+    if (isLimitedTask) {
+      throw new APIError(
+        httpStatus.UNAUTHORIZED,
+        "This task's assignee is not included in your list of accessible clients / companies",
+      )
+    }
+  }
+
+  private async filterTasksByClientAccess<T extends Task>(tasks: T[], currentInternalUser: InternalUsers): Promise<T[]> {
+    const hasClientOrCompanyTasks = tasks.some((task) => task.companyId)
+    if (!hasClientOrCompanyTasks) {
+      return tasks
+    }
 
     return tasks.filter((task) => {
-      if (!task.assigneeId || task.assigneeType === AssigneeType.internalUser) return true
-
-      if (task.assigneeType === AssigneeType.company) {
-        return currentInternalUser.companyAccessList?.includes(task.assigneeId)
-      }
-      const taskClient = clients.data?.find((client) => client.id === task.assigneeId)
-      if (!taskClient || !taskClient.companyId) {
-        return false
-      }
-      const taskClientsCompanyId = z.string().parse(taskClient?.companyId)
-      return currentInternalUser.companyAccessList?.includes(taskClientsCompanyId)
-    }) as T
+      // Pass all tasks that are unassigned or are assigned to IU
+      if ((!task.internalUserId && !task.clientId && !task.companyId) || task.internalUserId) return true
+      // For remaining client or company tasks, check if companyAccessList includes this companyId
+      return currentInternalUser.companyAccessList?.includes(task.companyId || '')
+    })
   }
 
   async hasMoreTasksAfterCursor(
