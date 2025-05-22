@@ -30,9 +30,11 @@ import {
   HandleSelectorComponentModes,
   IAssigneeCombined,
   ITemplate,
+  IUserIds,
+  UserIds,
 } from '@/types/interfaces'
+import { userIdFieldMap } from '@/types/objectMaps'
 import { getAssigneeName } from '@/utils/assignee'
-import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
 import { NoAssigneeExtraOptions } from '@/utils/noAssignee'
 import { trimAllTags } from '@/utils/trimTags'
@@ -148,13 +150,18 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
                 const newValue = _newValue as IAssigneeCombined
                 setTempAssignee(newValue)
                 updateAssigneeValue(newValue)
-                store.dispatch(
-                  setCreateTaskFields({
-                    targetField: 'assigneeType',
-                    value: getAssigneeTypeCorrected(newValue),
-                  }),
-                )
-                store.dispatch(setCreateTaskFields({ targetField: 'assigneeId', value: newValue?.id }))
+                const activeKey = userIdFieldMap[newValue.type as keyof typeof userIdFieldMap]
+                const newUserIds: IUserIds = {
+                  [UserIds.INTERNAL_USER_ID]: null,
+                  [UserIds.CLIENT_ID]: null,
+                  [UserIds.COMPANY_ID]: null,
+                  [activeKey]: newValue.id,
+                }
+                if (newValue.type === 'clients' && newValue.companyId) {
+                  newUserIds[UserIds.COMPANY_ID] = newValue.companyId
+                } //set companyId if clientId is selected
+
+                store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: newUserIds }))
               }}
               startIcon={tempAssignee ? <CopilotAvatar currentAssignee={tempAssignee} /> : <AssigneePlaceholderSmall />}
               onClick={() => {
@@ -311,7 +318,7 @@ const NewTaskFooter = ({
 }: NewTaskFormProps & { updateWorkflowStatusValue: (value: unknown) => void }) => {
   const [inputStatusValue, setInputStatusValue] = useState('')
 
-  const { title, assigneeId, showModal, description, appliedDescription, appliedTitle } = useSelector(selectCreateTask)
+  const { title, userIds, showModal, description, appliedDescription, appliedTitle } = useSelector(selectCreateTask)
   const { token, workflowStates } = useSelector(selectTaskBoard)
   const { templates } = useSelector(selectCreateTemplate)
 
@@ -434,7 +441,7 @@ const NewTaskFooter = ({
               <PrimaryBtn
                 handleClick={() => {
                   const hasTitleError = !title.trim()
-                  const hasAssigneeError = !assigneeId
+                  const hasAssigneeError = Object.values(userIds).every((value) => value === null)
                   if (hasTitleError || hasAssigneeError) {
                     hasTitleError && store.dispatch(setErrors({ key: CreateTaskErrors.TITLE, value: true }))
                     hasAssigneeError && store.dispatch(setErrors({ key: CreateTaskErrors.ASSIGNEE, value: true }))

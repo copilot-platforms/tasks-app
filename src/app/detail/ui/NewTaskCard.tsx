@@ -17,17 +17,17 @@ import { selectTaskDetails, setActiveTaskAssignees } from '@/redux/features/task
 import { selectCreateTemplate } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
 import { DateString } from '@/types/date'
-import { AssigneeTypeSchema, CreateTaskRequest } from '@/types/dto/tasks.dto'
+import { CreateTaskRequest } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { AssigneeType, CreateTaskErrors, IAssigneeCombined, ITemplate } from '@/types/interfaces'
+import { CreateTaskErrors, IAssigneeCombined, ITemplate, IUserIds, UserIds } from '@/types/interfaces'
+import { userIdFieldMap } from '@/types/objectMaps'
 import { getAssigneeName } from '@/utils/assignee'
-import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
 import { NoAssigneeExtraOptions } from '@/utils/noAssignee'
 import { trimAllTags } from '@/utils/trimTags'
 import { setDebouncedFilteredAssignees } from '@/utils/users'
 import { Box, Stack, Typography } from '@mui/material'
-import { AssigneeType as AssigneeTypeEnum } from '@prisma/client'
+import { AssigneeType } from '@prisma/client'
 import dayjs from 'dayjs'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
@@ -42,10 +42,9 @@ interface SubTaskFields {
   title: string
   description: string
   workflowStateId: string
-  assigneeId: string | null
+  userIds: IUserIds
   dueDate: DateString | null
   errors: IErrors
-  assigneeType?: AssigneeType | null
 }
 
 export const NewTaskCard = ({
@@ -69,12 +68,15 @@ export const NewTaskCard = ({
     title: '',
     description: '',
     workflowStateId: '',
-    assigneeId: '',
+    userIds: {
+      [UserIds.INTERNAL_USER_ID]: null,
+      [UserIds.CLIENT_ID]: null,
+      [UserIds.COMPANY_ID]: null,
+    },
     dueDate: null,
     errors: {
       [CreateTaskErrors.ASSIGNEE]: false,
     },
-    assigneeType: null,
   })
 
   const [filteredAssignees, setFilteredAssignees] = useState(activeTaskAssignees.length ? activeTaskAssignees : assignee)
@@ -100,7 +102,7 @@ export const NewTaskCard = ({
     updateStatusValue(todoWorkflowState)
   }
 
-  const handleFieldChange = (field: keyof SubTaskFields, value: string | DateString | IErrors | null) => {
+  const handleFieldChange = (field: keyof SubTaskFields, value: string | DateString | IErrors | null | IUserIds) => {
     setSubTaskFields((prev) => ({
       ...prev,
       [field]: value,
@@ -144,7 +146,7 @@ export const NewTaskCard = ({
   }
 
   const clientCompanyId =
-    activeTask && activeTask.assigneeType !== AssigneeTypeEnum.internalUser ? activeTask.assigneeId : undefined
+    activeTask && activeTask.assigneeType !== AssigneeType.internalUser ? activeTask.assigneeId : undefined
 
   const applyTemplate = useCallback(
     (id: string, templateTitle: string) => {
@@ -210,15 +212,21 @@ export const NewTaskCard = ({
   }
 
   const handleTaskCreation = async () => {
-    if (subTaskFields.title && subTaskFields.assigneeId && subTaskFields.assigneeType) {
+    if (
+      subTaskFields.title &&
+      (subTaskFields.userIds[UserIds.INTERNAL_USER_ID] ||
+        subTaskFields.userIds[UserIds.CLIENT_ID] ||
+        subTaskFields.userIds[UserIds.COMPANY_ID])
+    ) {
       const formattedDueDate = subTaskFields.dueDate && dayjs(new Date(subTaskFields.dueDate)).format('YYYY-MM-DD')
 
       const payload: CreateTaskRequest = {
         title: subTaskFields.title,
         body: subTaskFields.description,
         workflowStateId: subTaskFields.workflowStateId,
-        assigneeType: AssigneeTypeSchema.parse(subTaskFields.assigneeType),
-        assigneeId: subTaskFields.assigneeId,
+        internalUserId: subTaskFields.userIds[UserIds.INTERNAL_USER_ID],
+        clientId: subTaskFields.userIds[UserIds.CLIENT_ID],
+        companyId: subTaskFields.userIds[UserIds.COMPANY_ID],
         dueDate: formattedDueDate,
         parentId: activeTask?.id,
       }
@@ -226,7 +234,7 @@ export const NewTaskCard = ({
       clearSubTaskFields()
       handleClose()
 
-      if (subTaskFields.assigneeType === 'clients' || subTaskFields.assigneeType === 'companies') {
+      if (subTaskFields.userIds[UserIds.CLIENT_ID] || subTaskFields.userIds[UserIds.COMPANY_ID]) {
         const assigneeTypes = new Set(activeTaskAssignees.map((a) => a.type))
         if (assigneeTypes.has('ius') || assigneeTypes.has('internalUsers')) {
           store.dispatch(
@@ -381,8 +389,19 @@ export const NewTaskCard = ({
               const newValue = _newValue as IAssigneeCombined
 
               updateAssigneeValue(newValue)
-              handleFieldChange('assigneeType', getAssigneeTypeCorrected(newValue))
-              handleFieldChange('assigneeId', newValue?.id)
+
+              const activeKey = userIdFieldMap[newValue.type as keyof typeof userIdFieldMap]
+              const newUserIds: IUserIds = {
+                [UserIds.INTERNAL_USER_ID]: null,
+                [UserIds.CLIENT_ID]: null,
+                [UserIds.COMPANY_ID]: null,
+                [activeKey]: newValue.id,
+              }
+              if (newValue.type === 'clients' && newValue.companyId) {
+                newUserIds[UserIds.COMPANY_ID] = newValue.companyId
+              } //set companyId if clientId is selected
+
+              handleFieldChange('userIds', newUserIds)
             }}
             onClick={() => {
               if (activeDebounceTimeoutId) {
@@ -471,7 +490,7 @@ export const NewTaskCard = ({
           <PrimaryBtn
             padding={'3px 8px'}
             handleClick={() => {
-              const hasAssigneeError = !subTaskFields.assigneeId
+              const hasAssigneeError = Object.values(subTaskFields.userIds).every((value) => value === null)
 
               if (hasAssigneeError) {
                 handleFieldChange('errors', {

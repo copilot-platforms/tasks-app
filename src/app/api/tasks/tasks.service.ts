@@ -157,28 +157,11 @@ export class TasksService extends BaseService {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Create, Resource.Tasks)
 
+    const { internalUserId, clientId, companyId } = data
+
     const copilot = new CopilotAPI(this.user.token)
 
-    //generate the label
-    const labelMappingService = new LabelMappingService(this.user)
-
-    let validatedIds = {
-      internalUserId: data.internalUserId ?? null,
-      clientId: data.clientId ?? null,
-      companyId: data.companyId ?? null,
-    }
-
-    if (opts?.isPublicApi) {
-      validatedIds = await this.validateUserIds(validatedIds.internalUserId, validatedIds.clientId, validatedIds.companyId)
-      Object.assign(data, this.setAssigneeFromPublicApi(validatedIds)) //remove this in the future. This is done for syncing assigneeId and assigneeType with userIds. Once assigneeId and assigneeType are removed, this shall be removed.
-    }
-
-    if (data.assigneeId && data.assigneeType) {
-      validatedIds = await this.setUserIdsFromWebApi({
-        id: data.assigneeId,
-        type: data.assigneeType,
-      })
-    } //remove this in the future. This is done for syncing assigneeId and assigneeType with userIds. Once assigneeId and assigneeType are removed, this shall be removed.
+    const validatedIds = await this.validateUserIds(internalUserId, clientId, companyId)
 
     const { assigneeId, assigneeType } = this.getAssigneeFromUserIds({
       internalUserId: validatedIds.internalUserId,
@@ -186,9 +169,9 @@ export class TasksService extends BaseService {
       companyId: validatedIds.companyId,
     })
 
-    const label = z
-      .string()
-      .parse(await labelMappingService.getLabel(data.assigneeId ?? assigneeId, data.assigneeType ?? assigneeType))
+    //generate the label
+    const labelMappingService = new LabelMappingService(this.user)
+    const label = z.string().parse(await labelMappingService.getLabel(assigneeId, assigneeType))
 
     if (data.parentId) {
       const canCreateSubTask = await this.canCreateSubTask(data.parentId)
@@ -225,6 +208,8 @@ export class TasksService extends BaseService {
         completedBy,
         completedByUserType,
         source: opts?.isPublicApi ? Source.api : Source.web,
+        assigneeId,
+        assigneeType,
         ...validatedIds,
         ...(await getTaskTimestamps('create', this.user, data)),
       },
@@ -913,7 +898,7 @@ export class TasksService extends BaseService {
     throw new APIError(httpStatus.BAD_REQUEST, `At least one of internalUserId, clientId, or companyId is required`)
   }
 
-  //The function below should be removed after we apply the userIds replacement for assigneeId and assigneeType for the webApp too. The method below is a temporary code for maintaining consistency on publicAPI and web app.
+  //The function below should be removed after we apply the userIds replacement for assigneeId and assigneeType for the webApp too. The method below is a temporary code for maintaining consistency on publicAPI and web app. //update : Depricated, remove this while implementing update userIds from web app.
   private setAssigneeFromPublicApi(validatedUserIds: {
     internalUserId: string | null
     clientId: string | null
@@ -932,7 +917,7 @@ export class TasksService extends BaseService {
     return assignee ? { assigneeId: assignee.id, assigneeType: assignee.type } : { assigneeId: null, assigneeType: null }
   }
 
-  //The function below should be removed after we apply the userIds replacement for assigneeId and assigneeType for the webApp too. The method below is a temporary code for maintaining consistency on publicAPI and web app.
+  //The function below should be removed after we apply the userIds replacement for assigneeId and assigneeType for the webApp too. The method below is a temporary code for maintaining consistency on publicAPI and web app. //update : Depricated, remove this while implementing update userIds from web app.
   private async setUserIdsFromWebApi(assignee: { id: string | null; type: string | null }): Promise<{
     internalUserId: string | null
     clientId: string | null

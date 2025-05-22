@@ -1,4 +1,4 @@
-import { FilterByOptions, FilterOptionsKeywords, IAssigneeCombined } from '@/types/interfaces'
+import { FilterByOptions, FilterOptionsKeywords, IAssigneeCombined, UserIds } from '@/types/interfaces'
 
 export const filterTypeToButtonIndexMap: Record<string, number> = {
   [FilterOptionsKeywords.CLIENTS]: 2,
@@ -18,3 +18,9 @@ export const filterOptionsToAssigneeMap: Record<string, (assignee: IAssigneeComb
   [FilterOptionsKeywords.TEAM]: (assignee) => assignee.filter((el) => el.type == FilterByOptions.IUS),
   default: (assignee) => assignee,
 }
+
+export const userIdFieldMap = {
+  internalUsers: UserIds.INTERNAL_USER_ID,
+  clients: UserIds.CLIENT_ID,
+  companies: UserIds.COMPANY_ID,
+} as const
