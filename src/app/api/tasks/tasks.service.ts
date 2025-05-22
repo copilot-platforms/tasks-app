@@ -767,27 +767,18 @@ export class TasksService extends BaseService {
     return await subtaskService.getAccessiblePathTasks(parentTasks)
   }
 
-  private async filterTasksByClientAccess<T extends Task[] | Pick<Task, 'id' | 'assigneeId' | 'assigneeType'>[]>(
-    tasks: T,
-    currentInternalUser: InternalUsers,
-  ) {
-    const copilot = new CopilotAPI(this.user.token)
-    const hasClientTasks = tasks.some((task) => task.assigneeType === AssigneeType.client)
-    const clients = hasClientTasks ? await copilot.getClients({ limit: MAX_FETCH_ASSIGNEE_COUNT }) : { data: [] }
+  private async filterTasksByClientAccess<T extends Task>(tasks: T[], currentInternalUser: InternalUsers): Promise<T[]> {
+    const hasClientOrCompanyTasks = tasks.some((task) => task.companyId)
+    if (!hasClientOrCompanyTasks) {
+      return tasks
+    }
 
     return tasks.filter((task) => {
-      if (!task.assigneeId || task.assigneeType === AssigneeType.internalUser) return true
-
-      if (task.assigneeType === AssigneeType.company) {
-        return currentInternalUser.companyAccessList?.includes(task.assigneeId)
-      }
-      const taskClient = clients.data?.find((client) => client.id === task.assigneeId)
-      if (!taskClient || !taskClient.companyId) {
-        return false
-      }
-      const taskClientsCompanyId = z.string().parse(taskClient?.companyId)
-      return currentInternalUser.companyAccessList?.includes(taskClientsCompanyId)
-    }) as T
+      // Pass all tasks that are unassigned or are assigned to IU
+      if ((!task.internalUserId && !task.clientId && !task.companyId) || task.internalUserId) return true
+      // For remaining client or company tasks, check if companyAccessList includes this companyId
+      return currentInternalUser.companyAccessList?.includes(task.companyId || '')
+    })
   }
 
   async hasMoreTasksAfterCursor(
