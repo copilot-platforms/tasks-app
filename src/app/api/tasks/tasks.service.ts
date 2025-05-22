@@ -299,17 +299,7 @@ export class TasksService extends BaseService {
     if (!task) throw new APIError(httpStatus.NOT_FOUND, 'The requested task was not found')
 
     if (this.user.internalUserId) {
-      const copilot = new CopilotAPI(this.user.token)
-      const currentInternalUser = await copilot.getInternalUser(this.user.internalUserId)
-      if (currentInternalUser.isClientAccessLimited) {
-        const isLimitedTask = (await this.filterTasksByClientAccess([task], currentInternalUser)).length === 0
-        if (isLimitedTask) {
-          throw new APIError(
-            httpStatus.UNAUTHORIZED,
-            "This task's assignee is not included in your list of accessible clients / companies",
-          )
-        }
-      }
+      await this.checkClientAccessForTask(task, this.user.internalUserId)
     }
 
     const updatedTask = await this.db.task.update({
@@ -781,6 +771,20 @@ export class TasksService extends BaseService {
 
     const subtaskService = new SubtaskService(this.user)
     return await subtaskService.getAccessiblePathTasks(parentTasks)
+  }
+
+  private async checkClientAccessForTask(task: Task, internalUserId: string) {
+    const copilot = new CopilotAPI(this.user.token)
+    const currentInternalUser = await copilot.getInternalUser(internalUserId)
+    if (!currentInternalUser.isClientAccessLimited) return
+
+    const isLimitedTask = !(await this.filterTasksByClientAccess([task], currentInternalUser)).length
+    if (isLimitedTask) {
+      throw new APIError(
+        httpStatus.UNAUTHORIZED,
+        "This task's assignee is not included in your list of accessible clients / companies",
+      )
+    }
   }
 
   private async filterTasksByClientAccess<T extends Task>(tasks: T[], currentInternalUser: InternalUsers): Promise<T[]> {
