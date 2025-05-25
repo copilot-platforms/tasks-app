@@ -4,6 +4,7 @@ import { MenuBox } from '@/components/inputs/MenuBox'
 import { EmojiIcon, ReplyIcon } from '@/icons'
 import { KeyboardArrowRight } from '@mui/icons-material'
 import { Box, Modal, Stack, Typography, styled } from '@mui/material'
+import { UserCompanySelector } from 'copilot-design-system'
 
 export const StyledTypography = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[500],
@@ -239,4 +240,8 @@ export const CustomDivider = styled(Box)(({ theme }) => ({
   backgroundColor: theme.color.gray[150],
   marginLeft: '-10px',
   marginRight: '-10px',
+}))
+
+export const StyledUserCompanySelector = styled(UserCompanySelector)(() => ({
+  width: '200px',
 }))
