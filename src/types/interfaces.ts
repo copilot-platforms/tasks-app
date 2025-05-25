@@ -1,6 +1,6 @@
 import { UserSchema } from '@/types/common'
 import { UpdateTaskRequestSchema } from '@/types/dto/tasks.dto'
-import { PropsWithChildren } from 'react'
+import { Option } from 'copilot-design-system'
 import { z } from 'zod'
 
 export enum TargetMethod {
@@ -89,6 +89,12 @@ export interface IAssignee {
   internalUsers: Omit<IIus, 'type'>[]
   clients: Omit<IClient, 'type'>[]
   companies: Omit<ICompany, 'type'>[]
+}
+
+export interface ISelectorAssignee {
+  clients: Option[]
+  internalUsers: Option[]
+  companies: Option[]
 }
 
 export interface IIus {

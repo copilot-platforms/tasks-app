@@ -9,6 +9,7 @@ import {
   setAssigneeList,
   setFilteredAssgineeList,
   setPreviewMode,
+  setSelectorAssignee,
   setTasks,
   setToken,
   setViewSettings,
@@ -21,7 +22,7 @@ import { Token } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { IAssigneeCombined, IAssigneeSuggestions, ITemplate } from '@/types/interfaces'
+import { IAssignee, IAssigneeCombined, IAssigneeSuggestions, ISelectorAssignee, ITemplate } from '@/types/interfaces'
 import { filterOptionsMap } from '@/types/objectMaps'
 import { getPreviewMode, handlePreviewMode } from '@/utils/previewMode'
 import { ReactNode, useEffect } from 'react'
@@ -47,6 +48,7 @@ export const ClientSideStateUpdate = ({
   accesibleTaskIds,
   accessibleTasks,
   activeTaskAssignees,
+  selectorAssignee,
 }: {
   children: ReactNode
   workflowStates?: WorkflowStateResponse[]
@@ -62,8 +64,10 @@ export const ClientSideStateUpdate = ({
   accesibleTaskIds?: string[]
   accessibleTasks?: TaskResponse[]
   activeTaskAssignees?: IAssigneeCombined[]
+  selectorAssignee?: ISelectorAssignee
 }) => {
   const { tasks: tasksInStore, viewSettingsTemp } = useSelector(selectTaskBoard)
+  console.log(selectorAssignee)
   useEffect(() => {
     if (workflowStates) {
       store.dispatch(setWorkflowStates(workflowStates))
@@ -126,6 +130,9 @@ export const ClientSideStateUpdate = ({
     }
     if (activeTaskAssignees) {
       store.dispatch(setActiveTaskAssignees(activeTaskAssignees))
+    }
+    if (selectorAssignee) {
+      store.dispatch(setSelectorAssignee(selectorAssignee))
     }
     return () => {
       store.dispatch(setActiveTask(undefined))
