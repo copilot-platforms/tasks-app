@@ -13,20 +13,18 @@ import { z } from 'zod'
 export const getAllTasksPublic = async (req: NextRequest) => {
   const user = await authenticate(req)
 
-  const { parentTaskId, assigneeId, createdBy, status, limit, nextToken } = getSearchParams(req.nextUrl.searchParams, [
-    'parentTaskId',
-    'assigneeId',
-    'createdBy',
-    'status',
-    'limit',
-    'nextToken',
-  ])
+  const { parentTaskId, internalUserId, clientId, companyId, createdBy, status, limit, nextToken } = getSearchParams(
+    req.nextUrl.searchParams,
+    ['parentTaskId', 'internalUserId', 'clientId', 'companyId', 'createdBy', 'status', 'limit', 'nextToken'],
+  )
 
   const statusParsed = StatusSchema.optional().parse(status || undefined)
   const workflowStateType = statusParsed && workflowStateTypeMap[statusParsed]
 
   const publicFilters: Partial<Parameters<TasksService['getAllTasks']>[0]> = {
-    assigneeId: assigneeId || undefined,
+    internalUserId: internalUserId || undefined,
+    clientId: clientId || undefined,
+    companyId: companyId || undefined,
     createdById: createdBy || undefined,
     // Note - this technically messes up getting only parent tasks, but that doesn't seem to be in scope for API
     parentId: parentTaskId || undefined,

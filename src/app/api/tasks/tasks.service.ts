@@ -64,7 +64,9 @@ export class TasksService extends BaseService {
     // Column filters
     showArchived: boolean
     showUnarchived: boolean
-    assigneeId?: string
+    internalUserId?: string
+    clientId?: string
+    companyId?: string
     createdById?: string
     parentId?: string | null
     workflowState?: { type: StateType }
@@ -114,7 +116,9 @@ export class TasksService extends BaseService {
     const where: Prisma.TaskWhereInput = {
       ...filters,
       ...disjointTasksFilter,
-      assigneeId: queryFilters.assigneeId,
+      internalUserId: queryFilters.internalUserId,
+      clientId: queryFilters.clientId,
+      companyId: queryFilters.companyId,
       createdById: queryFilters.createdById,
       workflowState: queryFilters.workflowState,
       isArchived,
