@@ -7,7 +7,7 @@ import { TaskWithWorkflowState } from '@/types/db'
 import { AncestorTaskResponse, CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { DISPATCHABLE_EVENT } from '@/types/webhook'
 import { CopilotAPI } from '@/utils/CopilotAPI'
-import { isPastDate } from '@/utils/dateHelper'
+import { isPastDateString } from '@/utils/dateHelper'
 import { buildLtree, buildLtreeNodeString, getIdsFromLtreePath } from '@/utils/ltree'
 import { getFilePathFromUrl, replaceImageSrc } from '@/utils/signedUrlReplacer'
 import { getSignedUrl } from '@/utils/signUrl'
@@ -197,7 +197,7 @@ export class TasksService extends BaseService {
       }
     }
 
-    if (data.dueDate && isPastDate(data.dueDate)) {
+    if (data.dueDate && isPastDateString(data.dueDate)) {
       throw new APIError(httpStatus.BAD_REQUEST, 'Due date cannot be in the past')
     }
 
