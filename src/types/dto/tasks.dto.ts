@@ -77,6 +77,7 @@ export const TaskResponseSchema = z.object({
   workflowState: WorkflowStateResponseSchema,
   dueDate: DateStringSchema.optional(),
   createdAt: z.date(),
+  updatedAt: z.date().nullish(),
   assignee: z.union([ClientResponseSchema, InternalUsersSchema, CompanyResponseSchema]),
   lastActivityLogUpdated: z.date().optional(),
   isArchived: z.boolean().optional(),

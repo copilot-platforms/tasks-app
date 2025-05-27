@@ -3,7 +3,7 @@
 import { RealTimeTaskResponse } from '@/hoc/RealTime'
 import { selectTaskBoard, setAccessibleTasks, setActiveTask, setTasks } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
-import { InternalUsersSchema } from '@/types/common'
+import { InternalUsersSchema, Token } from '@/types/common'
 import { IAssigneeCombined } from '@/types/interfaces'
 import { AssigneeType } from '@prisma/client'
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
@@ -15,15 +15,27 @@ export class RealtimeHandler {
     private readonly user: IAssigneeCombined,
     private readonly userRole: AssigneeType,
     private readonly handleDelete: (newTask: RealTimeTaskResponse) => void,
+    private readonly tokenPayload?: Token,
   ) {}
+
+  private getFormattedTask(task: unknown): RealTimeTaskResponse {
+    const newTask = task as RealTimeTaskResponse
+    // NOTE: we append a Z here to make JS understand this raw timestamp (in format YYYY-MM-DD:HH:MM:SS.MS) is in UTC timezone
+    // New payloads listened on the 'INSERT' action in realtime doesn't contain this tz info so the order can mess up,
+    // causing tasks to bounce around on hover
+    return {
+      ...newTask,
+      createdAt: newTask.createdAt && new Date(newTask.createdAt + 'Z'),
+      updatedAt: newTask.updatedAt && new Date(newTask.updatedAt + 'Z'),
+    }
+  }
 
   /**
    * Filters out tasks this user type does not have access to
    */
-  private isTaskAccessible(newTask: RealTimeTaskResponse): boolean {
+  private isSubtaskAccessible(newTask: RealTimeTaskResponse): boolean {
     const currentState = store.getState()
     const { assignee } = selectTaskBoard(currentState)
-
     // Ignore all tasks that belong to client / company in user's limited access array, if IU is ClientAccessLimited
     if (this.userRole === AssigneeType.internalUser) {
       const iu = InternalUsersSchema.parse(this.user)
@@ -51,20 +63,6 @@ export class RealtimeHandler {
       return false
     }
     return true
-  }
-
-  /**
-   * Validates that payload contains all necessary fields
-   */
-  private isValidPayload() {
-    return (
-      this.payload.new &&
-      Object.keys(this.payload.new).includes('assigneeId') &&
-      Object.keys(this.payload.new).includes('assigneeType') &&
-      Object.keys(this.payload.new).includes('parentId') &&
-      Object.keys(this.payload.new).includes('title')
-      // body may not be in payload due to postgres TOAST mechanism
-    )
   }
 
   /**
@@ -118,7 +116,7 @@ export class RealtimeHandler {
     }
 
     const isParentTaskAccessible = accessibleTasks.some((task) => task.id === newTask.parentId)
-    if (this.isTaskAccessible(newTask)) {
+    if (this.isSubtaskAccessible(newTask)) {
       // If task is accessible, add it to the tasks array
       if (!isTaskVisibleInBoard && !isParentTaskAccessible) {
         store.dispatch(setTasks([...tasks, newTask]))
@@ -133,7 +131,7 @@ export class RealtimeHandler {
           tasks.map((task) => {
             return task.id === newTask.id
               ? // Update task - account for TOAST behavior in `body`, and format realtime postgres' timestamp
-                { ...newTask, body: newTask.body || task.body, createdAt: new Date(newTask.createdAt + 'Z') }
+                { ...newTask, body: newTask.body || task.body }
               : task
           }),
         ),
@@ -147,9 +145,7 @@ export class RealtimeHandler {
     store.dispatch(
       setAccessibleTasks(
         accessibleTasks.map((task) => {
-          return task.id === newTask.id
-            ? { ...newTask, body: newTask.body || task.body, createdAt: new Date(newTask.createdAt + 'Z') }
-            : task
+          return task.id === newTask.id ? { ...newTask, body: newTask.body || task.body } : task
         }),
       ),
     )
@@ -159,17 +155,15 @@ export class RealtimeHandler {
    * Handler for realtime subtasks
    */
   handleRealtimeSubtasks() {
-    if (!this.isValidPayload()) {
-      return
-    }
     const currentState = store.getState()
     const { tasks, accessibleTasks } = selectTaskBoard(currentState)
 
-    const newTask = this.payload.new as RealTimeTaskResponse
+    const newTask = this.getFormattedTask(this.payload.new)
+
     // Being a subtask, this surely has a valid non-null parentId
     newTask.parentId = z.string().parse(newTask.parentId)
 
-    if (!this.isTaskAccessible(newTask)) {
+    if (!this.isSubtaskAccessible(newTask)) {
       if (tasks.some((task) => task.id === newTask.id)) {
         store.dispatch(setTasks(tasks.filter((task) => task.id !== newTask.id)))
         store.dispatch(setAccessibleTasks(accessibleTasks.filter((task) => task.id !== newTask.id)))
@@ -181,6 +175,54 @@ export class RealtimeHandler {
       return this.handleRealtimeSubtaskInsert(newTask)
     } else if (this.payload.eventType === 'UPDATE') {
       return this.handleRealtimeSubtaskUpdate(newTask)
+    }
+  }
+
+  /**
+   * Handler for realtime task inserts
+   */
+  handleRealtimeTaskInsert() {
+    const newTask = this.getFormattedTask(this.payload.new)
+
+    // Failsafe even though realtime filter is already in place
+    if (newTask.workspaceId !== this.tokenPayload?.workspaceId) {
+      return
+    }
+
+    const commonStore = store.getState()
+    const { assignee, accessibleTasks, showUnarchived, tasks } = commonStore.taskBoard
+
+    // Step 1: Add to accessibleTasks array (store of all accessible tasks for current user in state)
+    // --- Internal User
+    if (
+      this.user &&
+      this.userRole === AssigneeType.internalUser &&
+      InternalUsersSchema.parse(this.user).isClientAccessLimited
+    ) {
+      const iu = InternalUsersSchema.parse(this.user)
+      let isIuAccessibleTask =
+        !iu.isClientAccessLimited || (iu.isClientAccessLimited && assignee.some((user) => user.id === newTask.assigneeId))
+      if (isIuAccessibleTask) {
+        store.dispatch(setAccessibleTasks([...accessibleTasks, newTask]))
+      }
+    }
+    // --- Client
+    if (this.userRole === AssigneeType.client) {
+      const isClientOrCompanyTask = [this.tokenPayload?.clientId, this.tokenPayload?.companyId].includes(newTask.assigneeId)
+      if (isClientOrCompanyTask) {
+        store.dispatch(setAccessibleTasks([...accessibleTasks, newTask]))
+      }
+    }
+
+    // Step 2: Add to tasks array (show in task board)
+    if (showUnarchived) {
+      store.dispatch(
+        setTasks([
+          // Remove any previously disjointed tasks from the board
+          ...tasks.filter((task) => task.parentId !== newTask.id),
+          newTask,
+        ]),
+      )
     }
   }
 }
