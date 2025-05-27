@@ -30,8 +30,8 @@ export const useHandleSelectorComponent = ({
       store.dispatch(setCreateTemplateFields({ targetField: 'workflowStateId', value: (item as WorkflowStateResponse)?.id }))
     }
 
-    if (mode === HandleSelectorComponentModes.CreateTaskFieldUpdate && type === SelectorType.ASSIGNEE_SELECTOR) {
-      const activeKey = userIdFieldMap[(item as IAssigneeCombined).type as keyof typeof userIdFieldMap]
+    if (mode === HandleSelectorComponentModes.CreateTaskFieldUpdate && type === SelectorType.ASSIGNEE_SELECTOR && item) {
+      const activeKey = userIdFieldMap[(item as IAssigneeCombined)?.type as keyof typeof userIdFieldMap]
       const newUserIds: IUserIds = {
         [UserIds.INTERNAL_USER_ID]: null,
         [UserIds.CLIENT_ID]: null,
