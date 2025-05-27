@@ -52,5 +52,6 @@ export const rfc3339ToDateString = (date: string | null | undefined) => {
 }
 
 export const isPastDate = (date: DateString) => {
+  return false
   return dayjs(date, 'YYYY-MM-DD').isBefore(dayjs(), 'day')
 }
