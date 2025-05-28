@@ -49,11 +49,8 @@ interface NewTaskFormProps {
 }
 
 export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => {
-  const { activeWorkflowStateId, errors } = useSelector(selectCreateTask)
-  const { workflowStates, assignee, token, filterOptions, previewMode } = useSelector(selectTaskBoard)
-  const [filteredAssignees, setFilteredAssignees] = useState(assignee)
-  const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
-  const [loading, setLoading] = useState(false)
+  const { activeWorkflowStateId } = useSelector(selectCreateTask)
+  const { workflowStates } = useSelector(selectTaskBoard)
 
   const todoWorkflowState = workflowStates.find((el) => el.key === 'todo') || workflowStates[0]
   const defaultWorkflowState = activeWorkflowStateId
@@ -64,28 +61,12 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
     item: defaultWorkflowState,
     type: SelectorType.STATUS_SELECTOR,
   })
-  const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
-    item:
-      assignee.find(
-        (item) => item.id == filterOptions[FilterOptions.ASSIGNEE] || item.id == filterOptions[FilterOptions.TYPE],
-      ) ?? null,
-    type: SelectorType.ASSIGNEE_SELECTOR,
-    mode: HandleSelectorComponentModes.CreateTaskFieldUpdate,
-  })
 
   const statusValue = _statusValue as WorkflowStateResponse //typecasting
-  const assigneeValue = _assigneeValue as IAssigneeCombined //typecasting
-  // use temp state pattern so that we don't fall into an infinite loop of assigneeValue set -> trigger -> set
-  const [tempAssignee, setTempAssignee] = useState<IAssigneeCombined | null>(assigneeValue)
-
-  const [inputStatusValue, setInputStatusValue] = useState('')
 
   const [isEditorReadonly, setIsEditorReadonly] = useState(false)
 
   const handleCreateWithAssignee = () => {
-    if (!!tempAssignee?.id && !assignee.find((assignee) => assignee.id === tempAssignee.id)) {
-      store.dispatch(setAssigneeList([...assignee, tempAssignee]))
-    }
     handleCreate()
   }
 
