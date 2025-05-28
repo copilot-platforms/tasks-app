@@ -20,7 +20,7 @@ export const filterOptionsToAssigneeMap: Record<string, (assignee: IAssigneeComb
 }
 
 export const userIdFieldMap = {
-  internalUsers: UserIds.INTERNAL_USER_ID,
-  clients: UserIds.CLIENT_ID,
-  companies: UserIds.COMPANY_ID,
+  internalUser: UserIds.INTERNAL_USER_ID,
+  client: UserIds.CLIENT_ID,
+  company: UserIds.COMPANY_ID,
 } as const
