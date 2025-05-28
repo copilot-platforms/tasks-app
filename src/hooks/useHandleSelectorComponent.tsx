@@ -30,27 +30,6 @@ export const useHandleSelectorComponent = ({
       store.dispatch(setCreateTemplateFields({ targetField: 'workflowStateId', value: (item as WorkflowStateResponse)?.id }))
     }
 
-    if (mode === HandleSelectorComponentModes.CreateTaskFieldUpdate && type === SelectorType.ASSIGNEE_SELECTOR && item) {
-      const activeKey = userIdFieldMap[(item as IAssigneeCombined)?.type as keyof typeof userIdFieldMap]
-      const newUserIds: IUserIds = {
-        [UserIds.INTERNAL_USER_ID]: null,
-        [UserIds.CLIENT_ID]: null,
-        [UserIds.COMPANY_ID]: null,
-        [activeKey]: (item as IAssigneeCombined).id,
-      }
-      if ((item as IAssigneeCombined).type === 'clients' && (item as IAssigneeCombined).companyId) {
-        newUserIds[UserIds.COMPANY_ID] = (item as IAssigneeCombined).companyId ?? null
-      } //set companyId if clientId is selected
-
-      store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: newUserIds }))
-
-      store.dispatch(
-        setCreateTemplateFields({
-          targetField: 'assigneeType',
-          value: getAssigneeTypeCorrected(item as IAssigneeCombined),
-        }),
-      )
-    }
     setRenderingItem(item)
   }, [type, item])
 

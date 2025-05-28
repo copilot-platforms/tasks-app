@@ -18,12 +18,11 @@ import store from '@/redux/store'
 import { DateString } from '@/types/date'
 import { CreateTaskRequest } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { CreateTaskErrors, IAssigneeCombined, ITemplate, IUserIds, UserIds } from '@/types/interfaces'
+import { CreateTaskErrors, ITemplate, IUserIds, UserIds } from '@/types/interfaces'
 import { getSelectedUserIds } from '@/utils/getSelectedUserIds'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
 import { trimAllTags } from '@/utils/trimTags'
 import { Box, Stack, Typography } from '@mui/material'
-import { AssigneeType } from '@prisma/client'
 import dayjs from 'dayjs'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
@@ -53,8 +52,6 @@ export const NewTaskCard = ({
   const { activeTaskAssignees } = useSelector(selectTaskDetails)
 
   const { templates } = useSelector(selectCreateTemplate)
-  const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
-  const [loading, setLoading] = useState(false)
 
   const [isEditorReadonly, setIsEditorReadonly] = useState(false)
 
@@ -74,8 +71,6 @@ export const NewTaskCard = ({
     },
   })
 
-  const [filteredAssignees, setFilteredAssignees] = useState(activeTaskAssignees.length ? activeTaskAssignees : assignee)
-
   const inputRef = useRef<HTMLInputElement>(null)
 
   const [isUploading, setIsUploading] = useState(false)
@@ -89,11 +84,13 @@ export const NewTaskCard = ({
         [CreateTaskErrors.ASSIGNEE]: false,
       },
       workflowStateId: todoWorkflowState.id,
-      assigneeId: '',
-      assigneeType: null,
+      userIds: {
+        [UserIds.INTERNAL_USER_ID]: null,
+        [UserIds.CLIENT_ID]: null,
+        [UserIds.COMPANY_ID]: null,
+      },
       dueDate: null,
     }))
-    updateAssigneeValue(null)
     updateStatusValue(todoWorkflowState)
   }
 
@@ -122,12 +119,6 @@ export const NewTaskCard = ({
 
   const statusValue = _statusValue as WorkflowStateResponse
 
-  const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
-    item: null,
-    type: SelectorType.ASSIGNEE_SELECTOR,
-  })
-  const assigneeValue = _assigneeValue as IAssigneeCombined
-
   const { renderingItem: _templateValue, updateRenderingItem: updateTemplateValue } = useHandleSelectorComponent({
     item: undefined,
     type: SelectorType.TEMPLATE_SELECTOR,
@@ -139,9 +130,6 @@ export const NewTaskCard = ({
   const handleUploadStatusChange = (uploading: boolean) => {
     setIsUploading(uploading)
   }
-
-  const clientCompanyId =
-    activeTask && activeTask.assigneeType !== AssigneeType.internalUser ? activeTask.assigneeId : undefined
 
   const applyTemplate = useCallback(
     (id: string, templateTitle: string) => {
