@@ -1,16 +1,15 @@
-import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
-import { MiniLoader } from '@/components/atoms/MiniLoader'
 import AttachmentLayout from '@/components/AttachmentLayout'
 import { ManageTemplatesEndOption } from '@/components/buttons/ManageTemplatesEndOptions'
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
+import { CopilotSelector } from '@/components/inputs/CopilotSelector'
 import { DatePickerComponent } from '@/components/inputs/DatePickerComponent'
 import Selector, { SelectorType } from '@/components/inputs/Selector'
 import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
 import { StyledTextField } from '@/components/inputs/TextField'
 import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
-import { AssigneePlaceholderSmall, TempalteIconMd } from '@/icons'
+import { TempalteIconMd } from '@/icons'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { selectTaskDetails, setActiveTaskAssignees } from '@/redux/features/taskDetailsSlice'
@@ -20,19 +19,15 @@ import { DateString } from '@/types/date'
 import { CreateTaskRequest } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { CreateTaskErrors, IAssigneeCombined, ITemplate, IUserIds, UserIds } from '@/types/interfaces'
-import { userIdFieldMap } from '@/types/objectMaps'
-import { getAssigneeName } from '@/utils/assignee'
+import { getSelectedUserIds } from '@/utils/getSelectedUserIds'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
-import { NoAssigneeExtraOptions } from '@/utils/noAssignee'
 import { trimAllTags } from '@/utils/trimTags'
-import { setDebouncedFilteredAssignees } from '@/utils/users'
 import { Box, Stack, Typography } from '@mui/material'
 import { AssigneeType } from '@prisma/client'
 import dayjs from 'dayjs'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
-import { z } from 'zod'
 
 interface IErrors {
   [CreateTaskErrors.ASSIGNEE]: boolean
@@ -377,86 +372,21 @@ export const NewTaskCard = ({
             height={'28px'}
             gap={'6px'}
           />
-          <Selector
-            padding={'0px 4px'}
-            inputStatusValue={inputStatusValue}
-            setInputStatusValue={setInputStatusValue}
-            placeholder="Set assignee"
-            getSelectedValue={(_newValue) => {
-              handleFieldChange('errors', {
-                assignee: false,
-              })
-              const newValue = _newValue as IAssigneeCombined
-
-              updateAssigneeValue(newValue)
-
-              const activeKey = userIdFieldMap[newValue.type as keyof typeof userIdFieldMap]
-              const newUserIds: IUserIds = {
-                [UserIds.INTERNAL_USER_ID]: null,
-                [UserIds.CLIENT_ID]: null,
-                [UserIds.COMPANY_ID]: null,
-                [activeKey]: newValue.id,
+          <CopilotSelector
+            onChange={(inputValue) => {
+              const newUserIds = getSelectedUserIds(inputValue)
+              const areUserIdsEmpty = Object.values(newUserIds).every((value) => value === null) // remove this while adding support for no assignee.
+              if (areUserIdsEmpty) {
+                handleFieldChange('errors', {
+                  assignee: true,
+                })
+              } else {
+                handleFieldChange('errors', {
+                  assignee: false,
+                })
               }
-              if (newValue.type === 'clients' && newValue.companyId) {
-                newUserIds[UserIds.COMPANY_ID] = newValue.companyId
-              } //set companyId if clientId is selected
-
               handleFieldChange('userIds', newUserIds)
             }}
-            onClick={() => {
-              if (activeDebounceTimeoutId) {
-                clearTimeout(activeDebounceTimeoutId)
-              }
-              setLoading(true)
-              setFilteredAssignees(activeTaskAssignees.length ? activeTaskAssignees : assignee)
-              setLoading(false)
-            }}
-            options={loading ? [] : filteredAssignees}
-            value={assigneeValue}
-            extraOption={NoAssigneeExtraOptions}
-            extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
-              return <>{loading && <MiniLoader />}</>
-            }}
-            selectorType={SelectorType.ASSIGNEE_SELECTOR}
-            handleInputChange={async (newInputValue: string) => {
-              if (!newInputValue) {
-                setFilteredAssignees(activeTaskAssignees.length ? activeTaskAssignees : assignee)
-                return
-              }
-              setDebouncedFilteredAssignees(
-                activeDebounceTimeoutId,
-                setActiveDebounceTimeoutId,
-                setLoading,
-                setFilteredAssignees,
-                z.string().parse(token),
-                newInputValue,
-                undefined,
-                clientCompanyId,
-              )
-            }}
-            filterOption={(x: unknown) => x}
-            buttonHeight="auto"
-            buttonContent={
-              <Stack direction="row" alignItems={'center'} columnGap={'6px'} height="26px">
-                {assigneeValue ? <CopilotAvatar currentAssignee={assigneeValue} /> : <AssigneePlaceholderSmall />}
-                <Typography
-                  variant="bodySm"
-                  sx={{
-                    color: (theme) => (assigneeValue ? theme.color.gray[600] : theme.color.text.textDisabled),
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    lineHeight: '22px',
-                    overflow: 'hidden',
-                    fontSize: '12px',
-                    maxWidth: '120px',
-                  }}
-                >
-                  {getAssigneeName(assigneeValue as IAssigneeCombined, 'Assignee')}
-                </Typography>
-              </Stack>
-            }
-            error={subTaskFields.errors.assignee}
-            errorPlaceholder=""
           />
           <DatePickerComponent
             padding={'0px 4px'}
