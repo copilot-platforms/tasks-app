@@ -67,7 +67,6 @@ export const ClientSideStateUpdate = ({
   selectorAssignee?: ISelectorAssignee
 }) => {
   const { tasks: tasksInStore, viewSettingsTemp } = useSelector(selectTaskBoard)
-  console.log(selectorAssignee)
   useEffect(() => {
     if (workflowStates) {
       store.dispatch(setWorkflowStates(workflowStates))
