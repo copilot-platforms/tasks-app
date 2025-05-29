@@ -249,6 +249,7 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate 
           <Selector
             inputStatusValue={inputStatusValue}
             variant="icon"
+            placeholder="Set assignee"
             setInputStatusValue={setInputStatusValue}
             buttonWidth="100%"
             getSelectedValue={(newValue) => {
