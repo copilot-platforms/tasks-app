@@ -83,6 +83,9 @@ export const TaskResponseSchema = z.object({
   lastArchivedDate: z.string().datetime(),
   parentId: z.string().nullish(),
   subtaskCount: z.number(),
+  internalUserId: z.string().uuid().nullish(),
+  clientId: z.string().uuid().nullish(),
+  companyId: z.string().uuid().nullish(),
 })
 
 export type TaskResponse = z.infer<typeof TaskResponseSchema>

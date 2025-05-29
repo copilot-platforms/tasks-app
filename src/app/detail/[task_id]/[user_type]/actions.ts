@@ -49,14 +49,16 @@ export const updateWorkflowStateIdOfTask = async (token: string, taskId: string,
 export const updateAssignee = async (
   token: string,
   task_id: string,
-  assigneeType: string | null,
-  assigneeId: string | null,
+  internalUserId: string | null,
+  clientId: string | null,
+  companyId: string | null,
 ) => {
   await fetch(`${apiUrl}/api/tasks/${task_id}?token=${token}`, {
     method: 'PATCH',
     body: JSON.stringify({
-      assigneeType,
-      assigneeId,
+      internalUserId,
+      clientId,
+      companyId,
     }),
   })
   revalidateTag('getOneTask')
