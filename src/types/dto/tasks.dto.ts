@@ -4,17 +4,6 @@ import { WorkflowStateResponseSchema } from './workflowStates.dto'
 import { DateStringSchema } from '@/types/date'
 import { ClientResponseSchema, CompanyResponseSchema, InternalUsersSchema } from '../common'
 
-const requireAssigneeTypeIfAssigneeId =
-  () => (data: { assigneeId?: string | null; assigneeType?: AssigneeType }, ctx: z.RefinementCtx) => {
-    if (data.assigneeId && !data.assigneeType) {
-      ctx.addIssue({
-        path: ['assigneeType'],
-        message: 'assigneeType is required when assigneeId is provided',
-        code: z.ZodIssueCode.custom,
-      })
-    }
-  }
-
 export const validateUserIds = (
   data: { internalUserId?: string | null; clientId?: string | null; companyId?: string | null },
   ctx: z.RefinementCtx,
@@ -22,14 +11,6 @@ export const validateUserIds = (
   const hasInternalUser = Boolean(data.internalUserId)
   const hasClient = Boolean(data.clientId)
   const hasCompany = Boolean(data.companyId)
-
-  if (!hasInternalUser && !hasClient && !hasCompany) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: 'At least one of internalUserId, clientId, or companyId is required',
-      path: ['internalUserId'],
-    })
-  } //At least one of internalUserId, clientId, or companyId is required as of now. Tasks might be created without any of these in the future.
 
   if (hasInternalUser && (hasClient || hasCompany)) {
     ctx.addIssue({
@@ -70,8 +51,6 @@ export type CreateTaskRequest = z.infer<typeof CreateTaskRequestSchema>
 
 export const UpdateTaskRequestSchema = z
   .object({
-    assigneeId: z.string().nullish(),
-    assigneeType: AssigneeTypeSchema,
     title: z.string().optional(),
     body: z.string().optional(),
     workflowStateId: z.string().uuid().optional(),
@@ -81,7 +60,8 @@ export const UpdateTaskRequestSchema = z
     clientId: z.string().uuid().nullish(),
     companyId: z.string().uuid().nullish(),
   })
-  .superRefine(requireAssigneeTypeIfAssigneeId())
+  .superRefine(validateUserIds)
+
 export type UpdateTaskRequest = z.infer<typeof UpdateTaskRequestSchema>
 
 export const TaskResponseSchema = z.object({
