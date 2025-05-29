@@ -31,8 +31,9 @@ export const updateTask = async ({
     method: 'PATCH',
     body: JSON.stringify({
       workflowStateId: payload.workflowStateId,
-      assigneeId: payload.assigneeId,
-      assigneeType: payload.assigneeType,
+      internalUserId: payload.internalUserId,
+      clientId: payload.clientId,
+      companyId: payload.companyId,
       body: payload.body,
       title: payload.title,
       dueDate: payload.dueDate,
