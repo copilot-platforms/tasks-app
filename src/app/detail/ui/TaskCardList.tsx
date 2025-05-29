@@ -24,7 +24,7 @@ import store from '@/redux/store'
 import { DateStringSchema } from '@/types/date'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { IAssigneeCombined, Sizes } from '@/types/interfaces'
+import { IAssigneeCombined, IUserIds, Sizes } from '@/types/interfaces'
 import { getAssigneeName, isAssigneeTextMatching } from '@/utils/assignee'
 import { createDateFromFormattedDateString, formatDate } from '@/utils/dateHelper'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
@@ -93,14 +93,30 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate 
   const statusValue = _statusValue as WorkflowStateResponse
   const assigneeValue = _assigneeValue as IAssigneeCombined
 
+  const getUserIdsFromAssignee = (assigneeValue: IAssigneeCombined): IUserIds => {
+    const type = getAssigneeTypeCorrected(assigneeValue)
+    switch (type) {
+      case AssigneeType.internalUser:
+        return { internalUserId: assigneeValue.id, clientId: null, companyId: null }
+      case AssigneeType.client:
+        return { internalUserId: null, clientId: assigneeValue.id, companyId: assigneeValue.companyId || null }
+      case AssigneeType.company:
+        return { internalUserId: null, clientId: null, companyId: assigneeValue.id }
+      default:
+        return { internalUserId: null, clientId: null, companyId: null }
+    }
+  } //remove this util while implementing CopilotSelector for task lists assignee update. This is a simple patch to fix build issues.
+
   const handleConfirmAssigneeChange = (assigneeValue: IAssigneeCombined) => {
+    const { internalUserId, clientId, companyId } = getUserIdsFromAssignee(assigneeValue)
+
     if (handleUpdate) {
       token &&
         handleUpdate(task.id, { assigneeId: assigneeValue.id }, () =>
-          updateAssignee(token, task.id, getAssigneeTypeCorrected(assigneeValue), assigneeValue.id),
+          updateAssignee(token, task.id, internalUserId, clientId, companyId),
         )
     } else {
-      token && updateAssignee(token, task.id, getAssigneeTypeCorrected(assigneeValue), assigneeValue.id)
+      token && updateAssignee(token, task.id, internalUserId, clientId, companyId)
     }
     store.dispatch(setConfirmAssigneeModalId(undefined))
   }
@@ -259,13 +275,15 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate 
                 setSelectedAssignee(assignee)
                 store.dispatch(setConfirmAssigneeModalId(task.id))
               } else {
+                const { internalUserId, clientId, companyId } = getUserIdsFromAssignee(assigneeValue)
+
                 if (handleUpdate) {
                   token &&
                     handleUpdate(task.id, { assigneeId: assignee.id }, () =>
-                      updateAssignee(token, task.id, getAssigneeTypeCorrected(assignee), assignee.id),
+                      updateAssignee(token, task.id, internalUserId, clientId, companyId),
                     )
                 } else {
-                  token && updateAssignee(token, task.id, getAssigneeTypeCorrected(assignee), assignee.id)
+                  token && updateAssignee(token, task.id, internalUserId, clientId, companyId)
                 }
 
                 updateAssigneeValue(assignee)
