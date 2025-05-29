@@ -32,7 +32,7 @@ import CustomScrollBar from '@/hoc/CustomScrollBar'
 import { RealTime } from '@/hoc/RealTime'
 import { WorkspaceResponse } from '@/types/common'
 import { AncestorTaskResponse, SubTaskStatusResponse, TaskResponse } from '@/types/dto/tasks.dto'
-import { UserType } from '@/types/interfaces'
+import { IUserIds, UserType } from '@/types/interfaces'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import EscapeHandler from '@/utils/escapeHandler'
 import { getPreviewMode } from '@/utils/previewMode'
@@ -209,9 +209,9 @@ export default async function TaskDetailPage({
                       ? await clientUpdateTask(token, task_id, workflowState.id)
                       : await updateWorkflowStateIdOfTask(token, task_id, workflowState?.id)
                   }}
-                  updateAssignee={async (assigneeType, assigneeId) => {
+                  updateAssignee={async ({ internalUserId, clientId, companyId }: IUserIds) => {
                     'use server'
-                    await updateAssignee(token, task_id, assigneeType, assigneeId)
+                    await updateAssignee(token, task_id, internalUserId, clientId, companyId)
                   }}
                   updateTask={async (payload) => {
                     'use server'
