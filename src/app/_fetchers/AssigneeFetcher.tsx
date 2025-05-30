@@ -6,7 +6,7 @@ import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { IAssignee, PropsWithToken, UserType } from '@/types/interfaces'
-import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
+import { addTypeToAssignee, parseAssigneeToSelectorOption } from '@/utils/addTypeToAssignee'
 import fetchRetry from 'fetch-retry'
 
 const fetchWithRetry = fetchRetry(globalThis.fetch)
@@ -43,7 +43,6 @@ const fetchAssignee = async (
       next: { tags: ['getAssigneeList'] },
     },
   )
-
   return (await res.json()).users as IAssignee
 }
 export const AssigneeFetcher = async ({
@@ -54,14 +53,18 @@ export const AssigneeFetcher = async ({
   task,
   clientCompanyId,
 }: AssigneeFetcherProps) => {
-  const [assignableUsersWithType, activeTaskAssignees] = await Promise.all([
-    fetchAssignee(token, userType, isPreview).then(addTypeToAssignee),
-    clientCompanyId
-      ? fetchAssignee(token, userType, isPreview, clientCompanyId).then(addTypeToAssignee)
-      : Promise.resolve([]),
-  ])
+  const fetchAssigneePromise = fetchAssignee(token, userType, isPreview)
+  const activeTaskAssigneesPromise = clientCompanyId
+    ? fetchAssignee(token, userType, isPreview, clientCompanyId).then(addTypeToAssignee)
+    : Promise.resolve([])
+  const [fetchedAssignee, activeTaskAssignees] = await Promise.all([fetchAssigneePromise, activeTaskAssigneesPromise])
+
+  const assignableUsersWithType = addTypeToAssignee(fetchedAssignee)
+  const selectorOptions = parseAssigneeToSelectorOption(fetchedAssignee)
+
   return (
     <ClientSideStateUpdate
+      selectorAssignee={selectorOptions}
       assignee={assignableUsersWithType}
       viewSettings={viewSettings}
       task={task}

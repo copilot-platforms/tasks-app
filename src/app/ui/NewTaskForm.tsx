@@ -1,9 +1,8 @@
-import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
-import { MiniLoader } from '@/components/atoms/MiniLoader'
 import AttachmentLayout from '@/components/AttachmentLayout'
 import { ManageTemplatesEndOption } from '@/components/buttons/ManageTemplatesEndOptions'
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
+import { CopilotSelector } from '@/components/inputs/CopilotSelector'
 import { DatePickerComponent } from '@/components/inputs/DatePickerComponent'
 import Selector, { SelectorType } from '@/components/inputs/Selector'
 import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
@@ -11,14 +10,14 @@ import { StyledTextField } from '@/components/inputs/TextField'
 import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
-import { AssigneePlaceholderSmall, CloseIcon, TemplateIconSm } from '@/icons'
+import { CloseIcon, TemplateIconSm } from '@/icons'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import {
   selectCreateTask,
-  setCreateTaskFields,
-  setErrors,
   setAppliedDescription,
   setAppliedTitle,
+  setCreateTaskFields,
+  setErrors,
 } from '@/redux/features/createTaskSlice'
 import { selectTaskBoard, setAssigneeList } from '@/redux/features/taskBoardSlice'
 import { selectCreateTemplate } from '@/redux/features/templateSlice'
@@ -31,17 +30,13 @@ import {
   IAssigneeCombined,
   ITemplate,
 } from '@/types/interfaces'
-import { getAssigneeName } from '@/utils/assignee'
-import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
+import { getSelectedUserIds } from '@/utils/getSelectedUserIds'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
-import { NoAssigneeExtraOptions } from '@/utils/noAssignee'
 import { trimAllTags } from '@/utils/trimTags'
-import { setDebouncedFilteredAssignees } from '@/utils/users'
 import { Box, Stack, Typography, styled } from '@mui/material'
 import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
-import { z } from 'zod'
 
 interface NewTaskFormInputsProps {
   isEditorReadonly?: boolean
@@ -54,11 +49,8 @@ interface NewTaskFormProps {
 }
 
 export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => {
-  const { activeWorkflowStateId, errors } = useSelector(selectCreateTask)
-  const { workflowStates, assignee, token, filterOptions, previewMode } = useSelector(selectTaskBoard)
-  const [filteredAssignees, setFilteredAssignees] = useState(assignee)
-  const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
-  const [loading, setLoading] = useState(false)
+  const { activeWorkflowStateId } = useSelector(selectCreateTask)
+  const { workflowStates } = useSelector(selectTaskBoard)
 
   const todoWorkflowState = workflowStates.find((el) => el.key === 'todo') || workflowStates[0]
   const defaultWorkflowState = activeWorkflowStateId
@@ -69,28 +61,12 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
     item: defaultWorkflowState,
     type: SelectorType.STATUS_SELECTOR,
   })
-  const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
-    item:
-      filteredAssignees.find(
-        (item) => item.id == filterOptions[FilterOptions.ASSIGNEE] || item.id == filterOptions[FilterOptions.TYPE],
-      ) ?? null,
-    type: SelectorType.ASSIGNEE_SELECTOR,
-    mode: HandleSelectorComponentModes.CreateTaskFieldUpdate,
-  })
 
   const statusValue = _statusValue as WorkflowStateResponse //typecasting
-  const assigneeValue = _assigneeValue as IAssigneeCombined //typecasting
-  // use temp state pattern so that we don't fall into an infinite loop of assigneeValue set -> trigger -> set
-  const [tempAssignee, setTempAssignee] = useState<IAssigneeCombined | null>(assigneeValue)
-
-  const [inputStatusValue, setInputStatusValue] = useState('')
 
   const [isEditorReadonly, setIsEditorReadonly] = useState(false)
 
   const handleCreateWithAssignee = () => {
-    if (!!tempAssignee?.id && !assignee.find((assignee) => assignee.id === tempAssignee.id)) {
-      store.dispatch(setAssigneeList([...assignee, tempAssignee]))
-    }
     handleCreate()
   }
 
@@ -138,87 +114,18 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
             />
           </Box>
           <Stack alignSelf="flex-start">
-            <Selector
-              disabled={!!previewMode}
-              inputStatusValue={inputStatusValue}
-              setInputStatusValue={setInputStatusValue}
-              placeholder="Set assignee"
-              getSelectedValue={(_newValue) => {
-                store.dispatch(setErrors({ key: CreateTaskErrors.ASSIGNEE, value: false }))
-                const newValue = _newValue as IAssigneeCombined
-                setTempAssignee(newValue)
-                updateAssigneeValue(newValue)
-                store.dispatch(
-                  setCreateTaskFields({
-                    targetField: 'assigneeType',
-                    value: getAssigneeTypeCorrected(newValue),
-                  }),
-                )
-                store.dispatch(setCreateTaskFields({ targetField: 'assigneeId', value: newValue?.id }))
-              }}
-              startIcon={tempAssignee ? <CopilotAvatar currentAssignee={tempAssignee} /> : <AssigneePlaceholderSmall />}
-              onClick={() => {
-                if (activeDebounceTimeoutId) {
-                  clearTimeout(activeDebounceTimeoutId)
+            <CopilotSelector
+              name="Set assignee"
+              onChange={(inputValue) => {
+                const newUserIds = getSelectedUserIds(inputValue)
+                const areUserIdsEmpty = Object.values(newUserIds).every((value) => value === null) // remove this while adding support for no assignee.
+                if (areUserIdsEmpty) {
+                  store.dispatch(setErrors({ key: CreateTaskErrors.ASSIGNEE, value: true }))
+                } else {
+                  store.dispatch(setErrors({ key: CreateTaskErrors.ASSIGNEE, value: false }))
                 }
-                setLoading(true)
-                setFilteredAssignees(assignee)
-                setLoading(false)
+                store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: newUserIds }))
               }}
-              options={loading ? [] : filteredAssignees}
-              value={tempAssignee}
-              extraOption={NoAssigneeExtraOptions}
-              extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
-                return (
-                  <>
-                    {/* //****Disabling re-assignment completely for now*** */}
-                    {/* <ExtraOptionRendererAssignee
-                      props={props}
-                      onClick={(e) => {
-                        updateAssigneeValue({ id: '', name: 'No assignee' })
-                        setAnchorEl(anchorEl ? null : e.currentTarget)
-                        store.dispatch(setCreateTaskFields({ targetField: 'assigneeType', value: null }))
-                        store.dispatch(setCreateTaskFields({ targetField: 'assigneeId', value: null }))
-                      }}
-                    /> */}
-                    {loading && <MiniLoader />}
-                  </>
-                )
-              }}
-              selectorType={SelectorType.ASSIGNEE_SELECTOR}
-              handleInputChange={async (newInputValue: string) => {
-                if (!newInputValue) {
-                  setFilteredAssignees(assignee)
-                  return
-                }
-                setDebouncedFilteredAssignees(
-                  activeDebounceTimeoutId,
-                  setActiveDebounceTimeoutId,
-                  setLoading,
-                  setFilteredAssignees,
-                  z.string().parse(token),
-                  newInputValue,
-                )
-              }}
-              filterOption={(x: unknown) => x}
-              buttonHeight="auto"
-              buttonContent={
-                <Typography
-                  variant="bodySm"
-                  sx={{
-                    color: (theme) => (tempAssignee ? theme.color.gray[600] : theme.color.text.textDisabled),
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-
-                    overflow: 'hidden',
-                    fontSize: '12px',
-                    maxWidth: { xs: '60px', sm: '100px' },
-                  }}
-                >
-                  {getAssigneeName(tempAssignee as IAssigneeCombined, 'Assignee')}
-                </Typography>
-              }
-              error={errors.assignee}
             />
           </Stack>
           <Stack alignSelf="flex-start">
@@ -311,7 +218,7 @@ const NewTaskFooter = ({
 }: NewTaskFormProps & { updateWorkflowStatusValue: (value: unknown) => void }) => {
   const [inputStatusValue, setInputStatusValue] = useState('')
 
-  const { title, assigneeId, showModal, description, appliedDescription, appliedTitle } = useSelector(selectCreateTask)
+  const { title, userIds, showModal, description, appliedDescription, appliedTitle } = useSelector(selectCreateTask)
   const { token, workflowStates } = useSelector(selectTaskBoard)
   const { templates } = useSelector(selectCreateTemplate)
 
@@ -434,7 +341,7 @@ const NewTaskFooter = ({
               <PrimaryBtn
                 handleClick={() => {
                   const hasTitleError = !title.trim()
-                  const hasAssigneeError = !assigneeId
+                  const hasAssigneeError = Object.values(userIds).every((value) => value === null)
                   if (hasTitleError || hasAssigneeError) {
                     hasTitleError && store.dispatch(setErrors({ key: CreateTaskErrors.TITLE, value: true }))
                     hasAssigneeError && store.dispatch(setErrors({ key: CreateTaskErrors.ASSIGNEE, value: true }))
