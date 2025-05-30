@@ -1,36 +1,37 @@
 'use client'
 
-import { Box, IconButton, Stack } from '@mui/material'
-import { useEffect, useState } from 'react'
-import store from '@/redux/store'
-import { setFilterOptions, setViewSettingsTemp, setViewSettings, setIsTasksLoading } from '@/redux/features/taskBoardSlice'
+import { UserRole } from '@/app/api/core/types/user'
+import FilterButtonGroup from '@/components/buttonsGroup/FilterButtonsGroup'
+import { DisplaySelector } from '@/components/inputs/DisplaySelector'
+import { SelectorType } from '@/components/inputs/Selector'
 import SearchBar from '@/components/searchBar'
-import Selector, { SelectorType } from '@/components/inputs/Selector'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
-import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
-import { useSelector } from 'react-redux'
+import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
+import {
+  selectTaskBoard,
+  setFilterOptions,
+  setIsTasksLoading,
+  setViewSettings,
+  setViewSettingsTemp,
+} from '@/redux/features/taskBoardSlice'
+import store from '@/redux/store'
+import { IUTokenSchema } from '@/types/common'
+import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import {
   FilterOptions,
   FilterOptionsKeywords,
+  HandleSelectorComponentModes,
   IAssigneeCombined,
   IFilterOptions,
-  HandleSelectorComponentModes,
 } from '@/types/interfaces'
-import { CrossIcon, FilterByAsigneeIcon } from '@/icons'
-import { FilterByAssigneeBtn } from '../buttons/FilterByAssigneeBtn'
-import FilterButtonGroup from '@/components/buttonsGroup/FilterButtonsGroup'
-import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
-import { useFilter } from '@/hooks/useFilter'
-import { IUTokenSchema } from '@/types/common'
-import { NoAssigneeExtraOptions, NoDataFoundOption } from '@/utils/noAssignee'
-import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
-import { z } from 'zod'
-import { setDebouncedFilteredAssignees } from '@/utils/users'
-import { MiniLoader } from '@/components/atoms/MiniLoader'
-import { checkAssignee } from '@/utils/assignee'
 import { filterOptionsToAssigneeMap, filterTypeToButtonIndexMap } from '@/types/objectMaps'
-import { UserRole } from '@/app/api/core/types/user'
-import { DisplaySelector } from '@/components/inputs/DisplaySelector'
+import { getAssigneeId } from '@/utils/assignee'
+import { getSelectedUserIds } from '@/utils/getSelectedUserIds'
+import { NoAssigneeExtraOptions } from '@/utils/noAssignee'
+import { Box, Stack } from '@mui/material'
+import { useEffect, useState } from 'react'
+import { useSelector } from 'react-redux'
+import { CopilotSelector } from '../inputs/CopilotSelector'
 
 interface FilterBarProps {
   mode: UserRole
@@ -169,7 +170,6 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
     >
       <Box
         sx={{
-          overflowX: 'hidden',
           padding: '12px 20px',
           display: { xs: 'none', sm: 'none', sd: 'block' },
         }}
@@ -185,82 +185,18 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
                       display: { xs: 'none', sm: 'none', sd: 'block' },
                     }}
                   >
-                    <Selector
-                      inputStatusValue={inputStatusValue}
-                      setInputStatusValue={setInputStatusValue}
-                      getSelectedValue={(_newValue) => {
-                        const newValue = _newValue as IAssigneeCombined
-                        updateAssigneeValue(newValue)
-                        handleFilterOptionsChange(FilterOptions.ASSIGNEE, newValue?.id as string)
-                      }}
-                      startIcon={<FilterByAsigneeIcon />}
-                      endIcon={
-                        checkAssignee(assigneeValue) && (
-                          <IconButton
-                            aria-label="remove"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              updateAssigneeValue(null)
-                              handleFilterOptionsChange(FilterOptions.ASSIGNEE, '')
-                            }}
-                            sx={{
-                              cursor: 'default',
-                              borderRadius: 0,
-                              padding: '6px 5px 6px 6px',
-
-                              '&:hover': {
-                                bgcolor: (theme) => theme.color.gray[100],
-                              },
-                            }}
-                            disableRipple
-                            disableTouchRipple
-                          >
-                            <CrossIcon />
-                          </IconButton>
-                        )
-                      }
-                      options={loading ? [] : filteredAssignee.length ? filteredAssignee : [NoDataFoundOption]}
-                      placeholder="Assignee"
-                      value={assigneeValue}
-                      selectorType={SelectorType.ASSIGNEE_SELECTOR}
-                      extraOption={NoAssigneeExtraOptions}
-                      extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
-                        return (
-                          noAssigneOptionFlag && (
-                            <>
-                              {/* //****Disabling re-assignment completely for now*** */}
-                              {/* <ExtraOptionRendererAssignee
-                              props={props}
-                              onClick={(e) => {
-                                updateAssigneeValue({ id: '', name: 'No assignee' })
-                                setAnchorEl(anchorEl ? null : e.currentTarget)
-                                handleFilterOptionsChange(FilterOptions.ASSIGNEE, 'No assignee')
-                              }}
-                            /> */}
-                              {loading && <MiniLoader />}
-                            </>
-                          )
-                        )
-                      }}
-                      buttonContent={<FilterByAssigneeBtn assigneeValue={assigneeValue} />}
-                      padding="2px 10px 2px 10px"
-                      handleInputChange={async (newInputValue: string) => {
-                        if (!newInputValue) {
-                          setFilteredAssignee(initialAssignees)
-                          return
+                    <CopilotSelector
+                      name="Filter by assignee"
+                      onChange={(inputValue) => {
+                        console.log('VALUE CHANGED')
+                        const newUserIds = getSelectedUserIds(inputValue)
+                        const newAssignee = getAssigneeId(newUserIds)
+                        if (newAssignee) {
+                          handleFilterOptionsChange(FilterOptions.ASSIGNEE, newAssignee)
+                        } else {
+                          handleFilterOptionsChange(FilterOptions.ASSIGNEE, '')
                         }
-
-                        setDebouncedFilteredAssignees(
-                          activeDebounceTimeoutId,
-                          setActiveDebounceTimeoutId,
-                          setLoading,
-                          setFilteredAssignee,
-                          z.string().parse(token),
-                          newInputValue,
-                          filterOptions.type,
-                        )
                       }}
-                      filterOption={(x: unknown) => x}
                     />
                   </Box>
                 )}
@@ -352,82 +288,15 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
           >
             <Box>
               {filterOptions[FilterOptions.TYPE] !== tokenPayload?.internalUserId && mode === UserRole.IU && (
-                <Selector
-                  inputStatusValue={inputStatusValue}
-                  setInputStatusValue={setInputStatusValue}
-                  getSelectedValue={(_newValue) => {
-                    const newValue = _newValue as IAssigneeCombined
-                    updateAssigneeValue(newValue)
-                    handleFilterOptionsChange(FilterOptions.ASSIGNEE, newValue?.id as string)
-                  }}
-                  startIcon={<FilterByAsigneeIcon />}
-                  endIcon={
-                    checkAssignee(assigneeValue) && (
-                      <IconButton
-                        aria-label="remove"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          updateAssigneeValue(null)
-                          handleFilterOptionsChange(FilterOptions.ASSIGNEE, '')
-                        }}
-                        sx={{
-                          cursor: 'default',
-                          borderRadius: 0,
-                          padding: '6px 5px 6px 6px',
-
-                          '&:hover': {
-                            bgcolor: (theme) => theme.color.gray[100],
-                          },
-                        }}
-                        disableRipple
-                        disableTouchRipple
-                      >
-                        <CrossIcon />
-                      </IconButton>
-                    )
-                  }
-                  options={loading ? [] : filteredAssignee.length ? filteredAssignee : [NoDataFoundOption]}
-                  placeholder="Assignee"
-                  value={assigneeValue}
-                  selectorType={SelectorType.ASSIGNEE_SELECTOR}
-                  extraOption={NoAssigneeExtraOptions}
-                  extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
-                    return (
-                      noAssigneOptionFlag && (
-                        <>
-                          {/* //****Disabling re-assignment completely for now*** */}
-                          {/* <ExtraOptionRendererAssignee
-                             props={props}
-                             onClick={(e) => {
-                               updateAssigneeValue({ id: '', name: 'No assignee' })
-                               setAnchorEl(anchorEl ? null : e.currentTarget)
-                               handleFilterOptionsChange(FilterOptions.ASSIGNEE, 'No assignee')
-                             }}
-                           /> */}
-                          {loading && <MiniLoader />}
-                        </>
-                      )
-                    )
-                  }}
-                  buttonContent={<FilterByAssigneeBtn assigneeValue={assigneeValue} />}
-                  padding="2px 10px 2px 10px"
-                  handleInputChange={async (newInputValue: string) => {
-                    if (!newInputValue) {
-                      setFilteredAssignee(initialAssignees)
-                      return
+                <CopilotSelector
+                  name="Filter by assignee"
+                  onChange={(inputValue) => {
+                    const newUserIds = getSelectedUserIds(inputValue)
+                    const newAssignee = getAssigneeId(newUserIds)
+                    if (newAssignee) {
+                      handleFilterOptionsChange(FilterOptions.ASSIGNEE, newAssignee)
                     }
-
-                    setDebouncedFilteredAssignees(
-                      activeDebounceTimeoutId,
-                      setActiveDebounceTimeoutId,
-                      setLoading,
-                      setFilteredAssignee,
-                      z.string().parse(token),
-                      newInputValue,
-                      filterOptions.type,
-                    )
                   }}
-                  filterOption={(x: unknown) => x}
                 />
               )}
             </Box>
