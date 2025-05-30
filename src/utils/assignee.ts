@@ -12,17 +12,7 @@ export const isAssigneeTextMatching = (newInputValue: string, assigneeValue: IAs
 }
 
 export const getAssigneeId = (userIds?: IUserIds) => {
-  if (!userIds) {
-    return undefined
-  }
-  if (userIds.internalUserId) {
-    return userIds.internalUserId
-  } else if (userIds.clientId) {
-    return userIds.clientId
-  } else if (userIds.companyId) {
-    return userIds.companyId
-  }
-  return undefined
+  return userIds?.internalUserId || userIds?.clientId || userIds?.companyId || undefined
 } //usecase : extract the assignee id from the userIds.
 
 export const getUserIds = (task: TaskResponse): IUserIds => {
