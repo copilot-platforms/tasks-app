@@ -5,10 +5,10 @@ import { UserRole } from '@/app/api/core/types/user'
 import { clientUpdateTask, updateAssignee, updateTaskDetail } from '@/app/detail/[task_id]/[user_type]/actions'
 import { StyledModal } from '@/app/detail/ui/styledComponent'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
-import { MiniLoader } from '@/components/atoms/MiniLoader'
 import { TaskMetaItems } from '@/components/atoms/TaskMetaItems'
+import { CopilotPopSelector } from '@/components/inputs/CopilotSelector'
 import { DatePickerComponent } from '@/components/inputs/DatePickerComponent'
-import Selector, { SelectorType } from '@/components/inputs/Selector'
+import { SelectorType } from '@/components/inputs/Selector'
 import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
 import { ConfirmUI } from '@/components/layouts/ConfirmUI'
 import { CustomLink } from '@/hoc/CustomLink'
@@ -25,19 +25,18 @@ import { DateStringSchema } from '@/types/date'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { IAssigneeCombined, IUserIds, Sizes } from '@/types/interfaces'
-import { getAssigneeName, isAssigneeTextMatching } from '@/utils/assignee'
+import { getAssigneeId, getAssigneeName, getUserIds } from '@/utils/assignee'
 import { createDateFromFormattedDateString, formatDate } from '@/utils/dateHelper'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { getCardHref } from '@/utils/getCardHref'
+import { getSelectedUserIds } from '@/utils/getSelectedUserIds'
 import { isTaskCompleted } from '@/utils/isTaskCompleted'
-import { NoAssignee, NoAssigneeExtraOptions, NoDataFoundOption } from '@/utils/noAssignee'
+import { NoAssignee } from '@/utils/noAssignee'
 import { ShouldConfirmBeforeReassignment } from '@/utils/shouldConfirmBeforeReassign'
-import { setDebouncedFilteredAssignees } from '@/utils/users'
 import { Box, Skeleton, Stack, Typography } from '@mui/material'
 import { AssigneeType } from '@prisma/client'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
-import { ScopedMutator } from 'swr/_internal'
 import { z } from 'zod'
 
 interface TaskCardListProps {
@@ -59,7 +58,7 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate 
   })
   const [currentDueDate, setCurrentDueDate] = useState<string | undefined>(task.dueDate)
   const [inputStatusValue, setInputStatusValue] = useState('')
-  const [selectedAssignee, setSelectedAssignee] = useState<IAssigneeCombined | undefined>(undefined)
+  const [selectedAssignee, setSelectedAssignee] = useState<IUserIds | undefined>(undefined)
   const [loading, setLoading] = useState(false)
   const [filteredAssignees, setFilteredAssignees] = useState(activeTaskAssignees.length ? activeTaskAssignees : assignee)
   const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
@@ -84,35 +83,14 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate 
     item: workflowState ?? task.workflowState,
     type: SelectorType.STATUS_SELECTOR,
   })
-  const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
-    // item: selectedAssigneeId ? assignee.find((el) => el.id === selectedAssigneeId) : NoAssignee,
-    item: currentAssignee,
-    type: SelectorType.ASSIGNEE_SELECTOR,
-  })
 
   const statusValue = _statusValue as WorkflowStateResponse
-  const assigneeValue = _assigneeValue as IAssigneeCombined
 
-  const getUserIdsFromAssignee = (assigneeValue: IAssigneeCombined): IUserIds => {
-    const type = getAssigneeTypeCorrected(assigneeValue)
-    switch (type) {
-      case AssigneeType.internalUser:
-        return { internalUserId: assigneeValue.id, clientId: null, companyId: null }
-      case AssigneeType.client:
-        return { internalUserId: null, clientId: assigneeValue.id, companyId: assigneeValue.companyId || null }
-      case AssigneeType.company:
-        return { internalUserId: null, clientId: null, companyId: assigneeValue.id }
-      default:
-        return { internalUserId: null, clientId: null, companyId: null }
-    }
-  } //remove this util while implementing CopilotSelector for task lists assignee update. This is a simple patch to fix build issues.
-
-  const handleConfirmAssigneeChange = (assigneeValue: IAssigneeCombined) => {
-    const { internalUserId, clientId, companyId } = getUserIdsFromAssignee(assigneeValue)
-
+  const handleConfirmAssigneeChange = (userIds: IUserIds) => {
+    const { internalUserId, clientId, companyId } = userIds
     if (handleUpdate) {
       token &&
-        handleUpdate(task.id, { assigneeId: assigneeValue.id }, () =>
+        handleUpdate(task.id, { internalUserId, clientId, companyId }, () =>
           updateAssignee(token, task.id, internalUserId, clientId, companyId),
         )
     } else {
@@ -121,12 +99,16 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate 
     store.dispatch(setConfirmAssigneeModalId(undefined))
   }
 
-  const getClientCompanyId = () => {
-    if (variant == 'subtask' && activeTask) {
-      return activeTask.assigneeType !== AssigneeType.internalUser ? activeTask.assigneeId : undefined
+  const getAssigneeValue = (userIds?: IUserIds) => {
+    if (!userIds) {
+      return NoAssignee
     }
-    return undefined
+    const assigneeId = getAssigneeId(userIds)
+    const match = assignee.find((assignee) => assignee.id === assigneeId)
+    return match ?? NoAssignee
   }
+
+  const [assigneeValue, setAssigneeValue] = useState(getAssigneeValue(getUserIds(task)))
 
   return (
     <Stack
@@ -262,37 +244,35 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate 
           </Box>
         )}
         {assigneeValue ? (
-          <Selector
-            inputStatusValue={inputStatusValue}
-            variant="icon"
-            placeholder="Set assignee"
-            setInputStatusValue={setInputStatusValue}
-            buttonWidth="100%"
-            getSelectedValue={(newValue) => {
-              const assignee = newValue as IAssigneeCombined
-              const shouldShowConfirmModal = ShouldConfirmBeforeReassignment(assigneeValue, assignee)
-              if (shouldShowConfirmModal) {
-                setSelectedAssignee(assignee)
-                store.dispatch(setConfirmAssigneeModalId(task.id))
+          <CopilotPopSelector
+            name="Set assignee"
+            disabled={mode === UserRole.Client && !previewMode}
+            onChange={(inputValue) => {
+              const newUserIds = getSelectedUserIds(inputValue)
+              const areUserIdsEmpty = Object.values(newUserIds).every((value) => value === null) // remove this while adding support for no assignee.
+              if (areUserIdsEmpty) {
+                return // right now we are not supporting no assingee.
               } else {
-                const { internalUserId, clientId, companyId } = getUserIdsFromAssignee(assigneeValue)
-
-                if (handleUpdate) {
-                  token &&
-                    handleUpdate(task.id, { assigneeId: assignee.id }, () =>
-                      updateAssignee(token, task.id, internalUserId, clientId, companyId),
-                    )
+                const previousAssignee = assignee.find((assignee) => assignee.id == getAssigneeId(getUserIds(task)))
+                const nextAssignee = assignee.find((assignee) => assignee.id == getAssigneeId(newUserIds))
+                const shouldShowConfirmModal = ShouldConfirmBeforeReassignment(previousAssignee, nextAssignee)
+                if (shouldShowConfirmModal) {
+                  setSelectedAssignee(newUserIds)
+                  store.dispatch(setConfirmAssigneeModalId(task.id))
                 } else {
-                  token && updateAssignee(token, task.id, internalUserId, clientId, companyId)
+                  const { internalUserId, clientId, companyId } = newUserIds
+                  if (handleUpdate) {
+                    token &&
+                      handleUpdate(task.id, { assigneeId: nextAssignee?.id }, () =>
+                        updateAssignee(token, task.id, internalUserId, clientId, companyId),
+                      )
+                  } else {
+                    token && updateAssignee(token, task.id, internalUserId, clientId, companyId)
+                  }
+                  setAssigneeValue(assignee.find((assignee) => assignee.id === nextAssignee?.id) ?? NoAssignee)
                 }
-
-                updateAssigneeValue(assignee)
               }
             }}
-            options={loading ? [] : filteredAssignees.length ? filteredAssignees : [NoDataFoundOption]}
-            value={assigneeValue?.name == 'No assignee' ? null : assigneeValue}
-            selectorType={SelectorType.ASSIGNEE_SELECTOR}
-            buttonHeight="auto"
             buttonContent={
               <Box
                 sx={{
@@ -311,32 +291,6 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate 
                 <CopilotAvatar currentAssignee={assigneeValue as IAssigneeCombined} />
               </Box>
             }
-            handleInputChange={async (newInputValue: string) => {
-              if (!newInputValue || isAssigneeTextMatching(newInputValue, assigneeValue)) {
-                setFilteredAssignees(activeTaskAssignees.length ? activeTaskAssignees : assignee)
-                return
-              }
-
-              setDebouncedFilteredAssignees(
-                activeDebounceTimeoutId,
-                setActiveDebounceTimeoutId,
-                setLoading,
-                setFilteredAssignees,
-                z.string().parse(token),
-                newInputValue,
-                undefined,
-                getClientCompanyId(),
-              )
-            }}
-            extraOption={NoAssigneeExtraOptions}
-            extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
-              return <>{loading && <MiniLoader />}</>
-            }}
-            disabled={mode === UserRole.Client && !previewMode}
-            cursor="pointer"
-            filterOption={(x: unknown) => x}
-            responsiveNoHide
-            currentOption={assigneeValue}
           />
         ) : (
           <Box
@@ -376,9 +330,10 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate 
           buttonText="Reassign"
           description={
             <>
-              You&apos;re about to reassign this task from <strong>{getAssigneeName(assigneeValue)}</strong> to{' '}
-              <strong>{getAssigneeName(selectedAssignee)}</strong>. This will give{' '}
-              <strong>{getAssigneeName(selectedAssignee)}</strong> access to all task comments and history.
+              You&apos;re about to reassign this task from{' '}
+              <strong>{getAssigneeName(getAssigneeValue(getUserIds(task)))}</strong> to{' '}
+              <strong>{getAssigneeName(getAssigneeValue(selectedAssignee))}</strong>. This will give{' '}
+              <strong>{getAssigneeName(getAssigneeValue(selectedAssignee))}</strong> access to all task comments and history.
             </>
           }
           title="Reassign task?"
