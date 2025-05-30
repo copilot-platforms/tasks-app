@@ -115,6 +115,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
           </Box>
           <Stack alignSelf="flex-start">
             <CopilotSelector
+              name="Set assignee"
               onChange={(inputValue) => {
                 const newUserIds = getSelectedUserIds(inputValue)
                 const areUserIdsEmpty = Object.values(newUserIds).every((value) => value === null) // remove this while adding support for no assignee.
