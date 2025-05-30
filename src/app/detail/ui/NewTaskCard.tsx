@@ -361,6 +361,7 @@ export const NewTaskCard = ({
             gap={'6px'}
           />
           <CopilotSelector
+            name="Set assignee"
             onChange={(inputValue) => {
               const newUserIds = getSelectedUserIds(inputValue)
               const areUserIdsEmpty = Object.values(newUserIds).every((value) => value === null) // remove this while adding support for no assignee.
