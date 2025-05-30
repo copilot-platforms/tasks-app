@@ -53,9 +53,9 @@ export const PublicTaskCreateDtoSchema = z
     dueDate: RFC3339DateSchema.optional(),
     templateId: z.string().uuid().nullish(),
     createdBy: z.string().uuid().optional(),
-    internalUserId: z.string().uuid().optional(),
-    clientId: z.string().uuid().optional(),
-    companyId: z.string().uuid().optional(),
+    internalUserId: z.string().uuid().nullish(),
+    clientId: z.string().uuid().nullish(),
+    companyId: z.string().uuid().nullish(),
   })
   .superRefine((data, ctx) => {
     const { templateId, name } = data
@@ -84,32 +84,10 @@ export const PublicTaskUpdateDtoSchema = z
     dueDate: RFC3339DateSchema.nullish(),
     status: StatusSchema.optional(),
     isArchived: z.boolean().optional(),
-    internalUserId: z.string().uuid().optional(),
-    clientId: z.string().uuid().optional(),
-    companyId: z.string().uuid().optional(),
+    internalUserId: z.string().uuid().nullish(),
+    clientId: z.string().uuid().nullish(),
+    companyId: z.string().uuid().nullish(),
   })
-  .superRefine((data, ctx) => {
-    const { internalUserId, clientId, companyId } = data
-
-    const hasInternalUser = Boolean(internalUserId)
-    const hasClient = Boolean(clientId)
-    const hasCompany = Boolean(companyId)
-
-    if (hasInternalUser && (hasClient || hasCompany)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'internalUserId cannot be combined with clientId or companyId',
-        path: ['internalUserId'],
-      })
-    }
-
-    if (hasClient && !hasCompany) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'companyId is required when clientId is provided',
-        path: ['companyId'],
-      })
-    }
-  })
+  .superRefine(validateUserIds)
 
 export type PublicTaskUpdateDto = z.infer<typeof PublicTaskUpdateDtoSchema>
