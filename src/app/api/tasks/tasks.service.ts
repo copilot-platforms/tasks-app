@@ -319,34 +319,8 @@ export class TasksService extends BaseService {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Update, Resource.Tasks)
 
-    const { completedBy, completedByUserType } = await this.getCompletionInfo(data?.workflowStateId)
-    const { internalUserId, clientId, companyId, ...dataWithoutUserIds } = data
-
-    const shouldUpdateUserIds =
-      [internalUserId, clientId, companyId].some((id) => id !== null) || !!(data.assigneeId && data.assigneeType)
-
-    let validatedIds = {
-      internalUserId: internalUserId ?? null,
-      clientId: clientId ?? null,
-      companyId: companyId ?? null,
-    }
-    if (shouldUpdateUserIds && opts?.isPublicApi) {
-      validatedIds = await this.validateUserIds(validatedIds.internalUserId, validatedIds.clientId, validatedIds.companyId)
-      Object.assign(dataWithoutUserIds, this.setAssigneeFromPublicApi(validatedIds)) //remove this in the future. This is done for syncing assigneeId and assigneeType with userIds. Once assigneeId and assigneeType are removed, this shall be removed.
-    }
-
-    if (data.assigneeId && data.assigneeType) {
-      validatedIds = await this.setUserIdsFromWebApi({ id: data.assigneeId, type: data.assigneeType })
-    } //remove this block in the future. This is done for syncing assigneeId and assigneeType with userIds. Once assigneeId and assigneeType are removed, this shall be removed.
-
-    const userAssignmentFields = shouldUpdateUserIds ? validatedIds : {}
-
     // Query previous task
     const filters = this.buildTaskPermissions(id)
-    // Validate updated due date to not be in the past
-    if (data.dueDate && dayjs(new Date(data.dueDate)).isBefore(dayjs())) {
-      throw new APIError(httpStatus.BAD_REQUEST, 'Due date cannot be in the past')
-    }
 
     const prevTask = await this.db.task.findFirst({
       where: filters,
@@ -355,19 +329,49 @@ export class TasksService extends BaseService {
     })
     if (!prevTask) throw new APIError(httpStatus.NOT_FOUND, 'The requested task was not found')
 
+    const { completedBy, completedByUserType } = await this.getCompletionInfo(data?.workflowStateId)
+    const { internalUserId, clientId, companyId, ...dataWithoutUserIds } = data
+
+    const shouldUpdateUserIds =
+      [internalUserId, clientId, companyId].some((id) => id !== undefined) &&
+      (internalUserId !== prevTask?.internalUserId || clientId !== prevTask?.clientId || companyId !== prevTask?.companyId)
+
+    let validatedIds
+
+    if (shouldUpdateUserIds) {
+      validatedIds = await this.validateUserIds(internalUserId, clientId, companyId)
+    }
+
+    const { assigneeId, assigneeType } = this.getAssigneeFromUserIds({
+      internalUserId: validatedIds?.internalUserId ?? null,
+      clientId: validatedIds?.clientId ?? null,
+      companyId: validatedIds?.companyId ?? null,
+    })
+
+    const userAssignmentFields = shouldUpdateUserIds
+      ? {
+          ...validatedIds,
+          assigneeId,
+          assigneeType,
+        }
+      : {}
+
+    // Validate updated due date to not be in the past
+    if (data.dueDate && dayjs(new Date(data.dueDate)).isBefore(dayjs())) {
+      throw new APIError(httpStatus.BAD_REQUEST, 'Due date cannot be in the past')
+    }
+
     const subtaskService = new SubtaskService(this.user)
 
     let updatedTask = await this.db.$transaction(async (tx) => {
       //generate new label if prevTask has no assignee but now assigned to someone
       let label: string = prevTask.label
-      if (!prevTask.assigneeId && dataWithoutUserIds.assigneeId) {
+      if (!prevTask.assigneeId && assigneeId && assigneeType) {
         const labelMappingService = new LabelMappingService(this.user)
         labelMappingService.setTransaction(tx as PrismaClient)
         //delete the existing label
         await labelMappingService.deleteLabel(prevTask.label)
-        label = z
-          .string()
-          .parse(await labelMappingService.getLabel(dataWithoutUserIds.assigneeId, dataWithoutUserIds.assigneeType))
+        label = z.string().parse(await labelMappingService.getLabel(assigneeId, assigneeType))
       }
 
       // Set / reset lastArchivedDate if isArchived has been triggered, else remove it from the update query
@@ -383,7 +387,6 @@ export class TasksService extends BaseService {
         where: { id },
         data: {
           ...dataWithoutUserIds,
-          assigneeId: dataWithoutUserIds.assigneeId === '' ? null : dataWithoutUserIds.assigneeId,
           label,
           lastArchivedDate,
           archivedBy,
@@ -839,9 +842,9 @@ export class TasksService extends BaseService {
   }
 
   private async validateUserIds(
-    internalUserId: string | null,
-    clientId: string | null,
-    companyId: string | null,
+    internalUserId?: string | null,
+    clientId?: string | null,
+    companyId?: string | null,
   ): Promise<{
     internalUserId: string | null
     clientId: string | null
@@ -899,60 +902,11 @@ export class TasksService extends BaseService {
       }
     }
 
-    throw new APIError(httpStatus.BAD_REQUEST, `At least one of internalUserId, clientId, or companyId is required`)
-  }
-
-  //The function below should be removed after we apply the userIds replacement for assigneeId and assigneeType for the webApp too. The method below is a temporary code for maintaining consistency on publicAPI and web app. //update : Depricated, remove this while implementing update userIds from web app.
-  private setAssigneeFromPublicApi(validatedUserIds: {
-    internalUserId: string | null
-    clientId: string | null
-    companyId: string | null
-  }): {
-    assigneeId: string | null
-    assigneeType: AssigneeType | null
-  } {
-    const assigneeMap: { id: string | null; type: AssigneeType }[] = [
-      { id: validatedUserIds.internalUserId, type: AssigneeType.internalUser },
-      { id: validatedUserIds.clientId, type: AssigneeType.client },
-      { id: validatedUserIds.companyId, type: AssigneeType.company },
-    ]
-
-    const assignee = assigneeMap.find((entry) => entry.id)
-    return assignee ? { assigneeId: assignee.id, assigneeType: assignee.type } : { assigneeId: null, assigneeType: null }
-  }
-
-  //The function below should be removed after we apply the userIds replacement for assigneeId and assigneeType for the webApp too. The method below is a temporary code for maintaining consistency on publicAPI and web app. //update : Depricated, remove this while implementing update userIds from web app.
-  private async setUserIdsFromWebApi(assignee: { id: string | null; type: string | null }): Promise<{
-    internalUserId: string | null
-    clientId: string | null
-    companyId: string | null
-  }> {
-    let internalUserId: string | null = null
-    let clientId: string | null = null
-    let companyId: string | null = null
-
-    if (!assignee.id || !assignee.type) {
-      return { internalUserId, clientId, companyId }
+    return {
+      internalUserId: null,
+      clientId: null,
+      companyId: null,
     }
-
-    switch (assignee.type) {
-      case AssigneeType.internalUser:
-        internalUserId = assignee.id
-        break
-
-      case AssigneeType.client:
-        clientId = assignee.id
-        const copilot = new CopilotAPI(this.user.token)
-        const client = await copilot.getClient(assignee.id)
-        companyId = client?.companyId ?? null
-        break
-
-      case AssigneeType.company:
-        companyId = assignee.id
-        break
-    }
-
-    return { internalUserId, clientId, companyId }
   }
 
   private getAssigneeFromUserIds(userIds: {
