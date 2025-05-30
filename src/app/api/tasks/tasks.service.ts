@@ -319,10 +319,22 @@ export class TasksService extends BaseService {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Update, Resource.Tasks)
 
+    // Query previous task
+    const filters = this.buildTaskPermissions(id)
+
+    const prevTask = await this.db.task.findFirst({
+      where: filters,
+      relationLoadStrategy: 'join',
+      include: { workflowState: true },
+    })
+    if (!prevTask) throw new APIError(httpStatus.NOT_FOUND, 'The requested task was not found')
+
     const { completedBy, completedByUserType } = await this.getCompletionInfo(data?.workflowStateId)
     const { internalUserId, clientId, companyId, ...dataWithoutUserIds } = data
 
-    const shouldUpdateUserIds = [internalUserId, clientId, companyId].some((id) => id !== undefined)
+    const shouldUpdateUserIds =
+      [internalUserId, clientId, companyId].some((id) => id !== undefined) &&
+      (internalUserId !== prevTask?.internalUserId || clientId !== prevTask?.clientId || companyId !== prevTask?.companyId)
 
     let validatedIds
 
@@ -344,19 +356,10 @@ export class TasksService extends BaseService {
         }
       : {}
 
-    // Query previous task
-    const filters = this.buildTaskPermissions(id)
     // Validate updated due date to not be in the past
     if (data.dueDate && dayjs(new Date(data.dueDate)).isBefore(dayjs())) {
       throw new APIError(httpStatus.BAD_REQUEST, 'Due date cannot be in the past')
     }
-
-    const prevTask = await this.db.task.findFirst({
-      where: filters,
-      relationLoadStrategy: 'join',
-      include: { workflowState: true },
-    })
-    if (!prevTask) throw new APIError(httpStatus.NOT_FOUND, 'The requested task was not found')
 
     const subtaskService = new SubtaskService(this.user)
 
