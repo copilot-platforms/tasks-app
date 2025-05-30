@@ -1,6 +1,5 @@
-import { IAssignee, IAssigneeCombined } from '@/types/interfaces'
+import { IAssignee, IAssigneeCombined, ISelectorOption } from '@/types/interfaces'
 import { getAssigneeName } from '@/utils/assignee'
-import { Option } from 'copilot-design-system'
 
 export type ObjectType = 'client' | 'internalUser' | 'company'
 
@@ -15,9 +14,9 @@ export function addTypeToAssignee(assignee?: IAssignee): IAssigneeCombined[] {
 }
 
 export function parseAssigneeToSelectorOption(assignee?: IAssignee): {
-  clients: Option[]
-  internalUsers: Option[]
-  companies: Option[]
+  clients: ISelectorOption[]
+  internalUsers: ISelectorOption[]
+  companies: ISelectorOption[]
 } {
   if (!assignee) {
     return {
@@ -27,7 +26,7 @@ export function parseAssigneeToSelectorOption(assignee?: IAssignee): {
     }
   }
 
-  const parseCategory = (category: Record<string, any> | undefined, type: ObjectType): Option[] => {
+  const parseCategory = (category: Record<string, any> | undefined, type: ObjectType): ISelectorOption[] => {
     if (!category) return []
     return Object.values(category).map((item: any) => ({
       value: item.id,

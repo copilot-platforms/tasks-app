@@ -1,6 +1,6 @@
 import { UserSchema } from '@/types/common'
 import { UpdateTaskRequestSchema } from '@/types/dto/tasks.dto'
-import { Option } from 'copilot-design-system'
+import { ObjectType } from '@/utils/addTypeToAssignee'
 import { z } from 'zod'
 
 export enum TargetMethod {
@@ -91,10 +91,19 @@ export interface IAssignee {
   companies: Omit<ICompany, 'type'>[]
 }
 
+export interface ISelectorOption {
+  value: string
+  label: string
+  avatarSrc?: string
+  avatarFallbackColor?: string
+  companyId?: string
+  type: ObjectType
+}
+
 export interface ISelectorAssignee {
-  clients: Option[]
-  internalUsers: Option[]
-  companies: Option[]
+  clients: ISelectorOption[]
+  internalUsers: Omit<ISelectorOption, 'companyId'>[]
+  companies: Omit<ISelectorOption, 'companyId'>[]
 }
 
 export interface IIus {
