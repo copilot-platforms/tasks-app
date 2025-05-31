@@ -27,7 +27,7 @@ export const getAllTasksPublic = async (req: NextRequest) => {
     companyId: companyId || undefined,
     createdById: createdBy || undefined,
     // Note - this technically messes up getting only parent tasks, but that doesn't seem to be in scope for API
-    parentId: parentTaskId || undefined,
+    parentId: (parentTaskId === 'null' ? null : parentTaskId) || undefined,
     workflowState: workflowStateType && { type: workflowStateType },
   }
 
@@ -40,7 +40,6 @@ export const getAllTasksPublic = async (req: NextRequest) => {
     limit: limit ? +limit : defaultLimit,
     lastIdCursor: nextToken ? decode(nextToken) : undefined,
     ...publicFilters,
-    parentId: publicFilters.parentId === 'null' ? null : publicFilters.parentId,
   })
 
   const lastTaskId = tasks[tasks.length - 1]?.id
