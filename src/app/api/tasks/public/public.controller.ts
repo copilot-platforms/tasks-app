@@ -40,6 +40,7 @@ export const getAllTasksPublic = async (req: NextRequest) => {
     limit: limit ? +limit : defaultLimit,
     lastIdCursor: nextToken ? decode(nextToken) : undefined,
     ...publicFilters,
+    parentId: publicFilters.parentId === 'null' ? null : publicFilters.parentId,
   })
 
   const lastTaskId = tasks[tasks.length - 1]?.id
