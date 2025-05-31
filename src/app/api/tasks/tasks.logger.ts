@@ -8,7 +8,7 @@ import { WorkflowStateUpdatedSchema } from '@api/activity-logs/schemas/WorkflowS
 import { ActivityLogger } from '@api/activity-logs/services/activity-logger.service'
 import User from '@api/core/models/User.model'
 import { BaseService } from '@api/core/services/base.service'
-import { ActivityType, Task, WorkflowState } from '@prisma/client'
+import { ActivityType, AssigneeType, Task, WorkflowState } from '@prisma/client'
 
 /**
  * Wrapper over ActivityLogger to implement a clean abstraction for task creation / update events
@@ -28,8 +28,8 @@ export class TasksActivityLogger extends BaseService {
     this.activityLogger = new ActivityLogger({ taskId: this.task.id, user })
   }
 
-  async logNewTask() {
-    await this.logTaskCreated()
+  async logNewTask(createdBy?: { userId: string; role: AssigneeType }) {
+    await this.logTaskCreated(createdBy)
   }
 
   async logTaskUpdated(prevTask: Task & { workflowState: WorkflowState }) {
@@ -102,12 +102,13 @@ export class TasksActivityLogger extends BaseService {
     )
   }
 
-  private async logTaskCreated() {
+  private async logTaskCreated(createdBy?: { userId: string; role: AssigneeType }) {
     await this.activityLogger.log(
       ActivityType.TASK_CREATED,
       TaskCreatedSchema.parse({
         taskId: this.task.id,
       }),
+      createdBy,
     )
   }
 }

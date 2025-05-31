@@ -1,9 +1,13 @@
+import { maxSubTaskDepth } from '@/constants/tasks'
 import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 import { deleteTaskNotifications, sendTaskCreateNotifications, sendTaskUpdateNotifications } from '@/jobs/notifications'
 import { sendClientUpdateTaskNotifications } from '@/jobs/notifications/send-client-task-update-notifications'
 import { ClientResponse, CompanyResponse, InternalUsers } from '@/types/common'
+import { TaskWithWorkflowState } from '@/types/db'
 import { AncestorTaskResponse, CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
+import { DISPATCHABLE_EVENT } from '@/types/webhook'
 import { CopilotAPI } from '@/utils/CopilotAPI'
+import { isPastDateString } from '@/utils/dateHelper'
 import { buildLtree, buildLtreeNodeString, getIdsFromLtreePath } from '@/utils/ltree'
 import { getFilePathFromUrl, replaceImageSrc } from '@/utils/signedUrlReplacer'
 import { getSignedUrl } from '@/utils/signUrl'
@@ -14,10 +18,17 @@ import { PoliciesService } from '@api/core/services/policies.service'
 import { Resource } from '@api/core/types/api'
 import { UserAction, UserRole } from '@api/core/types/user'
 import { LabelMappingService } from '@api/label-mapping/label-mapping.service'
+import { PublicTaskSerializer } from '@api/tasks/public/public.serializer'
 import { SubtaskService } from '@api/tasks/subtasks.service'
-import { getArchivedStatus, getTaskTimestamps } from '@api/tasks/tasks.helpers'
+import {
+  dispatchUpdatedWebhookEvent,
+  getArchivedStatus,
+  getTaskTimestamps,
+  queueBodyUpdatedWebhook,
+} from '@api/tasks/tasks.helpers'
 import { TasksActivityLogger } from '@api/tasks/tasks.logger'
-import { AssigneeType, Prisma, PrismaClient, StateType, Task, WorkflowState } from '@prisma/client'
+import { AssigneeType, Prisma, PrismaClient, Source, StateType, Task, WorkflowState } from '@prisma/client'
+import dayjs from 'dayjs'
 import httpStatus from 'http-status'
 import { z } from 'zod'
 
@@ -45,13 +56,23 @@ export class TasksService extends BaseService {
   }
 
   async getAllTasks(queryFilters: {
-    showArchived: boolean
-    showUnarchived: boolean
-    parentId?: string | null
+    // Global filters
     all?: boolean
     showIncompleteOnly?: boolean
-    selectColumns?: string[]
-  }) {
+    // Public Api filters
+    fromPublicApi?: boolean
+    // Column filters
+    showArchived: boolean
+    showUnarchived: boolean
+    internalUserId?: string
+    clientId?: string
+    companyId?: string
+    createdById?: string
+    parentId?: string | null
+    workflowState?: { type: StateType }
+    limit?: number
+    lastIdCursor?: string // When this id field cursor is provided, we return data AFTER this id
+  }): Promise<TaskWithWorkflowState[]> {
     // Check if given user role is authorized access to this resource
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Read, Resource.Tasks)
@@ -72,7 +93,7 @@ export class TasksService extends BaseService {
       isArchived = getArchivedStatus(queryFilters.showArchived, queryFilters.showUnarchived)
     }
 
-    if (queryFilters.showIncompleteOnly) {
+    if (queryFilters.showIncompleteOnly && !queryFilters.fromPublicApi) {
       filters.workflowState = {
         type: { not: StateType.completed },
       }
@@ -88,8 +109,6 @@ export class TasksService extends BaseService {
         ? {} // No need to support disjoint tasks when querying all tasks / subtasks
         : await this.getDisjointTasksFilter(queryFilters.parentId)
 
-    const select = this.getSelectColumns(queryFilters.selectColumns)
-
     // NOTE: Terminology:
     // Disjoint task -> A task where the parent task is not assigned to / inaccessible to the current user,
     // but the subtask is accessible
@@ -97,33 +116,35 @@ export class TasksService extends BaseService {
     const where: Prisma.TaskWhereInput = {
       ...filters,
       ...disjointTasksFilter,
+      internalUserId: queryFilters.internalUserId,
+      clientId: queryFilters.clientId,
+      companyId: queryFilters.companyId,
+      createdById: queryFilters.createdById,
+      workflowState: queryFilters.workflowState,
       isArchived,
     }
 
-    const orderBy: Prisma.TaskOrderByWithRelationInput[] = [
-      { dueDate: { sort: 'asc', nulls: 'last' } },
-      { createdAt: 'desc' },
-    ]
-
-    let tasks: Task[] | (Task & { workflowState: WorkflowState })[]
-
-    if (select) {
-      // @ts-expect-error workaround to support ModelSelectInput
-      tasks = await this.db.task.findMany({
-        where,
-        orderBy,
-        select,
-      })
-    } else {
-      tasks = await this.db.task.findMany({
-        where,
-        orderBy,
-        relationLoadStrategy: 'join',
-        include: { workflowState: true },
-      })
+    const orderBy: Prisma.TaskOrderByWithRelationInput[] = [{ createdAt: 'desc' }]
+    if (!queryFilters.fromPublicApi) {
+      // For web, we show dueDate as the primary sort key
+      orderBy.unshift({ dueDate: { sort: 'asc', nulls: 'last' } })
     }
 
-    if (!this.user.internalUserId) {
+    const pagination: Prisma.TaskFindManyArgs = {
+      take: queryFilters.limit,
+      cursor: queryFilters.lastIdCursor ? { id: queryFilters.lastIdCursor } : undefined,
+      skip: queryFilters.lastIdCursor ? 1 : undefined,
+    }
+
+    const tasks = await this.db.task.findMany({
+      where,
+      orderBy,
+      ...pagination,
+      relationLoadStrategy: 'join',
+      include: { workflowState: true },
+    })
+
+    if (!this.user.internalUserId || queryFilters.fromPublicApi) {
       return tasks
     }
 
@@ -136,21 +157,79 @@ export class TasksService extends BaseService {
     return filteredTasks
   }
 
-  async createTask(data: CreateTaskRequest) {
+  async createTask(data: CreateTaskRequest, opts?: { isPublicApi: boolean }) {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Create, Resource.Tasks)
 
+    const copilot = new CopilotAPI(this.user.token)
+
     //generate the label
     const labelMappingService = new LabelMappingService(this.user)
-    const label = z.string().parse(await labelMappingService.getLabel(data.assigneeId, data.assigneeType))
+
+    let validatedIds = {
+      internalUserId: data.internalUserId ?? null,
+      clientId: data.clientId ?? null,
+      companyId: data.companyId ?? null,
+    }
+
+    if (opts?.isPublicApi) {
+      validatedIds = await this.validateUserIds(validatedIds.internalUserId, validatedIds.clientId, validatedIds.companyId)
+      Object.assign(data, this.setAssigneeFromPublicApi(validatedIds)) //remove this in the future. This is done for syncing assigneeId and assigneeType with userIds. Once assigneeId and assigneeType are removed, this shall be removed.
+    }
+
+    if (data.assigneeId && data.assigneeType) {
+      validatedIds = await this.setUserIdsFromWebApi({
+        id: data.assigneeId,
+        type: data.assigneeType,
+      })
+    } //remove this in the future. This is done for syncing assigneeId and assigneeType with userIds. Once assigneeId and assigneeType are removed, this shall be removed.
+
+    const { assigneeId, assigneeType } = this.getAssigneeFromUserIds({
+      internalUserId: validatedIds.internalUserId,
+      clientId: validatedIds.clientId,
+      companyId: validatedIds.companyId,
+    })
+
+    const label = z
+      .string()
+      .parse(await labelMappingService.getLabel(data.assigneeId ?? assigneeId, data.assigneeType ?? assigneeType))
+
+    if (data.parentId) {
+      const canCreateSubTask = await this.canCreateSubTask(data.parentId)
+      if (!canCreateSubTask) {
+        throw new APIError(httpStatus.BAD_REQUEST, 'Reached the maximum subtask depth for this task')
+      }
+    }
+
+    if (data.dueDate && isPastDateString(data.dueDate)) {
+      throw new APIError(httpStatus.BAD_REQUEST, 'Due date cannot be in the past')
+    }
+
+    const { completedBy, completedByUserType } = await this.getCompletionInfo(data?.workflowStateId)
+
+    // NOTE: This block strictly doesn't allow clients to create tasks
+    let createdById = z.string().parse(this.user.internalUserId)
+
+    if (data.createdById && opts?.isPublicApi) {
+      const internalUsers = await copilot.getInternalUsers({ limit: MAX_FETCH_ASSIGNEE_COUNT }) // there are 2 of these api running on this same serive. need to think about this later.
+      const createdBy = internalUsers?.data?.find((iu) => iu.id === data.createdById)
+      if (!createdBy) {
+        throw new APIError(httpStatus.BAD_REQUEST, 'The requested user for createdBy was not found')
+      }
+      createdById = createdBy.id
+    }
 
     // Create a new task associated with current workspaceId. Also inject current request user as the creator.
     const newTask = await this.db.task.create({
       data: {
         ...data,
         workspaceId: this.user.workspaceId,
-        createdById: this.user.internalUserId as string,
+        createdById,
         label: label,
+        completedBy,
+        completedByUserType,
+        source: opts?.isPublicApi ? Source.api : Source.web,
+        ...validatedIds,
         ...(await getTaskTimestamps('create', this.user, data)),
       },
       include: { workflowState: true },
@@ -159,7 +238,10 @@ export class TasksService extends BaseService {
     if (newTask) {
       // Add activity logs
       const activityLogger = new TasksActivityLogger(this.user, newTask)
-      await activityLogger.logNewTask()
+      await activityLogger.logNewTask({
+        userId: createdById,
+        role: AssigneeType.internalUser,
+      }) //hardcoding internalUser as role since task can only be created by IUs.
 
       try {
         if (newTask.body) {
@@ -192,13 +274,19 @@ export class TasksService extends BaseService {
       }
     }
 
-    // Send task created notifications to users
-    await sendTaskCreateNotifications.trigger({ user: this.user, task: newTask })
+    // Send task created notifications to users + dispatch webhook
+    await Promise.all([
+      sendTaskCreateNotifications.trigger({ user: this.user, task: newTask }),
+      copilot.dispatchWebhook(DISPATCHABLE_EVENT.TaskCreated, {
+        payload: PublicTaskSerializer.serialize(newTask),
+        workspaceId: this.user.workspaceId,
+      }),
+    ])
 
     return newTask
   }
 
-  async getOneTask(id: string) {
+  async getOneTask(id: string, fromPublicApi?: boolean): Promise<Task & { workflowState: WorkflowState }> {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Read, Resource.Tasks)
 
@@ -206,19 +294,19 @@ export class TasksService extends BaseService {
     // while clients can only view the tasks assigned to them or their company
     const filters = this.buildTaskPermissions(id)
 
-    const task = await this.db.task.findFirst({
-      where: filters,
-      relationLoadStrategy: 'join',
-      include: {
-        workflowState: true,
-      },
-    })
+    const where = fromPublicApi ? { ...filters, deletedAt: { not: undefined } } : filters
+
+    const task = await this.db.task.findFirst({ where })
+
     if (!task) throw new APIError(httpStatus.NOT_FOUND, 'The requested task was not found')
+
     const updatedTask = await this.db.task.update({
       where: { id: task.id },
       data: {
         body: task.body && (await replaceImageSrc(task.body, getSignedUrl)),
       },
+      relationLoadStrategy: 'join',
+      include: { workflowState: true },
     })
 
     return updatedTask
@@ -240,12 +328,39 @@ export class TasksService extends BaseService {
     }
   }
 
-  async updateOneTask(id: string, data: UpdateTaskRequest) {
+  async updateOneTask(id: string, data: UpdateTaskRequest, opts?: { isPublicApi: boolean }) {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Update, Resource.Tasks)
 
+    const { completedBy, completedByUserType } = await this.getCompletionInfo(data?.workflowStateId)
+    const { internalUserId, clientId, companyId, ...dataWithoutUserIds } = data
+
+    const shouldUpdateUserIds =
+      [internalUserId, clientId, companyId].some((id) => id !== null) || !!(data.assigneeId && data.assigneeType)
+
+    let validatedIds = {
+      internalUserId: internalUserId ?? null,
+      clientId: clientId ?? null,
+      companyId: companyId ?? null,
+    }
+    if (shouldUpdateUserIds && opts?.isPublicApi) {
+      validatedIds = await this.validateUserIds(validatedIds.internalUserId, validatedIds.clientId, validatedIds.companyId)
+      Object.assign(dataWithoutUserIds, this.setAssigneeFromPublicApi(validatedIds)) //remove this in the future. This is done for syncing assigneeId and assigneeType with userIds. Once assigneeId and assigneeType are removed, this shall be removed.
+    }
+
+    if (data.assigneeId && data.assigneeType) {
+      validatedIds = await this.setUserIdsFromWebApi({ id: data.assigneeId, type: data.assigneeType })
+    } //remove this block in the future. This is done for syncing assigneeId and assigneeType with userIds. Once assigneeId and assigneeType are removed, this shall be removed.
+
+    const userAssignmentFields = shouldUpdateUserIds ? validatedIds : {}
+
     // Query previous task
     const filters = this.buildTaskPermissions(id)
+    // Validate updated due date to not be in the past
+    if (data.dueDate && dayjs(new Date(data.dueDate)).isBefore(dayjs())) {
+      throw new APIError(httpStatus.BAD_REQUEST, 'Due date cannot be in the past')
+    }
+
     const prevTask = await this.db.task.findFirst({
       where: filters,
       relationLoadStrategy: 'join',
@@ -253,37 +368,48 @@ export class TasksService extends BaseService {
     })
     if (!prevTask) throw new APIError(httpStatus.NOT_FOUND, 'The requested task was not found')
 
+    const subtaskService = new SubtaskService(this.user)
+
     let updatedTask = await this.db.$transaction(async (tx) => {
       //generate new label if prevTask has no assignee but now assigned to someone
       let label: string = prevTask.label
-      if (!prevTask.assigneeId && data.assigneeId) {
+      if (!prevTask.assigneeId && dataWithoutUserIds.assigneeId) {
         const labelMappingService = new LabelMappingService(this.user)
         labelMappingService.setTransaction(tx as PrismaClient)
         //delete the existing label
         await labelMappingService.deleteLabel(prevTask.label)
-        label = z.string().parse(await labelMappingService.getLabel(data.assigneeId, data.assigneeType))
+        label = z
+          .string()
+          .parse(await labelMappingService.getLabel(dataWithoutUserIds.assigneeId, dataWithoutUserIds.assigneeType))
       }
 
       // Set / reset lastArchivedDate if isArchived has been triggered, else remove it from the update query
-      const lastArchivedDate = data.isArchived === true ? new Date() : data.isArchived === false ? null : undefined
+      let lastArchivedDate: Date | undefined | null = undefined
+      let archivedBy: string | null | undefined = undefined
+      if (data.isArchived !== undefined && prevTask.isArchived !== data.isArchived) {
+        lastArchivedDate = data.isArchived === true ? new Date() : data.isArchived === false ? null : undefined
+        archivedBy = data.isArchived === true ? this.user.internalUserId : data.isArchived === false ? null : undefined
+      }
 
       // Get the updated task
       const updatedTask = await tx.task.update({
         where: { id },
         data: {
-          ...data,
-          assigneeId: data.assigneeId === '' ? null : data.assigneeId,
+          ...dataWithoutUserIds,
+          assigneeId: dataWithoutUserIds.assigneeId === '' ? null : dataWithoutUserIds.assigneeId,
           label,
           lastArchivedDate,
+          archivedBy,
+          completedBy,
+          completedByUserType,
+          ...userAssignmentFields,
           ...(await getTaskTimestamps('update', this.user, data, prevTask)),
         },
         include: { workflowState: true },
       })
-
+      subtaskService.setTransaction(tx as PrismaClient)
       // Archive / unarchive all subtasks if parent task is archived / unarchived
-      if (data.isArchived !== undefined) {
-        const subtaskService = new SubtaskService(this.user)
-        subtaskService.setTransaction(tx as PrismaClient)
+      if (prevTask.isArchived !== data.isArchived && data.isArchived !== undefined) {
         await subtaskService.toggleArchiveForAllSubtasks(id, data.isArchived)
       }
 
@@ -292,17 +418,22 @@ export class TasksService extends BaseService {
 
     if (updatedTask) {
       const activityLogger = new TasksActivityLogger(this.user, updatedTask)
-      await activityLogger.logTaskUpdated(prevTask)
-
-      await sendTaskUpdateNotifications.trigger({ prevTask, updatedTask, user: this.user })
+      const isBodyChanged = prevTask.body !== updatedTask.body
+      await Promise.all([
+        activityLogger.logTaskUpdated(prevTask),
+        sendTaskUpdateNotifications.trigger({ prevTask, updatedTask, user: this.user }),
+        dispatchUpdatedWebhookEvent(this.user, prevTask, updatedTask, opts?.isPublicApi || false),
+        isBodyChanged && opts?.isPublicApi ? queueBodyUpdatedWebhook(this.user, updatedTask) : undefined,
+      ])
     }
 
     return updatedTask
   }
 
-  async deleteOneTask(id: string) {
+  async deleteOneTask(id: string, recursive: boolean = true) {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Delete, Resource.Tasks)
+    const deletedBy = this.user.internalUserId
 
     // Try to delete existing client notification related to this task if exists
     const task = await this.db.task.findFirst({
@@ -313,23 +444,44 @@ export class TasksService extends BaseService {
 
     if (!task) throw new APIError(httpStatus.NOT_FOUND, 'The requested task to delete was not found')
 
+    if (!recursive) {
+      if (task.subtaskCount > 0) {
+        throw new APIError(httpStatus.CONFLICT, 'Cannot delete task with subtasks. Use recursive delete instead.')
+      }
+    }
+
     //delete the associated label
     const labelMappingService = new LabelMappingService(this.user)
-    await this.db.$transaction(async (tx) => {
+
+    const updatedTask = await this.db.$transaction(async (tx) => {
       labelMappingService.setTransaction(tx as PrismaClient)
       await labelMappingService.deleteLabel(task?.label)
 
-      await tx.task.delete({ where: { id, workspaceId: this.user.workspaceId } })
-
+      const deletedTask = await tx.task.update({
+        where: { id, workspaceId: this.user.workspaceId },
+        relationLoadStrategy: 'join',
+        include: { workflowState: true },
+        data: { deletedAt: new Date(), deletedBy: deletedBy },
+      })
       const subtaskService = new SubtaskService(this.user)
       subtaskService.setTransaction(tx as PrismaClient)
       if (task.parentId) {
         await subtaskService.decreaseSubtaskCount(task.parentId)
       }
       await subtaskService.softDeleteAllSubtasks(task.id)
+      return deletedTask
     })
 
-    await deleteTaskNotifications.trigger({ user: this.user, task })
+    const copilot = new CopilotAPI(this.user.token)
+    await Promise.all([
+      deleteTaskNotifications.trigger({ user: this.user, task }),
+      copilot.dispatchWebhook(DISPATCHABLE_EVENT.TaskDeleted, {
+        payload: PublicTaskSerializer.serialize(updatedTask),
+        workspaceId: this.user.workspaceId,
+      }),
+    ])
+
+    return updatedTask
 
     // Logic to remove internal user notifications when a task is deleted / assignee is deleted
     // ...In case requirements change later again
@@ -367,13 +519,6 @@ export class TasksService extends BaseService {
         { assigneeId: parsedCompanyId.data, assigneeType: 'company' },
       ],
     }
-  }
-
-  private getSelectColumns = (columns?: string[]) => {
-    if (!columns) return undefined
-    const select: Record<string, true> = {}
-    columns.forEach((column) => (select[column] = true))
-    return select
   }
 
   private getDisjointTasksFilter = (parentId?: string | null) => {
@@ -559,6 +704,8 @@ export class TasksService extends BaseService {
       throw new APIError(httpStatus.UNAUTHORIZED, 'You are not authorized to perform this action')
     }
 
+    const { completedBy, completedByUserType } = await this.getCompletionInfo(targetWorkflowStateId)
+
     // Query previous task
     const filters = this.buildTaskPermissions(id)
     const prevTask = await this.db.task.findFirst({
@@ -582,6 +729,8 @@ export class TasksService extends BaseService {
       where: { id },
       data: {
         ...data,
+        completedBy,
+        completedByUserType,
         ...(await getTaskTimestamps('update', this.user, data, prevTask)),
       },
       include: { workflowState: true },
@@ -643,5 +792,207 @@ export class TasksService extends BaseService {
       const taskClientsCompanyId = z.string().parse(taskClient?.companyId)
       return currentInternalUser.companyAccessList?.includes(taskClientsCompanyId)
     }) as T
+  }
+
+  async hasMoreTasksAfterCursor(
+    id: string,
+    publicFilters: Partial<Parameters<TasksService['getAllTasks']>[0]>,
+  ): Promise<boolean> {
+    const nextTask = await this.db.task.findFirst({
+      where: { ...publicFilters, workspaceId: this.user.workspaceId },
+      cursor: { id },
+      skip: 1,
+      orderBy: { createdAt: 'desc' },
+    })
+    return !!nextTask
+  }
+
+  async canCreateSubTask(taskId: string): Promise<boolean> {
+    const parentPath = await this.getPathOfTask(taskId)
+    if (!parentPath) {
+      throw new APIError(httpStatus.NOT_FOUND, 'The requested parent task was not found')
+    }
+    const uuidLength = parentPath.split('.').length
+    if (!uuidLength) return true
+    return uuidLength <= maxSubTaskDepth
+  }
+
+  private async getCompletionInfo(targetWorkflowStateId?: string | null): Promise<{
+    completedBy: string | null
+    completedByUserType: AssigneeType | null
+  }> {
+    if (!targetWorkflowStateId) {
+      return { completedBy: null, completedByUserType: null }
+    }
+
+    const role = this.user.role
+
+    const workflowState = await this.db.workflowState.findFirst({
+      where: { id: targetWorkflowStateId, workspaceId: this.user.workspaceId },
+      select: { type: true },
+    })
+
+    if (!workflowState) {
+      throw new APIError(httpStatus.NOT_FOUND, 'The requested workflow state was not found')
+    }
+
+    if (workflowState.type === StateType.completed) {
+      return {
+        completedBy: z.string().parse(role === AssigneeType.internalUser ? this.user.internalUserId : this.user.clientId),
+        completedByUserType: role,
+      }
+    }
+
+    return { completedBy: null, completedByUserType: null }
+  }
+
+  private async validateUserIds(
+    internalUserId: string | null,
+    clientId: string | null,
+    companyId: string | null,
+  ): Promise<{
+    internalUserId: string | null
+    clientId: string | null
+    companyId: string | null
+  }> {
+    const copilot = new CopilotAPI(this.user.token)
+
+    if (internalUserId) {
+      const internalUsers = (await copilot.getInternalUsers({ limit: MAX_FETCH_ASSIGNEE_COUNT })).data
+      const isValid = internalUsers?.some((user) => user.id === internalUserId)
+
+      if (!isValid) {
+        throw new APIError(httpStatus.BAD_REQUEST, `Invalid internalUserId`)
+      }
+
+      return {
+        internalUserId,
+        clientId: null,
+        companyId: null,
+      }
+    }
+
+    if (clientId) {
+      const clients = (await copilot.getClients({ limit: MAX_FETCH_ASSIGNEE_COUNT })).data
+      const client = clients?.find((c) => c.id === clientId)
+      const isValidCompany = companyId === client?.companyId //change this to search companyIds array in the future
+
+      if (!client) {
+        throw new APIError(httpStatus.BAD_REQUEST, `Invalid clientId`)
+      }
+
+      if (companyId && !isValidCompany) {
+        throw new APIError(httpStatus.BAD_REQUEST, `Invalid company for the provided clientId`)
+      }
+
+      return {
+        internalUserId: null,
+        clientId,
+        companyId: client.companyId,
+      }
+    }
+
+    if (companyId) {
+      const companies = (await copilot.getCompanies({ limit: MAX_FETCH_ASSIGNEE_COUNT })).data
+      const isValid = companies?.some((company) => company.id === companyId)
+
+      if (!isValid) {
+        throw new APIError(httpStatus.BAD_REQUEST, `Invalid companyId`)
+      }
+
+      return {
+        internalUserId: null,
+        clientId: null,
+        companyId,
+      }
+    }
+
+    throw new APIError(httpStatus.BAD_REQUEST, `At least one of internalUserId, clientId, or companyId is required`)
+  }
+
+  //The function below should be removed after we apply the userIds replacement for assigneeId and assigneeType for the webApp too. The method below is a temporary code for maintaining consistency on publicAPI and web app.
+  private setAssigneeFromPublicApi(validatedUserIds: {
+    internalUserId: string | null
+    clientId: string | null
+    companyId: string | null
+  }): {
+    assigneeId: string | null
+    assigneeType: AssigneeType | null
+  } {
+    const assigneeMap: { id: string | null; type: AssigneeType }[] = [
+      { id: validatedUserIds.internalUserId, type: AssigneeType.internalUser },
+      { id: validatedUserIds.clientId, type: AssigneeType.client },
+      { id: validatedUserIds.companyId, type: AssigneeType.company },
+    ]
+
+    const assignee = assigneeMap.find((entry) => entry.id)
+    return assignee ? { assigneeId: assignee.id, assigneeType: assignee.type } : { assigneeId: null, assigneeType: null }
+  }
+
+  //The function below should be removed after we apply the userIds replacement for assigneeId and assigneeType for the webApp too. The method below is a temporary code for maintaining consistency on publicAPI and web app.
+  private async setUserIdsFromWebApi(assignee: { id: string | null; type: string | null }): Promise<{
+    internalUserId: string | null
+    clientId: string | null
+    companyId: string | null
+  }> {
+    let internalUserId: string | null = null
+    let clientId: string | null = null
+    let companyId: string | null = null
+
+    if (!assignee.id || !assignee.type) {
+      return { internalUserId, clientId, companyId }
+    }
+
+    switch (assignee.type) {
+      case AssigneeType.internalUser:
+        internalUserId = assignee.id
+        break
+
+      case AssigneeType.client:
+        clientId = assignee.id
+        const copilot = new CopilotAPI(this.user.token)
+        const client = await copilot.getClient(assignee.id)
+        companyId = client?.companyId ?? null
+        break
+
+      case AssigneeType.company:
+        companyId = assignee.id
+        break
+    }
+
+    return { internalUserId, clientId, companyId }
+  }
+
+  private getAssigneeFromUserIds(userIds: {
+    internalUserId: string | null
+    clientId: string | null
+    companyId: string | null
+  }): { assigneeId: string | null; assigneeType: AssigneeType | null } {
+    const { internalUserId, clientId, companyId } = userIds
+
+    if (internalUserId) {
+      return {
+        assigneeId: internalUserId,
+        assigneeType: AssigneeType.internalUser,
+      }
+    }
+
+    if (clientId) {
+      return {
+        assigneeId: clientId,
+        assigneeType: AssigneeType.client,
+      }
+    }
+
+    if (companyId) {
+      return {
+        assigneeId: companyId,
+        assigneeType: AssigneeType.company,
+      }
+    }
+    return {
+      assigneeId: null,
+      assigneeType: null,
+    }
   }
 }

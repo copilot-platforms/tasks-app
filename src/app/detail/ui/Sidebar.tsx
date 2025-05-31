@@ -1,35 +1,34 @@
 'use client'
 
-import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
-import { Box, Skeleton, Stack, Typography, styled, useMediaQuery } from '@mui/material'
-import Selector, { SelectorType } from '@/components/inputs/Selector'
-import { IAssigneeCombined, Sizes } from '@/types/interfaces'
-import { DatePickerComponent } from '@/components/inputs/DatePickerComponent'
-import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
-import { useSelector } from 'react-redux'
-import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
-import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { StyledBox, StyledModal } from './styledComponent'
-import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
-import { UpdateTaskRequest } from '@/types/dto/tasks.dto'
-import { createDateFromFormattedDateString, formatDate } from '@/utils/dateHelper'
-import { selectTaskDetails, toggleShowConfirmAssignModal, setShowSidebar } from '@/redux/features/taskDetailsSlice'
-import { ToggleButtonContainer } from './ToggleButtonContainer'
-import { NoAssignee, NoAssigneeExtraOptions, NoDataFoundOption } from '@/utils/noAssignee'
-import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
+import { StyledBox, StyledModal } from '@/app/detail/ui/styledComponent'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
-import { AssigneePlaceholder } from '@/icons'
-import { useEffect, useState } from 'react'
-import { setDebouncedFilteredAssignees } from '@/utils/users'
-import { z } from 'zod'
-import { getAssigneeName, isAssigneeTextMatching } from '@/utils/assignee'
-import { DateStringSchema } from '@/types/date'
-import { useWindowWidth } from '@/hooks/useWindowWidth'
-import store from '@/redux/store'
-import { ConfirmUI } from '@/components/layouts/ConfirmUI'
-import { ShouldConfirmBeforeReassignment } from '@/utils/shouldConfirmBeforeReassign'
 import { MiniLoader } from '@/components/atoms/MiniLoader'
-import { useSWRConfig } from 'swr'
+import { DatePickerComponent } from '@/components/inputs/DatePickerComponent'
+import Selector, { SelectorType } from '@/components/inputs/Selector'
+import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
+import { ConfirmUI } from '@/components/layouts/ConfirmUI'
+import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
+import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
+import { useWindowWidth } from '@/hooks/useWindowWidth'
+import { AssigneePlaceholder } from '@/icons'
+import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { selectTaskDetails, setShowSidebar, toggleShowConfirmAssignModal } from '@/redux/features/taskDetailsSlice'
+import store from '@/redux/store'
+import { DateStringSchema } from '@/types/date'
+import { UpdateTaskRequest } from '@/types/dto/tasks.dto'
+import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
+import { IAssigneeCombined, Sizes } from '@/types/interfaces'
+import { getAssigneeName, isAssigneeTextMatching } from '@/utils/assignee'
+import { createDateFromFormattedDateString, formatDate } from '@/utils/dateHelper'
+import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
+import { NoAssignee, NoAssigneeExtraOptions, NoDataFoundOption } from '@/utils/noAssignee'
+import { ShouldConfirmBeforeReassignment } from '@/utils/shouldConfirmBeforeReassign'
+import { setDebouncedFilteredAssignees } from '@/utils/users'
+import { Box, Skeleton, Stack, Typography, styled } from '@mui/material'
+import { AssigneeType as AssigneeTypeEnum } from '@prisma/client'
+import { useEffect, useMemo, useState } from 'react'
+import { useSelector } from 'react-redux'
+import { z } from 'zod'
 
 const StyledText = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[500],
@@ -54,11 +53,20 @@ export const Sidebar = ({
   workflowDisabled?: false
 }) => {
   const { activeTask, token, workflowStates, assignee, previewMode } = useSelector(selectTaskBoard)
-  const { showSidebar, showConfirmAssignModal } = useSelector(selectTaskDetails)
-  const [filteredAssignees, setFilteredAssignees] = useState(assignee)
+  const { showSidebar, showConfirmAssignModal, activeTaskAssignees } = useSelector(selectTaskDetails)
+
+  const initialAssignees = useMemo(
+    () => (activeTaskAssignees.length ? activeTaskAssignees : assignee),
+    [activeTaskAssignees, assignee],
+  )
+  const [filteredAssignees, setFilteredAssignees] = useState(initialAssignees)
+  const clientCompanyId =
+    activeTask && activeTask.assigneeType !== AssigneeTypeEnum.internalUser ? activeTask.assigneeId : undefined
+
   const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
   const [loading, setLoading] = useState(false)
   const [dueDate, setDueDate] = useState<Date | string | undefined>()
+
   const [inputStatusValue, setInputStatusValue] = useState('')
   const [selectedAssignee, setSelectedAssignee] = useState<IAssigneeCombined | undefined>(undefined)
 
@@ -189,7 +197,7 @@ export const Sidebar = ({
             }
             handleInputChange={async (newInputValue: string) => {
               if (!newInputValue || isAssigneeTextMatching(newInputValue, assigneeValue)) {
-                setFilteredAssignees(assignee)
+                setFilteredAssignees(initialAssignees)
                 return
               }
 
@@ -200,6 +208,8 @@ export const Sidebar = ({
                 setFilteredAssignees,
                 z.string().parse(token),
                 newInputValue,
+                undefined,
+                clientCompanyId,
               )
             }}
             extraOption={NoAssigneeExtraOptions}
@@ -383,7 +393,7 @@ export const Sidebar = ({
               }
               handleInputChange={async (newInputValue: string) => {
                 if (!newInputValue || isAssigneeTextMatching(newInputValue, assigneeValue)) {
-                  setFilteredAssignees(assignee)
+                  setFilteredAssignees(initialAssignees)
                   return
                 }
 

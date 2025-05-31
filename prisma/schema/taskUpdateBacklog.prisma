@@ -1,0 +1,15 @@
+enum LogStatus {
+    waiting
+    processing
+}
+
+model TaskUpdateBacklog {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  taskId         String    @db.Uuid
+  task           Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  status         LogStatus @default(waiting)
+  createdAt      DateTime  @default(now()) @db.Timestamptz()
+  deletedAt      DateTime? @db.Timestamptz()
+
+  @@map("TaskUpdateBacklogs")
+}
