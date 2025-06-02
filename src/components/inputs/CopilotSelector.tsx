@@ -1,7 +1,9 @@
-import { useSelector } from 'react-redux'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { Box, Popper, Stack } from '@mui/material'
+import { InputValue, UserCompanySelector } from 'copilot-design-system'
 import 'copilot-design-system/dist/styles/main.css'
-import { UserCompanySelector, InputValue } from 'copilot-design-system'
+import { ReactNode, useEffect, useState } from 'react'
+import { useSelector } from 'react-redux'
 
 export const CopilotSelector = ({ onChange, name }: { onChange: (inputValue: InputValue[]) => void; name: string }) => {
   const { selectorAssignee } = useSelector(selectTaskBoard)
@@ -16,5 +18,65 @@ export const CopilotSelector = ({ onChange, name }: { onChange: (inputValue: Inp
         grouped={true}
       />
     </>
+  )
+}
+
+interface CopilotPopSelectorProps {
+  buttonContent?: ReactNode
+  disabled?: boolean
+  onClick?: () => void
+  name: string
+  onChange: (inputValue: InputValue[]) => void
+}
+export const CopilotPopSelector = ({ buttonContent, disabled = false, name, onChange }: CopilotPopSelectorProps) => {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+
+  const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (!disabled) {
+      setAnchorEl(anchorEl ? null : event.currentTarget)
+    }
+  }
+  const open = Boolean(anchorEl)
+  const id = open ? 'selector-popper' : ''
+
+  useEffect(() => {
+    function closePopper(e: KeyboardEvent) {
+      if (e.key === 'Escape' && open) {
+        e.preventDefault()
+        e.stopPropagation()
+        setAnchorEl(null)
+      }
+    }
+    if (open) {
+      document.addEventListener('keydown', closePopper, true)
+    }
+    return () => {
+      document.removeEventListener('keydown', closePopper, true)
+    }
+  }, [open])
+
+  return (
+    <Stack direction="column">
+      <Box onMouseDown={handleClick}>
+        <> {buttonContent}</>
+      </Box>
+      <Popper
+        id={id}
+        open={open}
+        anchorEl={anchorEl}
+        sx={{
+          width: 'fit-content',
+        }}
+        placement="bottom-start"
+      >
+        <CopilotSelector
+          name={name}
+          onChange={(inputValue) => {
+            onChange(inputValue)
+            setAnchorEl(null)
+          }}
+        />
+      </Popper>
+    </Stack>
   )
 }
