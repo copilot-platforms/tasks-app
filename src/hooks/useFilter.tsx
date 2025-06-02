@@ -1,7 +1,8 @@
 import { selectTaskBoard, setFilteredTasks } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
 import { TaskResponse } from '@/types/dto/tasks.dto'
-import { FilterOptions, FilterOptionsKeywords, IFilterOptions } from '@/types/interfaces'
+import { FilterOptions, FilterOptionsKeywords, IAssigneeCombined, IFilterOptions } from '@/types/interfaces'
+import { getAssigneeName } from '@/utils/assignee'
 import { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 
@@ -9,6 +10,7 @@ interface KeywordMatchable {
   title?: string
   body?: string
   label?: string
+  assigneeId?: string
 }
 
 const FilterFunctions = {
@@ -30,6 +32,7 @@ function filterByKeyword(
   filteredTasks: TaskResponse[],
   filterValue: string,
   accessibleTasks?: TaskResponse[],
+  assignee?: IAssigneeCombined[],
 ): TaskResponse[] {
   const keyword = (filterValue as string).toLowerCase()
   const matchKeyword = (task: KeywordMatchable) =>
@@ -37,6 +40,9 @@ function filterByKeyword(
     task.title?.toLowerCase().includes(keyword) ||
     task.body?.toLowerCase().includes(keyword) ||
     task.label?.toLowerCase().includes(keyword) ||
+    getAssigneeName(assignee?.find((el) => el.id === task.assigneeId))
+      ?.toLowerCase()
+      .includes(keyword) ||
     false
 
   const keywordMatchingParentIds = accessibleTasks?.filter(matchKeyword).map((task) => task.parentId) || []
@@ -62,14 +68,14 @@ function filterByType(filteredTasks: TaskResponse[], filterValue: string): TaskR
 }
 
 export const useFilter = (filterOptions: IFilterOptions) => {
-  const { tasks, accessibleTasks } = useSelector(selectTaskBoard)
+  const { tasks, accessibleTasks, assignee } = useSelector(selectTaskBoard)
 
   function applyFilter(tasks: TaskResponse[], filterOptions: IFilterOptions) {
     let filteredTasks = [...tasks]
     for (const [filterType, filterValue] of Object.entries(filterOptions)) {
       if (!filterValue) continue
       const filterFn = FilterFunctions[filterType as FilterOptions]
-      filteredTasks = filterFn(filteredTasks, filterValue, accessibleTasks)
+      filteredTasks = filterFn(filteredTasks, filterValue, accessibleTasks, assignee)
     }
     store.dispatch(setFilteredTasks(filteredTasks))
   }
