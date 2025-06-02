@@ -1,6 +1,9 @@
 import { withRetry } from '@/app/api/core/utils/withRetry'
 import { copilotAPIKey as apiKey, APP_ID } from '@/config'
+import { API_DOMAIN } from '@/constants/domains'
 import {
+  ApiKeyOwnerResponse,
+  ApiKeyOwnerResponseSchema,
   ClientRequest,
   ClientResponse,
   ClientResponseSchema,
@@ -31,11 +34,11 @@ import {
   WorkspaceResponse,
   WorkspaceResponseSchema,
 } from '@/types/common'
+import { DISPATCHABLE_EVENT } from '@/types/webhook'
 import Bottleneck from 'bottleneck'
 import type { CopilotAPI as SDK } from 'copilot-node-sdk'
 import { copilotApi } from 'copilot-node-sdk'
 import { z } from 'zod'
-import { API_DOMAIN } from '@/constants/domains'
 
 export class CopilotAPI {
   copilot: SDK
@@ -223,6 +226,11 @@ export class CopilotAPI {
     await Promise.all(deletePromises)
   }
 
+  async _getApiKeyOwner(): Promise<ApiKeyOwnerResponse> {
+    const data = await this.manualFetch('me')
+    return ApiKeyOwnerResponseSchema.parse(data)
+  }
+
   async getNotifications(recipientId: string, opts: { limit?: number } = { limit: 100 }) {
     const data = await this.manualFetch('notifications', {
       recipientId,
@@ -233,6 +241,24 @@ export class CopilotAPI {
     return notifications.filter(
       (notification) => notification.appId === z.string({ message: 'Missing AppID in environment' }).parse(APP_ID),
     )
+  }
+
+  async dispatchWebhook(eventName: DISPATCHABLE_EVENT, { workspaceId, payload }: { workspaceId: string; payload?: object }) {
+    const url = `${API_DOMAIN}/v1/webhooks/${eventName}`
+    console.info('CopilotAPI#dispatchWebhook | Dispatching webhook to ', url)
+
+    try {
+      await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': `${workspaceId}/${apiKey}`,
+        },
+        body: payload ? JSON.stringify(payload) : null,
+      })
+    } catch (e) {
+      console.error(`Failed to dispatch webhook for event ${eventName}`, e)
+    }
   }
 
   private wrapWithRetry<Args extends unknown[], R>(fn: (...args: Args) => Promise<R>): (...args: Args) => Promise<R> {
@@ -257,6 +283,7 @@ export class CopilotAPI {
   getCustomFields = this.wrapWithRetry(this._getCustomFields)
   getInternalUsers = this.wrapWithRetry(this._getInternalUsers)
   getInternalUser = this.wrapWithRetry(this._getInternalUser)
+  getApiKeyOwner = this.wrapWithRetry(this._getApiKeyOwner)
   createNotification = this.wrapWithRetry(this._createNotification)
   markNotificationAsRead = this.wrapWithRetry(this._markNotificationAsRead)
   bulkMarkNotificationsAsRead = this.wrapWithRetry(this._bulkMarkNotificationsAsRead)

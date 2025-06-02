@@ -33,7 +33,10 @@
     "loadtest": "tsx ./src/cmd/load-testing",
     "loadtest:delete-clients": "tsx ./src/cmd/load-testing/deleteClients.ts",
     "seed:activity-logs": "tsx ./src/cmd/fill-activity-logs",
-    "delete-duplicate-notifications": "tsx ./src/cmd/delete-duplicate-notifications"
+    "cmd:delete-duplicate-notifications": "tsx ./src/cmd/delete-duplicate-notifications",
+    "cmd:backfill-archived-by": "tsx ./src/cmd/backfill-archived-by",
+    "cmd:backfill-completed-tasks": "tsx ./src/cmd/backfill-completed-tasks",
+    "cmd:backfill-new-user-ids": "tsx ./src/cmd/backfill-new-user-ids"
   },
   "dependencies": {
     "@cyntler/react-doc-viewer": "^1.17.0",
@@ -57,6 +60,7 @@
     "file-saver": "^2.0.5",
     "http-status": "^1.7.4",
     "immutability-helper": "^3.1.1",
+    "js-base64": "^3.7.7",
     "jsdom": "^25.0.1",
     "next": "14.2.28",
     "nextjs-progressloader": "^1.2.0",

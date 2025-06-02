@@ -8,6 +8,14 @@ export enum HANDLEABLE_EVENT {
   CompanyDeleted = 'company.deleted',
 }
 
+export enum DISPATCHABLE_EVENT {
+  TaskCreated = 'task.created',
+  TaskArchived = 'task.archived',
+  TaskUpdated = 'task.updated',
+  TaskCompleted = 'task.completed',
+  TaskDeleted = 'task.deleted',
+}
+
 export const WebhookSchema = z.object({
   eventType: z.string(),
   created: z.string().optional(),
