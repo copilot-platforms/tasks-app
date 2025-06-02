@@ -11,6 +11,9 @@ interface KeywordMatchable {
   body?: string
   label?: string
   assigneeId?: string
+  internalUserId?: string | null
+  clientId?: string | null
+  companyId?: string | null
 }
 
 const FilterFunctions = {
@@ -24,7 +27,9 @@ function filterByAssignee(filteredTasks: TaskResponse[], filterValue: string | n
   filteredTasks =
     assigneeId === 'No assignee'
       ? filteredTasks.filter((task) => !task.assigneeId)
-      : filteredTasks.filter((task) => task.assigneeId == assigneeId)
+      : filteredTasks.filter(
+          (task) => task.internalUserId == assigneeId || task.clientId == assigneeId || task.companyId == assigneeId,
+        )
   return filteredTasks
 }
 
@@ -35,15 +40,23 @@ function filterByKeyword(
   assignee?: IAssigneeCombined[],
 ): TaskResponse[] {
   const keyword = (filterValue as string).toLowerCase()
+
   const matchKeyword = (task: KeywordMatchable) =>
     // Match title, body or task label (case-insensitive)
-    task.title?.toLowerCase().includes(keyword) ||
-    task.body?.toLowerCase().includes(keyword) ||
-    task.label?.toLowerCase().includes(keyword) ||
-    getAssigneeName(assignee?.find((el) => el.id === task.assigneeId)) //also match assignee name
-      ?.toLowerCase()
-      .includes(keyword) ||
-    false
+    {
+      const assigneeNameMatches = [task.assigneeId, task.companyId]
+        .map((id) => getAssigneeName(assignee?.find((el) => el.id === id)))
+        .filter(Boolean)
+        .some((name) => name!.toLowerCase().includes(keyword)) //Logic to match tasks whose assignee name matches the keyword. Also, Extra logic to match client tasks' whose company name matches the keyword.
+
+      return (
+        task.title?.toLowerCase().includes(keyword) ||
+        task.body?.toLowerCase().includes(keyword) ||
+        task.label?.toLowerCase().includes(keyword) ||
+        assigneeNameMatches ||
+        false
+      )
+    }
 
   const keywordMatchingParentIds = accessibleTasks?.filter(matchKeyword).map((task) => task.parentId) || []
   filteredTasks = filteredTasks.filter((task) => {
