@@ -188,7 +188,6 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
                     <CopilotSelector
                       name="Filter by assignee"
                       onChange={(inputValue) => {
-                        console.log('VALUE CHANGED')
                         const newUserIds = getSelectedUserIds(inputValue)
                         const newAssignee = getAssigneeId(newUserIds)
                         if (newAssignee) {
