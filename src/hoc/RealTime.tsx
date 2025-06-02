@@ -2,22 +2,14 @@
 
 import { RealtimeHandler } from '@/lib/realtime'
 import { supabase } from '@/lib/supabase'
-import {
-  selectTaskBoard,
-  setAccesibleTaskIds,
-  setAccessibleTasks,
-  setActiveTask,
-  setTasks,
-} from '@/redux/features/taskBoardSlice'
-import store from '@/redux/store'
-import { InternalUsersSchema, Token } from '@/types/common'
+import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { Token } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
-import { extractImgSrcs, replaceImgSrcs } from '@/utils/signedUrlReplacer'
 import { AssigneeType } from '@prisma/client'
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
 import { usePathname, useRouter } from 'next/navigation'
 import { ReactNode, useEffect } from 'react'
-import { shallowEqual, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 
 export interface RealTimeTaskResponse extends TaskResponse {
   assigneeId: string
@@ -69,148 +61,21 @@ export const RealTime = ({
     const user = assignee.find((el) => el.id === userId)
     if (!user || !userRole) return
 
-    // Handle realtime subtasks in a modular way
-    // TODO: Handle rest of the realtime operations in the same way in a TDB milestone
     const realtimeHandler = new RealtimeHandler(payload, user, userRole, redirectToBoard)
     const isSubtask =
       Object.keys(payload.new).includes('parentId') && (payload.new as RealTimeTaskResponse).parentId !== null
 
     if (isSubtask) {
       return realtimeHandler.handleRealtimeSubtasks()
-    } else if (payload.eventType === 'INSERT') {
-      return realtimeHandler.handleRealtimeTaskInsert()
-    } else if (payload.eventType === 'UPDATE') {
-      const updatedTask = payload.new
-      // if (updatedTask.parentId && tasks.find((task) => task.id === updatedTask.parentId)) {
-      //   return //short circuit if the updated task is a subtask and its parent id is in the tasks array
-      // }
-
-      // --- Handle unassignment (board + details page)
-      if (user && userRole === AssigneeType.client) {
-        // Check if assignee is this client's ID, or it's company's ID
-        if (![userId, tokenPayload?.companyId].includes(updatedTask.assigneeId)) {
-          // Get the previous task from tasks array and check if it was previously assigned to this client
-
-          const task = tasks.find((task) => task.id === updatedTask.id)
-          if (!task) {
-            return
-          }
-          const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
-          // Check if any disjoint children were created
-          const newlyDisjointChildren = accessibleTasks.filter((task) => task.parentId === updatedTask.id)
-          newlyDisjointChildren.length && newTaskArr.push(...newlyDisjointChildren)
-
-          store.dispatch(setTasks(newTaskArr))
-          store.dispatch(setAccesibleTaskIds(accesibleTaskIds.filter((id) => id !== updatedTask.id)))
-          store.dispatch(setAccessibleTasks(accessibleTasks.filter((task) => task.id !== updatedTask.id)))
-
-          if (updatedTask.id === activeTask?.id) {
-            return redirectToBoard(updatedTask)
-          }
-
-          return
-        }
-      }
-
-      //if the updated task is out of scope for limited access iu
-      if (user && userRole === AssigneeType.internalUser && InternalUsersSchema.parse(user).isClientAccessLimited) {
-        const assigneeSet = new Set(assignee.map((a) => a.id))
-        if (updatedTask.assigneeId && !assigneeSet.has(updatedTask.assigneeId)) {
-          const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
-          store.dispatch(setTasks(newTaskArr))
-          store.dispatch(setAccesibleTaskIds(accesibleTaskIds.filter((id) => id !== updatedTask.id)))
-          store.dispatch(setAccessibleTasks(accessibleTasks.filter((task) => task.id !== updatedTask.id)))
-          if (updatedTask.id === activeTask?.id) {
-            redirectToBoard(updatedTask)
-          }
-          return
-        }
-      }
-
-      const isCreatedAtGMT = (updatedTask.createdAt as unknown as string).slice(-1).toLowerCase() === 'z'
-      if (!isCreatedAtGMT) {
-        // DB stores GMT timestamp without 'z', so need to append this manually
-        updatedTask.createdAt = ((updatedTask.createdAt as unknown as string) + 'Z') as unknown as Date
-        // This casting is safe
-      }
-      const oldTask =
-        activeTask && updatedTask.id === activeTask.id ? activeTask : tasks.find((task) => task.id == updatedTask.id)
-
-      //check if the new task in this event belongs to the same workspaceId
-      if (updatedTask.workspaceId === tokenPayload?.workspaceId) {
-        //if the task is deleted
-        if (updatedTask.deletedAt) {
-          const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
-          store.dispatch(setTasks(newTaskArr))
-          store.dispatch(setAccesibleTaskIds(accesibleTaskIds.filter((id) => id !== updatedTask.id)))
-          store.dispatch(setAccessibleTasks(accessibleTasks.filter((task) => task.id !== updatedTask.id)))
-          //if a user is in the details page when the task is deleted then we want the user to get redirected to '/' route
-          if (updatedTask.id === activeTask?.id) {
-            redirectToBoard(updatedTask)
-          }
-          //if the task is updated
-        } else {
-          // Address Postgres' TOAST limitation that causes fields like TEXT, BYTEA to be copied as a pointer, instead of copying template field in realtime replica
-          // (See TOAST https://www.postgresql.org/docs/current/storage-toast.html)
-          // If `body` field (which *can* be toasted) is not changed, Supabase Realtime won't send large fields like this in `payload.new`
-
-          // So, we need to check if the oldTask has valid body but new body field is not being sent in updatedTask, and add it if required
-          if (oldTask?.body && updatedTask.body === undefined) {
-            updatedTask.body = oldTask?.body
-          }
-          if (oldTask && oldTask.body && updatedTask.body) {
-            const oldImgSrcs = extractImgSrcs(oldTask.body)
-            const newImgSrcs = extractImgSrcs(updatedTask.body)
-            // Need to extract new image Srcs and replace it with old ones, because since we are creating a new url of images on each task details navigation,
-            // a second user navigating the task details will generate a new src and replace it in the database which causes the previous user to load the src again(because its new)
-            if (oldImgSrcs.length > 0 && newImgSrcs.length > 0) {
-              updatedTask.body = replaceImgSrcs(updatedTask.body, newImgSrcs, oldImgSrcs)
-            }
-          }
-          if ((updatedTask.isArchived && !showArchived) || (!updatedTask.isArchived && !showUnarchived)) {
-            if (activeTask && activeTask.id === updatedTask.id) {
-              store.dispatch(setActiveTask(updatedTask))
-            }
-            store.dispatch(setTasks(tasks.filter((el) => el.id !== updatedTask.id)))
-            return
-          }
-          const newTaskArr = [...tasks.filter((task) => task.id !== updatedTask.id), updatedTask]
-          const shouldUpdateTasksOnBoard = () => {
-            if (user && userRole === AssigneeType.internalUser && !InternalUsersSchema.parse(user).isClientAccessLimited) {
-              if (updatedTask.parentId) {
-                return false
-              }
-            }
-            if (user && userRole === AssigneeType.internalUser && InternalUsersSchema.parse(user).isClientAccessLimited) {
-              if (updatedTask.parentId && accesibleTaskIds.includes(updatedTask.parentId)) {
-                return false
-              }
-            }
-            if (user && userRole === AssigneeType.client) {
-              if (updatedTask.parentId && accesibleTaskIds.includes(updatedTask.parentId)) {
-                return false
-              }
-            }
-            return true
-          } // returns false if the currently updatedTask is a subtask
-
-          if (!shallowEqual(tasks, newTaskArr) && shouldUpdateTasksOnBoard()) {
-            // Remove previously disjointed tasks on reassignment
-            store.dispatch(setTasks(newTaskArr.filter((task) => task.parentId !== updatedTask.id)))
-          }
-          if (activeTask && activeTask.id === updatedTask.id) {
-            store.dispatch(setActiveTask(updatedTask))
-          }
-
-          // If there are disjoint child tasks floating around in the task board
-          if (tasks.some((task) => task.parentId === updatedTask.id)) {
-            store.dispatch(setTasks(tasks.filter((task) => task.parentId !== updatedTask.id)))
-          }
-        }
-      }
-    } else {
-      console.error('Unknown event type for realtime handler')
     }
+    if (payload.eventType === 'INSERT') {
+      return realtimeHandler.handleRealtimeTaskInsert()
+    }
+    if (payload.eventType === 'UPDATE') {
+      return realtimeHandler.handleRealtimeTaskUpdate()
+    }
+
+    console.error('Unknown event type for realtime handler')
   }
 
   useEffect(() => {
