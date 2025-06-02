@@ -15,16 +15,15 @@ import store from '@/redux/store'
 import { DateStringSchema } from '@/types/date'
 import { UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { IAssigneeCombined, IUserIds, Sizes } from '@/types/interfaces'
+import { IUserIds, Sizes } from '@/types/interfaces'
 import { getAssigneeId, getAssigneeName, getUserIds } from '@/utils/assignee'
 import { createDateFromFormattedDateString, formatDate } from '@/utils/dateHelper'
-import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { getSelectedUserIds } from '@/utils/getSelectedUserIds'
 import { NoAssignee } from '@/utils/noAssignee'
 import { ShouldConfirmBeforeReassignment } from '@/utils/shouldConfirmBeforeReassign'
 import { Box, Skeleton, Stack, Typography, styled } from '@mui/material'
-import { AssigneeType as AssigneeTypeEnum } from '@prisma/client'
-import { useEffect, useMemo, useState } from 'react'
+import { InputValue } from 'copilot-design-system'
+import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { z } from 'zod'
 
@@ -78,12 +77,8 @@ export const Sidebar = ({
   const windowWidth = useWindowWidth()
   const isMobile = windowWidth < 600 && windowWidth !== 0
 
-  const handleAssigneeChange = (userIds: IUserIds) => {
-    updateAssignee(userIds)
-  }
-
   const handleConfirmAssigneeChange = (userIds: IUserIds) => {
-    handleAssigneeChange(userIds)
+    updateAssignee(userIds)
     store.dispatch(toggleShowConfirmAssignModal())
   }
 
@@ -103,6 +98,25 @@ export const Sidebar = ({
   }
 
   if (!activeTask) return <SidebarSkeleton />
+
+  const handleAssigneeChange = (inputValue: InputValue[]) => {
+    const newUserIds = getSelectedUserIds(inputValue)
+    const areUserIdsEmpty = Object.values(newUserIds).every((value) => value === null) // remove this while adding support for no assignee.
+    if (areUserIdsEmpty) {
+      return // right now we are not supporting no assingee.
+    } else {
+      const previousAssignee = assignee.find((assignee) => assignee.id == getAssigneeId(getUserIds(activeTask)))
+      const nextAssignee = assignee.find((assignee) => assignee.id == getAssigneeId(newUserIds))
+      const shouldShowConfirmModal = ShouldConfirmBeforeReassignment(previousAssignee, nextAssignee)
+      if (shouldShowConfirmModal) {
+        setSelectedAssignee(newUserIds)
+        store.dispatch(toggleShowConfirmAssignModal())
+      } else {
+        updateAssignee(newUserIds)
+      }
+    }
+  }
+
   if (!showSidebar) {
     return (
       <Stack
@@ -137,26 +151,7 @@ export const Sidebar = ({
             width: 'fit-content',
           }}
         >
-          <CopilotSelector
-            name="Set assignee"
-            onChange={(inputValue) => {
-              const newUserIds = getSelectedUserIds(inputValue)
-              const areUserIdsEmpty = Object.values(newUserIds).every((value) => value === null) // remove this while adding support for no assignee.
-              if (areUserIdsEmpty) {
-                return // right now we are not supporting no assingee.
-              } else {
-                const previousAssignee = assignee.find((assignee) => assignee.id == getAssigneeId(getUserIds(activeTask)))
-                const nextAssignee = assignee.find((assignee) => assignee.id == getAssigneeId(newUserIds))
-                const shouldShowConfirmModal = ShouldConfirmBeforeReassignment(previousAssignee, nextAssignee)
-                if (shouldShowConfirmModal) {
-                  setSelectedAssignee(newUserIds)
-                  store.dispatch(toggleShowConfirmAssignModal())
-                } else {
-                  handleAssigneeChange(newUserIds)
-                }
-              }
-            }}
-          />
+          <CopilotSelector name="Set assignee" onChange={handleAssigneeChange} />
         </Box>
         <Box sx={{}}>
           <DatePickerComponent
@@ -267,26 +262,7 @@ export const Sidebar = ({
               width: 'fit-content',
             }}
           >
-            <CopilotSelector
-              name="Set assignee"
-              onChange={(inputValue) => {
-                const newUserIds = getSelectedUserIds(inputValue)
-                const areUserIdsEmpty = Object.values(newUserIds).every((value) => value === null) // remove this while adding support for no assignee.
-                if (areUserIdsEmpty) {
-                  return // right now we are not supporting no assingee.
-                } else {
-                  const previousAssignee = assignee.find((assignee) => assignee.id == getAssigneeId(getUserIds(activeTask)))
-                  const nextAssignee = assignee.find((assignee) => assignee.id == getAssigneeId(newUserIds))
-                  const shouldShowConfirmModal = ShouldConfirmBeforeReassignment(previousAssignee, nextAssignee)
-                  if (shouldShowConfirmModal) {
-                    setSelectedAssignee(newUserIds)
-                    store.dispatch(toggleShowConfirmAssignModal())
-                  } else {
-                    handleAssigneeChange(newUserIds)
-                  }
-                }
-              }}
-            />
+            <CopilotSelector name="Set assignee" onChange={handleAssigneeChange} />
           </Box>
         </Stack>
         <Stack direction="row" m="8px 0px" alignItems="center" columnGap="10px" minWidth="fit-content">

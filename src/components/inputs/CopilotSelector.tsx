@@ -30,6 +30,7 @@ interface CopilotPopSelectorProps {
 }
 export const CopilotPopSelector = ({ buttonContent, disabled = false, name, onChange }: CopilotPopSelectorProps) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+
   const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
     if (!disabled) {
       setAnchorEl(anchorEl ? null : event.currentTarget)
@@ -40,23 +41,20 @@ export const CopilotPopSelector = ({ buttonContent, disabled = false, name, onCh
 
   useEffect(() => {
     function closePopper(e: KeyboardEvent) {
-      if (e.key === 'Escape') {
+      if (e.key === 'Escape' && open) {
+        e.preventDefault()
+        e.stopPropagation()
         setAnchorEl(null)
       }
     }
-
-    window.addEventListener('keydown', closePopper)
-
+    if (open) {
+      document.addEventListener('keydown', closePopper, true)
+    }
     return () => {
-      window.removeEventListener('keydown', closePopper)
+      document.removeEventListener('keydown', closePopper, true)
     }
-  }, [])
+  }, [open])
 
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === 'Escape') {
-      setAnchorEl(null)
-    }
-  }
   return (
     <Stack direction="column">
       <Box onMouseDown={handleClick}>
@@ -71,15 +69,13 @@ export const CopilotPopSelector = ({ buttonContent, disabled = false, name, onCh
         }}
         placement="bottom-start"
       >
-        <Box onKeyDown={handleKeyDown}>
-          <CopilotSelector
-            name={name}
-            onChange={(inputValue) => {
-              onChange(inputValue)
-              setAnchorEl(null)
-            }}
-          />
-        </Box>
+        <CopilotSelector
+          name={name}
+          onChange={(inputValue) => {
+            onChange(inputValue)
+            setAnchorEl(null)
+          }}
+        />
       </Popper>
     </Stack>
   )
