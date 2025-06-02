@@ -40,7 +40,7 @@ function filterByKeyword(
     task.title?.toLowerCase().includes(keyword) ||
     task.body?.toLowerCase().includes(keyword) ||
     task.label?.toLowerCase().includes(keyword) ||
-    getAssigneeName(assignee?.find((el) => el.id === task.assigneeId))
+    getAssigneeName(assignee?.find((el) => el.id === task.assigneeId)) //also match assignee name
       ?.toLowerCase()
       .includes(keyword) ||
     false
