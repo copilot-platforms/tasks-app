@@ -35,7 +35,8 @@ export const RealTime = ({
   task?: TaskResponse
   tokenPayload: Token
 }) => {
-  const { tasks, accessibleTasks, token, activeTask, assignee, accesibleTaskIds } = useSelector(selectTaskBoard)
+  const { tasks, accessibleTasks, token, activeTask, assignee, selectorAssignee, accesibleTaskIds } =
+    useSelector(selectTaskBoard)
   const { showUnarchived, showArchived } = useSelector(selectTaskBoard)
   const pathname = usePathname()
   const router = useRouter()
@@ -50,7 +51,6 @@ export const RealTime = ({
   if (!tokenPayload || !userId || !userRole) {
     console.error(`Failed to authenticate a realtime connection for id ${userId} with role ${userRole}`)
   }
-  const user = assignee.find((el) => el.id === userId)
 
   const redirectToBoard = (updatedTask: RealTimeTaskResponse) => {
     if (!pathname.includes('detail')) return
@@ -65,7 +65,8 @@ export const RealTime = ({
     }
   }
 
-  const handleTaskRealTimeUpdates = (payload: RealtimePostgresChangesPayload<RealTimeTaskResponse>) => {
+  const handleRealtimeEvents = (payload: RealtimePostgresChangesPayload<RealTimeTaskResponse>) => {
+    const user = assignee.find((el) => el.id === userId)
     if (!user || !userRole) return
 
     // Handle realtime subtasks in a modular way
@@ -230,7 +231,7 @@ export const RealTime = ({
           table: 'Tasks',
           filter: `workspaceId=eq.${tokenPayload?.workspaceId}`,
         },
-        handleTaskRealTimeUpdates,
+        handleRealtimeEvents,
       )
       .subscribe()
     // console.info('Connected to realtime channel', channel)
@@ -238,7 +239,7 @@ export const RealTime = ({
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [supabase, tasks])
+  }, [supabase, tasks, assignee])
 
   return children
 }
