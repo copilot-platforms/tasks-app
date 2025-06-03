@@ -241,10 +241,28 @@ export class RealtimeHandler {
   handleRealtimeTaskUpdate() {
     const updatedTask = this.getFormattedTask(this.payload.new)
 
+    if (updatedTask.workspaceId !== this.tokenPayload?.workspaceId) {
+      return
+    }
+
     const commonStore = store.getState()
     const { assignee, activeTask, accessibleTasks, showArchived, showUnarchived, tasks } = commonStore.taskBoard
 
-    // --- Handle unassignment (board + details page)
+    const filterOutUpdatedTask = <T extends { id: string }>(tasks: T[]): T[] =>
+      tasks.filter((task) => task.id !== updatedTask.id)
+
+    // CASE I: Task is deleted
+    if (updatedTask.deletedAt) {
+      store.dispatch(setTasks(filterOutUpdatedTask(tasks)))
+      store.dispatch(setAccessibleTasks(filterOutUpdatedTask(accessibleTasks)))
+      //if a user is in the details page when the task is deleted then we want the user to get redirected to '/' route
+      if (updatedTask.id === activeTask?.id) {
+        return this.redirectToBoard(updatedTask)
+      }
+    }
+
+    // CASE II: REASSIGNMENT OUT OF SCOPE
+    // --- Handle unassignment for clients (board + details page)
     if (this.userRole === AssigneeType.client) {
       // Check if assignee is this client's ID + currently active company ID
       if (this.tokenPayload?.companyId && this.tokenPayload.companyId === updatedTask.companyId) {
@@ -253,14 +271,14 @@ export class RealtimeHandler {
         if (!task) {
           return
         }
-        const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
 
+        const newTaskArr = filterOutUpdatedTask(tasks)
         // Check if any disjoint children were created
         const newlyDisjointChildren = accessibleTasks.filter((task) => task.parentId === updatedTask.id)
         newlyDisjointChildren.length && newTaskArr.push(...newlyDisjointChildren)
 
         store.dispatch(setTasks(newTaskArr))
-        store.dispatch(setAccessibleTasks(accessibleTasks.filter((task) => task.id !== updatedTask.id)))
+        store.dispatch(setAccessibleTasks(filterOutUpdatedTask(accessibleTasks)))
 
         if (updatedTask.id === activeTask?.id) {
           return this.redirectToBoard(updatedTask)
@@ -270,105 +288,47 @@ export class RealtimeHandler {
       }
     }
 
-    // If the updated task is out of scope for limited access IU
-    if (
-      this.user &&
-      this.userRole === AssigneeType.internalUser &&
-      InternalUsersSchema.parse(this.user).isClientAccessLimited
-    ) {
-      const assigneeSet = new Set(assignee.map((a) => a.companyId).filter((companyId) => !!companyId))
-      if (updatedTask.companyId && !assigneeSet.has(updatedTask.companyId)) {
-        const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
-        store.dispatch(setTasks(newTaskArr))
-        store.dispatch(setAccessibleTasks(accessibleTasks.filter((task) => task.id !== updatedTask.id)))
-        if (updatedTask.id === activeTask?.id) {
-          this.redirectToBoard(updatedTask)
-        }
-        return
-      }
-    }
+    // CASE III: Task properties except deletedAt / assigneeId (userId) are updated
 
     // Get from active task directly (user is in task board)
     const oldTask = activeTask && updatedTask.id === activeTask.id ? activeTask : tasks.find((t) => t.id == updatedTask.id)
 
-    //check if the new task in this event belongs to the same workspaceId
-    if (updatedTask.workspaceId === this.tokenPayload?.workspaceId) {
-      //if the task is deleted
-      if (updatedTask.deletedAt) {
-        const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
-        store.dispatch(setTasks(newTaskArr))
-        store.dispatch(setAccessibleTasks(accessibleTasks.filter((task) => task.id !== updatedTask.id)))
-        //if a user is in the details page when the task is deleted then we want the user to get redirected to '/' route
-        if (updatedTask.id === activeTask?.id) {
-          this.redirectToBoard(updatedTask)
-        }
-        //if the task is updated
-      } else {
-        // Address Postgres' TOAST limitation that causes fields like TEXT, BYTEA to be copied as a pointer, instead of copying template field in realtime replica
-        // (See TOAST https://www.postgresql.org/docs/current/storage-toast.html)
-        // If `body` field (which *can* be toasted) is not changed, Supabase Realtime won't send large fields like this in `payload.new`
+    // Address Postgres' TOAST limitation that causes fields like TEXT, BYTEA to be copied as a pointer, instead of copying template field in realtime replica
+    // (See TOAST https://www.postgresql.org/docs/current/storage-toast.html)
+    // If `body` field (which *can* be toasted) is not changed, Supabase Realtime won't send large fields like this in `payload.new`
+    // So, we need to check if the oldTask has valid body but new body field is not being sent in updatedTask, and add it if required
+    if (oldTask?.body && updatedTask.body === undefined) {
+      updatedTask.body = oldTask?.body
+    }
 
-        // So, we need to check if the oldTask has valid body but new body field is not being sent in updatedTask, and add it if required
-        if (oldTask?.body && updatedTask.body === undefined) {
-          updatedTask.body = oldTask?.body
-        }
-        if (oldTask && oldTask.body && updatedTask.body) {
-          const oldImgSrcs = extractImgSrcs(oldTask.body)
-          const newImgSrcs = extractImgSrcs(updatedTask.body)
-          // Need to extract new image Srcs and replace it with old ones, because since we are creating a new url of images on each task details navigation,
-          // a second user navigating the task details will generate a new src and replace it in the database which causes the previous user to load the src again(because its new)
-          if (oldImgSrcs.length > 0 && newImgSrcs.length > 0) {
-            updatedTask.body = replaceImgSrcs(updatedTask.body, newImgSrcs, oldImgSrcs)
-          }
-        }
-        if ((updatedTask.isArchived && !showArchived) || (!updatedTask.isArchived && !showUnarchived)) {
-          if (activeTask && activeTask.id === updatedTask.id) {
-            store.dispatch(setActiveTask(updatedTask))
-          }
-          store.dispatch(setTasks(tasks.filter((el) => el.id !== updatedTask.id)))
-          return
-        }
-        const newTaskArr = [...tasks.filter((task) => task.id !== updatedTask.id), updatedTask]
-        const shouldUpdateTasksOnBoard = () => {
-          if (
-            this.user &&
-            this.userRole === AssigneeType.internalUser &&
-            !InternalUsersSchema.parse(this.user).isClientAccessLimited
-          ) {
-            if (updatedTask.parentId) {
-              return false
-            }
-          }
-          if (
-            this.user &&
-            this.userRole === AssigneeType.internalUser &&
-            InternalUsersSchema.parse(this.user).isClientAccessLimited
-          ) {
-            if (updatedTask.parentId && accessibleTasks.map((task) => task.id).includes(updatedTask.parentId)) {
-              return false
-            }
-          }
-          if (this.user && this.userRole === AssigneeType.client) {
-            if (updatedTask.parentId && accessibleTasks.map((task) => task.id).includes(updatedTask.parentId)) {
-              return false
-            }
-          }
-          return true
-        } // returns false if the currently updatedTask is a subtask
-
-        if (!shallowEqual(tasks, newTaskArr) && shouldUpdateTasksOnBoard()) {
-          // Remove previously disjointed tasks on reassignment
-          store.dispatch(setTasks(newTaskArr.filter((task) => task.parentId !== updatedTask.id)))
-        }
-        if (activeTask && activeTask.id === updatedTask.id) {
-          store.dispatch(setActiveTask(updatedTask))
-        }
-
-        // If there are disjoint child tasks floating around in the task board
-        if (tasks.some((task) => task.parentId === updatedTask.id)) {
-          store.dispatch(setTasks(tasks.filter((task) => task.parentId !== updatedTask.id)))
-        }
+    // Extract new image Srcs and replace it with old ones, because since we are creating a new url of images on each task details navigation,
+    // a second user navigating the task details will generate a new src and replace it in the database which causes the previous user to load the src again(because its new)
+    if (oldTask && oldTask.body && updatedTask.body) {
+      const oldImgSrcs = extractImgSrcs(oldTask.body)
+      const newImgSrcs = extractImgSrcs(updatedTask.body)
+      if (oldImgSrcs.length > 0 && newImgSrcs.length > 0) {
+        updatedTask.body = replaceImgSrcs(updatedTask.body, newImgSrcs, oldImgSrcs)
       }
+    }
+
+    // Handle task updated to an archival state not active in user's viewsettings filter
+    if ((updatedTask.isArchived && !showArchived) || (!updatedTask.isArchived && !showUnarchived)) {
+      if (activeTask && activeTask.id === updatedTask.id) {
+        // However if we're in the details page of this task, we want the changes to reflect
+        store.dispatch(setActiveTask(updatedTask))
+      }
+      store.dispatch(setTasks(filterOutUpdatedTask(tasks)))
+      return
+    }
+
+    // Update active task if it's the one being updated
+    if (activeTask && activeTask.id === updatedTask.id) {
+      store.dispatch(setActiveTask(updatedTask))
+    }
+
+    // If there are disjoint child tasks floating around in the task board, yeet them all
+    if (tasks.some((task) => task.parentId === updatedTask.id)) {
+      store.dispatch(setTasks(tasks.filter((task) => task.parentId !== updatedTask.id)))
     }
   }
 }
