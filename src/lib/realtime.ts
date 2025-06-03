@@ -75,7 +75,7 @@ export class RealtimeHandler {
     const { tasks, accessibleTasks } = selectTaskBoard(currentState)
 
     // Check if this new task is a disjoint task by checking if accessible tasks array contains its parent.
-    // If it is a disjoint task we need to insert it to the fkin board
+    // If it is a disjoint task we need to insert it to the board
     const isParentTaskAccessible = accessibleTasks.some((task) => task.id === newTask.parentId)
 
     if (this.userRole === AssigneeType.internalUser) {
@@ -175,9 +175,11 @@ export class RealtimeHandler {
 
     if (this.payload.eventType === 'INSERT') {
       return this.handleRealtimeSubtaskInsert(newTask)
-    } else if (this.payload.eventType === 'UPDATE') {
+    }
+    if (this.payload.eventType === 'UPDATE') {
       return this.handleRealtimeSubtaskUpdate(newTask)
     }
+    console.error('Unknown event type for realtime subtask handler')
   }
 
   /**
@@ -196,14 +198,12 @@ export class RealtimeHandler {
 
     // Step 1: Add to accessibleTasks array (store of all accessible tasks for current user in state)
     // --- Internal User
-    if (
-      this.user &&
-      this.userRole === AssigneeType.internalUser &&
-      InternalUsersSchema.parse(this.user).isClientAccessLimited
-    ) {
+    if (this.user && this.userRole === AssigneeType.internalUser) {
       const iu = InternalUsersSchema.parse(this.user)
-      let isIuAccessibleTask =
-        !iu.isClientAccessLimited || (iu.isClientAccessLimited && assignee.some((user) => user.id === newTask.assigneeId))
+      let isIuAccessibleTask = true
+      if (iu.isClientAccessLimited && newTask.companyId) {
+        isIuAccessibleTask = iu.companyAccessList!.includes(newTask.companyId)
+      }
       if (isIuAccessibleTask) {
         store.dispatch(setAccessibleTasks([...accessibleTasks, newTask]))
       }
@@ -233,20 +233,21 @@ export class RealtimeHandler {
    */
   handleRealtimeTaskUpdate() {
     const updatedTask = this.getFormattedTask(this.payload.new)
+
     const commonStore = store.getState()
     const { assignee, activeTask, accessibleTasks, showArchived, showUnarchived, tasks } = commonStore.taskBoard
 
     // --- Handle unassignment (board + details page)
     if (this.user && this.userRole === AssigneeType.client) {
-      // Check if assignee is this client's ID, or it's company's ID
-      if (![this.tokenPayload?.clientId, this.tokenPayload?.companyId].includes(updatedTask.assigneeId)) {
+      // Check if assignee is this client's ID + currently active company ID
+      if (this.tokenPayload?.companyId && this.tokenPayload.companyId === updatedTask.companyId) {
         // Get the previous task from tasks array and check if it was previously assigned to this client
-
         const task = tasks.find((task) => task.id === updatedTask.id)
         if (!task) {
           return
         }
         const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
+
         // Check if any disjoint children were created
         const newlyDisjointChildren = accessibleTasks.filter((task) => task.parentId === updatedTask.id)
         newlyDisjointChildren.length && newTaskArr.push(...newlyDisjointChildren)
@@ -262,14 +263,14 @@ export class RealtimeHandler {
       }
     }
 
-    //if the updated task is out of scope for limited access iu
+    // If the updated task is out of scope for limited access IU
     if (
       this.user &&
       this.userRole === AssigneeType.internalUser &&
       InternalUsersSchema.parse(this.user).isClientAccessLimited
     ) {
-      const assigneeSet = new Set(assignee.map((a) => a.id))
-      if (updatedTask.assigneeId && !assigneeSet.has(updatedTask.assigneeId)) {
+      const assigneeSet = new Set(assignee.map((a) => a.companyId).filter((companyId) => !!companyId))
+      if (updatedTask.companyId && !assigneeSet.has(updatedTask.companyId)) {
         const newTaskArr = tasks.filter((el) => el.id !== updatedTask.id)
         store.dispatch(setTasks(newTaskArr))
         store.dispatch(setAccessibleTasks(accessibleTasks.filter((task) => task.id !== updatedTask.id)))
@@ -280,14 +281,8 @@ export class RealtimeHandler {
       }
     }
 
-    const isCreatedAtGMT = (updatedTask.createdAt as unknown as string).slice(-1).toLowerCase() === 'z'
-    if (!isCreatedAtGMT) {
-      // DB stores GMT timestamp without 'z', so need to append this manually
-      updatedTask.createdAt = ((updatedTask.createdAt as unknown as string) + 'Z') as unknown as Date
-      // This casting is safe
-    }
-    const oldTask =
-      activeTask && updatedTask.id === activeTask.id ? activeTask : tasks.find((task) => task.id == updatedTask.id)
+    // Get from active task directly (user is in task board)
+    const oldTask = activeTask && updatedTask.id === activeTask.id ? activeTask : tasks.find((t) => t.id == updatedTask.id)
 
     //check if the new task in this event belongs to the same workspaceId
     if (updatedTask.workspaceId === this.tokenPayload?.workspaceId) {
