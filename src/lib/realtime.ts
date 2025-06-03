@@ -8,7 +8,6 @@ import { IAssigneeCombined } from '@/types/interfaces'
 import { extractImgSrcs, replaceImgSrcs } from '@/utils/signedUrlReplacer'
 import { AssigneeType } from '@prisma/client'
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
-import { shallowEqual } from 'react-redux'
 import { z } from 'zod'
 
 export class RealtimeHandler {
@@ -18,7 +17,13 @@ export class RealtimeHandler {
     private readonly userRole: AssigneeType,
     private readonly redirectToBoard: (newTask: RealTimeTaskResponse) => void,
     private readonly tokenPayload?: Token,
-  ) {}
+  ) {
+    const newTask = this.getFormattedTask(this.payload.new)
+    if (newTask.workspaceId !== this.tokenPayload?.workspaceId) {
+      console.error('Realtime event ignored for task with different workspaceId')
+      return
+    }
+  }
 
   private getFormattedTask(task: unknown): RealTimeTaskResponse {
     const newTask = task as RealTimeTaskResponse
@@ -188,11 +193,6 @@ export class RealtimeHandler {
   handleRealtimeTaskInsert() {
     const newTask = this.getFormattedTask(this.payload.new)
 
-    // Failsafe even though realtime filter is already in place
-    if (newTask.workspaceId !== this.tokenPayload?.workspaceId) {
-      return
-    }
-
     const commonStore = store.getState()
     const { accessibleTasks, showUnarchived, tasks } = commonStore.taskBoard
 
@@ -240,10 +240,6 @@ export class RealtimeHandler {
    */
   handleRealtimeTaskUpdate() {
     const updatedTask = this.getFormattedTask(this.payload.new)
-
-    if (updatedTask.workspaceId !== this.tokenPayload?.workspaceId) {
-      return
-    }
 
     const commonStore = store.getState()
     const { assignee, activeTask, accessibleTasks, showArchived, showUnarchived, tasks } = commonStore.taskBoard
