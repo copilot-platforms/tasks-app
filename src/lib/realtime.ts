@@ -207,8 +207,17 @@ export class RealtimeHandler {
     }
     // --- Client
     if (this.userRole === AssigneeType.client) {
-      // If this task is an IU task, or task's companyId does not match current user's active companyId
-      if (newTask.internalUserId || this.user.companyId !== newTask.companyId) {
+      // Return if:
+      // - task is unassigned
+      // - task is an IU task
+      // - task is a client task, assigned to another client
+      // - task's companyId does not match current user's active companyId
+      if (
+        !newTask.assigneeId ||
+        newTask.internalUserId ||
+        (newTask.clientId && newTask.clientId !== this.user.id) ||
+        this.user.companyId !== newTask.companyId
+      ) {
         return
       }
     }
