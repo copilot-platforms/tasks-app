@@ -208,7 +208,7 @@ export class RealtimeHandler {
     // --- Client
     if (this.userRole === AssigneeType.client) {
       // If this task is an IU task, or task's companyId does not match current user's active companyId
-      if (newTask.internalUserId || this.user.companyId !== newTask.assigneeId) {
+      if (newTask.internalUserId || this.user.companyId !== newTask.companyId) {
         return
       }
     }
@@ -236,7 +236,7 @@ export class RealtimeHandler {
     const { assignee, activeTask, accessibleTasks, showArchived, showUnarchived, tasks } = commonStore.taskBoard
 
     // --- Handle unassignment (board + details page)
-    if (this.user && this.userRole === AssigneeType.client) {
+    if (this.userRole === AssigneeType.client) {
       // Check if assignee is this client's ID + currently active company ID
       if (this.tokenPayload?.companyId && this.tokenPayload.companyId === updatedTask.companyId) {
         // Get the previous task from tasks array and check if it was previously assigned to this client
