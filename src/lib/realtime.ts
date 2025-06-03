@@ -198,7 +198,7 @@ export class RealtimeHandler {
 
     // Step 1: Add to accessibleTasks array (store of all accessible tasks for current user in state)
     // --- Internal User
-    if (this.user && this.userRole === AssigneeType.internalUser) {
+    if (this.userRole === AssigneeType.internalUser) {
       const iu = InternalUsersSchema.parse(this.user)
       let isIuAccessibleTask = true
       if (iu.isClientAccessLimited && newTask.companyId) {
