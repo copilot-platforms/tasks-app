@@ -194,25 +194,21 @@ export class RealtimeHandler {
     }
 
     const commonStore = store.getState()
-    const { assignee, accessibleTasks, showUnarchived, tasks } = commonStore.taskBoard
+    const { accessibleTasks, showUnarchived, tasks } = commonStore.taskBoard
 
     // Step 1: Add to accessibleTasks array (store of all accessible tasks for current user in state)
     // --- Internal User
     if (this.userRole === AssigneeType.internalUser) {
       const iu = InternalUsersSchema.parse(this.user)
-      let isIuAccessibleTask = true
-      if (iu.isClientAccessLimited && newTask.companyId) {
-        isIuAccessibleTask = iu.companyAccessList!.includes(newTask.companyId)
+      if (iu.isClientAccessLimited && newTask.companyId && !iu.companyAccessList!.includes(newTask.companyId)) {
+        return
       }
-      if (isIuAccessibleTask) {
-        store.dispatch(setAccessibleTasks([...accessibleTasks, newTask]))
-      }
+      store.dispatch(setAccessibleTasks([...accessibleTasks, newTask]))
     }
     // --- Client
     if (this.userRole === AssigneeType.client) {
-      const isClientOrCompanyTask = [this.tokenPayload?.clientId, this.tokenPayload?.companyId].includes(newTask.assigneeId)
-      if (isClientOrCompanyTask) {
-        store.dispatch(setAccessibleTasks([...accessibleTasks, newTask]))
+      if (![this.tokenPayload?.clientId, this.tokenPayload?.companyId].includes(newTask.assigneeId)) {
+        return
       }
     }
 
