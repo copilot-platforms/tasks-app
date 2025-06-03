@@ -196,23 +196,25 @@ export class RealtimeHandler {
     const commonStore = store.getState()
     const { accessibleTasks, showUnarchived, tasks } = commonStore.taskBoard
 
-    // Step 1: Add to accessibleTasks array (store of all accessible tasks for current user in state)
+    // Step 1: Guardrail returns
     // --- Internal User
     if (this.userRole === AssigneeType.internalUser) {
       const iu = InternalUsersSchema.parse(this.user)
+      // If the user has limited client access, and this task is outside of it, return
       if (iu.isClientAccessLimited && newTask.companyId && !iu.companyAccessList!.includes(newTask.companyId)) {
         return
       }
-      store.dispatch(setAccessibleTasks([...accessibleTasks, newTask]))
     }
     // --- Client
     if (this.userRole === AssigneeType.client) {
-      if (![this.tokenPayload?.clientId, this.tokenPayload?.companyId].includes(newTask.assigneeId)) {
+      // If this task is an IU task, or task's companyId does not match current user's active companyId
+      if (newTask.internalUserId || this.user.companyId !== newTask.assigneeId) {
         return
       }
     }
 
-    // Step 2: Add to tasks array (show in task board)
+    // Step 2: Add to accessible + board tasks
+    store.dispatch(setAccessibleTasks([...accessibleTasks, newTask]))
     if (showUnarchived) {
       store.dispatch(
         setTasks([
