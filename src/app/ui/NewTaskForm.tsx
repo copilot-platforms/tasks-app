@@ -335,7 +335,7 @@ const NewTaskFooter = ({
             placeholder="Search..."
             value={templateValue}
             selectorType={SelectorType.TEMPLATE_SELECTOR}
-            endOption={<ManageTemplatesEndOption />}
+            endOption={<ManageTemplatesEndOption hasTemplates={!!templates?.length} />}
             endOptionHref={`/manage-templates?token=${token}`}
             listAutoHeightMax="147px"
             buttonContent={
