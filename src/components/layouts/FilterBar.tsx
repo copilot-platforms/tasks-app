@@ -2,6 +2,7 @@
 
 import { UserRole } from '@/app/api/core/types/user'
 import FilterButtonGroup from '@/components/buttonsGroup/FilterButtonsGroup'
+import { CopilotSelector } from '@/components/inputs/CopilotSelector'
 import { DisplaySelector } from '@/components/inputs/DisplaySelector'
 import { SelectorType } from '@/components/inputs/Selector'
 import SearchBar from '@/components/searchBar'
@@ -31,7 +32,6 @@ import { NoAssigneeExtraOptions } from '@/utils/noAssignee'
 import { Box, Stack } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
-import { CopilotSelector } from '../inputs/CopilotSelector'
 
 interface FilterBarProps {
   mode: UserRole
