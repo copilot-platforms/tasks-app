@@ -4461,10 +4461,10 @@ convert-source-map@^2.0.0:
   resolved "https://registry.yarnpkg.com/convert-source-map/-/convert-source-map-2.0.0.tgz#4b560f649fc4e918dd0ab75cf4961e8bc882d82a"
   integrity sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==
 
-copilot-design-system@^2.0.8:
-  version "2.0.8"
-  resolved "https://registry.yarnpkg.com/copilot-design-system/-/copilot-design-system-2.0.8.tgz#884ef246b9f60f5cb85c0ddecb64659ace5a9ce1"
-  integrity sha512-gbs7ni9CY315hxXZcu2Ve2PbXL5pIAhAsijsQOybiEGNSPGoaWbJvpp/wNlHs1VGo24B/CsZ7uReQaxXQ6lWTw==
+copilot-design-system@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/copilot-design-system/-/copilot-design-system-2.1.0.tgz#e7f0cc210b88228ca172de6622f9e52cfa69fc84"
+  integrity sha512-DF4PW3uZEm0/Wf557k7Wg59AlJIuwU3Xe5QuTCiW5GT0KCboSGAAytP+gfiEEQ7uUGYf6hyoDmmfIgkxVfi8jQ==
   dependencies:
     "@radix-ui/react-avatar" "^1.0.4"
     "@radix-ui/react-toast" "^1.2.1"
@@ -7947,7 +7947,7 @@ react-dnd@^16.0.1:
     fast-deep-equal "^3.1.3"
     hoist-non-react-statics "^3.3.2"
 
-react-dom@^18:
+react-dom@^18.3:
   version "18.3.1"
   resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-18.3.1.tgz#c2265d79511b57d479b3dd3fdfa51536494c5cb4"
   integrity sha512-5m4nQKp+rZRb09LNH59GM4BxTh9251/ylbKIbpe7TpGxfJ+9kv6BLkLBXIjjspbgbnIBNqlI23tRnTWT0snUIw==
