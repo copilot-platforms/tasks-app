@@ -3,7 +3,7 @@
 import { StyledBox, StyledModal } from '@/app/detail/ui/styledComponent'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { SelectorButton } from '@/components/buttons/SelectorButton'
-import { CopilotPopSelector, CopilotSelector } from '@/components/inputs/CopilotSelector'
+import { CopilotPopSelector } from '@/components/inputs/CopilotSelector'
 import { DatePickerComponent } from '@/components/inputs/DatePickerComponent'
 import { SelectorType } from '@/components/inputs/Selector'
 import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
@@ -159,7 +159,38 @@ export const Sidebar = ({
             width: 'fit-content',
           }}
         >
-          <CopilotSelector name="Set assignee" onChange={handleAssigneeChange} />
+          <CopilotPopSelector
+            name="Set assignee"
+            onChange={handleAssigneeChange}
+            buttonContent={
+              <SelectorButton
+                padding="4px 8px"
+                startIcon={
+                  (assigneeValue as IAssigneeCombined)?.name == 'No assignee' ? (
+                    <AssigneePlaceholder />
+                  ) : (
+                    <CopilotAvatar currentAssignee={assigneeValue} />
+                  )
+                }
+                outlined={true}
+                buttonContent={
+                  <Typography
+                    variant="md"
+                    lineHeight="22px"
+                    sx={{
+                      color: (theme) => theme.color.gray[600],
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      maxWidth: '150px',
+                    }}
+                  >
+                    {assigneeValue?.name == 'No assignee' ? 'Unassigned' : getAssigneeName(assigneeValue, 'Unassigned')}
+                  </Typography>
+                }
+              />
+            }
+          />
         </Box>
         <Box sx={{}}>
           <DatePickerComponent
