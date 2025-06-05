@@ -1,6 +1,8 @@
+import { StyledUserCompanySelector } from '@/app/detail/ui/styledComponent'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { InputValue } from '@/types/interfaces'
 import { Box, Popper, Stack } from '@mui/material'
-import { InputValue, UserCompanySelector } from 'copilot-design-system'
+
 import 'copilot-design-system/dist/styles/main.css'
 import { ReactNode, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
@@ -9,20 +11,21 @@ export const CopilotSelector = ({ onChange, name }: { onChange: (inputValue: Inp
   const { selectorAssignee } = useSelector(selectTaskBoard)
   return (
     <>
-      <UserCompanySelector
+      <StyledUserCompanySelector
         clientUsers={selectorAssignee.clients}
         name={name}
         internalUsers={selectorAssignee.internalUsers}
         companies={selectorAssignee.companies}
         onChange={onChange}
         grouped={true}
+        limitSelectedOptions={1}
       />
     </>
   )
 }
 
 interface CopilotPopSelectorProps {
-  buttonContent?: ReactNode
+  buttonContent: ReactNode
   disabled?: boolean
   onClick?: () => void
   name: string
@@ -30,7 +33,6 @@ interface CopilotPopSelectorProps {
 }
 export const CopilotPopSelector = ({ buttonContent, disabled = false, name, onChange }: CopilotPopSelectorProps) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-
   const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
     if (!disabled) {
       setAnchorEl(anchorEl ? null : event.currentTarget)
@@ -65,6 +67,7 @@ export const CopilotPopSelector = ({ buttonContent, disabled = false, name, onCh
         open={open}
         anchorEl={anchorEl}
         sx={{
+          zIndex: '1600',
           width: 'fit-content',
         }}
         placement="bottom-start"

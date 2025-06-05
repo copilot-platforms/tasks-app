@@ -1,7 +1,9 @@
 'use client'
 
 import { StyledBox, StyledModal } from '@/app/detail/ui/styledComponent'
-import { CopilotSelector } from '@/components/inputs/CopilotSelector'
+import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
+import { SelectorButton } from '@/components/buttons/SelectorButton'
+import { CopilotPopSelector, CopilotSelector } from '@/components/inputs/CopilotSelector'
 import { DatePickerComponent } from '@/components/inputs/DatePickerComponent'
 import { SelectorType } from '@/components/inputs/Selector'
 import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
@@ -9,20 +11,20 @@ import { ConfirmUI } from '@/components/layouts/ConfirmUI'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { useWindowWidth } from '@/hooks/useWindowWidth'
+import { AssigneePlaceholder } from '@/icons'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { selectTaskDetails, setShowSidebar, toggleShowConfirmAssignModal } from '@/redux/features/taskDetailsSlice'
 import store from '@/redux/store'
 import { DateStringSchema } from '@/types/date'
 import { UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { IUserIds, Sizes } from '@/types/interfaces'
+import { IAssigneeCombined, InputValue, IUserIds, Sizes } from '@/types/interfaces'
 import { getAssigneeId, getAssigneeName, getUserIds } from '@/utils/assignee'
 import { createDateFromFormattedDateString, formatDate } from '@/utils/dateHelper'
 import { getSelectedUserIds } from '@/utils/getSelectedUserIds'
 import { NoAssignee } from '@/utils/noAssignee'
 import { ShouldConfirmBeforeReassignment } from '@/utils/shouldConfirmBeforeReassign'
-import { Box, Skeleton, Stack, Typography, styled } from '@mui/material'
-import { InputValue } from 'copilot-design-system'
+import { Box, Skeleton, Stack, styled, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { z } from 'zod'
@@ -54,6 +56,8 @@ export const Sidebar = ({
 
   const [dueDate, setDueDate] = useState<Date | string | undefined>()
 
+  const [assigneeValue, setAssigneeValue] = useState<IAssigneeCombined | undefined>()
+
   const [selectedAssignee, setSelectedAssignee] = useState<IUserIds | undefined>(undefined)
 
   const { renderingItem: _statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
@@ -71,6 +75,8 @@ export const Sidebar = ({
       updateStatusValue(currentWorkflowState)
       //UPDATE THE VALUE OF ASSIGNEE IN COPILOT SELECTOR after it supports value prop. (REALTIME)
       setDueDate(currentTask?.dueDate)
+      const currentAssignee = assignee.find((assignee) => assignee.id == currentTask.assigneeId)
+      setAssigneeValue(currentAssignee)
     }
   }, [activeTask, workflowStates, assignee])
 
@@ -79,6 +85,7 @@ export const Sidebar = ({
 
   const handleConfirmAssigneeChange = (userIds: IUserIds) => {
     updateAssignee(userIds)
+    setAssigneeValue(getAssigneeValue(userIds) as IAssigneeCombined)
     store.dispatch(toggleShowConfirmAssignModal())
   }
 
@@ -112,6 +119,7 @@ export const Sidebar = ({
         setSelectedAssignee(newUserIds)
         store.dispatch(toggleShowConfirmAssignModal())
       } else {
+        setAssigneeValue(getAssigneeValue(newUserIds) as IAssigneeCombined)
         updateAssignee(newUserIds)
       }
     }
@@ -255,14 +263,45 @@ export const Sidebar = ({
           <Box
             sx={{
               ':hover': {
-                // bgcolor: (theme) => theme.color.background.bgCallout,
+                bgcolor: (theme) => theme.color.background.bgCallout,
               },
               padding: '4px',
               borderRadius: '4px',
               width: 'fit-content',
             }}
           >
-            <CopilotSelector name="Set assignee" onChange={handleAssigneeChange} />
+            <CopilotPopSelector
+              name="Set assignee"
+              onChange={handleAssigneeChange}
+              buttonContent={
+                <SelectorButton
+                  padding="4px 8px"
+                  startIcon={
+                    (assigneeValue as IAssigneeCombined)?.name == 'No assignee' ? (
+                      <AssigneePlaceholder />
+                    ) : (
+                      <CopilotAvatar currentAssignee={assigneeValue} />
+                    )
+                  }
+                  outlined={true}
+                  buttonContent={
+                    <Typography
+                      variant="md"
+                      lineHeight="22px"
+                      sx={{
+                        color: (theme) => theme.color.gray[600],
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        maxWidth: '150px',
+                      }}
+                    >
+                      {assigneeValue?.name == 'No assignee' ? 'Unassigned' : getAssigneeName(assigneeValue, 'Unassigned')}
+                    </Typography>
+                  }
+                />
+              }
+            />
           </Box>
         </Stack>
         <Stack direction="row" m="8px 0px" alignItems="center" columnGap="10px" minWidth="fit-content">
