@@ -2,11 +2,12 @@
 
 import { UserRole } from '@/app/api/core/types/user'
 import FilterButtonGroup from '@/components/buttonsGroup/FilterButtonsGroup'
-import { CopilotSelector } from '@/components/inputs/CopilotSelector'
+import { CopilotPopSelector } from '@/components/inputs/CopilotSelector'
 import { DisplaySelector } from '@/components/inputs/DisplaySelector'
 import { SelectorType } from '@/components/inputs/Selector'
 import SearchBar from '@/components/searchBar'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
+import { CrossIcon, FilterByAsigneeIcon } from '@/icons'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import {
   selectTaskBoard,
@@ -26,12 +27,14 @@ import {
   IFilterOptions,
 } from '@/types/interfaces'
 import { filterOptionsToAssigneeMap, filterTypeToButtonIndexMap } from '@/types/objectMaps'
-import { getAssigneeId } from '@/utils/assignee'
+import { checkAssignee, getAssigneeId } from '@/utils/assignee'
 import { getSelectedUserIds } from '@/utils/getSelectedUserIds'
 import { NoAssigneeExtraOptions } from '@/utils/noAssignee'
-import { Box, Stack } from '@mui/material'
+import { Box, IconButton, Stack } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
+import { FilterByAssigneeBtn } from '@/components/buttons/FilterByAssigneeBtn'
+import { SelectorButton } from '@/components/buttons/SelectorButton'
 
 interface FilterBarProps {
   mode: UserRole
@@ -185,7 +188,39 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
                       display: { xs: 'none', sm: 'none', sd: 'block' },
                     }}
                   >
-                    <CopilotSelector
+                    <CopilotPopSelector
+                      buttonContent={
+                        <SelectorButton
+                          startIcon={<FilterByAsigneeIcon />}
+                          endIcon={
+                            checkAssignee(assigneeValue) && (
+                              <IconButton
+                                aria-label="remove"
+                                onClick={(e) => {
+                                  e.preventDefault()
+                                  e.stopPropagation()
+                                  updateAssigneeValue(null)
+                                  handleFilterOptionsChange(FilterOptions.ASSIGNEE, '')
+                                }}
+                                sx={{
+                                  cursor: 'default',
+                                  borderRadius: 0,
+                                  padding: '6px 5px 6px 6px',
+
+                                  '&:hover': {
+                                    bgcolor: (theme) => theme.color.gray[100],
+                                  },
+                                }}
+                                disableRipple
+                                disableTouchRipple
+                              >
+                                <CrossIcon />
+                              </IconButton>
+                            )
+                          }
+                          buttonContent={<FilterByAssigneeBtn assigneeValue={assigneeValue} />}
+                        />
+                      }
                       name="Filter by assignee"
                       onChange={(inputValue) => {
                         const newUserIds = getSelectedUserIds(inputValue)
@@ -287,13 +322,47 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
           >
             <Box>
               {filterOptions[FilterOptions.TYPE] !== tokenPayload?.internalUserId && mode === UserRole.IU && (
-                <CopilotSelector
+                <CopilotPopSelector
+                  buttonContent={
+                    <SelectorButton
+                      startIcon={<FilterByAsigneeIcon />}
+                      endIcon={
+                        checkAssignee(assigneeValue) && (
+                          <IconButton
+                            aria-label="remove"
+                            onClick={(e) => {
+                              e.preventDefault()
+                              e.stopPropagation()
+                              updateAssigneeValue(null)
+                              handleFilterOptionsChange(FilterOptions.ASSIGNEE, '')
+                            }}
+                            sx={{
+                              cursor: 'default',
+                              borderRadius: 0,
+                              padding: '6px 5px 6px 6px',
+
+                              '&:hover': {
+                                bgcolor: (theme) => theme.color.gray[100],
+                              },
+                            }}
+                            disableRipple
+                            disableTouchRipple
+                          >
+                            <CrossIcon />
+                          </IconButton>
+                        )
+                      }
+                      buttonContent={<FilterByAssigneeBtn assigneeValue={assigneeValue} />}
+                    />
+                  }
                   name="Filter by assignee"
                   onChange={(inputValue) => {
                     const newUserIds = getSelectedUserIds(inputValue)
                     const newAssignee = getAssigneeId(newUserIds)
                     if (newAssignee) {
                       handleFilterOptionsChange(FilterOptions.ASSIGNEE, newAssignee)
+                    } else {
+                      handleFilterOptionsChange(FilterOptions.ASSIGNEE, '')
                     }
                   }}
                 />

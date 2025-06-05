@@ -241,3 +241,8 @@ export const CustomDivider = styled(Box)(({ theme }) => ({
   marginLeft: '-10px',
   marginRight: '-10px',
 }))
+
+export const StyledUserCompanySelector = styled(UserCompanySelector)(({ theme }) => ({
+  width: '294px',
+  height: '40px',
+}))

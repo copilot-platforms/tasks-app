@@ -1,15 +1,17 @@
+import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import AttachmentLayout from '@/components/AttachmentLayout'
 import { ManageTemplatesEndOption } from '@/components/buttons/ManageTemplatesEndOptions'
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
-import { CopilotSelector } from '@/components/inputs/CopilotSelector'
+import { SelectorButton } from '@/components/buttons/SelectorButton'
+import { CopilotPopSelector } from '@/components/inputs/CopilotSelector'
 import { DatePickerComponent } from '@/components/inputs/DatePickerComponent'
 import Selector, { SelectorType } from '@/components/inputs/Selector'
 import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
 import { StyledTextField } from '@/components/inputs/TextField'
 import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
-import { TempalteIconMd } from '@/icons'
+import { AssigneePlaceholderSmall, TempalteIconMd } from '@/icons'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { selectTaskDetails, setActiveTaskAssignees } from '@/redux/features/taskDetailsSlice'
@@ -18,7 +20,8 @@ import store from '@/redux/store'
 import { DateString } from '@/types/date'
 import { CreateTaskRequest } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { CreateTaskErrors, ITemplate, IUserIds, UserIds } from '@/types/interfaces'
+import { CreateTaskErrors, IAssigneeCombined, ITemplate, IUserIds, UserIds } from '@/types/interfaces'
+import { getAssigneeName } from '@/utils/assignee'
 import { getSelectedUserIds } from '@/utils/getSelectedUserIds'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
 import { trimAllTags } from '@/utils/trimTags'
@@ -92,6 +95,7 @@ export const NewTaskCard = ({
       dueDate: null,
     }))
     updateStatusValue(todoWorkflowState)
+    setAssigneeValue(null)
   }
 
   const handleFieldChange = (field: keyof SubTaskFields, value: string | DateString | IErrors | null | IUserIds) => {
@@ -130,6 +134,8 @@ export const NewTaskCard = ({
   const handleUploadStatusChange = (uploading: boolean) => {
     setIsUploading(uploading)
   }
+
+  const [assigneeValue, setAssigneeValue] = useState<IAssigneeCombined | null>(null)
 
   const applyTemplate = useCallback(
     (id: string, templateTitle: string) => {
@@ -360,7 +366,7 @@ export const NewTaskCard = ({
             height={'28px'}
             gap={'6px'}
           />
-          <CopilotSelector
+          <CopilotPopSelector
             name="Set assignee"
             onChange={(inputValue) => {
               const newUserIds = getSelectedUserIds(inputValue)
@@ -374,8 +380,35 @@ export const NewTaskCard = ({
                   assignee: false,
                 })
               }
+              const selectedAssignee = assignee.find((assignee) => assignee.id === inputValue[0].id)
+              setAssigneeValue(selectedAssignee || null)
               handleFieldChange('userIds', newUserIds)
             }}
+            buttonContent={
+              <SelectorButton
+                padding="0px 4px"
+                height="28px"
+                buttonContent={
+                  <Stack direction="row" alignItems={'center'} columnGap={'6px'} height="26px">
+                    {assigneeValue ? <CopilotAvatar currentAssignee={assigneeValue} /> : <AssigneePlaceholderSmall />}
+                    <Typography
+                      variant="bodySm"
+                      sx={{
+                        color: (theme) => (assigneeValue ? theme.color.gray[600] : theme.color.text.textDisabled),
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        lineHeight: '22px',
+                        overflow: 'hidden',
+                        fontSize: '12px',
+                        maxWidth: '120px',
+                      }}
+                    >
+                      {getAssigneeName(assigneeValue as IAssigneeCombined, 'Assignee')}
+                    </Typography>
+                  </Stack>
+                }
+              />
+            }
           />
           <DatePickerComponent
             padding={'0px 4px'}
