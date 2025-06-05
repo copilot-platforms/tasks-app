@@ -1,8 +1,10 @@
+import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import AttachmentLayout from '@/components/AttachmentLayout'
 import { ManageTemplatesEndOption } from '@/components/buttons/ManageTemplatesEndOptions'
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
-import { CopilotSelector } from '@/components/inputs/CopilotSelector'
+import { SelectorButton } from '@/components/buttons/SelectorButton'
+import { CopilotPopSelector } from '@/components/inputs/CopilotSelector'
 import { DatePickerComponent } from '@/components/inputs/DatePickerComponent'
 import Selector, { SelectorType } from '@/components/inputs/Selector'
 import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
@@ -10,7 +12,7 @@ import { StyledTextField } from '@/components/inputs/TextField'
 import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
-import { CloseIcon, TemplateIconSm } from '@/icons'
+import { AssigneePlaceholderSmall, CloseIcon, TemplateIconSm } from '@/icons'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import {
   selectCreateTask,
@@ -19,17 +21,12 @@ import {
   setCreateTaskFields,
   setErrors,
 } from '@/redux/features/createTaskSlice'
-import { selectTaskBoard, setAssigneeList } from '@/redux/features/taskBoardSlice'
+import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { selectCreateTemplate } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import {
-  CreateTaskErrors,
-  FilterOptions,
-  HandleSelectorComponentModes,
-  IAssigneeCombined,
-  ITemplate,
-} from '@/types/interfaces'
+import { CreateTaskErrors, IAssigneeCombined, ITemplate } from '@/types/interfaces'
+import { getAssigneeName } from '@/utils/assignee'
 import { getSelectedUserIds } from '@/utils/getSelectedUserIds'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
 import { trimAllTags } from '@/utils/trimTags'
@@ -50,7 +47,7 @@ interface NewTaskFormProps {
 
 export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => {
   const { activeWorkflowStateId } = useSelector(selectCreateTask)
-  const { workflowStates } = useSelector(selectTaskBoard)
+  const { workflowStates, assignee } = useSelector(selectTaskBoard)
 
   const todoWorkflowState = workflowStates.find((el) => el.key === 'todo') || workflowStates[0]
   const defaultWorkflowState = activeWorkflowStateId
@@ -65,6 +62,8 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
   const statusValue = _statusValue as WorkflowStateResponse //typecasting
 
   const [isEditorReadonly, setIsEditorReadonly] = useState(false)
+
+  const [assigneeValue, setAssigneeValue] = useState<IAssigneeCombined | null>(null)
 
   const handleCreateWithAssignee = () => {
     handleCreate()
@@ -101,10 +100,10 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
 
       <AppMargin size={SizeofAppMargin.MEDIUM} py="16px">
         <NewTaskFormInputs isEditorReadonly={isEditorReadonly} />
-
         <Stack direction="row" columnGap={3} position="relative" sx={{ flexWrap: 'wrap' }}>
           <Box sx={{ padding: 0.1 }}>
             <WorkflowStateSelector
+              padding="4px"
               option={workflowStates}
               value={statusValue}
               getValue={(value) => {
@@ -113,21 +112,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
               }}
             />
           </Box>
-          <Stack alignSelf="flex-start">
-            <CopilotSelector
-              name="Set assignee"
-              onChange={(inputValue) => {
-                const newUserIds = getSelectedUserIds(inputValue)
-                const areUserIdsEmpty = Object.values(newUserIds).every((value) => value === null) // remove this while adding support for no assignee.
-                if (areUserIdsEmpty) {
-                  store.dispatch(setErrors({ key: CreateTaskErrors.ASSIGNEE, value: true }))
-                } else {
-                  store.dispatch(setErrors({ key: CreateTaskErrors.ASSIGNEE, value: false }))
-                }
-                store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: newUserIds }))
-              }}
-            />
-          </Stack>
+
           <Stack alignSelf="flex-start">
             <Box
               sx={{
@@ -138,10 +123,52 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
               }}
             >
               <DatePickerComponent
+                padding="4px"
                 getDate={(value) => store.dispatch(setCreateTaskFields({ targetField: 'dueDate', value: value as string }))}
                 variant="button"
               />
             </Box>
+          </Stack>
+          <Stack alignSelf="flex-start">
+            <CopilotPopSelector
+              name="Set assignee"
+              onChange={(inputValue) => {
+                const newUserIds = getSelectedUserIds(inputValue)
+                const areUserIdsEmpty = Object.values(newUserIds).every((value) => value === null) // remove this while adding support for no assignee.
+                if (areUserIdsEmpty) {
+                  store.dispatch(setErrors({ key: CreateTaskErrors.ASSIGNEE, value: true }))
+                } else {
+                  store.dispatch(setErrors({ key: CreateTaskErrors.ASSIGNEE, value: false }))
+                }
+                const selectedAssignee = assignee.find((assignee) => assignee.id === inputValue[0].id)
+                setAssigneeValue(selectedAssignee || null)
+                store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: newUserIds }))
+              }}
+              buttonContent={
+                <SelectorButton
+                  startIcon={
+                    assigneeValue ? <CopilotAvatar currentAssignee={assigneeValue} /> : <AssigneePlaceholderSmall />
+                  }
+                  height="30px"
+                  padding="4px 4px 4px 8px"
+                  buttonContent={
+                    <Typography
+                      variant="bodySm"
+                      sx={{
+                        color: (theme) => theme.color.text.textDisabled,
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        fontSize: '12px',
+                        maxWidth: { xs: '60px', sm: '100px' },
+                      }}
+                    >
+                      {getAssigneeName(assigneeValue as IAssigneeCombined, 'Assignee')}
+                    </Typography>
+                  }
+                />
+              }
+            />
           </Stack>
         </Stack>
       </AppMargin>
