@@ -4,24 +4,36 @@ import { WorkflowStateResponseSchema } from './workflowStates.dto'
 import { DateStringSchema } from '@/types/date'
 import { ClientResponseSchema, CompanyResponseSchema, InternalUsersSchema } from '../common'
 
-const requireAssigneeTypeIfAssigneeId =
-  () => (data: { assigneeId?: string | null; assigneeType?: AssigneeType }, ctx: z.RefinementCtx) => {
-    if (data.assigneeId && !data.assigneeType) {
-      ctx.addIssue({
-        path: ['assigneeType'],
-        message: 'assigneeType is required when assigneeId is provided',
-        code: z.ZodIssueCode.custom,
-      })
-    }
+export const validateUserIds = (
+  data: { internalUserId?: string | null; clientId?: string | null; companyId?: string | null },
+  ctx: z.RefinementCtx,
+) => {
+  const hasInternalUser = Boolean(data.internalUserId)
+  const hasClient = Boolean(data.clientId)
+  const hasCompany = Boolean(data.companyId)
+
+  if (hasInternalUser && (hasClient || hasCompany)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'internalUserId cannot be combined with clientId or companyId',
+      path: ['internalUserId'],
+    })
   }
+
+  if (hasClient && !hasCompany) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'companyId is required when clientId is provided',
+      path: ['companyId'],
+    })
+  }
+}
 
 export const AssigneeTypeSchema = z.nativeEnum(PrismaAssigneeType).nullish()
 export type AssigneeType = z.infer<typeof AssigneeTypeSchema>
 
 export const CreateTaskRequestSchema = z
   .object({
-    assigneeId: z.string().optional().nullish(),
-    assigneeType: AssigneeTypeSchema,
     title: z.string().min(1),
     body: z.string().optional(),
     workflowStateId: z.string().uuid(),
@@ -29,18 +41,16 @@ export const CreateTaskRequestSchema = z
     parentId: z.string().uuid().nullish(),
     templateId: z.string().uuid().nullish(),
     createdById: z.string().uuid().optional(),
-    internalUserId: z.string().uuid().nullish(),
-    clientId: z.string().uuid().nullish(),
-    companyId: z.string().uuid().nullish(),
+    internalUserId: z.string().uuid().nullish().default(null),
+    clientId: z.string().uuid().nullish().default(null),
+    companyId: z.string().uuid().nullish().default(null),
   })
-  .superRefine(requireAssigneeTypeIfAssigneeId())
+  .superRefine(validateUserIds)
 
 export type CreateTaskRequest = z.infer<typeof CreateTaskRequestSchema>
 
 export const UpdateTaskRequestSchema = z
   .object({
-    assigneeId: z.string().nullish(),
-    assigneeType: AssigneeTypeSchema,
     title: z.string().optional(),
     body: z.string().optional(),
     workflowStateId: z.string().uuid().optional(),
@@ -50,7 +60,8 @@ export const UpdateTaskRequestSchema = z
     clientId: z.string().uuid().nullish(),
     companyId: z.string().uuid().nullish(),
   })
-  .superRefine(requireAssigneeTypeIfAssigneeId())
+  .superRefine(validateUserIds)
+
 export type UpdateTaskRequest = z.infer<typeof UpdateTaskRequestSchema>
 
 export const TaskResponseSchema = z.object({
@@ -72,6 +83,9 @@ export const TaskResponseSchema = z.object({
   lastArchivedDate: z.string().datetime(),
   parentId: z.string().nullish(),
   subtaskCount: z.number(),
+  internalUserId: z.string().uuid().nullish(),
+  clientId: z.string().uuid().nullish(),
+  companyId: z.string().uuid().nullish(),
 })
 
 export type TaskResponse = z.infer<typeof TaskResponseSchema>

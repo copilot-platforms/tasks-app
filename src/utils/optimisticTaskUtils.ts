@@ -17,8 +17,10 @@ export const getTempTask = (
     id: tempId,
     label: 'temp-label',
     workspaceId: workspaceId,
-    assigneeId: payload.assigneeId ?? '',
-    assigneeType: payload.assigneeType,
+    assigneeId: (payload.internalUserId || payload.clientId || payload.companyId) ?? '',
+    internalUserId: payload.internalUserId ?? null,
+    clientId: payload.clientId ?? null,
+    companyId: payload.companyId ?? null,
     title: payload.title,
     body: payload.body,
     workflowStateId: payload.workflowStateId,
@@ -26,7 +28,7 @@ export const getTempTask = (
     createdById: userId,
     assignee: z
       .union([ClientResponseSchema, InternalUsersSchema, CompanyResponseSchema])
-      .parse(assignee.find((a) => a.id === payload.assigneeId)),
+      .parse(assignee.find((a) => a.id === (payload.internalUserId || payload.clientId || payload.companyId))),
     createdAt: new Date(),
     lastArchivedDate: new Date().toISOString(),
     isArchived: false,
