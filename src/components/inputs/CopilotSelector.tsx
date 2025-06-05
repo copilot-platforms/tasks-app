@@ -59,7 +59,7 @@ export const CopilotPopSelector = ({ buttonContent, disabled = false, name, onCh
 
   return (
     <Stack direction="column">
-      <Box onMouseDown={handleClick}>
+      <Box onClick={handleClick}>
         <> {buttonContent}</>
       </Box>
       <Popper
