@@ -106,6 +106,12 @@ export interface ISelectorAssignee {
   companies: Omit<ISelectorOption, 'companyId'>[]
 }
 
+export interface InputValue {
+  id: string
+  companyId: string
+  object: ObjectType
+}
+
 export interface IIus {
   id: string
   givenName: string

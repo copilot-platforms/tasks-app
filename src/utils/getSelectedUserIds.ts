@@ -1,6 +1,5 @@
-import { IUserIds, UserIds } from '@/types/interfaces'
+import { InputValue, IUserIds, UserIds } from '@/types/interfaces'
 import { userIdFieldMap } from '@/types/objectMaps'
-import { InputValue } from 'copilot-design-system'
 
 export const getSelectedUserIds = (inputValue: InputValue[]): IUserIds => {
   let userIds: IUserIds = {
