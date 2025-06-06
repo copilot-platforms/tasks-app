@@ -162,6 +162,7 @@ export const Sidebar = ({
           <CopilotPopSelector
             name="Set assignee"
             onChange={handleAssigneeChange}
+            initialValue={assigneeValue}
             buttonContent={
               <SelectorButton
                 padding="4px 8px"
@@ -304,6 +305,7 @@ export const Sidebar = ({
             <CopilotPopSelector
               name="Set assignee"
               onChange={handleAssigneeChange}
+              initialValue={assigneeValue}
               buttonContent={
                 <SelectorButton
                   padding="4px 8px"

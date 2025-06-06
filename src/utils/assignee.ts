@@ -1,7 +1,9 @@
 import { TruncateMaxNumber } from '@/types/constants'
 import { TaskResponse } from '@/types/dto/tasks.dto'
-import { IAssigneeCombined, IUserIds } from '@/types/interfaces'
+import { IAssigneeCombined, ISelectorOption, IUserIds } from '@/types/interfaces'
+import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { truncateText } from '@/utils/truncateText'
+import { AssigneeType } from '@prisma/client'
 
 export const isAssigneeTextMatching = (newInputValue: string, assigneeValue: IAssigneeCombined): boolean => {
   const truncate = (newInputValue: string) => truncateText(newInputValue, TruncateMaxNumber.SELECTOR)
@@ -22,6 +24,19 @@ export const getUserIds = (task: TaskResponse): IUserIds => {
     companyId: task.companyId || null,
   }
 } //util to get userIds ({internalUserId, clientId, companyId}) from a task object
+
+export const parseAssigneeToSelectorOptions = (assignee: IAssigneeCombined): ISelectorOption[] => {
+  return [
+    {
+      value: assignee.id,
+      label: getAssigneeName(assignee),
+      avatarSrc: assignee.avatarImageUrl,
+      avatarFallbackColor: assignee.fallbackColor,
+      companyId: assignee.companyId,
+      type: getAssigneeTypeCorrected(assignee) ?? AssigneeType.internalUser, //change this when UserCompanySelector supports noAssignee.
+    },
+  ]
+}
 
 interface Assignable {
   name?: string

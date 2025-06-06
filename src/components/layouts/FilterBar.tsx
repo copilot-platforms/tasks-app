@@ -1,6 +1,8 @@
 'use client'
 
 import { UserRole } from '@/app/api/core/types/user'
+import { FilterByAssigneeBtn } from '@/components/buttons/FilterByAssigneeBtn'
+import { SelectorButton } from '@/components/buttons/SelectorButton'
 import FilterButtonGroup from '@/components/buttonsGroup/FilterButtonsGroup'
 import { CopilotPopSelector } from '@/components/inputs/CopilotSelector'
 import { DisplaySelector } from '@/components/inputs/DisplaySelector'
@@ -19,33 +21,23 @@ import {
 import store from '@/redux/store'
 import { IUTokenSchema } from '@/types/common'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
-import {
-  FilterOptions,
-  FilterOptionsKeywords,
-  HandleSelectorComponentModes,
-  IAssigneeCombined,
-  IFilterOptions,
-} from '@/types/interfaces'
+import { FilterOptions, FilterOptionsKeywords, IAssigneeCombined, IFilterOptions } from '@/types/interfaces'
 import { filterOptionsToAssigneeMap, filterTypeToButtonIndexMap } from '@/types/objectMaps'
 import { checkAssignee, getAssigneeId } from '@/utils/assignee'
 import { getSelectedUserIds } from '@/utils/getSelectedUserIds'
 import { NoAssigneeExtraOptions } from '@/utils/noAssignee'
 import { Box, IconButton, Stack } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useSelector } from 'react-redux'
-import { FilterByAssigneeBtn } from '@/components/buttons/FilterByAssigneeBtn'
-import { SelectorButton } from '@/components/buttons/SelectorButton'
 
 interface FilterBarProps {
   mode: UserRole
   updateViewModeSetting: (payload: CreateViewSettingsDTO) => void
 }
 export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
-  const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
-  const { view, filteredAssigneeList, filterOptions, assignee, token, viewSettingsTemp, showArchived, showUnarchived } =
+  const { view, filterOptions, assignee, token, viewSettingsTemp, showArchived, showUnarchived } =
     useSelector(selectTaskBoard)
-  const [filteredAssignee, setFilteredAssignee] = useState(filteredAssigneeList)
-  const [loading, setLoading] = useState(false)
+
   const viewMode = viewSettingsTemp ? viewSettingsTemp.viewMode : view
   const archivedOptions = {
     showArchived: viewSettingsTemp ? viewSettingsTemp.showArchived : showArchived,
@@ -54,33 +46,10 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
 
   const viewModeFilterOptions = viewSettingsTemp ? (viewSettingsTemp.filterOptions as IFilterOptions) : filterOptions //ViewSettingsTemp used to apply temp values of viewSettings in filterOptions and viewMode because clientSideUpdate applies outdated cached values to original view and filterOptions if navigated
 
-  // Stores the initial assignee list for a particular filter type
-  const [initialAssignees, setInitialAssignees] = useState(filteredAssignee)
-  const [inputStatusValue, setInputStatusValue] = useState('')
-
-  useEffect(() => {
-    setFilteredAssignee(filteredAssigneeList)
-  }, [filteredAssigneeList]) //to prevent filteredAssignee not updating when filteredAssigneeList changes when fetching assignee is delayed
-
-  useEffect(() => {
-    // Base these initial values off of first fetch of filteredAssignee
-    if (!initialAssignees.length) {
-      setInitialAssignees(filteredAssignee)
-    }
-    // When focus is taken away from selector, make sure that assignee search results are replaced
-    if (filteredAssignee.length && initialAssignees.length && !inputStatusValue) {
-      loading && setLoading(false)
-      setFilteredAssignee(initialAssignees)
-    }
-  }, [initialAssignees, filteredAssignee, inputStatusValue])
-
   const handleFilterOptionsChange = async (optionType: FilterOptions, newValue: string | null) => {
     store.dispatch(setFilterOptions({ optionType, newValue }))
     if (optionType === FilterOptions.TYPE) {
       const filterFunction = filterOptionsToAssigneeMap[newValue as string] || filterOptionsToAssigneeMap.default
-      setFilteredAssignee(filterFunction(assignee))
-      const newAssignees = filterFunction(assignee)
-      setInitialAssignees(newAssignees)
     }
 
     //FilteredAssignee is also updated in the component's state and used in Selector's autocomplete to mitigate the time taken to update the store and fetch values to the Selector's autocomplete.
@@ -110,15 +79,17 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
   const ButtonIndex = filterTypeToButtonIndexMap[viewModeFilterOptions.type] ?? 0
 
   const [noAssigneOptionFlag, setNoAssigneeOptionFlag] = useState<boolean>(true)
+
   const { tokenPayload } = useSelector(selectAuthDetails)
+
   const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
     item:
       viewModeFilterOptions.assignee == 'No assignee'
         ? NoAssigneeExtraOptions
-        : filteredAssigneeList.find((item) => item.id == viewModeFilterOptions.assignee),
+        : assignee.find((item) => item.id == viewModeFilterOptions.assignee),
     type: SelectorType.ASSIGNEE_SELECTOR,
-    mode: HandleSelectorComponentModes.CreateTaskFieldUpdate,
   })
+
   const filterButtons = [
     {
       name: 'My tasks',
@@ -189,6 +160,9 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
                     }}
                   >
                     <CopilotPopSelector
+                      hideClientsList={filterOptions[FilterOptions.TYPE] === FilterOptionsKeywords.TEAM}
+                      hideIusList={filterOptions[FilterOptions.TYPE] === FilterOptionsKeywords.CLIENTS}
+                      initialValue={assigneeValue}
                       buttonContent={
                         <SelectorButton
                           startIcon={<FilterByAsigneeIcon />}
@@ -323,6 +297,9 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
             <Box>
               {filterOptions[FilterOptions.TYPE] !== tokenPayload?.internalUserId && mode === UserRole.IU && (
                 <CopilotPopSelector
+                  hideClientsList={filterOptions[FilterOptions.TYPE] === FilterOptionsKeywords.TEAM}
+                  hideIusList={filterOptions[FilterOptions.TYPE] === FilterOptionsKeywords.CLIENTS}
+                  initialValue={assigneeValue}
                   buttonContent={
                     <SelectorButton
                       startIcon={<FilterByAsigneeIcon />}
