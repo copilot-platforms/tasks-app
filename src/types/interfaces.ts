@@ -108,7 +108,7 @@ export interface ISelectorAssignee {
 
 export interface InputValue {
   id: string
-  companyId: string
+  companyId?: string
   object: ObjectType
 }
 
