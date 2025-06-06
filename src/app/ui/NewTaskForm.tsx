@@ -25,8 +25,9 @@ import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { selectCreateTemplate } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { CreateTaskErrors, IAssigneeCombined, ITemplate } from '@/types/interfaces'
+import { CreateTaskErrors, FilterOptions, IAssigneeCombined, ITemplate } from '@/types/interfaces'
 import { getAssigneeName } from '@/utils/assignee'
+import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { getSelectedUserIds } from '@/utils/getSelectedUserIds'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
 import { trimAllTags } from '@/utils/trimTags'
@@ -47,7 +48,7 @@ interface NewTaskFormProps {
 
 export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => {
   const { activeWorkflowStateId } = useSelector(selectCreateTask)
-  const { workflowStates, assignee } = useSelector(selectTaskBoard)
+  const { workflowStates, assignee, previewMode, filterOptions } = useSelector(selectTaskBoard)
 
   const todoWorkflowState = workflowStates.find((el) => el.key === 'todo') || workflowStates[0]
   const defaultWorkflowState = activeWorkflowStateId
@@ -63,7 +64,18 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
 
   const [isEditorReadonly, setIsEditorReadonly] = useState(false)
 
-  const [assigneeValue, setAssigneeValue] = useState<IAssigneeCombined | null>(null)
+  const [assigneeValue, setAssigneeValue] = useState<IAssigneeCombined | null>(
+    assignee.find(
+      (item) => item.id == filterOptions[FilterOptions.ASSIGNEE] || item.id == filterOptions[FilterOptions.TYPE],
+    ) ?? null,
+  )
+  useEffect(() => {
+    if (!assigneeValue) return
+    const correctedObject = getAssigneeTypeCorrected(assigneeValue)
+    if (!correctedObject) return
+    const newUserIds = getSelectedUserIds([{ ...assigneeValue, object: correctedObject }])
+    store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: newUserIds }))
+  }, []) //if assigneeValue has an intial value before selection (when my tasks, filter by assignee filter is applied), then update the task creation field for userIds.
 
   const handleCreateWithAssignee = () => {
     handleCreate()
@@ -131,6 +143,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
           </Stack>
           <Stack alignSelf="flex-start">
             <CopilotPopSelector
+              disabled={!!previewMode}
               name="Set assignee"
               onChange={(inputValue) => {
                 const newUserIds = getSelectedUserIds(inputValue)
@@ -146,6 +159,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
               }}
               buttonContent={
                 <SelectorButton
+                  disabled={!!previewMode}
                   startIcon={
                     assigneeValue ? <CopilotAvatar currentAssignee={assigneeValue} /> : <AssigneePlaceholderSmall />
                   }
