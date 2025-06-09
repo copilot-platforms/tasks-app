@@ -288,7 +288,7 @@ export class RealtimeHandler {
     // CASE III: Task properties except deletedAt / assigneeId (userId) are updated
 
     // Get from active task directly (user is in task board)
-    const oldTask = activeTask && updatedTask.id === activeTask.id ? activeTask : tasks.find((t) => t.id == updatedTask.id)
+    const oldTask = tasks.find((t) => t.id == updatedTask.id)
 
     // Address Postgres' TOAST limitation that causes fields like TEXT, BYTEA to be copied as a pointer, instead of copying template field in realtime replica
     // (See TOAST https://www.postgresql.org/docs/current/storage-toast.html)
@@ -322,6 +322,12 @@ export class RealtimeHandler {
     if (activeTask && activeTask.id === updatedTask.id) {
       store.dispatch(setActiveTask(updatedTask))
     }
+
+    // Update tasks + accessibleTasks
+    if (tasks.some((task) => task.id === updatedTask.id)) {
+      store.dispatch(setTasks(tasks.map((task) => (task.id === updatedTask.id ? updatedTask : task))))
+    }
+    store.dispatch(setAccessibleTasks(accessibleTasks.map((task) => (task.id === updatedTask.id ? updatedTask : task))))
 
     // If there are disjoint child tasks floating around in the task board, yeet them all
     if (tasks.some((task) => task.parentId === updatedTask.id)) {
