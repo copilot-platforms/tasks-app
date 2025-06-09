@@ -16,10 +16,10 @@ export class RealtimeHandler {
     private readonly user: IAssigneeCombined,
     private readonly userRole: AssigneeType,
     private readonly redirectToBoard: (newTask: RealTimeTaskResponse) => void,
-    private readonly tokenPayload?: Token,
+    private readonly tokenPayload: Token,
   ) {
     const newTask = this.getFormattedTask(this.payload.new)
-    if (newTask.workspaceId !== this.tokenPayload?.workspaceId) {
+    if (newTask.workspaceId !== tokenPayload.workspaceId) {
       console.error('Realtime event ignored for task with different workspaceId')
       return
     }
@@ -170,6 +170,7 @@ export class RealtimeHandler {
     // Being a subtask, this surely has a valid non-null parentId
     newTask.parentId = z.string().parse(newTask.parentId)
 
+    // If subtask is no longer accessible, yeet it out from tasks & accessibleTasks arrays
     if (!this.isSubtaskAccessible(newTask)) {
       if (tasks.some((task) => task.id === newTask.id)) {
         store.dispatch(setTasks(tasks.filter((task) => task.id !== newTask.id)))
@@ -242,7 +243,7 @@ export class RealtimeHandler {
     const updatedTask = this.getFormattedTask(this.payload.new)
 
     const commonStore = store.getState()
-    const { assignee, activeTask, accessibleTasks, showArchived, showUnarchived, tasks } = commonStore.taskBoard
+    const { activeTask, accessibleTasks, showArchived, showUnarchived, tasks } = commonStore.taskBoard
 
     const filterOutUpdatedTask = <T extends { id: string }>(tasks: T[]): T[] =>
       tasks.filter((task) => task.id !== updatedTask.id)
@@ -261,7 +262,7 @@ export class RealtimeHandler {
     // --- Handle unassignment for clients (board + details page)
     if (this.userRole === AssigneeType.client) {
       // Check if assignee is this client's ID + currently active company ID
-      if (this.tokenPayload?.companyId && this.tokenPayload.companyId === updatedTask.companyId) {
+      if (this.tokenPayload.companyId && this.tokenPayload.companyId !== updatedTask.companyId) {
         // Get the previous task from tasks array and check if it was previously assigned to this client
         const task = tasks.find((task) => task.id === updatedTask.id)
         if (!task) {
