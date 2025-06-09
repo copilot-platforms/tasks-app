@@ -328,10 +328,5 @@ export class RealtimeHandler {
       store.dispatch(setTasks(tasks.map((task) => (task.id === updatedTask.id ? updatedTask : task))))
     }
     store.dispatch(setAccessibleTasks(accessibleTasks.map((task) => (task.id === updatedTask.id ? updatedTask : task))))
-
-    // If there are disjoint child tasks floating around in the task board, yeet them all
-    if (tasks.some((task) => task.parentId === updatedTask.id)) {
-      store.dispatch(setTasks(tasks.filter((task) => task.parentId !== updatedTask.id)))
-    }
   }
 }
