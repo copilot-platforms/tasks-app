@@ -61,7 +61,7 @@ export const RealTime = ({
     const user = assignee.find((el) => el.id === userId)
     if (!user || !userRole) return
 
-    const realtimeHandler = new RealtimeHandler(payload, user, userRole, redirectToBoard)
+    const realtimeHandler = new RealtimeHandler(payload, user, userRole, redirectToBoard, tokenPayload)
     const isSubtask =
       Object.keys(payload.new).includes('parentId') && (payload.new as RealTimeTaskResponse).parentId !== null
 
