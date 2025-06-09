@@ -129,10 +129,8 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate 
     const match = assignee.find((assignee) => assignee.id === assigneeId)
     return match ?? NoAssignee
   }
-  console.log(task)
 
   const [assigneeValue, setAssigneeValue] = useState(getAssigneeValue(getUserIds(task)))
-  console.log(task)
 
   return (
     <Stack
