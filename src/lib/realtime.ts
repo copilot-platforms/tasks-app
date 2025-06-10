@@ -260,32 +260,50 @@ export class RealtimeHandler {
 
     // CASE II: REASSIGNMENT OUT OF SCOPE
     // --- Handle unassignment for clients (board + details page)
-    if (this.userRole === AssigneeType.client) {
-      // Check if assignee is this client's ID + currently active company ID
-      if (this.tokenPayload.companyId && this.tokenPayload.companyId !== updatedTask.companyId) {
-        // Get the previous task from tasks array and check if it was previously assigned to this client
-        const task = tasks.find((task) => task.id === updatedTask.id)
-        if (!task) {
-          return
-        }
+    const isReassignedOutOfClientScope =
+      this.userRole === AssigneeType.client && updatedTask.companyId !== this.tokenPayload.companyId
+    const isReassignedOutOfLimitedIUScope = (() => {
+      if (this.userRole !== AssigneeType.internalUser) return false
+      const iu = InternalUsersSchema.parse(this.user)
+      return iu.isClientAccessLimited && !iu.companyAccessList?.includes(updatedTask.companyId || '__')
+    })()
 
-        const newTaskArr = filterOutUpdatedTask(tasks)
-        // Check if any disjoint children were created
-        const newlyDisjointChildren = accessibleTasks.filter((task) => task.parentId === updatedTask.id)
-        newlyDisjointChildren.length && newTaskArr.push(...newlyDisjointChildren)
-
-        store.dispatch(setTasks(newTaskArr))
-        store.dispatch(setAccessibleTasks(filterOutUpdatedTask(accessibleTasks)))
-
-        if (updatedTask.id === activeTask?.id) {
-          return this.redirectToBoard(updatedTask)
-        }
-
+    if (isReassignedOutOfClientScope || isReassignedOutOfLimitedIUScope) {
+      // Get the previous task from tasks array and check if it was previously assigned to this client
+      const task = tasks.find((task) => task.id === updatedTask.id)
+      if (!task) {
         return
       }
+
+      const newTaskArr = filterOutUpdatedTask(tasks)
+      // Check if any disjoint children were created
+      const newlyDisjointChildren = accessibleTasks.filter((task) => task.parentId === updatedTask.id)
+      newlyDisjointChildren.length && newTaskArr.push(...newlyDisjointChildren)
+
+      store.dispatch(setTasks(newTaskArr))
+      store.dispatch(setAccessibleTasks(filterOutUpdatedTask(accessibleTasks)))
+      if (updatedTask.id === activeTask?.id) {
+        return this.redirectToBoard(updatedTask)
+      }
+      return
     }
 
-    // CASE III: Task properties except deletedAt / assigneeId (userId) are updated
+    // CASE III: Reassignment into scope
+    const isReassignedIntoClientScope =
+      this.userRole === AssigneeType.client && updatedTask.companyId === this.tokenPayload.companyId
+    const isReassignedIntoLimitedIUScope = (() => {
+      if (this.userRole !== AssigneeType.internalUser) return false
+      const iu = InternalUsersSchema.parse(this.user)
+      return iu.isClientAccessLimited && iu.companyAccessList?.includes(updatedTask.companyId || '__')
+    })()
+
+    if (isReassignedIntoClientScope || isReassignedIntoLimitedIUScope) {
+      store.dispatch(setTasks([...tasks, updatedTask]))
+      store.dispatch(setAccessibleTasks([...accessibleTasks, updatedTask]))
+      return
+    }
+
+    // CASE IV: Task properties except deletedAt / assigneeId (userId) are updated
 
     // Get from active task directly (user is in task board)
     const oldTask = tasks.find((t) => t.id == updatedTask.id)
