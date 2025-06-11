@@ -4,6 +4,7 @@ import { RealTimeTaskResponse } from '@/hoc/RealTime'
 import { selectTaskBoard, setAccessibleTasks, setActiveTask, setTasks } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
 import { InternalUsersSchema, Token } from '@/types/common'
+import { TaskResponse } from '@/types/dto/tasks.dto'
 import { IAssigneeCombined } from '@/types/interfaces'
 import { extractImgSrcs, replaceImgSrcs } from '@/utils/signedUrlReplacer'
 import { AssigneeType } from '@prisma/client'
@@ -307,24 +308,7 @@ export class RealtimeHandler {
 
     // Get from active task directly (user is in task board)
     const oldTask = tasks.find((t) => t.id == updatedTask.id)
-
-    // Address Postgres' TOAST limitation that causes fields like TEXT, BYTEA to be copied as a pointer, instead of copying template field in realtime replica
-    // (See TOAST https://www.postgresql.org/docs/current/storage-toast.html)
-    // If `body` field (which *can* be toasted) is not changed, Supabase Realtime won't send large fields like this in `payload.new`
-    // So, we need to check if the oldTask has valid body but new body field is not being sent in updatedTask, and add it if required
-    if (oldTask?.body && updatedTask.body === undefined) {
-      updatedTask.body = oldTask?.body
-    }
-
-    // Extract new image Srcs and replace it with old ones, because since we are creating a new url of images on each task details navigation,
-    // a second user navigating the task details will generate a new src and replace it in the database which causes the previous user to load the src again(because its new)
-    if (oldTask && oldTask.body && updatedTask.body) {
-      const oldImgSrcs = extractImgSrcs(oldTask.body)
-      const newImgSrcs = extractImgSrcs(updatedTask.body)
-      if (oldImgSrcs.length > 0 && newImgSrcs.length > 0) {
-        updatedTask.body = replaceImgSrcs(updatedTask.body, newImgSrcs, oldImgSrcs)
-      }
-    }
+    this.processTaskDescription(updatedTask, oldTask)
 
     // Handle task updated to an archival state not active in user's viewsettings filter
     if ((updatedTask.isArchived && !showArchived) || (!updatedTask.isArchived && !showUnarchived)) {
@@ -346,5 +330,25 @@ export class RealtimeHandler {
       store.dispatch(setTasks(tasks.map((task) => (task.id === updatedTask.id ? updatedTask : task))))
     }
     store.dispatch(setAccessibleTasks(accessibleTasks.map((task) => (task.id === updatedTask.id ? updatedTask : task))))
+  }
+
+  private processTaskDescription(updatedTask: TaskResponse, oldTask?: TaskResponse) {
+    // Address Postgres' TOAST limitation that causes fields like TEXT, BYTEA to be copied as a pointer, instead of copying template field in realtime replica
+    // (See TOAST https://www.postgresql.org/docs/current/storage-toast.html)
+    // If `body` field (which *can* be toasted) is not changed, Supabase Realtime won't send large fields like this in `payload.new`
+    // So, we need to check if the oldTask has valid body but new body field is not being sent in updatedTask, and add it if required
+    if (oldTask?.body && updatedTask.body === undefined) {
+      updatedTask.body = oldTask?.body
+    }
+
+    // Extract new image Srcs and replace it with old ones, because since we are creating a new url of images on each task details navigation,
+    // a second user navigating the task details will generate a new src and replace it in the database which causes the previous user to load the src again(because its new)
+    if (oldTask && oldTask.body && updatedTask.body) {
+      const oldImgSrcs = extractImgSrcs(oldTask.body)
+      const newImgSrcs = extractImgSrcs(updatedTask.body)
+      if (oldImgSrcs.length > 0 && newImgSrcs.length > 0) {
+        updatedTask.body = replaceImgSrcs(updatedTask.body, newImgSrcs, oldImgSrcs)
+      }
+    }
   }
 }
