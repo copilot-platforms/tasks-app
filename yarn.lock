@@ -4461,10 +4461,10 @@ convert-source-map@^2.0.0:
   resolved "https://registry.yarnpkg.com/convert-source-map/-/convert-source-map-2.0.0.tgz#4b560f649fc4e918dd0ab75cf4961e8bc882d82a"
   integrity sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==
 
-copilot-design-system@^2.1.0:
-  version "2.1.0"
-  resolved "https://registry.yarnpkg.com/copilot-design-system/-/copilot-design-system-2.1.0.tgz#e7f0cc210b88228ca172de6622f9e52cfa69fc84"
-  integrity sha512-DF4PW3uZEm0/Wf557k7Wg59AlJIuwU3Xe5QuTCiW5GT0KCboSGAAytP+gfiEEQ7uUGYf6hyoDmmfIgkxVfi8jQ==
+copilot-design-system@^2.1.2:
+  version "2.1.2"
+  resolved "https://registry.yarnpkg.com/copilot-design-system/-/copilot-design-system-2.1.2.tgz#31ad07d896e965dfc784a4af5d56824097485f27"
+  integrity sha512-6iQiZ5RGbdkl8vUBYoTzfo8johXE+xFt/6DhxwtoCQmxuZhrYvOMj40FlrGnoIaZmc99crNWY7l1KOIIwRxlkg==
   dependencies:
     "@radix-ui/react-avatar" "^1.0.4"
     "@radix-ui/react-toast" "^1.2.1"
