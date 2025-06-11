@@ -63,7 +63,7 @@ export class RealtimeHandler {
       }
     } else if (this.userRole === AssigneeType.client) {
       // Ignore all tasks that don't belong to client
-      if (newTask.assigneeId !== this.user.id && newTask.assigneeId !== this.user.companyId) {
+      if (newTask.assigneeId !== this.tokenPayload.clientId && newTask.assigneeId !== this.tokenPayload.companyId) {
         return false
       }
     } else {
@@ -217,8 +217,8 @@ export class RealtimeHandler {
       if (
         !newTask.assigneeId ||
         newTask.internalUserId ||
-        (newTask.clientId && newTask.clientId !== this.user.id) ||
-        this.user.companyId !== newTask.companyId
+        (newTask.clientId && newTask.clientId !== this.tokenPayload.clientId) ||
+        this.tokenPayload.companyId !== newTask.companyId
       ) {
         return
       }
