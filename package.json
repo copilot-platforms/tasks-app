@@ -55,7 +55,7 @@
     "@vercel/postgres": "^0.8.0",
     "bottleneck": "^2.19.5",
     "copilot-design-system": "^2.1.2",
-    "copilot-node-sdk": "^3.5.1",
+    "copilot-node-sdk": "^3.12.1",
     "dayjs": "^1.11.10",
     "fetch-retry": "^6.0.0",
     "file-saver": "^2.0.5",
