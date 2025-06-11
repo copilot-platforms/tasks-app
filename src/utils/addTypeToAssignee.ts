@@ -14,11 +14,14 @@ export function addTypeToAssignee(assignee?: IAssignee): IAssigneeCombined[] {
   })
 }
 
-export function parseAssigneeToSelectorOption(assignee?: IAssignee): {
+export async function parseAssigneeToSelectorOption(
+  token: string,
+  assignee?: IAssignee,
+): Promise<{
   clients: ISelectorOption[]
   internalUsers: ISelectorOption[]
   companies: ISelectorOption[]
-} {
+}> {
   if (!assignee) {
     return {
       clients: [],
@@ -26,8 +29,8 @@ export function parseAssigneeToSelectorOption(assignee?: IAssignee): {
       companies: [],
     }
   }
-
-  const parseCategory = (category: Record<string, any> | undefined, type: ObjectType): ISelectorOption[] => {
+  const copilot = new CopilotAPI(token)
+  const parseCategory = async (category: Record<string, any> | undefined, type: ObjectType): Promise<ISelectorOption[]> => {
     if (!category) return []
 
     const results = Object.values(category).map((item: any) => {
@@ -55,6 +58,12 @@ export function parseAssigneeToSelectorOption(assignee?: IAssignee): {
     // Flatten the result because client branch returns an array of clients for each company
     return results.flat()
   }
+
+  const [clients, internalUsers, companies] = await Promise.all([
+    parseCategory(assignee.clients, 'client'),
+    parseCategory(assignee.internalUsers, 'internalUser'),
+    parseCategory(assignee.companies, 'company'),
+  ])
 
   return {
     clients: parseCategory(assignee.clients, AssigneeType.client),
