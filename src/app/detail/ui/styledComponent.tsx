@@ -246,7 +246,7 @@ export const StyledUserCompanySelector = styled(UserCompanySelector)(({ theme })
   width: '294px',
   height: '40px',
   '& [class*="cop-border-primary"]': {
-    borderColor: '#EFF1F4 !important',
-    backgroundColor: '#ffffff !important',
+    borderColor: `${theme.color.borders.borderDisabled}`,
+    backgroundColor: `${theme.color.base.white}`,
   },
 }))
