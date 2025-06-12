@@ -299,8 +299,13 @@ export class RealtimeHandler {
     })()
 
     if (isReassignedIntoClientScope || isReassignedIntoLimitedIUScope) {
-      store.dispatch(setTasks([...tasks, updatedTask]))
-      store.dispatch(setAccessibleTasks([...accessibleTasks, updatedTask]))
+      store.dispatch(setTasks([...tasks.filter((task) => task.id !== updatedTask.id), updatedTask]))
+      store.dispatch(
+        setAccessibleTasks([
+          ...accessibleTasks.filter((accessibleTask) => accessibleTask.id !== updatedTask.id),
+          updatedTask,
+        ]),
+      )
       return
     }
 
