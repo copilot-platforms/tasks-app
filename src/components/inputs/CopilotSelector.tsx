@@ -26,6 +26,9 @@ export const CopilotSelector = ({
   return (
     <>
       <StyledUserCompanySelector
+        openMenuOnFocus
+        autoFocus
+        placeholder={'Set assignee'}
         initialValue={initialAssignee}
         clientUsers={hideClientsList ? [] : selectorAssignee.clients}
         name={name}
