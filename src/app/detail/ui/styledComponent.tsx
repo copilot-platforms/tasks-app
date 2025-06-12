@@ -245,8 +245,8 @@ export const CustomDivider = styled(Box)(({ theme }) => ({
 export const StyledUserCompanySelector = styled(UserCompanySelector)(({ theme }) => ({
   width: '294px',
   height: '40px',
-  backgroundColor: `${theme.color.base.white}`,
-  '& .focus-within\\:cop-border-primary:focus-within': {
-    borderColor: `${theme.color.borders.borderDisabled}`,
+  '& [class*="cop-border-primary"]': {
+    borderColor: '#EFF1F4 !important',
+    backgroundColor: '#ffffff !important',
   },
 }))
