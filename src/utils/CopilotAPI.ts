@@ -78,7 +78,6 @@ export class CopilotAPI {
   }
 
   async _me(): Promise<MeResponse | null> {
-    console.info('CopilotAPI#me | token =', this.token)
     const tokenPayload = await this.getTokenPayload()
     const id = tokenPayload?.internalUserId || tokenPayload?.clientId
     if (!tokenPayload || !id) return null
@@ -92,12 +91,10 @@ export class CopilotAPI {
   }
 
   async _getWorkspace(): Promise<WorkspaceResponse> {
-    console.info('CopilotAPI#getWorkspace | token =', this.token)
     return WorkspaceResponseSchema.parse(await this.copilot.retrieveWorkspace())
   }
 
   async _getClientTokenPayload(): Promise<ClientToken | null> {
-    console.info('CopilotAPI#getClientTokenPayload | token =', this.token)
     const tokenPayload = await this.getTokenPayload()
     if (!tokenPayload) return null
 
@@ -105,7 +102,6 @@ export class CopilotAPI {
   }
 
   async _getIUTokenPayload(): Promise<IUToken | null> {
-    console.info('CopilotAPI#getIUTokenPayload | token =', this.token)
     const tokenPayload = await this.getTokenPayload()
     if (!tokenPayload) return null
 
@@ -113,68 +109,55 @@ export class CopilotAPI {
   }
 
   async _createClient(requestBody: ClientRequest, sendInvite: boolean = false): Promise<ClientResponse> {
-    console.info('CopilotAPI#createClient | token =', this.token)
     return ClientResponseSchema.parse(await this.copilot.createClient({ sendInvite, requestBody }))
   }
 
   async _getClient(id: string): Promise<ClientResponse> {
-    console.info('CopilotAPI#getClient | token =', this.token)
     return ClientResponseSchema.parse(await this.copilot.retrieveClient({ id }))
   }
 
   async _getClients(args: CopilotListArgs & { companyId?: string } = {}) {
-    console.info('CopilotAPI#getClients | token =', this.token)
     return ClientsResponseSchema.parse(await this.copilot.listClients(args))
   }
 
   async _updateClient(id: string, requestBody: ClientRequest): Promise<ClientResponse> {
-    console.info('CopilotAPI#updateClient | token =', this.token)
     // @ts-ignore
     return ClientResponseSchema.parse(await this.copilot.updateClient({ id, requestBody }))
   }
 
   async _deleteClient(id: string) {
-    console.info('CopilotAPI#deleteClient | token =', this.token)
     return await this.copilot.deleteClient({ id })
   }
 
   async _createCompany(requestBody: CompanyCreateRequest) {
-    console.info('CopilotAPI#createCompany | token =', this.token)
     return CompanyResponseSchema.parse(await this.copilot.createCompany({ requestBody }))
   }
 
   async _getCompany(id: string): Promise<CompanyResponse> {
-    console.info('CopilotAPI#getCompany | token =', this.token)
     return CompanyResponseSchema.parse(await this.copilot.retrieveCompany({ id }))
   }
 
   async _getCompanies(args: CopilotListArgs = {}): Promise<CompaniesResponse> {
-    console.info('CopilotAPI#getCompanies | token =', this.token)
     return CompaniesResponseSchema.parse(await this.copilot.listCompanies(args))
   }
 
   async _getCompanyClients(companyId: string): Promise<ClientResponse[]> {
-    console.info('CopilotAPI#getCompanyClients | token =', this.token)
     return (await this.getClients({ limit: 10000, companyId })).data || []
   }
 
   async _getCustomFields(): Promise<CustomFieldResponse> {
-    console.info('CopilotAPI#getCustomFields | token =', this.token)
     return CustomFieldResponseSchema.parse(await this.copilot.listCustomFields())
   }
 
   async _getInternalUsers(args: CopilotListArgs = {}): Promise<InternalUsersResponse> {
-    console.info('CopilotAPI#getInternalUsers | token =', this.token)
     return InternalUsersResponseSchema.parse(await this.copilot.listInternalUsers(args))
   }
 
   async _getInternalUser(id: string): Promise<InternalUsers> {
-    console.info('CopilotAPI#getInternalUser | token =', this.token)
     return InternalUsersSchema.parse(await this.copilot.retrieveInternalUser({ id }))
   }
 
   async _createNotification(requestBody: NotificationRequestBody): Promise<NotificationCreatedResponse> {
-    console.info('CopilotAPI#createNotification | token =', this.token)
     return NotificationCreatedResponseSchema.parse(
       await this.copilot.createNotification({
         requestBody,
@@ -183,12 +166,10 @@ export class CopilotAPI {
   }
 
   async _markNotificationAsRead(id: string): Promise<void> {
-    console.info('CopilotAPI#markNotificationAsRead | token =', this.token)
     await this.copilot.markNotificationRead({ id })
   }
 
   async _bulkMarkNotificationsAsRead(notificationIds: string[]): Promise<void> {
-    console.info('CopilotAPI#markNotificationAsRead | token =', this.token)
     const markAsReadPromises = []
     const bottleneck = new Bottleneck({ minTime: 250, maxConcurrent: 2 })
 
@@ -206,12 +187,10 @@ export class CopilotAPI {
   }
 
   async _deleteNotification(id: string): Promise<void> {
-    console.info('CopilotAPI#deleteNotification | token =', this.token)
     await this.copilot.deleteNotification({ id })
   }
 
   async _bulkDeleteNotifications(notificationIds: string[]): Promise<void> {
-    console.info('CopilotAPI#deleteNotification | token =', this.token)
     const deletePromises = []
     const bottleneck = new Bottleneck({ minTime: 250, maxConcurrent: 2 })
     for (let notification of notificationIds) {

@@ -1,4 +1,4 @@
-import { IExtraOption } from '@/types/interfaces'
+import { IAssigneeCombined, IExtraOption } from '@/types/interfaces'
 
 export const NoAssignee = {
   id: '01',

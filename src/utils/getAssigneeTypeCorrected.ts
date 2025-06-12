@@ -1,11 +1,12 @@
-import { IAssigneeCombined } from '@/types/interfaces'
+import { IAssigneeCombined, UserIds } from '@/types/interfaces'
+import { AssigneeType } from '@prisma/client'
 
 export const getAssigneeTypeCorrected = (assignee: IAssigneeCombined) => {
   return assignee?.type === 'internalUsers'
-    ? 'internalUser'
+    ? AssigneeType.internalUser
     : assignee?.type === 'clients'
-      ? 'client'
+      ? AssigneeType.client
       : assignee?.type === 'companies'
-        ? 'company'
+        ? AssigneeType.company
         : null
 }
