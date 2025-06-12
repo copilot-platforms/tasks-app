@@ -496,17 +496,16 @@ export class TasksService extends BaseService {
 
     const clientId = parsedClientId.data
     const parsedCompanyId = z.string().safeParse(this.user.companyId)
-
     if (!parsedCompanyId.data) {
       return {
-        OR: [{ assigneeId: clientId, assigneeType: 'client' }],
+        OR: [{ clientId }],
       }
     }
 
     return {
       OR: [
-        { assigneeId: clientId as string, assigneeType: 'client' },
-        { assigneeId: parsedCompanyId.data, assigneeType: 'company' },
+        { clientId, companyId: parsedCompanyId.data },
+        { companyId: parsedCompanyId.data, clientId: null },
       ],
     }
   }
@@ -876,6 +875,10 @@ export class TasksService extends BaseService {
         throw new APIError(httpStatus.BAD_REQUEST, `Invalid clientId`)
       }
 
+      if (!companyId) {
+        throw new APIError(httpStatus.BAD_REQUEST, `CompanyId is required for client tasks`)
+      }
+
       if (companyId && !isValidCompany) {
         throw new APIError(httpStatus.BAD_REQUEST, `Invalid company for the provided clientId`)
       }
@@ -883,7 +886,7 @@ export class TasksService extends BaseService {
       return {
         internalUserId: null,
         clientId,
-        companyId: client.companyId,
+        companyId,
       }
     }
 
