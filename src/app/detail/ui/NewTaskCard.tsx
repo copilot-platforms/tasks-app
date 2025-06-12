@@ -1,9 +1,10 @@
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
-import { MiniLoader } from '@/components/atoms/MiniLoader'
 import AttachmentLayout from '@/components/AttachmentLayout'
 import { ManageTemplatesEndOption } from '@/components/buttons/ManageTemplatesEndOptions'
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
+import { SelectorButton } from '@/components/buttons/SelectorButton'
+import { CopilotPopSelector } from '@/components/inputs/CopilotSelector'
 import { DatePickerComponent } from '@/components/inputs/DatePickerComponent'
 import Selector, { SelectorType } from '@/components/inputs/Selector'
 import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
@@ -17,22 +18,18 @@ import { selectTaskDetails, setActiveTaskAssignees } from '@/redux/features/task
 import { selectCreateTemplate } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
 import { DateString } from '@/types/date'
-import { AssigneeTypeSchema, CreateTaskRequest } from '@/types/dto/tasks.dto'
+import { CreateTaskRequest } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { AssigneeType, CreateTaskErrors, IAssigneeCombined, ITemplate } from '@/types/interfaces'
+import { CreateTaskErrors, IAssigneeCombined, ITemplate, IUserIds, UserIds } from '@/types/interfaces'
 import { getAssigneeName } from '@/utils/assignee'
-import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
+import { getSelectedUserIds } from '@/utils/getSelectedUserIds'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
-import { NoAssigneeExtraOptions } from '@/utils/noAssignee'
 import { trimAllTags } from '@/utils/trimTags'
-import { setDebouncedFilteredAssignees } from '@/utils/users'
 import { Box, Stack, Typography } from '@mui/material'
-import { AssigneeType as AssigneeTypeEnum } from '@prisma/client'
 import dayjs from 'dayjs'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
-import { z } from 'zod'
 
 interface IErrors {
   [CreateTaskErrors.ASSIGNEE]: boolean
@@ -42,10 +39,9 @@ interface SubTaskFields {
   title: string
   description: string
   workflowStateId: string
-  assigneeId: string | null
+  userIds: IUserIds
   dueDate: DateString | null
   errors: IErrors
-  assigneeType?: AssigneeType | null
 }
 
 export const NewTaskCard = ({
@@ -59,8 +55,6 @@ export const NewTaskCard = ({
   const { activeTaskAssignees } = useSelector(selectTaskDetails)
 
   const { templates } = useSelector(selectCreateTemplate)
-  const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
-  const [loading, setLoading] = useState(false)
 
   const [isEditorReadonly, setIsEditorReadonly] = useState(false)
 
@@ -69,15 +63,16 @@ export const NewTaskCard = ({
     title: '',
     description: '',
     workflowStateId: '',
-    assigneeId: '',
+    userIds: {
+      [UserIds.INTERNAL_USER_ID]: null,
+      [UserIds.CLIENT_ID]: null,
+      [UserIds.COMPANY_ID]: null,
+    },
     dueDate: null,
     errors: {
       [CreateTaskErrors.ASSIGNEE]: false,
     },
-    assigneeType: null,
   })
-
-  const [filteredAssignees, setFilteredAssignees] = useState(activeTaskAssignees.length ? activeTaskAssignees : assignee)
 
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -92,15 +87,18 @@ export const NewTaskCard = ({
         [CreateTaskErrors.ASSIGNEE]: false,
       },
       workflowStateId: todoWorkflowState.id,
-      assigneeId: '',
-      assigneeType: null,
+      userIds: {
+        [UserIds.INTERNAL_USER_ID]: null,
+        [UserIds.CLIENT_ID]: null,
+        [UserIds.COMPANY_ID]: null,
+      },
       dueDate: null,
     }))
-    updateAssigneeValue(null)
     updateStatusValue(todoWorkflowState)
+    setAssigneeValue(null)
   }
 
-  const handleFieldChange = (field: keyof SubTaskFields, value: string | DateString | IErrors | null) => {
+  const handleFieldChange = (field: keyof SubTaskFields, value: string | DateString | IErrors | null | IUserIds) => {
     setSubTaskFields((prev) => ({
       ...prev,
       [field]: value,
@@ -125,12 +123,6 @@ export const NewTaskCard = ({
 
   const statusValue = _statusValue as WorkflowStateResponse
 
-  const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
-    item: null,
-    type: SelectorType.ASSIGNEE_SELECTOR,
-  })
-  const assigneeValue = _assigneeValue as IAssigneeCombined
-
   const { renderingItem: _templateValue, updateRenderingItem: updateTemplateValue } = useHandleSelectorComponent({
     item: undefined,
     type: SelectorType.TEMPLATE_SELECTOR,
@@ -143,8 +135,7 @@ export const NewTaskCard = ({
     setIsUploading(uploading)
   }
 
-  const clientCompanyId =
-    activeTask && activeTask.assigneeType !== AssigneeTypeEnum.internalUser ? activeTask.assigneeId : undefined
+  const [assigneeValue, setAssigneeValue] = useState<IAssigneeCombined | null>(null)
 
   const applyTemplate = useCallback(
     (id: string, templateTitle: string) => {
@@ -210,15 +201,21 @@ export const NewTaskCard = ({
   }
 
   const handleTaskCreation = async () => {
-    if (subTaskFields.title && subTaskFields.assigneeId && subTaskFields.assigneeType) {
+    if (
+      subTaskFields.title &&
+      (subTaskFields.userIds[UserIds.INTERNAL_USER_ID] ||
+        subTaskFields.userIds[UserIds.CLIENT_ID] ||
+        subTaskFields.userIds[UserIds.COMPANY_ID])
+    ) {
       const formattedDueDate = subTaskFields.dueDate && dayjs(new Date(subTaskFields.dueDate)).format('YYYY-MM-DD')
 
       const payload: CreateTaskRequest = {
         title: subTaskFields.title,
         body: subTaskFields.description,
         workflowStateId: subTaskFields.workflowStateId,
-        assigneeType: AssigneeTypeSchema.parse(subTaskFields.assigneeType),
-        assigneeId: subTaskFields.assigneeId,
+        internalUserId: subTaskFields.userIds[UserIds.INTERNAL_USER_ID],
+        clientId: subTaskFields.userIds[UserIds.CLIENT_ID],
+        companyId: subTaskFields.userIds[UserIds.COMPANY_ID],
         dueDate: formattedDueDate,
         parentId: activeTask?.id,
       }
@@ -226,7 +223,7 @@ export const NewTaskCard = ({
       clearSubTaskFields()
       handleClose()
 
-      if (subTaskFields.assigneeType === 'clients' || subTaskFields.assigneeType === 'companies') {
+      if (subTaskFields.userIds[UserIds.CLIENT_ID] || subTaskFields.userIds[UserIds.COMPANY_ID]) {
         const assigneeTypes = new Set(activeTaskAssignees.map((a) => a.type))
         if (assigneeTypes.has('ius') || assigneeTypes.has('internalUsers')) {
           store.dispatch(
@@ -306,7 +303,7 @@ export const NewTaskCard = ({
             placeholder="Search..."
             value={templateValue}
             selectorType={SelectorType.TEMPLATE_SELECTOR}
-            endOption={<ManageTemplatesEndOption />}
+            endOption={<ManageTemplatesEndOption hasTemplates={!!templates?.length} />}
             endOptionHref={`/manage-templates?token=${token}`}
             listAutoHeightMax="147px"
             variant="normal"
@@ -369,75 +366,49 @@ export const NewTaskCard = ({
             height={'28px'}
             gap={'6px'}
           />
-          <Selector
-            padding={'0px 4px'}
-            inputStatusValue={inputStatusValue}
-            setInputStatusValue={setInputStatusValue}
-            placeholder="Set assignee"
-            getSelectedValue={(_newValue) => {
-              handleFieldChange('errors', {
-                assignee: false,
-              })
-              const newValue = _newValue as IAssigneeCombined
-
-              updateAssigneeValue(newValue)
-              handleFieldChange('assigneeType', getAssigneeTypeCorrected(newValue))
-              handleFieldChange('assigneeId', newValue?.id)
-            }}
-            onClick={() => {
-              if (activeDebounceTimeoutId) {
-                clearTimeout(activeDebounceTimeoutId)
+          <CopilotPopSelector
+            name="Set assignee"
+            onChange={(inputValue) => {
+              const newUserIds = getSelectedUserIds(inputValue)
+              const areUserIdsEmpty = Object.values(newUserIds).every((value) => value === null) // remove this while adding support for no assignee.
+              if (areUserIdsEmpty) {
+                handleFieldChange('errors', {
+                  assignee: true,
+                })
+              } else {
+                handleFieldChange('errors', {
+                  assignee: false,
+                })
               }
-              setLoading(true)
-              setFilteredAssignees(activeTaskAssignees.length ? activeTaskAssignees : assignee)
-              setLoading(false)
+              const selectedAssignee = assignee.find((assignee) => assignee.id === inputValue[0].id)
+              setAssigneeValue(selectedAssignee || null)
+              handleFieldChange('userIds', newUserIds)
             }}
-            options={loading ? [] : filteredAssignees}
-            value={assigneeValue}
-            extraOption={NoAssigneeExtraOptions}
-            extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
-              return <>{loading && <MiniLoader />}</>
-            }}
-            selectorType={SelectorType.ASSIGNEE_SELECTOR}
-            handleInputChange={async (newInputValue: string) => {
-              if (!newInputValue) {
-                setFilteredAssignees(activeTaskAssignees.length ? activeTaskAssignees : assignee)
-                return
-              }
-              setDebouncedFilteredAssignees(
-                activeDebounceTimeoutId,
-                setActiveDebounceTimeoutId,
-                setLoading,
-                setFilteredAssignees,
-                z.string().parse(token),
-                newInputValue,
-                undefined,
-                clientCompanyId,
-              )
-            }}
-            filterOption={(x: unknown) => x}
-            buttonHeight="auto"
             buttonContent={
-              <Stack direction="row" alignItems={'center'} columnGap={'6px'} height="26px">
-                {assigneeValue ? <CopilotAvatar currentAssignee={assigneeValue} /> : <AssigneePlaceholderSmall />}
-                <Typography
-                  variant="bodySm"
-                  sx={{
-                    color: (theme) => (assigneeValue ? theme.color.gray[600] : theme.color.text.textDisabled),
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    lineHeight: '22px',
-                    overflow: 'hidden',
-                    fontSize: '12px',
-                    maxWidth: '120px',
-                  }}
-                >
-                  {getAssigneeName(assigneeValue as IAssigneeCombined, 'Assignee')}
-                </Typography>
-              </Stack>
+              <SelectorButton
+                padding="0px 4px"
+                height="28px"
+                buttonContent={
+                  <Stack direction="row" alignItems={'center'} columnGap={'6px'} height="26px">
+                    {assigneeValue ? <CopilotAvatar currentAssignee={assigneeValue} /> : <AssigneePlaceholderSmall />}
+                    <Typography
+                      variant="bodySm"
+                      sx={{
+                        color: (theme) => (assigneeValue ? theme.color.gray[600] : theme.color.text.textDisabled),
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        lineHeight: '22px',
+                        overflow: 'hidden',
+                        fontSize: '12px',
+                        maxWidth: '120px',
+                      }}
+                    >
+                      {getAssigneeName(assigneeValue as IAssigneeCombined, 'Assignee')}
+                    </Typography>
+                  </Stack>
+                }
+              />
             }
-            error={subTaskFields.errors.assignee}
-            errorPlaceholder=""
           />
           <DatePickerComponent
             padding={'0px 4px'}
@@ -471,7 +442,7 @@ export const NewTaskCard = ({
           <PrimaryBtn
             padding={'3px 8px'}
             handleClick={() => {
-              const hasAssigneeError = !subTaskFields.assigneeId
+              const hasAssigneeError = Object.values(subTaskFields.userIds).every((value) => value === null)
 
               if (hasAssigneeError) {
                 handleFieldChange('errors', {

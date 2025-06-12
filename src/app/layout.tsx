@@ -9,6 +9,7 @@ import { ProviderWrapper } from '@/redux/ProviderWrapper'
 import './tapwrite.css'
 import { InterrupCmdK } from '@/hoc/Interrupt_CmdK'
 import { ProgressLoad } from '@/components/TopLoader'
+import 'copilot-design-system/dist/styles/main.css'
 
 const inter = Inter({ subsets: ['latin'] })
 

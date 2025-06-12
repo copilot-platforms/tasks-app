@@ -161,28 +161,11 @@ export class TasksService extends BaseService {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Create, Resource.Tasks)
 
+    const { internalUserId, clientId, companyId } = data
+
     const copilot = new CopilotAPI(this.user.token)
 
-    //generate the label
-    const labelMappingService = new LabelMappingService(this.user)
-
-    let validatedIds = {
-      internalUserId: data.internalUserId ?? null,
-      clientId: data.clientId ?? null,
-      companyId: data.companyId ?? null,
-    }
-
-    if (opts?.isPublicApi) {
-      validatedIds = await this.validateUserIds(validatedIds.internalUserId, validatedIds.clientId, validatedIds.companyId)
-      Object.assign(data, this.setAssigneeFromPublicApi(validatedIds)) //remove this in the future. This is done for syncing assigneeId and assigneeType with userIds. Once assigneeId and assigneeType are removed, this shall be removed.
-    }
-
-    if (data.assigneeId && data.assigneeType) {
-      validatedIds = await this.setUserIdsFromWebApi({
-        id: data.assigneeId,
-        type: data.assigneeType,
-      })
-    } //remove this in the future. This is done for syncing assigneeId and assigneeType with userIds. Once assigneeId and assigneeType are removed, this shall be removed.
+    const validatedIds = await this.validateUserIds(internalUserId, clientId, companyId)
 
     const { assigneeId, assigneeType } = this.getAssigneeFromUserIds({
       internalUserId: validatedIds.internalUserId,
@@ -190,9 +173,9 @@ export class TasksService extends BaseService {
       companyId: validatedIds.companyId,
     })
 
-    const label = z
-      .string()
-      .parse(await labelMappingService.getLabel(data.assigneeId ?? assigneeId, data.assigneeType ?? assigneeType))
+    //generate the label
+    const labelMappingService = new LabelMappingService(this.user)
+    const label = z.string().parse(await labelMappingService.getLabel(assigneeId, assigneeType))
 
     if (data.parentId) {
       const canCreateSubTask = await this.canCreateSubTask(data.parentId)
@@ -229,6 +212,8 @@ export class TasksService extends BaseService {
         completedBy,
         completedByUserType,
         source: opts?.isPublicApi ? Source.api : Source.web,
+        assigneeId,
+        assigneeType,
         ...validatedIds,
         ...(await getTaskTimestamps('create', this.user, data)),
       },
@@ -293,12 +278,14 @@ export class TasksService extends BaseService {
     // Build query filters based on role of user. IU can access all tasks related to a workspace
     // while clients can only view the tasks assigned to them or their company
     const filters = this.buildTaskPermissions(id)
-
     const where = fromPublicApi ? { ...filters, deletedAt: { not: undefined } } : filters
 
     const task = await this.db.task.findFirst({ where })
-
     if (!task) throw new APIError(httpStatus.NOT_FOUND, 'The requested task was not found')
+
+    if (this.user.internalUserId) {
+      await this.checkClientAccessForTask(task, this.user.internalUserId)
+    }
 
     const updatedTask = await this.db.task.update({
       where: { id: task.id },
@@ -332,34 +319,8 @@ export class TasksService extends BaseService {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Update, Resource.Tasks)
 
-    const { completedBy, completedByUserType } = await this.getCompletionInfo(data?.workflowStateId)
-    const { internalUserId, clientId, companyId, ...dataWithoutUserIds } = data
-
-    const shouldUpdateUserIds =
-      [internalUserId, clientId, companyId].some((id) => id !== null) || !!(data.assigneeId && data.assigneeType)
-
-    let validatedIds = {
-      internalUserId: internalUserId ?? null,
-      clientId: clientId ?? null,
-      companyId: companyId ?? null,
-    }
-    if (shouldUpdateUserIds && opts?.isPublicApi) {
-      validatedIds = await this.validateUserIds(validatedIds.internalUserId, validatedIds.clientId, validatedIds.companyId)
-      Object.assign(dataWithoutUserIds, this.setAssigneeFromPublicApi(validatedIds)) //remove this in the future. This is done for syncing assigneeId and assigneeType with userIds. Once assigneeId and assigneeType are removed, this shall be removed.
-    }
-
-    if (data.assigneeId && data.assigneeType) {
-      validatedIds = await this.setUserIdsFromWebApi({ id: data.assigneeId, type: data.assigneeType })
-    } //remove this block in the future. This is done for syncing assigneeId and assigneeType with userIds. Once assigneeId and assigneeType are removed, this shall be removed.
-
-    const userAssignmentFields = shouldUpdateUserIds ? validatedIds : {}
-
     // Query previous task
     const filters = this.buildTaskPermissions(id)
-    // Validate updated due date to not be in the past
-    if (data.dueDate && dayjs(new Date(data.dueDate)).isBefore(dayjs())) {
-      throw new APIError(httpStatus.BAD_REQUEST, 'Due date cannot be in the past')
-    }
 
     const prevTask = await this.db.task.findFirst({
       where: filters,
@@ -368,19 +329,49 @@ export class TasksService extends BaseService {
     })
     if (!prevTask) throw new APIError(httpStatus.NOT_FOUND, 'The requested task was not found')
 
+    const { completedBy, completedByUserType } = await this.getCompletionInfo(data?.workflowStateId)
+    const { internalUserId, clientId, companyId, ...dataWithoutUserIds } = data
+
+    const shouldUpdateUserIds =
+      [internalUserId, clientId, companyId].some((id) => id !== undefined) &&
+      (internalUserId !== prevTask?.internalUserId || clientId !== prevTask?.clientId || companyId !== prevTask?.companyId)
+
+    let validatedIds
+
+    if (shouldUpdateUserIds) {
+      validatedIds = await this.validateUserIds(internalUserId, clientId, companyId)
+    }
+
+    const { assigneeId, assigneeType } = this.getAssigneeFromUserIds({
+      internalUserId: validatedIds?.internalUserId ?? null,
+      clientId: validatedIds?.clientId ?? null,
+      companyId: validatedIds?.companyId ?? null,
+    })
+
+    const userAssignmentFields = shouldUpdateUserIds
+      ? {
+          ...validatedIds,
+          assigneeId,
+          assigneeType,
+        }
+      : {}
+
+    // Validate updated due date to not be in the past
+    if (data.dueDate && dayjs(new Date(data.dueDate)).isBefore(dayjs())) {
+      throw new APIError(httpStatus.BAD_REQUEST, 'Due date cannot be in the past')
+    }
+
     const subtaskService = new SubtaskService(this.user)
 
     let updatedTask = await this.db.$transaction(async (tx) => {
       //generate new label if prevTask has no assignee but now assigned to someone
       let label: string = prevTask.label
-      if (!prevTask.assigneeId && dataWithoutUserIds.assigneeId) {
+      if (!prevTask.assigneeId && assigneeId && assigneeType) {
         const labelMappingService = new LabelMappingService(this.user)
         labelMappingService.setTransaction(tx as PrismaClient)
         //delete the existing label
         await labelMappingService.deleteLabel(prevTask.label)
-        label = z
-          .string()
-          .parse(await labelMappingService.getLabel(dataWithoutUserIds.assigneeId, dataWithoutUserIds.assigneeType))
+        label = z.string().parse(await labelMappingService.getLabel(assigneeId, assigneeType))
       }
 
       // Set / reset lastArchivedDate if isArchived has been triggered, else remove it from the update query
@@ -396,7 +387,6 @@ export class TasksService extends BaseService {
         where: { id },
         data: {
           ...dataWithoutUserIds,
-          assigneeId: dataWithoutUserIds.assigneeId === '' ? null : dataWithoutUserIds.assigneeId,
           label,
           lastArchivedDate,
           archivedBy,
@@ -506,17 +496,16 @@ export class TasksService extends BaseService {
 
     const clientId = parsedClientId.data
     const parsedCompanyId = z.string().safeParse(this.user.companyId)
-
     if (!parsedCompanyId.data) {
       return {
-        OR: [{ assigneeId: clientId, assigneeType: 'client' }],
+        OR: [{ clientId }],
       }
     }
 
     return {
       OR: [
-        { assigneeId: clientId as string, assigneeType: 'client' },
-        { assigneeId: parsedCompanyId.data, assigneeType: 'company' },
+        { clientId, companyId: parsedCompanyId.data },
+        { companyId: parsedCompanyId.data, clientId: null },
       ],
     }
   }
@@ -771,27 +760,32 @@ export class TasksService extends BaseService {
     return await subtaskService.getAccessiblePathTasks(parentTasks)
   }
 
-  private async filterTasksByClientAccess<T extends Task[] | Pick<Task, 'id' | 'assigneeId' | 'assigneeType'>[]>(
-    tasks: T,
-    currentInternalUser: InternalUsers,
-  ) {
+  private async checkClientAccessForTask(task: Task, internalUserId: string) {
     const copilot = new CopilotAPI(this.user.token)
-    const hasClientTasks = tasks.some((task) => task.assigneeType === AssigneeType.client)
-    const clients = hasClientTasks ? await copilot.getClients({ limit: MAX_FETCH_ASSIGNEE_COUNT }) : { data: [] }
+    const currentInternalUser = await copilot.getInternalUser(internalUserId)
+    if (!currentInternalUser.isClientAccessLimited) return
+
+    const isLimitedTask = !(await this.filterTasksByClientAccess([task], currentInternalUser)).length
+    if (isLimitedTask) {
+      throw new APIError(
+        httpStatus.UNAUTHORIZED,
+        "This task's assignee is not included in your list of accessible clients / companies",
+      )
+    }
+  }
+
+  private async filterTasksByClientAccess<T extends Task>(tasks: T[], currentInternalUser: InternalUsers): Promise<T[]> {
+    const hasClientOrCompanyTasks = tasks.some((task) => task.companyId)
+    if (!hasClientOrCompanyTasks) {
+      return tasks
+    }
 
     return tasks.filter((task) => {
-      if (!task.assigneeId || task.assigneeType === AssigneeType.internalUser) return true
-
-      if (task.assigneeType === AssigneeType.company) {
-        return currentInternalUser.companyAccessList?.includes(task.assigneeId)
-      }
-      const taskClient = clients.data?.find((client) => client.id === task.assigneeId)
-      if (!taskClient || !taskClient.companyId) {
-        return false
-      }
-      const taskClientsCompanyId = z.string().parse(taskClient?.companyId)
-      return currentInternalUser.companyAccessList?.includes(taskClientsCompanyId)
-    }) as T
+      // Pass all tasks that are unassigned or are assigned to IU
+      if ((!task.internalUserId && !task.clientId && !task.companyId) || task.internalUserId) return true
+      // For remaining client or company tasks, check if companyAccessList includes this companyId
+      return currentInternalUser.companyAccessList?.includes(task.companyId || '')
+    })
   }
 
   async hasMoreTasksAfterCursor(
@@ -847,9 +841,9 @@ export class TasksService extends BaseService {
   }
 
   private async validateUserIds(
-    internalUserId: string | null,
-    clientId: string | null,
-    companyId: string | null,
+    internalUserId?: string | null,
+    clientId?: string | null,
+    companyId?: string | null,
   ): Promise<{
     internalUserId: string | null
     clientId: string | null
@@ -881,14 +875,14 @@ export class TasksService extends BaseService {
         throw new APIError(httpStatus.BAD_REQUEST, `Invalid clientId`)
       }
 
-      if (companyId && !isValidCompany) {
+      if (!companyId || !isValidCompany) {
         throw new APIError(httpStatus.BAD_REQUEST, `Invalid company for the provided clientId`)
       }
 
       return {
         internalUserId: null,
         clientId,
-        companyId: client.companyId,
+        companyId,
       }
     }
 
@@ -907,60 +901,11 @@ export class TasksService extends BaseService {
       }
     }
 
-    throw new APIError(httpStatus.BAD_REQUEST, `At least one of internalUserId, clientId, or companyId is required`)
-  }
-
-  //The function below should be removed after we apply the userIds replacement for assigneeId and assigneeType for the webApp too. The method below is a temporary code for maintaining consistency on publicAPI and web app.
-  private setAssigneeFromPublicApi(validatedUserIds: {
-    internalUserId: string | null
-    clientId: string | null
-    companyId: string | null
-  }): {
-    assigneeId: string | null
-    assigneeType: AssigneeType | null
-  } {
-    const assigneeMap: { id: string | null; type: AssigneeType }[] = [
-      { id: validatedUserIds.internalUserId, type: AssigneeType.internalUser },
-      { id: validatedUserIds.clientId, type: AssigneeType.client },
-      { id: validatedUserIds.companyId, type: AssigneeType.company },
-    ]
-
-    const assignee = assigneeMap.find((entry) => entry.id)
-    return assignee ? { assigneeId: assignee.id, assigneeType: assignee.type } : { assigneeId: null, assigneeType: null }
-  }
-
-  //The function below should be removed after we apply the userIds replacement for assigneeId and assigneeType for the webApp too. The method below is a temporary code for maintaining consistency on publicAPI and web app.
-  private async setUserIdsFromWebApi(assignee: { id: string | null; type: string | null }): Promise<{
-    internalUserId: string | null
-    clientId: string | null
-    companyId: string | null
-  }> {
-    let internalUserId: string | null = null
-    let clientId: string | null = null
-    let companyId: string | null = null
-
-    if (!assignee.id || !assignee.type) {
-      return { internalUserId, clientId, companyId }
+    return {
+      internalUserId: null,
+      clientId: null,
+      companyId: null,
     }
-
-    switch (assignee.type) {
-      case AssigneeType.internalUser:
-        internalUserId = assignee.id
-        break
-
-      case AssigneeType.client:
-        clientId = assignee.id
-        const copilot = new CopilotAPI(this.user.token)
-        const client = await copilot.getClient(assignee.id)
-        companyId = client?.companyId ?? null
-        break
-
-      case AssigneeType.company:
-        companyId = assignee.id
-        break
-    }
-
-    return { internalUserId, clientId, companyId }
   }
 
   private getAssigneeFromUserIds(userIds: {
