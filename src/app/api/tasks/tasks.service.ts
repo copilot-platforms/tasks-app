@@ -875,11 +875,7 @@ export class TasksService extends BaseService {
         throw new APIError(httpStatus.BAD_REQUEST, `Invalid clientId`)
       }
 
-      if (!companyId) {
-        throw new APIError(httpStatus.BAD_REQUEST, `CompanyId is required for client tasks`)
-      }
-
-      if (companyId && !isValidCompany) {
+      if (!companyId || !isValidCompany) {
         throw new APIError(httpStatus.BAD_REQUEST, `Invalid company for the provided clientId`)
       }
 
