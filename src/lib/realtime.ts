@@ -299,7 +299,9 @@ export class RealtimeHandler {
     })()
 
     if (isReassignedIntoClientScope || isReassignedIntoLimitedIUScope) {
-      store.dispatch(setTasks([...tasks.filter((task) => task.id !== updatedTask.id), updatedTask]))
+      store.dispatch(
+        setTasks([...tasks.filter((task) => task.id !== updatedTask.id && task.parentId !== updatedTask.id), updatedTask]), //also removing previous stand alone tasks after the reassignment.
+      )
       store.dispatch(
         setAccessibleTasks([
           ...accessibleTasks.filter((accessibleTask) => accessibleTask.id !== updatedTask.id),
