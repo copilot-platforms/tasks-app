@@ -5,6 +5,7 @@ import { sendClientUpdateTaskNotifications } from '@/jobs/notifications/send-cli
 import { ClientResponse, CompanyResponse, InternalUsers } from '@/types/common'
 import { TaskWithWorkflowState } from '@/types/db'
 import { AncestorTaskResponse, CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
+import { IUserIds } from '@/types/interfaces'
 import { DISPATCHABLE_EVENT } from '@/types/webhook'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { isPastDateString } from '@/utils/dateHelper'
@@ -175,7 +176,7 @@ export class TasksService extends BaseService {
 
     //generate the label
     const labelMappingService = new LabelMappingService(this.user)
-    const label = z.string().parse(await labelMappingService.getLabel(assigneeId, assigneeType))
+    const label = z.string().parse(await labelMappingService.getLabel(validatedIds))
 
     if (data.parentId) {
       const canCreateSubTask = await this.canCreateSubTask(data.parentId)
@@ -336,7 +337,7 @@ export class TasksService extends BaseService {
       [internalUserId, clientId, companyId].some((id) => !!id) &&
       (internalUserId !== prevTask?.internalUserId || clientId !== prevTask?.clientId || companyId !== prevTask?.companyId)
 
-    let validatedIds
+    let validatedIds: IUserIds | undefined
 
     if (shouldUpdateUserIds) {
       validatedIds = await this.validateUserIds(internalUserId, clientId, companyId)
@@ -371,7 +372,9 @@ export class TasksService extends BaseService {
         labelMappingService.setTransaction(tx as PrismaClient)
         //delete the existing label
         await labelMappingService.deleteLabel(prevTask.label)
-        label = z.string().parse(await labelMappingService.getLabel(assigneeId, assigneeType))
+        if (validatedIds) {
+          label = z.string().parse(await labelMappingService.getLabel(validatedIds))
+        }
       }
 
       // Set / reset lastArchivedDate if isArchived has been triggered, else remove it from the update query
