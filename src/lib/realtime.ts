@@ -63,7 +63,13 @@ export class RealtimeHandler {
       }
     } else if (this.userRole === AssigneeType.client) {
       // Ignore all tasks that don't belong to client
-      if (newTask.assigneeId !== this.tokenPayload.clientId && newTask.assigneeId !== this.tokenPayload.companyId) {
+
+      if (
+        !(
+          (newTask.clientId == this.tokenPayload.clientId && newTask.companyId == this.tokenPayload.companyId) ||
+          (newTask.clientId == null && newTask.companyId == this.tokenPayload.companyId)
+        )
+      ) {
         return false
       }
     } else {
@@ -291,7 +297,9 @@ export class RealtimeHandler {
 
     // CASE III: Reassignment into scope
     const isReassignedIntoClientScope =
-      this.userRole === AssigneeType.client && updatedTask.companyId === this.tokenPayload.companyId
+      this.userRole === AssigneeType.client &&
+      updatedTask.companyId === this.tokenPayload.companyId &&
+      updatedTask.clientId == this.tokenPayload.clientId
     const isReassignedIntoLimitedIUScope = (() => {
       if (this.userRole !== AssigneeType.internalUser) return false
       const iu = InternalUsersSchema.parse(this.user)
