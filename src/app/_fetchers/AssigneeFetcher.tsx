@@ -60,7 +60,7 @@ export const AssigneeFetcher = async ({
   const [fetchedAssignee, activeTaskAssignees] = await Promise.all([fetchAssigneePromise, activeTaskAssigneesPromise])
 
   const assignableUsersWithType = addTypeToAssignee(fetchedAssignee)
-  const selectorOptions = parseAssigneeToSelectorOption(fetchedAssignee)
+  const selectorOptions = await parseAssigneeToSelectorOption(token, fetchedAssignee)
 
   return (
     <ClientSideStateUpdate

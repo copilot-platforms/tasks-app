@@ -526,7 +526,10 @@ export class TasksService extends BaseService {
           {
             ...this.getClientOrCompanyAssigneeFilter(), // Prevent overwriting of OR statement
             parent: {
-              AND: [{ assigneeId: { not: this.user.clientId } }, { assigneeId: { not: this.user.companyId } }],
+              OR: [
+                { assigneeId: { not: this.user.clientId } },
+                { OR: [{ companyId: null }, { companyId: { not: this.user.companyId } }] },
+              ],
             },
           },
           // Task is a parent / standalone task
@@ -867,9 +870,9 @@ export class TasksService extends BaseService {
     }
 
     if (clientId) {
-      const clients = (await copilot.getClients({ limit: MAX_FETCH_ASSIGNEE_COUNT })).data
-      const client = clients?.find((c) => c.id === clientId)
-      const isValidCompany = companyId === client?.companyId //change this to search companyIds array in the future
+      const client = await copilot.getClient(clientId)
+
+      const isValidCompany = companyId ? client?.companyIds?.includes(companyId) : false
 
       if (!client) {
         throw new APIError(httpStatus.BAD_REQUEST, `Invalid clientId`)
