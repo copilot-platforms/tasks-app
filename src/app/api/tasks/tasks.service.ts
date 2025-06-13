@@ -526,7 +526,10 @@ export class TasksService extends BaseService {
           {
             ...this.getClientOrCompanyAssigneeFilter(), // Prevent overwriting of OR statement
             parent: {
-              AND: [{ assigneeId: { not: this.user.clientId } }, { assigneeId: { not: this.user.companyId } }],
+              OR: [
+                { assigneeId: { not: this.user.clientId } },
+                { OR: [{ companyId: null }, { companyId: { not: this.user.companyId } }] },
+              ],
             },
           },
           // Task is a parent / standalone task
