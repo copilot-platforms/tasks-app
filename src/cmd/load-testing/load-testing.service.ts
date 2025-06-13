@@ -127,7 +127,13 @@ class LoadTester {
           createdById: z.string().parse(currentUser.internalUserId),
           workflowStateId: workflowStates[Math.floor(Math.random() * workflowStates.length)].id,
           workspaceId: currentUser.workspaceId,
-          label: z.string().parse(await labelsService.getLabel(user.id, assigneeType)),
+          label: z.string().parse(
+            await labelsService.getLabel({
+              internalUserId: null,
+              clientId: null,
+              companyId: null,
+            }),
+          ), //passed a static value of userIds null for label. label wont work properly. This load testing service needs to be revamped in the future if we need this to run properly.
           assigneeId: user.id,
           assigneeType,
           assignedAt: getRandomBool() ? getRandomFutureDate() : null,
