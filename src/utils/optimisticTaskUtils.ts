@@ -28,6 +28,7 @@ export const getTempTask = (
     createdById: userId,
     assignee: z
       .union([ClientResponseSchema, InternalUsersSchema, CompanyResponseSchema])
+      .optional()
       .parse(assignee.find((a) => a.id === (payload.internalUserId || payload.clientId || payload.companyId))),
     createdAt: new Date(),
     lastArchivedDate: new Date().toISOString(),

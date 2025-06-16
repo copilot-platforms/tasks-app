@@ -78,7 +78,7 @@ export const TaskResponseSchema = z.object({
   dueDate: DateStringSchema.optional(),
   createdAt: z.date(),
   updatedAt: z.date().nullish(),
-  assignee: z.union([ClientResponseSchema, InternalUsersSchema, CompanyResponseSchema]),
+  assignee: z.union([ClientResponseSchema, InternalUsersSchema, CompanyResponseSchema]).optional(),
   lastActivityLogUpdated: z.date().optional(),
   isArchived: z.boolean().optional(),
   lastArchivedDate: z.string().datetime(),
