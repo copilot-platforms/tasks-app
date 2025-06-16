@@ -1,13 +1,11 @@
-import { createSlice } from '@reduxjs/toolkit'
-import { RootState } from '../store'
-import { AssigneeType } from '@prisma/client'
-import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
+import { RootState } from '@/redux/store'
 import { DateString } from '@/types/date'
+import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { CreateTaskErrors, IUserIds, UserIds } from '@/types/interfaces'
+import { createSlice } from '@reduxjs/toolkit'
 
 interface IErrors {
   [CreateTaskErrors.TITLE]: boolean
-  [CreateTaskErrors.ASSIGNEE]: boolean
 }
 
 interface IInitialState {
@@ -35,7 +33,6 @@ const initialState: IInitialState = {
   dueDate: null,
   errors: {
     [CreateTaskErrors.TITLE]: false,
-    [CreateTaskErrors.ASSIGNEE]: false,
   },
   appliedTitle: null,
   appliedDescription: null,
@@ -91,7 +88,6 @@ const createTaskSlice = createSlice({
       state.dueDate = null
       state.errors = {
         [CreateTaskErrors.TITLE]: false,
-        [CreateTaskErrors.ASSIGNEE]: false,
       }
       state.appliedDescription = null
       state.appliedTitle = null

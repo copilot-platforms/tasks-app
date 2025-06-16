@@ -75,7 +75,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
     if (!correctedObject) return
     const newUserIds = getSelectedUserIds([{ ...assigneeValue, object: correctedObject }])
     store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: newUserIds }))
-  }, []) //if assigneeValue has an intial value before selection (when my tasks, filter by assignee filter is applied), then update the task creation field for userIds.
+  }, [assigneeValue]) //if assigneeValue has an intial value before selection (when my tasks, filter by assignee filter is applied), then update the task creation field for userIds.
 
   const handleCreateWithAssignee = () => {
     handleCreate()
@@ -147,12 +147,6 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
               name="Set assignee"
               onChange={(inputValue) => {
                 const newUserIds = getSelectedUserIds(inputValue)
-                const areUserIdsEmpty = Object.values(newUserIds).every((value) => value === null) // remove this while adding support for no assignee.
-                if (areUserIdsEmpty) {
-                  store.dispatch(setErrors({ key: CreateTaskErrors.ASSIGNEE, value: true }))
-                } else {
-                  store.dispatch(setErrors({ key: CreateTaskErrors.ASSIGNEE, value: false }))
-                }
                 const selectedAssignee = assignee.find((assignee) => assignee.id === inputValue[0].id)
                 setAssigneeValue(selectedAssignee || null)
                 store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: newUserIds }))
@@ -259,7 +253,7 @@ const NewTaskFooter = ({
 }: NewTaskFormProps & { updateWorkflowStatusValue: (value: unknown) => void }) => {
   const [inputStatusValue, setInputStatusValue] = useState('')
 
-  const { title, userIds, showModal, description, appliedDescription, appliedTitle } = useSelector(selectCreateTask)
+  const { title, showModal, description, appliedDescription, appliedTitle } = useSelector(selectCreateTask)
   const { token, workflowStates } = useSelector(selectTaskBoard)
   const { templates } = useSelector(selectCreateTemplate)
 
@@ -321,7 +315,17 @@ const NewTaskFooter = ({
       fetchTemplate()
       return controller
     },
-    [token, setIsEditorReadonly, workflowStates, title, description, appliedDescription, appliedTitle],
+    [
+      token,
+      setIsEditorReadonly,
+      workflowStates,
+      title,
+      description,
+      appliedDescription,
+      appliedTitle,
+      showModal,
+      updateWorkflowStatusValue,
+    ],
   )
 
   const applyTemplateHandler = (newValue: ITemplate) => {
@@ -382,10 +386,8 @@ const NewTaskFooter = ({
               <PrimaryBtn
                 handleClick={() => {
                   const hasTitleError = !title.trim()
-                  const hasAssigneeError = Object.values(userIds).every((value) => value === null)
-                  if (hasTitleError || hasAssigneeError) {
-                    hasTitleError && store.dispatch(setErrors({ key: CreateTaskErrors.TITLE, value: true }))
-                    hasAssigneeError && store.dispatch(setErrors({ key: CreateTaskErrors.ASSIGNEE, value: true }))
+                  if (hasTitleError) {
+                    store.dispatch(setErrors({ key: CreateTaskErrors.TITLE, value: true }))
                   } else {
                     handleCreate()
                   }

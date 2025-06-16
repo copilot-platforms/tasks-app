@@ -20,7 +20,7 @@ import store from '@/redux/store'
 import { DateString } from '@/types/date'
 import { CreateTaskRequest } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { CreateTaskErrors, IAssigneeCombined, ITemplate, IUserIds, UserIds } from '@/types/interfaces'
+import { IAssigneeCombined, ITemplate, IUserIds, UserIds } from '@/types/interfaces'
 import { userIdFieldMap } from '@/types/objectMaps'
 import { getAssigneeName } from '@/utils/assignee'
 import { getSelectedUserIds } from '@/utils/getSelectedUserIds'
@@ -32,17 +32,12 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
 
-interface IErrors {
-  [CreateTaskErrors.ASSIGNEE]: boolean
-}
-
 interface SubTaskFields {
   title: string
   description: string
   workflowStateId: string
   userIds: IUserIds
   dueDate: DateString | null
-  errors: IErrors
 }
 
 export const NewTaskCard = ({
@@ -52,7 +47,7 @@ export const NewTaskCard = ({
   handleClose: () => void
   handleSubTaskCreation: (payload: CreateTaskRequest) => void
 }) => {
-  const { workflowStates, assignee, token, filterOptions, previewMode, activeTask } = useSelector(selectTaskBoard)
+  const { workflowStates, assignee, token, filterOptions, activeTask } = useSelector(selectTaskBoard)
   const { activeTaskAssignees } = useSelector(selectTaskDetails)
 
   const { templates } = useSelector(selectCreateTemplate)
@@ -70,9 +65,6 @@ export const NewTaskCard = ({
       [UserIds.COMPANY_ID]: null,
     },
     dueDate: null,
-    errors: {
-      [CreateTaskErrors.ASSIGNEE]: false,
-    },
   })
 
   const inputRef = useRef<HTMLInputElement>(null)
@@ -84,9 +76,6 @@ export const NewTaskCard = ({
       ...prev,
       title: '',
       description: '',
-      errors: {
-        [CreateTaskErrors.ASSIGNEE]: false,
-      },
       workflowStateId: todoWorkflowState.id,
       userIds: {
         [UserIds.INTERNAL_USER_ID]: null,
@@ -99,7 +88,7 @@ export const NewTaskCard = ({
     setAssigneeValue(null)
   }
 
-  const handleFieldChange = (field: keyof SubTaskFields, value: string | DateString | IErrors | null | IUserIds) => {
+  const handleFieldChange = (field: keyof SubTaskFields, value: string | DateString | null | IUserIds) => {
     setSubTaskFields((prev) => ({
       ...prev,
       [field]: value,
@@ -190,7 +179,7 @@ export const NewTaskCard = ({
       fetchTemplate()
       return controller
     },
-    [token, setIsEditorReadonly, workflowStates, subTaskFields.title, subTaskFields.description],
+    [token, setIsEditorReadonly, workflowStates, subTaskFields.title, subTaskFields.description, updateStatusValue],
   )
 
   const applyTemplateHandler = (newValue: ITemplate) => {
@@ -371,16 +360,6 @@ export const NewTaskCard = ({
             name="Set assignee"
             onChange={(inputValue) => {
               const newUserIds = getSelectedUserIds(inputValue)
-              const areUserIdsEmpty = Object.values(newUserIds).every((value) => value === null) // remove this while adding support for no assignee.
-              if (areUserIdsEmpty) {
-                handleFieldChange('errors', {
-                  assignee: true,
-                })
-              } else {
-                handleFieldChange('errors', {
-                  assignee: false,
-                })
-              }
               const selectedAssignee = assignee.find((assignee) => assignee.id === inputValue[0].id)
               setAssigneeValue(selectedAssignee || null)
               handleFieldChange('userIds', newUserIds)
@@ -442,17 +421,7 @@ export const NewTaskCard = ({
           />
           <PrimaryBtn
             padding={'3px 8px'}
-            handleClick={() => {
-              const hasAssigneeError = Object.values(subTaskFields.userIds).every((value) => value === null)
-
-              if (hasAssigneeError) {
-                handleFieldChange('errors', {
-                  assignee: true,
-                })
-              } else {
-                handleTaskCreation()
-              }
-            }}
+            handleClick={handleTaskCreation}
             buttonText="Create"
             disabled={!subTaskFields.title.trim() || isUploading || isEditorReadonly}
           />
