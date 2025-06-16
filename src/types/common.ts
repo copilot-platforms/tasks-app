@@ -205,7 +205,7 @@ export type CopilotUser = InternalUsers | ClientResponse
 export type NotificationRequestBody = z.infer<typeof NotificationRequestBodySchema>
 
 export const NotificationCreatedResponseSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string(), // Sometimes the ID is not UUID, like when triggered for clients from contracts
   appId: z.string().uuid().optional(),
   createdAt: z.string().datetime(),
   event: z.string().optional(),
