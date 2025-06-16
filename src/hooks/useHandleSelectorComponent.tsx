@@ -3,9 +3,7 @@ import { setCreateTaskFields } from '@/redux/features/createTaskSlice'
 import { setCreateTemplateFields } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { IAssigneeCombined, HandleSelectorComponentModes, IUserIds, UserIds } from '@/types/interfaces'
-import { userIdFieldMap } from '@/types/objectMaps'
-import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
+import { HandleSelectorComponentModes } from '@/types/interfaces'
 import { useEffect, useState } from 'react'
 
 export const useHandleSelectorComponent = ({
