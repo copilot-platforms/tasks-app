@@ -29,7 +29,6 @@ interface OptimisticUpdate {
 export const Subtasks = ({
   task_id,
   token,
-  userType,
   canCreateSubtasks,
 }: {
   task_id: string
@@ -175,7 +174,7 @@ export const Subtasks = ({
 
       {openTaskForm && <NewTaskCard handleClose={handleFormCancel} handleSubTaskCreation={handleSubTaskCreation} />}
       <Box>
-        {subTasks?.tasks?.map((item: TaskResponse, index: number) => {
+        {subTasks?.tasks?.map((item: TaskResponse) => {
           const isTempId = item.id.includes('temp')
           if (isTempId) {
             return (
