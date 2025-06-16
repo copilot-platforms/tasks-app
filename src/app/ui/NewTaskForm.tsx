@@ -71,7 +71,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
   })
   const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
     item:
-      filteredAssignees.find(
+      assignee.find(
         (item) => item.id == filterOptions[FilterOptions.ASSIGNEE] || item.id == filterOptions[FilterOptions.TYPE],
       ) ?? null,
     type: SelectorType.ASSIGNEE_SELECTOR,

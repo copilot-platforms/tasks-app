@@ -34,12 +34,6 @@ export const useHandleSelectorComponent = ({
       store.dispatch(
         setCreateTaskFields({ targetField: 'assigneeType', value: getAssigneeTypeCorrected(item as IAssigneeCombined) }),
       )
-      store.dispatch(
-        setCreateTemplateFields({
-          targetField: 'assigneeType',
-          value: getAssigneeTypeCorrected(item as IAssigneeCombined),
-        }),
-      )
     }
     setRenderingItem(item)
   }, [type, item])
