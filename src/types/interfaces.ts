@@ -20,7 +20,6 @@ export enum View {
 
 export enum CreateTaskErrors {
   TITLE = 'title',
-  ASSIGNEE = 'assignee',
 }
 
 export enum createTemplateErrors {
