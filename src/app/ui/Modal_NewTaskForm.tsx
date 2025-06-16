@@ -54,29 +54,28 @@ export const ModalNewTaskForm = ({
     >
       <NewTaskForm
         handleCreate={async () => {
-          if (title) {
-            store.dispatch(setShowModal())
-            const formattedDueDate = dueDate && dayjs(new Date(dueDate)).format('YYYY-MM-DD')
+          if (!title.trim()) return
 
-            const payload = {
-              title,
-              body: description,
-              workflowStateId,
-              ...userIds,
-              dueDate: formattedDueDate,
-              templateId,
-            }
-
-            store.dispatch(clearCreateTaskFields({ isFilterOn: !!filterOptions[FilterOptions.ASSIGNEE] }))
-            const createdTask = await handleCreate(token as string, CreateTaskRequestSchema.parse(payload))
-            const toUploadAttachments: CreateAttachmentRequest[] = attachments.map((el) => {
-              return {
-                ...el,
-                taskId: createdTask.id,
-              }
-            })
-            await handleCreateMultipleAttachments(toUploadAttachments)
+          store.dispatch(setShowModal())
+          const formattedDueDate = dueDate && dayjs(new Date(dueDate)).format('YYYY-MM-DD')
+          const payload = {
+            title,
+            body: description,
+            workflowStateId,
+            ...userIds,
+            dueDate: formattedDueDate,
+            templateId,
           }
+
+          store.dispatch(clearCreateTaskFields({ isFilterOn: !!filterOptions[FilterOptions.ASSIGNEE] }))
+          const createdTask = await handleCreate(token as string, CreateTaskRequestSchema.parse(payload))
+          const toUploadAttachments: CreateAttachmentRequest[] = attachments.map((el) => {
+            return {
+              ...el,
+              taskId: createdTask.id,
+            }
+          })
+          await handleCreateMultipleAttachments(toUploadAttachments)
         }}
         handleClose={handleModalClose}
       />

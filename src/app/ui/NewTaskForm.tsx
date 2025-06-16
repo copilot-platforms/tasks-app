@@ -386,7 +386,7 @@ const NewTaskFooter = ({
               <PrimaryBtn
                 handleClick={() => {
                   const hasTitleError = !title.trim()
-                  if (hasTitleError) {
+                  if (!title.trim()) {
                     store.dispatch(setErrors({ key: CreateTaskErrors.TITLE, value: true }))
                   } else {
                     handleCreate()
