@@ -336,7 +336,7 @@ export class TasksService extends BaseService {
     const { internalUserId, clientId, companyId, ...dataWithoutUserIds } = data
 
     const shouldUpdateUserIds =
-      [internalUserId, clientId, companyId].some((id) => id !== null) || !!(data.assigneeId && data.assigneeType)
+      [internalUserId, clientId, companyId].some((id) => id !== undefined) || !!(data.assigneeId && data.assigneeType)
 
     let validatedIds = {
       internalUserId: internalUserId ?? null,
