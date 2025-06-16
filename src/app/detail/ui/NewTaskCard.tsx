@@ -191,37 +191,31 @@ export const NewTaskCard = ({
   }
 
   const handleTaskCreation = async () => {
-    if (
-      subTaskFields.title &&
-      (subTaskFields.userIds[UserIds.INTERNAL_USER_ID] ||
-        subTaskFields.userIds[UserIds.CLIENT_ID] ||
-        subTaskFields.userIds[UserIds.COMPANY_ID])
-    ) {
-      const formattedDueDate = subTaskFields.dueDate && dayjs(new Date(subTaskFields.dueDate)).format('YYYY-MM-DD')
+    if (!subTaskFields.title.trim()) return
 
-      const payload: CreateTaskRequest = {
-        title: subTaskFields.title,
-        body: subTaskFields.description,
-        workflowStateId: subTaskFields.workflowStateId,
-        internalUserId: subTaskFields.userIds[UserIds.INTERNAL_USER_ID],
-        clientId: subTaskFields.userIds[UserIds.CLIENT_ID],
-        companyId: subTaskFields.userIds[UserIds.COMPANY_ID],
-        dueDate: formattedDueDate,
-        parentId: activeTask?.id,
-      }
-      handleSubTaskCreation(payload)
-      clearSubTaskFields()
-      handleClose()
+    const formattedDueDate = subTaskFields.dueDate && dayjs(new Date(subTaskFields.dueDate)).format('YYYY-MM-DD')
+    const payload: CreateTaskRequest = {
+      title: subTaskFields.title,
+      body: subTaskFields.description,
+      workflowStateId: subTaskFields.workflowStateId,
+      internalUserId: subTaskFields.userIds[UserIds.INTERNAL_USER_ID],
+      clientId: subTaskFields.userIds[UserIds.CLIENT_ID],
+      companyId: subTaskFields.userIds[UserIds.COMPANY_ID],
+      dueDate: formattedDueDate,
+      parentId: activeTask?.id,
+    }
+    handleSubTaskCreation(payload)
+    clearSubTaskFields()
+    handleClose()
 
-      if (subTaskFields.userIds[UserIds.CLIENT_ID] || subTaskFields.userIds[UserIds.COMPANY_ID]) {
-        const assigneeTypes = new Set(activeTaskAssignees.map((a) => a.type))
-        if (assigneeTypes.has('ius') || assigneeTypes.has('internalUsers')) {
-          store.dispatch(
-            setActiveTaskAssignees(
-              activeTaskAssignees.filter((assignee) => assignee.type === 'clients' || assignee.type === 'companies'),
-            ),
-          )
-        }
+    if (subTaskFields.userIds[UserIds.CLIENT_ID] || subTaskFields.userIds[UserIds.COMPANY_ID]) {
+      const assigneeTypes = new Set(activeTaskAssignees.map((a) => a.type))
+      if (assigneeTypes.has('ius') || assigneeTypes.has('internalUsers')) {
+        store.dispatch(
+          setActiveTaskAssignees(
+            activeTaskAssignees.filter((assignee) => assignee.type === 'clients' || assignee.type === 'companies'),
+          ),
+        )
       }
     }
   }

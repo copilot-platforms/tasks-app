@@ -42,12 +42,8 @@ export const Subtasks = ({
   const { tokenPayload } = useSelector(selectAuthDetails)
   const [optimisticUpdates, setOptimisticUpdates] = useState<OptimisticUpdate[]>([]) //might need this server-temp id maps in the future.
 
-  const handleFormCancel = () => {
-    setOpenTaskForm(false)
-  }
-  const handleFormOpen = () => {
-    setOpenTaskForm(!openTaskForm)
-  }
+  const handleFormCancel = () => setOpenTaskForm(false)
+  const handleFormOpen = () => setOpenTaskForm(!openTaskForm)
 
   const mode = tokenPayload?.internalUserId ? UserRole.IU : UserRole.Client
 
@@ -64,7 +60,7 @@ export const Subtasks = ({
     if (activeTask?.subtaskCount !== undefined) {
       refetchSubtasks()
     }
-  }, [activeTask?.subtaskCount, activeTask?.isArchived])
+  }, [activeTask?.subtaskCount, activeTask?.isArchived, cacheKey, mutate])
 
   const handleSubTaskCreation = (payload: CreateTaskRequest) => {
     const tempId = generateRandomString('temp-task')
