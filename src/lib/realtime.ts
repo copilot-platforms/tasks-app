@@ -268,7 +268,11 @@ export class RealtimeHandler {
     // CASE II: REASSIGNMENT OUT OF SCOPE
     // --- Handle unassignment for clients (board + details page)
     const isReassignedOutOfClientScope =
-      this.userRole === AssigneeType.client && updatedTask.companyId !== this.tokenPayload.companyId
+      this.userRole === AssigneeType.client &&
+      (!updatedTask.clientId
+        ? updatedTask.companyId !== this.tokenPayload.companyId
+        : updatedTask.companyId !== this.tokenPayload.companyId || updatedTask.clientId !== this.tokenPayload.clientId)
+
     const isReassignedOutOfLimitedIUScope = (() => {
       if (this.userRole !== AssigneeType.internalUser) return false
       const iu = InternalUsersSchema.parse(this.user)
