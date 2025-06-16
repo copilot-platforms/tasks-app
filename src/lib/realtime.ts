@@ -302,8 +302,10 @@ export class RealtimeHandler {
     // CASE III: Reassignment into scope
     const isReassignedIntoClientScope =
       this.userRole === AssigneeType.client &&
-      updatedTask.companyId === this.tokenPayload.companyId &&
-      updatedTask.clientId == this.tokenPayload.clientId
+      (!updatedTask.clientId
+        ? updatedTask.companyId === this.tokenPayload.companyId
+        : updatedTask.companyId === this.tokenPayload.companyId && updatedTask.clientId === this.tokenPayload.clientId)
+
     const isReassignedIntoLimitedIUScope = (() => {
       if (this.userRole !== AssigneeType.internalUser) return false
       const iu = InternalUsersSchema.parse(this.user)
