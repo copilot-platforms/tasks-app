@@ -1,8 +1,15 @@
 import { selectTaskBoard, setFilteredTasks } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
 import { TaskResponse } from '@/types/dto/tasks.dto'
-import { FilterOptions, FilterOptionsKeywords, IAssigneeCombined, IFilterOptions } from '@/types/interfaces'
-import { getAssigneeName } from '@/utils/assignee'
+import {
+  FilterOptions,
+  FilterOptionsKeywords,
+  IAssigneeCombined,
+  IFilterOptions,
+  IUserIds,
+  UserIds,
+} from '@/types/interfaces'
+import { emptyAssignee, getAssigneeName } from '@/utils/assignee'
 import { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 
@@ -22,14 +29,26 @@ const FilterFunctions = {
   [FilterOptions.TYPE]: filterByType,
 }
 
-function filterByAssignee(filteredTasks: TaskResponse[], filterValue: string | null): TaskResponse[] {
-  const assigneeId = filterValue
+function filterByAssignee(filteredTasks: TaskResponse[], filterValue: IUserIds): TaskResponse[] {
+  const assigneeUserIds = filterValue
+  if (assigneeUserIds == emptyAssignee) {
+    return filteredTasks
+  }
   filteredTasks =
-    assigneeId === 'No assignee'
+    assigneeUserIds[UserIds.INTERNAL_USER_ID] === 'No assignee'
       ? filteredTasks.filter((task) => !task.assigneeId)
-      : filteredTasks.filter(
-          (task) => task.internalUserId == assigneeId || task.clientId == assigneeId || task.companyId == assigneeId,
-        )
+      : filteredTasks.filter((task) => {
+          if (assigneeUserIds[UserIds.INTERNAL_USER_ID]) {
+            return task.internalUserId == assigneeUserIds[UserIds.INTERNAL_USER_ID]
+          } else if (assigneeUserIds[UserIds.CLIENT_ID]) {
+            return (
+              task.clientId == assigneeUserIds[UserIds.CLIENT_ID] && task.companyId == assigneeUserIds[UserIds.COMPANY_ID]
+            )
+          } else {
+            return task.companyId == assigneeUserIds[UserIds.COMPANY_ID]
+          }
+        })
+
   return filteredTasks
 }
 
@@ -88,7 +107,13 @@ export const useFilter = (filterOptions: IFilterOptions) => {
     for (const [filterType, filterValue] of Object.entries(filterOptions)) {
       if (!filterValue) continue
       const filterFn = FilterFunctions[filterType as FilterOptions]
-      filteredTasks = filterFn(filteredTasks, filterValue, accessibleTasks, assignee)
+      if (filterType === FilterOptions.ASSIGNEE) {
+        filteredTasks = FilterFunctions.assignee(filteredTasks, filterValue as IUserIds)
+      } else if (filterType === FilterOptions.KEYWORD) {
+        filteredTasks = FilterFunctions.keyword(filteredTasks, filterValue as string, accessibleTasks, assignee)
+      } else if (filterType === FilterOptions.TYPE) {
+        filteredTasks = FilterFunctions.type(filteredTasks, filterValue as string)
+      }
     }
     store.dispatch(setFilteredTasks(filteredTasks))
   }

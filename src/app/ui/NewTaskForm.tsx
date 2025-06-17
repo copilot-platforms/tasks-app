@@ -25,7 +25,7 @@ import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { selectCreateTemplate } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { CreateTaskErrors, FilterOptions, IAssigneeCombined, ITemplate } from '@/types/interfaces'
+import { CreateTaskErrors, FilterOptions, IAssigneeCombined, ITemplate, UserIds } from '@/types/interfaces'
 import { getAssigneeName } from '@/utils/assignee'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
@@ -66,7 +66,11 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
 
   const [assigneeValue, setAssigneeValue] = useState<IAssigneeCombined | null>(
     assignee.find(
-      (item) => item.id == filterOptions[FilterOptions.ASSIGNEE] || item.id == filterOptions[FilterOptions.TYPE],
+      (item) =>
+        item.id == filterOptions[FilterOptions.ASSIGNEE][UserIds.INTERNAL_USER_ID] ||
+        item.id == filterOptions[FilterOptions.ASSIGNEE][UserIds.CLIENT_ID] ||
+        item.id == filterOptions[FilterOptions.ASSIGNEE][UserIds.COMPANY_ID] ||
+        item.id == filterOptions[FilterOptions.TYPE],
     ) ?? null,
   )
   useEffect(() => {

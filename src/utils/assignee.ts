@@ -52,3 +52,9 @@ export const getAssigneeName = (assigneeValue: Assignable | undefined, noAssigne
 export const checkAssignee = (assigneeValue: IAssigneeCombined | undefined): boolean => {
   return !!assigneeValue
 }
+
+export const emptyAssignee: IUserIds = {
+  internalUserId: null,
+  clientId: null,
+  companyId: null,
+}

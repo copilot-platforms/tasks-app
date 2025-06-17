@@ -321,10 +321,8 @@ export const NewTaskCard = ({
           display: 'flex',
           padding: '0px 12px',
           alignItems: 'center',
-
           alignSelf: 'stretch',
           justifyContent: 'space-between',
-          filterOptions,
           flexWrap: 'wrap',
         }}
       >
