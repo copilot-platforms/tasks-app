@@ -21,9 +21,16 @@ import {
 import store from '@/redux/store'
 import { IUTokenSchema } from '@/types/common'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
-import { FilterOptions, FilterOptionsKeywords, IAssigneeCombined, IFilterOptions } from '@/types/interfaces'
+import {
+  FilterOptions,
+  FilterOptionsKeywords,
+  IAssigneeCombined,
+  IFilterOptions,
+  IUserIds,
+  UserIds,
+} from '@/types/interfaces'
 import { filterOptionsToAssigneeMap, filterTypeToButtonIndexMap } from '@/types/objectMaps'
-import { checkAssignee, getAssigneeId } from '@/utils/assignee'
+import { checkAssignee, emptyAssignee, getAssigneeId } from '@/utils/assignee'
 import { NoAssigneeExtraOptions } from '@/utils/noAssignee'
 import { getSelectedUserIds } from '@/utils/selector'
 import { Box, IconButton, Stack } from '@mui/material'
@@ -46,7 +53,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
 
   const viewModeFilterOptions = viewSettingsTemp ? (viewSettingsTemp.filterOptions as IFilterOptions) : filterOptions //ViewSettingsTemp used to apply temp values of viewSettings in filterOptions and viewMode because clientSideUpdate applies outdated cached values to original view and filterOptions if navigated
 
-  const handleFilterOptionsChange = async (optionType: FilterOptions, newValue: string | null) => {
+  const handleFilterOptionsChange = async (optionType: FilterOptions, newValue: string | null | IUserIds) => {
     store.dispatch(setFilterOptions({ optionType, newValue }))
     if (optionType === FilterOptions.TYPE) {
       const filterFunction = filterOptionsToAssigneeMap[newValue as string] || filterOptionsToAssigneeMap.default
@@ -84,9 +91,14 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
 
   const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
     item:
-      viewModeFilterOptions.assignee == 'No assignee'
+      viewModeFilterOptions.assignee[UserIds.INTERNAL_USER_ID] == 'No assignee'
         ? NoAssigneeExtraOptions
-        : assignee.find((item) => item.id == viewModeFilterOptions.assignee),
+        : assignee.find(
+            (item) =>
+              item.id == viewModeFilterOptions.assignee[UserIds.INTERNAL_USER_ID] ||
+              item.id == viewModeFilterOptions.assignee[UserIds.CLIENT_ID] ||
+              item.id == viewModeFilterOptions.assignee[UserIds.COMPANY_ID],
+          ),
     type: SelectorType.ASSIGNEE_SELECTOR,
   })
 
@@ -97,7 +109,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
         const selfAssigneeId = IUTokenSchema.parse(tokenPayload).internalUserId
         handleFilterOptionsChange(FilterOptions.TYPE, selfAssigneeId)
         updateAssigneeValue(null)
-        filterOptions.assignee !== '' && handleFilterOptionsChange(FilterOptions.ASSIGNEE, '')
+        handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
       },
       id: 'MyTasks',
     },
@@ -107,7 +119,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
         handleFilterOptionsChange(FilterOptions.TYPE, FilterOptionsKeywords.TEAM)
         updateAssigneeValue(null)
         setNoAssigneeOptionFlag(false)
-        filterOptions.assignee !== '' && handleFilterOptionsChange(FilterOptions.ASSIGNEE, '')
+        handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
       },
       id: 'TeamTasks',
     },
@@ -117,7 +129,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
         handleFilterOptionsChange(FilterOptions.TYPE, FilterOptionsKeywords.CLIENTS)
         updateAssigneeValue(null)
         setNoAssigneeOptionFlag(false)
-        filterOptions.assignee !== '' && handleFilterOptionsChange(FilterOptions.ASSIGNEE, '')
+        handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
       },
       id: 'ClientTasks',
     },
@@ -127,7 +139,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
         handleFilterOptionsChange(FilterOptions.TYPE, '')
         updateAssigneeValue(null)
         setNoAssigneeOptionFlag(true)
-        filterOptions.assignee !== '' && handleFilterOptionsChange(FilterOptions.ASSIGNEE, '')
+        handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
       },
       id: 'AllTasks',
     },
@@ -174,7 +186,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
                                   e.preventDefault()
                                   e.stopPropagation()
                                   updateAssigneeValue(null)
-                                  handleFilterOptionsChange(FilterOptions.ASSIGNEE, '')
+                                  handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
                                 }}
                                 sx={{
                                   cursor: 'default',
@@ -200,9 +212,9 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
                         const newUserIds = getSelectedUserIds(inputValue)
                         const newAssignee = getAssigneeId(newUserIds)
                         if (newAssignee) {
-                          handleFilterOptionsChange(FilterOptions.ASSIGNEE, newAssignee)
+                          handleFilterOptionsChange(FilterOptions.ASSIGNEE, newUserIds)
                         } else {
-                          handleFilterOptionsChange(FilterOptions.ASSIGNEE, '')
+                          handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
                         }
                       }}
                     />
@@ -311,7 +323,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
                               e.preventDefault()
                               e.stopPropagation()
                               updateAssigneeValue(null)
-                              handleFilterOptionsChange(FilterOptions.ASSIGNEE, '')
+                              handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
                             }}
                             sx={{
                               cursor: 'default',
@@ -337,9 +349,9 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
                     const newUserIds = getSelectedUserIds(inputValue)
                     const newAssignee = getAssigneeId(newUserIds)
                     if (newAssignee) {
-                      handleFilterOptionsChange(FilterOptions.ASSIGNEE, newAssignee)
+                      handleFilterOptionsChange(FilterOptions.ASSIGNEE, newUserIds)
                     } else {
-                      handleFilterOptionsChange(FilterOptions.ASSIGNEE, '')
+                      handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
                     }
                   }}
                 />

@@ -32,6 +32,7 @@ import { Box, Stack } from '@mui/material'
 import { useCallback, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { z } from 'zod'
+import { emptyAssignee } from '@/utils/assignee'
 
 interface TaskBoardProps {
   mode: UserRole
@@ -93,7 +94,7 @@ export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
     filterOptions &&
     !filterOptions.type &&
     !filterOptions.keyword &&
-    (!filterOptions.assignee || previewMode) &&
+    (filterOptions.assignee == emptyAssignee || previewMode) &&
     archivedOptions.showUnarchived &&
     !archivedOptions.showArchived
 

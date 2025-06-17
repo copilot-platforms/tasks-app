@@ -80,7 +80,7 @@ export enum UserIds {
 }
 
 export type IFilterOptions = {
-  [key in FilterOptions]: string
+  [key in FilterOptions]: key extends FilterOptions.ASSIGNEE ? IUserIds : string
 }
 
 export interface IAssignee {

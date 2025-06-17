@@ -16,6 +16,7 @@ import dayjs from 'dayjs'
 import { useSelector } from 'react-redux'
 import { handleCreate } from '../(home)/actions'
 import { NewTaskForm } from './NewTaskForm'
+import { emptyAssignee } from '@/utils/assignee'
 
 export const ModalNewTaskForm = ({
   handleCreateMultipleAttachments,
@@ -31,7 +32,7 @@ export const ModalNewTaskForm = ({
       return
     }
     store.dispatch(setShowModal())
-    store.dispatch(clearCreateTaskFields({ isFilterOn: !!filterOptions[FilterOptions.ASSIGNEE] }))
+    store.dispatch(clearCreateTaskFields({ isFilterOn: !!(filterOptions[FilterOptions.ASSIGNEE] !== emptyAssignee) }))
     store.dispatch(setActiveWorkflowStateId(null))
     // NOTE: Reimplement in M3
     // await bulkRemoveAttachments(attachments)
@@ -64,7 +65,7 @@ export const ModalNewTaskForm = ({
             templateId,
           }
 
-          store.dispatch(clearCreateTaskFields({ isFilterOn: !!filterOptions[FilterOptions.ASSIGNEE] }))
+          store.dispatch(clearCreateTaskFields({ isFilterOn: !!(filterOptions[FilterOptions.ASSIGNEE] !== emptyAssignee) }))
           const createdTask = await handleCreate(token as string, CreateTaskRequestSchema.parse(payload))
           const toUploadAttachments: CreateAttachmentRequest[] = attachments.map((el) => {
             return {
