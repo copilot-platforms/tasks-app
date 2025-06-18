@@ -1,9 +1,18 @@
 import { TruncateMaxNumber } from '@/types/constants'
 import { TaskResponse } from '@/types/dto/tasks.dto'
-import { IAssigneeCombined, ISelectorOption, IUserIds } from '@/types/interfaces'
+import { IAssigneeCombined, ISelectorOption } from '@/types/interfaces'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { truncateText } from '@/utils/truncateText'
 import { AssigneeType } from '@prisma/client'
+import { z } from 'zod'
+
+export const UserIdsSchema = z.object({
+  internalUserId: z.string().nullable(),
+  clientId: z.string().nullable(),
+  companyId: z.string().nullable(),
+})
+
+export type UserIdsType = z.infer<typeof UserIdsSchema>
 
 export const isAssigneeTextMatching = (newInputValue: string, assigneeValue: IAssigneeCombined): boolean => {
   const truncate = (newInputValue: string) => truncateText(newInputValue, TruncateMaxNumber.SELECTOR)
@@ -13,11 +22,11 @@ export const isAssigneeTextMatching = (newInputValue: string, assigneeValue: IAs
   )
 }
 
-export const getAssigneeId = (userIds?: IUserIds) => {
+export const getAssigneeId = (userIds?: UserIdsType) => {
   return userIds?.internalUserId || userIds?.clientId || userIds?.companyId || undefined
 } //usecase : extract the assignee id from the userIds.
 
-export const getUserIds = (task: TaskResponse): IUserIds => {
+export const getUserIds = (task: TaskResponse): UserIdsType => {
   return {
     internalUserId: task.internalUserId || null,
     clientId: task.clientId || null,
@@ -43,6 +52,7 @@ interface Assignable {
   givenName?: string
   familyName?: string
 }
+
 export const getAssigneeName = (assigneeValue: Assignable | undefined, noAssigneetext: string = 'No assignee'): string => {
   return assigneeValue
     ? assigneeValue?.name || `${assigneeValue?.givenName ?? ''} ${assigneeValue?.familyName ?? ''}`.trim()
@@ -53,7 +63,7 @@ export const checkAssignee = (assigneeValue: IAssigneeCombined | undefined): boo
   return !!assigneeValue
 }
 
-export const emptyAssignee: IUserIds = {
+export const emptyAssignee: UserIdsType = {
   internalUserId: null,
   clientId: null,
   companyId: null,

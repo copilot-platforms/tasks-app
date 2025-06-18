@@ -1,7 +1,8 @@
 import { RootState } from '@/redux/store'
 import { DateString } from '@/types/date'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
-import { CreateTaskErrors, IUserIds, UserIds } from '@/types/interfaces'
+import { CreateTaskErrors, UserIds } from '@/types/interfaces'
+import { UserIdsType } from '@/utils/assignee'
 import { createSlice } from '@reduxjs/toolkit'
 
 interface IErrors {
@@ -20,7 +21,7 @@ interface IInitialState {
   appliedTitle: string | null
   appliedDescription: string | null
   templateId: string | null
-  userIds: IUserIds
+  userIds: UserIdsType
 }
 
 const initialState: IInitialState = {

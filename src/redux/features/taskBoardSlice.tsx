@@ -9,10 +9,9 @@ import {
   IAssigneeCombined,
   IFilterOptions,
   ISelectorAssignee,
-  IUserIds,
   UserIds,
 } from '@/types/interfaces'
-import { emptyAssignee } from '@/utils/assignee'
+import { emptyAssignee, UserIdsType } from '@/utils/assignee'
 import { ViewMode } from '@prisma/client'
 import { createSlice } from '@reduxjs/toolkit'
 
@@ -117,7 +116,7 @@ const taskBoardSlice = createSlice({
     setViewSettingsTemp: (state, action: { payload: CreateViewSettingsDTO }) => {
       state.viewSettingsTemp = action.payload
     },
-    setFilterOptions: (state, action: { payload: { optionType: FilterOptions; newValue: string | null | IUserIds } }) => {
+    setFilterOptions: (state, action: { payload: { optionType: FilterOptions; newValue: string | null | UserIdsType } }) => {
       state.filterOptions = {
         ...state.filterOptions,
         [action.payload.optionType]: action.payload.newValue,

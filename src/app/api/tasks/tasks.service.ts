@@ -5,8 +5,8 @@ import { sendClientUpdateTaskNotifications } from '@/jobs/notifications/send-cli
 import { ClientResponse, CompanyResponse, InternalUsers } from '@/types/common'
 import { TaskWithWorkflowState } from '@/types/db'
 import { AncestorTaskResponse, CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
-import { IUserIds } from '@/types/interfaces'
 import { DISPATCHABLE_EVENT } from '@/types/webhook'
+import { UserIdsType } from '@/utils/assignee'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { isPastDateString } from '@/utils/dateHelper'
 import { buildLtree, buildLtreeNodeString, getIdsFromLtreePath } from '@/utils/ltree'
@@ -336,7 +336,7 @@ export class TasksService extends BaseService {
     const shouldUpdateUserIds =
       internalUserId !== prevTask?.internalUserId || clientId !== prevTask?.clientId || companyId !== prevTask?.companyId
 
-    let validatedIds: IUserIds | undefined
+    let validatedIds: UserIdsType | undefined
 
     if (shouldUpdateUserIds) {
       validatedIds = await this.validateUserIds(internalUserId, clientId, companyId)

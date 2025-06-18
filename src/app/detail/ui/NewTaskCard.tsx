@@ -20,8 +20,8 @@ import store from '@/redux/store'
 import { DateString } from '@/types/date'
 import { CreateTaskRequest } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { IAssigneeCombined, ITemplate, IUserIds, UserIds } from '@/types/interfaces'
-import { getAssigneeName } from '@/utils/assignee'
+import { IAssigneeCombined, ITemplate, UserIds } from '@/types/interfaces'
+import { getAssigneeName, UserIdsType } from '@/utils/assignee'
 import { getSelectedUserIds } from '@/utils/selector'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
 import { trimAllTags } from '@/utils/trimTags'
@@ -35,7 +35,7 @@ interface SubTaskFields {
   title: string
   description: string
   workflowStateId: string
-  userIds: IUserIds
+  userIds: UserIdsType
   dueDate: DateString | null
 }
 
@@ -87,7 +87,7 @@ export const NewTaskCard = ({
     setAssigneeValue(null)
   }
 
-  const handleFieldChange = (field: keyof SubTaskFields, value: string | DateString | null | IUserIds) => {
+  const handleFieldChange = (field: keyof SubTaskFields, value: string | DateString | null | UserIdsType) => {
     setSubTaskFields((prev) => ({
       ...prev,
       [field]: value,

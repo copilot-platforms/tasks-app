@@ -2,11 +2,12 @@
  * All utils related to the Copilot selector component
  */
 
-import { InputValue, ISelectorOption, IUserIds, UserIds } from '@/types/interfaces'
+import { InputValue, ISelectorOption, UserIds } from '@/types/interfaces'
 import { userIdFieldMap } from '@/types/objectMaps'
+import { UserIdsType } from './assignee'
 
-export const getSelectedUserIds = (inputValue: InputValue[]): IUserIds => {
-  let userIds: IUserIds = {
+export const getSelectedUserIds = (inputValue: InputValue[]): UserIdsType => {
+  let userIds: UserIdsType = {
     [UserIds.INTERNAL_USER_ID]: null,
     [UserIds.CLIENT_ID]: null,
     [UserIds.COMPANY_ID]: null,

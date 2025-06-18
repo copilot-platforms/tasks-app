@@ -23,8 +23,8 @@ import store from '@/redux/store'
 import { DateStringSchema } from '@/types/date'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { IAssigneeCombined, InputValue, IUserIds, Sizes } from '@/types/interfaces'
-import { getAssigneeId, getAssigneeName, getUserIds } from '@/utils/assignee'
+import { IAssigneeCombined, InputValue, Sizes } from '@/types/interfaces'
+import { getAssigneeId, getAssigneeName, getUserIds, UserIdsType } from '@/utils/assignee'
 import { createDateFromFormattedDateString, formatDate } from '@/utils/dateHelper'
 import { getCardHref } from '@/utils/getCardHref'
 import { isTaskCompleted } from '@/utils/isTaskCompleted'
@@ -53,7 +53,7 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate 
     return assigneeCache[task.id]
   })
   const [currentDueDate, setCurrentDueDate] = useState<string | undefined>(task.dueDate)
-  const [selectedAssignee, setSelectedAssignee] = useState<IUserIds | undefined>(undefined)
+  const [selectedAssignee, setSelectedAssignee] = useState<UserIdsType | undefined>(undefined)
 
   useEffect(() => {
     if (assignee.length > 0) {
@@ -78,7 +78,7 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate 
 
   const statusValue = _statusValue as WorkflowStateResponse
 
-  const handleConfirmAssigneeChange = (userIds: IUserIds) => {
+  const handleConfirmAssigneeChange = (userIds: UserIdsType) => {
     const { internalUserId, clientId, companyId } = userIds
     if (handleUpdate) {
       token &&
@@ -118,7 +118,7 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate 
     updateAssignee(token!, task.id, null, null, null) // This is a safe non-null asssertion since callback is recomputed as token is loaded
   }, [token, task.id])
 
-  const getAssigneeValue = (userIds?: IUserIds) => {
+  const getAssigneeValue = (userIds?: UserIdsType) => {
     if (!userIds) {
       return NoAssignee
     }
