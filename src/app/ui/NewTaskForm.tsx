@@ -28,8 +28,8 @@ import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { CreateTaskErrors, FilterOptions, IAssigneeCombined, ITemplate } from '@/types/interfaces'
 import { getAssigneeName } from '@/utils/assignee'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
-import { getSelectedUserIds } from '@/utils/getSelectedUserIds'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
+import { getSelectedUserIds } from '@/utils/selector'
 import { trimAllTags } from '@/utils/trimTags'
 import { Box, Stack, Typography, styled } from '@mui/material'
 import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react'
@@ -150,6 +150,14 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
                 const selectedAssignee = assignee.find((assignee) => assignee.id === inputValue[0].id)
                 setAssigneeValue(selectedAssignee || null)
                 store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: newUserIds }))
+              }}
+              onEmptySelection={() => {
+                store.dispatch(
+                  setCreateTaskFields({
+                    targetField: 'userIds',
+                    value: { internalUserId: null, clientId: null, companyId: null },
+                  }),
+                )
               }}
               buttonContent={
                 <SelectorButton

@@ -21,7 +21,7 @@ import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { IAssigneeCombined, InputValue, IUserIds, Sizes } from '@/types/interfaces'
 import { getAssigneeId, getAssigneeName, getUserIds } from '@/utils/assignee'
 import { createDateFromFormattedDateString, formatDate } from '@/utils/dateHelper'
-import { getSelectedUserIds } from '@/utils/getSelectedUserIds'
+import { getSelectedUserIds } from '@/utils/selector'
 import { NoAssignee } from '@/utils/noAssignee'
 import { ShouldConfirmBeforeReassignment } from '@/utils/shouldConfirmBeforeReassign'
 import { Box, Skeleton, Stack, styled, Typography } from '@mui/material'
@@ -108,22 +108,19 @@ export const Sidebar = ({
 
   const handleAssigneeChange = (inputValue: InputValue[]) => {
     const newUserIds = getSelectedUserIds(inputValue)
-    const areUserIdsEmpty = Object.values(newUserIds).every((value) => value === null) // remove this while adding support for no assignee.
-    if (areUserIdsEmpty) {
-      return // right now we are not supporting no assingee.
+    const previousAssignee = assignee.find((assignee) => assignee.id == getAssigneeId(getUserIds(activeTask)))
+    const nextAssignee = assignee.find((assignee) => assignee.id == getAssigneeId(newUserIds))
+    const shouldShowConfirmModal = ShouldConfirmBeforeReassignment(previousAssignee, nextAssignee)
+    if (shouldShowConfirmModal) {
+      setSelectedAssignee(newUserIds)
+      store.dispatch(toggleShowConfirmAssignModal())
     } else {
-      const previousAssignee = assignee.find((assignee) => assignee.id == getAssigneeId(getUserIds(activeTask)))
-      const nextAssignee = assignee.find((assignee) => assignee.id == getAssigneeId(newUserIds))
-      const shouldShowConfirmModal = ShouldConfirmBeforeReassignment(previousAssignee, nextAssignee)
-      if (shouldShowConfirmModal) {
-        setSelectedAssignee(newUserIds)
-        store.dispatch(toggleShowConfirmAssignModal())
-      } else {
-        setAssigneeValue(getAssigneeValue(newUserIds) as IAssigneeCombined)
-        updateAssignee(newUserIds)
-      }
+      setAssigneeValue(getAssigneeValue(newUserIds) as IAssigneeCombined)
+      updateAssignee(newUserIds)
     }
   }
+
+  const handleUnassignment = () => setAssigneeValue(undefined)
 
   if (!showSidebar) {
     return (
@@ -162,6 +159,7 @@ export const Sidebar = ({
           <CopilotPopSelector
             name="Set assignee"
             onChange={handleAssigneeChange}
+            onEmptySelection={handleUnassignment}
             initialValue={assigneeValue}
             buttonContent={
               <SelectorButton
@@ -305,6 +303,7 @@ export const Sidebar = ({
             <CopilotPopSelector
               name="Set assignee"
               onChange={handleAssigneeChange}
+              onEmptySelection={handleUnassignment}
               initialValue={assigneeValue}
               buttonContent={
                 <SelectorButton

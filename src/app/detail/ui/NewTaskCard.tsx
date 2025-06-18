@@ -22,7 +22,7 @@ import { CreateTaskRequest } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { IAssigneeCombined, ITemplate, IUserIds, UserIds } from '@/types/interfaces'
 import { getAssigneeName } from '@/utils/assignee'
-import { getSelectedUserIds } from '@/utils/getSelectedUserIds'
+import { getSelectedUserIds } from '@/utils/selector'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
 import { trimAllTags } from '@/utils/trimTags'
 import { Box, Stack, Typography } from '@mui/material'
@@ -357,6 +357,8 @@ export const NewTaskCard = ({
               setAssigneeValue(selectedAssignee || null)
               handleFieldChange('userIds', newUserIds)
             }}
+            onEmptySelection={() => setAssigneeValue(null)}
+            initialValue={assigneeValue || undefined}
             buttonContent={
               <SelectorButton
                 padding="0px 4px"
