@@ -1,4 +1,8 @@
-import { InputValue, IUserIds, UserIds } from '@/types/interfaces'
+/**
+ * All utils related to the Copilot selector component
+ */
+
+import { InputValue, ISelectorOption, IUserIds, UserIds } from '@/types/interfaces'
 import { userIdFieldMap } from '@/types/objectMaps'
 
 export const getSelectedUserIds = (inputValue: InputValue[]): IUserIds => {
@@ -25,3 +29,10 @@ export const getSelectedUserIds = (inputValue: InputValue[]): IUserIds => {
 
   return userIds
 }
+
+export const selectorOptionsToInputValue = (options: ISelectorOption[]): InputValue[] =>
+  options.map((option) => ({
+    id: option.value,
+    object: option.type,
+    companyId: option.companyId,
+  }))
