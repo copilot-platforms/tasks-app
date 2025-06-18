@@ -2,7 +2,7 @@ import { selectTaskBoard, setFilteredTasks } from '@/redux/features/taskBoardSli
 import store from '@/redux/store'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { FilterOptions, FilterOptionsKeywords, IAssigneeCombined, IFilterOptions, UserIds } from '@/types/interfaces'
-import { emptyAssignee, getAssigneeName, UserIdsSchema, UserIdsType } from '@/utils/assignee'
+import { checkEmptyAssignee, getAssigneeName, UserIdsSchema, UserIdsType } from '@/utils/assignee'
 import { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 
@@ -24,7 +24,8 @@ const FilterFunctions = {
 
 function filterByAssignee(filteredTasks: TaskResponse[], filterValue: UserIdsType): TaskResponse[] {
   const assigneeUserIds = filterValue
-  if (assigneeUserIds == emptyAssignee) {
+
+  if (checkEmptyAssignee(assigneeUserIds)) {
     return filteredTasks
   }
   const {
