@@ -26,7 +26,7 @@ import { selectCreateTemplate } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { CreateTaskErrors, FilterOptions, IAssigneeCombined, ITemplate, UserIds } from '@/types/interfaces'
-import { getAssigneeName } from '@/utils/assignee'
+import { emptyAssignee, getAssigneeName } from '@/utils/assignee'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
 import { getSelectedUserIds } from '@/utils/selector'
@@ -74,12 +74,18 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
     ) ?? null,
   )
   useEffect(() => {
-    if (!assigneeValue) return
-    const correctedObject = getAssigneeTypeCorrected(assigneeValue)
-    if (!correctedObject) return
-    const newUserIds = getSelectedUserIds([{ ...assigneeValue, object: correctedObject }])
-    store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: newUserIds }))
-  }, [assigneeValue]) //if assigneeValue has an intial value before selection (when my tasks, filter by assignee filter is applied), then update the task creation field for userIds.
+    if (filterOptions[FilterOptions.ASSIGNEE] !== emptyAssignee) {
+      store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: filterOptions[FilterOptions.ASSIGNEE] }))
+    } else if (filterOptions[FilterOptions.TYPE]) {
+      if (!assigneeValue) return
+      const correctedObject = getAssigneeTypeCorrected(assigneeValue)
+      if (!correctedObject) return
+      const newUserIds = getSelectedUserIds([{ ...assigneeValue, object: correctedObject }])
+      store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: newUserIds }))
+    } else {
+      store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: emptyAssignee }))
+    }
+  }, []) //if assigneeValue has an intial value before selection (when my tasks, filter by assignee filter is applied), then update the task creation field for userIds.
 
   const handleCreateWithAssignee = () => {
     handleCreate()

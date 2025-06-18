@@ -35,7 +35,7 @@ function filterByAssignee(filteredTasks: TaskResponse[], filterValue: IUserIds):
     return filteredTasks
   }
   filteredTasks =
-    assigneeUserIds[UserIds.INTERNAL_USER_ID] === 'No assignee'
+    assigneeUserIds[UserIds.INTERNAL_USER_ID] === 'No assignee' //some flag should be introduced here instead of this after the selector component supports no assignee option.
       ? filteredTasks.filter((task) => !task.assigneeId)
       : filteredTasks.filter((task) => {
           if (assigneeUserIds[UserIds.INTERNAL_USER_ID]) {
@@ -106,13 +106,17 @@ export const useFilter = (filterOptions: IFilterOptions) => {
     let filteredTasks = [...tasks]
     for (const [filterType, filterValue] of Object.entries(filterOptions)) {
       if (!filterValue) continue
-      const filterFn = FilterFunctions[filterType as FilterOptions]
       if (filterType === FilterOptions.ASSIGNEE) {
-        filteredTasks = FilterFunctions.assignee(filteredTasks, filterValue as IUserIds)
+        filteredTasks = FilterFunctions[FilterOptions.ASSIGNEE](filteredTasks, filterValue as IUserIds)
       } else if (filterType === FilterOptions.KEYWORD) {
-        filteredTasks = FilterFunctions.keyword(filteredTasks, filterValue as string, accessibleTasks, assignee)
+        filteredTasks = FilterFunctions[FilterOptions.KEYWORD](
+          filteredTasks,
+          filterValue as string,
+          accessibleTasks,
+          assignee,
+        )
       } else if (filterType === FilterOptions.TYPE) {
-        filteredTasks = FilterFunctions.type(filteredTasks, filterValue as string)
+        filteredTasks = FilterFunctions[FilterOptions.TYPE](filteredTasks, filterValue as string)
       }
     }
     store.dispatch(setFilteredTasks(filteredTasks))

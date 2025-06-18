@@ -139,6 +139,7 @@ const taskBoardSlice = createSlice({
     },
     updateFilterOption: (state, action: { payload: { filterOptions: FilterOptionsType } }) => {
       const { filterOptions } = action.payload
+      let updatedFilterOptions = { ...filterOptions }
       if (filterOptions?.assignee) {
         const assigneeCheck = state.assignee.find(
           (assignee) =>
@@ -147,10 +148,13 @@ const taskBoardSlice = createSlice({
             assignee.id === filterOptions.assignee[UserIds.COMPANY_ID],
         )
         if (!assigneeCheck) {
-          filterOptions.assignee = emptyAssignee
+          updatedFilterOptions = {
+            ...updatedFilterOptions,
+            assignee: emptyAssignee,
+          }
         }
       }
-      state.filterOptions = action.payload.filterOptions
+      state.filterOptions = updatedFilterOptions
     }, //updates filters according to viewSettings
 
     setIsTasksLoading: (state, action: { payload: boolean }) => {
