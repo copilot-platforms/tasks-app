@@ -23,7 +23,7 @@ import { getAssigneeId, getAssigneeName, getUserIds } from '@/utils/assignee'
 import { createDateFromFormattedDateString, formatDate } from '@/utils/dateHelper'
 import { getSelectedUserIds } from '@/utils/selector'
 import { NoAssignee } from '@/utils/noAssignee'
-import { ShouldConfirmBeforeReassignment } from '@/utils/shouldConfirmBeforeReassign'
+import { shouldConfirmBeforeReassignment } from '@/utils/shouldConfirmBeforeReassign'
 import { Box, Skeleton, Stack, styled, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
@@ -110,7 +110,7 @@ export const Sidebar = ({
     const newUserIds = getSelectedUserIds(inputValue)
     const previousAssignee = assignee.find((assignee) => assignee.id == getAssigneeId(getUserIds(activeTask)))
     const nextAssignee = assignee.find((assignee) => assignee.id == getAssigneeId(newUserIds))
-    const shouldShowConfirmModal = ShouldConfirmBeforeReassignment(previousAssignee, nextAssignee)
+    const shouldShowConfirmModal = shouldConfirmBeforeReassignment(previousAssignee, nextAssignee)
     if (shouldShowConfirmModal) {
       setSelectedAssignee(newUserIds)
       store.dispatch(toggleShowConfirmAssignModal())
