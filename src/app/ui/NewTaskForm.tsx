@@ -145,6 +145,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
             <CopilotPopSelector
               disabled={!!previewMode}
               name="Set assignee"
+              initialValue={assigneeValue || undefined}
               onChange={(inputValue) => {
                 const newUserIds = getSelectedUserIds(inputValue)
                 const selectedAssignee = assignee.find((assignee) => assignee.id === inputValue[0].id)
@@ -152,6 +153,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
                 store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: newUserIds }))
               }}
               onEmptySelection={() => {
+                setAssigneeValue(null)
                 store.dispatch(
                   setCreateTaskFields({
                     targetField: 'userIds',
