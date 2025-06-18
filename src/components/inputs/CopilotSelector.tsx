@@ -2,12 +2,10 @@ import { StyledUserCompanySelector } from '@/app/detail/ui/styledComponent'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { IAssigneeCombined, InputValue } from '@/types/interfaces'
 import { parseAssigneeToSelectorOptions } from '@/utils/assignee'
+import { selectorOptionsToInputValue } from '@/utils/selector'
 import { Box, ClickAwayListener, Popper, Stack } from '@mui/material'
 import { ReactNode, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
-
-import 'copilot-design-system/dist/styles/main.css'
-import { selectorOptionsToInputValue } from '@/utils/selector'
 
 export const CopilotSelector = ({
   onChange,

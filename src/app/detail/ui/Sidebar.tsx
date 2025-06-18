@@ -85,7 +85,7 @@ export const Sidebar = ({
       //UPDATE THE VALUE OF ASSIGNEE IN COPILOT SELECTOR after it supports value prop. (REALTIME)
       setDueDate(currentTask?.dueDate)
     }
-  }, [activeTask, workflowStates, assignee, updateStatusValue])
+  }, [activeTask, workflowStates, updateStatusValue])
 
   const windowWidth = useWindowWidth()
   const isMobile = windowWidth < 600 && windowWidth !== 0
