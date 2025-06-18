@@ -4,7 +4,7 @@ import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { AssigneeType } from '@prisma/client'
 import { z } from 'zod'
 
-export const ShouldConfirmBeforeReassignment = (
+export const shouldConfirmBeforeReassignment = (
   previousAssignee?: IAssigneeCombined,
   currentAssignee?: IAssigneeCombined,
 ) => {

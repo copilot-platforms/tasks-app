@@ -19,7 +19,6 @@ import {
   setConfirmAssigneeModalId,
   updateWorkflowStateIdByTaskId,
 } from '@/redux/features/taskBoardSlice'
-import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 import store from '@/redux/store'
 import { DateStringSchema } from '@/types/date'
 import { TaskResponse } from '@/types/dto/tasks.dto'
@@ -31,7 +30,7 @@ import { getCardHref } from '@/utils/getCardHref'
 import { isTaskCompleted } from '@/utils/isTaskCompleted'
 import { NoAssignee } from '@/utils/noAssignee'
 import { getSelectedUserIds } from '@/utils/selector'
-import { ShouldConfirmBeforeReassignment } from '@/utils/shouldConfirmBeforeReassign'
+import { shouldConfirmBeforeReassignment } from '@/utils/shouldConfirmBeforeReassign'
 import { Box, Skeleton, Stack, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
@@ -49,7 +48,6 @@ interface TaskCardListProps {
 export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate }: TaskCardListProps) => {
   const { assignee, workflowStates, previewMode, token, confirmAssignModalId, assigneeCache, activeTask } =
     useSelector(selectTaskBoard)
-  const { activeTaskAssignees } = useSelector(selectTaskDetails)
 
   const [currentAssignee, setCurrentAssignee] = useState<IAssigneeCombined | undefined>(() => {
     return assigneeCache[task.id]
@@ -97,7 +95,7 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate 
     const newUserIds = getSelectedUserIds(inputValue)
     const previousAssignee = assignee.find((assignee) => assignee.id == getAssigneeId(getUserIds(task)))
     const nextAssignee = assignee.find((assignee) => assignee.id == getAssigneeId(newUserIds))
-    const shouldShowConfirmModal = ShouldConfirmBeforeReassignment(previousAssignee, nextAssignee)
+    const shouldShowConfirmModal = shouldConfirmBeforeReassignment(previousAssignee, nextAssignee)
     if (shouldShowConfirmModal) {
       setSelectedAssignee(newUserIds)
       store.dispatch(setConfirmAssigneeModalId(task.id))
