@@ -3,19 +3,23 @@ import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { IAssigneeCombined, InputValue } from '@/types/interfaces'
 import { parseAssigneeToSelectorOptions } from '@/utils/assignee'
 import { Box, ClickAwayListener, Popper, Stack } from '@mui/material'
-
-import 'copilot-design-system/dist/styles/main.css'
 import { ReactNode, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 
+import 'copilot-design-system/dist/styles/main.css'
+import { selectorOptionsToInputValue } from '@/utils/selector'
+
 export const CopilotSelector = ({
   onChange,
+  onEmptySelection,
   name,
   initialValue,
   hideClientsList,
   hideIusList,
 }: {
   onChange: (inputValue: InputValue[]) => void
+  // Triggered when the user clicks away from the selector without selecting an option / by removing existing options
+  onEmptySelection?: () => unknown
   name: string
   initialValue?: IAssigneeCombined
   hideClientsList?: boolean
@@ -23,6 +27,14 @@ export const CopilotSelector = ({
 }) => {
   const { selectorAssignee } = useSelector(selectTaskBoard)
   const initialAssignee = initialValue && parseAssigneeToSelectorOptions(initialValue)
+  // Currently selected assignee. This is not guarenteed to be the same as the final assignee
+  // and is just the temporary state while the selector is still open
+  const [currentlySelected, setCurrentlySelected] = useState<InputValue[]>(
+    initialAssignee ? selectorOptionsToInputValue(initialAssignee) : [],
+  )
+
+  const handleBlur = () => !currentlySelected.length && onEmptySelection?.()
+
   return (
     <>
       <StyledUserCompanySelector
@@ -34,7 +46,11 @@ export const CopilotSelector = ({
         name={name}
         internalUsers={hideIusList ? [] : selectorAssignee.internalUsers}
         companies={hideClientsList ? [] : selectorAssignee.companies}
-        onChange={onChange}
+        onChange={(inputValue: InputValue[]) => {
+          setCurrentlySelected(inputValue)
+          onChange(inputValue)
+        }}
+        onBlur={handleBlur}
         grouped={true}
         limitSelectedOptions={1}
       />
@@ -46,17 +62,20 @@ interface CopilotPopSelectorProps {
   buttonContent: ReactNode
   disabled?: boolean
   onClick?: () => void
+  onEmptySelection?: () => unknown
   name: string
   onChange: (inputValue: InputValue[]) => void
   initialValue?: IAssigneeCombined
   hideClientsList?: boolean
   hideIusList?: boolean
 }
+
 export const CopilotPopSelector = ({
   buttonContent,
   disabled = false,
   name,
   onChange,
+  onEmptySelection,
   initialValue,
   hideClientsList,
   hideIusList,
@@ -109,6 +128,7 @@ export const CopilotPopSelector = ({
             hideIusList={hideIusList}
             initialValue={initialValue}
             name={name}
+            onEmptySelection={onEmptySelection}
             onChange={(inputValue) => {
               if (inputValue.length) {
                 onChange(inputValue)

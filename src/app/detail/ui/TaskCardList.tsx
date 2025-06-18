@@ -28,9 +28,9 @@ import { IAssigneeCombined, InputValue, IUserIds, Sizes } from '@/types/interfac
 import { getAssigneeId, getAssigneeName, getUserIds } from '@/utils/assignee'
 import { createDateFromFormattedDateString, formatDate } from '@/utils/dateHelper'
 import { getCardHref } from '@/utils/getCardHref'
-import { getSelectedUserIds } from '@/utils/getSelectedUserIds'
 import { isTaskCompleted } from '@/utils/isTaskCompleted'
 import { NoAssignee } from '@/utils/noAssignee'
+import { getSelectedUserIds } from '@/utils/selector'
 import { ShouldConfirmBeforeReassignment } from '@/utils/shouldConfirmBeforeReassign'
 import { Box, Skeleton, Stack, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
@@ -95,30 +95,27 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate 
 
   const handleAssigneeChange = (inputValue: InputValue[]) => {
     const newUserIds = getSelectedUserIds(inputValue)
-    const areUserIdsEmpty = Object.values(newUserIds).every((value) => value === null) // remove this while adding support for no assignee.
-    if (areUserIdsEmpty) {
-      return // right now we are not supporting no assingee.
+    const previousAssignee = assignee.find((assignee) => assignee.id == getAssigneeId(getUserIds(task)))
+    const nextAssignee = assignee.find((assignee) => assignee.id == getAssigneeId(newUserIds))
+    const shouldShowConfirmModal = ShouldConfirmBeforeReassignment(previousAssignee, nextAssignee)
+    if (shouldShowConfirmModal) {
+      setSelectedAssignee(newUserIds)
+      store.dispatch(setConfirmAssigneeModalId(task.id))
     } else {
-      const previousAssignee = assignee.find((assignee) => assignee.id == getAssigneeId(getUserIds(task)))
-      const nextAssignee = assignee.find((assignee) => assignee.id == getAssigneeId(newUserIds))
-      const shouldShowConfirmModal = ShouldConfirmBeforeReassignment(previousAssignee, nextAssignee)
-      if (shouldShowConfirmModal) {
-        setSelectedAssignee(newUserIds)
-        store.dispatch(setConfirmAssigneeModalId(task.id))
+      const { internalUserId, clientId, companyId } = newUserIds
+      if (handleUpdate) {
+        token &&
+          handleUpdate(task.id, { assigneeId: nextAssignee?.id }, () =>
+            updateAssignee(token, task.id, internalUserId, clientId, companyId),
+          )
       } else {
-        const { internalUserId, clientId, companyId } = newUserIds
-        if (handleUpdate) {
-          token &&
-            handleUpdate(task.id, { assigneeId: nextAssignee?.id }, () =>
-              updateAssignee(token, task.id, internalUserId, clientId, companyId),
-            )
-        } else {
-          token && updateAssignee(token, task.id, internalUserId, clientId, companyId)
-        }
-        setAssigneeValue(assignee.find((assignee) => assignee.id === nextAssignee?.id) ?? NoAssignee)
+        token && updateAssignee(token, task.id, internalUserId, clientId, companyId)
       }
+      setAssigneeValue(assignee.find((assignee) => assignee.id === nextAssignee?.id) ?? NoAssignee)
     }
   }
+
+  const handleUnassignment = () => setAssigneeValue(NoAssignee)
 
   const getAssigneeValue = (userIds?: IUserIds) => {
     if (!userIds) {
@@ -268,7 +265,13 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate 
           <CopilotPopSelector
             name="Set assignee"
             disabled={mode === UserRole.Client && !previewMode}
+            initialValue={(() => {
+              const value = assigneeValue as IAssigneeCombined
+              if (!value || value === NoAssignee) return undefined
+              return value
+            })()}
             onChange={handleAssigneeChange}
+            onEmptySelection={handleUnassignment}
             buttonContent={
               <Box
                 sx={{
