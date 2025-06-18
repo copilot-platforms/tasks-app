@@ -29,15 +29,16 @@ function filterByAssignee(filteredTasks: TaskResponse[], filterValue: UserIdsTyp
     return filteredTasks
   }
   const {
-    [UserIds.INTERNAL_USER_ID]: internalId,
+    [UserIds.INTERNAL_USER_ID]: internalUserId,
     [UserIds.CLIENT_ID]: clientId,
     [UserIds.COMPANY_ID]: companyId,
   } = assigneeUserIds
 
-  if (internalId === 'No assignee') {
+  if (internalUserId === 'No assignee') {
+    //Change this when UserCompanySelector supports extra options for 'No assignee'
     filteredTasks = filteredTasks.filter((task) => !task.assigneeId)
-  } else if (internalId) {
-    filteredTasks = filteredTasks.filter((task) => task.internalUserId === internalId)
+  } else if (internalUserId) {
+    filteredTasks = filteredTasks.filter((task) => task.internalUserId === internalUserId)
   } else if (clientId) {
     filteredTasks = filteredTasks.filter((task) => task.clientId === clientId && task.companyId === companyId)
   } else {
