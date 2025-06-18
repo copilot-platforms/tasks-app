@@ -53,7 +53,7 @@ export const ActivityLog = ({ log }: Prop) => {
 
         case ActivityType.TASK_UNASSIGNED:
           const { oldValue: oldId } = TaskUnassignedSchema.parse(log.details)
-          const oldAssignee = assignee.find((el) => el.id !== oldId)
+          const oldAssignee = assignee.find((el) => el.id === oldId)
           return [oldAssignee ? `${oldAssignee.givenName} ${oldAssignee.familyName}` : 'Deleted User']
 
         case ActivityType.TITLE_UPDATED:
