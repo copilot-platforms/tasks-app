@@ -32,7 +32,7 @@ import { NoAssignee } from '@/utils/noAssignee'
 import { getSelectedUserIds } from '@/utils/selector'
 import { shouldConfirmBeforeReassignment } from '@/utils/shouldConfirmBeforeReassign'
 import { Box, Skeleton, Stack, Typography } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { z } from 'zod'
 
@@ -113,7 +113,10 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate 
     }
   }
 
-  const handleUnassignment = () => setAssigneeValue(NoAssignee)
+  const handleUnassignment = useCallback(() => {
+    setAssigneeValue(NoAssignee)
+    updateAssignee(token!, task.id, null, null, null) // This is a safe non-null asssertion since callback is recomputed as token is loaded
+  }, [token, task.id])
 
   const getAssigneeValue = (userIds?: IUserIds) => {
     if (!userIds) {
