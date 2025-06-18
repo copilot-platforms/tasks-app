@@ -18,8 +18,8 @@ import store from '@/redux/store'
 import { DateStringSchema } from '@/types/date'
 import { UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { IAssigneeCombined, InputValue, IUserIds, Sizes } from '@/types/interfaces'
-import { getAssigneeId, getAssigneeName, getUserIds } from '@/utils/assignee'
+import { IAssigneeCombined, InputValue, Sizes } from '@/types/interfaces'
+import { getAssigneeId, getAssigneeName, getUserIds, UserIdsType } from '@/utils/assignee'
 import { createDateFromFormattedDateString, formatDate } from '@/utils/dateHelper'
 import { getSelectedUserIds } from '@/utils/selector'
 import { NoAssignee } from '@/utils/noAssignee'
@@ -46,7 +46,7 @@ export const Sidebar = ({
   selectedWorkflowState: WorkflowStateResponse
   selectedAssigneeId: string | undefined
   updateWorkflowState: (workflowState: WorkflowStateResponse) => void
-  updateAssignee: (userIds: IUserIds) => void
+  updateAssignee: (userIds: UserIdsType) => void
   updateTask: (payload: UpdateTaskRequest) => void
   disabled: boolean
   workflowDisabled?: false
@@ -58,7 +58,7 @@ export const Sidebar = ({
 
   const [assigneeValue, setAssigneeValue] = useState<IAssigneeCombined | undefined>()
 
-  const [selectedAssignee, setSelectedAssignee] = useState<IUserIds | undefined>(undefined)
+  const [selectedAssignee, setSelectedAssignee] = useState<UserIdsType | undefined>(undefined)
   const [isIntialTaskLoaded, setIsIntialTaskLoaded] = useState(false)
 
   const { renderingItem: _statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
@@ -90,7 +90,7 @@ export const Sidebar = ({
   const windowWidth = useWindowWidth()
   const isMobile = windowWidth < 600 && windowWidth !== 0
 
-  const handleConfirmAssigneeChange = (userIds: IUserIds) => {
+  const handleConfirmAssigneeChange = (userIds: UserIdsType) => {
     updateAssignee(userIds)
     setAssigneeValue(getAssigneeValue(userIds) as IAssigneeCombined)
     store.dispatch(toggleShowConfirmAssignModal())
@@ -102,7 +102,7 @@ export const Sidebar = ({
     }
   }, [isMobile])
 
-  const getAssigneeValue = (userIds?: IUserIds) => {
+  const getAssigneeValue = (userIds?: UserIdsType) => {
     if (!userIds) {
       return NoAssignee
     }

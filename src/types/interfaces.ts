@@ -1,6 +1,7 @@
 import { UserSchema } from '@/types/common'
 import { UpdateTaskRequestSchema } from '@/types/dto/tasks.dto'
 import { ObjectType } from '@/utils/addTypeToAssignee'
+import { UserIdsType } from '@/utils/assignee'
 import { z } from 'zod'
 
 export enum TargetMethod {
@@ -80,7 +81,7 @@ export enum UserIds {
 }
 
 export type IFilterOptions = {
-  [key in FilterOptions]: key extends FilterOptions.ASSIGNEE ? IUserIds : string
+  [key in FilterOptions]: key extends FilterOptions.ASSIGNEE ? UserIdsType : string
 }
 
 export interface IAssignee {
@@ -203,10 +204,4 @@ export const UserTypesName = {
 
 export interface PropsWithToken {
   token: string
-}
-
-export interface IUserIds {
-  [UserIds.INTERNAL_USER_ID]: string | null
-  [UserIds.CLIENT_ID]: string | null
-  [UserIds.COMPANY_ID]: string | null
 }

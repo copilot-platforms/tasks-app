@@ -21,16 +21,9 @@ import {
 import store from '@/redux/store'
 import { IUTokenSchema } from '@/types/common'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
-import {
-  FilterOptions,
-  FilterOptionsKeywords,
-  IAssigneeCombined,
-  IFilterOptions,
-  IUserIds,
-  UserIds,
-} from '@/types/interfaces'
-import { filterOptionsToAssigneeMap, filterTypeToButtonIndexMap } from '@/types/objectMaps'
-import { checkAssignee, emptyAssignee, getAssigneeId } from '@/utils/assignee'
+import { FilterOptions, FilterOptionsKeywords, IAssigneeCombined, IFilterOptions, UserIds } from '@/types/interfaces'
+import { filterTypeToButtonIndexMap } from '@/types/objectMaps'
+import { checkAssignee, emptyAssignee, getAssigneeId, UserIdsType } from '@/utils/assignee'
 import { NoAssigneeExtraOptions } from '@/utils/noAssignee'
 import { getSelectedUserIds } from '@/utils/selector'
 import { Box, IconButton, Stack } from '@mui/material'
@@ -53,12 +46,8 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
 
   const viewModeFilterOptions = viewSettingsTemp ? (viewSettingsTemp.filterOptions as IFilterOptions) : filterOptions //ViewSettingsTemp used to apply temp values of viewSettings in filterOptions and viewMode because clientSideUpdate applies outdated cached values to original view and filterOptions if navigated
 
-  const handleFilterOptionsChange = async (optionType: FilterOptions, newValue: string | null | IUserIds) => {
+  const handleFilterOptionsChange = async (optionType: FilterOptions, newValue: string | null | UserIdsType) => {
     store.dispatch(setFilterOptions({ optionType, newValue }))
-    if (optionType === FilterOptions.TYPE) {
-      const filterFunction = filterOptionsToAssigneeMap[newValue as string] || filterOptionsToAssigneeMap.default
-    }
-
     //FilteredAssignee is also updated in the component's state and used in Selector's autocomplete to mitigate the time taken to update the store and fetch values to the Selector's autocomplete.
     const updatedFilterOptions = viewSettingsTemp
       ? (store.getState().taskBoard.viewSettingsTemp?.filterOptions as IFilterOptions)

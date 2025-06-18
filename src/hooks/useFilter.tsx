@@ -1,15 +1,8 @@
 import { selectTaskBoard, setFilteredTasks } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
 import { TaskResponse } from '@/types/dto/tasks.dto'
-import {
-  FilterOptions,
-  FilterOptionsKeywords,
-  IAssigneeCombined,
-  IFilterOptions,
-  IUserIds,
-  UserIds,
-} from '@/types/interfaces'
-import { emptyAssignee, getAssigneeName } from '@/utils/assignee'
+import { FilterOptions, FilterOptionsKeywords, IAssigneeCombined, IFilterOptions, UserIds } from '@/types/interfaces'
+import { emptyAssignee, getAssigneeName, UserIdsSchema, UserIdsType } from '@/utils/assignee'
 import { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 
@@ -29,25 +22,26 @@ const FilterFunctions = {
   [FilterOptions.TYPE]: filterByType,
 }
 
-function filterByAssignee(filteredTasks: TaskResponse[], filterValue: IUserIds): TaskResponse[] {
+function filterByAssignee(filteredTasks: TaskResponse[], filterValue: UserIdsType): TaskResponse[] {
   const assigneeUserIds = filterValue
   if (assigneeUserIds == emptyAssignee) {
     return filteredTasks
   }
-  filteredTasks =
-    assigneeUserIds[UserIds.INTERNAL_USER_ID] === 'No assignee' //some flag should be introduced here instead of this after the selector component supports no assignee option.
-      ? filteredTasks.filter((task) => !task.assigneeId)
-      : filteredTasks.filter((task) => {
-          if (assigneeUserIds[UserIds.INTERNAL_USER_ID]) {
-            return task.internalUserId == assigneeUserIds[UserIds.INTERNAL_USER_ID]
-          } else if (assigneeUserIds[UserIds.CLIENT_ID]) {
-            return (
-              task.clientId == assigneeUserIds[UserIds.CLIENT_ID] && task.companyId == assigneeUserIds[UserIds.COMPANY_ID]
-            )
-          } else {
-            return task.companyId == assigneeUserIds[UserIds.COMPANY_ID]
-          }
-        })
+  const {
+    [UserIds.INTERNAL_USER_ID]: internalId,
+    [UserIds.CLIENT_ID]: clientId,
+    [UserIds.COMPANY_ID]: companyId,
+  } = assigneeUserIds
+
+  if (internalId === 'No assignee') {
+    filteredTasks = filteredTasks.filter((task) => !task.assigneeId)
+  } else if (internalId) {
+    filteredTasks = filteredTasks.filter((task) => task.internalUserId === internalId)
+  } else if (clientId) {
+    filteredTasks = filteredTasks.filter((task) => task.clientId === clientId && task.companyId === companyId)
+  } else {
+    filteredTasks = filteredTasks.filter((task) => task.companyId === companyId)
+  }
 
   return filteredTasks
 }
@@ -107,7 +101,8 @@ export const useFilter = (filterOptions: IFilterOptions) => {
     for (const [filterType, filterValue] of Object.entries(filterOptions)) {
       if (!filterValue) continue
       if (filterType === FilterOptions.ASSIGNEE) {
-        filteredTasks = FilterFunctions[FilterOptions.ASSIGNEE](filteredTasks, filterValue as IUserIds)
+        const assigneeFilterValue = UserIdsSchema.parse(filterValue)
+        filteredTasks = FilterFunctions[FilterOptions.ASSIGNEE](filteredTasks, assigneeFilterValue)
       } else if (filterType === FilterOptions.KEYWORD) {
         filteredTasks = FilterFunctions[FilterOptions.KEYWORD](
           filteredTasks,
