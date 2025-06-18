@@ -357,7 +357,14 @@ export const NewTaskCard = ({
               setAssigneeValue(selectedAssignee || null)
               handleFieldChange('userIds', newUserIds)
             }}
-            onEmptySelection={() => setAssigneeValue(null)}
+            onEmptySelection={() => {
+              setAssigneeValue(null)
+              handleFieldChange('userIds', {
+                [UserIds.INTERNAL_USER_ID]: null,
+                [UserIds.CLIENT_ID]: null,
+                [UserIds.COMPANY_ID]: null,
+              })
+            }}
             initialValue={assigneeValue || undefined}
             buttonContent={
               <SelectorButton
