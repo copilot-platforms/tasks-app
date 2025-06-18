@@ -52,13 +52,14 @@ export const Sidebar = ({
   workflowDisabled?: false
 }) => {
   const { activeTask, workflowStates, assignee, previewMode } = useSelector(selectTaskBoard)
-  const { showSidebar, showConfirmAssignModal, activeTaskAssignees } = useSelector(selectTaskDetails)
+  const { showSidebar, showConfirmAssignModal } = useSelector(selectTaskDetails)
 
   const [dueDate, setDueDate] = useState<Date | string | undefined>()
 
   const [assigneeValue, setAssigneeValue] = useState<IAssigneeCombined | undefined>()
 
   const [selectedAssignee, setSelectedAssignee] = useState<IUserIds | undefined>(undefined)
+  const [isIntialTaskLoaded, setIsIntialTaskLoaded] = useState(false)
 
   const { renderingItem: _statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
     // item: selectedWorkflowState,
@@ -69,16 +70,22 @@ export const Sidebar = ({
   const statusValue = _statusValue as WorkflowStateResponse //typecasting
 
   useEffect(() => {
+    if (activeTask?.assigneeId && !isIntialTaskLoaded) {
+      setIsIntialTaskLoaded(true)
+      const currentAssignee = assignee.find((assignee) => assignee.id == activeTask?.assigneeId)
+      setAssigneeValue(currentAssignee)
+    }
+  }, [assignee, activeTask, isIntialTaskLoaded])
+
+  useEffect(() => {
     if (activeTask && workflowStates) {
       const currentTask = activeTask
       const currentWorkflowState = workflowStates.find((el) => el?.id === currentTask?.workflowStateId)
       updateStatusValue(currentWorkflowState)
       //UPDATE THE VALUE OF ASSIGNEE IN COPILOT SELECTOR after it supports value prop. (REALTIME)
       setDueDate(currentTask?.dueDate)
-      const currentAssignee = assignee.find((assignee) => assignee.id == currentTask.assigneeId)
-      setAssigneeValue(currentAssignee)
     }
-  }, [activeTask, workflowStates, assignee])
+  }, [activeTask, workflowStates, assignee, updateStatusValue])
 
   const windowWidth = useWindowWidth()
   const isMobile = windowWidth < 600 && windowWidth !== 0
@@ -120,7 +127,10 @@ export const Sidebar = ({
     }
   }
 
-  const handleUnassignment = () => setAssigneeValue(undefined)
+  const handleUnassignment = () => {
+    setAssigneeValue(undefined)
+    updateAssignee({ internalUserId: null, clientId: null, companyId: null })
+  }
 
   if (!showSidebar) {
     return (
