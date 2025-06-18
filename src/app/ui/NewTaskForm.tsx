@@ -26,7 +26,7 @@ import { selectCreateTemplate } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { CreateTaskErrors, FilterOptions, IAssigneeCombined, ITemplate, UserIds } from '@/types/interfaces'
-import { emptyAssignee, getAssigneeName } from '@/utils/assignee'
+import { checkEmptyAssignee, emptyAssignee, getAssigneeName } from '@/utils/assignee'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
 import { getSelectedUserIds } from '@/utils/selector'
@@ -74,7 +74,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
     ) ?? null,
   )
   useEffect(() => {
-    if (filterOptions[FilterOptions.ASSIGNEE] !== emptyAssignee) {
+    if (!checkEmptyAssignee(filterOptions[FilterOptions.ASSIGNEE])) {
       store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: filterOptions[FilterOptions.ASSIGNEE] }))
     } else if (filterOptions[FilterOptions.TYPE]) {
       if (!assigneeValue) return

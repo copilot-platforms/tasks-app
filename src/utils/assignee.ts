@@ -4,6 +4,7 @@ import { IAssigneeCombined, ISelectorOption } from '@/types/interfaces'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { truncateText } from '@/utils/truncateText'
 import { AssigneeType } from '@prisma/client'
+import deepEqual from 'deep-equal'
 import { z } from 'zod'
 
 export const UserIdsSchema = z.object({
@@ -67,4 +68,8 @@ export const emptyAssignee: UserIdsType = {
   internalUserId: null,
   clientId: null,
   companyId: null,
+}
+
+export const checkEmptyAssignee = (userIds: UserIdsType) => {
+  return deepEqual(emptyAssignee, userIds)
 }

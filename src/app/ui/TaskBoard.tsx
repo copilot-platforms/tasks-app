@@ -24,6 +24,7 @@ import { WorkspaceResponse } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { View } from '@/types/interfaces'
+import { checkEmptyAssignee } from '@/utils/assignee'
 import { getCardHref } from '@/utils/getCardHref'
 import { sortTaskByDescendingOrder } from '@/utils/sortTask'
 import { prioritizeStartedStates } from '@/utils/workflowStates'
@@ -32,7 +33,6 @@ import { Box, Stack } from '@mui/material'
 import { useCallback, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { z } from 'zod'
-import { emptyAssignee } from '@/utils/assignee'
 
 interface TaskBoardProps {
   mode: UserRole
@@ -94,7 +94,7 @@ export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
     filterOptions &&
     !filterOptions.type &&
     !filterOptions.keyword &&
-    (filterOptions.assignee == emptyAssignee || previewMode) &&
+    (checkEmptyAssignee(filterOptions.assignee) || previewMode) &&
     archivedOptions.showUnarchived &&
     !archivedOptions.showArchived
 
