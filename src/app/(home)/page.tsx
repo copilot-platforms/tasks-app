@@ -64,10 +64,13 @@ export async function getWorkspace(token: string): Promise<WorkspaceResponse> {
 }
 
 export async function getViewSettings(token: string): Promise<CreateViewSettingsDTO> {
+  console.time('getViewSettings')
   const res = await fetch(`${apiUrl}/api/view-settings?token=${token}`, {
     next: { tags: ['getViewSettings'] },
   })
-  return await res.json()
+  const resp = await res.json()
+  console.timeEnd('getViewSettings')
+  return resp
 }
 
 async function getAccessibleTasks(token: string) {
