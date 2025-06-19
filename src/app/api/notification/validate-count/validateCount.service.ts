@@ -3,7 +3,6 @@ import { getArrayDifference } from '@/utils/array'
 import { bottleneck } from '@/utils/bottleneck'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import User from '@api/core/models/User.model'
-import { UserRole } from '@api/core/types/user'
 import { NotificationService } from '@api/notification/notification.service'
 import { TasksService } from '@api/tasks/tasks.service'
 import { ClientNotification, Task } from '@prisma/client'
@@ -21,7 +20,7 @@ export class ValidateCountService extends NotificationService {
    * @param {string} clientId - Copilot client id for which notification fix has to be done
    */
   async fixClientNotificationCount(clientId: string): Promise<void> {
-    const notifications = await this.copilot.getNotifications(clientId, { limit: 1_000_000 })
+    const notifications = await this.copilot.getNotifications(clientId, this.user.workspaceId, { limit: 1_000_000 })
     console.info('ValidateCount :: Total Copilot Notifications:', notifications.length)
     await this.validateWithTasks(
       clientId,
