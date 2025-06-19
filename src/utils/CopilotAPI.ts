@@ -2,8 +2,6 @@ import { withRetry } from '@/app/api/core/utils/withRetry'
 import { copilotAPIKey as apiKey, APP_ID } from '@/config'
 import { API_DOMAIN } from '@/constants/domains'
 import {
-  ApiKeyOwnerResponse,
-  ApiKeyOwnerResponseSchema,
   ClientRequest,
   ClientResponse,
   ClientResponseSchema,
@@ -50,16 +48,16 @@ export class CopilotAPI {
     this.copilot = copilotApi({ apiKey: customApiKey ?? apiKey, token })
   }
 
-  private async manualFetch(route: string, query?: Record<string, string>) {
+  private async manualFetch(route: string, workspaceId: string, query?: Record<string, string>) {
     const url = new URL(`${API_DOMAIN}/v1/${route}`)
     if (query) {
       for (const key of Object.keys(query)) {
         url.searchParams.set(key, query[key])
       }
     }
-    const resp = await fetch(url, {
-      headers: { 'X-API-KEY': apiKey, accept: 'application/json' },
-    })
+    const headers = { 'X-API-KEY': `${workspaceId}/${apiKey}`, accept: 'application/json' }
+    console.info('CopilotAPI#manualFetch |', url, headers)
+    const resp = await fetch(url, { headers })
     return await resp.json()
   }
 
@@ -226,13 +224,8 @@ export class CopilotAPI {
     await Promise.all(deletePromises)
   }
 
-  async _getApiKeyOwner(): Promise<ApiKeyOwnerResponse> {
-    const data = await this.manualFetch('me')
-    return ApiKeyOwnerResponseSchema.parse(data)
-  }
-
-  async getNotifications(recipientId: string, opts: { limit?: number } = { limit: 100 }) {
-    const data = await this.manualFetch('notifications', {
+  async getNotifications(recipientId: string, workspaceId: string, opts: { limit?: number } = { limit: 100 }) {
+    const data = await this.manualFetch('notifications', workspaceId, {
       recipientId,
       limit: `${opts.limit}`,
     })
@@ -283,7 +276,6 @@ export class CopilotAPI {
   getCustomFields = this.wrapWithRetry(this._getCustomFields)
   getInternalUsers = this.wrapWithRetry(this._getInternalUsers)
   getInternalUser = this.wrapWithRetry(this._getInternalUser)
-  getApiKeyOwner = this.wrapWithRetry(this._getApiKeyOwner)
   createNotification = this.wrapWithRetry(this._createNotification)
   markNotificationAsRead = this.wrapWithRetry(this._markNotificationAsRead)
   bulkMarkNotificationsAsRead = this.wrapWithRetry(this._bulkMarkNotificationsAsRead)
