@@ -101,4 +101,7 @@ export type SubTaskStatusResponse = z.infer<typeof SubTaskStatusSchema>
 export type AncestorTaskResponse = Pick<Task, 'id' | 'title' | 'label'> & {
   assigneeId: string
   assigneeType: NonNullable<AssigneeType>
+  internalUserId: string | null
+  clientId: string | null
+  companyId: string | null
 }
