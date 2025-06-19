@@ -766,7 +766,16 @@ export class TasksService extends BaseService {
       parents.map((id) =>
         this.db.task.findFirstOrThrow({
           where: { id, workspaceId: this.user.workspaceId },
-          select: { id: true, title: true, label: true, assigneeId: true, assigneeType: true },
+          select: {
+            id: true,
+            title: true,
+            label: true,
+            assigneeId: true,
+            assigneeType: true,
+            clientId: true,
+            companyId: true,
+            internalUserId: true,
+          },
         }),
       ) as Promise<AncestorTaskResponse>[],
     )
