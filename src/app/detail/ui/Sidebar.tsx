@@ -162,17 +162,24 @@ export const Sidebar = ({
         </Box>
         <Box
           sx={{
+            border: (theme) => `1px solid ${theme.color.borders.border}`,
             borderRadius: '4px',
             width: 'fit-content',
+            height: '30px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
           <CopilotPopSelector
             name="Set assignee"
             onChange={handleAssigneeChange}
+            disabled={disabled}
             onEmptySelection={handleUnassignment}
             initialValue={assigneeValue}
             buttonContent={
               <SelectorButton
+                disabled={disabled}
                 padding="4px 8px"
                 startIcon={
                   (assigneeValue as IAssigneeCombined)?.name == 'No assignee' ? (
@@ -203,6 +210,7 @@ export const Sidebar = ({
         </Box>
         <Box sx={{}}>
           <DatePickerComponent
+            height={'30px'}
             getDate={(date) => {
               const isoDate = DateStringSchema.parse(formatDate(date))
               updateTask({
@@ -303,7 +311,7 @@ export const Sidebar = ({
           <Box
             sx={{
               ':hover': {
-                bgcolor: (theme) => theme.color.background.bgCallout,
+                bgcolor: (theme) => (disabled ? 'none' : theme.color.background.bgCallout),
               },
               padding: '4px',
               borderRadius: '4px',
@@ -313,10 +321,12 @@ export const Sidebar = ({
             <CopilotPopSelector
               name="Set assignee"
               onChange={handleAssigneeChange}
+              disabled={disabled}
               onEmptySelection={handleUnassignment}
               initialValue={assigneeValue}
               buttonContent={
                 <SelectorButton
+                  disabled={disabled}
                   padding="4px 8px"
                   startIcon={
                     (assigneeValue as IAssigneeCombined)?.name == 'No assignee' ? (
