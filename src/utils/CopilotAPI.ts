@@ -238,7 +238,7 @@ export class CopilotAPI {
 
   async dispatchWebhook(eventName: DISPATCHABLE_EVENT, { workspaceId, payload }: { workspaceId: string; payload?: object }) {
     const url = `${API_DOMAIN}/v1/webhooks/${eventName}`
-    console.info('CopilotAPI#dispatchWebhook | Dispatching webhook to ', url)
+    console.info('CopilotAPI#dispatchWebhook | Dispatching webhook to ', url, 'with payload', payload ?? null)
 
     try {
       await fetch(url, {
