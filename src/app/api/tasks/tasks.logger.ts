@@ -1,7 +1,8 @@
 import { TasksService } from '@/app/api/tasks/tasks.service'
+import { TaskWithWorkflowState } from '@/types/db'
 import { ArchivedStateUpdatedSchema } from '@api/activity-logs/schemas/ArchiveStateUpdatedSchema'
 import { DueDateChangedSchema } from '@api/activity-logs/schemas/DueDateChangedSchema'
-import { TaskAssignedSchema } from '@api/activity-logs/schemas/TaskAssignedSchema'
+import { TaskAssignedSchema, TaskUnassignedSchema } from '@api/activity-logs/schemas/TaskAssignedSchema'
 import { TaskCreatedSchema } from '@api/activity-logs/schemas/TaskCreatedSchema'
 import { TitleUpdatedSchema } from '@api/activity-logs/schemas/TitleUpdatedSchema'
 import { WorkflowStateUpdatedSchema } from '@api/activity-logs/schemas/WorkflowStateUpdatedSchema'
@@ -35,7 +36,11 @@ export class TasksActivityLogger extends BaseService {
   async logTaskUpdated(prevTask: Task & { workflowState: WorkflowState }) {
     const tasksService = new TasksService(this.user)
     if (this.task.assigneeId !== prevTask.assigneeId) {
-      await this.logTaskAssigneeUpdated(prevTask)
+      if (this.task.assigneeId) {
+        await this.logTaskAssigneeUpdated(prevTask)
+      } else {
+        await this.logTaskAssigneeUnassigned(prevTask)
+      }
     }
     if (this.task.workflowStateId !== prevTask?.workflowStateId) {
       await this.logWorkflowStateUpdated(prevTask)
@@ -98,6 +103,16 @@ export class TasksActivityLogger extends BaseService {
       TaskAssignedSchema.parse({
         oldValue: prevTask?.assigneeId ?? null,
         newValue: this.task.assigneeId,
+      }),
+    )
+  }
+
+  private async logTaskAssigneeUnassigned(prevTask?: TaskWithWorkflowState) {
+    await this.activityLogger.log(
+      ActivityType.TASK_UNASSIGNED,
+      TaskUnassignedSchema.parse({
+        oldValue: prevTask?.assigneeId!,
+        newValue: null,
       }),
     )
   }
