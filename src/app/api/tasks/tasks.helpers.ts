@@ -19,6 +19,21 @@ export const getArchivedStatus = (showArchived: boolean, showUnarchived: boolean
   return undefined
 }
 
+const isTaskAssigned = (task: { internalUserId?: string | null; clientId?: string | null; companyId?: string | null }) => {
+  return Boolean(task.internalUserId || task.clientId || task.companyId)
+}
+
+const areAssignmentsEqual = (
+  previousTask: { internalUserId?: string | null; clientId?: string | null; companyId?: string | null },
+  currentTask: { internalUserId?: string | null; clientId?: string | null; companyId?: string | null },
+) => {
+  return (
+    previousTask.internalUserId === currentTask.internalUserId &&
+    previousTask.clientId === currentTask.clientId &&
+    previousTask.companyId === currentTask.companyId
+  )
+}
+
 /**
  * Reusable function to get assignedAt & completedAt time for a task create / update action
  * @param mode 'create' | 'update' as per action
@@ -43,7 +58,7 @@ export const getTaskTimestamps = async (
 
   const curDate = new Date()
   const freshTimestamps: TaskTimestamps = {
-    assignedAt: data.assigneeId ? curDate : null,
+    assignedAt: isTaskAssigned(data) ? curDate : null,
     completedAt: workflowStateStatus === StateType.completed ? curDate : null,
   }
 
@@ -56,7 +71,7 @@ export const getTaskTimestamps = async (
   const previousTask = prevData as Task
   return {
     assignedAt:
-      data.assigneeId === undefined || previousTask.assigneeId === data.assigneeId
+      !isTaskAssigned(data) || areAssignmentsEqual(previousTask, data)
         ? previousTask.assignedAt
         : freshTimestamps.assignedAt,
     // The freshTimestamps.assignedAt part is to handle case when task previously had an assignee

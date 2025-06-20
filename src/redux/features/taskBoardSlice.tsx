@@ -3,7 +3,15 @@ import { PreviewMode } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { CreateViewSettingsDTO, FilterOptionsType } from '@/types/dto/viewSettings.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { FilterByOptions, FilterOptions, IAssigneeCombined, IFilterOptions } from '@/types/interfaces'
+import {
+  FilterByOptions,
+  FilterOptions,
+  IAssigneeCombined,
+  IFilterOptions,
+  ISelectorAssignee,
+  UserIds,
+} from '@/types/interfaces'
+import { emptyAssignee, UserIdsType } from '@/utils/assignee'
 import { ViewMode } from '@prisma/client'
 import { createSlice } from '@reduxjs/toolkit'
 
@@ -26,6 +34,7 @@ interface IInitialState {
   accessibleTasks: TaskResponse[]
   confirmAssignModalId: string | undefined
   assigneeCache: Record<string, IAssigneeCombined>
+  selectorAssignee: ISelectorAssignee
 }
 
 const initialState: IInitialState = {
@@ -36,7 +45,7 @@ const initialState: IInitialState = {
   view: ViewMode.board,
   filteredTasks: [], //contains tasks which are client-side filtered. is modified from the useFilter custom hook.
   filterOptions: {
-    [FilterOptions.ASSIGNEE]: '',
+    [FilterOptions.ASSIGNEE]: emptyAssignee,
     [FilterOptions.KEYWORD]: '',
     [FilterOptions.TYPE]: '',
   },
@@ -52,6 +61,11 @@ const initialState: IInitialState = {
   accessibleTasks: [],
   confirmAssignModalId: '',
   assigneeCache: {},
+  selectorAssignee: {
+    clients: [],
+    internalUsers: [],
+    companies: [],
+  },
 }
 
 const taskBoardSlice = createSlice({
@@ -102,7 +116,7 @@ const taskBoardSlice = createSlice({
     setViewSettingsTemp: (state, action: { payload: CreateViewSettingsDTO }) => {
       state.viewSettingsTemp = action.payload
     },
-    setFilterOptions: (state, action: { payload: { optionType: FilterOptions; newValue: string | null } }) => {
+    setFilterOptions: (state, action: { payload: { optionType: FilterOptions; newValue: string | null | UserIdsType } }) => {
       state.filterOptions = {
         ...state.filterOptions,
         [action.payload.optionType]: action.payload.newValue,
@@ -124,13 +138,22 @@ const taskBoardSlice = createSlice({
     },
     updateFilterOption: (state, action: { payload: { filterOptions: FilterOptionsType } }) => {
       const { filterOptions } = action.payload
+      let updatedFilterOptions = { ...filterOptions }
       if (filterOptions?.assignee) {
-        const assigneeCheck = state.assignee.find((assignee) => assignee.id == filterOptions.assignee)
+        const assigneeCheck = state.assignee.find(
+          (assignee) =>
+            assignee.id === filterOptions.assignee[UserIds.INTERNAL_USER_ID] ||
+            assignee.id === filterOptions.assignee[UserIds.CLIENT_ID] ||
+            assignee.id === filterOptions.assignee[UserIds.COMPANY_ID],
+        )
         if (!assigneeCheck) {
-          filterOptions.assignee = ''
+          updatedFilterOptions = {
+            ...updatedFilterOptions,
+            assignee: emptyAssignee,
+          }
         }
       }
-      state.filterOptions = action.payload.filterOptions
+      state.filterOptions = updatedFilterOptions
     }, //updates filters according to viewSettings
 
     setIsTasksLoading: (state, action: { payload: boolean }) => {
@@ -155,6 +178,10 @@ const taskBoardSlice = createSlice({
     setAssigneeCache: (state, action: { payload: { key: string; value: IAssigneeCombined } }) => {
       state.assigneeCache[action.payload.key] = action.payload.value
     }, //used in memory cache rather than useMemo for cross-view(board and list) caching. The alternate idea would be to include assignee object in the response of getTasks api for each task but that would be a bit expensive.
+
+    setSelectorAssignee: (state, action: { payload: ISelectorAssignee }) => {
+      state.selectorAssignee = action.payload
+    },
   },
 })
 
@@ -179,6 +206,7 @@ export const {
   setAccessibleTasks,
   setConfirmAssigneeModalId,
   setAssigneeCache,
+  setSelectorAssignee,
 } = taskBoardSlice.actions
 
 export default taskBoardSlice.reducer

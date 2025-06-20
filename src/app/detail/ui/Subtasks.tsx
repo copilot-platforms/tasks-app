@@ -29,7 +29,6 @@ interface OptimisticUpdate {
 export const Subtasks = ({
   task_id,
   token,
-  userType,
   canCreateSubtasks,
 }: {
   task_id: string
@@ -42,12 +41,8 @@ export const Subtasks = ({
   const { tokenPayload } = useSelector(selectAuthDetails)
   const [optimisticUpdates, setOptimisticUpdates] = useState<OptimisticUpdate[]>([]) //might need this server-temp id maps in the future.
 
-  const handleFormCancel = () => {
-    setOpenTaskForm(false)
-  }
-  const handleFormOpen = () => {
-    setOpenTaskForm(!openTaskForm)
-  }
+  const handleFormCancel = () => setOpenTaskForm(false)
+  const handleFormOpen = () => setOpenTaskForm(!openTaskForm)
 
   const mode = tokenPayload?.internalUserId ? UserRole.IU : UserRole.Client
 
@@ -64,7 +59,7 @@ export const Subtasks = ({
     if (activeTask?.subtaskCount !== undefined) {
       refetchSubtasks()
     }
-  }, [activeTask?.subtaskCount, activeTask?.isArchived])
+  }, [activeTask?.subtaskCount, activeTask?.isArchived, cacheKey, mutate])
 
   const handleSubTaskCreation = (payload: CreateTaskRequest) => {
     const tempId = generateRandomString('temp-task')
@@ -179,7 +174,7 @@ export const Subtasks = ({
 
       {openTaskForm && <NewTaskCard handleClose={handleFormCancel} handleSubTaskCreation={handleSubTaskCreation} />}
       <Box>
-        {subTasks?.tasks?.map((item: TaskResponse, index: number) => {
+        {subTasks?.tasks?.map((item: TaskResponse) => {
           const isTempId = item.id.includes('temp')
           if (isTempId) {
             return (
