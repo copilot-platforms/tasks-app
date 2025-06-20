@@ -11,6 +11,9 @@ import { z } from 'zod'
 interface Assignable {
   assigneeId: string
   assigneeType: AssigneeType
+  internalUserId: string | null
+  clientId: string | null
+  companyId: string | null
 }
 
 export class SubtaskService extends BaseService {
@@ -119,7 +122,11 @@ export class SubtaskService extends BaseService {
     } else if (this.user.role === UserRole.Client) {
       // If user is a client, just check index of which task was last assigned to client
       latestAccessibleTaskIndex = tasks.findLastIndex(
-        (task) => task.assigneeId !== this.user.clientId && task.assigneeId !== this.user.companyId,
+        (task) =>
+          !(
+            (task.clientId === this.user.clientId && task.companyId === this.user.companyId) ||
+            (task.clientId === null && task.companyId === this.user.companyId)
+          ),
       )
     } else {
       throw new APIError(httpStatus.BAD_REQUEST, 'Failed to parse user role from token')

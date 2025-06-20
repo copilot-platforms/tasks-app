@@ -756,7 +756,16 @@ export class TasksService extends BaseService {
       parents.map((id) =>
         this.db.task.findFirstOrThrow({
           where: { id, workspaceId: this.user.workspaceId },
-          select: { id: true, title: true, label: true, assigneeId: true, assigneeType: true },
+          select: {
+            id: true,
+            title: true,
+            label: true,
+            assigneeId: true,
+            assigneeType: true,
+            clientId: true,
+            companyId: true,
+            internalUserId: true,
+          },
         }),
       ) as Promise<AncestorTaskResponse>[],
     )
@@ -872,9 +881,9 @@ export class TasksService extends BaseService {
     }
 
     if (clientId) {
-      const clients = (await copilot.getClients({ limit: MAX_FETCH_ASSIGNEE_COUNT })).data
-      const client = clients?.find((c) => c.id === clientId)
-      const isValidCompany = companyId === client?.companyId //change this to search companyIds array in the future
+      const client = await copilot.getClient(clientId)
+
+      const isValidCompany = companyId ? client?.companyIds?.includes(companyId) : false
 
       if (!client) {
         throw new APIError(httpStatus.BAD_REQUEST, `Invalid clientId`)
