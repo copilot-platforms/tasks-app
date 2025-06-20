@@ -738,7 +738,10 @@ export class TasksService extends BaseService {
 
     if (updatedTask) {
       const activityLogger = new TasksActivityLogger(this.user, updatedTask)
-      await activityLogger.logTaskUpdated(prevTask)
+      await Promise.all([
+        activityLogger.logTaskUpdated(prevTask),
+        dispatchUpdatedWebhookEvent(this.user, prevTask, updatedTask, false),
+      ])
     }
 
     await sendClientUpdateTaskNotifications.trigger({ user: this.user, prevTask, updatedTask, updatedWorkflowState })
