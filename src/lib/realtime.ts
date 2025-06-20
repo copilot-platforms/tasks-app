@@ -183,7 +183,7 @@ export class RealtimeHandler {
         store.dispatch(setTasks(tasks.filter((task) => task.id !== newTask.id)))
         store.dispatch(setAccessibleTasks(accessibleTasks.filter((task) => task.id !== newTask.id)))
       }
-      return
+      return this.redirectToBoard(newTask)
     }
 
     if (this.payload.eventType === 'INSERT') {
