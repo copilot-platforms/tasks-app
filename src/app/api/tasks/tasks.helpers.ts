@@ -88,19 +88,14 @@ export const dispatchUpdatedWebhookEvent = async (
   }
 
   if (isDispatchableUpdateChange) {
-    if (updatedTask.workflowState.type === StateType.completed) {
-      event = DISPATCHABLE_EVENT.TaskCompleted
-    } else {
-      event = DISPATCHABLE_EVENT.TaskUpdated
-    }
+    event =
+      updatedTask.workflowState.type === StateType.completed
+        ? DISPATCHABLE_EVENT.TaskCompleted
+        : DISPATCHABLE_EVENT.TaskUpdated
   }
 
   if (prevTask.isArchived !== updatedTask.isArchived) {
-    if (updatedTask.isArchived === true) {
-      event = DISPATCHABLE_EVENT.TaskArchived
-    } else {
-      event = DISPATCHABLE_EVENT.TaskUpdated
-    }
+    event = updatedTask.isArchived ? DISPATCHABLE_EVENT.TaskArchived : DISPATCHABLE_EVENT.TaskUpdated
   }
 
   if (event) {
