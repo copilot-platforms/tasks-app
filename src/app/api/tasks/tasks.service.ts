@@ -69,7 +69,7 @@ export class TasksService extends BaseService {
     companyId?: string
     createdById?: string
     parentId?: string | null
-    workflowState?: { type: StateType }
+    workflowState?: { type: StateType | { not: StateType } }
     limit?: number
     lastIdCursor?: string // When this id field cursor is provided, we return data AFTER this id
   }): Promise<TaskWithWorkflowState[]> {
@@ -94,7 +94,7 @@ export class TasksService extends BaseService {
     }
 
     if (queryFilters.showIncompleteOnly && !queryFilters.fromPublicApi) {
-      filters.workflowState = {
+      queryFilters.workflowState = {
         type: { not: StateType.completed },
       }
     }
