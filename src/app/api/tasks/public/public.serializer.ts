@@ -107,15 +107,8 @@ export class PublicTaskSerializer {
       throw new APIError(httpStatus.NOT_FOUND, 'The requested template was not found')
     }
 
-    let title = existingTitle
-    if (title !== template.title) {
-      // only concatenate if the title is not already the same as the template title
-      // otherwise, likely the user is passing in the title with the intention
-      // of keeping the template title as the original title. E.g. user might fetch
-      // template and use the name from template as the name param for create task
-      title = (existingTitle ? `${existingTitle} ` : '') + template.title
-    }
-
+    console.info({ existingTitle, templateTitle: template.title })
+    const title = (existingTitle && existingTitle !== template.title ? `${existingTitle} ` : '') + template.title
     const body = (existingBody ? `${existingBody} ` : '') + (replacedBody || template.body)
     return { title, body }
   }
