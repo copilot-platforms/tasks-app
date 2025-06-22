@@ -37,15 +37,7 @@ export type PublicTaskDto = z.infer<typeof PublicTaskDtoSchema>
 
 export const PublicTaskCreateDtoSchema = z
   .object({
-    name: z
-      .string()
-      .min(1)
-      .max(255)
-      .refine((name) => name.trim().length > 0, {
-        message: 'Required',
-      })
-      .transform((val) => val.trim())
-      .optional(),
+    name: z.string().max(255).optional(), // allow empty/whitespace, validated in superRefine
     description: z.string().optional(),
     parentTaskId: z.string().uuid().optional(),
     status: StatusSchema,
@@ -57,9 +49,12 @@ export const PublicTaskCreateDtoSchema = z
     companyId: z.string().uuid().optional(),
   })
   .superRefine((data, ctx) => {
-    const { internalUserId, clientId, companyId, templateId, name } = data
+    const { name, templateId, internalUserId, clientId, companyId } = data
 
-    if (!templateId && !name) {
+    const nameIsNonEmpty = typeof name === 'string' && name.trim().length > 0
+    const hasTemplateId = typeof templateId === 'string' && templateId.length > 0
+
+    if (!hasTemplateId && !nameIsNonEmpty) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: 'Name is required when templateId is not provided',
@@ -85,7 +80,7 @@ export const PublicTaskCreateDtoSchema = z
         message: 'internalUserId cannot be combined with clientId or companyId',
         path: ['internalUserId'],
       })
-    } //InternalUserId and (clientId | companyId) must be exclusive.
+    }
 
     if (hasClient && !hasCompany) {
       ctx.addIssue({
@@ -93,7 +88,7 @@ export const PublicTaskCreateDtoSchema = z
         message: 'companyId is required when clientId is provided',
         path: ['companyId'],
       })
-    } //companyId must be provided when clientId is provided
+    }
   })
 export type PublicTaskCreateDto = z.infer<typeof PublicTaskCreateDtoSchema>
 
