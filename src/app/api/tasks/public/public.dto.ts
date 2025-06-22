@@ -55,13 +55,13 @@ export const PublicTaskCreateDtoSchema = z
     companyId: z.string().uuid().optional(),
   })
   .superRefine((data, ctx) => {
-    const { name, templateId, internalUserId, clientId, companyId } = data
+    const { name, templateId, internalUserId, clientId, companyId, status } = data
 
-    const nameIsNonEmpty = typeof name === 'string' && name.trim().length > 0
+    const nameIsValid = typeof name === 'string' && name.trim().length > 0
     const hasTemplateId = typeof templateId === 'string' && templateId.length > 0
-    const statusIsValid = typeof status === 'string' && ['todo', 'inProgress', 'completed']
+    const statusIsValid = typeof status === 'string' && ['todo', 'inProgress', 'completed'].includes(status)
 
-    if (!hasTemplateId && !nameIsNonEmpty) {
+    if (!hasTemplateId && !nameIsValid) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: 'Name is required when templateId is not provided',
