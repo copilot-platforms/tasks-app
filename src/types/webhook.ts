@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 export enum HANDLEABLE_EVENT {
   InternalUserDeleted = 'internalUser.deleted',
-  ClientCreated = 'client.created',
+  ClientActivated = 'client.activated',
   ClientUpdated = 'client.updated',
   ClientDeleted = 'client.deleted',
   CompanyDeleted = 'company.deleted',
