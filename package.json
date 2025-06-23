@@ -28,6 +28,8 @@
     "lint-staged": "npx lint-staged",
     "postinstall": "prisma generate",
     "test": "jest",
+    "predeploy": "node src/lib/patch-jsdom-xhr.cjs",
+    "deploy": "npx trigger.dev@latest deploy",
     "trigger": "npx trigger.dev@3.3.17",
     "trigger:deploy-staging": "yarn trigger deploy -e staging",
     "loadtest": "tsx ./src/cmd/load-testing",
