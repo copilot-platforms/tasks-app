@@ -1,4 +1,5 @@
 import { RFC3339DateSchema } from '@/types/common'
+import { CopilotAPI } from '@/utils/CopilotAPI'
 import { AssigneeType } from '@prisma/client'
 import { z } from 'zod'
 
@@ -41,71 +42,94 @@ export const PublicTaskDtoSchema = z.object({
 })
 export type PublicTaskDto = z.infer<typeof PublicTaskDtoSchema>
 
-export const PublicTaskCreateDtoSchema = z
-  .object({
-    name: z.string().max(255).optional(), // allow empty/whitespace, validated in superRefine
-    description: z.string().optional(),
-    parentTaskId: z.string().uuid().optional(),
-    status: StatusSchema,
-    dueDate: RFC3339DateSchema.optional(),
-    templateId: z.string().uuid().nullish(),
-    createdBy: z.string().uuid().optional(),
-    internalUserId: z.string().uuid().optional(),
-    clientId: z.string().uuid().optional(),
-    companyId: z.string().uuid().optional(),
-  })
-  .superRefine((data, ctx) => {
-    const { name, templateId, internalUserId, clientId, companyId, status } = data
+export const publicTaskCreateDtoSchemaFactory = (token: string) => {
+  return z
+    .object({
+      name: z.string().max(255).optional(), // allow empty/whitespace, validated in superRefine
+      description: z.string().optional(),
+      parentTaskId: z.string().uuid().optional(),
+      status: StatusSchema,
+      dueDate: RFC3339DateSchema.optional(),
+      templateId: z.string().uuid().nullish(),
+      createdBy: z.string().uuid().optional(),
+      internalUserId: z.string().uuid().optional(),
+      clientId: z.string().uuid().optional(),
+      companyId: z.string().uuid().optional(),
+    })
+    .superRefine(async (data, ctx) => {
+      const { name, templateId, internalUserId, clientId, status } = data
+      let { companyId } = data
 
-    const nameIsValid = typeof name === 'string' && name.trim().length > 0
-    const hasTemplateId = typeof templateId === 'string' && templateId.length > 0
-    const statusIsValid = typeof status === 'string' && ['todo', 'inProgress', 'completed'].includes(status)
+      const nameIsValid = typeof name === 'string' && name.trim().length > 0
+      const hasTemplateId = typeof templateId === 'string' && templateId.length > 0
+      const statusIsValid = typeof status === 'string' && ['todo', 'inProgress', 'completed'].includes(status)
 
-    if (!hasTemplateId && !nameIsValid) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Name is required when templateId is not provided',
-        path: ['name'],
-      })
-    }
+      if (!hasTemplateId && !nameIsValid) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Name is required when templateId is not provided',
+          path: ['name'],
+        })
+      }
 
-    if (!hasTemplateId && !statusIsValid) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Status is required and must be valid when templateId is not provided',
-        path: ['status'],
-      })
-    }
+      if (!hasTemplateId && !statusIsValid) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Status is required and must be valid when templateId is not provided',
+          path: ['status'],
+        })
+      }
 
-    const hasInternalUser = Boolean(internalUserId)
-    const hasClient = Boolean(clientId)
-    const hasCompany = Boolean(companyId)
+      // If companyId is not provided, try to infer it from the clientId if client has only one company
+      if (clientId && !companyId) {
+        const copilot = new CopilotAPI(token)
+        const client = await copilot.getClient(clientId)
+        if (Array.isArray(client.companyIds) && client.companyIds.length === 1) {
+          companyId = client.companyIds[0]
+        }
+        // Backwards compatibility in case a client has companyId only and undefined / empty array in companyIds (you can never be too careful)
+        else if (
+          client.companyId &&
+          // This prevents us from picking companyId when there are already many companies in companyIds
+          (!client.companyIds || (Array.isArray(client.companyIds) && !client.companyIds.length))
+        ) {
+          companyId = client.companyId
+        }
+        // If client has multiple companies, throw error
+        else if (Array.isArray(client.companyIds)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'companyId must be provided for clients with more than one company',
+            path: ['companyId'],
+          })
+        } else {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'companyId must be provided when clientId is provided',
+            path: ['companyId'],
+          })
+        }
+      }
 
-    if (!hasInternalUser && !hasClient && !hasCompany) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'At least one of internalUserId, clientId, or companyId is required',
-        path: ['internalUserId'],
-      })
-    }
+      if (!internalUserId && !clientId && !companyId) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'At least one of internalUserId, clientId, or companyId is required',
+          path: ['internalUserId'],
+        })
+      }
 
-    if (hasInternalUser && (hasClient || hasCompany)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'internalUserId cannot be combined with clientId or companyId',
-        path: ['internalUserId'],
-      })
-    }
+      if (internalUserId && (clientId || companyId)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'internalUserId cannot be combined with clientId or companyId',
+          path: ['internalUserId'],
+        })
+      }
+    })
+}
 
-    if (hasClient && !hasCompany) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'companyId is required when clientId is provided',
-        path: ['companyId'],
-      })
-    }
-  })
-export type PublicTaskCreateDto = z.infer<typeof PublicTaskCreateDtoSchema>
+export type PublicTaskCreateDto = z.infer<ReturnType<typeof publicTaskCreateDtoSchemaFactory>>
 
 export const PublicTaskUpdateDtoSchema = z
   .object({
