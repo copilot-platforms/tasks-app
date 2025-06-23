@@ -46,12 +46,8 @@ interface TaskCardListProps {
 }
 
 export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate }: TaskCardListProps) => {
-  const { assignee, workflowStates, previewMode, token, confirmAssignModalId, assigneeCache, activeTask } =
-    useSelector(selectTaskBoard)
+  const { assignee, workflowStates, previewMode, token, confirmAssignModalId, assigneeCache } = useSelector(selectTaskBoard)
 
-  const [currentAssignee, setCurrentAssignee] = useState<IAssigneeCombined | undefined>(() => {
-    return assigneeCache[task.id]
-  })
   const [currentDueDate, setCurrentDueDate] = useState<string | undefined>(task.dueDate)
   const [selectedAssignee, setSelectedAssignee] = useState<UserIdsType | undefined>(undefined)
 
@@ -61,8 +57,7 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate 
       const finalAssignee = currentAssignee ?? NoAssignee
       // @ts-expect-error  "type" property has mismatching types in between NoAssignee and IAssigneeCombined
       store.dispatch(setAssigneeCache({ key: task.id, value: finalAssignee }))
-      //@ts-expect-error  "type" property has mismatching types in between NoAssignee and IAssigneeCombined
-      setCurrentAssignee(finalAssignee)
+      setAssigneeValue(finalAssignee)
     }
   }, [assignee, task.id, task.assigneeId])
 
@@ -127,7 +122,9 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate 
     return match ?? NoAssignee
   }
 
-  const [assigneeValue, setAssigneeValue] = useState(getAssigneeValue(getUserIds(task)))
+  const [assigneeValue, setAssigneeValue] = useState<IAssigneeCombined | Omit<IAssigneeCombined, 'type'> | undefined>(() => {
+    return assigneeCache[task.id]
+  }) //Omitting type for NoAssignee
 
   return (
     <Stack

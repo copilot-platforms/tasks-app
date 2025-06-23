@@ -59,7 +59,6 @@ export const Sidebar = ({
   const [assigneeValue, setAssigneeValue] = useState<IAssigneeCombined | undefined>()
 
   const [selectedAssignee, setSelectedAssignee] = useState<UserIdsType | undefined>(undefined)
-  const [isIntialTaskLoaded, setIsIntialTaskLoaded] = useState(false)
 
   const { renderingItem: _statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
     // item: selectedWorkflowState,
@@ -70,20 +69,14 @@ export const Sidebar = ({
   const statusValue = _statusValue as WorkflowStateResponse //typecasting
 
   useEffect(() => {
-    if (activeTask?.assigneeId && !isIntialTaskLoaded) {
-      setIsIntialTaskLoaded(true)
-      const currentAssignee = assignee.find((assignee) => assignee.id == activeTask?.assigneeId)
-      setAssigneeValue(currentAssignee)
-    }
-  }, [assignee, activeTask, isIntialTaskLoaded])
-
-  useEffect(() => {
     if (activeTask && workflowStates) {
       const currentTask = activeTask
       const currentWorkflowState = workflowStates.find((el) => el?.id === currentTask?.workflowStateId)
       updateStatusValue(currentWorkflowState)
       //UPDATE THE VALUE OF ASSIGNEE IN COPILOT SELECTOR after it supports value prop. (REALTIME)
       setDueDate(currentTask?.dueDate)
+      const currentAssignee = assignee.find((assignee) => assignee.id == activeTask?.assigneeId)
+      setAssigneeValue(currentAssignee)
     }
   }, [activeTask, workflowStates, updateStatusValue])
 
