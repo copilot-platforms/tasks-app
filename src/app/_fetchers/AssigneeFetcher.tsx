@@ -40,7 +40,7 @@ export const AssigneeFetcher = async ({ token, userType, viewSettings, isPreview
   const fetchedAssignee = await fetchAssignee(token, userType, isPreview)
 
   const assignableUsersWithType = addTypeToAssignee(fetchedAssignee)
-  const selectorOptions = await parseAssigneeToSelectorOption(token, fetchedAssignee)
+  const selectorOptions = parseAssigneeToSelectorOption(fetchedAssignee)
 
   return (
     <ClientSideStateUpdate
