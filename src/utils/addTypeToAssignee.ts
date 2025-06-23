@@ -1,5 +1,6 @@
 import { IAssignee, IAssigneeCombined, ISelectorOption } from '@/types/interfaces'
 import { getAssigneeName } from '@/utils/assignee'
+import { AssigneeType } from '@prisma/client'
 
 export type ObjectType = 'client' | 'internalUser' | 'company'
 
@@ -28,19 +29,36 @@ export function parseAssigneeToSelectorOption(assignee?: IAssignee): {
 
   const parseCategory = (category: Record<string, any> | undefined, type: ObjectType): ISelectorOption[] => {
     if (!category) return []
-    return Object.values(category).map((item: any) => ({
-      value: item.id,
-      label: getAssigneeName(item),
-      avatarSrc: item.avatarImageUrl ?? item.iconImageUrl,
-      avatarFallbackColor: item.fallbackColor,
-      companyId: item.companyId,
-      type,
-    }))
+
+    const results = Object.values(category).map((item: any) => {
+      if (type === AssigneeType.client) {
+        return (item.companyIds ?? [item.companyId]).map((companyId: string) => ({
+          value: item.id,
+          label: getAssigneeName(item),
+          avatarSrc: item.avatarImageUrl ?? item.iconImageUrl,
+          avatarFallbackColor: item.fallbackColor,
+          companyId,
+          type,
+        }))
+      } else {
+        return {
+          value: item.id,
+          label: getAssigneeName(item),
+          avatarSrc: item.avatarImageUrl ?? item.iconImageUrl,
+          avatarFallbackColor: item.fallbackColor,
+          companyId: item.companyId,
+          type,
+        }
+      }
+    })
+
+    // Flatten the result because client branch returns an array of clients for each company
+    return results.flat()
   }
 
   return {
-    clients: parseCategory(assignee.clients, 'client'),
-    internalUsers: parseCategory(assignee.internalUsers, 'internalUser'),
-    companies: parseCategory(assignee.companies, 'company'),
+    clients: parseCategory(assignee.clients, AssigneeType.client),
+    internalUsers: parseCategory(assignee.internalUsers, AssigneeType.internalUser),
+    companies: parseCategory(assignee.companies, AssigneeType.company),
   }
 }
