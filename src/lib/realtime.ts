@@ -125,8 +125,9 @@ export class RealtimeHandler {
       if (tasks.some((task) => task.parentId === newTask.id)) {
         store.dispatch(setTasks(tasks.filter((task) => task.parentId !== newTask.id)))
       }
-
-      return this.redirectToBoard(newTask)
+      if (newTask.id === activeTask?.id) {
+        return this.redirectToBoard(newTask)
+      }
     }
 
     const isParentTaskAccessible = accessibleTasks.some((task) => task.id === newTask.parentId)
