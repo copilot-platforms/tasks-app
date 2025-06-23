@@ -4,16 +4,18 @@ import { WorkflowStateResponseSchema } from './workflowStates.dto'
 import { DateStringSchema } from '@/types/date'
 import { ClientResponseSchema, CompanyResponseSchema, InternalUsersSchema } from '../common'
 
-const requireAssigneeTypeIfAssigneeId =
-  () => (data: { assigneeId?: string | null; assigneeType?: AssigneeType }, ctx: z.RefinementCtx) => {
-    if (data.assigneeId && !data.assigneeType) {
-      ctx.addIssue({
-        path: ['assigneeType'],
-        message: 'assigneeType is required when assigneeId is provided',
-        code: z.ZodIssueCode.custom,
-      })
-    }
+const requireAssigneeTypeIfAssigneeId = (
+  data: { assigneeId?: string | null; assigneeType?: AssigneeType },
+  ctx: z.RefinementCtx,
+) => {
+  if (data.assigneeId && !data.assigneeType) {
+    ctx.addIssue({
+      path: ['assigneeType'],
+      message: 'assigneeType is required when assigneeId is provided',
+      code: z.ZodIssueCode.custom,
+    })
   }
+}
 
 export const AssigneeTypeSchema = z.nativeEnum(PrismaAssigneeType).nullish()
 export type AssigneeType = z.infer<typeof AssigneeTypeSchema>
@@ -33,7 +35,7 @@ export const CreateTaskRequestSchema = z
     clientId: z.string().uuid().nullish(),
     companyId: z.string().uuid().nullish(),
   })
-  .superRefine(requireAssigneeTypeIfAssigneeId())
+  .superRefine(requireAssigneeTypeIfAssigneeId)
 
 export type CreateTaskRequest = z.infer<typeof CreateTaskRequestSchema>
 
@@ -50,7 +52,7 @@ export const UpdateTaskRequestSchema = z
     clientId: z.string().uuid().nullish(),
     companyId: z.string().uuid().nullish(),
   })
-  .superRefine(requireAssigneeTypeIfAssigneeId())
+  .superRefine(requireAssigneeTypeIfAssigneeId)
 export type UpdateTaskRequest = z.infer<typeof UpdateTaskRequestSchema>
 
 export const TaskResponseSchema = z.object({
