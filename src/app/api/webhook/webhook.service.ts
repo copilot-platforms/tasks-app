@@ -71,6 +71,7 @@ class WebhookService extends BaseService {
 
     const tasksService = new TasksService(this.user)
     const tasks = await tasksService.getIncompleteTasksForCompany(company.id)
+    console.log('xxxtasks', tasks)
     if (!tasks.length) return
 
     // Then trigger appropriate notifications
