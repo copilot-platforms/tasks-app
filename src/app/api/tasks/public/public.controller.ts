@@ -1,4 +1,4 @@
-import { PublicTaskCreateDtoSchema, StatusSchema } from '@/app/api/tasks/public/public.dto'
+import { publicTaskCreateDtoSchemaFactory, StatusSchema } from '@/app/api/tasks/public/public.dto'
 import { defaultLimit } from '@/constants/public-api'
 import { getSearchParams } from '@/utils/request'
 import { IdParams } from '@api/core/types/api'
@@ -61,7 +61,7 @@ export const getOneTaskPublic = async (req: NextRequest, { params: { id } }: IdP
 
 export const createTaskPublic = async (req: NextRequest) => {
   const user = await authenticate(req)
-  const data = PublicTaskCreateDtoSchema.parse(await req.json())
+  const data = await publicTaskCreateDtoSchemaFactory(user.token).parseAsync(await req.json())
   const createPayload = await PublicTaskSerializer.deserializeCreatePayload(data, user.workspaceId)
   const tasksService = new TasksService(user)
   const newTask = await tasksService.createTask(createPayload, { isPublicApi: true })
