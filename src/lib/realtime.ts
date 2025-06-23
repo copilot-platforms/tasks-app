@@ -277,6 +277,9 @@ export class RealtimeHandler {
     const isReassignedOutOfLimitedIUScope = (() => {
       if (this.userRole !== AssigneeType.internalUser) return false
       const iu = InternalUsersSchema.parse(this.user)
+      if (updatedTask.internalUserId || !updatedTask.assigneeId) {
+        return false
+      }
       return iu.isClientAccessLimited && !iu.companyAccessList?.includes(updatedTask.companyId || '__')
     })()
 
@@ -309,6 +312,9 @@ export class RealtimeHandler {
 
     const isReassignedIntoLimitedIUScope = (() => {
       if (this.userRole !== AssigneeType.internalUser) return false
+      if (updatedTask.internalUserId || !updatedTask.assigneeId) {
+        return true
+      }
       const iu = InternalUsersSchema.parse(this.user)
       return iu.isClientAccessLimited && iu.companyAccessList?.includes(updatedTask.companyId || '__')
     })()

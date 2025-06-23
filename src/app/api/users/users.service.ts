@@ -57,7 +57,21 @@ class UsersService extends BaseService {
     const clientsWithCompanyData = clients.data || []
     const accessibleClients = (
       currentInternalUser.isClientAccessLimited
-        ? clientsWithCompanyData?.filter((client) => currentInternalUser.companyAccessList?.includes(client.companyId))
+        ? clientsWithCompanyData
+            ?.map((client) => {
+              const matchingCompanyIds = client.companyIds?.filter((id) =>
+                currentInternalUser.companyAccessList?.includes(id),
+              )
+
+              if (matchingCompanyIds?.length) {
+                return {
+                  ...client,
+                  companyIds: matchingCompanyIds,
+                }
+              }
+              return null
+            })
+            .filter((c) => c !== null)
         : clientsWithCompanyData
     )?.slice(0, limit)
 
