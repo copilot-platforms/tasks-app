@@ -770,8 +770,6 @@ export class TasksService extends BaseService {
             id: true,
             title: true,
             label: true,
-            assigneeId: true,
-            assigneeType: true,
             clientId: true,
             companyId: true,
             internalUserId: true,
