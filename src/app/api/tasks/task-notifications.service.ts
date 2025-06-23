@@ -323,7 +323,7 @@ export class TaskNotificationsService extends BaseService {
         // For each loop we are considering a separate task where that particular member is the assignee
         notificationPromises.push(
           this.notificationService.addToClientNotifications(
-            { ...task, assigneeId: recipientIds[0], assigneeType: AssigneeType.client },
+            { ...task, assigneeId: recipientIds[i], assigneeType: AssigneeType.client },
             notifications[i],
           ),
         )
