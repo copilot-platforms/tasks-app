@@ -48,7 +48,7 @@ export const publicTaskCreateDtoSchemaFactory = (token: string) => {
       name: z.string().max(255).optional(), // allow empty/whitespace, validated in superRefine
       description: z.string().optional(),
       parentTaskId: z.string().uuid().optional(),
-      status: StatusSchema,
+      status: StatusSchema.optional(),
       dueDate: RFC3339DateSchema.optional(),
       templateId: z.string().uuid().nullish(),
       createdBy: z.string().uuid().optional(),
