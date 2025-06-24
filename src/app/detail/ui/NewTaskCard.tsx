@@ -14,16 +14,14 @@ import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { AssigneePlaceholderSmall, TempalteIconMd } from '@/icons'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
-import { selectTaskDetails, setActiveTaskAssignees } from '@/redux/features/taskDetailsSlice'
 import { selectCreateTemplate } from '@/redux/features/templateSlice'
-import store from '@/redux/store'
 import { DateString } from '@/types/date'
 import { CreateTaskRequest } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { IAssigneeCombined, ITemplate, UserIds } from '@/types/interfaces'
 import { getAssigneeName, UserIdsType } from '@/utils/assignee'
-import { getSelectedUserIds } from '@/utils/selector'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
+import { getSelectedUserIds } from '@/utils/selector'
 import { trimAllTags } from '@/utils/trimTags'
 import { Box, Stack, Typography } from '@mui/material'
 import dayjs from 'dayjs'
@@ -46,9 +44,7 @@ export const NewTaskCard = ({
   handleClose: () => void
   handleSubTaskCreation: (payload: CreateTaskRequest) => void
 }) => {
-  const { workflowStates, assignee, token, filterOptions, activeTask } = useSelector(selectTaskBoard)
-  const { activeTaskAssignees } = useSelector(selectTaskDetails)
-
+  const { workflowStates, assignee, token, activeTask } = useSelector(selectTaskBoard)
   const { templates } = useSelector(selectCreateTemplate)
 
   const [isEditorReadonly, setIsEditorReadonly] = useState(false)
@@ -206,17 +202,6 @@ export const NewTaskCard = ({
     handleSubTaskCreation(payload)
     clearSubTaskFields()
     handleClose()
-
-    if (subTaskFields.userIds[UserIds.CLIENT_ID] || subTaskFields.userIds[UserIds.COMPANY_ID]) {
-      const assigneeTypes = new Set(activeTaskAssignees.map((a) => a.type))
-      if (assigneeTypes.has('ius') || assigneeTypes.has('internalUsers')) {
-        store.dispatch(
-          setActiveTaskAssignees(
-            activeTaskAssignees.filter((assignee) => assignee.type === 'clients' || assignee.type === 'companies'),
-          ),
-        )
-      }
-    }
   }
 
   return (

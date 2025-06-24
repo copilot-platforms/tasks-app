@@ -16,15 +16,9 @@ interface AssigneeFetcherProps extends PropsWithToken {
   userType?: UserType
   isPreview?: boolean
   task?: TaskResponse
-  clientCompanyId?: string
 }
 
-const fetchAssignee = async (
-  token: string,
-  userType?: UserType,
-  isPreview?: boolean,
-  clientCompanyId?: string,
-): Promise<IAssignee> => {
+const fetchAssignee = async (token: string, userType?: UserType, isPreview?: boolean): Promise<IAssignee> => {
   if (userType === UserType.CLIENT_USER && !isPreview) {
     const res = await fetchWithRetry(`${apiUrl}/api/users/client?token=${token}&limit=${MAX_FETCH_ASSIGNEE_COUNT}`, {
       next: { tags: ['getAssigneeList'] },
@@ -37,27 +31,13 @@ const fetchAssignee = async (
     return data.clients
   }
 
-  const res = await fetch(
-    `${apiUrl}/api/users?token=${token}&limit=${MAX_FETCH_ASSIGNEE_COUNT}&clientCompanyId=${clientCompanyId}`,
-    {
-      next: { tags: ['getAssigneeList'] },
-    },
-  )
+  const res = await fetch(`${apiUrl}/api/users?token=${token}&limit=${MAX_FETCH_ASSIGNEE_COUNT}`, {
+    next: { tags: ['getAssigneeList'] },
+  })
   return (await res.json()).users as IAssignee
 }
-export const AssigneeFetcher = async ({
-  token,
-  userType,
-  viewSettings,
-  isPreview,
-  task,
-  clientCompanyId,
-}: AssigneeFetcherProps) => {
-  const fetchAssigneePromise = fetchAssignee(token, userType, isPreview)
-  const activeTaskAssigneesPromise = clientCompanyId
-    ? fetchAssignee(token, userType, isPreview, clientCompanyId).then(addTypeToAssignee)
-    : Promise.resolve([])
-  const [fetchedAssignee, activeTaskAssignees] = await Promise.all([fetchAssigneePromise, activeTaskAssigneesPromise])
+export const AssigneeFetcher = async ({ token, userType, viewSettings, isPreview, task }: AssigneeFetcherProps) => {
+  const fetchedAssignee = await fetchAssignee(token, userType, isPreview)
 
   const assignableUsersWithType = addTypeToAssignee(fetchedAssignee)
   const selectorOptions = parseAssigneeToSelectorOption(fetchedAssignee)
@@ -68,7 +48,6 @@ export const AssigneeFetcher = async ({
       assignee={assignableUsersWithType}
       viewSettings={viewSettings}
       task={task}
-      activeTaskAssignees={activeTaskAssignees}
     >
       {null}
     </ClientSideStateUpdate>

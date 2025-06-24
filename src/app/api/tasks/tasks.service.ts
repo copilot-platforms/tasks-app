@@ -108,7 +108,7 @@ export class TasksService extends BaseService {
     const disjointTasksFilter: Prisma.TaskWhereInput =
       queryFilters.all || queryFilters.parentId
         ? {} // No need to support disjoint tasks when querying all tasks / subtasks
-        : await this.getDisjointTasksFilter(queryFilters.parentId)
+        : await this.getDisjointTasksFilter()
 
     // NOTE: Terminology:
     // Disjoint task -> A task where the parent task is not assigned to / inaccessible to the current user,
@@ -514,14 +514,28 @@ export class TasksService extends BaseService {
     }
   }
 
-  private getDisjointTasksFilter = (parentId?: string | null) => {
+  private getDisjointTasksFilter = () => {
     // For disjoint tasks, show this subtask as a root-level task
     // This n-node matcher matches any task tree chain where previous task's assigneeId is not self's
     // E.g. A -> B -> C, where A is assigned to user 1, B is assigned to user 2, C is assigned to user 2
     // For user 2, task B should show up as a parent task in the main task board
     const disjointTasksFilter: Promise<Prisma.TaskWhereInput> = (async () => {
-      if ((this.user.role === UserRole.IU && !this.user.clientId) || parentId) {
-        return {}
+      if (this.user.role === UserRole.IU && !this.user.clientId) {
+        const copilot = new CopilotAPI(this.user.token)
+        const currentInternalUser = await copilot.getInternalUser(z.string().parse(this.user.internalUserId))
+        if (!currentInternalUser.isClientAccessLimited) return {}
+
+        const accesibleCompanyIds = currentInternalUser.companyAccessList || []
+        return {
+          OR: [
+            {
+              parent: { OR: [{ companyId: { notIn: accesibleCompanyIds } }, { companyId: null }] },
+            },
+            {
+              parentId: null,
+            },
+          ],
+        }
       }
 
       return {
