@@ -15,10 +15,16 @@ export const getPreviewMode = (tokenPayload: Token): PreviewMode => {
 
 export const handlePreviewMode = (previewMode: NonNullable<PreviewMode>, tokenPayload: Token) => {
   // If clientId is provided, ignore corresponding companyId. Else pick up the companyId
-  const previewId = tokenPayload.clientId || tokenPayload.companyId
-  if (!previewId) {
+  const previewClientId = tokenPayload.clientId
+  const previewCompanyId = tokenPayload.companyId
+  if (!previewClientId && !previewCompanyId) {
     throw new Error('Could not find preview client / company id')
   }
 
-  store.dispatch(setFilterOptions({ optionType: FilterOptions.ASSIGNEE, newValue: previewId }))
+  store.dispatch(
+    setFilterOptions({
+      optionType: FilterOptions.ASSIGNEE,
+      newValue: { internalUserId: null, clientId: previewClientId!, companyId: previewCompanyId! },
+    }),
+  )
 }
