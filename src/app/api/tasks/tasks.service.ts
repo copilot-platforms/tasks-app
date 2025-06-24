@@ -520,7 +520,7 @@ export class TasksService extends BaseService {
     // E.g. A -> B -> C, where A is assigned to user 1, B is assigned to user 2, C is assigned to user 2
     // For user 2, task B should show up as a parent task in the main task board
     const disjointTasksFilter: Promise<Prisma.TaskWhereInput> = (async () => {
-      if (this.user.role === UserRole.IU || parentId) {
+      if ((this.user.role === UserRole.IU && !this.user.clientId) || parentId) {
         return {}
       }
 
@@ -561,7 +561,7 @@ export class TasksService extends BaseService {
       return z.string().uuid().parse(parentId)
     }
     // If user is IU, no need to flatten subtasks
-    if (this.user.role === UserRole.IU) {
+    if (this.user.role === UserRole.IU && !this.user.clientId) {
       const copilot = new CopilotAPI(this.user.token)
       if (this.user.internalUserId) {
         const currentInternalUser = await copilot.getInternalUser(this.user.internalUserId)
