@@ -529,7 +529,7 @@ export class TasksService extends BaseService {
         return {
           OR: [
             {
-              parent: { OR: [{ companyId: { notIn: accesibleCompanyIds } }, { companyId: null }] },
+              parent: { companyId: { notIn: accesibleCompanyIds } },
             },
             {
               parentId: null,
