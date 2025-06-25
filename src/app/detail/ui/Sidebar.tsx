@@ -168,13 +168,7 @@ export const Sidebar = ({
               <SelectorButton
                 disabled={disabled}
                 padding="4px 8px"
-                startIcon={
-                  (assigneeValue as IAssigneeCombined)?.name == 'No assignee' ? (
-                    <AssigneePlaceholder />
-                  ) : (
-                    <CopilotAvatar currentAssignee={assigneeValue} />
-                  )
-                }
+                startIcon={<CopilotAvatar currentAssignee={assigneeValue} />}
                 outlined={true}
                 buttonContent={
                   <Typography
