@@ -9,15 +9,12 @@ import { useSelector } from 'react-redux'
 
 export const CopilotSelector = ({
   onChange,
-  onEmptySelection,
   name,
   initialValue,
   hideClientsList,
   hideIusList,
 }: {
   onChange: (inputValue: InputValue[]) => void
-  // Triggered when the user clicks away from the selector without selecting an option / by removing existing options
-  onEmptySelection?: () => unknown
   name: string
   initialValue?: IAssigneeCombined
   hideClientsList?: boolean
@@ -30,8 +27,6 @@ export const CopilotSelector = ({
   const [currentlySelected, setCurrentlySelected] = useState<InputValue[]>(
     initialAssignee ? selectorOptionsToInputValue(initialAssignee) : [],
   )
-
-  const handleBlur = () => !currentlySelected.length && onEmptySelection?.()
 
   return (
     <>
@@ -48,7 +43,6 @@ export const CopilotSelector = ({
           setCurrentlySelected(inputValue)
           onChange(inputValue)
         }}
-        onBlur={handleBlur}
         grouped={true}
         limitSelectedOptions={1}
       />
@@ -60,7 +54,6 @@ interface CopilotPopSelectorProps {
   buttonContent: ReactNode
   disabled?: boolean
   onClick?: () => void
-  onEmptySelection?: () => unknown
   name: string
   onChange: (inputValue: InputValue[]) => void
   initialValue?: IAssigneeCombined
@@ -73,7 +66,6 @@ export const CopilotPopSelector = ({
   disabled = false,
   name,
   onChange,
-  onEmptySelection,
   initialValue,
   hideClientsList,
   hideIusList,
@@ -126,12 +118,9 @@ export const CopilotPopSelector = ({
             hideIusList={hideIusList}
             initialValue={initialValue}
             name={name}
-            onEmptySelection={onEmptySelection}
             onChange={(inputValue) => {
-              if (inputValue.length) {
-                onChange(inputValue)
-                setAnchorEl(null)
-              }
+              onChange(inputValue)
+              setAnchorEl(null)
             }}
           />
         </Popper>

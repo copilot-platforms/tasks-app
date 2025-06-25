@@ -108,11 +108,6 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate 
     }
   }
 
-  const handleUnassignment = useCallback(() => {
-    setAssigneeValue(NoAssignee)
-    updateAssignee(token!, task.id, null, null, null) // This is a safe non-null asssertion since callback is recomputed as token is loaded
-  }, [token, task.id])
-
   const getAssigneeValue = (userIds?: UserIdsType) => {
     if (!userIds) {
       return NoAssignee
@@ -269,7 +264,6 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate 
               return value
             })()}
             onChange={handleAssigneeChange}
-            onEmptySelection={handleUnassignment}
             buttonContent={
               <Box
                 sx={{

@@ -336,17 +336,9 @@ export const NewTaskCard = ({
             name="Set assignee"
             onChange={(inputValue) => {
               const newUserIds = getSelectedUserIds(inputValue)
-              const selectedAssignee = assignee.find((assignee) => assignee.id === inputValue[0].id)
+              const selectedAssignee = assignee.find((assignee) => assignee.id === inputValue[0]?.id)
               setAssigneeValue(selectedAssignee || null)
               handleFieldChange('userIds', newUserIds)
-            }}
-            onEmptySelection={() => {
-              setAssigneeValue(null)
-              handleFieldChange('userIds', {
-                [UserIds.INTERNAL_USER_ID]: null,
-                [UserIds.CLIENT_ID]: null,
-                [UserIds.COMPANY_ID]: null,
-              })
             }}
             initialValue={assigneeValue || undefined}
             buttonContent={
