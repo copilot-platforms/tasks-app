@@ -183,7 +183,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
                     <Typography
                       variant="bodySm"
                       sx={{
-                        color: (theme) => theme.color.text.textDisabled,
+                        color: (theme) => (assigneeValue ? theme.color.gray[600] : theme.color.text.textDisabled),
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
