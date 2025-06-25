@@ -78,7 +78,7 @@ export const Sidebar = ({
       const currentAssignee = assignee.find((assignee) => assignee.id == activeTask?.assigneeId)
       setAssigneeValue(currentAssignee)
     }
-  }, [activeTask, workflowStates, updateStatusValue])
+  }, [activeTask, workflowStates, assignee])
 
   const windowWidth = useWindowWidth()
   const isMobile = windowWidth < 600 && windowWidth !== 0
@@ -101,7 +101,7 @@ export const Sidebar = ({
     }
     const assigneeId = getAssigneeId(userIds)
     const match = assignee.find((assignee) => assignee.id === assigneeId)
-    return match ?? NoAssignee
+    return match ?? undefined
   }
 
   if (!activeTask) return <SidebarSkeleton />
@@ -118,11 +118,6 @@ export const Sidebar = ({
       setAssigneeValue(getAssigneeValue(newUserIds) as IAssigneeCombined)
       updateAssignee(newUserIds)
     }
-  }
-
-  const handleUnassignment = () => {
-    setAssigneeValue(undefined)
-    updateAssignee({ internalUserId: null, clientId: null, companyId: null })
   }
 
   if (!showSidebar) {
@@ -168,7 +163,6 @@ export const Sidebar = ({
             name="Set assignee"
             onChange={handleAssigneeChange}
             disabled={disabled}
-            onEmptySelection={handleUnassignment}
             initialValue={assigneeValue}
             buttonContent={
               <SelectorButton
@@ -315,19 +309,12 @@ export const Sidebar = ({
               name="Set assignee"
               onChange={handleAssigneeChange}
               disabled={disabled}
-              onEmptySelection={handleUnassignment}
               initialValue={assigneeValue}
               buttonContent={
                 <SelectorButton
                   disabled={disabled}
                   padding="4px 8px"
-                  startIcon={
-                    (assigneeValue as IAssigneeCombined)?.name == 'No assignee' ? (
-                      <AssigneePlaceholder />
-                    ) : (
-                      <CopilotAvatar currentAssignee={assigneeValue} />
-                    )
-                  }
+                  startIcon={<CopilotAvatar currentAssignee={assigneeValue} />}
                   outlined={true}
                   buttonContent={
                     <Typography
