@@ -2,7 +2,7 @@ export const fetchCache = 'force-no-store'
 
 import { createMultipleAttachments } from '@/app/(home)/actions'
 import { getViewSettings } from '@/app/(home)/page'
-import { ClientAssigneeCacheGetter } from '@/app/_cache/AssigneeCacheGetter'
+import { AssigneeCacheGetter } from '@/app/_cache/AssigneeCacheGetter'
 import { AllTasksFetcher } from '@/app/_fetchers/AllTasksFetcher'
 import { AssigneeFetcher } from '@/app/_fetchers/AssigneeFetcher'
 import { TemplatesFetcher } from '@/app/_fetchers/TemplatesFetcher'
@@ -78,7 +78,7 @@ export default async function ClientPage({ searchParams }: { searchParams: { tok
   return (
     <>
       <Suspense>{!previewMode && <ValidateNotificationCountFetcher token={token} />}</Suspense>
-      <ClientAssigneeCacheGetter lookupKey={`${tokenPayload.clientId}.${tokenPayload.companyId}`} />
+      <AssigneeCacheGetter lookupKey={`${tokenPayload.clientId}.${tokenPayload.companyId}`} />
       <ClientSideStateUpdate
         workflowStates={workflowStates}
         tasks={tasks}
