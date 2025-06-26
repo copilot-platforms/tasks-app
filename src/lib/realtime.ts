@@ -135,7 +135,6 @@ export class RealtimeHandler {
       // If task is accessible, add it to the tasks array
       if (!isTaskVisibleInBoard && !isParentTaskAccessible) {
         store.dispatch(setTasks([...tasks, newTask]))
-        store.dispatch(setAccessibleTasks([...accessibleTasks, newTask]))
       }
     }
 
@@ -157,13 +156,14 @@ export class RealtimeHandler {
       store.dispatch(setActiveTask(newTask))
     } //updating active task if a user is currently in details page of the task being udpated
     // Update it in accessible tasks
-    store.dispatch(
-      setAccessibleTasks(
-        accessibleTasks.map((task) => {
-          return task.id === newTask.id ? { ...newTask, body: newTask.body || task.body } : task
-        }),
-      ),
-    )
+    const updatedAccessibleTasks = [
+      ...accessibleTasks.filter((t) => t.id !== newTask.id),
+      {
+        ...newTask,
+        body: newTask.body || accessibleTasks.find((t) => t.id === newTask.id)?.body,
+      },
+    ]
+    store.dispatch(setAccessibleTasks(updatedAccessibleTasks))
   }
 
   /**
@@ -180,9 +180,9 @@ export class RealtimeHandler {
 
     // If subtask is no longer accessible, yeet it out from tasks & accessibleTasks arrays
     if (!this.isSubtaskAccessible(newTask)) {
+      store.dispatch(setAccessibleTasks(accessibleTasks.filter((task) => task.id !== newTask.id)))
       if (tasks.some((task) => task.id === newTask.id)) {
         store.dispatch(setTasks(tasks.filter((task) => task.id !== newTask.id)))
-        store.dispatch(setAccessibleTasks(accessibleTasks.filter((task) => task.id !== newTask.id)))
       }
       return this.redirectToBoard(newTask)
     }
