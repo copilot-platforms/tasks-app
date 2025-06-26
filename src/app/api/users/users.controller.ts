@@ -15,7 +15,7 @@ export const getUsers = async (req: NextRequest) => {
 
   // "search" param condition has been separated so we can unplug it in the future after CopilotAPI implements keyword match natively
   const users = await (keyword
-    ? usersService.getFilteredUsersStartingWith(keyword, userType, limit, nextToken)
+    ? usersService.getFilteredUsersStartingWith(keyword, userType, limit, nextToken) //keyword is not being used after we migrated to new Assignee Selector (UserCompanySelector). This was primarily used to filter out assignee on the old selector's autocomplete.
     : usersService.getGroupedUsers(limit, undefined))
 
   return NextResponse.json({ users })
