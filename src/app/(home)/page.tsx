@@ -1,9 +1,10 @@
 export const fetchCache = 'force-no-store'
 
+import { createMultipleAttachments } from '@/app/(home)/actions'
+import { ClientAssigneeCacheGetter } from '@/app/_cache/AssigneeCacheGetter'
 import { AllTasksFetcher } from '@/app/_fetchers/AllTasksFetcher'
 import { AssigneeFetcher } from '@/app/_fetchers/AssigneeFetcher'
 import { TemplatesFetcher } from '@/app/_fetchers/TemplatesFetcher'
-import { createMultipleAttachments } from '@/app/(home)/actions'
 import { ModalNewTaskForm } from '@/app/ui/Modal_NewTaskForm'
 import { TaskBoard } from '@/app/ui/TaskBoard'
 import { SilentError } from '@/components/templates/SilentError'
@@ -102,36 +103,39 @@ export default async function Main({ searchParams }: { searchParams: { token: st
 
   console.info(`app/page.tsx | Serving user ${token} with payload`, tokenPayload)
   return (
-    <ClientSideStateUpdate
-      workflowStates={workflowStates}
-      tasks={tasks}
-      token={token}
-      viewSettings={viewSettings}
-      tokenPayload={tokenPayload}
-      clearExpandedComments={true}
-    >
-      {/* Async fetchers */}
-      <Suspense fallback={null}>
-        <AssigneeFetcher token={token} viewSettings={viewSettings} />
-      </Suspense>
-      <Suspense fallback={null}>
-        <TemplatesFetcher token={token} />
-      </Suspense>
-      <Suspense fallback={null}>
-        <AllTasksFetcher token={token} />
-      </Suspense>
+    <>
+      <ClientAssigneeCacheGetter lookupKey={tokenPayload.internalUserId!} />
+      <ClientSideStateUpdate
+        workflowStates={workflowStates}
+        tasks={tasks}
+        token={token}
+        viewSettings={viewSettings}
+        tokenPayload={tokenPayload}
+        clearExpandedComments={true}
+      >
+        {/* Async fetchers */}
+        <Suspense fallback={null}>
+          <AssigneeFetcher token={token} viewSettings={viewSettings} tokenPayload={tokenPayload} />
+        </Suspense>
+        <Suspense fallback={null}>
+          <TemplatesFetcher token={token} />
+        </Suspense>
+        <Suspense fallback={null}>
+          <AllTasksFetcher token={token} />
+        </Suspense>
 
-      <RealTime tokenPayload={tokenPayload}>
-        <DndWrapper>
-          <TaskBoard mode={UserRole.IU} workspace={workspace} />
-        </DndWrapper>
-        <ModalNewTaskForm
-          handleCreateMultipleAttachments={async (attachments: CreateAttachmentRequest[]) => {
-            'use server'
-            await createMultipleAttachments(token, attachments)
-          }}
-        />
-      </RealTime>
-    </ClientSideStateUpdate>
+        <RealTime tokenPayload={tokenPayload}>
+          <DndWrapper>
+            <TaskBoard mode={UserRole.IU} workspace={workspace} />
+          </DndWrapper>
+          <ModalNewTaskForm
+            handleCreateMultipleAttachments={async (attachments: CreateAttachmentRequest[]) => {
+              'use server'
+              await createMultipleAttachments(token, attachments)
+            }}
+          />
+        </RealTime>
+      </ClientSideStateUpdate>
+    </>
   )
 }

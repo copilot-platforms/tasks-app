@@ -1,10 +1,12 @@
 export const fetchCache = 'force-no-store'
 
-import { AllTasksFetcher } from '@/app/_fetchers/AllTasksFetcher'
-import { AssigneeFetcher } from '@/app/_fetchers/AssigneeFetcher'
-import { ValidateNotificationCountFetcher } from '@/app/_fetchers/ValidateNotificationCountFetcher'
 import { createMultipleAttachments } from '@/app/(home)/actions'
 import { getViewSettings } from '@/app/(home)/page'
+import { ClientAssigneeCacheGetter } from '@/app/_cache/AssigneeCacheGetter'
+import { AllTasksFetcher } from '@/app/_fetchers/AllTasksFetcher'
+import { AssigneeFetcher } from '@/app/_fetchers/AssigneeFetcher'
+import { TemplatesFetcher } from '@/app/_fetchers/TemplatesFetcher'
+import { ValidateNotificationCountFetcher } from '@/app/_fetchers/ValidateNotificationCountFetcher'
 import { ModalNewTaskForm } from '@/app/ui/Modal_NewTaskForm'
 import { TaskBoard } from '@/app/ui/TaskBoard'
 import { TaskBoardAppBridge } from '@/app/ui/TaskBoardAppBridge'
@@ -24,7 +26,6 @@ import { redirectIfTaskCta } from '@/utils/redirect'
 import { UserRole } from '@api/core/types/user'
 import { Suspense } from 'react'
 import { z } from 'zod'
-import { TemplatesFetcher } from '@/app/_fetchers/TemplatesFetcher'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -63,8 +64,8 @@ export default async function ClientPage({ searchParams }: { searchParams: { tok
   }
   redirectIfTaskCta(searchParams, UserType.CLIENT_USER)
   const [workflowStates, tasks, viewSettings, tokenPayload, workspace] = await Promise.all([
-    await getAllWorkflowStates(token),
-    await getAllTasks(token),
+    getAllWorkflowStates(token),
+    getAllTasks(token),
     getViewSettings(token),
     getTokenPayload(token),
     getWorkspace(token),
@@ -77,6 +78,7 @@ export default async function ClientPage({ searchParams }: { searchParams: { tok
   return (
     <>
       <Suspense>{!previewMode && <ValidateNotificationCountFetcher token={token} />}</Suspense>
+      <ClientAssigneeCacheGetter lookupKey={`${tokenPayload.clientId}.${tokenPayload.companyId}`} />
       <ClientSideStateUpdate
         workflowStates={workflowStates}
         tasks={tasks}
@@ -91,6 +93,7 @@ export default async function ClientPage({ searchParams }: { searchParams: { tok
             token={token}
             userType={previewMode ? UserType.INTERNAL_USER : UserType.CLIENT_USER}
             isPreview={!!getPreviewMode(tokenPayload)}
+            tokenPayload={tokenPayload}
           />
         </Suspense>
         <Suspense fallback={null}>{previewMode && <TemplatesFetcher token={token} />}</Suspense>
