@@ -1,6 +1,7 @@
 'use client'
 
 import { IAssigneeCombined } from '@/types/interfaces'
+import { useEffect } from 'react'
 
 interface ClientAssigneeCacheSetterProps {
   lookupKey: string
@@ -16,6 +17,11 @@ interface ClientAssigneeCacheSetterProps {
  * - (Client) User switches companies
  */
 export const AssigneeCacheSetter = ({ lookupKey, assignee }: ClientAssigneeCacheSetterProps) => {
-  localStorage.setItem(`assignees.${lookupKey}`, JSON.stringify(assignee))
-  return <></>
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(`assignees.${lookupKey}`, JSON.stringify(assignee))
+    }
+  }, [lookupKey, assignee])
+
+  return null
 }
