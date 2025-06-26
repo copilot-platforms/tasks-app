@@ -24,7 +24,7 @@ export const handlePreviewMode = (previewMode: NonNullable<PreviewMode>, tokenPa
   store.dispatch(
     setFilterOptions({
       optionType: FilterOptions.ASSIGNEE,
-      newValue: { internalUserId: null, clientId: previewClientId!, companyId: previewCompanyId! },
+      newValue: { internalUserId: null, clientId: previewClientId ?? null, companyId: previewCompanyId ?? null },
     }),
   )
 }
