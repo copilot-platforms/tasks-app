@@ -1,7 +1,7 @@
 export const fetchCache = 'force-no-store'
 
 import { createMultipleAttachments } from '@/app/(home)/actions'
-import { ClientAssigneeCacheGetter } from '@/app/_cache/AssigneeCacheGetter'
+import { AssigneeCacheGetter } from '@/app/_cache/AssigneeCacheGetter'
 import { AllTasksFetcher } from '@/app/_fetchers/AllTasksFetcher'
 import { AssigneeFetcher } from '@/app/_fetchers/AssigneeFetcher'
 import { TemplatesFetcher } from '@/app/_fetchers/TemplatesFetcher'
@@ -71,13 +71,6 @@ export async function getViewSettings(token: string): Promise<CreateViewSettings
   return await res.json()
 }
 
-async function getAccessibleTasks(token: string) {
-  const res = await fetch(`${apiUrl}/api/tasks?token=${token}&all=1`)
-
-  const data = await res.json()
-  return data.tasks
-}
-
 export default async function Main({ searchParams }: { searchParams: { token: string; taskId?: string } }) {
   const token = searchParams.token
 
@@ -104,7 +97,7 @@ export default async function Main({ searchParams }: { searchParams: { token: st
   console.info(`app/page.tsx | Serving user ${token} with payload`, tokenPayload)
   return (
     <>
-      <ClientAssigneeCacheGetter lookupKey={tokenPayload.internalUserId!} />
+      <AssigneeCacheGetter lookupKey={tokenPayload.internalUserId!} />
       <ClientSideStateUpdate
         workflowStates={workflowStates}
         tasks={tasks}
