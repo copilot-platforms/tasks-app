@@ -15,7 +15,7 @@ import {
   setViewSettings,
   setWorkflowStates,
 } from '@/redux/features/taskBoardSlice'
-import { setActiveTaskAssignees, setAssigneeSuggestion, setExpandedComments } from '@/redux/features/taskDetailsSlice'
+import { setAssigneeSuggestion, setExpandedComments } from '@/redux/features/taskDetailsSlice'
 import { setTemplates } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
 import { Token } from '@/types/common'
@@ -47,7 +47,6 @@ export const ClientSideStateUpdate = ({
   clearExpandedComments,
   accesibleTaskIds,
   accessibleTasks,
-  activeTaskAssignees,
   selectorAssignee,
 }: {
   children: ReactNode
@@ -63,7 +62,6 @@ export const ClientSideStateUpdate = ({
   clearExpandedComments?: boolean
   accesibleTaskIds?: string[]
   accessibleTasks?: TaskResponse[]
-  activeTaskAssignees?: IAssigneeCombined[]
   selectorAssignee?: ISelectorAssignee
 }) => {
   const { tasks: tasksInStore, viewSettingsTemp } = useSelector(selectTaskBoard)
@@ -127,15 +125,11 @@ export const ClientSideStateUpdate = ({
     if (accessibleTasks) {
       store.dispatch(setAccessibleTasks(accessibleTasks))
     }
-    if (activeTaskAssignees) {
-      store.dispatch(setActiveTaskAssignees(activeTaskAssignees))
-    }
     if (selectorAssignee) {
       store.dispatch(setSelectorAssignee(selectorAssignee))
     }
     return () => {
       store.dispatch(setActiveTask(undefined))
-      store.dispatch(setActiveTaskAssignees([]))
     } //when component is unmounted, we need to clear the active task.
   }, [
     workflowStates,
@@ -149,7 +143,6 @@ export const ClientSideStateUpdate = ({
     task,
     accesibleTaskIds,
     accessibleTasks,
-    activeTaskAssignees,
   ])
 
   return children
