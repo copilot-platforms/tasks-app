@@ -30,7 +30,7 @@ export const getTempTask = (
       .union([ClientResponseSchema, InternalUsersSchema, CompanyResponseSchema])
       .optional()
       .parse(assignee.find((a) => a.id === (payload.internalUserId || payload.clientId || payload.companyId))),
-    createdAt: new Date(),
+    createdAt: new Date().toISOString(),
     lastArchivedDate: new Date().toISOString(),
     isArchived: false,
     parentId: parentId,
