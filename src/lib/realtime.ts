@@ -33,8 +33,8 @@ export class RealtimeHandler {
     // causing tasks to bounce around on hover
     return {
       ...newTask,
-      createdAt: newTask.createdAt && new Date(newTask.createdAt + 'Z'),
-      updatedAt: newTask.updatedAt && new Date(newTask.updatedAt + 'Z'),
+      createdAt: newTask.createdAt && new Date(newTask.createdAt + 'Z').toISOString(),
+      updatedAt: newTask.updatedAt && new Date(newTask.updatedAt + 'Z').toISOString(),
     }
   }
 
