@@ -9,7 +9,7 @@ import { setShowModal } from '@/redux/features/createTaskSlice'
 import store from '@/redux/store'
 import { UserRole } from '@api/core/types/user'
 import { useRouter } from 'next/navigation'
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 interface TaskBoardAppBridgeProps {
   token: string
@@ -20,11 +20,13 @@ interface TaskBoardAppBridgeProps {
 
 export const TaskBoardAppBridge = ({ token, role, portalUrl, isTaskBoardEmpty = false }: TaskBoardAppBridgeProps) => {
   const router = useRouter()
-
   const [awake, setAwake] = useState(false)
-  setTimeout(() => {
-    setAwake(true)
-  }, 0)
+
+  useEffect(() => {
+    setTimeout(() => {
+      setAwake(true)
+    }, 0)
+  }, [])
 
   const handleTaskCreate = useCallback(() => {
     store.dispatch(setShowModal())
