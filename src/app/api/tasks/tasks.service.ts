@@ -666,18 +666,22 @@ export class TasksService extends BaseService {
     }
   }
 
-  async getIncompleteTasksForCompany(assigneeId: string): Promise<(Task & { workflowState: WorkflowState })[]> {
+  async getIncompleteTasksForCompany(assigneeId: string): Promise<TaskWithWorkflowState[]> {
     // This works across workspaces
-    return await this.db.task.findMany({
+    const tasks = await this.db.task.findMany({
       where: {
-        assigneeId,
-        assigneeType: AssigneeType.company,
+        OR: [
+          { assigneeId, assigneeType: AssigneeType.company },
+          { companyId: assigneeId, clientId: null },
+        ],
         workflowState: { type: { not: StateType.completed } },
         isArchived: false,
       },
       relationLoadStrategy: 'join',
       include: { workflowState: true },
     })
+    console.info(`Found ${tasks.length} incomplete tasks for company ${assigneeId}`)
+    return tasks
   }
 
   async deleteAllAssigneeTasks(assigneeId: string, assigneeType: AssigneeType) {

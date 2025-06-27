@@ -65,7 +65,7 @@ class WebhookService extends BaseService {
       company = null
     }
     if (!company?.name) {
-      // Client does not have a fixed company!
+      console.info("Ignoring client.activated event for client that doesn't have a company")
       return
     }
 
