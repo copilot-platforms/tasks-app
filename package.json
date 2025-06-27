@@ -2,6 +2,9 @@
   "name": "task-app",
   "description": "A comprehensive task management app",
   "version": "0.1.0",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "keywords": [
     "nextjs",
     "nodejs"
