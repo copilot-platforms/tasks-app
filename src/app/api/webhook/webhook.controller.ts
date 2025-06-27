@@ -1,5 +1,6 @@
 import { ClientUpdatedEventDataSchema, HANDLEABLE_EVENT } from '@/types/webhook'
 import authenticate from '@api/core/utils/authenticate'
+import { ValidateCountService } from '@api/notification/validate-count/validateCount.service'
 import WebhookService from '@api/webhook/webhook.service'
 import { NextRequest, NextResponse } from 'next/server'
 
@@ -24,6 +25,8 @@ export const handleWebhookEvent = async (req: NextRequest) => {
     // See: https://linear.app/copilotplatforms/issue/OUT-1927/cu-can-see-the-in-product-notification-for-a-completed-company-task
     case HANDLEABLE_EVENT.ClientActivated:
       await webhookService.handleClientCreated(assigneeId)
+      const validateCountService = new ValidateCountService(user)
+      await validateCountService.fixClientNotificationCount(user.clientId!)
       break
     case HANDLEABLE_EVENT.ClientUpdated:
       await webhookService.handleClientUpdated(ClientUpdatedEventDataSchema.parse(webhookEvent.data))
