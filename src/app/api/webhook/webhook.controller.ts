@@ -24,7 +24,7 @@ export const handleWebhookEvent = async (req: NextRequest) => {
     // Any notifications dispatched / deleted in this time period will not be synced to this not-yet activated client!
     // See: https://linear.app/copilotplatforms/issue/OUT-1927/cu-can-see-the-in-product-notification-for-a-completed-company-task
     case HANDLEABLE_EVENT.ClientActivated:
-      await webhookService.handleClientCreated(assigneeId)
+      // await webhookService.handleClientCreated(assigneeId)
       const validateCountService = new ValidateCountService(user)
       await validateCountService.fixClientNotificationCount(user.clientId!)
       break
