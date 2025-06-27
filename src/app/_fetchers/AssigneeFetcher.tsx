@@ -39,7 +39,14 @@ const fetchAssignee = async (token: string, userType?: UserType, isPreview?: boo
   })
   return (await res.json()).users as IAssignee
 }
-export const AssigneeFetcher = async ({ token, userType, viewSettings, isPreview, task, tokenPayload }: AssigneeFetcherProps) => {
+export const AssigneeFetcher = async ({
+  token,
+  userType,
+  viewSettings,
+  isPreview,
+  task,
+  tokenPayload,
+}: AssigneeFetcherProps) => {
   const fetchedAssignee = await fetchAssignee(token, userType, isPreview)
 
   const assignableUsersWithType = addTypeToAssignee(fetchedAssignee)
