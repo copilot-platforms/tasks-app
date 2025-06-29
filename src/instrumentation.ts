@@ -1,8 +1,11 @@
-export async function register() {
-  if (process.env.NEXT_RUNTIME === 'nodejs') {
+/**
+ * Registers Sentry instrumentation based on the runtime environment.
+ */
+export const register = async (): Promise<void> => {
+  const runtime = process.env.NEXT_RUNTIME as 'nodejs' | 'edge' | undefined
+  if (runtime === 'nodejs') {
     await import('../sentry.server.config')
-  }
-  if (process.env.NEXT_RUNTIME === 'edge') {
+  } else if (runtime === 'edge') {
     await import('../sentry.edge.config')
   }
 }

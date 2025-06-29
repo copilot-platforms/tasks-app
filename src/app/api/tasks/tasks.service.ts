@@ -164,7 +164,7 @@ export class TasksService extends BaseService {
     const copilot = new CopilotAPI(this.user.token)
 
     //generate the label
-    const labelMappingService = new LabelMappingService(this.user)
+    const labelMappingService = new LabelMappingService({ user: this.user })
 
     let validatedIds = {
       internalUserId: data.internalUserId ?? null,
@@ -260,7 +260,7 @@ export class TasksService extends BaseService {
 
         // Increment parent task's subtask count, if exists
         if (newTask.parentId) {
-          const subtaskService = new SubtaskService(this.user)
+          const subtaskService = new SubtaskService({ user: this.user })
           await subtaskService.addSubtaskCount(newTask.parentId)
         }
       } catch (e: unknown) {
@@ -368,13 +368,13 @@ export class TasksService extends BaseService {
     })
     if (!prevTask) throw new APIError(httpStatus.NOT_FOUND, 'The requested task was not found')
 
-    const subtaskService = new SubtaskService(this.user)
+    const subtaskService = new SubtaskService({ user: this.user })
 
     let updatedTask = await this.db.$transaction(async (tx) => {
       //generate new label if prevTask has no assignee but now assigned to someone
       let label: string = prevTask.label
       if (!prevTask.assigneeId && dataWithoutUserIds.assigneeId) {
-        const labelMappingService = new LabelMappingService(this.user)
+        const labelMappingService = new LabelMappingService({ user: this.user })
         labelMappingService.setTransaction(tx as PrismaClient)
         //delete the existing label
         await labelMappingService.deleteLabel(prevTask.label)
@@ -451,7 +451,7 @@ export class TasksService extends BaseService {
     }
 
     //delete the associated label
-    const labelMappingService = new LabelMappingService(this.user)
+    const labelMappingService = new LabelMappingService({ user: this.user })
 
     const updatedTask = await this.db.$transaction(async (tx) => {
       labelMappingService.setTransaction(tx as PrismaClient)
@@ -463,7 +463,7 @@ export class TasksService extends BaseService {
         include: { workflowState: true },
         data: { deletedAt: new Date(), deletedBy: deletedBy },
       })
-      const subtaskService = new SubtaskService(this.user)
+      const subtaskService = new SubtaskService({ user: this.user })
       subtaskService.setTransaction(tx as PrismaClient)
       if (task.parentId) {
         await subtaskService.decreaseSubtaskCount(task.parentId)
@@ -482,11 +482,6 @@ export class TasksService extends BaseService {
     ])
 
     return updatedTask
-
-    // Logic to remove internal user notifications when a task is deleted / assignee is deleted
-    // ...In case requirements change later again
-    // const notificationService = new NotificationService(this.user)
-    // await notificationService.deleteInternalUserNotificationForTask(id)
   }
 
   async getPathOfTask(id: string) {
@@ -774,7 +769,7 @@ export class TasksService extends BaseService {
       ) as Promise<AncestorTaskResponse>[],
     )
 
-    const subtaskService = new SubtaskService(this.user)
+    const subtaskService = new SubtaskService({ user: this.user })
     return await subtaskService.getAccessiblePathTasks(parentTasks)
   }
 
@@ -917,7 +912,8 @@ export class TasksService extends BaseService {
     throw new APIError(httpStatus.BAD_REQUEST, `At least one of internalUserId, clientId, or companyId is required`)
   }
 
-  //The function below should be removed after we apply the userIds replacement for assigneeId and assigneeType for the webApp too. The method below is a temporary code for maintaining consistency on publicAPI and web app.
+  // Temporary: For maintaining consistency between public API and web app.
+  // To be removed after userIds replacement for assigneeId/assigneeType is complete.
   private setAssigneeFromPublicApi(validatedUserIds: {
     internalUserId: string | null
     clientId: string | null
@@ -931,43 +927,32 @@ export class TasksService extends BaseService {
       { id: validatedUserIds.clientId, type: AssigneeType.client },
       { id: validatedUserIds.companyId, type: AssigneeType.company },
     ]
-
     const assignee = assigneeMap.find((entry) => entry.id)
     return assignee ? { assigneeId: assignee.id, assigneeType: assignee.type } : { assigneeId: null, assigneeType: null }
   }
 
-  //The function below should be removed after we apply the userIds replacement for assigneeId and assigneeType for the webApp too. The method below is a temporary code for maintaining consistency on publicAPI and web app.
+  // Temporary: For maintaining consistency between public API and web app.
+  // To be removed after userIds replacement for assigneeId/assigneeType is complete.
   private async setUserIdsFromWebApi(assignee: { id: string | null; type: string | null }): Promise<{
     internalUserId: string | null
     clientId: string | null
     companyId: string | null
   }> {
-    let internalUserId: string | null = null
-    let clientId: string | null = null
-    let companyId: string | null = null
-
     if (!assignee.id || !assignee.type) {
-      return { internalUserId, clientId, companyId }
+      return { internalUserId: null, clientId: null, companyId: null }
     }
-
-    switch (assignee.type) {
-      case AssigneeType.internalUser:
-        internalUserId = assignee.id
-        break
-
-      case AssigneeType.client:
-        clientId = assignee.id
-        const copilot = new CopilotAPI(this.user.token)
-        const client = await copilot.getClient(assignee.id)
-        companyId = client?.companyId ?? null
-        break
-
-      case AssigneeType.company:
-        companyId = assignee.id
-        break
+    if (assignee.type === AssigneeType.internalUser) {
+      return { internalUserId: assignee.id, clientId: null, companyId: null }
     }
-
-    return { internalUserId, clientId, companyId }
+    if (assignee.type === AssigneeType.client) {
+      const copilot = new CopilotAPI(this.user.token)
+      const client = await copilot.getClient(assignee.id)
+      return { internalUserId: null, clientId: assignee.id, companyId: client?.companyId ?? null }
+    }
+    if (assignee.type === AssigneeType.company) {
+      return { internalUserId: null, clientId: null, companyId: assignee.id }
+    }
+    return { internalUserId: null, clientId: null, companyId: null }
   }
 
   private getAssigneeFromUserIds(userIds: {

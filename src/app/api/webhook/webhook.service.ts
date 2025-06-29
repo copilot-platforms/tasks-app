@@ -16,7 +16,7 @@ import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 class WebhookService extends BaseService {
   private copilot
   constructor(user: User, customCopilotApiKey?: string) {
-    super(user, customCopilotApiKey)
+    super({ user, customApiKey: customCopilotApiKey })
     this.copilot = new CopilotAPI(this.user.token)
   }
 
@@ -69,7 +69,7 @@ class WebhookService extends BaseService {
       return
     }
 
-    const tasksService = new TasksService(this.user)
+    const tasksService = new TasksService({ user: this.user })
     const tasks = await tasksService.getIncompleteTasksForCompany(company.id)
     if (!tasks.length) return
 
@@ -109,7 +109,7 @@ class WebhookService extends BaseService {
     // Now add appropriate records to our ClientNotifications table
     const insertBottleneck = new Bottleneck({ minTime: 100, maxConcurrent: 4 })
     const insertPromises = []
-    const notificationService = new NotificationService(this.user)
+    const notificationService = new NotificationService({ user: this.user })
     for (let i = 0; i < notifications.length; i++) {
       insertPromises.push(
         // This is assuming a 1:1 map for tasks and notifications
@@ -120,7 +120,7 @@ class WebhookService extends BaseService {
   }
 
   async handleUserDeleted(assigneeId: string, assigneeType: AssigneeType) {
-    const tasksService = new TasksService(this.user)
+    const tasksService = new TasksService({ user: this.user })
     // Delete corresponding tasks
     console.info(`Deleting all tasks for ${assigneeType} ${assigneeId}`)
     const tasks = await tasksService.deleteAllAssigneeTasks(assigneeId, assigneeType)

@@ -54,7 +54,7 @@ export const sendReplyCreateNotifications = task({
       promise && queueNotificationPromise(promise) // It's certain we will get a promise here
     }
 
-    const commentService = new CommentService(user)
+    const commentService = new CommentService({ user })
     const parentComment = await commentService.getCommentById(comment.parentId)
     if (parentComment) {
       // Queue notification for parent comment initiator, if:
@@ -82,7 +82,7 @@ export const sendReplyCreateNotifications = task({
 
 async function getNotificationDetails(copilot: CopilotAPI, user: User, comment: Comment) {
   // Get parent task for title
-  const tasksService = new TasksService(user)
+  const tasksService = new TasksService({ user })
   const task = await tasksService.getOneTask(comment.taskId)
   const senderType = user.internalUserId ? CommentInitiator.internalUser : CommentInitiator.client
   const senderId = z

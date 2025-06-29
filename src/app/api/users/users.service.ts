@@ -18,7 +18,7 @@ class UsersService extends BaseService {
   private DEFAULT_USERS_LIMIT = 10
 
   constructor(user: User) {
-    super(user)
+    super({ user })
     this.copilot = new CopilotAPI(this.user.token)
   }
 

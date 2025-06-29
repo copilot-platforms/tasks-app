@@ -4,7 +4,10 @@ import { DateString } from '@/types/date'
 import dayjs from 'dayjs'
 import httpStatus from 'http-status'
 
-export function formatDate(dateString: string): DateString {
+/**
+ * Formats a date string to YYYY-MM-DD.
+ */
+export const formatDate = (dateString: string): DateString => {
   // Parse the date from the input format
   const date = new Date(dateString)
   const day = String(date.getDate()).padStart(2, '0')
@@ -19,7 +22,12 @@ export function formatDate(dateString: string): DateString {
  * @param {DateString} dateString In format YYYY-MM-DD (This is human readable date - month starts from 1, not 0!)
  * @returns {Date}
  */
-export function createDateFromFormattedDateString(dateString: string): Date {
+/**
+ * Util to convert datestring to a Date object
+ * @param {DateString} dateString In format YYYY-MM-DD (This is human readable date - month starts from 1, not 0!)
+ * @returns {Date}
+ */
+export const createDateFromFormattedDateString = (dateString: string): Date => {
   // Split the date string into day, month, and year
   const [year, month, day] = dateString.split('-').map(Number)
 
@@ -32,12 +40,17 @@ export function createDateFromFormattedDateString(dateString: string): Date {
  * @param {DateString} datestring In format YYYY-MM-DD (This is human readable date - month starts from 1, not 0!)
  * @returns {string}
  */
+/**
+ * Util to convert datestring to a RFC3339 format
+ * @param {DateString} datestring In format YYYY-MM-DD (This is human readable date - month starts from 1, not 0!)
+ * @returns {string}
+ */
 export const toRFC3339 = (datestring: string | Date | null): RFC3339Date | null => {
   if (!datestring) return null
   const date = typeof datestring === 'string' ? new Date(datestring) : datestring
 
   if (isNaN(date.getTime())) {
-    throw new Error('Invalid date input')
+    throw new APIError(httpStatus.BAD_REQUEST, 'Invalid date input')
   }
 
   // Get the ISO string and strip milliseconds
@@ -45,12 +58,18 @@ export const toRFC3339 = (datestring: string | Date | null): RFC3339Date | null 
   return RFC3339DateSchema.parse(iso.replace(/\.\d{3}Z$/, 'Z')) // Remove milliseconds
 }
 
-export const rfc3339ToDateString = (date: string | null | undefined) => {
+/**
+ * Converts RFC3339 string to YYYY-MM-DD date string.
+ */
+export const rfc3339ToDateString = (date: string | null | undefined): string | null | undefined => {
   if (date === null) return null
   if (!date) return undefined
   return new Date(date).toISOString().slice(0, 10)
 }
 
-export const isPastDateString = (date: DateString) => {
+/**
+ * Checks if a date string is in the past.
+ */
+export const isPastDateString = (date: DateString): boolean => {
   return dayjs(date).isBefore(dayjs().format('YYYY-MM-DD'))
 }

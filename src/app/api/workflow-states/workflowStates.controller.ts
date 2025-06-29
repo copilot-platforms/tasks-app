@@ -9,7 +9,7 @@ export const getWorkflowStates = async (req: NextRequest) => {
   noStore()
   const user = await authenticate(req)
 
-  const workflowStatesService = new WorkflowStatesService(user)
+  const workflowStatesService = new WorkflowStatesService({ user })
   const workflowStates = await workflowStatesService.getAllWorkflowStates()
 
   return NextResponse.json({ workflowStates })
@@ -19,7 +19,7 @@ export const createWorkflowStates = async (req: NextRequest) => {
   const user = await authenticate(req)
 
   const data = CreateWorkflowStateRequestSchema.parse(await req.json())
-  const workflowStatesService = new WorkflowStatesService(user)
+  const workflowStatesService = new WorkflowStatesService({ user })
   const newWorkflowState = await workflowStatesService.createWorkflowStates(data)
 
   return NextResponse.json({ newWorkflowState }, { status: httpWorkflowState.CREATED })

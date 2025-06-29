@@ -11,7 +11,7 @@ import { NextRequest, NextResponse } from 'next/server'
 export const getTaskTemplatesPublic = async (req: NextRequest) => {
   const user = await authenticate(req)
   const { limit, nextToken } = getSearchParams(req.nextUrl.searchParams, ['limit', 'nextToken'])
-  const templateService = new TemplatesService(user)
+  const templateService = new TemplatesService({ user })
   const templates = await templateService.getTaskTemplates({
     limit: limit ? +limit : defaultLimit,
     lastIdCursor: nextToken ? decode(nextToken) : undefined,
@@ -24,7 +24,7 @@ export const getTaskTemplatesPublic = async (req: NextRequest) => {
 
 export const getTaskTemplatePublic = async (req: NextRequest, { params: { id } }: IdParams) => {
   const user = await authenticate(req)
-  const templatesService = new TemplatesService(user)
+  const templatesService = new TemplatesService({ user })
   const template = await templatesService.getOneTemplate(id)
   return NextResponse.json({ ...PublicTemplateSerializer.serialize(template) })
 }

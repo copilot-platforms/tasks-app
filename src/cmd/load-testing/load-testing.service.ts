@@ -109,7 +109,7 @@ class LoadTester {
         | 'companyId'
       >[] = []
       const currentUser = await authenticateWithToken(this.token, this.apiKey)
-      const labelsService = new LabelMappingService(currentUser, this.apiKey)
+      const labelsService = new LabelMappingService({ user: currentUser, customApiKey: this.apiKey })
       const workflowStates = await this.db.workflowState.findMany({
         where: {
           type: { not: 'completed' },

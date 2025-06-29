@@ -6,10 +6,10 @@ export const HexColorSchema = z.string().refine((val) => /^#([0-9A-Fa-f]{3}|[0-9
   message: 'Invalid hex color code',
 })
 
-export type CopilotListArgs = {
+export type CopilotListArgs = Readonly<{
   limit?: number
   nextToken?: string
-}
+}>
 
 export const TokenSchema = z.object({
   clientId: z.string().optional(),
@@ -17,20 +17,20 @@ export const TokenSchema = z.object({
   internalUserId: z.string().optional(),
   workspaceId: z.string(),
 })
-export type Token = z.infer<typeof TokenSchema>
+export type Token = Readonly<z.infer<typeof TokenSchema>>
 
 export const IUTokenSchema = z.object({
   internalUserId: z.string(),
   workspaceId: z.string(),
 })
-export type IUToken = z.infer<typeof IUTokenSchema>
+export type IUToken = Readonly<z.infer<typeof IUTokenSchema>>
 
 export const ClientTokenSchema = z.object({
   clientId: z.string(),
   companyId: z.string().optional(),
   workspaceId: z.string(),
 })
-export type ClientToken = z.infer<typeof ClientTokenSchema>
+export type ClientToken = Readonly<z.infer<typeof ClientTokenSchema>>
 
 export const MeResponseSchema = z.object({
   id: z.string(),

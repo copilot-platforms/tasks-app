@@ -1,19 +1,18 @@
 import { UserRole } from '@api/core/types/user'
-import { Token } from '@/types/common'
+import type { Token } from '@/types/common'
 
 /**
- * Faux model for Copilot Users (IU + Client)
- * This model is used to repressent the current user based on the token payload decrypted by Copilot SDK
+ * Domain model representing a Copilot User (InternalUser or Client).
+ * Designed to be immutable (readonly where possible) for safe API use.
  */
-class User {
-  token: string
-  role: UserRole
-  workspaceId: string
-  clientId?: string
-  companyId?: string
-  internalUserId?: string
+export default class User {
+  readonly token: string
+  readonly role: UserRole
+  readonly workspaceId: string
+  readonly clientId?: string
+  readonly companyId?: string
+  readonly internalUserId?: string
 
-  // Instantiate a User from a request token & decrypted payload
   constructor(token: string, tokenPayload: Token) {
     this.token = token
     this.role = tokenPayload.internalUserId ? UserRole.IU : UserRole.Client
@@ -23,5 +22,3 @@ class User {
     this.workspaceId = tokenPayload.workspaceId
   }
 }
-
-export default User

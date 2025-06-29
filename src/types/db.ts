@@ -1,3 +1,8 @@
 import { Task, WorkflowState } from '@prisma/client'
 
-export type TaskWithWorkflowState = Task & { workflowState: WorkflowState }
+/**
+ * Task entity with its associated workflow state.
+ */
+export type TaskWithWorkflowState = Task & {
+  readonly workflowState: WorkflowState
+}

@@ -15,7 +15,7 @@ import { unstable_noStore as noStore } from 'next/cache'
 export const createAttachment = async (req: NextRequest) => {
   const user = await authenticate(req)
   const body = CreateAttachmentRequestSchema.parse(await req.json())
-  const attachmentsService = new AttachmentsService(user)
+  const attachmentsService = new AttachmentsService({ user })
   const newAttachment = await attachmentsService.createAttachments(body)
   return NextResponse.json({ newAttachment }, { status: httpStatus.CREATED })
 }
@@ -23,7 +23,7 @@ export const createAttachment = async (req: NextRequest) => {
 export const createMultipleAttachments = async (req: NextRequest) => {
   const user = await authenticate(req)
   const body = await req.json()
-  const attachmentsService = new AttachmentsService(user)
+  const attachmentsService = new AttachmentsService({ user })
   const newAttachments = await attachmentsService.createMultipleAttachments(body)
   return NextResponse.json({ newAttachments }, { status: httpStatus.CREATED })
 }
@@ -35,14 +35,14 @@ export const getAttachments = async (req: NextRequest) => {
     throw new APIError(httpStatus.BAD_REQUEST, 'taskId is required')
   }
   const user = await authenticate(req)
-  const attachmentsService = new AttachmentsService(user)
+  const attachmentsService = new AttachmentsService({ user })
   const attachments = await attachmentsService.getAttachments(taskId)
   return NextResponse.json({ attachments })
 }
 
 export const deleteAttachment = async (req: NextRequest, { params: { id } }: IdParams) => {
   const user = await authenticate(req)
-  const attachmentsService = new AttachmentsService(user)
+  const attachmentsService = new AttachmentsService({ user })
   await attachmentsService.deleteAttachment(id)
   return new NextResponse(null, { status: httpStatus.NO_CONTENT })
 }
@@ -55,7 +55,7 @@ export const getSignedUrlUpload = async (req: NextRequest) => {
   if (!filePath) throw new APIError(httpStatus.BAD_REQUEST, 'filePath is required')
 
   const user = await authenticate(req)
-  const attachmentsService = new AttachmentsService(user)
+  const attachmentsService = new AttachmentsService({ user })
   const signedUrl = await attachmentsService.signUrlUpload(fileName, filePath)
   return NextResponse.json({ signedUrl })
 }
@@ -66,7 +66,7 @@ export const getSignedUrlFile = async (req: NextRequest) => {
     throw new APIError(httpStatus.BAD_REQUEST, 'filePath is required')
   }
   const user = await authenticate(req)
-  const attachmentsService = new AttachmentsService(user)
+  const attachmentsService = new AttachmentsService({ user })
   const signedUrl = await attachmentsService.getSignedUrl(filePath)
   return NextResponse.json({ signedUrl })
 }

@@ -34,23 +34,16 @@ interface TaskCardProps {
   href: string | UrlObject
 }
 
-export const TaskCard = ({ task, href }: TaskCardProps) => {
+import React, { useMemo } from 'react'
+
+const TaskCardInner: React.FC<TaskCardProps> = ({ task, href }) => {
   const { assignee, workflowStates, assigneeCache } = useSelector(selectTaskBoard)
 
-  const [currentAssignee, setCurrentAssignee] = useState<IAssigneeCombined | undefined>(() => {
-    return assigneeCache[task.id]
-  })
-
-  useEffect(() => {
-    if (assignee.length > 0) {
-      const currentAssignee = assignee.find((el) => el.id === task.assigneeId)
-      const finalAssignee = currentAssignee ?? NoAssignee
-      //@ts-expect-error  "type" property has mismatching types in between NoAssignee and IAssigneeCombined
-      store.dispatch(setAssigneeCache({ key: task.id, value: finalAssignee }))
-      //@ts-expect-error  "type" property has mismatching types in between NoAssignee and IAssigneeCombined
-      setCurrentAssignee(finalAssignee)
-    }
-  }, [assignee, task.id, task.assigneeId])
+  // Memoize currentAssignee to avoid unnecessary recalculations
+  const currentAssignee: IAssigneeCombined | typeof NoAssignee = useMemo(() => {
+    const found = assigneeCache[task.id] ?? assignee.find((el) => el.id === task.assigneeId)
+    return found ?? NoAssignee
+  }, [assigneeCache, assignee, task.id, task.assigneeId])
 
   return (
     <TaskCardContainer>
@@ -102,3 +95,7 @@ export const TaskCard = ({ task, href }: TaskCardProps) => {
     </TaskCardContainer>
   )
 }
+
+TaskCardInner.displayName = 'TaskCard'
+
+export const TaskCard = React.memo(TaskCardInner)

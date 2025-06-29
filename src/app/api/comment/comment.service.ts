@@ -93,7 +93,7 @@ export class CommentService extends BaseService {
       }
     }
 
-    const tasksService = new TasksService(this.user)
+    const tasksService = new TasksService({ user: this.user })
     await tasksService.setNewLastActivityLogUpdated(comment.taskId)
     return comment
   }
@@ -128,7 +128,7 @@ export class CommentService extends BaseService {
       where: filters,
       data,
     })
-    const tasksService = new TasksService(this.user)
+    const tasksService = new TasksService({ user: this.user })
     await tasksService.setNewLastActivityLogUpdated(comment.taskId)
     return comment
   }

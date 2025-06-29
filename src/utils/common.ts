@@ -1,22 +1,14 @@
 import { NextResponse } from 'next/server'
 import { CopilotApiError } from '@/types/CopilotApiError'
 
-export function respondError(message: string, status: number = 500) {
+export const respondError = (message: string, status: number = 500): NextResponse => {
   return NextResponse.json({ message }, { status })
 }
 
-export function handleError(error: unknown) {
+export const handleError = (error: unknown): NextResponse => {
   console.error(error)
-  let apiError = {
-    message: 'Something went wrong',
-    status: 500,
-  }
   if (error instanceof CopilotApiError) {
-    apiError = {
-      status: error.status,
-      message: error.body.message,
-    }
+    return respondError(error.body.message, error.status)
   }
-
-  return respondError(apiError.message, apiError.status)
+  return respondError('Something went wrong', 500)
 }
