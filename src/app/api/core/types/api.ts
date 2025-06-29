@@ -1,5 +1,5 @@
 /**
- * Resource store made accessible by Tasks API
+ * Enum of all resource types accessible by the Tasks API.
  */
 export enum Resource {
   Tasks = 'Task',
@@ -14,10 +14,10 @@ export enum Resource {
 }
 
 /**
- * NextParam when uuid is being used as a dynamic param (slug) for accessing a resource
+ * Route params for endpoints using a UUID as a dynamic param.
  */
-export type IdParams = {
-  params: {
-    id: string
+export interface IdParams {
+  readonly params: {
+    readonly id: string
   }
 }

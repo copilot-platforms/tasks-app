@@ -8,7 +8,7 @@ import { NextRequest, NextResponse } from 'next/server'
 export const getTaskTemplates = async (req: NextRequest) => {
   const user = await authenticate(req)
 
-  const templatesService = new TemplatesService(user)
+  const templatesService = new TemplatesService({ user })
   const data = await templatesService.getTaskTemplates()
 
   return NextResponse.json({ data })
@@ -18,7 +18,7 @@ export const createTaskTemplate = async (req: NextRequest) => {
   const user = await authenticate(req)
 
   const payload = CreateTemplateRequestSchema.parse(await req.json())
-  const templatesService = new TemplatesService(user)
+  const templatesService = new TemplatesService({ user })
   const data = await templatesService.createTaskTemplate(payload)
 
   return NextResponse.json({ data })
@@ -28,7 +28,7 @@ export const updateTaskTemplate = async (req: NextRequest, { params: { id } }: I
   const user = await authenticate(req)
 
   const payload = UpdateTemplateRequestSchema.parse(await req.json())
-  const templatesService = new TemplatesService(user)
+  const templatesService = new TemplatesService({ user })
   const data = await templatesService.updateTaskTemplate(id, payload)
 
   return NextResponse.json({ data })
@@ -37,7 +37,7 @@ export const updateTaskTemplate = async (req: NextRequest, { params: { id } }: I
 export const deleteTaskTemplate = async (req: NextRequest, { params: { id } }: IdParams) => {
   const user = await authenticate(req)
 
-  const templatesService = new TemplatesService(user)
+  const templatesService = new TemplatesService({ user })
   await templatesService.deleteTaskTemplate(id)
 
   return new NextResponse(null, { status: httpStatus.NO_CONTENT })
@@ -45,7 +45,7 @@ export const deleteTaskTemplate = async (req: NextRequest, { params: { id } }: I
 
 export const applyTemplate = async (req: NextRequest, { params: { id } }: IdParams) => {
   const user = await authenticate(req)
-  const templatesService = new TemplatesService(user)
+  const templatesService = new TemplatesService({ user })
   const data = await templatesService.getAppliedTemplateDescription(id)
 
   return NextResponse.json({ data })

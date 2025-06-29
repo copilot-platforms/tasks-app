@@ -19,7 +19,7 @@ import { z } from 'zod'
 
 export class ActivityLogService extends BaseService {
   constructor(user: User) {
-    super(user)
+    super({ user })
   }
 
   async get(
@@ -63,7 +63,10 @@ export class ActivityLogService extends BaseService {
       copilotService.getCompanies(userOpts),
     ])
 
-    let filteredActivityLogs = parsedActivityLogs
+    // Only include valid activity types to satisfy strict typing
+    const allowed = Object.values(ActivityType)
+    const isAllowedType = (type: any): type is ActivityType => allowed.includes(type)
+    let filteredActivityLogs = parsedActivityLogs.filter((log) => isAllowedType(log.type))
 
     if (this.user.role == AssigneeType.internalUser) {
       const currentInternalUser = internalUsers.data.find((iu) => iu.id === this.user.internalUserId)
@@ -93,7 +96,7 @@ export class ActivityLogService extends BaseService {
       .map((activityLog) => activityLog.details.id)
       .filter((commentId: unknown): commentId is string => commentId !== null)
 
-    const commentService = new CommentService(this.user)
+    const commentService = new CommentService({ user: this.user })
     const comments = await commentService.getCommentsByIds(commentIds)
     const signedComments = await signMediaForComments(comments)
 
@@ -104,7 +107,10 @@ export class ActivityLogService extends BaseService {
     ])
     const signedReplies = await signMediaForComments(allReplies)
 
-    const logResponseData = filteredActivityLogs.map((activityLog) => {
+    const allowedLogs = filteredActivityLogs.filter((log): log is typeof log & { type: ActivityType } =>
+      isAllowedType(log.type),
+    )
+    const logResponseData = allowedLogs.map((activityLog) => {
       const initiator = copilotUsers.find((iu) => iu.id === activityLog.userId) || null
       return {
         ...activityLog,

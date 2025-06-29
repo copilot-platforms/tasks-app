@@ -5,7 +5,7 @@ import { ScrapMediaService } from '@/app/api/scrap-medias/scrap-medias.service'
 
 export const PostScrapMedia = async (req: NextRequest) => {
   const user = await authenticate(req)
-  const scrapMediaService = new ScrapMediaService(user)
+  const scrapMediaService = new ScrapMediaService({ user })
 
   const data = ScrapMediaRequestSchema.parse(await req.json())
 

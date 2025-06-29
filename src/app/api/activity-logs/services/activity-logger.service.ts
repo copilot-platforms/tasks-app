@@ -9,7 +9,7 @@ export class ActivityLogger extends BaseService {
   public taskId: string
 
   constructor({ taskId, user }: { taskId: string; user: User }) {
-    super(user)
+    super({ user })
     this.taskId = taskId
   }
 
@@ -31,7 +31,7 @@ export class ActivityLogger extends BaseService {
         details: payload,
       },
     })
-    const tasksService = new TasksService(this.user)
+    const tasksService = new TasksService({ user: this.user })
     const updateLastActivityLogTimestamp = tasksService.setNewLastActivityLogUpdated(this.taskId)
 
     await Promise.all([createActivityLog, updateLastActivityLogTimestamp])

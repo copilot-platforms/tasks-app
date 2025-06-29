@@ -11,7 +11,7 @@ import { z } from 'zod'
 export class ValidateCountService extends NotificationService {
   private readonly copilot: CopilotAPI
   constructor(user: User) {
-    super(user)
+    super({ user })
     this.copilot = new CopilotAPI(user.token)
   }
 
@@ -34,7 +34,7 @@ export class ValidateCountService extends NotificationService {
    * @param {string[]} copilotNotificationIds - Notification Ids for a particular user for an app in Copilot
    */
   private async validateWithTasks(clientId: string, copilotNotificationIds: string[]): Promise<void> {
-    const tasksService = new TasksService(this.user)
+    const tasksService = new TasksService({ user: this.user })
     const tasks = await tasksService.getAllTasks({
       showArchived: false,
       showUnarchived: true,

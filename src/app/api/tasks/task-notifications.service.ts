@@ -10,8 +10,8 @@ import { AssigneeType, StateType, Task, WorkflowState } from '@prisma/client'
 export class TaskNotificationsService extends BaseService {
   private notificationService: NotificationService
   constructor(user: User) {
-    super(user)
-    this.notificationService = new NotificationService(user)
+    super({ user })
+    this.notificationService = new NotificationService({ user })
   }
 
   async removeDeletedTaskNotifications(task: TaskWithWorkflowState) {
