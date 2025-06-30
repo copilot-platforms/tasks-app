@@ -26,6 +26,7 @@ export default defineConfig({
   },
   dirs: ['./src/jobs'],
   build: {
+    external: ['canvas'],
     extensions: [
       prismaExtension({
         schema: 'prisma/schema/main.prisma',
