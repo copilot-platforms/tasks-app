@@ -93,7 +93,7 @@ export class ValidateCountService extends NotificationService {
     })
     // Remove duplicate notifications from copilot
     const targetNotificationIds = duplicateNotificationIds.map(({ notificationId }) => notificationId)
-    await this.copilot.bulkMarkNotificationsAsRead(targetNotificationIds)
+    targetNotificationIds.length && (await this.copilot.bulkMarkNotificationsAsRead(targetNotificationIds))
     console.info('ValidateCount :: Removing duplicate notifications', targetNotificationIds.length)
 
     // Remove those duplicate notifications from db
