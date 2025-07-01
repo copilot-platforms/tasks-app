@@ -3,8 +3,10 @@ model ClientNotification {
 
   /// Client ID on Copilot for the assigned client user
   clientId       String    @db.Uuid
+  /// Company ID on Copilot for the assigned client user -> update after copilot supporting multiple companies for a client
+  companyId      String?    @db.Uuid
   /// Notification ID for triggered notification on Copilot
-  notificationId String    @db.Uuid
+  notificationId  String    @db.Uuid
   /// Related task
   task           Task      @relation(fields: [taskId], references: [id])
   taskId         String    @db.Uuid
