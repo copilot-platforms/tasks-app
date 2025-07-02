@@ -74,7 +74,7 @@ export class ValidateCountService extends NotificationService {
         FROM (
           SELECT "taskId", "clientId", "createdAt"
           FROM "ClientNotifications"
-          WHERE "clientId" = ${clientId}::uuid 
+          WHERE "clientId" = ${clientId}::uuid
             AND "deletedAt" IS NULL
         ) c
         GROUP BY "taskId"
@@ -169,6 +169,7 @@ export class ValidateCountService extends NotificationService {
         notificationId: newNotifications[i].id,
         taskId: tasksWithoutNotifications[i].id,
         clientId,
+        companyId: tasksWithNotifications[i].companyId,
       })
     }
     await this.db.clientNotification.createMany({
