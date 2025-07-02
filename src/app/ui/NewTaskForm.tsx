@@ -29,7 +29,7 @@ import { CreateTaskErrors, FilterOptions, IAssigneeCombined, ITemplate, UserIds 
 import { checkEmptyAssignee, emptyAssignee, getAssigneeName } from '@/utils/assignee'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
-import { getSelectedUserIds } from '@/utils/selector'
+import { getSelectedUserIds, updateCompanyIdOfSelectedAssignee } from '@/utils/selector'
 import { trimAllTags } from '@/utils/trimTags'
 import { Box, Stack, Typography, styled } from '@mui/material'
 import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react'
@@ -65,12 +65,15 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
   const [isEditorReadonly, setIsEditorReadonly] = useState(false)
 
   const [assigneeValue, setAssigneeValue] = useState<IAssigneeCombined | null>(
-    assignee.find(
-      (item) =>
-        item.id == filterOptions[FilterOptions.ASSIGNEE][UserIds.INTERNAL_USER_ID] ||
-        item.id == filterOptions[FilterOptions.ASSIGNEE][UserIds.CLIENT_ID] ||
-        item.id == filterOptions[FilterOptions.ASSIGNEE][UserIds.COMPANY_ID] ||
-        item.id == filterOptions[FilterOptions.TYPE],
+    updateCompanyIdOfSelectedAssignee(
+      assignee.find(
+        (item) =>
+          item.id == filterOptions[FilterOptions.ASSIGNEE][UserIds.INTERNAL_USER_ID] ||
+          item.id == filterOptions[FilterOptions.ASSIGNEE][UserIds.CLIENT_ID] ||
+          item.id == filterOptions[FilterOptions.ASSIGNEE][UserIds.COMPANY_ID] ||
+          item.id == filterOptions[FilterOptions.TYPE],
+      ),
+      filterOptions[FilterOptions.ASSIGNEE][UserIds.COMPANY_ID],
     ) ?? null,
   )
   useEffect(() => {
@@ -159,7 +162,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
               onChange={(inputValue) => {
                 const newUserIds = getSelectedUserIds(inputValue)
                 const selectedAssignee = assignee.find((assignee) => assignee.id === inputValue[0]?.id)
-                setAssigneeValue(selectedAssignee || null)
+                setAssigneeValue(updateCompanyIdOfSelectedAssignee(selectedAssignee, newUserIds.companyId) || null)
                 store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: newUserIds }))
               }}
               buttonContent={

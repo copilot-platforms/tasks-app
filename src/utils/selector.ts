@@ -2,7 +2,7 @@
  * All utils related to the Copilot selector component
  */
 
-import { InputValue, ISelectorOption, UserIds } from '@/types/interfaces'
+import { IAssigneeCombined, InputValue, ISelectorAssignee, ISelectorOption, UserIds } from '@/types/interfaces'
 import { userIdFieldMap } from '@/types/objectMaps'
 import { UserIdsType } from './assignee'
 
@@ -37,3 +37,8 @@ export const selectorOptionsToInputValue = (options: ISelectorOption[]): InputVa
     object: option.type,
     companyId: option.companyId,
   }))
+
+export const updateCompanyIdOfSelectedAssignee = (value: IAssigneeCombined | undefined, companyId: string | null) => {
+  if (!value) return null
+  return { ...value, companyId: companyId ?? undefined }
+} //util to update companyId for the selected assignee for copilot selector

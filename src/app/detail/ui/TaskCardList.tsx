@@ -29,7 +29,7 @@ import { createDateFromFormattedDateString, formatDate } from '@/utils/dateHelpe
 import { getCardHref } from '@/utils/getCardHref'
 import { isTaskCompleted } from '@/utils/isTaskCompleted'
 import { NoAssignee } from '@/utils/noAssignee'
-import { getSelectedUserIds } from '@/utils/selector'
+import { getSelectedUserIds, updateCompanyIdOfSelectedAssignee } from '@/utils/selector'
 import { shouldConfirmBeforeReassignment } from '@/utils/shouldConfirmBeforeReassign'
 import { Box, Skeleton, Stack, Typography } from '@mui/material'
 import { useCallback, useEffect, useState } from 'react'
@@ -54,8 +54,7 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate 
   useEffect(() => {
     if (assignee.length > 0) {
       const currentAssignee = assignee.find((el) => el.id === task.assigneeId)
-      const finalAssignee = currentAssignee ?? NoAssignee
-      // @ts-expect-error  "type" property has mismatching types in between NoAssignee and IAssigneeCombined
+      const finalAssignee = updateCompanyIdOfSelectedAssignee(currentAssignee, task.companyId ?? null) ?? NoAssignee
       store.dispatch(setAssigneeCache({ key: task.id, value: finalAssignee }))
       setAssigneeValue(finalAssignee)
     }
@@ -104,7 +103,12 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate 
       } else {
         token && updateAssignee(token, task.id, internalUserId, clientId, companyId)
       }
-      setAssigneeValue(assignee.find((assignee) => assignee.id === nextAssignee?.id) ?? NoAssignee)
+      setAssigneeValue(
+        updateCompanyIdOfSelectedAssignee(
+          assignee.find((assignee) => assignee.id === nextAssignee?.id),
+          companyId,
+        ) ?? NoAssignee,
+      )
     }
   }
 
@@ -119,6 +123,8 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate 
 
   const [assigneeValue, setAssigneeValue] = useState<IAssigneeCombined | Omit<IAssigneeCombined, 'type'> | undefined>(() => {
     return assigneeCache[task.id]
+      ? (updateCompanyIdOfSelectedAssignee(assigneeCache[task.id], task.companyId ?? null) ?? undefined)
+      : undefined
   }) //Omitting type for NoAssignee
 
   return (
