@@ -259,9 +259,7 @@ export class NotificationService extends BaseService {
         break
       case NotificationTaskActions.AssignedToCompany:
         senderId = task.createdById
-        recipientIds = (await copilot.getCompanyClients(z.string().parse(task.assigneeId)))
-          .filter((client) => client.status === 'active')
-          .map((client) => client.id)
+        recipientIds = (await copilot.getCompanyClients(z.string().parse(task.assigneeId))).map((client) => client.id)
         actionTrigger = await copilot.getInternalUser(senderId)
         break
       case NotificationTaskActions.CompletedByCompanyMember:
@@ -302,7 +300,7 @@ export class NotificationService extends BaseService {
           // should be considered as the recipients of the comment
           console.info('fetching clients for company:', task.assigneeId)
           const clientsInCompany = await copilot.getCompanyClients(task.assigneeId)
-          const clientIds = clientsInCompany.filter((client) => client.status === 'active').map((client) => client.id)
+          const clientIds = clientsInCompany.map((client) => client.id)
           console.info('fetched client Ids', clientIds)
           recipientIds = clientIds
         }
