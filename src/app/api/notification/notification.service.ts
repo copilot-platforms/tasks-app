@@ -121,6 +121,7 @@ export class NotificationService extends BaseService {
         clientId: z.string().parse(notification.recipientId),
         notificationId: notification.id,
         taskId: task.id,
+        companyId: task.companyId,
       },
     })
   }
