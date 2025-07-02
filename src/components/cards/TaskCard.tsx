@@ -48,9 +48,7 @@ export const TaskCard = ({ task, href }: TaskCardProps) => {
     if (assignee.length > 0) {
       const currentAssignee = assignee.find((el) => el.id === task.assigneeId)
       const finalAssignee = currentAssignee ?? NoAssignee
-      //@ts-expect-error  "type" property has mismatching types in between NoAssignee and IAssigneeCombined
       store.dispatch(setAssigneeCache({ key: task.id, value: finalAssignee }))
-      //@ts-expect-error  "type" property has mismatching types in between NoAssignee and IAssigneeCombined
       setCurrentAssignee(finalAssignee)
     }
   }, [assignee, task.id, task.assigneeId])

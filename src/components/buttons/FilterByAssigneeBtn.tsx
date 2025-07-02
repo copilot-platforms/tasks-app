@@ -5,7 +5,7 @@ import { Avatar, IconButton, Stack, Typography } from '@mui/material'
 import { CopilotAvatar } from '../atoms/CopilotAvatar'
 import { getAssigneeName } from '@/utils/assignee'
 
-export const FilterByAssigneeBtn = ({ assigneeValue }: { assigneeValue: IAssigneeCombined }) => {
+export const FilterByAssigneeBtn = ({ assigneeValue }: { assigneeValue: IAssigneeCombined | null }) => {
   return (
     <Stack direction="row" alignItems="center" columnGap={1}>
       <Typography

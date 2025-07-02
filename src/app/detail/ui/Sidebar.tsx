@@ -21,7 +21,7 @@ import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { IAssigneeCombined, InputValue, Sizes } from '@/types/interfaces'
 import { getAssigneeId, getAssigneeName, getUserIds, UserIdsType } from '@/utils/assignee'
 import { createDateFromFormattedDateString, formatDate } from '@/utils/dateHelper'
-import { getSelectedUserIds } from '@/utils/selector'
+import { getSelectedUserIds, updateCompanyIdOfSelectedAssignee } from '@/utils/selector'
 import { NoAssignee } from '@/utils/noAssignee'
 import { shouldConfirmBeforeReassignment } from '@/utils/shouldConfirmBeforeReassign'
 import { Box, Skeleton, Stack, styled, Typography } from '@mui/material'
@@ -75,8 +75,11 @@ export const Sidebar = ({
       updateStatusValue(currentWorkflowState)
       //UPDATE THE VALUE OF ASSIGNEE IN COPILOT SELECTOR after it supports value prop. (REALTIME)
       setDueDate(currentTask?.dueDate)
-      const currentAssignee = assignee.find((assignee) => assignee.id == activeTask?.assigneeId)
-      setAssigneeValue(currentAssignee)
+      const currentAssignee = updateCompanyIdOfSelectedAssignee(
+        assignee.find((assignee) => assignee.id == activeTask?.assigneeId),
+        activeTask.companyId ?? null,
+      )
+      setAssigneeValue(currentAssignee || undefined)
     }
   }, [activeTask, workflowStates, assignee])
 
@@ -85,7 +88,9 @@ export const Sidebar = ({
 
   const handleConfirmAssigneeChange = (userIds: UserIdsType) => {
     updateAssignee(userIds)
-    setAssigneeValue(getAssigneeValue(userIds) as IAssigneeCombined)
+    setAssigneeValue(
+      updateCompanyIdOfSelectedAssignee(getAssigneeValue(userIds) as IAssigneeCombined, userIds.companyId) ?? undefined,
+    )
     store.dispatch(toggleShowConfirmAssignModal())
   }
 
@@ -115,7 +120,10 @@ export const Sidebar = ({
       setSelectedAssignee(newUserIds)
       store.dispatch(toggleShowConfirmAssignModal())
     } else {
-      setAssigneeValue(getAssigneeValue(newUserIds) as IAssigneeCombined)
+      setAssigneeValue(
+        updateCompanyIdOfSelectedAssignee(getAssigneeValue(newUserIds) as IAssigneeCombined, newUserIds.companyId) ??
+          undefined,
+      )
       updateAssignee(newUserIds)
     }
   }
