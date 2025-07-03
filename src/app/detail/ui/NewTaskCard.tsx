@@ -19,7 +19,7 @@ import store from '@/redux/store'
 import { DateString } from '@/types/date'
 import { AssigneeTypeSchema, CreateTaskRequest } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { AssigneeType, CreateTaskErrors, IAssigneeCombined, ITemplate } from '@/types/interfaces'
+import { CreateTaskErrors, FilterOptions, IAssigneeCombined, ITemplate } from '@/types/interfaces'
 import { getAssigneeName } from '@/utils/assignee'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
@@ -27,7 +27,7 @@ import { NoAssigneeExtraOptions } from '@/utils/noAssignee'
 import { trimAllTags } from '@/utils/trimTags'
 import { setDebouncedFilteredAssignees } from '@/utils/users'
 import { Box, Stack, Typography } from '@mui/material'
-import { AssigneeType as AssigneeTypeEnum } from '@prisma/client'
+import { AssigneeType } from '@prisma/client'
 import dayjs from 'dayjs'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
@@ -64,17 +64,23 @@ export const NewTaskCard = ({
 
   const [isEditorReadonly, setIsEditorReadonly] = useState(false)
 
+  const previewModeAssignee = previewMode
+    ? (assignee.find(
+        (item) => item.id == filterOptions[FilterOptions.ASSIGNEE] || item.id == filterOptions[FilterOptions.TYPE],
+      ) ?? null)
+    : null
+
   const { tokenPayload } = useSelector(selectAuthDetails)
   const [subTaskFields, setSubTaskFields] = useState<SubTaskFields>({
     title: '',
     description: '',
     workflowStateId: '',
-    assigneeId: '',
+    assigneeId: previewModeAssignee?.id ?? '',
     dueDate: null,
     errors: {
       [CreateTaskErrors.ASSIGNEE]: false,
     },
-    assigneeType: null,
+    assigneeType: previewModeAssignee ? getAssigneeTypeCorrected(previewModeAssignee) : null,
   })
 
   const [filteredAssignees, setFilteredAssignees] = useState(activeTaskAssignees.length ? activeTaskAssignees : assignee)
@@ -92,8 +98,8 @@ export const NewTaskCard = ({
         [CreateTaskErrors.ASSIGNEE]: false,
       },
       workflowStateId: todoWorkflowState.id,
-      assigneeId: '',
-      assigneeType: null,
+      assigneeId: previewModeAssignee?.id ?? '',
+      assigneeType: previewModeAssignee ? getAssigneeTypeCorrected(previewModeAssignee) : null,
       dueDate: null,
     }))
     updateAssigneeValue(null)
@@ -126,7 +132,7 @@ export const NewTaskCard = ({
   const statusValue = _statusValue as WorkflowStateResponse
 
   const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
-    item: null,
+    item: previewModeAssignee,
     type: SelectorType.ASSIGNEE_SELECTOR,
   })
   const assigneeValue = _assigneeValue as IAssigneeCombined
@@ -144,7 +150,7 @@ export const NewTaskCard = ({
   }
 
   const clientCompanyId =
-    activeTask && activeTask.assigneeType !== AssigneeTypeEnum.internalUser ? activeTask.assigneeId : undefined
+    activeTask && activeTask.assigneeType !== AssigneeType.internalUser ? activeTask.assigneeId : undefined
 
   const applyTemplate = useCallback(
     (id: string, templateTitle: string) => {
@@ -226,9 +232,9 @@ export const NewTaskCard = ({
       clearSubTaskFields()
       handleClose()
 
-      if (subTaskFields.assigneeType === 'clients' || subTaskFields.assigneeType === 'companies') {
-        const assigneeTypes = new Set(activeTaskAssignees.map((a) => a.type))
-        if (assigneeTypes.has('ius') || assigneeTypes.has('internalUsers')) {
+      if (subTaskFields.assigneeType === 'client' || subTaskFields.assigneeType === 'company') {
+        const assigneeTypes = new Set(activeTaskAssignees.map((a) => getAssigneeTypeCorrected(a)))
+        if (assigneeTypes.has('internalUser')) {
           store.dispatch(
             setActiveTaskAssignees(
               activeTaskAssignees.filter((assignee) => assignee.type === 'clients' || assignee.type === 'companies'),
@@ -371,6 +377,7 @@ export const NewTaskCard = ({
           />
           <Selector
             padding={'0px 4px'}
+            disabled={!!previewMode}
             inputStatusValue={inputStatusValue}
             setInputStatusValue={setInputStatusValue}
             placeholder="Set assignee"
