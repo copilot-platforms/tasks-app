@@ -27,39 +27,31 @@ import { z } from 'zod'
 import { TemplatesFetcher } from '@/app/_fetchers/TemplatesFetcher'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
-  console.time('getAllWorkflowStates')
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
     next: { tags: ['getAllWorkflowStates'] },
   })
 
   const data = await res.json()
-  console.timeEnd('getAllWorkflowStates')
   return data.workflowStates
 }
 
 async function getAllTasks(token: string): Promise<TaskResponse[]> {
-  console.time('getAllTasks')
   const res = await fetch(`${apiUrl}/api/tasks?token=${token}`, {
     next: { tags: ['getAllTasks-client'] },
   })
 
   const data = await res.json()
-  console.timeEnd('getAllTasks')
   return data.tasks
 }
 
 async function getTokenPayload(token: string): Promise<Token> {
-  console.time('getTokenPayload')
   const copilotClient = new CopilotAPI(token)
   const payload = TokenSchema.parse(await copilotClient.getTokenPayload())
-  console.timeEnd('getTokenPayload')
   return payload as Token
 }
 
 async function getWorkspace(token: string): Promise<WorkspaceResponse> {
-  console.time('getWorkspace')
   const copilot = new CopilotAPI(token)
-  console.timeEnd('getWorkspace')
   return await copilot.getWorkspace()
 }
 
