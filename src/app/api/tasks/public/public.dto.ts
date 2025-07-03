@@ -3,16 +3,29 @@ import { CopilotAPI } from '@/utils/CopilotAPI'
 import { AssigneeType } from '@prisma/client'
 import { z } from 'zod'
 
+/**
+ * Enum for the source of a task.
+ */
 export const TaskSourceSchema = z.enum(['web', 'api'])
 export type TaskSource = z.infer<typeof TaskSourceSchema>
+
+/**
+ * Enum for the status of a task.
+ */
 export const StatusSchema = z.enum(['todo', 'inProgress', 'completed'])
 
+/**
+ * Schema for the status field in public task creation.
+ */
 export const PublicTaskCreateStatusSchema = z
   .enum(['todo', 'inProgress', 'completed'])
   .optional()
   .or(z.literal(''))
   .transform((val) => (val === '' ? undefined : val))
 
+/**
+ * Schema for a public task DTO.
+ */
 export const PublicTaskDtoSchema = z.object({
   id: z.string(),
   object: z.literal('task'),
@@ -42,10 +55,13 @@ export const PublicTaskDtoSchema = z.object({
 })
 export type PublicTaskDto = z.infer<typeof PublicTaskDtoSchema>
 
+/**
+ * Factory for the public task creation DTO schema.
+ */
 export const publicTaskCreateDtoSchemaFactory = (token: string) => {
   return z
     .object({
-      name: z.string().max(255).optional(), // allow empty/whitespace, validated in superRefine
+      name: z.string().max(255).optional(),
       description: z.string().optional(),
       parentTaskId: z.string().uuid().optional(),
       status: StatusSchema.optional(),

@@ -50,3 +50,7 @@ next-env.d.ts
 
 # Dumps
 dump.sql
+
+# OpenCode
+OpenCode.md
+.opencode/

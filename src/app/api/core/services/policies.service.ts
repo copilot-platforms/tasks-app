@@ -5,10 +5,18 @@ import APIError from '@api/core/exceptions/api'
 import httpStatus from 'http-status'
 
 /**
- * Resource-level policies control service for Users (IU + Client)
+ * Service for resource-level policy enforcement for Users (IU + Client).
+ * Ensures that policy structure and access logic is strongly typed and isolated.
  */
 export class PoliciesService extends BaseService {
-  private defaultPolicies: Record<UserRole.Client, Record<Resource, UserAction[]>> = {
+  constructor(user: import('@api/core/models/User.model').default) {
+    super({ user })
+  }
+  /**
+   * Default allowed actions for CLIENT users per resource.
+   * Internal users have full access and skip this map.
+   */
+  private readonly defaultPolicies: Readonly<Record<UserRole.Client, Record<Resource, ReadonlyArray<UserAction>>>> = {
     [UserRole.Client]: {
       [Resource.Tasks]: [UserAction.Read],
       [Resource.TaskTemplates]: [],
@@ -20,21 +28,24 @@ export class PoliciesService extends BaseService {
       [Resource.ScrapMedias]: [],
       [Resource.Notifications]: [UserAction.Update],
     },
-  }
+  } as const
 
-  authorize(action: UserAction, resource: Resource): boolean | void {
-    // In the future if we want configurable permissions, we can set them here
-
-    // If user role is IU, grant them unrestricted access to all resources
+  /**
+   * Checks whether the user is authorized for a particular action and resource.
+   * Throws if not authorized. Returns true if permitted.
+   */
+  authorize(action: UserAction, resource: Resource): true {
+    // Internal users (IUs) have unrestricted access
     if (this.user.role === UserRole.IU) {
       return true
     }
 
-    // Grab user role policies from `defaultPolicies`
-    const userPolicy = this.defaultPolicies[this.user.role][resource]
+    // For all others, check the policy map
+    const userPolicy = this.defaultPolicies[this.user.role]?.[resource] ?? []
     const isAuthorized = userPolicy.includes(UserAction.All) || userPolicy.includes(action)
     if (!isAuthorized) {
       throw new APIError(httpStatus.UNAUTHORIZED, 'You are not authorized to perform this action')
     }
+    return true
   }
 }

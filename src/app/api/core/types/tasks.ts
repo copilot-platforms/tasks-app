@@ -1,3 +1,6 @@
+/**
+ * Enum of all possible notification actions for tasks.
+ */
 export enum NotificationTaskActions {
   Assigned = 'assigned',
   AssignedToCompany = 'assignedToCompany',
@@ -9,14 +12,15 @@ export enum NotificationTaskActions {
   Completed = 'completed',
   CompletedByIU = 'completedByIu',
   Commented = 'commented',
-  // these two comment actions below are sub actions of Commented.
-  // Its used to handle the cases for CU vs IU being notified of comments appropriately
-  CommentToCU = 'commentToCU',
-  CommentToIU = 'commentToIU',
+  CommentToCU = 'commentToCU', // sub-action of Commented
+  CommentToIU = 'commentToIU', // sub-action of Commented
   Mentioned = 'mentioned',
 }
 
-export type TaskTimestamps = {
-  assignedAt: Date | null
-  completedAt: Date | null
+/**
+ * Timestamps for task assignment and completion.
+ */
+export interface TaskTimestamps {
+  readonly assignedAt: Date | null
+  readonly completedAt: Date | null
 }

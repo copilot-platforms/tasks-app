@@ -24,7 +24,7 @@ export class TasksActivityLogger extends BaseService {
     private task: Task & { workflowState: WorkflowState },
     customCopilotApiKey?: string,
   ) {
-    super(user, customCopilotApiKey)
+    super({ user, customApiKey: customCopilotApiKey })
     this.activityLogger = new ActivityLogger({ taskId: this.task.id, user })
   }
 
@@ -33,7 +33,7 @@ export class TasksActivityLogger extends BaseService {
   }
 
   async logTaskUpdated(prevTask: Task & { workflowState: WorkflowState }) {
-    const tasksService = new TasksService(this.user)
+    const tasksService = new TasksService({ user: this.user })
     if (this.task.assigneeId !== prevTask.assigneeId) {
       await this.logTaskAssigneeUpdated(prevTask)
     }

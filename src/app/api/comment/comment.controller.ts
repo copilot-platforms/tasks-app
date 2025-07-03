@@ -11,7 +11,7 @@ import { z } from 'zod'
 export const createComment = async (req: NextRequest) => {
   const user = await authenticate(req)
 
-  const commentService = new CommentService(user)
+  const commentService = new CommentService({ user })
   const data = CreateCommentSchema.parse(await req.json())
   const comment = await commentService.create(data)
   return NextResponse.json({ comment }, { status: httpStatus.CREATED })
@@ -20,7 +20,7 @@ export const createComment = async (req: NextRequest) => {
 export const deleteComment = async (req: NextRequest, { params: { id } }: IdParams) => {
   const user = await authenticate(req)
 
-  const commentService = new CommentService(user)
+  const commentService = new CommentService({ user })
   await commentService.delete(id)
   //Can't use status code 204 in NextResponse as of now - https://github.com/vercel/next.js/discussions/51475
   //Using Response is also not allowed since withErrorHandler wrapper uses NextResponse.
@@ -31,7 +31,7 @@ export const updateComment = async (req: NextRequest, { params: { id } }: IdPara
   const user = await authenticate(req)
 
   const data = UpdateCommentSchema.parse(await req.json())
-  const commentService = new CommentService(user)
+  const commentService = new CommentService({ user })
   const comment = await commentService.update(id, data)
 
   return NextResponse.json({ comment })
@@ -42,7 +42,7 @@ export const getFilteredComments = async (req: NextRequest) => {
 
   const { parentId: rawParentId } = getSearchParams(req.nextUrl.searchParams, ['parentId'])
   const parentId = z.string().uuid().parse(rawParentId)
-  const commentService = new CommentService(user)
+  const commentService = new CommentService({ user })
   const comments = await commentService.getComments({ parentId })
   const signedComments = await signMediaForComments(comments)
 
