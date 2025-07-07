@@ -50,7 +50,6 @@ export const RealTime = ({
   if (!tokenPayload || !userId || !userRole) {
     console.error(`Failed to authenticate a realtime connection for id ${userId} with role ${userRole}`)
   }
-  const user = assignee.find((el) => el.id === userId)
 
   const redirectToBoard = (updatedTask: RealTimeTaskResponse) => {
     if (!pathname.includes('detail')) return
@@ -66,6 +65,7 @@ export const RealTime = ({
   }
 
   const handleTaskRealTimeUpdates = (payload: RealtimePostgresChangesPayload<RealTimeTaskResponse>) => {
+    const user = assignee.find((el) => el.id === userId)
     if (!user || !userRole) return
 
     // Handle realtime subtasks in a modular way
@@ -283,7 +283,7 @@ export const RealTime = ({
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [supabase, tasks])
+  }, [supabase, tasks, assignee])
 
   return children
 }
