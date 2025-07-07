@@ -158,11 +158,8 @@ export class CopilotAPI {
   }
 
   async _createNotification(requestBody: NotificationRequestBody): Promise<NotificationCreatedResponse> {
-    return NotificationCreatedResponseSchema.parse(
-      await this.copilot.createNotification({
-        requestBody,
-      }),
-    )
+    const notification = await this.copilot.createNotification({ requestBody })
+    return NotificationCreatedResponseSchema.parse(notification)
   }
 
   async _markNotificationAsRead(id: string): Promise<void> {

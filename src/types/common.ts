@@ -173,6 +173,7 @@ export type ApiKeyOwnerResponse = z.infer<typeof ApiKeyOwnerResponseSchema>
 export const NotificationRequestBodySchema = z.object({
   senderId: z.string(),
   recipientId: z.string(),
+  recipientCompanyId: z.string().optional(),
   deliveryTargets: z
     .object({
       inProduct: z
@@ -211,6 +212,7 @@ export const NotificationCreatedResponseSchema = z.object({
   event: z.string().optional(),
   object: z.string().optional(),
   recipientId: z.string().optional(),
+  recipientCompanyId: z.string().optional(),
   resourceId: z.string().optional(),
   senderId: z.string().optional(),
   senderType: z.string().optional(),
