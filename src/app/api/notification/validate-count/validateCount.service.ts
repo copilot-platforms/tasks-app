@@ -150,6 +150,7 @@ export class ValidateCountService extends NotificationService {
           return this.copilot.createNotification({
             senderId: task.createdById,
             recipientId: clientId,
+            recipientCompanyId: task.companyId || undefined,
             deliveryTargets: {
               inProduct: {
                 // doesn't matter what you add here since notification details cannot be viewed
@@ -169,6 +170,7 @@ export class ValidateCountService extends NotificationService {
         notificationId: newNotifications[i].id,
         taskId: tasksWithoutNotifications[i].id,
         clientId,
+        companyId: tasksWithoutNotifications[i].companyId,
       })
     }
     await this.db.clientNotification.createMany({
