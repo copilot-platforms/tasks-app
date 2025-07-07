@@ -40,11 +40,11 @@ export const RealTime = ({
   const pathname = usePathname()
   const router = useRouter()
 
-  const userId = tokenPayload?.internalUserId || tokenPayload?.clientId
-  const userRole = tokenPayload?.internalUserId
-    ? AssigneeType.internalUser
-    : tokenPayload?.clientId
-      ? AssigneeType.client
+  const userId = tokenPayload?.clientId || tokenPayload?.companyId || tokenPayload?.internalUserId
+  const userRole = tokenPayload?.companyId
+    ? AssigneeType.client
+    : tokenPayload?.internalUserId
+      ? AssigneeType.internalUser
       : undefined
 
   if (!tokenPayload || !userId || !userRole) {
