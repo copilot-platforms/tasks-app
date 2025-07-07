@@ -58,13 +58,14 @@ export const Subtasks = ({
   const { mutate } = useSWRConfig()
 
   useEffect(() => {
-    const refetchSubtasks = async () => {
-      await mutate(cacheKey)
+    const taskListLength = subTasks?.tasks?.length
+
+    if (!activeTask || typeof taskListLength !== 'number') return
+
+    if (activeTask.subtaskCount !== taskListLength) {
+      mutate(cacheKey)
     }
-    if (activeTask?.subtaskCount !== undefined) {
-      refetchSubtasks()
-    }
-  }, [activeTask?.subtaskCount, activeTask?.isArchived])
+  }, [activeTask?.subtaskCount, activeTask?.isArchived, subTasks?.tasks?.length])
 
   const handleSubTaskCreation = (payload: CreateTaskRequest) => {
     const tempId = generateRandomString('temp-task')
