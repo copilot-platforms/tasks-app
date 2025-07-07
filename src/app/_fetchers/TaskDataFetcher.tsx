@@ -29,7 +29,7 @@ export const TaskDataFetcher = ({ token }: PropsWithToken) => {
 
   const queryString = token ? buildQueryString(token, { showArchived, showUnarchived }) : ''
 
-  const { data, isLoading, mutate } = useSWR(token ? `/api/tasks/?${queryString}` : null, fetcher)
+  const { data, isLoading, mutate } = useSWR(token ? `/api/tasks/?${queryString}&testId=123` : null, fetcher)
 
   const updateTaskOnArchivedStateUpdate = useCallback(async () => {
     const currentArchivedOptions = latestArchivedOptions.current // Use latest values from ref
