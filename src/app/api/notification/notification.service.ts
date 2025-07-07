@@ -32,6 +32,7 @@ export class NotificationService extends BaseService {
       const notificationDetails = {
         senderId,
         recipientId,
+        recipientCompanyId: task.companyId || undefined,
         // If any of the given action is not present in details obj, that type of notification is not sent
         deliveryTargets: { inProduct, email },
       }
@@ -93,6 +94,7 @@ export class NotificationService extends BaseService {
           const notificationDetails = {
             senderId,
             recipientId,
+            recipientCompanyId: task.companyId || undefined,
             deliveryTargets: { inProduct, email },
           }
           console.info('NotificationService#bulkCreate | Creating single notification:', notificationDetails)
@@ -119,6 +121,7 @@ export class NotificationService extends BaseService {
     return await this.db.clientNotification.create({
       data: {
         clientId: z.string().parse(notification.recipientId),
+        companyId: z.string().parse(task.companyId),
         notificationId: notification.id,
         taskId: task.id,
       },

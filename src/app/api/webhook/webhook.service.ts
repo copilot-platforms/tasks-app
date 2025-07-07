@@ -13,6 +13,7 @@ import { NotificationService } from '@api/notification/notification.service'
 import User from '@api/core/models/User.model'
 import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 
+// TODO: This will be broken for a while until OUT-1985
 class WebhookService extends BaseService {
   private copilot
   constructor(user: User, customCopilotApiKey?: string) {
