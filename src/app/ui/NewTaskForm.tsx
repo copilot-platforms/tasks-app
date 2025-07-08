@@ -29,7 +29,7 @@ import { CreateTaskErrors, FilterOptions, IAssigneeCombined, ITemplate, UserIds 
 import { checkEmptyAssignee, emptyAssignee, getAssigneeName } from '@/utils/assignee'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
-import { getSelectedUserIds, getSelectorAssignee } from '@/utils/selector'
+import { getSelectedUserIds, getSelectorAssignee, getSelectorAssigneeFromFilterOptions } from '@/utils/selector'
 import { trimAllTags } from '@/utils/trimTags'
 import { Box, Stack, Typography, styled } from '@mui/material'
 import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react'
@@ -65,13 +65,10 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
   const [isEditorReadonly, setIsEditorReadonly] = useState(false)
 
   const [assigneeValue, setAssigneeValue] = useState<IAssigneeCombined | null>(
-    assignee.find(
-      (item) =>
-        item.id == filterOptions[FilterOptions.ASSIGNEE][UserIds.INTERNAL_USER_ID] ||
-        (item.id == filterOptions[FilterOptions.ASSIGNEE][UserIds.CLIENT_ID] &&
-          item.companyId == filterOptions[FilterOptions.ASSIGNEE][UserIds.COMPANY_ID]) ||
-        item.id == filterOptions[FilterOptions.ASSIGNEE][UserIds.COMPANY_ID] ||
-        item.id == filterOptions[FilterOptions.TYPE],
+    getSelectorAssigneeFromFilterOptions(
+      assignee,
+      filterOptions[FilterOptions.ASSIGNEE],
+      filterOptions[FilterOptions.TYPE],
     ) ?? null,
   )
   useEffect(() => {

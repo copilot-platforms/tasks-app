@@ -29,7 +29,7 @@ import { createDateFromFormattedDateString, formatDate } from '@/utils/dateHelpe
 import { getCardHref } from '@/utils/getCardHref'
 import { isTaskCompleted } from '@/utils/isTaskCompleted'
 import { NoAssignee } from '@/utils/noAssignee'
-import { getSelectedUserIds, getSelectorAssignee } from '@/utils/selector'
+import { getSelectedUserIds, getSelectorAssignee, getSelectorAssigneeFromTask } from '@/utils/selector'
 import { shouldConfirmBeforeReassignment } from '@/utils/shouldConfirmBeforeReassign'
 import { Box, Skeleton, Stack, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
@@ -53,9 +53,7 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate 
 
   useEffect(() => {
     if (assignee.length > 0) {
-      const currentAssignee = assignee.find((el) =>
-        task.clientId ? el.id === task.assigneeId && el.companyId == task.companyId : el.id === task.assigneeId,
-      )
+      const currentAssignee = getSelectorAssigneeFromTask(assignee, task)
       const finalAssignee = currentAssignee ?? NoAssignee
       store.dispatch(setAssigneeCache({ key: task.id, value: finalAssignee }))
       setAssigneeValue(finalAssignee)

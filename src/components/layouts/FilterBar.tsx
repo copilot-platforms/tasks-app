@@ -23,7 +23,7 @@ import { FilterOptions, FilterOptionsKeywords, IFilterOptions, UserIds } from '@
 import { filterTypeToButtonIndexMap } from '@/types/objectMaps'
 import { checkAssignee, emptyAssignee, getAssigneeId, UserIdsType } from '@/utils/assignee'
 import { NoAssignee } from '@/utils/noAssignee'
-import { getSelectedUserIds, getSelectorAssignee } from '@/utils/selector'
+import { getSelectedUserIds, getSelectorAssignee, getSelectorAssigneeFromFilterOptions } from '@/utils/selector'
 import { Box, IconButton, Stack } from '@mui/material'
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
@@ -79,13 +79,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
   const [assigneeValue, setAssigneeValue] = useState(
     viewModeFilterOptions.assignee[UserIds.INTERNAL_USER_ID] == 'No assignee'
       ? NoAssignee
-      : assignee.find(
-          (item) =>
-            item.id == viewModeFilterOptions.assignee[UserIds.INTERNAL_USER_ID] ||
-            (item.id == filterOptions[FilterOptions.ASSIGNEE][UserIds.CLIENT_ID] &&
-              item.companyId == filterOptions[FilterOptions.ASSIGNEE][UserIds.COMPANY_ID]) ||
-            item.id == viewModeFilterOptions.assignee[UserIds.COMPANY_ID],
-        ),
+      : getSelectorAssigneeFromFilterOptions(assignee, viewModeFilterOptions.assignee),
   )
 
   const filterButtons = [
