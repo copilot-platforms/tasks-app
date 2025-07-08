@@ -32,13 +32,14 @@ export const RealTime = ({
   const pathname = usePathname()
   const router = useRouter()
 
-  const userId = tokenPayload?.internalUserId || tokenPayload?.clientId
-  const userRole = tokenPayload?.internalUserId
-    ? AssigneeType.internalUser
-    : tokenPayload?.clientId
+  const userId = tokenPayload?.clientId || tokenPayload?.companyId || tokenPayload?.internalUserId
+  const userRole =
+    tokenPayload?.companyId || tokenPayload?.clientId
       ? AssigneeType.client
-      : undefined
-
+      : tokenPayload?.internalUserId
+        ? AssigneeType.internalUser
+        : undefined
+  console.log(userId, userRole, tokenPayload, tokenPayload?.companyId || tokenPayload?.clientId)
   if (!tokenPayload || !userId || !userRole) {
     console.error(`Failed to authenticate a realtime connection for id ${userId} with role ${userRole}`)
   }
