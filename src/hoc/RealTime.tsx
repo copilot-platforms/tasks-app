@@ -27,8 +27,7 @@ export const RealTime = ({
   task?: TaskResponse
   tokenPayload: Token
 }) => {
-  const { tasks, accessibleTasks, token, activeTask, assignee, selectorAssignee, accesibleTaskIds } =
-    useSelector(selectTaskBoard)
+  const { tasks, accessibleTasks, token, activeTask, assignee, accesibleTaskIds } = useSelector(selectTaskBoard)
   const { showUnarchived, showArchived } = useSelector(selectTaskBoard)
   const pathname = usePathname()
   const router = useRouter()

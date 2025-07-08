@@ -21,7 +21,7 @@ import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { IAssigneeCombined, InputValue, Sizes } from '@/types/interfaces'
 import { getAssigneeId, getAssigneeName, getUserIds, UserIdsType } from '@/utils/assignee'
 import { createDateFromFormattedDateString, formatDate } from '@/utils/dateHelper'
-import { getSelectedUserIds } from '@/utils/selector'
+import { getSelectedUserIds, getSelectorAssignee } from '@/utils/selector'
 import { NoAssignee } from '@/utils/noAssignee'
 import { shouldConfirmBeforeReassignment } from '@/utils/shouldConfirmBeforeReassign'
 import { Box, Skeleton, Stack, styled, Typography } from '@mui/material'
@@ -75,7 +75,11 @@ export const Sidebar = ({
       updateStatusValue(currentWorkflowState)
       //UPDATE THE VALUE OF ASSIGNEE IN COPILOT SELECTOR after it supports value prop. (REALTIME)
       setDueDate(currentTask?.dueDate)
-      const currentAssignee = assignee.find((assignee) => assignee.id == activeTask?.assigneeId)
+      const currentAssignee = assignee.find((assignee) =>
+        currentTask?.clientId
+          ? assignee.id == activeTask?.assigneeId && assignee.companyId == activeTask?.companyId
+          : assignee.id == activeTask?.assigneeId,
+      )
       setAssigneeValue(currentAssignee)
     }
   }, [activeTask, workflowStates, assignee])
@@ -100,7 +104,9 @@ export const Sidebar = ({
       return NoAssignee
     }
     const assigneeId = getAssigneeId(userIds)
-    const match = assignee.find((assignee) => assignee.id === assigneeId)
+    const match = assignee.find((assignee) =>
+      userIds.clientId ? assignee.id === assigneeId && assignee.companyId == userIds.companyId : assignee.id === assigneeId,
+    )
     return match ?? undefined
   }
 
@@ -109,7 +115,7 @@ export const Sidebar = ({
   const handleAssigneeChange = (inputValue: InputValue[]) => {
     const newUserIds = getSelectedUserIds(inputValue)
     const previousAssignee = assignee.find((assignee) => assignee.id == getAssigneeId(getUserIds(activeTask)))
-    const nextAssignee = assignee.find((assignee) => assignee.id == getAssigneeId(newUserIds))
+    const nextAssignee = getSelectorAssignee(assignee, inputValue)
     const shouldShowConfirmModal = shouldConfirmBeforeReassignment(previousAssignee, nextAssignee)
     if (shouldShowConfirmModal) {
       setSelectedAssignee(newUserIds)

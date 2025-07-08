@@ -21,7 +21,7 @@ import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { IAssigneeCombined, ITemplate, UserIds } from '@/types/interfaces'
 import { getAssigneeName, UserIdsType } from '@/utils/assignee'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
-import { getSelectedUserIds } from '@/utils/selector'
+import { getSelectedUserIds, getSelectorAssignee } from '@/utils/selector'
 import { trimAllTags } from '@/utils/trimTags'
 import { Box, Stack, Typography } from '@mui/material'
 import dayjs from 'dayjs'
@@ -336,7 +336,7 @@ export const NewTaskCard = ({
             name="Set assignee"
             onChange={(inputValue) => {
               const newUserIds = getSelectedUserIds(inputValue)
-              const selectedAssignee = assignee.find((assignee) => assignee.id === inputValue[0]?.id)
+              const selectedAssignee = getSelectorAssignee(assignee, inputValue)
               setAssigneeValue(selectedAssignee || null)
               handleFieldChange('userIds', newUserIds)
             }}

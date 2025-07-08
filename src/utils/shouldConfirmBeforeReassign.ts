@@ -15,7 +15,10 @@ export const shouldConfirmBeforeReassignment = (
   const currentAssigneeType = getAssigneeTypeCorrected(currentAssignee)
   const previousAssigneeCompanyAccessList = getPreviousCompanyList(previousAssignee)
   const previousAssigneeType = getAssigneeTypeCorrected(previousAssignee)
-  if (!previousAssigneeCompanyAccessList.length && previousAssigneeType == AssigneeType.internalUser) {
+  if (
+    (!previousAssigneeCompanyAccessList.length && previousAssigneeType == AssigneeType.internalUser) ||
+    previousAssignee.id == currentAssignee.id //might be the same client with different company
+  ) {
     return false
   } // case when previous assignee is an IU with full access to clients.
 
