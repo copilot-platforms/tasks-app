@@ -18,10 +18,10 @@ import { selectCreateTemplate } from '@/redux/features/templateSlice'
 import { DateString } from '@/types/date'
 import { CreateTaskRequest } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { IAssigneeCombined, ITemplate, UserIds } from '@/types/interfaces'
+import { FilterOptions, IAssigneeCombined, ITemplate, UserIds } from '@/types/interfaces'
 import { getAssigneeName, UserIdsType } from '@/utils/assignee'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
-import { getSelectedUserIds, getSelectorAssignee } from '@/utils/selector'
+import { getSelectedUserIds, getSelectorAssignee, getSelectorAssigneeFromFilterOptions } from '@/utils/selector'
 import { trimAllTags } from '@/utils/trimTags'
 import { Box, Stack, Typography } from '@mui/material'
 import dayjs from 'dayjs'
@@ -44,21 +44,29 @@ export const NewTaskCard = ({
   handleClose: () => void
   handleSubTaskCreation: (payload: CreateTaskRequest) => void
 }) => {
-  const { workflowStates, assignee, token, activeTask } = useSelector(selectTaskBoard)
+  const { workflowStates, assignee, token, activeTask, previewMode, filterOptions } = useSelector(selectTaskBoard)
   const { templates } = useSelector(selectCreateTemplate)
 
   const [isEditorReadonly, setIsEditorReadonly] = useState(false)
+
+  const assigneeIds = previewMode
+    ? {
+        [UserIds.INTERNAL_USER_ID]: null,
+        [UserIds.CLIENT_ID]: filterOptions[FilterOptions.ASSIGNEE][UserIds.CLIENT_ID],
+        [UserIds.COMPANY_ID]: filterOptions[FilterOptions.ASSIGNEE][UserIds.COMPANY_ID],
+      }
+    : {
+        [UserIds.INTERNAL_USER_ID]: null,
+        [UserIds.CLIENT_ID]: null,
+        [UserIds.COMPANY_ID]: null,
+      }
 
   const { tokenPayload } = useSelector(selectAuthDetails)
   const [subTaskFields, setSubTaskFields] = useState<SubTaskFields>({
     title: '',
     description: '',
     workflowStateId: '',
-    userIds: {
-      [UserIds.INTERNAL_USER_ID]: null,
-      [UserIds.CLIENT_ID]: null,
-      [UserIds.COMPANY_ID]: null,
-    },
+    userIds: assigneeIds,
     dueDate: null,
   })
 
@@ -72,11 +80,7 @@ export const NewTaskCard = ({
       title: '',
       description: '',
       workflowStateId: todoWorkflowState.id,
-      userIds: {
-        [UserIds.INTERNAL_USER_ID]: null,
-        [UserIds.CLIENT_ID]: null,
-        [UserIds.COMPANY_ID]: null,
-      },
+      userIds: assigneeIds,
       dueDate: null,
     }))
     updateStatusValue(todoWorkflowState)
@@ -120,7 +124,15 @@ export const NewTaskCard = ({
     setIsUploading(uploading)
   }
 
-  const [assigneeValue, setAssigneeValue] = useState<IAssigneeCombined | null>(null)
+  const [assigneeValue, setAssigneeValue] = useState<IAssigneeCombined | null>(
+    previewMode
+      ? (getSelectorAssigneeFromFilterOptions(
+          assignee,
+          filterOptions[FilterOptions.ASSIGNEE],
+          filterOptions[FilterOptions.TYPE],
+        ) ?? null)
+      : null,
+  )
 
   const applyTemplate = useCallback(
     (id: string, templateTitle: string) => {
@@ -199,6 +211,7 @@ export const NewTaskCard = ({
       dueDate: formattedDueDate,
       parentId: activeTask?.id,
     }
+    console.log(payload, 'jere')
     handleSubTaskCreation(payload)
     clearSubTaskFields()
     handleClose()
@@ -333,6 +346,7 @@ export const NewTaskCard = ({
             gap={'6px'}
           />
           <CopilotPopSelector
+            disabled={!!previewMode}
             name="Set assignee"
             onChange={(inputValue) => {
               const newUserIds = getSelectedUserIds(inputValue)
@@ -343,6 +357,7 @@ export const NewTaskCard = ({
             initialValue={assigneeValue || undefined}
             buttonContent={
               <SelectorButton
+                disabled={!!previewMode}
                 padding="0px 4px"
                 height="28px"
                 buttonContent={
