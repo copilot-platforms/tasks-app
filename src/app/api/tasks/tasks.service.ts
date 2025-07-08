@@ -121,7 +121,7 @@ export class TasksService extends BaseService {
       clientId: queryFilters.clientId,
       companyId: queryFilters.companyId,
       createdById: queryFilters.createdById,
-      workflowState: queryFilters.workflowState,
+      workflowState: queryFilters.workflowState || filters.workflowState,
       isArchived,
     }
 
