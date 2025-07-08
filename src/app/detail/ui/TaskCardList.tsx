@@ -13,6 +13,7 @@ import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowStat
 import { ConfirmUI } from '@/components/layouts/ConfirmUI'
 import { CustomLink } from '@/hoc/CustomLink'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
+import { useSubtaskCount } from '@/hooks/useSubtaskCount'
 import {
   selectTaskBoard,
   setAssigneeCache,
@@ -50,6 +51,8 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate 
 
   const [currentDueDate, setCurrentDueDate] = useState<string | undefined>(task.dueDate)
   const [selectedAssignee, setSelectedAssignee] = useState<UserIdsType | undefined>(undefined)
+
+  const subtaskCount = useSubtaskCount(task.id)
 
   useEffect(() => {
     if (assignee.length > 0) {
@@ -211,7 +214,7 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate 
             >
               {task.title}
             </Typography>
-            {(task.subtaskCount > 0 || task.isArchived) && (
+            {(subtaskCount > 0 || task.isArchived) && (
               <Stack direction="row" sx={{ display: 'flex', gap: '12px', flexShrink: 0, alignItems: 'center' }}>
                 <TaskMetaItems task={task} lineHeight="21px" />
               </Stack>
