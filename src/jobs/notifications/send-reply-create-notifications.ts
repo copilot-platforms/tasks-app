@@ -89,7 +89,7 @@ export const sendReplyCreateNotifications = task({
         )
         // If there is no "initiatorType" for parentComment we have to be slightly creative (coughhackycough)
         if (!promise) {
-          promise = getNotificationToUntypedInitiator(copilot, parentComment, senderId, deliveryTargets, payload.task)
+          promise = getNotificationToUntypedInitiator(copilot, parentComment, payload.task, senderId, deliveryTargets)
         }
         queueNotificationPromise(promise)
       }
@@ -161,9 +161,9 @@ const getInitiatorNotificationPromises = async (
 const getNotificationToUntypedInitiator = async (
   copilot: CopilotAPI,
   parentComment: Comment,
+  task: Task,
   senderId: string,
   deliveryTargets: { inProduct: Record<'title', any>; email: object },
-  task: Task,
 ) => {
   let promise
   try {
