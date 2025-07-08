@@ -3,7 +3,6 @@ import { getArrayDifference } from '@/utils/array'
 import { bottleneck } from '@/utils/bottleneck'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import User from '@api/core/models/User.model'
-import { UserRole } from '@api/core/types/user'
 import { NotificationService } from '@api/notification/notification.service'
 import { TasksService } from '@api/tasks/tasks.service'
 import { ClientNotification, Task } from '@prisma/client'
@@ -11,7 +10,7 @@ import { z } from 'zod'
 
 export class ValidateCountService extends NotificationService {
   private readonly copilot: CopilotAPI
-  constructor(user: User) {
+  constructor(readonly user: User) {
     super(user)
     this.copilot = new CopilotAPI(user.token)
   }
@@ -20,11 +19,12 @@ export class ValidateCountService extends NotificationService {
    * Queries for notifications from CopilotAPI and fixes it if not in sync with task count
    * @param {string} clientId - Copilot client id for which notification fix has to be done
    */
-  async fixClientNotificationCount(clientId: string): Promise<void> {
-    const notifications = await this.copilot.getNotifications(clientId, { limit: 1_000_000 })
+  async fixClientNotificationCount(clientId: string, companyId: string): Promise<void> {
+    const notifications = await this.copilot.getNotifications(clientId, companyId, { limit: 1_000_000 })
     console.info('ValidateCount :: Total Copilot Notifications:', notifications.length)
     await this.validateWithTasks(
       clientId,
+      companyId,
       notifications.map((n) => n.id),
     )
   }
@@ -34,14 +34,15 @@ export class ValidateCountService extends NotificationService {
    * Creates / removes notifications from Copilot as necessary
    * @param {string[]} copilotNotificationIds - Notification Ids for a particular user for an app in Copilot
    */
-  private async validateWithTasks(clientId: string, copilotNotificationIds: string[]): Promise<void> {
+  private async validateWithTasks(clientId: string, companyId: string, copilotNotificationIds: string[]): Promise<void> {
     const tasksService = new TasksService(this.user)
     const tasks = await tasksService.getAllTasks({
+      companyId,
       showArchived: false,
       showUnarchived: true,
       showIncompleteOnly: true,
     })
-    console.info('ValidateCount :: User tasks', tasks.length)
+    console.info('ValidateCount :: User tasks for company', companyId, ':', tasks.length)
 
     // Query all notifications triggered for a list of client/company tasks
     const appNotifications = await this.getAllForTasks(tasks)

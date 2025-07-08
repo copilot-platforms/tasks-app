@@ -207,9 +207,19 @@ export class CopilotAPI {
     return ApiKeyOwnerResponseSchema.parse(data)
   }
 
-  async getNotifications(recipientId: string, opts: { limit?: number } = { limit: 100 }) {
+  async getNotifications(
+    recipientId: string,
+    recipientCompanyId: string,
+    opts: {
+      limit?: number
+      showArchived?: boolean
+      showUnarchived?: boolean
+      showIncompleteOnly?: boolean
+    } = { limit: 100 },
+  ) {
     const data = await this.manualFetch('notifications', {
       recipientId,
+      recipientCompanyId,
       limit: `${opts.limit}`,
     })
     const notifications = z.array(NotificationCreatedResponseSchema).parse(data.data)
@@ -263,6 +273,6 @@ export class CopilotAPI {
   createNotification = this.wrapWithRetry(this._createNotification)
   markNotificationAsRead = this.wrapWithRetry(this._markNotificationAsRead)
   bulkMarkNotificationsAsRead = this.wrapWithRetry(this._bulkMarkNotificationsAsRead)
-  bulkDeleteNotifications = this.wrapWithRetry(this._bulkDeleteNotifications)
   deleteNotification = this.wrapWithRetry(this._deleteNotification)
+  bulkDeleteNotifications = this.wrapWithRetry(this._bulkDeleteNotifications)
 }

@@ -12,13 +12,14 @@ export const maxDuration = 300
 
 export const validateCount = async (req: NextRequest) => {
   const user = await authenticate(req)
-  const userId = z.string().safeParse(user.clientId)
-  if (userId.error) {
+  const clientId = z.string().safeParse(user.clientId)
+  const companyId = z.string().safeParse(user.companyId)
+  if (clientId.error || companyId.error) {
     throw new APIError(httpStatus.UNAUTHORIZED, 'Only client users are allowed to access this feature')
   }
 
   const validateCountService = new ValidateCountService(user)
-  await validateCountService.fixClientNotificationCount(userId.data)
+  await validateCountService.fixClientNotificationCount(clientId.data, companyId.data)
 
   return NextResponse.json({ message: 'Validated counts successfully' })
 }
