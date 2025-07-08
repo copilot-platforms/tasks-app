@@ -1,6 +1,7 @@
 import { StyledUserCompanySelector } from '@/app/detail/ui/styledComponent'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { IAssigneeCombined, InputValue } from '@/types/interfaces'
+import { parseAssigneeToSelectorOption } from '@/utils/addTypeToAssignee'
 import { parseAssigneeToSelectorOptions } from '@/utils/assignee'
 import { selectorOptionsToInputValue } from '@/utils/selector'
 import { Box, ClickAwayListener, Popper, Stack } from '@mui/material'
@@ -20,13 +21,15 @@ export const CopilotSelector = ({
   hideClientsList?: boolean
   hideIusList?: boolean
 }) => {
-  const { selectorAssignee } = useSelector(selectTaskBoard)
+  const { assignee } = useSelector(selectTaskBoard)
   const initialAssignee = initialValue && parseAssigneeToSelectorOptions(initialValue)
   // Currently selected assignee. This is not guarenteed to be the same as the final assignee
   // and is just the temporary state while the selector is still open
   const [currentlySelected, setCurrentlySelected] = useState<InputValue[]>(
     initialAssignee ? selectorOptionsToInputValue(initialAssignee) : [],
   )
+
+  const selectorAssignee = parseAssigneeToSelectorOption(assignee)
 
   return (
     <>

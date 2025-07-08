@@ -130,6 +130,7 @@ export interface IClient {
   avatarImageUrl: string
   customFields: unknown
   type: AssigneeType
+  companyIds: string[]
 }
 
 export interface ICompany {

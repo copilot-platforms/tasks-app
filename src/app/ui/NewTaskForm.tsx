@@ -29,7 +29,7 @@ import { CreateTaskErrors, FilterOptions, IAssigneeCombined, ITemplate, UserIds 
 import { checkEmptyAssignee, emptyAssignee, getAssigneeName } from '@/utils/assignee'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
-import { getSelectedUserIds } from '@/utils/selector'
+import { getSelectedUserIds, getSelectorAssignee } from '@/utils/selector'
 import { trimAllTags } from '@/utils/trimTags'
 import { Box, Stack, Typography, styled } from '@mui/material'
 import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react'
@@ -68,7 +68,8 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
     assignee.find(
       (item) =>
         item.id == filterOptions[FilterOptions.ASSIGNEE][UserIds.INTERNAL_USER_ID] ||
-        item.id == filterOptions[FilterOptions.ASSIGNEE][UserIds.CLIENT_ID] ||
+        (item.id == filterOptions[FilterOptions.ASSIGNEE][UserIds.CLIENT_ID] &&
+          item.companyId == filterOptions[FilterOptions.ASSIGNEE][UserIds.COMPANY_ID]) ||
         item.id == filterOptions[FilterOptions.ASSIGNEE][UserIds.COMPANY_ID] ||
         item.id == filterOptions[FilterOptions.TYPE],
     ) ?? null,
@@ -158,7 +159,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
               initialValue={assigneeValue || undefined}
               onChange={(inputValue) => {
                 const newUserIds = getSelectedUserIds(inputValue)
-                const selectedAssignee = assignee.find((assignee) => assignee.id === inputValue[0]?.id)
+                const selectedAssignee = getSelectorAssignee(assignee, inputValue)
                 setAssigneeValue(selectedAssignee || null)
                 store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: newUserIds }))
               }}

@@ -9,7 +9,6 @@ import {
   setAssigneeList,
   setFilteredAssgineeList,
   setPreviewMode,
-  setSelectorAssignee,
   setTasks,
   setToken,
   setViewSettings,
@@ -47,7 +46,6 @@ export const ClientSideStateUpdate = ({
   clearExpandedComments,
   accesibleTaskIds,
   accessibleTasks,
-  selectorAssignee,
 }: {
   children: ReactNode
   workflowStates?: WorkflowStateResponse[]
@@ -62,7 +60,6 @@ export const ClientSideStateUpdate = ({
   clearExpandedComments?: boolean
   accesibleTaskIds?: string[]
   accessibleTasks?: TaskResponse[]
-  selectorAssignee?: ISelectorAssignee
 }) => {
   const { tasks: tasksInStore, viewSettingsTemp } = useSelector(selectTaskBoard)
   useEffect(() => {
@@ -125,9 +122,7 @@ export const ClientSideStateUpdate = ({
     if (accessibleTasks) {
       store.dispatch(setAccessibleTasks(accessibleTasks))
     }
-    if (selectorAssignee) {
-      store.dispatch(setSelectorAssignee(selectorAssignee))
-    }
+
     return () => {
       store.dispatch(setActiveTask(undefined))
     } //when component is unmounted, we need to clear the active task.

@@ -6,9 +6,7 @@ import { SelectorButton } from '@/components/buttons/SelectorButton'
 import FilterButtonGroup from '@/components/buttonsGroup/FilterButtonsGroup'
 import { CopilotPopSelector } from '@/components/inputs/CopilotSelector'
 import { DisplaySelector } from '@/components/inputs/DisplaySelector'
-import { SelectorType } from '@/components/inputs/Selector'
 import SearchBar from '@/components/searchBar'
-import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { CrossIcon, FilterByAsigneeIcon } from '@/icons'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import {
@@ -21,11 +19,11 @@ import {
 import store from '@/redux/store'
 import { IUTokenSchema } from '@/types/common'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
-import { FilterOptions, FilterOptionsKeywords, IAssigneeCombined, IFilterOptions, UserIds } from '@/types/interfaces'
+import { FilterOptions, FilterOptionsKeywords, IFilterOptions, UserIds } from '@/types/interfaces'
 import { filterTypeToButtonIndexMap } from '@/types/objectMaps'
 import { checkAssignee, emptyAssignee, getAssigneeId, UserIdsType } from '@/utils/assignee'
-import { NoAssigneeExtraOptions } from '@/utils/noAssignee'
-import { getSelectedUserIds } from '@/utils/selector'
+import { NoAssignee } from '@/utils/noAssignee'
+import { getSelectedUserIds, getSelectorAssignee } from '@/utils/selector'
 import { Box, IconButton, Stack } from '@mui/material'
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
@@ -78,18 +76,17 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
 
   const { tokenPayload } = useSelector(selectAuthDetails)
 
-  const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
-    item:
-      viewModeFilterOptions.assignee[UserIds.INTERNAL_USER_ID] == 'No assignee'
-        ? NoAssigneeExtraOptions
-        : assignee.find(
-            (item) =>
-              item.id == viewModeFilterOptions.assignee[UserIds.INTERNAL_USER_ID] ||
-              item.id == viewModeFilterOptions.assignee[UserIds.CLIENT_ID] ||
-              item.id == viewModeFilterOptions.assignee[UserIds.COMPANY_ID],
-          ),
-    type: SelectorType.ASSIGNEE_SELECTOR,
-  })
+  const [assigneeValue, setAssigneeValue] = useState(
+    viewModeFilterOptions.assignee[UserIds.INTERNAL_USER_ID] == 'No assignee'
+      ? NoAssignee
+      : assignee.find(
+          (item) =>
+            item.id == viewModeFilterOptions.assignee[UserIds.INTERNAL_USER_ID] ||
+            (item.id == filterOptions[FilterOptions.ASSIGNEE][UserIds.CLIENT_ID] &&
+              item.companyId == filterOptions[FilterOptions.ASSIGNEE][UserIds.COMPANY_ID]) ||
+            item.id == viewModeFilterOptions.assignee[UserIds.COMPANY_ID],
+        ),
+  )
 
   const filterButtons = [
     {
@@ -97,7 +94,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
       onClick: () => {
         const selfAssigneeId = IUTokenSchema.parse(tokenPayload).internalUserId
         handleFilterOptionsChange(FilterOptions.TYPE, selfAssigneeId)
-        updateAssigneeValue(null)
+        setAssigneeValue(undefined)
         handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
       },
       id: 'MyTasks',
@@ -106,7 +103,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
       name: "My team's tasks",
       onClick: () => {
         handleFilterOptionsChange(FilterOptions.TYPE, FilterOptionsKeywords.TEAM)
-        updateAssigneeValue(null)
+        setAssigneeValue(undefined)
         setNoAssigneeOptionFlag(false)
         handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
       },
@@ -116,7 +113,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
       name: 'Client tasks',
       onClick: () => {
         handleFilterOptionsChange(FilterOptions.TYPE, FilterOptionsKeywords.CLIENTS)
-        updateAssigneeValue(null)
+        setAssigneeValue(undefined)
         setNoAssigneeOptionFlag(false)
         handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
       },
@@ -126,15 +123,13 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
       name: 'All tasks',
       onClick: () => {
         handleFilterOptionsChange(FilterOptions.TYPE, '')
-        updateAssigneeValue(null)
+        setAssigneeValue(undefined)
         setNoAssigneeOptionFlag(true)
         handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
       },
       id: 'AllTasks',
     },
   ]
-
-  const assigneeValue = _assigneeValue as IAssigneeCombined
 
   return (
     <Box
@@ -174,7 +169,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
                                 onClick={(e) => {
                                   e.preventDefault()
                                   e.stopPropagation()
-                                  updateAssigneeValue(null)
+                                  setAssigneeValue(undefined)
                                   handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
                                 }}
                                 sx={{
@@ -201,8 +196,10 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
                         const newUserIds = getSelectedUserIds(inputValue)
                         const newAssignee = getAssigneeId(newUserIds)
                         if (newAssignee) {
+                          setAssigneeValue(getSelectorAssignee(assignee, inputValue))
                           handleFilterOptionsChange(FilterOptions.ASSIGNEE, newUserIds)
                         } else {
+                          setAssigneeValue(undefined)
                           handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
                         }
                       }}
@@ -311,7 +308,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
                             onClick={(e) => {
                               e.preventDefault()
                               e.stopPropagation()
-                              updateAssigneeValue(null)
+                              setAssigneeValue(undefined)
                               handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
                             }}
                             sx={{
@@ -338,8 +335,10 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
                     const newUserIds = getSelectedUserIds(inputValue)
                     const newAssignee = getAssigneeId(newUserIds)
                     if (newAssignee) {
+                      setAssigneeValue(getSelectorAssignee(assignee, inputValue))
                       handleFilterOptionsChange(FilterOptions.ASSIGNEE, newUserIds)
                     } else {
+                      setAssigneeValue(undefined)
                       handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
                     }
                   }}

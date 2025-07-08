@@ -2,7 +2,7 @@
  * All utils related to the Copilot selector component
  */
 
-import { InputValue, ISelectorOption, UserIds } from '@/types/interfaces'
+import { IAssigneeCombined, InputValue, ISelectorOption, UserIds } from '@/types/interfaces'
 import { userIdFieldMap } from '@/types/objectMaps'
 import { UserIdsType } from './assignee'
 
@@ -37,3 +37,11 @@ export const selectorOptionsToInputValue = (options: ISelectorOption[]): InputVa
     object: option.type,
     companyId: option.companyId,
   }))
+
+export const getSelectorAssignee = (assignee: IAssigneeCombined[], inputValue: InputValue[]) => {
+  return assignee.find((assignee) =>
+    inputValue[0]?.companyId
+      ? assignee.id === inputValue[0]?.id && assignee.companyId === inputValue[0]?.companyId
+      : assignee.id === inputValue[0]?.id,
+  )
+}

@@ -29,10 +29,10 @@ import { createDateFromFormattedDateString, formatDate } from '@/utils/dateHelpe
 import { getCardHref } from '@/utils/getCardHref'
 import { isTaskCompleted } from '@/utils/isTaskCompleted'
 import { NoAssignee } from '@/utils/noAssignee'
-import { getSelectedUserIds } from '@/utils/selector'
+import { getSelectedUserIds, getSelectorAssignee } from '@/utils/selector'
 import { shouldConfirmBeforeReassignment } from '@/utils/shouldConfirmBeforeReassign'
 import { Box, Skeleton, Stack, Typography } from '@mui/material'
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { z } from 'zod'
 
@@ -53,9 +53,10 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate 
 
   useEffect(() => {
     if (assignee.length > 0) {
-      const currentAssignee = assignee.find((el) => el.id === task.assigneeId)
+      const currentAssignee = assignee.find((el) =>
+        task.clientId ? el.id === task.assigneeId && el.companyId == task.companyId : el.id === task.assigneeId,
+      )
       const finalAssignee = currentAssignee ?? NoAssignee
-      // @ts-expect-error  "type" property has mismatching types in between NoAssignee and IAssigneeCombined
       store.dispatch(setAssigneeCache({ key: task.id, value: finalAssignee }))
       setAssigneeValue(finalAssignee)
     }
@@ -89,7 +90,7 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate 
   const handleAssigneeChange = (inputValue: InputValue[]) => {
     const newUserIds = getSelectedUserIds(inputValue)
     const previousAssignee = assignee.find((assignee) => assignee.id == getAssigneeId(getUserIds(task)))
-    const nextAssignee = assignee.find((assignee) => assignee.id == getAssigneeId(newUserIds))
+    const nextAssignee = getSelectorAssignee(assignee, inputValue)
     const shouldShowConfirmModal = shouldConfirmBeforeReassignment(previousAssignee, nextAssignee)
     if (shouldShowConfirmModal) {
       setSelectedAssignee(newUserIds)
@@ -104,7 +105,7 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate 
       } else {
         token && updateAssignee(token, task.id, internalUserId, clientId, companyId)
       }
-      setAssigneeValue(assignee.find((assignee) => assignee.id === nextAssignee?.id) ?? NoAssignee)
+      setAssigneeValue(nextAssignee ?? NoAssignee)
     }
   }
 

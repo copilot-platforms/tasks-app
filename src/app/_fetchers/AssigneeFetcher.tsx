@@ -8,7 +8,7 @@ import { Token } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { IAssignee, PropsWithToken, UserType } from '@/types/interfaces'
-import { addTypeToAssignee, parseAssigneeToSelectorOption } from '@/utils/addTypeToAssignee'
+import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
 import fetchRetry from 'fetch-retry'
 
 const fetchWithRetry = fetchRetry(globalThis.fetch)
@@ -50,17 +50,11 @@ export const AssigneeFetcher = async ({
   const fetchedAssignee = await fetchAssignee(token, userType, isPreview)
 
   const assignableUsersWithType = addTypeToAssignee(fetchedAssignee)
-  const selectorOptions = parseAssigneeToSelectorOption(fetchedAssignee)
 
   const { internalUserId, clientId, companyId } = tokenPayload || {}
 
   return (
-    <ClientSideStateUpdate
-      selectorAssignee={selectorOptions}
-      assignee={assignableUsersWithType}
-      viewSettings={viewSettings}
-      task={task}
-    >
+    <ClientSideStateUpdate assignee={assignableUsersWithType} viewSettings={viewSettings} task={task}>
       {(internalUserId || (clientId && companyId)) && (
         <AssigneeCacheSetter
           lookupKey={clientId && companyId ? `${clientId!}.${companyId!}` : internalUserId!}
