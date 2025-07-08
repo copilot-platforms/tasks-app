@@ -2,9 +2,10 @@
  * All utils related to the Copilot selector component
  */
 
-import { IAssigneeCombined, InputValue, ISelectorOption, UserIds } from '@/types/interfaces'
+import { FilterByOptions, IAssigneeCombined, IFilterOptions, InputValue, ISelectorOption, UserIds } from '@/types/interfaces'
 import { userIdFieldMap } from '@/types/objectMaps'
 import { UserIdsType } from './assignee'
+import { TaskResponse } from '@/types/dto/tasks.dto'
 
 export const getSelectedUserIds = (inputValue: InputValue[]): UserIdsType => {
   let userIds: UserIdsType = {
@@ -45,3 +46,26 @@ export const getSelectorAssignee = (assignee: IAssigneeCombined[], inputValue: I
       : assignee.id === inputValue[0]?.id,
   )
 }
+
+export const getSelectorAssigneeFromTask = (assignee: IAssigneeCombined[], task: TaskResponse) => {
+  if (!task) return undefined
+  return assignee.find((assignee) =>
+    task?.clientId
+      ? assignee.id == task?.assigneeId && assignee.companyId == task?.companyId
+      : assignee.id == task?.assigneeId,
+  )
+} //util to get initial assignee from task for selector.
+
+export const getSelectorAssigneeFromFilterOptions = (
+  assignee: IAssigneeCombined[],
+  assigneeFilterOptions: UserIdsType,
+  typeFilterOptions?: string,
+) => {
+  return assignee.find(
+    (item) =>
+      item.id == assigneeFilterOptions[UserIds.INTERNAL_USER_ID] ||
+      (item.id == assigneeFilterOptions[UserIds.CLIENT_ID] && item.companyId == assigneeFilterOptions[UserIds.COMPANY_ID]) ||
+      item.id == assigneeFilterOptions[UserIds.COMPANY_ID] ||
+      (typeFilterOptions && item.id == typeFilterOptions),
+  )
+} //util to get initial assignee from filterOptions for selector.

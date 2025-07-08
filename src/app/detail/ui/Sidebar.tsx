@@ -21,7 +21,7 @@ import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { IAssigneeCombined, InputValue, Sizes } from '@/types/interfaces'
 import { getAssigneeId, getAssigneeName, getUserIds, UserIdsType } from '@/utils/assignee'
 import { createDateFromFormattedDateString, formatDate } from '@/utils/dateHelper'
-import { getSelectedUserIds, getSelectorAssignee } from '@/utils/selector'
+import { getSelectedUserIds, getSelectorAssignee, getSelectorAssigneeFromTask } from '@/utils/selector'
 import { NoAssignee } from '@/utils/noAssignee'
 import { shouldConfirmBeforeReassignment } from '@/utils/shouldConfirmBeforeReassign'
 import { Box, Skeleton, Stack, styled, Typography } from '@mui/material'
@@ -75,11 +75,7 @@ export const Sidebar = ({
       updateStatusValue(currentWorkflowState)
       //UPDATE THE VALUE OF ASSIGNEE IN COPILOT SELECTOR after it supports value prop. (REALTIME)
       setDueDate(currentTask?.dueDate)
-      const currentAssignee = assignee.find((assignee) =>
-        currentTask?.clientId
-          ? assignee.id == activeTask?.assigneeId && assignee.companyId == activeTask?.companyId
-          : assignee.id == activeTask?.assigneeId,
-      )
+      const currentAssignee = getSelectorAssigneeFromTask(assignee, activeTask)
       setAssigneeValue(currentAssignee)
     }
   }, [activeTask, workflowStates, assignee])
