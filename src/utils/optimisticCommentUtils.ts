@@ -32,7 +32,7 @@ export const getTempLog = (
   userDetails: IAssigneeCombined | undefined,
   userId: string | undefined,
 ): LogResponse | ReplyResponse => {
-  const currentUserDetails = z.union([InternalUsersSchema, ClientResponseSchema]).parse(userDetails)
+  const currentUserDetails = z.union([InternalUsersSchema, ClientResponseSchema]).optional().parse(userDetails)
   return postCommentPayload.parentId
     ? {
         id: tempId,
