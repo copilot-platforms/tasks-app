@@ -18,7 +18,7 @@ import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { UserType } from '@/types/interfaces'
 import { CopilotAPI } from '@/utils/CopilotAPI'
-import { redirectIfTaskCta } from '@/utils/redirect'
+import { redirectIfTaskCta, redirectToClientPortal } from '@/utils/redirect'
 import { UserRole } from '@api/core/types/user'
 import { Suspense } from 'react'
 import { z } from 'zod'
@@ -100,6 +100,10 @@ export default async function Main({ searchParams }: { searchParams: { token: st
     getAllTasks(token, { showArchived: viewSettings.showArchived, showUnarchived: viewSettings.showUnarchived }),
     getWorkspace(token),
   ])
+
+  if (tokenPayload.companyId) {
+    redirectToClientPortal(token)
+  }
 
   console.info(`app/page.tsx | Serving user ${token} with payload`, tokenPayload)
   return (
