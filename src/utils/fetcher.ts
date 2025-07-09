@@ -1,8 +1,12 @@
-export const fetcher = (url: string | null) => {
-  if (url) {
-    return fetch(url)
-      .then((res) => res.json())
-      .catch((e) => console.error('fetcher: ', e))
-    // @aatbip we should have better error handling here eventually - we could force rerender this component for a fixed number of times
+export const fetcher = async (url: string | null) => {
+  if (!url) return
+
+  const res = await fetch(url)
+
+  if (!res.ok) {
+    const error = new Error('An error occurred while fetching the data.')
+    throw error
   }
+
+  return res.json()
 }
