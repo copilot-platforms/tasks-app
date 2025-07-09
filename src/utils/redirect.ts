@@ -23,3 +23,7 @@ export const RESOURCE_NOT_FOUND_REDIRECT_PATHS = {
   [UserType.INTERNAL_USER]: '/',
   [UserType.CLIENT_USER]: '/client',
 }
+
+export const redirectToClientPortal = (token: string) => {
+  redirect(`${apiUrl}/client?token=${token}`)
+}
