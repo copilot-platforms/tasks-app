@@ -36,6 +36,11 @@ export class NotificationService extends BaseService {
         // If any of the given action is not present in details obj, that type of notification is not sent
         deliveryTargets: { inProduct, email },
       }
+      //! Since IU's NEVER get email notifications, we send recipientCompanyId only if email is present
+      // In case this logic ever changes, good luck
+      if (!notificationDetails.deliveryTargets.email) {
+        delete notificationDetails.recipientCompanyId
+      }
       console.info('NotificationService#create | Creating single notification:', notificationDetails)
 
       const notification = await copilot.createNotification(notificationDetails)
@@ -96,6 +101,9 @@ export class NotificationService extends BaseService {
             recipientId,
             recipientCompanyId: task.companyId || undefined,
             deliveryTargets: { inProduct, email },
+          }
+          if (!notificationDetails.deliveryTargets.email) {
+            delete notificationDetails.recipientCompanyId
           }
           console.info('NotificationService#bulkCreate | Creating single notification:', notificationDetails)
 

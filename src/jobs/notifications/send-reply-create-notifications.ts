@@ -143,7 +143,6 @@ const getInitiatorNotificationPromises = async (
     return copilot.createNotification({
       senderId,
       recipientId: initiator.initiatorId,
-      recipientCompanyId: initiatorCompanyId,
       deliveryTargets: { inProduct: deliveryTargets.inProduct },
     })
   } else if (initiator.initiatorType === CommentInitiator.client || assume === CommentInitiator.client) {

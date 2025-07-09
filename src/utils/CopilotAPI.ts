@@ -207,7 +207,7 @@ export class CopilotAPI {
     return ApiKeyOwnerResponseSchema.parse(data)
   }
 
-  async getNotifications(
+  async getClientNotifications(
     recipientId: string,
     recipientCompanyId: string,
     opts: {
