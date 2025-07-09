@@ -37,19 +37,15 @@ import { CopilotAPI } from '@/utils/CopilotAPI'
 import EscapeHandler from '@/utils/escapeHandler'
 import { getPreviewMode } from '@/utils/previewMode'
 import { Box, Stack } from '@mui/material'
-import httpStatus from 'http-status'
 import { Suspense } from 'react'
 import { z } from 'zod'
+import { fetchWithErrorHandler } from '@/app/_fetchers/fetchWithErrorHandler'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
-  const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
+  const data = await fetchWithErrorHandler<{ task: TaskResponse }>(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
     cache: 'no-store',
     next: { tags: ['getOneTask'] },
   })
-  if (res.status == httpStatus.INTERNAL_SERVER_ERROR) {
-    throw new Error('Something went wrong.')
-  }
-  const data = await res.json()
 
   return data.task
 }

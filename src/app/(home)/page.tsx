@@ -22,6 +22,7 @@ import { redirectIfTaskCta, redirectToClientPortal } from '@/utils/redirect'
 import { UserRole } from '@api/core/types/user'
 import { Suspense } from 'react'
 import { z } from 'zod'
+import { fetchWithErrorHandler } from '@/app/_fetchers/fetchWithErrorHandler'
 
 export async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -43,11 +44,9 @@ export async function getAllTasks(
   if (filters?.showUnarchived !== undefined) {
     queryParams.append('showUnarchived', filters.showUnarchived.toString())
   }
-  const res = await fetch(`${apiUrl}/api/tasks?${queryParams.toString()}`, {
+  const data = await fetchWithErrorHandler<{ tasks: TaskResponse[] }>(`${apiUrl}/api/tasks?${queryParams.toString()}`, {
     next: { tags: ['getTasks'] },
   })
-
-  const data = await res.json()
 
   return data.tasks
 }
