@@ -8,7 +8,7 @@ import { useSelector } from 'react-redux'
 import useSWR from 'swr'
 
 export const TaskDataFetcher = ({ token }: PropsWithToken) => {
-  const { showArchived, showUnarchived } = useSelector(selectTaskBoard)
+  const { showArchived, showUnarchived, tasks } = useSelector(selectTaskBoard)
 
   const buildQueryString = (token: string, archivedOptions?: ArchivedOptionsType) => {
     const queryParams = new URLSearchParams({ token })
@@ -23,7 +23,10 @@ export const TaskDataFetcher = ({ token }: PropsWithToken) => {
 
   const queryString = token ? buildQueryString(token, { showArchived, showUnarchived }) : null
 
-  const { data, isLoading } = useSWR(queryString ? `/api/tasks/?${queryString}` : null, fetcher)
+  const { data, isLoading } = useSWR(queryString ? `/api/tasks/?${queryString}` : null, fetcher, {
+    fallbackData: { tasks },
+    revalidateOnMount: false,
+  })
 
   useEffect(() => {
     store.dispatch(setIsTasksLoading(isLoading))
