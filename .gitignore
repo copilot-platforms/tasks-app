@@ -50,3 +50,5 @@ next-env.d.ts
 
 # Dumps
 dump.sql
+
+src/app/api/testing
