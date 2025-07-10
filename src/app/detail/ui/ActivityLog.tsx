@@ -51,11 +51,6 @@ export const ActivityLog = ({ log }: Prop) => {
           const taskAssignees = TaskAssignedResponseSchema.parse(log.details)
           return getAssignedToName(taskAssignees)
 
-        case ActivityType.TASK_UNASSIGNED:
-          const { oldValue: oldId } = TaskUnassignedSchema.parse(log.details)
-          const oldAssignee = assignee.find((el) => el.id === oldId)
-          return [getAssigneeName(oldAssignee, 'Deleted User')]
-
         case ActivityType.TITLE_UPDATED:
           const titles = TitleUpdatedSchema.parse(log.details)
           return [titles.oldValue, titles.newValue]
@@ -97,10 +92,9 @@ export const ActivityLog = ({ log }: Prop) => {
         <DotSeparator />
       </>
     ),
-    [ActivityType.TASK_UNASSIGNED]: (from: string) => (
+    [ActivityType.TASK_UNASSIGNED]: () => (
       <>
-        <StyledTypography>unassigned the task {from && `from `}</StyledTypography>
-        {from && <BoldTypography>{from}</BoldTypography>}
+        <StyledTypography>removed assignee</StyledTypography>
         <DotSeparator />
       </>
     ),
