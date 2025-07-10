@@ -216,7 +216,7 @@ export const ActivityWrapper = ({
                         stableId={z.string().parse(item.details.id) ?? item.id}
                         optimisticUpdates={optimisticUpdates}
                       />
-                    ) : (
+                    ) : Object.keys(item).length === 0 ? null : (
                       <ActivityLog log={item} />
                     )}
                   </Box>
