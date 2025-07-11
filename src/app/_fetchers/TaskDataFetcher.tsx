@@ -26,6 +26,9 @@ export const TaskDataFetcher = ({ token }: PropsWithToken) => {
   const { data, isLoading } = useSWR(queryString ? `/api/tasks/?${queryString}` : null, fetcher, {
     fallbackData: { tasks },
     revalidateOnMount: false,
+    revalidateOnFocus: false,
+    revalidateIfStale: false,
+    refreshInterval: 0,
   })
 
   useEffect(() => {
