@@ -99,7 +99,7 @@ const dispatchMissingEmailNotificationsForWorkspace = async (missedTasks: Task[]
   const clients = await copilot.getClients({ limit: MAX_FETCH_ASSIGNEE_COUNT })
   const numClients = clients.data?.length || 0
   const workspaceClientTasks = missedTasks.filter((t) => t.workspaceId === workspaceId && t.clientId)
-  const workspaceCompanyTasks = missedTasks.filter((t) => t.workspaceId === workspaceId && t.companyId)
+  const workspaceCompanyTasks = missedTasks.filter((t) => t.workspaceId === workspaceId && t.companyId && !t.clientId)
 
   const notificationDispatchPromises = []
 
