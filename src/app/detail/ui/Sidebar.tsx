@@ -55,6 +55,12 @@ export const Sidebar = ({
   const { activeTask, token, workflowStates, assignee, previewMode } = useSelector(selectTaskBoard)
   const { showSidebar, showConfirmAssignModal, activeTaskAssignees } = useSelector(selectTaskDetails)
 
+  const [isHydrated, setIsHydrated] = useState(false)
+
+  useEffect(() => {
+    setIsHydrated(true)
+  }, [])
+
   const initialAssignees = useMemo(
     () => (activeTaskAssignees.length ? activeTaskAssignees : assignee),
     [activeTaskAssignees, assignee],
@@ -116,7 +122,7 @@ export const Sidebar = ({
     }
   }, [isMobile])
 
-  if (!activeTask) return <SidebarSkeleton />
+  if (!activeTask || !isHydrated) return <SidebarSkeleton />
   if (!showSidebar) {
     return (
       <Stack
