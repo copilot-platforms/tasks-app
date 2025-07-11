@@ -49,7 +49,7 @@ export class TasksService extends BaseService {
       workspaceId: user.workspaceId,
     }
 
-    if (user.clientId) {
+    if (user.clientId || user.companyId) {
       filters = { ...filters, ...this.getClientOrCompanyAssigneeFilter() }
     }
 
@@ -495,23 +495,19 @@ export class TasksService extends BaseService {
   }
 
   private getClientOrCompanyAssigneeFilter(): Prisma.TaskWhereInput {
-    const parsedClientId = z.string().safeParse(this.user.clientId)
-    if (!parsedClientId.data) return {}
+    const clientId = z.string().safeParse(this.user.clientId).data
+    const companyId = z.string().safeParse(this.user.companyId).data
 
-    const clientId = parsedClientId.data
-    const parsedCompanyId = z.string().safeParse(this.user.companyId)
-    if (!parsedCompanyId.data) {
-      return {
-        OR: [{ clientId }],
-      }
-    }
+    const filters = []
 
-    return {
-      OR: [
-        { clientId, companyId: parsedCompanyId.data },
-        { companyId: parsedCompanyId.data, clientId: null },
-      ],
+    if (clientId && companyId) {
+      filters.push({ clientId, companyId }, { companyId, clientId: null })
+    } else if (clientId) {
+      filters.push({ clientId })
+    } else if (companyId) {
+      filters.push({ clientId: null, companyId })
     }
+    return filters.length > 0 ? { OR: filters } : {}
   }
 
   private getDisjointTasksFilter = () => {
@@ -520,7 +516,7 @@ export class TasksService extends BaseService {
     // E.g. A -> B -> C, where A is assigned to user 1, B is assigned to user 2, C is assigned to user 2
     // For user 2, task B should show up as a parent task in the main task board
     const disjointTasksFilter: Promise<Prisma.TaskWhereInput> = (async () => {
-      if (this.user.role === UserRole.IU && !this.user.clientId) {
+      if (this.user.role === UserRole.IU && !this.user.clientId && !this.user.companyId) {
         const copilot = new CopilotAPI(this.user.token)
         const currentInternalUser = await copilot.getInternalUser(z.string().parse(this.user.internalUserId))
         if (!currentInternalUser.isClientAccessLimited) return {}
@@ -582,6 +578,10 @@ export class TasksService extends BaseService {
     if (parentId) {
       return z.string().uuid().parse(parentId)
     }
+    if (this.user.companyId) {
+      // If user is client, flatten subtasks by not filtering by parentId right now
+      return undefined
+    }
     // If user is IU, no need to flatten subtasks
     if (this.user.role === UserRole.IU && !this.user.clientId) {
       const copilot = new CopilotAPI(this.user.token)
@@ -593,7 +593,6 @@ export class TasksService extends BaseService {
       }
       return null
     }
-    // If user is client, flatten subtasks by not filtering by parentId right now
     return undefined
   }
 

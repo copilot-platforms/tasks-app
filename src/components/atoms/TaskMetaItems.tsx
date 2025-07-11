@@ -22,19 +22,21 @@ export const TaskMetaItems = ({ task, lineHeight }: { task: TaskResponse; lineHe
           </Typography>
         </Stack>
       )}
-      <Stack direction="row" alignItems={'center'} columnGap={'4px'}>
-        <Typography
-          variant="bodySm"
-          sx={{
-            fontSize: '12px',
-            color: (theme) => theme.color.text.textSecondary,
-            lineHeight: lineHeight ?? '21px',
-          }}
-        >
-          {subtaskCount}
-        </Typography>
-        <SubtaskIcon />
-      </Stack>
+      {subtaskCount > 0 && (
+        <Stack direction="row" alignItems={'center'} columnGap={'4px'}>
+          <Typography
+            variant="bodySm"
+            sx={{
+              fontSize: '12px',
+              color: (theme) => theme.color.text.textSecondary,
+              lineHeight: lineHeight ?? '21px',
+            }}
+          >
+            {subtaskCount}
+          </Typography>
+          <SubtaskIcon />
+        </Stack>
+      )}
     </>
   )
 }
