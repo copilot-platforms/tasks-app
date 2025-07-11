@@ -27,7 +27,6 @@ export const TaskDataFetcher = ({ token }: PropsWithToken) => {
     fallbackData: { tasks },
     revalidateOnMount: false,
     revalidateOnFocus: false,
-    revalidateIfStale: false,
     refreshInterval: 0,
   })
 
