@@ -158,6 +158,7 @@ export class CopilotAPI {
   }
 
   async _createNotification(requestBody: NotificationRequestBody): Promise<NotificationCreatedResponse> {
+    // @ts-expect-error like always, SDK types are not up to date
     const notification = await this.copilot.createNotification({ requestBody })
     return NotificationCreatedResponseSchema.parse(notification)
   }
@@ -208,7 +209,7 @@ export class CopilotAPI {
   }
 
   async getClientNotifications(
-    recipientId: string,
+    recipientClientId: string,
     recipientCompanyId: string,
     opts: {
       limit?: number
@@ -218,7 +219,7 @@ export class CopilotAPI {
     } = { limit: 100 },
   ) {
     const data = await this.manualFetch('notifications', {
-      recipientId,
+      recipientClientId,
       recipientCompanyId,
       limit: `${opts.limit}`,
     })
