@@ -172,7 +172,10 @@ export type ApiKeyOwnerResponse = z.infer<typeof ApiKeyOwnerResponseSchema>
  */
 export const NotificationRequestBodySchema = z.object({
   senderId: z.string(),
-  recipientId: z.string(),
+  // New notification body schema for copilot to accomodate for multiple companies
+  senderType: z.enum(['internalUser', 'client']),
+  recipientInternalUserId: z.string().optional(),
+  recipientClientId: z.string().optional(),
   recipientCompanyId: z.string().optional(),
   deliveryTargets: z
     .object({
@@ -211,7 +214,8 @@ export const NotificationCreatedResponseSchema = z.object({
   createdAt: z.string().datetime(),
   event: z.string().optional(),
   object: z.string().optional(),
-  recipientId: z.string().optional(),
+  recipientInternalUserId: z.string().optional(),
+  recipientClientId: z.string().optional(),
   recipientCompanyId: z.string().optional(),
   resourceId: z.string().optional(),
   senderId: z.string().optional(),
