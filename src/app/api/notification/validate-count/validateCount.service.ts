@@ -148,9 +148,10 @@ export class ValidateCountService extends NotificationService {
       createNotificationPromises.push(
         bottleneck.schedule(() => {
           console.info(`ValidateCount :: Creating missing notification for task ${task.id} - ${task.title}`)
+          // @ts-expect-error SDK types for new notification payload is not up to datelike always, SDK types are not up to date
           return this.copilot.createNotification({
             senderId: task.createdById,
-            recipientId: clientId,
+            recipientClientId: clientId,
             recipientCompanyId: task.companyId || undefined,
             deliveryTargets: {
               inProduct: {
