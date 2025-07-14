@@ -175,8 +175,6 @@ export class ValidateCountService extends NotificationService {
         companyId: tasksWithoutNotifications[i].companyId,
       })
     }
-    await this.db.clientNotification.createMany({
-      data: newClientNotificationData,
-    })
+    await this.db.clientNotification.createMany({ data: newClientNotificationData })
   }
 }

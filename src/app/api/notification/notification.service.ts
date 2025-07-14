@@ -109,7 +109,7 @@ export class NotificationService extends BaseService {
     return await this.db.clientNotification.create({
       data: {
         clientId: z.string().parse(notification.recipientClientId),
-        companyId: z.string().parse(task.companyId),
+        companyId: z.string().parse(notification.recipientCompanyId),
         notificationId: notification.id,
         taskId: task.id,
       },
