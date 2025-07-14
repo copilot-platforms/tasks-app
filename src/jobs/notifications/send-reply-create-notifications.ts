@@ -1,3 +1,4 @@
+import { NotificationSenderSchema } from '@/types/common'
 import { getAssigneeName } from '@/utils/assignee'
 import { bottleneck } from '@/utils/bottleneck'
 import { CopilotAPI } from '@/utils/CopilotAPI'
@@ -138,19 +139,20 @@ const getInitiatorNotificationPromises = async (
   senderId: string,
   deliveryTargets: { inProduct: Record<'title', any>; email: object },
   initiatorCompanyId?: string,
+  // Overrides the default senderType for the notification
   assume?: CommentInitiator,
 ) => {
   if (initiator.initiatorType === CommentInitiator.internalUser || assume === CommentInitiator.internalUser) {
     return copilot.createNotification({
       senderId,
-      senderType: assume || z.enum(['internalUser', 'client']).parse(initiator.initiatorType),
+      senderType: assume || NotificationSenderSchema.parse(initiator.initiatorType),
       recipientInternalUserId: initiator.initiatorId,
       deliveryTargets: { inProduct: deliveryTargets.inProduct },
     })
   } else if (initiator.initiatorType === CommentInitiator.client || assume === CommentInitiator.client) {
     return copilot.createNotification({
       senderId,
-      senderType: assume || z.enum(['internalUser', 'client']).parse(initiator.initiatorType),
+      senderType: assume || NotificationSenderSchema.parse(initiator.initiatorType),
       recipientClientId: initiator.initiatorId,
       recipientCompanyId: initiatorCompanyId,
       deliveryTargets: { email: deliveryTargets.email },
