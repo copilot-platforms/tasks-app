@@ -17,7 +17,7 @@ export const sendClientUpdateTaskNotifications = task({
     preset: 'medium-1x',
   },
   queue: {
-    concurrencyLimit: 25,
+    concurrencyLimit: 5,
   },
 
   run: async (payload: ClientTaskUpdateNotificationPayload, { ctx }) => {
@@ -28,7 +28,7 @@ export const sendClientUpdateTaskNotifications = task({
     await taskNotificationsSevice.sendClientUpdateTaskNotifications(prevTask, updatedTask, updatedWorkflowState)
 
     return {
-      message: `Handled client task upadte notifications for taskId ${updatedTask.id} successfully`,
+      message: `Handled client task update notifications for taskId ${updatedTask.id} successfully`,
     }
   },
 })
