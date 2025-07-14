@@ -7,7 +7,7 @@ import {
   setAccessibleTasks,
   setActiveTask,
   setAssigneeList,
-  setFilteredAssgineeList,
+  setFilteredAssigneeList,
   setPreviewMode,
   setTasks,
   setToken,
@@ -85,7 +85,7 @@ export const ClientSideStateUpdate = ({
       const viewSettingsCopy = structuredClone(viewSettings) //deep cloning for immutability and prevent the reducer mutating the original object.
       store.dispatch(setViewSettings(viewSettingsCopy))
       const view = viewSettingsTemp ? viewSettingsTemp.filterOptions : viewSettingsCopy.filterOptions
-      store.dispatch(setFilteredAssgineeList({ filteredType: filterOptionsMap[view?.type] || filterOptionsMap.default }))
+      store.dispatch(setFilteredAssigneeList({ filteredType: filterOptionsMap[view?.type] || filterOptionsMap.default }))
     }
 
     if (tokenPayload) {
