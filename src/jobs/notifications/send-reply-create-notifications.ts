@@ -133,6 +133,7 @@ const getNotificationDetails = async (copilot: CopilotAPI, user: User, comment: 
 
 const getInitiatorNotificationPromises = async (
   copilot: CopilotAPI,
+  // Initiator in this context means previous initiators that were active in the thread, NOT the currently commenting user
   initiator: { initiatorId: string; initiatorType: CommentInitiator | null },
   senderId: string,
   deliveryTargets: { inProduct: Record<'title', any>; email: object },
@@ -142,13 +143,15 @@ const getInitiatorNotificationPromises = async (
   if (initiator.initiatorType === CommentInitiator.internalUser || assume === CommentInitiator.internalUser) {
     return copilot.createNotification({
       senderId,
-      recipientId: initiator.initiatorId,
+      senderType: assume || z.enum(['internalUser', 'client']).parse(initiator.initiatorType),
+      recipientInternalUserId: initiator.initiatorId,
       deliveryTargets: { inProduct: deliveryTargets.inProduct },
     })
   } else if (initiator.initiatorType === CommentInitiator.client || assume === CommentInitiator.client) {
     return copilot.createNotification({
       senderId,
-      recipientId: initiator.initiatorId,
+      senderType: assume || z.enum(['internalUser', 'client']).parse(initiator.initiatorType),
+      recipientClientId: initiator.initiatorId,
       recipientCompanyId: initiatorCompanyId,
       deliveryTargets: { email: deliveryTargets.email },
     })
