@@ -12,6 +12,7 @@ import { NotificationTaskActions } from '@api/core/types/tasks'
 import { NotificationService } from '@api/notification/notification.service'
 import User from '@api/core/models/User.model'
 import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
+import { NotificationRequestBody } from '@/types/common'
 
 // TODO: This will be broken for a while until OUT-1985
 class WebhookService extends BaseService {
@@ -99,9 +100,11 @@ class WebhookService extends BaseService {
       const inProduct = getInProductNotificationDetails(actionUserName, task, { companyName: company.name })[
         NotificationTaskActions.AssignedToCompany
       ]
-      const notificationDetails = {
+      const notificationDetails: NotificationRequestBody = {
         senderId: task.createdById,
-        recipientId: assigneeId,
+        senderType: 'internalUser',
+        recipientClientId: assigneeId,
+        recipientCompanyId: company.id,
         // If any of the given action is not present in details obj, that type of notification is not sent
         deliveryTargets: { inProduct },
       }
