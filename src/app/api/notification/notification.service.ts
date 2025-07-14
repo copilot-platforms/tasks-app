@@ -1,4 +1,4 @@
-import { CompanyResponse, CopilotUser, NotificationCreatedResponse, NotificationRequestBody } from '@/types/common'
+import { CompanyResponse, CopilotUser, NotificationCreatedResponse, NotificationRequestBody, Uuid } from '@/types/common'
 import { bottleneck } from '@/utils/bottleneck'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import APIError from '@api/core/exceptions/api'
@@ -108,8 +108,8 @@ export class NotificationService extends BaseService {
   async addToClientNotifications(task: Task, notification: NotificationCreatedResponse): Promise<ClientNotification> {
     return await this.db.clientNotification.create({
       data: {
-        clientId: z.string().parse(notification.recipientClientId),
-        companyId: z.string().parse(notification.recipientCompanyId),
+        clientId: Uuid.parse(notification.recipientClientId),
+        companyId: Uuid.parse(notification.recipientCompanyId),
         notificationId: notification.id,
         taskId: task.id,
       },
@@ -148,8 +148,8 @@ export class NotificationService extends BaseService {
       // Due to race conditions, we are forced to allow multiple client notifications for a single notification as well
       const relatedNotifications = await this.db.clientNotification.findMany({
         where: {
-          clientId: z.string().parse(task.clientId),
-          companyId: z.string().parse(task.companyId),
+          clientId: Uuid.parse(task.clientId),
+          companyId: Uuid.parse(task.companyId),
           taskId: task.id,
         },
       })

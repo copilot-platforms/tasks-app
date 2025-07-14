@@ -3,6 +3,8 @@ import { validateNotificationRecipient } from '@/utils/notifications'
 import { CommentInitiator, StateType } from '@prisma/client'
 import { z } from 'zod'
 
+export const Uuid = z.string().uuid()
+
 export const HexColorSchema = z.string().refine((val) => /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/.test(val), {
   message: 'Invalid hex color code',
 })
