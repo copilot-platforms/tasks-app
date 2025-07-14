@@ -1,4 +1,5 @@
 import { UserRole } from '@/app/api/core/types/user'
+import { validateNotificationRecipient } from '@/utils/notifications'
 import { CommentInitiator, StateType } from '@prisma/client'
 import { z } from 'zod'
 
@@ -170,32 +171,34 @@ export type ApiKeyOwnerResponse = z.infer<typeof ApiKeyOwnerResponseSchema>
 /**
  * Notification RequestBody schema - accepted by SDK#createNotification
  */
-export const NotificationRequestBodySchema = z.object({
-  senderId: z.string(),
-  // New notification body schema for copilot to accomodate for multiple companies
-  senderType: z.enum(['internalUser', 'client']),
-  recipientInternalUserId: z.string().optional(),
-  recipientClientId: z.string().optional(),
-  recipientCompanyId: z.string().optional(),
-  deliveryTargets: z
-    .object({
-      inProduct: z
-        .object({
-          title: z.string(),
-          body: z.string().optional(),
-        })
-        .optional(),
-      email: z
-        .object({
-          subject: z.string().optional(),
-          header: z.string().optional(),
-          title: z.string().optional(),
-          body: z.string().optional(),
-        })
-        .optional(),
-    })
-    .optional(),
-})
+export const NotificationRequestBodySchema = z
+  .object({
+    senderId: z.string(),
+    // New notification body schema for copilot to accomodate for multiple companies
+    senderType: z.enum(['internalUser', 'client']),
+    recipientInternalUserId: z.string().optional(),
+    recipientClientId: z.string().optional(),
+    recipientCompanyId: z.string().optional(),
+    deliveryTargets: z
+      .object({
+        inProduct: z
+          .object({
+            title: z.string(),
+            body: z.string().optional(),
+          })
+          .optional(),
+        email: z
+          .object({
+            subject: z.string().optional(),
+            header: z.string().optional(),
+            title: z.string().optional(),
+            body: z.string().optional(),
+          })
+          .optional(),
+      })
+      .optional(),
+  })
+  .superRefine(validateNotificationRecipient)
 
 export const ScrapMediaRequestSchema = z.object({
   filePath: z.string(),
