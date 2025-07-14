@@ -169,13 +169,19 @@ export const ApiKeyOwnerResponseSchema = InternalUsersSchema.pick({
 export type ApiKeyOwnerResponse = z.infer<typeof ApiKeyOwnerResponseSchema>
 
 /**
+ * `senderType` field for notification payload in Copilot API
+ */
+export const NotificationSenderSchema = z.enum(['internalUser', 'client'])
+export type NotificationSender = z.infer<typeof NotificationSenderSchema>
+
+/**
  * Notification RequestBody schema - accepted by SDK#createNotification
  */
 export const NotificationRequestBodySchema = z
   .object({
     senderId: z.string(),
     // New notification body schema for copilot to accomodate for multiple companies
-    senderType: z.enum(['internalUser', 'client']),
+    senderType: NotificationSenderSchema,
     recipientInternalUserId: z.string().optional(),
     recipientClientId: z.string().optional(),
     recipientCompanyId: z.string().optional(),
