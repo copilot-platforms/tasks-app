@@ -56,22 +56,14 @@ export class ActivityLogService extends BaseService {
     const parsedActivityLogs = DBActivityLogArraySchema.parse(activityLogs)
     const copilotService = new CopilotAPI(this.user.token)
 
-    const userOpts: CopilotListArgs = { limit: MAX_FETCH_ASSIGNEE_COUNT }
-    const [internalUsers, clientUsers, companies] = await Promise.all([
-      copilotService.getInternalUsers(userOpts),
-      copilotService.getClients(userOpts),
-      copilotService.getCompanies(userOpts),
-    ])
-
     let filteredActivityLogs = parsedActivityLogs
 
-    if (this.user.role == AssigneeType.internalUser) {
-      const currentInternalUser = internalUsers.data.find((iu) => iu.id === this.user.internalUserId)
+    if (this.user.role == AssigneeType.internalUser && this.user.internalUserId) {
+      const currentInternalUser = await copilotService.getInternalUser(this.user.internalUserId)
       if (currentInternalUser?.isClientAccessLimited) {
-        filteredActivityLogs = this.filterActivityLogsForLimitedAccess(
+        filteredActivityLogs = await this.filterActivityLogsForLimitedAccess(
           parsedActivityLogs,
-          clientUsers,
-          companies,
+          copilotService,
           currentInternalUser,
         )
       }
@@ -89,7 +81,7 @@ export class ActivityLogService extends BaseService {
     const [allReplies, replyCounts, initiators] = await Promise.all([
       commentService.getReplies(commentIds, opts?.expandComments),
       commentService.getReplyCounts(commentIds),
-      commentService.getThreadInitiators(commentIds, internalUsers, clientUsers),
+      commentService.getThreadInitiators(commentIds),
     ])
     const signedReplies = await signMediaForComments(allReplies)
 
@@ -159,12 +151,17 @@ export class ActivityLogService extends BaseService {
     }
   }
 
-  private filterActivityLogsForLimitedAccess(
+  private async filterActivityLogsForLimitedAccess(
     parsedActivityLogs: DBActivityLogArray,
-    clientUsers: ClientsResponse,
-    companies: CompaniesResponse,
+    copilotService: CopilotAPI,
     currentInternalUser: InternalUsers,
-  ): DBActivityLogArray {
+  ): Promise<DBActivityLogArray> {
+    const userOpts: CopilotListArgs = { limit: MAX_FETCH_ASSIGNEE_COUNT }
+    const [clientUsers, companies] = await Promise.all([
+      copilotService.getClients(userOpts),
+      copilotService.getCompanies(userOpts),
+    ])
+
     const previousAssigneeIds = parsedActivityLogs
       .filter(
         (log) =>
