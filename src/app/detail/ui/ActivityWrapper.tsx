@@ -38,7 +38,7 @@ export const ActivityWrapper = ({
   task_id: string
   tokenPayload: Token
 }) => {
-  const { activeTask } = useSelector(selectTaskBoard)
+  const { activeTask, assignee } = useSelector(selectTaskBoard)
   const { expandedComments } = useSelector(selectTaskDetails)
   const task = activeTask
   const [lastUpdated, setLastUpdated] = useState(task?.lastActivityLogUpdated)
@@ -47,8 +47,8 @@ export const ActivityWrapper = ({
   const cacheKey = `/api/tasks/${task_id}/activity-logs?token=${token}`
   const { data: activities, isLoading } = useSWR(`/api/tasks/${task_id}/activity-logs?token=${token}`, fetcher, {
     refreshInterval: 0,
+    dedupingInterval: 10000, // avoid duplicate requests within 10 seconds
   })
-  const { assignee } = useSelector(selectTaskBoard)
   const { mutate } = useSWRConfig()
   useScrollToElement('commentId')
   useEffect(() => {
