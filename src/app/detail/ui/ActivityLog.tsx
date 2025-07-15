@@ -137,7 +137,7 @@ export const ActivityLog = ({ log }: Prop) => {
     [ActivityType.COMMENT_ADDED]: () => null,
   }
 
-  const activityUser = log.initiator as unknown as IAssigneeCombined
+  const activityUser = assignee.find((assignee) => assignee.id == log.userId)
 
   return (
     <Stack direction="row" columnGap={4} position="relative">

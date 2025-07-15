@@ -22,7 +22,6 @@ export const commentAddedResponseSchema = z.object({
       parentId: z.string().uuid(),
       initiatorId: z.string().uuid(),
       workspaceId: z.string(),
-      initiator: z.union([InternalUsersSchema, ClientResponseSchema]),
       createdAt: z.string().datetime(),
       updatedAt: z.string().datetime(),
     }),
