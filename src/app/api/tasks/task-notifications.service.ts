@@ -255,6 +255,7 @@ export class TaskNotificationsService extends BaseService {
         NotificationTaskActions.CompletedByCompanyMember,
         updatedTask,
         recipientIds,
+        { senderCompanyId: updatedTask.companyId || undefined },
       )
       await this.notificationService.markAsReadForAllRecipients(updatedTask)
     } else {
