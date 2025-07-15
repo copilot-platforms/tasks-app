@@ -48,7 +48,11 @@ export const Subtasks = ({
 
   const cacheKey = `/api/tasks/?token=${token}&showArchived=1&showUnarchived=1&parentId=${task_id}`
 
-  const { data: subTasks } = useSWR(cacheKey, fetcher, { refreshInterval: 0 })
+  const { data: subTasks } = useSWR(cacheKey, fetcher, {
+    refreshInterval: 0,
+    revalidateOnMount: false,
+    dedupingInterval: 10000, // avoid duplicate requests within 10 seconds
+  })
 
   const { mutate } = useSWRConfig()
 
