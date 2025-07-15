@@ -47,7 +47,7 @@ export const ActivityWrapper = ({
   const cacheKey = `/api/tasks/${task_id}/activity-logs?token=${token}`
   const { data: activities, isLoading } = useSWR(`/api/tasks/${task_id}/activity-logs?token=${token}`, fetcher, {
     refreshInterval: 0,
-    dedupingInterval: 10000, // avoid duplicate requests within 10 seconds
+    dedupingInterval: 5000, // avoid duplicate requests within 5 seconds
   })
   const { mutate } = useSWRConfig()
   useScrollToElement('commentId')
