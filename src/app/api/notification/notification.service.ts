@@ -181,7 +181,7 @@ export class NotificationService extends BaseService {
 
       const notificationIds = relatedNotifications.map(({ notificationId }) => notificationId)
       await copilot.bulkMarkNotificationsAsRead(notificationIds)
-      await this.db.clientNotification.deleteMany({ where: { id: { in: notificationIds } } })
+      await this.db.clientNotification.deleteMany({ where: { notificationId: { in: notificationIds } } })
     } catch (e: unknown) {
       // There may be cases where existing notification has not been updated in the ClientNotifications table yet
       // So don't let it crash the entire program, instead just log it to stderr
@@ -390,6 +390,7 @@ export class NotificationService extends BaseService {
     // Assume client notification then change details body if IU
     const notificationDetails: NotificationRequestBody = {
       senderId,
+      senderCompanyId,
       senderType: 'client',
       recipientClientId: recipientId ?? undefined,
       recipientCompanyId: task.companyId ?? undefined,
