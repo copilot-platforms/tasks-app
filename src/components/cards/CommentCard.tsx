@@ -93,6 +93,10 @@ export const CommentCard = ({
   const [editedContent, setEditedContent] = useState(content)
   const [isListOrMenuActive, setIsListOrMenuActive] = useState(false)
 
+  const firstInitiators = (comment?.details?.firstInitiators as string[])?.map((initiator) => {
+    return assignee.find((assignee) => assignee.id == initiator)
+  })
+
   useEffect(() => {
     const updateTimeAgo = () => setTimeAgo(getTimeDifference(comment.createdAt))
     const intervalId = setInterval(updateTimeAgo, 60 * 1000)
@@ -339,7 +343,7 @@ export const CommentCard = ({
           showReply) && <CustomDivider />}
         {replyCount > 3 && !expandedComments.includes(z.string().parse(comment.details.id)) && (
           <CollapsibleReplyCard
-            lastAssignees={comment.details.firstInitiators as IAssigneeCombined[]}
+            lastAssignees={firstInitiators}
             fetchCommentsWithFullReplies={fetchCommentsWithFullReplies}
             replyCount={replyCount}
           />

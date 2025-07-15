@@ -7,7 +7,7 @@ import { Box, Stack, Typography } from '@mui/material'
 interface CollapsibleReplyCardProps {
   replyCount: number
   fetchCommentsWithFullReplies: () => void
-  lastAssignees: IAssigneeCombined[]
+  lastAssignees: (IAssigneeCombined | undefined)[]
 }
 
 export const CollapsibleReplyCard = ({
