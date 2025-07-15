@@ -184,6 +184,7 @@ export const NotificationRequestBodySchema = z
     senderId: z.string(),
     // New notification body schema for copilot to accomodate for multiple companies
     senderType: NotificationSenderSchema,
+    senderCompanyId: z.string().optional(),
     recipientInternalUserId: z.string().optional(),
     recipientClientId: z.string().optional(),
     recipientCompanyId: z.string().optional(),

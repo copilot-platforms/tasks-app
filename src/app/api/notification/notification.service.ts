@@ -14,14 +14,21 @@ export class NotificationService extends BaseService {
   async create(
     action: NotificationTaskActions,
     task: Task,
-    opts: { disableEmail: boolean; disableInProduct?: boolean; commentId?: string } = {
-      disableEmail: false,
-    },
+    opts: {
+      disableEmail: boolean
+      disableInProduct?: boolean
+      commentId?: string
+      senderCompanyId?: string
+    } = { disableEmail: false },
   ) {
     try {
       const copilot = new CopilotAPI(this.user.token)
 
-      const { senderId, recipientId, actionUser, companyName } = await this.getNotificationParties(copilot, task, action)
+      const { senderId, senderCompanyId, recipientId, actionUser, companyName } = await this.getNotificationParties(
+        copilot,
+        task,
+        action,
+      )
 
       const inProduct = opts.disableInProduct
         ? undefined
@@ -29,7 +36,13 @@ export class NotificationService extends BaseService {
 
       const email = opts.disableEmail ? undefined : getEmailDetails(actionUser, task, { commentId: opts?.commentId })[action]
 
-      const notificationDetails = this.buildNotificationDetails(task, senderId, recipientId, { inProduct, email })
+      const notificationDetails = this.buildNotificationDetails(
+        task,
+        senderId,
+        recipientId,
+        { inProduct, email },
+        senderCompanyId,
+      )
       console.info('NotificationService#create | Creating single notification:', notificationDetails)
 
       const notification = await copilot.createNotification(notificationDetails)
@@ -59,7 +72,7 @@ export class NotificationService extends BaseService {
     action: NotificationTaskActions,
     task: Task,
     recipientIds: string[],
-    opts?: { email?: boolean; disableInProduct?: boolean; commentId?: string },
+    opts?: { email?: boolean; disableInProduct?: boolean; commentId?: string; senderCompanyId?: string },
   ) {
     try {
       const copilot = new CopilotAPI(this.user.token)
@@ -85,7 +98,13 @@ export class NotificationService extends BaseService {
       const notifications = []
       for (let recipientId of recipientIds) {
         try {
-          const notificationDetails = this.buildNotificationDetails(task, senderId, recipientId, { inProduct, email })
+          const notificationDetails = this.buildNotificationDetails(
+            task,
+            senderId,
+            recipientId,
+            { inProduct, email },
+            opts?.senderCompanyId,
+          )
           console.info('NotificationService#bulkCreate | Creating single notification:', notificationDetails)
           notifications.push(await copilot.createNotification(notificationDetails))
         } catch (err: unknown) {
@@ -106,10 +125,11 @@ export class NotificationService extends BaseService {
    * @returns New ClientNotification object
    */
   async addToClientNotifications(task: Task, notification: NotificationCreatedResponse): Promise<ClientNotification> {
+    console.log('nnn', notification)
     return await this.db.clientNotification.create({
       data: {
         clientId: Uuid.parse(notification.recipientClientId),
-        companyId: Uuid.parse(notification.recipientCompanyId),
+        companyId: Uuid.parse(task.companyId),
         notificationId: notification.id,
         taskId: task.id,
       },
@@ -227,6 +247,7 @@ export class NotificationService extends BaseService {
    */
   async getNotificationParties(copilot: CopilotAPI, task: Task, action: NotificationTaskActions) {
     let senderId: string = ''
+    let senderCompanyId: string | undefined
     let recipientId: string = ''
     let recipientIds: string[] = []
     let actionTrigger: CopilotUser | CompanyResponse | null = null
@@ -258,6 +279,7 @@ export class NotificationService extends BaseService {
         break
       case NotificationTaskActions.CompletedByCompanyMember:
         senderId = z.string().parse(task.assigneeId)
+        senderCompanyId = z.string().parse(task.companyId)
         const internalUsers = await copilot.getInternalUsers()
         const client =
           task.assigneeType === AssigneeType.client
@@ -274,6 +296,7 @@ export class NotificationService extends BaseService {
         break
       case NotificationTaskActions.Completed:
         senderId = z.string().parse(task.assigneeId)
+        senderCompanyId = z.string().parse(task.companyId)
         recipientId = task.createdById
         actionTrigger = await getAssignedTo()
         break
@@ -350,7 +373,7 @@ export class NotificationService extends BaseService {
           : `${(actionTrigger as CopilotUser).givenName} ${(actionTrigger as CopilotUser).familyName}`
     }
 
-    return { senderId, recipientId, recipientIds, actionUser, companyName }
+    return { senderId, senderCompanyId, recipientId, recipientIds, actionUser, companyName }
   }
 
   async getAllForTasks(tasks: Task[]): Promise<ClientNotification[]> {
@@ -363,6 +386,7 @@ export class NotificationService extends BaseService {
     senderId: string,
     recipientId: string,
     deliveryTargets: NotificationRequestBody['deliveryTargets'],
+    senderCompanyId?: string,
   ): NotificationRequestBody {
     // Assume client notification then change details body if IU
     const notificationDetails: NotificationRequestBody = {

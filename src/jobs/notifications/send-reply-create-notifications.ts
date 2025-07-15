@@ -1,4 +1,4 @@
-import { NotificationSenderSchema } from '@/types/common'
+import { NotificationSender, NotificationSenderSchema } from '@/types/common'
 import { getAssigneeName } from '@/utils/assignee'
 import { bottleneck } from '@/utils/bottleneck'
 import { CopilotAPI } from '@/utils/CopilotAPI'
@@ -104,7 +104,7 @@ const getNotificationDetails = async (copilot: CopilotAPI, user: User, comment: 
   // Get parent task for title
   const tasksService = new TasksService(user)
   const task = await tasksService.getOneTask(comment.taskId)
-  const senderType = user.internalUserId ? CommentInitiator.internalUser : CommentInitiator.client
+  const senderType: NotificationSender = user.internalUserId ? CommentInitiator.internalUser : CommentInitiator.client
   const senderId = z
     .string()
     .uuid()
