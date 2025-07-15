@@ -201,42 +201,20 @@ export class CommentService extends BaseService {
    */
   async getThreadInitiators(
     commentIds: string[],
-    internalUsers: InternalUsersResponse,
-    clients: ClientsResponse,
     opts: {
       limit?: number
-      onlyIds?: boolean
-    } = { limit: 3, onlyIds: false },
+    } = { limit: 3 },
   ) {
     if (!commentIds.length) return {}
     const commentRepo = new CommentRepository(this.user)
     const results = await commentRepo.getFirstCommentInitiators(commentIds, opts.limit)
 
     const initiators: Record<string, unknown[]> = {}
-    // Extract initiator details
+    // Extract initiator ids
     for (let { parentId, initiatorId, initiatorType } of results) {
       if (!parentId) continue
       initiators[parentId] ??= []
-      // If we are in onlyIds mode, append userId only, instead of full user details
-      if (opts.onlyIds) {
-        initiators[parentId].push(initiatorId)
-        continue
-      }
-
-      let user
-      const getUserById = (user: { id: string }) => user.id === initiatorId
-      // Get full initiator body from Copilot API
-      // NOTE: initiatorType was recently implemented, and it will be null for older comments.
-      // for replies it is safe to assume every reply will have a initiatorType since it was implemented in the same milestone
-      if (initiatorType === CommentInitiator.internalUser) {
-        user = internalUsers.data.find(getUserById)
-      } else if (initiatorType === CommentInitiator.client) {
-        user = clients.data?.find(getUserById)
-      } else {
-        user = internalUsers.data.find(getUserById) || clients.data?.find(getUserById)
-      }
-      // If initiator was deleted, return null to denote deleted user
-      initiators[parentId].push(user || null)
+      initiators[parentId].push(initiatorId)
     }
 
     return initiators
