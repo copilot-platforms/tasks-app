@@ -49,12 +49,14 @@ export const CommentCard = ({
   deleteComment,
   task_id,
   optimisticUpdates,
+  commentInitiator,
 }: {
   comment: LogResponse
   createComment: (postCommentPayload: CreateComment) => void
   deleteComment: (id: string, replyId?: string, softDelete?: boolean) => void
   task_id: string
   optimisticUpdates: OptimisticUpdate[]
+  commentInitiator: IAssigneeCombined | undefined
 }) => {
   const [showReply, setShowReply] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
@@ -66,8 +68,8 @@ export const CommentCard = ({
 
   const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState(false)
   const { tokenPayload } = useSelector(selectAuthDetails)
-  const canEdit = tokenPayload?.internalUserId == comment?.initiator?.id || tokenPayload?.clientId == comment?.initiator?.id
-  const canDelete = tokenPayload?.internalUserId == comment?.initiator?.id
+  const canEdit = tokenPayload?.internalUserId == comment?.userId || tokenPayload?.clientId == comment?.userId
+  const canDelete = tokenPayload?.internalUserId == comment?.userId
   const { assignee, activeTask, token } = useSelector(selectTaskBoard)
   const { expandedComments } = useSelector(selectTaskDetails)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -148,7 +150,6 @@ export const CommentCard = ({
     }
   }, [editedContent, isListOrMenuActive, isFocused, isMobile])
 
-  const commentUser = comment.initiator as unknown as IAssigneeCombined
   const replyCount = (comment.details as CommentResponse).replyCount
 
   const cacheKey = `/api/comment/?token=${token}&parentId=${comment.details.id}`
@@ -213,7 +214,7 @@ export const CommentCard = ({
             {isReadOnly && (
               <Stack direction="row" justifyContent={'space-between'} alignItems="flex-end">
                 <Stack direction="row" columnGap={1} alignItems="center" sx={{ display: 'flex', flexWrap: 'wrap' }}>
-                  {commentUser ? (
+                  {commentInitiator ? (
                     <BoldTypography
                       sx={{
                         maxWidth: { xs: isXxs ? '100px' : '225px', sm: '300px', sd: '380px', md: '520px' },
@@ -222,7 +223,7 @@ export const CommentCard = ({
                         whiteSpace: 'nowrap',
                       }}
                     >
-                      {getAssigneeName(commentUser, '')}
+                      {getAssigneeName(commentInitiator, '')}
                     </BoldTypography>
                   ) : (
                     <Typography
@@ -346,6 +347,7 @@ export const CommentCard = ({
         <TransitionGroup>
           {Array.isArray((comment as LogResponse).details?.replies) &&
             replies.map((item: ReplyResponse) => {
+              const replyInitiator = assignee.find((assignee) => assignee.id == item.initiatorId)
               return (
                 <Collapse key={checkOptimisticStableId(item, optimisticUpdates)}>
                   <ReplyCard
@@ -355,6 +357,7 @@ export const CommentCard = ({
                     handleImagePreview={handleImagePreview}
                     deleteReply={deleteComment}
                     setDeletedReplies={setDeletedReplies}
+                    replyInitiator={replyInitiator}
                   />
                 </Collapse>
               )

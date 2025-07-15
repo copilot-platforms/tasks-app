@@ -41,7 +41,7 @@ export class ActivityLogService extends BaseService {
             "ActivityLogs".type <> ${ActivityType.COMMENT_ADDED}::"ActivityType"
             OR
             (
-                "ActivityLogs".type = ${ActivityType.COMMENT_ADDED}::"ActivityType" 
+                "ActivityLogs".type = ${ActivityType.COMMENT_ADDED}::"ActivityType"
                 AND C."parentId" IS NULL
             )
           )
@@ -77,17 +77,6 @@ export class ActivityLogService extends BaseService {
       }
     }
 
-    const copilotUsers = filteredActivityLogs
-      .map((activityLog) => {
-        if (activityLog.userRole === AssigneeType.internalUser) {
-          return internalUsers.data.find((iu) => iu.id === activityLog.userId)
-        }
-        if (activityLog.userRole === AssigneeType.client) {
-          return clientUsers.data?.find((client) => client.id === activityLog.userId)
-        }
-      })
-      .filter((user): user is NonNullable<typeof user> => user !== undefined)
-
     const commentIds = filteredActivityLogs
       .filter((activityLog) => activityLog.type === ActivityType.COMMENT_ADDED)
       .map((activityLog) => activityLog.details.id)
@@ -105,23 +94,17 @@ export class ActivityLogService extends BaseService {
     const signedReplies = await signMediaForComments(allReplies)
 
     const logResponseData = filteredActivityLogs.map((activityLog) => {
-      const initiator = copilotUsers.find((iu) => iu.id === activityLog.userId) || null
       return {
         ...activityLog,
         details: this.formatActivityLogDetails(
           activityLog.type,
-          activityLog.userRole,
           activityLog.details,
           signedComments,
           signedReplies,
           replyCounts,
           initiators,
-          internalUsers,
-          clientUsers,
-          companies,
         ),
         createdAt: activityLog.createdAt.toISOString(),
-        initiator,
       }
     })
 
@@ -139,15 +122,11 @@ export class ActivityLogService extends BaseService {
 
   formatActivityLogDetails<ActivityLog extends keyof typeof SchemaByActivityType>(
     activityType: ActivityLog,
-    userRole: AssigneeType,
     payload: DBActivityLogDetails,
     comments: Comment[],
     allReplies: Comment[],
     replyCounts: Record<string, number>,
     initiators: Record<string, Array<any>>,
-    internalUsers: InternalUsersResponse,
-    clientUsers: ClientsResponse,
-    companies: CompaniesResponse,
   ) {
     switch (activityType) {
       case ActivityType.COMMENT_ADDED:
@@ -158,21 +137,9 @@ export class ActivityLogService extends BaseService {
 
         let replies = allReplies.filter((reply) => reply.parentId === comment.id)
 
-        const copilotUsers = replies
-          .map((reply) => {
-            if (reply.initiatorType === CommentInitiator.internalUser) {
-              return internalUsers.data.find((iu) => iu.id === reply.initiatorId)
-            }
-            if (reply.initiatorType === CommentInitiator.client) {
-              return clientUsers.data?.find((client) => client.id === reply.initiatorId)
-            }
-          })
-          .filter((user): user is NonNullable<typeof user> => user !== undefined)
-
         replies = replies
           .map((comment) => ({
             ...comment,
-            initiator: copilotUsers.find((iu) => iu.id === comment.initiatorId) || null,
           }))
           .reverse()
 
