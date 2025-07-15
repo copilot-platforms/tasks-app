@@ -125,7 +125,6 @@ export class NotificationService extends BaseService {
    * @returns New ClientNotification object
    */
   async addToClientNotifications(task: Task, notification: NotificationCreatedResponse): Promise<ClientNotification> {
-    console.log('nnn', notification)
     return await this.db.clientNotification.create({
       data: {
         clientId: Uuid.parse(notification.recipientClientId),
@@ -392,7 +391,7 @@ export class NotificationService extends BaseService {
     const notificationDetails: NotificationRequestBody = {
       senderId,
       senderType: 'client',
-      recipientClientId: task.assigneeId ?? undefined,
+      recipientClientId: recipientId ?? undefined,
       recipientCompanyId: task.companyId ?? undefined,
       // If any of the given action is not present in details obj, that type of notification is not sent
       deliveryTargets: deliveryTargets || {},
