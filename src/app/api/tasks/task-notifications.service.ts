@@ -246,26 +246,29 @@ export class TaskNotificationsService extends BaseService {
   private handleTaskCompleted = async (updatedTask: Task) => {
     const copilot = new CopilotAPI(this.user.token)
     if (updatedTask.assigneeType === AssigneeType.company) {
-      const { recipientIds } = await this.notificationService.getNotificationParties(
+      const { recipientIds, senderCompanyId } = await this.notificationService.getNotificationParties(
         copilot,
         updatedTask,
         NotificationTaskActions.CompletedByCompanyMember,
       )
+      console.log('senderCompanyId', senderCompanyId)
       await this.notificationService.createBulkNotification(
         NotificationTaskActions.CompletedByCompanyMember,
         updatedTask,
         recipientIds,
-        { senderCompanyId: updatedTask.companyId || undefined },
+        { senderCompanyId },
       )
       await this.notificationService.markAsReadForAllRecipients(updatedTask)
     } else {
       // Get every IU with access to company first
-      const { recipientIds } = await this.notificationService.getNotificationParties(
+      const { recipientIds, senderCompanyId } = await this.notificationService.getNotificationParties(
         copilot,
         updatedTask,
         NotificationTaskActions.CompletedByCompanyMember,
       )
-      await this.notificationService.createBulkNotification(NotificationTaskActions.Completed, updatedTask, recipientIds)
+      await this.notificationService.createBulkNotification(NotificationTaskActions.Completed, updatedTask, recipientIds, {
+        senderCompanyId,
+      })
       await this.notificationService.markClientNotificationAsRead(updatedTask)
     }
   }
