@@ -51,7 +51,7 @@ export const Subtasks = ({
   const { data: subTasks } = useSWR(cacheKey, fetcher, {
     refreshInterval: 0,
     revalidateOnMount: false,
-    dedupingInterval: 10000, // avoid duplicate requests within 10 seconds
+    dedupingInterval: 5000, // avoid duplicate requests within 5 seconds
   })
 
   const { mutate } = useSWRConfig()
