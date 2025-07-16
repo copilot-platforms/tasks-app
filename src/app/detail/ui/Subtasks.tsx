@@ -16,7 +16,7 @@ import { checkOptimisticStableId } from '@/utils/optimisticCommentUtils'
 import { getTempTask } from '@/utils/optimisticTaskUtils'
 import { sortTaskByDescendingOrder } from '@/utils/sortTask'
 import { Box, Stack, Typography } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import useSWR, { useSWRConfig } from 'swr'
 
@@ -50,20 +50,26 @@ export const Subtasks = ({
 
   const { data: subTasks } = useSWR(cacheKey, fetcher, {
     refreshInterval: 0,
-    revalidateOnMount: false,
-    dedupingInterval: 5000, // avoid duplicate requests within 5 seconds
+    revalidateOnFocus: false,
   })
+  const didMount = useRef(false)
 
   const { mutate } = useSWRConfig()
 
   useEffect(() => {
-    const refetchSubtasks = async () => {
-      await mutate(cacheKey)
+    if (activeTask) {
+      if (!didMount.current) {
+        didMount.current = true
+        return //skip the refetch on first mount.
+      }
+      const refetchSubtasks = async () => {
+        await mutate(cacheKey)
+      }
+      if (activeTask?.subtaskCount !== undefined) {
+        refetchSubtasks()
+      }
     }
-    if (activeTask?.subtaskCount !== undefined) {
-      refetchSubtasks()
-    }
-  }, [activeTask?.subtaskCount, activeTask?.isArchived, cacheKey, mutate])
+  }, [activeTask?.subtaskCount, activeTask?.isArchived])
 
   const handleSubTaskCreation = (payload: CreateTaskRequest) => {
     const tempId = generateRandomString('temp-task')
