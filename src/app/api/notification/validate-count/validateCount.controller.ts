@@ -19,7 +19,7 @@ export const validateCount = async (req: NextRequest) => {
   }
 
   const validateCountService = new ValidateCountService(user)
-  await validateCountService.fixClientNotificationCount(clientId.data, companyId.data)
+  await validateCountService.fixClientNotificationCount(clientId.data, companyId.data, user.workspaceId)
 
   return NextResponse.json({ message: 'Validated counts successfully' })
 }

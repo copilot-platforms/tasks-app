@@ -50,7 +50,7 @@ export class CopilotAPI {
     this.copilot = copilotApi({ apiKey: customApiKey ?? apiKey, token })
   }
 
-  private async manualFetch(route: string, query?: Record<string, string>) {
+  private async manualFetch(route: string, query?: Record<string, string>, workspaceId?: string) {
     const url = new URL(`${API_DOMAIN}/v1/${route}`)
     if (query) {
       for (const key of Object.keys(query)) {
@@ -58,7 +58,10 @@ export class CopilotAPI {
       }
     }
     const resp = await fetch(url, {
-      headers: { 'X-API-KEY': apiKey, accept: 'application/json' },
+      headers: {
+        'X-API-KEY': workspaceId ? `${workspaceId}/${apiKey}` : apiKey,
+        accept: 'application/json',
+      },
     })
     return await resp.json()
   }
@@ -211,6 +214,7 @@ export class CopilotAPI {
   async getClientNotifications(
     recipientClientId: string,
     recipientCompanyId: string,
+    workspaceId: string,
     opts: {
       limit?: number
       showArchived?: boolean
@@ -222,6 +226,7 @@ export class CopilotAPI {
       recipientClientId,
       recipientCompanyId,
       limit: `${opts.limit}`,
+      workspaceId,
     })
     const notifications = z.array(NotificationCreatedResponseSchema).parse(data.data)
     // Return only all notifications triggered by tasks-app
