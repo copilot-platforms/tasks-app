@@ -35,6 +35,7 @@ export class RealtimeHandler {
       ...newTask,
       createdAt: newTask.createdAt && new Date(newTask.createdAt + 'Z').toISOString(),
       updatedAt: newTask.updatedAt && new Date(newTask.updatedAt + 'Z').toISOString(),
+      lastActivityLogUpdated: newTask.lastActivityLogUpdated && new Date(newTask.lastActivityLogUpdated + 'Z').toISOString(),
     }
   }
 
@@ -249,7 +250,6 @@ export class RealtimeHandler {
    */
   handleRealtimeTaskUpdate() {
     const updatedTask = this.getFormattedTask(this.payload.new)
-
     const commonStore = store.getState()
     const { activeTask, accessibleTasks, showArchived, showUnarchived, tasks } = commonStore.taskBoard
 
@@ -329,6 +329,9 @@ export class RealtimeHandler {
           updatedTask,
         ]),
       )
+      if (activeTask && activeTask.id === updatedTask.id) {
+        store.dispatch(setActiveTask(updatedTask))
+      }
       return
     }
 

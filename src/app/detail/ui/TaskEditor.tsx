@@ -17,7 +17,7 @@ import { UserType } from '@/types/interfaces'
 import { getDeleteMessage } from '@/utils/dialogMessages'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
 import { Box } from '@mui/material'
-import { MouseEvent, useCallback, useEffect, useState } from 'react'
+import { MouseEvent, useCallback, useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
 
@@ -75,6 +75,8 @@ export const TaskEditor = ({
     revalidateGetOneTask() //cache invalidation on realtime updates
   }, [])
 
+  const didMount = useRef(false)
+
   useEffect(() => {
     if (!isUserTyping && activeUploads === 0) {
       const currentTask = activeTask?.id === task_id ? activeTask : task
@@ -122,6 +124,10 @@ export const TaskEditor = ({
   }
 
   const handleDetailChange = (content: string) => {
+    if (!didMount.current) {
+      didMount.current = true
+      return //skip the update on first mount.
+    }
     if (content === updateDetail) {
       return
     }
