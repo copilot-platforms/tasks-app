@@ -157,6 +157,13 @@ export class NotificationService extends BaseService {
     `
   }
 
+  deleteClientNotificationForTask = async (id: string) => {
+    await this.db.$executeRaw`
+      DELETE FROM "ClientNotifications"
+      WHERE "taskId" = ${id}::uuid
+    `
+  }
+
   /**
    * Marks a client notification in Copilot Notifications service as read
    * @param id Notification ID for object as exists in Copilot
