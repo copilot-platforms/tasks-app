@@ -1,4 +1,4 @@
-import { NotificationCreatedResponseSchema } from '@/types/common'
+import { NotificationCreatedResponseSchema, Uuid } from '@/types/common'
 import { TaskWithWorkflowState } from '@/types/db'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import User from '@api/core/models/User.model'
@@ -12,6 +12,10 @@ export class TaskNotificationsService extends BaseService {
   constructor(user: User) {
     super(user)
     this.notificationService = new NotificationService(user)
+  }
+
+  async getExistingClientNotificationForTask(taskId: string, clientId: string, companyId: string) {
+    return await this.db.clientNotification.findFirst({ where: { taskId, clientId, companyId } })
   }
 
   async removeDeletedTaskNotifications(task: TaskWithWorkflowState) {
@@ -287,21 +291,32 @@ export class TaskNotificationsService extends BaseService {
       return properCopy[task.assigneeType]
     })()
 
+    // --- Validation to check for duplication ---
+    // When we are triggering bulk notifications, it's possible that we will be running a lot of db queries in parallel,
+    // This is okay because this service runs only on async jobs, it's not user facing.
+    const existingNotification =
+      task.assigneeType === AssigneeType.client
+        ? await this.getExistingClientNotificationForTask(task.id, Uuid.parse(task.clientId), Uuid.parse(task.companyId))
+        : undefined
+    if (existingNotification) {
+      console.error('Found an existing notification. Skipping creating a new one:', existingNotification)
+      return
+    }
+
     const notification = await this.notificationService.create(
       // In future when reassignment is supported, change this logic to support reassigned to client as well
       notificationType,
       task,
-      {
-        disableEmail: task.assigneeType === AssigneeType.internalUser,
-      },
+      { disableEmail: task.assigneeType === AssigneeType.internalUser },
     )
     // Create a new entry in ClientNotifications table so we can mark as read on
     // behalf of client later
     if (!notification) {
       console.error('Notification failed to trigger for task:', task)
-    }
-    if (task.assigneeType === AssigneeType.client) {
-      await this.notificationService.addToClientNotifications(task, NotificationCreatedResponseSchema.parse(notification))
+    } else {
+      if (task.assigneeType === AssigneeType.client) {
+        await this.notificationService.addToClientNotifications(task, NotificationCreatedResponseSchema.parse(notification))
+      }
     }
   }
 
