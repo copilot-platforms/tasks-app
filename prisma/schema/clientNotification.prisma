@@ -18,7 +18,7 @@ model ClientNotification {
   // WARNING: This is going to make it so that we cannot bulk soft-delete multiple duplicate client notifications at once
   // since there is "deletedAt" in the unique constraint.
   // Either way, soft deleting client notifications (not IU ones) is not very useful in the first place
-  @@unique([clientId, companyId, notificationId, deletedAt], name: "UQ_ClientNotifications_clientId_companyId_notificationId_deletedAt")
+  @@unique([taskId, clientId, companyId, deletedAt], name: "UQ_ClientNotifications_taskId_clientId_companyId_deletedAt")
   @@index([notificationId], name: "IX_ClientNotifications_notificationId")
   @@map("ClientNotifications")
 }
