@@ -314,9 +314,6 @@ export class TaskNotificationsService extends BaseService {
     if (!notification) {
       console.error('Notification failed to trigger for task:', task)
     } else {
-      if (task.assigneeType === AssigneeType.client) {
-        await this.notificationService.addToClientNotifications(task, NotificationCreatedResponseSchema.parse(notification))
-      }
     }
   }
 
@@ -327,28 +324,12 @@ export class TaskNotificationsService extends BaseService {
       task,
       NotificationTaskActions.AssignedToCompany,
     )
-    const notifications = await this.notificationService.createBulkNotification(
+    await this.notificationService.createBulkNotification(
       isReassigned ? NotificationTaskActions.ReassignedToCompany : NotificationTaskActions.AssignedToCompany,
       task,
       recipientIds,
       { email: true },
     )
-
-    // This is a hacky way to bulk create ClientNotifications for all company members.
-    if (notifications) {
-      const notificationPromises = []
-      for (let i = 0; i < notifications.length; i++) {
-        // Basically we are treating an individual company member as a client recipient for a notification
-        // For each loop we are considering a separate task where that particular member is the assignee
-        notificationPromises.push(
-          this.notificationService.addToClientNotifications(
-            { ...task, assigneeId: recipientIds[0], assigneeType: AssigneeType.client },
-            notifications[i],
-          ),
-        )
-      }
-      await Promise.all(notificationPromises)
-    }
   }
 
   private handleTaskArchiveToggle = async (prevTask: TaskWithWorkflowState, updatedTask: TaskWithWorkflowState) => {
