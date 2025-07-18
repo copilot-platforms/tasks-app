@@ -495,17 +495,23 @@ export class TasksService extends BaseService {
   }
 
   private getClientOrCompanyAssigneeFilter(): Prisma.TaskWhereInput {
-    const clientId = z.string().safeParse(this.user.clientId).data
-    const companyId = z.string().safeParse(this.user.companyId).data
+    const clientId = z.string().uuid().safeParse(this.user.clientId).data
+    const companyId = z.string().uuid().parse(this.user.companyId)
 
     const filters = []
 
     if (clientId && companyId) {
-      filters.push({ clientId, companyId }, { companyId, clientId: null })
-    } else if (clientId) {
-      filters.push({ clientId })
+      filters.push(
+        // Get client tasks for the particular companyId
+        { clientId, companyId },
+        // Get company tasks for the client's companyId
+        { companyId, clientId: null },
+      )
     } else if (companyId) {
-      filters.push({ clientId: null, companyId })
+      filters.push(
+        // Get only company tasks for the client's companyId
+        { clientId: null, companyId },
+      )
     }
     return filters.length > 0 ? { OR: filters } : {}
   }
@@ -541,21 +547,16 @@ export class TasksService extends BaseService {
             ...this.getClientOrCompanyAssigneeFilter(), // Prevent overwriting of OR statement
             parent: {
               OR: [
-                {
-                  clientId: null,
-                  companyId: null,
-                },
+                // Disjoint task if parent has no assignee
+                { clientId: null, companyId: null },
                 {
                   NOT: {
+                    // Do not disjoint task if parent task belongs to the same client / company
                     OR: [
-                      {
-                        clientId: this.user.clientId,
-                        companyId: this.user.companyId,
-                      },
-                      {
-                        clientId: null,
-                        companyId: this.user.companyId,
-                      },
+                      // Disjoint task if parent is a client task for a different client under the same company
+                      { clientId: this.user.clientId, companyId: this.user.companyId },
+                      // Disjoint task if parent is not a company task for the same company that client belongs to
+                      { clientId: null, companyId: this.user.companyId },
                     ],
                   },
                 },
