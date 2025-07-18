@@ -1,4 +1,4 @@
-import { NotificationCreatedResponseSchema, Uuid } from '@/types/common'
+import { Uuid } from '@/types/common'
 import { TaskWithWorkflowState } from '@/types/db'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import User from '@api/core/models/User.model'

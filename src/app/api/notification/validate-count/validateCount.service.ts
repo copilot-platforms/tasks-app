@@ -1,5 +1,4 @@
 import { DuplicateNotificationsQuerySchema } from '@/types/client-notifications'
-import { NotificationCreatedResponse } from '@/types/common'
 import { getArrayDifference } from '@/utils/array'
 import { bottleneck } from '@/utils/bottleneck'
 import { CopilotAPI } from '@/utils/CopilotAPI'
