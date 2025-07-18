@@ -35,7 +35,7 @@ export class NotificationService extends BaseService {
             where: { taskId: task.id, clientId: task.clientId, companyId: task.companyId },
           })
         : null
-      if (existingNotification) {
+      if (task.clientId && existingNotification) {
         console.error(`NotificationService#create | Found existing notification for ${task.clientId}`, existingNotification)
         return
       }
