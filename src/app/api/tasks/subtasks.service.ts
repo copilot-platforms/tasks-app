@@ -4,7 +4,6 @@ import { buildLtreeNodeString } from '@/utils/ltree'
 import APIError from '@api/core/exceptions/api'
 import { BaseService } from '@api/core/services/base.service'
 import { UserRole } from '@api/core/types/user'
-import { AssigneeType } from '@prisma/client'
 import httpStatus from 'http-status'
 import { z } from 'zod'
 

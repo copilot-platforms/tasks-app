@@ -10,6 +10,7 @@ import { z } from 'zod'
 
 export class ValidateCountService extends NotificationService {
   private readonly copilot: CopilotAPI
+
   constructor(readonly user: User) {
     super(user)
     this.copilot = new CopilotAPI(user.token)
@@ -145,6 +146,10 @@ export class ValidateCountService extends NotificationService {
     const createNotificationPromises = []
     // Create missing task notifications in Copilot
     for (const task of tasksWithoutNotifications) {
+      if (appNotifications.find((n) => n.taskId === task.id && n.clientId === clientId && n.companyId === task.companyId)) {
+        // This is a duplicate notification, SKIP
+        continue
+      }
       createNotificationPromises.push(
         bottleneck.schedule(() => {
           console.info(`ValidateCount :: Creating missing notification for task ${task.id} - ${task.title}`)
