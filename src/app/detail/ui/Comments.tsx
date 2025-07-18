@@ -7,6 +7,8 @@ import { Stack } from '@mui/material'
 import { VerticalLine } from './styledComponent'
 import { OptimisticUpdate } from '@/utils/optimisticCommentUtils'
 import { TrashIcon2 } from '@/icons'
+import { useSelector } from 'react-redux'
+import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 
 interface Prop {
   comment: LogResponse
@@ -18,6 +20,8 @@ interface Prop {
 }
 
 export const Comments = ({ comment, createComment, deleteComment, task_id, stableId, optimisticUpdates }: Prop) => {
+  const { assignee } = useSelector(selectTaskBoard)
+  const commentInitiator = assignee.find((assignee) => assignee.id == comment.userId)
   return (
     <Stack id={stableId} direction="row" columnGap={2} position="relative">
       <VerticalLine />
@@ -26,7 +30,7 @@ export const Comments = ({ comment, createComment, deleteComment, task_id, stabl
           width="22px"
           height="22px"
           fontSize="12px"
-          currentAssignee={comment.initiator as unknown as IAssigneeCombined}
+          currentAssignee={commentInitiator}
           sx={{
             border: (theme) => `1.1px solid ${theme.color.gray[200]}`,
             marginTop: '8px',
@@ -41,6 +45,7 @@ export const Comments = ({ comment, createComment, deleteComment, task_id, stabl
           deleteComment={deleteComment}
           task_id={task_id}
           optimisticUpdates={optimisticUpdates}
+          commentInitiator={commentInitiator}
         />
       </Stack>
     </Stack>
