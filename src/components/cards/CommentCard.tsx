@@ -39,7 +39,7 @@ import { Box, Collapse, Stack, Typography } from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { TransitionGroup } from 'react-transition-group'
-import useSWR from 'swr'
+import useSWRMutation from 'swr/mutation'
 import { Tapwrite } from 'tapwrite'
 import { z } from 'zod'
 
@@ -157,18 +157,12 @@ export const CommentCard = ({
   const replyCount = (comment.details as CommentResponse).replyCount
 
   const cacheKey = `/api/comment/?token=${token}&parentId=${comment.details.id}`
-  const { data: comments, mutate } = useSWR(cacheKey, fetcher, {
-    revalidateOnFocus: false,
-    revalidateOnMount: false,
-    revalidateOnReconnect: false,
-    refreshWhenOffline: false,
-    refreshWhenHidden: false,
-    refreshInterval: 0,
+  const { trigger } = useSWRMutation(cacheKey, fetcher, {
     optimisticData: optimisticUpdates.filter((update) => update.tempId),
   })
   const fetchCommentsWithFullReplies = async () => {
     try {
-      const updatedComment = await mutate()
+      const updatedComment = await trigger()
 
       setReplies(updatedComment?.comments || comment.details.replies || [])
       store.dispatch(setExpandedComments([...expandedComments, z.string().parse(comment.details.id ?? '')]))
