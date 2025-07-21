@@ -264,7 +264,8 @@ export class NotificationService extends BaseService {
       // Due to race conditions, we are forced to allow multiple client notifications for a single notification as well
       const relatedNotifications = await this.db.clientNotification.findMany({
         where: {
-          clientId: Uuid.parse(task.clientId),
+          // Accomodate company task lookups where clientId is null
+          clientId: Uuid.nullable().parse(task.clientId) || undefined,
           companyId: Uuid.parse(task.companyId),
           taskId: task.id,
         },
