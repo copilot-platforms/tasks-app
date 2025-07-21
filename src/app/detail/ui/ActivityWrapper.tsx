@@ -17,7 +17,7 @@ import { checkOptimisticStableId, getOptimisticData, getTempLog } from '@/utils/
 import { LogResponse } from '@api/activity-logs/schemas/LogResponseSchema'
 import { Box, Collapse, Skeleton, Stack, Typography } from '@mui/material'
 import { ActivityType } from '@prisma/client'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import { useSelector } from 'react-redux'
 import { TransitionGroup } from 'react-transition-group'
 import useSWR, { useSWRConfig } from 'swr'
@@ -57,10 +57,13 @@ export const ActivityWrapper = ({
   const _debounceMutate = async (cacheKey: string) => await mutate(cacheKey)
   const debounceMutate = useDebounce(_debounceMutate, 300)
 
+  const shouldRefetchRef = useRef(true) //preventing double fetching from comment apis. Due to optimistic update revalidation, we are already fetching logs there. So no need to refetch in case for comment creation and deletion.
+
   useEffect(() => {
     if (task) {
-      if (!didMount.current) {
+      if (!didMount.current || !shouldRefetchRef.current) {
         didMount.current = true
+        shouldRefetchRef.current = true
         setLastUpdated(task?.lastActivityLogUpdated)
         return //skip the refetch on first mount.
       }
@@ -101,6 +104,7 @@ export const ActivityWrapper = ({
       mutate(
         cacheKey,
         async () => {
+          shouldRefetchRef.current = false
           // Post the actual comment to the server
           const comment = await postComment(token, postCommentPayload)
           setOptimisticUpdates((prev) =>
@@ -112,7 +116,7 @@ export const ActivityWrapper = ({
         {
           optimisticData: { data: optimisticData },
           rollbackOnError: true,
-          revalidate: true, // Make sure to revalidate after mutation
+          revalidate: false, // Make sure to revalidate after mutation
         },
       )
     } catch (error) {
@@ -167,6 +171,7 @@ export const ActivityWrapper = ({
       await mutate(
         cacheKey,
         async () => {
+          shouldRefetchRef.current = false
           let commentIdToDelete = commentId
           if (commentIdToDelete.includes('temp-comment')) {
             const maxAttempts = 6
@@ -190,7 +195,7 @@ export const ActivityWrapper = ({
         {
           optimisticData: { data: optimisticData },
           rollbackOnError: true,
-          revalidate: true, // Make sure to revalidate after mutation
+          revalidate: false, // Make sure to revalidate after mutation
         },
       )
     } catch (error) {
