@@ -63,6 +63,7 @@ export class NotificationService extends BaseService {
       console.info('NotificationService#create | Creating single notification:', notificationDetails)
 
       const notification = await copilot.createNotification(notificationDetails)
+      console.info('NotificationService#create | Created single notification:', notification)
 
       // 3. Save notification to ClientNotification or InternalUserNotification table
       if (task.assigneeType === AssigneeType.client) {
@@ -158,6 +159,7 @@ export class NotificationService extends BaseService {
           )
           console.info('NotificationService#bulkCreate | Creating single notification:', notificationDetails)
           const notification = await copilot.createNotification(notificationDetails)
+          console.info('NotificationService#bulkCreate | Created single notification:', notification)
           if (!notification) {
             console.error(`NotificationService#bulkCreate | Failed to send notifications to ${recipientId}:`)
             continue
