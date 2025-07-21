@@ -11,7 +11,7 @@
 */
 
 import config from '@cmd/load-testing/load-testing.config.json'
-import LoadTester from '@cmd/load-testing/load-testing.service'
+import LoadTester from '@cmd/load-testing/load-testing-v2.service'
 
 export const run = async () => {
   if (process.env.VERCEL_ENV === 'production') {
@@ -21,20 +21,7 @@ export const run = async () => {
 
   const loadTester = new LoadTester()
 
-  const individualClients = await loadTester.seedClients(config.individualClients)
-  const { companies, clients: companyClients } = await loadTester.seedCompanyClients(config.companies, config.companyClients)
-
-  await Promise.all([
-    loadTester.seedClientTasks(
-      individualClients.slice(0, config.countsToAssign.individualClients),
-      config.taskPerAssigneeType.individualClients,
-    ),
-    loadTester.seedCompanyTasks(companies.slice(0, config.countsToAssign.companies), config.taskPerAssigneeType.companies),
-    loadTester.seedClientTasks(
-      companyClients.slice(0, config.countsToAssign.companyClients),
-      config.taskPerAssigneeType.companyClients,
-    ),
-  ])
+  await loadTester.seedCompanies(200)
 }
 
 run()
