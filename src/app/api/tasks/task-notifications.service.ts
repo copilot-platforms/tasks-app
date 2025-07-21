@@ -313,7 +313,6 @@ export class TaskNotificationsService extends BaseService {
     // behalf of client later
     if (!notification) {
       console.error('Notification failed to trigger for task:', task)
-    } else {
     }
   }
 
