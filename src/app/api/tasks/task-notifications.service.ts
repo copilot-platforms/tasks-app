@@ -95,7 +95,7 @@ export class TaskNotificationsService extends BaseService {
     }
 
     // Return if not workflowState / assignee updated
-    const isReassigned = updatedTask.assigneeId && prevTask.assigneeId !== updatedTask.assigneeId
+    const isReassigned = prevTask.assigneeId !== updatedTask.assigneeId
     if (prevTask.workflowStateId === updatedTask.workflowStateId && !isReassigned) return
 
     // Case 2
