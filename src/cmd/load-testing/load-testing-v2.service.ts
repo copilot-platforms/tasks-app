@@ -1,12 +1,19 @@
 import DBClient from '@/lib/db'
-import { CompanyCreateRequest, CompanyCreateRequestSchema, InternalUsersResponse } from '@/types/common'
+import {
+  ClientRequest,
+  ClientRequestSchema,
+  CompanyCreateRequest,
+  CompanyCreateRequestSchema,
+  InternalUsersResponse,
+} from '@/types/common'
 import { CopilotAPI } from '@/utils/CopilotAPI'
-import { PrismaClient } from '@prisma/client'
+import { AssigneeType, PrismaClient } from '@prisma/client'
 import Bottleneck from 'bottleneck'
 import { z } from 'zod'
 import { faker } from '@faker-js/faker'
 import fs from 'fs'
 import path from 'path'
+import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 
 class LoadTester {
   protected db: PrismaClient = DBClient.getInstance()
@@ -35,11 +42,40 @@ class LoadTester {
       seedPromises.push(seedPromiseWithBottleneck)
     }
     const responses = await Promise.all(seedPromises)
-    this.exportToCSV(responses)
+    this.exportToCSV(responses, AssigneeType.company)
     return responses
   }
 
-  private exportToCSV(data: Record<string, any>[]) {
+  async seedClients(numOfClients: number, includeCompany: boolean = false) {
+    const seedPromises = []
+    let companiesList = null
+    if (includeCompany) {
+      companiesList = (await this.copilot.getCompanies({ limit: MAX_FETCH_ASSIGNEE_COUNT })).data?.filter(
+        (data) => !data.isPlaceholder,
+      )
+    }
+
+    for (let i = 0; i < numOfClients; i++) {
+      const givenName = faker.person.firstName()
+      const familyName = faker.person.lastName() + ' Client'
+      const email = faker.internet.email({ firstName: givenName, lastName: familyName })
+      let companyId = undefined
+      if (includeCompany && companiesList) {
+        companyId = companiesList[Math.floor(Math.random() * companiesList.length)].id
+      }
+      const client: ClientRequest = ClientRequestSchema.parse({ givenName, familyName, email, companyId })
+      const seedPromiseWithBottleneck = this.bottlenecks.copilot.schedule(() => {
+        console.info(`Seeding client ${givenName} ${familyName}`)
+        return this.copilot.createClient(client)
+      })
+      seedPromises.push(seedPromiseWithBottleneck)
+    }
+    const responses = await Promise.all(seedPromises)
+    this.exportToCSV(responses, AssigneeType.client)
+    return responses
+  }
+
+  private exportToCSV(data: Record<string, any>[], type: AssigneeType) {
     if (data.length === 0) return
 
     const headers = Object.keys(data[0])
@@ -54,7 +90,7 @@ class LoadTester {
     }
 
     const csvContent = csvRows.join('\n')
-    const outputPath = path.resolve(process.cwd(), 'seeded_companies.csv')
+    const outputPath = path.resolve(process.cwd(), `seeded_${type}_${Date.now()}.csv`)
 
     fs.writeFileSync(outputPath, csvContent)
     console.log(`✅ CSV written to ${outputPath}`)
