@@ -33,7 +33,8 @@ const dispatchNotification = async (copilot: CopilotAPI, taskId: string, payload
   const notification = await copilot.createNotification(payload)
   await db.clientNotification.create({
     data: {
-      clientId: payload.recipientId,
+      clientId: payload.recipientClientId!,
+      companyId: payload.recipientCompanyId!,
       notificationId: notification.id,
       taskId,
     },
@@ -111,7 +112,9 @@ const dispatchMissingEmailNotificationsForWorkspace = async (missedTasks: Task[]
   for (const task of workspaceClientTasks) {
     const requestBody = {
       senderId: task.createdById,
-      recipientId: task.clientId!,
+      senderType: 'internalUser' as 'internalUser' | 'client',
+      recipientClientId: task.clientId!,
+      recipientCompanyId: task.companyId!,
       deliveryTargets: {
         email: getEmailDetails(task.createdById, task)[NotificationTaskActions.Assigned],
       },
@@ -129,7 +132,9 @@ const dispatchMissingEmailNotificationsForWorkspace = async (missedTasks: Task[]
     const requestBodies =
       clients.data?.map((client) => ({
         senderId: task.createdById,
-        recipientId: client.id,
+        senderType: 'internalUser' as 'internalUser' | 'client',
+        recipientClientId: client.id,
+        recipientCompanyId: client.companyId,
         deliveryTargets: {
           email: getEmailDetails(task.createdById, task)[NotificationTaskActions.AssignedToCompany],
         },
@@ -153,6 +158,11 @@ const dispatchMissingEmailNotificationsForWorkspace = async (missedTasks: Task[]
 }
 
 const run = async () => {
+  if (1 === 1) {
+    console.error("You shouldn't be doing this")
+    return
+  }
+
   // 1. Fetch tasks in error windw
   const tasks = await fetchTasksInErrorWindow()
   if (!tasks.length) {
