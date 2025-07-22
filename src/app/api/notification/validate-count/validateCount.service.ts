@@ -1,3 +1,4 @@
+import { MAX_NOTIFICATIONS_COUNT } from '@/constants/notifications'
 import { DuplicateNotificationsQuerySchema } from '@/types/client-notifications'
 import { getArrayDifference } from '@/utils/array'
 import { bottleneck } from '@/utils/bottleneck'
@@ -21,7 +22,9 @@ export class ValidateCountService extends NotificationService {
    * @param {string} clientId - Copilot client id for which notification fix has to be done
    */
   async fixClientNotificationCount(clientId: string, companyId: string, workspaceId: string): Promise<void> {
-    const notifications = await this.copilot.getClientNotifications(clientId, companyId, workspaceId, { limit: 1_000_000 })
+    const notifications = await this.copilot.getClientNotifications(clientId, companyId, workspaceId, {
+      limit: MAX_NOTIFICATIONS_COUNT,
+    })
     console.info('ValidateCount :: Total Copilot Notifications:', notifications.length)
     await this.validateWithTasks(
       clientId,
@@ -96,7 +99,7 @@ export class ValidateCountService extends NotificationService {
     })
     // Remove duplicate notifications from copilot
     const targetNotificationIds = duplicateNotificationIds.map(({ notificationId }) => notificationId)
-    await this.copilot.bulkMarkNotificationsAsRead(targetNotificationIds)
+    targetNotificationIds.length && (await this.copilot.bulkMarkNotificationsAsRead(targetNotificationIds))
     console.info('ValidateCount :: Removing duplicate notifications', targetNotificationIds.length)
 
     // Remove those duplicate notifications from db

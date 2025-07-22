@@ -162,14 +162,6 @@ export const InternalUsersResponseSchema = z.object({
 })
 export type InternalUsersResponse = z.infer<typeof InternalUsersResponseSchema>
 
-export const ApiKeyOwnerResponseSchema = InternalUsersSchema.pick({
-  id: true,
-  givenName: true,
-  familyName: true,
-  email: true,
-})
-export type ApiKeyOwnerResponse = z.infer<typeof ApiKeyOwnerResponseSchema>
-
 /**
  * `senderType` field for notification payload in Copilot API
  */
@@ -221,7 +213,7 @@ export type CopilotUser = InternalUsers | ClientResponse
 export type NotificationRequestBody = z.infer<typeof NotificationRequestBodySchema>
 
 export const NotificationCreatedResponseSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string(),
   appId: z.string().uuid().optional(),
   createdAt: z.string().datetime(),
   event: z.string().optional(),

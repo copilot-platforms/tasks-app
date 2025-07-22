@@ -33,7 +33,6 @@ async function getAllWorkflowStates(token: string): Promise<WorkflowStateRespons
   })
 
   const data = await res.json()
-
   return data.workflowStates
 }
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { revalidateGetOneTask } from '@/app/detail/[task_id]/[user_type]/actions'
+import { OneTaskDataFetcher } from '@/app/_fetchers/OneTaskDataFetcher'
 import { ImagePreviewModal } from '@/app/detail/ui/ImagePreviewModal'
 import { StyledModal } from '@/app/detail/ui/styledComponent'
 import AttachmentLayout from '@/components/AttachmentLayout'
@@ -71,10 +71,6 @@ export const TaskEditor = ({
   //   }
   // }
 
-  useEffect(() => {
-    revalidateGetOneTask() //cache invalidation on realtime updates
-  }, [])
-
   const didMount = useRef(false)
 
   useEffect(() => {
@@ -85,7 +81,7 @@ export const TaskEditor = ({
         setUpdateDetail(currentTask.body ?? '')
       }
     }
-  }, [activeTask, task_id, isUserTyping, activeUploads])
+  }, [activeTask, task_id, isUserTyping, activeUploads, task])
 
   const _titleUpdateDebounced = async (title: string) => updateTaskTitle(title)
 
@@ -149,6 +145,7 @@ export const TaskEditor = ({
 
   return (
     <>
+      {token && <OneTaskDataFetcher token={token} task_id={task_id} />}
       <StyledTextField
         type="text"
         multiline

@@ -8,11 +8,9 @@ export const validateUserIds = (
   data: { internalUserId?: string | null; clientId?: string | null; companyId?: string | null },
   ctx: z.RefinementCtx,
 ) => {
-  const hasInternalUser = Boolean(data.internalUserId)
-  const hasClient = Boolean(data.clientId)
-  const hasCompany = Boolean(data.companyId)
+  const { internalUserId, clientId, companyId } = data
 
-  if (hasInternalUser && (hasClient || hasCompany)) {
+  if (internalUserId && (clientId || companyId)) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       message: 'internalUserId cannot be combined with clientId or companyId',
@@ -20,7 +18,7 @@ export const validateUserIds = (
     })
   }
 
-  if (hasClient && !hasCompany) {
+  if (clientId && !companyId) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       message: 'companyId is required when clientId is provided',

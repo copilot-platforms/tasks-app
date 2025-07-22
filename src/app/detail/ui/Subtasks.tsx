@@ -44,7 +44,7 @@ export const Subtasks = ({
   const handleFormCancel = () => setOpenTaskForm(false)
   const handleFormOpen = () => setOpenTaskForm(!openTaskForm)
 
-  const mode = tokenPayload?.internalUserId ? UserRole.IU : UserRole.Client
+  const mode = tokenPayload?.companyId ? UserRole.Client : UserRole.IU
 
   const cacheKey = `/api/tasks/?token=${token}&showArchived=1&showUnarchived=1&parentId=${task_id}`
 
@@ -57,19 +57,14 @@ export const Subtasks = ({
   const { mutate } = useSWRConfig()
 
   useEffect(() => {
-    if (activeTask) {
-      if (!didMount.current) {
-        didMount.current = true
-        return //skip the refetch on first mount.
-      }
-      const refetchSubtasks = async () => {
-        await mutate(cacheKey)
-      }
-      if (activeTask?.subtaskCount !== undefined) {
-        refetchSubtasks()
-      }
+    const taskListLength = subTasks?.tasks?.length
+
+    if (!activeTask || typeof taskListLength !== 'number') return
+
+    if (activeTask.subtaskCount !== taskListLength) {
+      mutate?.(cacheKey)
     }
-  }, [activeTask?.subtaskCount, activeTask?.isArchived])
+  }, [activeTask?.subtaskCount, activeTask?.isArchived, subTasks?.tasks?.length, activeTask, cacheKey, mutate])
 
   const handleSubTaskCreation = (payload: CreateTaskRequest) => {
     const tempId = generateRandomString('temp-task')
@@ -186,21 +181,10 @@ export const Subtasks = ({
       <Box>
         {subTasks?.tasks?.map((item: TaskResponse) => {
           const isTempId = item.id.includes('temp')
-          if (isTempId) {
-            return (
-              <div
-                style={{
-                  cursor: 'pointer',
-                }}
-                key={checkOptimisticStableId(item, optimisticUpdates)}
-              >
-                <TaskCardList task={item} variant="subtask" mode={mode} />
-              </div>
-            )
-          }
 
           return (
             <TaskCardList
+              isTemp={isTempId}
               key={checkOptimisticStableId(item, optimisticUpdates)}
               task={item}
               variant="subtask"

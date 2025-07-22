@@ -19,10 +19,11 @@ import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { UserType } from '@/types/interfaces'
 import { CopilotAPI } from '@/utils/CopilotAPI'
-import { redirectIfTaskCta } from '@/utils/redirect'
+import { redirectIfTaskCta, redirectToClientPortal } from '@/utils/redirect'
 import { UserRole } from '@api/core/types/user'
 import { Suspense } from 'react'
 import { z } from 'zod'
+import { fetchWithErrorHandler } from '@/app/_fetchers/fetchWithErrorHandler'
 
 export async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -44,11 +45,9 @@ export async function getAllTasks(
   if (filters?.showUnarchived !== undefined) {
     queryParams.append('showUnarchived', filters.showUnarchived.toString())
   }
-  const res = await fetch(`${apiUrl}/api/tasks?${queryParams.toString()}`, {
+  const data = await fetchWithErrorHandler<{ tasks: TaskResponse[] }>(`${apiUrl}/api/tasks?${queryParams.toString()}`, {
     next: { tags: ['getTasks'] },
   })
-
-  const data = await res.json()
 
   return data.tasks
 }
@@ -68,7 +67,8 @@ export async function getViewSettings(token: string): Promise<CreateViewSettings
   const res = await fetch(`${apiUrl}/api/view-settings?token=${token}`, {
     next: { tags: ['getViewSettings'] },
   })
-  return await res.json()
+  const resp = await res.json()
+  return resp
 }
 
 export default async function Main({ searchParams }: { searchParams: { token: string; taskId?: string } }) {
@@ -93,6 +93,10 @@ export default async function Main({ searchParams }: { searchParams: { token: st
     getAllTasks(token, { showArchived: viewSettings.showArchived, showUnarchived: viewSettings.showUnarchived }),
     getWorkspace(token),
   ])
+
+  if (tokenPayload.companyId) {
+    redirectToClientPortal(token)
+  }
 
   console.info(`app/page.tsx | Serving user ${token} with payload`, tokenPayload)
   return (

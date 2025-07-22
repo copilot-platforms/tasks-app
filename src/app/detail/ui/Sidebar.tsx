@@ -54,6 +54,12 @@ export const Sidebar = ({
   const { activeTask, workflowStates, assignee, previewMode } = useSelector(selectTaskBoard)
   const { showSidebar, showConfirmAssignModal } = useSelector(selectTaskDetails)
 
+  const [isHydrated, setIsHydrated] = useState(false)
+
+  useEffect(() => {
+    setIsHydrated(true)
+  }, [])
+
   const [dueDate, setDueDate] = useState<Date | string | undefined>()
 
   const [assigneeValue, setAssigneeValue] = useState<IAssigneeCombined | undefined>()
@@ -69,7 +75,7 @@ export const Sidebar = ({
   const statusValue = _statusValue as WorkflowStateResponse //typecasting
 
   useEffect(() => {
-    if (activeTask && workflowStates) {
+    if (activeTask && workflowStates && updateStatusValue) {
       const currentTask = activeTask
       const currentWorkflowState = workflowStates.find((el) => el?.id === currentTask?.workflowStateId)
       updateStatusValue(currentWorkflowState)
@@ -78,7 +84,7 @@ export const Sidebar = ({
       const currentAssignee = getSelectorAssigneeFromTask(assignee, activeTask)
       setAssigneeValue(currentAssignee)
     }
-  }, [activeTask, workflowStates, assignee])
+  }, [activeTask, workflowStates, assignee, updateStatusValue])
 
   const windowWidth = useWindowWidth()
   const isMobile = windowWidth < 600 && windowWidth !== 0
@@ -121,6 +127,8 @@ export const Sidebar = ({
       updateAssignee(newUserIds)
     }
   }
+
+  if (!activeTask || !isHydrated) return <SidebarSkeleton />
 
   if (!showSidebar) {
     return (

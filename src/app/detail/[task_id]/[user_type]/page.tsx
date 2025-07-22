@@ -40,14 +40,13 @@ import { getPreviewMode } from '@/utils/previewMode'
 import { Box, Stack } from '@mui/material'
 import { Suspense } from 'react'
 import { z } from 'zod'
+import { fetchWithErrorHandler } from '@/app/_fetchers/fetchWithErrorHandler'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
-  const res = await fetch(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
+  const data = await fetchWithErrorHandler<{ task: TaskResponse }>(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
     cache: 'no-store',
     next: { tags: ['getOneTask'] },
   })
-
-  const data = await res.json()
 
   return data.task
 }
@@ -99,7 +98,7 @@ export default async function TaskDetailPage({
 
   console.info(`app/detail/${task_id}/${user_type}/page.tsx | Serving user ${token} with payload`, tokenPayload)
   if (!task) {
-    return <DeletedTaskRedirectPage userType={tokenPayload.internalUserId ? UserRole.IU : UserRole.Client} token={token} />
+    return <DeletedTaskRedirectPage userType={tokenPayload.companyId ? UserRole.Client : UserRole.IU} token={token} />
   }
 
   const isPreviewMode = !!getPreviewMode(tokenPayload)

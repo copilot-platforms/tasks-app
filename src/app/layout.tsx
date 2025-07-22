@@ -1,15 +1,18 @@
 // export const fetchCache = 'force-no-store'
 // export const revalidate = 0
 
+import { ProgressLoad } from '@/components/TopLoader'
+import { InterrupCmdK } from '@/hoc/Interrupt_CmdK'
+import { swrConfig } from '@/lib/swr-config'
+import { ProviderWrapper } from '@/redux/ProviderWrapper'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
-import './globals.css'
+import { SWRConfig } from 'swr'
 import ThemeRegistry from './ThemeRegistry'
-import { ProviderWrapper } from '@/redux/ProviderWrapper'
-import './tapwrite.css'
-import { InterrupCmdK } from '@/hoc/Interrupt_CmdK'
-import { ProgressLoad } from '@/components/TopLoader'
+
 import 'copilot-design-system/dist/styles/main.css'
+import './globals.css'
+import './tapwrite.css'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -25,7 +28,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ProgressLoad />
         <InterrupCmdK>
           <ProviderWrapper>
-            <ThemeRegistry options={{ key: 'mui' }}>{children}</ThemeRegistry>
+            <ThemeRegistry options={{ key: 'mui' }}>
+              <SWRConfig value={swrConfig}>{children} </SWRConfig>
+            </ThemeRegistry>
           </ProviderWrapper>
         </InterrupCmdK>
       </body>

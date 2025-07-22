@@ -70,7 +70,7 @@ export class TasksService extends BaseService {
     companyId?: string
     createdById?: string
     parentId?: string | null
-    workflowState?: { type: StateType }
+    workflowState?: { type: StateType | { not: StateType } }
     limit?: number
     lastIdCursor?: string // When this id field cursor is provided, we return data AFTER this id
   }): Promise<TaskWithWorkflowState[]> {
@@ -95,7 +95,7 @@ export class TasksService extends BaseService {
     }
 
     if (queryFilters.showIncompleteOnly && !queryFilters.fromPublicApi) {
-      filters.workflowState = {
+      queryFilters.workflowState = {
         type: { not: StateType.completed },
       }
     }
@@ -692,18 +692,22 @@ export class TasksService extends BaseService {
     }
   }
 
-  async getIncompleteTasksForCompany(assigneeId: string): Promise<(Task & { workflowState: WorkflowState })[]> {
+  async getIncompleteTasksForCompany(assigneeId: string): Promise<TaskWithWorkflowState[]> {
     // This works across workspaces
-    return await this.db.task.findMany({
+    const tasks = await this.db.task.findMany({
       where: {
-        assigneeId,
-        assigneeType: AssigneeType.company,
+        OR: [
+          { assigneeId, assigneeType: AssigneeType.company },
+          { companyId: assigneeId, clientId: null },
+        ],
         workflowState: { type: { not: StateType.completed } },
         isArchived: false,
       },
       relationLoadStrategy: 'join',
       include: { workflowState: true },
     })
+    console.info(`Found ${tasks.length} incomplete tasks for company ${assigneeId}`)
+    return tasks
   }
 
   async deleteAllAssigneeTasks(assigneeId: string, assigneeType: AssigneeType) {
@@ -764,7 +768,10 @@ export class TasksService extends BaseService {
 
     if (updatedTask) {
       const activityLogger = new TasksActivityLogger(this.user, updatedTask)
-      await activityLogger.logTaskUpdated(prevTask)
+      await Promise.all([
+        activityLogger.logTaskUpdated(prevTask),
+        dispatchUpdatedWebhookEvent(this.user, prevTask, updatedTask, false),
+      ])
     }
 
     await sendClientUpdateTaskNotifications.trigger({ user: this.user, prevTask, updatedTask, updatedWorkflowState })

@@ -44,9 +44,10 @@ interface TaskCardListProps {
   mode: UserRole
   assignee?: IAssigneeCombined
   handleUpdate?: (taskId: string, changes: Partial<TaskResponse>, updater: () => Promise<void>) => Promise<void>
+  isTemp?: boolean
 }
 
-export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate }: TaskCardListProps) => {
+export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate, isTemp }: TaskCardListProps) => {
   const { assignee, workflowStates, previewMode, token, confirmAssignModalId, assigneeCache } = useSelector(selectTaskBoard)
 
   const [currentDueDate, setCurrentDueDate] = useState<string | undefined>(task.dueDate)
@@ -55,13 +56,15 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate 
   const subtaskCount = useSubtaskCount(task.id)
 
   useEffect(() => {
+    if (!task) return
+
     if (assignee.length > 0) {
       const currentAssignee = getSelectorAssigneeFromTask(assignee, task)
       const finalAssignee = currentAssignee ?? NoAssignee
       store.dispatch(setAssigneeCache({ key: task.id, value: finalAssignee }))
       setAssigneeValue(finalAssignee)
     }
-  }, [assignee, task.id, task.assigneeId])
+  }, [assignee, task.id, task.assigneeId, task])
 
   useEffect(() => {
     setCurrentDueDate(task.dueDate)
@@ -175,52 +178,100 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate 
           size={Sizes.MEDIUM}
           padding={'2px 4px'}
         />
-        <CustomLink
-          key={task.id}
-          href={{ pathname: getCardHref(task, mode), query: { token } }}
-          style={{
-            display: 'flex',
-            gap: '2px',
-            minWidth: 0,
-            flexGrow: 0,
-            flexShrink: 1,
-            width: '100%',
-          }}
-        >
-          <Stack
-            direction="row"
-            sx={{
-              gap: '8px',
+        {isTemp ? (
+          <div
+            key={task.id}
+            style={{
               display: 'flex',
-              alignItems: 'center',
-              marginRight: 'auto',
+              gap: '2px',
               minWidth: 0,
-              flexGrow: 1,
+              flexGrow: 0,
               flexShrink: 1,
+              width: '100%',
             }}
           >
-            <Typography
-              variant="bodySm"
+            <Stack
+              direction="row"
               sx={{
-                lineHeight: variant == 'task' ? '22px' : '21px',
-                fontSize: variant == 'task' ? '14px' : '13px',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-                flexShrink: 1,
-                flexGrow: 0,
+                gap: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                marginRight: 'auto',
                 minWidth: 0,
+                flexGrow: 1,
+                flexShrink: 1,
               }}
             >
-              {task.title}
-            </Typography>
-            {(subtaskCount > 0 || task.isArchived) && (
-              <Stack direction="row" sx={{ display: 'flex', gap: '12px', flexShrink: 0, alignItems: 'center' }}>
-                <TaskMetaItems task={task} lineHeight="21px" />
-              </Stack>
-            )}
-          </Stack>
-        </CustomLink>
+              <Typography
+                variant="bodySm"
+                sx={{
+                  lineHeight: variant == 'task' ? '22px' : '21px',
+                  fontSize: variant == 'task' ? '14px' : '13px',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  flexShrink: 1,
+                  flexGrow: 0,
+                  minWidth: 0,
+                }}
+              >
+                {task.title}
+              </Typography>
+              {(task.subtaskCount > 0 || task.isArchived) && (
+                <Stack direction="row" sx={{ display: 'flex', gap: '12px', flexShrink: 0, alignItems: 'center' }}>
+                  <TaskMetaItems task={task} lineHeight="21px" />
+                </Stack>
+              )}
+            </Stack>
+          </div>
+        ) : (
+          <CustomLink
+            key={task.id}
+            href={{ pathname: getCardHref(task, mode), query: { token } }}
+            style={{
+              display: 'flex',
+              gap: '2px',
+              minWidth: 0,
+              flexGrow: 0,
+              flexShrink: 1,
+              width: '100%',
+            }}
+          >
+            <Stack
+              direction="row"
+              sx={{
+                gap: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                marginRight: 'auto',
+                minWidth: 0,
+                flexGrow: 1,
+                flexShrink: 1,
+              }}
+            >
+              <Typography
+                variant="bodySm"
+                sx={{
+                  lineHeight: variant == 'task' ? '22px' : '21px',
+                  fontSize: variant == 'task' ? '14px' : '13px',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  flexShrink: 1,
+                  flexGrow: 0,
+                  minWidth: 0,
+                }}
+              >
+                {task.title}
+              </Typography>
+              {(task.subtaskCount > 0 || task.isArchived) && (
+                <Stack direction="row" sx={{ display: 'flex', gap: '12px', flexShrink: 0, alignItems: 'center' }}>
+                  <TaskMetaItems task={task} lineHeight="21px" />
+                </Stack>
+              )}
+            </Stack>
+          </CustomLink>
+        )}
       </Stack>
 
       <Stack

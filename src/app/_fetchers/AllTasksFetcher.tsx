@@ -7,7 +7,7 @@ import { PropsWithToken } from '@/types/interfaces'
 import { PropsWithChildren } from 'react'
 
 const getAllAccessibleTasks = async (token: string): Promise<TaskResponse[]> => {
-  const res = await fetch(`${apiUrl}/api/tasks?token=${token}&all=1}`)
+  const res = await fetch(`${apiUrl}/api/tasks?token=${token}&all=1`)
   const { tasks } = await res.json()
   return tasks
 }

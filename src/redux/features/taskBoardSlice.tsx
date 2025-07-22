@@ -116,7 +116,7 @@ const taskBoardSlice = createSlice({
         [action.payload.optionType]: action.payload.newValue,
       }
     },
-    setFilteredAssgineeList: (state, action: { payload: { filteredType: FilterByOptions } }) => {
+    setFilteredAssigneeList: (state, action: { payload: { filteredType: FilterByOptions } }) => {
       const filteredType = action.payload.filteredType
       if (filteredType == 'internalUsers') {
         state.filteredAssigneeList = state.assignee.filter((el) => el.type == FilterByOptions.IUS)
@@ -187,7 +187,7 @@ export const {
   setFilteredTasks,
   setViewSettings,
   setFilterOptions,
-  setFilteredAssgineeList,
+  setFilteredAssigneeList,
   setViewSettingsTemp,
   setIsTasksLoading,
   setActiveTask,

@@ -34,7 +34,7 @@ class WebhookService extends BaseService {
     const eventType = webhookEvent.eventType as HANDLEABLE_EVENT
     const isValidWebhook = [
       HANDLEABLE_EVENT.InternalUserDeleted,
-      HANDLEABLE_EVENT.ClientCreated,
+      HANDLEABLE_EVENT.ClientActivated,
       HANDLEABLE_EVENT.ClientUpdated,
       HANDLEABLE_EVENT.ClientDeleted,
       HANDLEABLE_EVENT.CompanyDeleted,
@@ -47,7 +47,7 @@ class WebhookService extends BaseService {
     const assigneeId = deletedEntity.id
     const assigneeType = {
       [HANDLEABLE_EVENT.InternalUserDeleted]: AssigneeType.internalUser,
-      [HANDLEABLE_EVENT.ClientCreated]: AssigneeType.client,
+      [HANDLEABLE_EVENT.ClientActivated]: AssigneeType.client,
       [HANDLEABLE_EVENT.ClientUpdated]: AssigneeType.client,
       [HANDLEABLE_EVENT.ClientDeleted]: AssigneeType.client,
       [HANDLEABLE_EVENT.CompanyDeleted]: AssigneeType.company,
@@ -67,7 +67,7 @@ class WebhookService extends BaseService {
       company = null
     }
     if (!company?.name) {
-      // Client does not have a fixed company!
+      console.info("Ignoring client.activated event for client that doesn't have a company")
       return
     }
 
@@ -87,10 +87,8 @@ class WebhookService extends BaseService {
     for (let task of tasks) {
       const actionUser = internalUsers.find((iu) => iu.id === task.createdById)
       if (!actionUser) {
-        throw new APIError(
-          httpStatus.INTERNAL_SERVER_ERROR,
-          `webhookController :: could not get action user for company task ${task.id}`,
-        )
+        console.error(`WebhookService#handleClientCreated :: could not get action user for company task ${task.id}`)
+        continue
       }
 
       const existingNotification = existingNotifications.find((notification) => notification.taskId === task.id)
