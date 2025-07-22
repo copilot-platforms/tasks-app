@@ -20,8 +20,12 @@ export const run = async () => {
   }
 
   const loadTester = new LoadTester()
-
+  // seed companies
   await loadTester.seedCompanies(200)
+  // seed clients without a company
+  await loadTester.seedClients(200)
+  // seed clients with a single company
+  await loadTester.seedClients(200, true)
 }
 
 run()
