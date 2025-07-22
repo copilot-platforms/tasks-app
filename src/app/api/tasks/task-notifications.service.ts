@@ -255,7 +255,7 @@ export class TaskNotificationsService extends BaseService {
         updatedTask,
         NotificationTaskActions.CompletedByCompanyMember,
       )
-      console.log('senderCompanyId', senderCompanyId)
+
       await this.notificationService.createBulkNotification(
         NotificationTaskActions.CompletedByCompanyMember,
         updatedTask,

@@ -39,7 +39,7 @@ export const RealTime = ({
       : tokenPayload?.internalUserId
         ? AssigneeType.internalUser
         : undefined
-  console.log(userId, userRole, tokenPayload, tokenPayload?.companyId || tokenPayload?.clientId)
+
   if (!tokenPayload || !userId || !userRole) {
     console.error(`Failed to authenticate a realtime connection for id ${userId} with role ${userRole}`)
   }

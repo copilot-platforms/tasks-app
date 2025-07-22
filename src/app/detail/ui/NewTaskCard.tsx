@@ -211,7 +211,7 @@ export const NewTaskCard = ({
       dueDate: formattedDueDate,
       parentId: activeTask?.id,
     }
-    console.log(payload, 'jere')
+
     handleSubTaskCreation(payload)
     clearSubTaskFields()
     handleClose()
