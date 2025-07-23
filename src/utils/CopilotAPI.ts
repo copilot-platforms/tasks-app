@@ -239,17 +239,22 @@ export class CopilotAPI {
     } = { limit: 100 },
   ) {
     console.info('CopilotAPI#_getClientNotifications', this.token)
-    const data = await this.manualFetch('notifications', {
+    const response = await this.manualFetch('notifications', {
       recipientClientId,
       recipientCompanyId,
       limit: `${opts.limit}`,
       workspaceId,
     })
-    const notifications = z.array(NotificationCreatedResponseSchema).parse(data.data)
+    const notifications = z.array(NotificationCreatedResponseSchema).parse(response.data)
     // Return only all notifications triggered by tasks-app
-    return notifications.filter(
-      (notification) => notification.appId === z.string({ message: 'Missing AppID in environment' }).parse(APP_ID),
-    )
+    return notifications
+      .filter((notification) => notification.appId === z.string({ message: 'Missing AppID in environment' }).parse(APP_ID))
+      .filter((notification) => {
+        const isSameRecipientCompanyId =
+          notification.recipientCompanyId && notification.recipientCompanyId === recipientCompanyId
+        const isSameCompanyId = notification.companyId && notification.companyId === recipientCompanyId
+        return isSameRecipientCompanyId || isSameCompanyId
+      })
   }
 
   async dispatchWebhook(eventName: DISPATCHABLE_EVENT, { workspaceId, payload }: { workspaceId: string; payload?: object }) {
