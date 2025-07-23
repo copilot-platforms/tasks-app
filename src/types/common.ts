@@ -218,6 +218,7 @@ export const NotificationCreatedResponseSchema = z.object({
   createdAt: z.string().datetime(),
   event: z.string().optional(),
   object: z.string().optional(),
+  companyId: z.string().optional(),
   recipientInternalUserId: z.string().optional(),
   recipientClientId: z.string().optional(),
   recipientCompanyId: z.string().optional(),
