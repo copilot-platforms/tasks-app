@@ -26,9 +26,9 @@ export type WebhookEvent = z.infer<typeof WebhookSchema>
 
 export const ClientUpdatedEventDataSchema = z.object({
   id: z.string(),
-  companyId: z.string(),
+  companyIds: z.array(z.string()).nullish(),
   previousAttributes: z.object({
-    companyId: z.string().optional(),
+    companyIds: z.array(z.string()).optional(),
   }),
 })
 export type ClientUpdatedEventData = z.infer<typeof ClientUpdatedEventDataSchema>
