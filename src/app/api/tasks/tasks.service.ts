@@ -775,6 +775,7 @@ export class TasksService extends BaseService {
       const activityLogger = new TasksActivityLogger(this.user, updatedTask)
       await Promise.all([
         activityLogger.logTaskUpdated(prevTask),
+        this.setNewLastSubtaskUpdated(updatedTask.parentId),
         dispatchUpdatedWebhookEvent(this.user, prevTask, updatedTask, false),
       ])
     }
