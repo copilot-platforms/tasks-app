@@ -6,7 +6,7 @@ import {
   NotificationRequestBody,
   Uuid,
 } from '@/types/common'
-import { bottleneck } from '@/utils/bottleneck'
+import { copilotBottleneck } from '@/utils/bottleneck'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import APIError from '@api/core/exceptions/api'
 import { BaseService } from '@api/core/services/base.service'
@@ -334,7 +334,7 @@ export class NotificationService extends BaseService {
     const copilot = new CopilotAPI(this.user.token)
     const markAsReadPromises = []
     for (const id of notificationIds) {
-      markAsReadPromises.push(bottleneck.schedule(() => copilot.markNotificationAsRead(id)))
+      markAsReadPromises.push(copilotBottleneck.schedule(() => copilot.markNotificationAsRead(id)))
     }
     await Promise.all(markAsReadPromises)
   }

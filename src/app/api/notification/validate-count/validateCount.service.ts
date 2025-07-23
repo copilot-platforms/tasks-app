@@ -1,7 +1,7 @@
 import { MAX_NOTIFICATIONS_COUNT } from '@/constants/notifications'
 import { DuplicateNotificationsQuerySchema } from '@/types/client-notifications'
 import { getArrayDifference } from '@/utils/array'
-import { bottleneck } from '@/utils/bottleneck'
+import { copilotBottleneck } from '@/utils/bottleneck'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import User from '@api/core/models/User.model'
 import { NotificationService } from '@api/notification/notification.service'
@@ -154,7 +154,7 @@ export class ValidateCountService extends NotificationService {
         continue
       }
       createNotificationPromises.push(
-        bottleneck.schedule(() => {
+        copilotBottleneck.schedule(() => {
           console.info(`ValidateCount :: Creating missing notification for task ${task.id} - ${task.title}`)
           // @ts-expect-error SDK types for new notification payload is not up to datelike always, SDK types are not up to date
           return this.copilot.createNotification({

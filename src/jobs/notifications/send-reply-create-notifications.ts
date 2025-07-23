@@ -1,6 +1,6 @@
 import { NotificationSender, NotificationSenderSchema } from '@/types/common'
 import { getAssigneeName } from '@/utils/assignee'
-import { bottleneck } from '@/utils/bottleneck'
+import { copilotBottleneck } from '@/utils/bottleneck'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { CommentRepository } from '@api/comment/comment.repository'
 import { CommentService } from '@api/comment/comment.service'
@@ -44,7 +44,7 @@ export const sendReplyCreateNotifications = task({
 
     const notificationPromises: Promise<unknown>[] = []
     const queueNotificationPromise = <T>(promise: Promise<T>): void => {
-      notificationPromises.push(bottleneck.schedule(() => promise))
+      notificationPromises.push(copilotBottleneck.schedule(() => promise))
     }
 
     // Get all initiators involved in thread except the current user
