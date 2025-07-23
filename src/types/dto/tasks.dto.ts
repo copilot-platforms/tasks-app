@@ -78,6 +78,7 @@ export const TaskResponseSchema = z.object({
   updatedAt: z.string().datetime().nullish(),
   assignee: z.union([ClientResponseSchema, InternalUsersSchema, CompanyResponseSchema]).optional(),
   lastActivityLogUpdated: z.string().datetime().nullish(),
+  lastSubtaskUpdated: z.string().datetime().nullish(),
   isArchived: z.boolean().optional(),
   lastArchivedDate: z.string().datetime(),
   parentId: z.string().nullish(),

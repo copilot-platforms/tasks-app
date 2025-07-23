@@ -61,7 +61,7 @@ export const ClientSideStateUpdate = ({
   accesibleTaskIds?: string[]
   accessibleTasks?: TaskResponse[]
 }) => {
-  const { tasks: tasksInStore, viewSettingsTemp } = useSelector(selectTaskBoard)
+  const { tasks: tasksInStore, viewSettingsTemp, accessibleTasks: accessibleTaskInStore } = useSelector(selectTaskBoard)
   useEffect(() => {
     if (workflowStates) {
       store.dispatch(setWorkflowStates(workflowStates))
@@ -121,7 +121,8 @@ export const ClientSideStateUpdate = ({
     }
 
     if (accessibleTasks) {
-      store.dispatch(setAccessibleTasks(accessibleTasks))
+      const accessibleTaskData = accessibleTaskInStore.length ? accessibleTaskInStore : accessibleTasks
+      store.dispatch(setAccessibleTasks(accessibleTaskData))
     }
 
     return () => {

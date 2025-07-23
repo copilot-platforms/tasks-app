@@ -36,6 +36,7 @@ export class RealtimeHandler {
       createdAt: newTask.createdAt && new Date(newTask.createdAt + 'Z').toISOString(),
       updatedAt: newTask.updatedAt && new Date(newTask.updatedAt + 'Z').toISOString(),
       lastActivityLogUpdated: newTask.lastActivityLogUpdated && new Date(newTask.lastActivityLogUpdated + 'Z').toISOString(),
+      lastSubtaskUpdated: newTask.lastSubtaskUpdated && new Date(newTask.lastSubtaskUpdated + 'Z').toISOString(),
     }
   }
 
