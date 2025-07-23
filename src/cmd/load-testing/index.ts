@@ -10,8 +10,8 @@
       - 2000 tasks
 */
 
-import config from '@cmd/load-testing/load-testing.config.json'
 import LoadTester from '@cmd/load-testing/load-testing-v2.service'
+import { AssigneeType } from '@prisma/client'
 
 export const run = async () => {
   if (process.env.VERCEL_ENV === 'production') {
@@ -26,6 +26,8 @@ export const run = async () => {
   await loadTester.seedClients(200)
   // seed clients with a single company
   await loadTester.seedClients(200, true)
+  // seed tasks
+  await loadTester.seedTasks(100, AssigneeType.client)
 }
 
 run()
