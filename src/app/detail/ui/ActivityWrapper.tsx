@@ -116,7 +116,7 @@ export const ActivityWrapper = ({
         {
           optimisticData: { data: optimisticData },
           rollbackOnError: true,
-          revalidate: false, // Make sure to revalidate after mutation
+          revalidate: false,
         },
       )
     } catch (error) {

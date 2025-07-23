@@ -2,7 +2,7 @@ import { maxSubTaskDepth } from '@/constants/tasks'
 import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 import { deleteTaskNotifications, sendTaskCreateNotifications, sendTaskUpdateNotifications } from '@/jobs/notifications'
 import { sendClientUpdateTaskNotifications } from '@/jobs/notifications/send-client-task-update-notifications'
-import { ClientResponse, CompanyResponse, InternalUsers } from '@/types/common'
+import { ClientResponse, CompanyResponse, InternalUsers, Uuid } from '@/types/common'
 import { TaskWithWorkflowState } from '@/types/db'
 import { AncestorTaskResponse, CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { DISPATCHABLE_EVENT } from '@/types/webhook'
@@ -247,7 +247,10 @@ export class TasksService extends BaseService {
         // Increment parent task's subtask count, if exists
         if (newTask.parentId) {
           const subtaskService = new SubtaskService(this.user)
-          await subtaskService.addSubtaskCount(newTask.parentId)
+          await Promise.all([
+            subtaskService.addSubtaskCount(newTask.parentId),
+            this.setNewLastSubtaskUpdated(newTask.parentId),
+          ])
         }
       } catch (e: unknown) {
         // Manually rollback task creation
@@ -415,6 +418,7 @@ export class TasksService extends BaseService {
       const isBodyChanged = prevTask.body !== updatedTask.body
       await Promise.all([
         activityLogger.logTaskUpdated(prevTask),
+        this.setNewLastSubtaskUpdated(updatedTask.parentId),
         sendTaskUpdateNotifications.trigger({ prevTask, updatedTask, user: this.user }),
         dispatchUpdatedWebhookEvent(this.user, prevTask, updatedTask, opts?.isPublicApi || false),
         isBodyChanged && opts?.isPublicApi ? queueBodyUpdatedWebhook(this.user, updatedTask) : undefined,
@@ -461,6 +465,7 @@ export class TasksService extends BaseService {
       subtaskService.setTransaction(tx as PrismaClient)
       if (task.parentId) {
         await subtaskService.decreaseSubtaskCount(task.parentId)
+        await this.setNewLastSubtaskUpdated(task.parentId)
       }
       await subtaskService.softDeleteAllSubtasks(task.id)
       return deletedTask
@@ -989,6 +994,22 @@ export class TasksService extends BaseService {
     return {
       assigneeId: null,
       assigneeType: null,
+    }
+  }
+
+  private async setNewLastSubtaskUpdated(parentId?: z.infer<typeof Uuid> | null) {
+    if (!parentId) {
+      return
+    }
+    try {
+      await this.db.task.update({
+        where: { id: parentId, workspaceId: this.user.workspaceId },
+        data: {
+          lastSubtaskUpdated: new Date(),
+        },
+      })
+    } catch (e) {
+      console.error('TaskService#setNewLastSubtaskUpdated::', e)
     }
   }
 }
