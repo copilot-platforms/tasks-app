@@ -1,7 +1,7 @@
 import { ArrowRightIcon } from '@/icons'
 import { Box, Stack, Typography } from '@mui/material'
 
-export const ManageTemplatesEndOption = () => {
+export const ManageTemplatesEndOption = ({ hasTemplates }: { hasTemplates: boolean }) => {
   return (
     <Stack
       id="manage-templates-btn"
@@ -11,7 +11,7 @@ export const ManageTemplatesEndOption = () => {
       py="6px"
       justifyContent="space-between"
       sx={{
-        borderTop: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
+        borderTop: (theme) => `${hasTemplates ? '1px' : '0px'} solid ${theme.color.borders.borderDisabled}`,
         borderBottom: (theme) => `0px solid ${theme.color.borders.borderDisabled}`,
         cursor: 'pointer',
         lineHeight: '21px',

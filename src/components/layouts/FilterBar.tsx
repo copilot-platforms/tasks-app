@@ -1,47 +1,41 @@
 'use client'
 
-import { Box, IconButton, Stack } from '@mui/material'
-import { useEffect, useState } from 'react'
-import store from '@/redux/store'
-import { setFilterOptions, setViewSettingsTemp, setViewSettings, setIsTasksLoading } from '@/redux/features/taskBoardSlice'
-import SearchBar from '@/components/searchBar'
-import Selector, { SelectorType } from '@/components/inputs/Selector'
-import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
-import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
-import { useSelector } from 'react-redux'
-import {
-  FilterOptions,
-  FilterOptionsKeywords,
-  IAssigneeCombined,
-  IFilterOptions,
-  HandleSelectorComponentModes,
-} from '@/types/interfaces'
-import { CrossIcon, FilterByAsigneeIcon } from '@/icons'
-import { FilterByAssigneeBtn } from '../buttons/FilterByAssigneeBtn'
-import FilterButtonGroup from '@/components/buttonsGroup/FilterButtonsGroup'
-import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
-import { useFilter } from '@/hooks/useFilter'
-import { IUTokenSchema } from '@/types/common'
-import { NoAssigneeExtraOptions, NoDataFoundOption } from '@/utils/noAssignee'
-import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
-import { z } from 'zod'
-import { setDebouncedFilteredAssignees } from '@/utils/users'
-import { MiniLoader } from '@/components/atoms/MiniLoader'
-import { checkAssignee } from '@/utils/assignee'
-import { filterOptionsToAssigneeMap, filterTypeToButtonIndexMap } from '@/types/objectMaps'
 import { UserRole } from '@/app/api/core/types/user'
+import { FilterByAssigneeBtn } from '@/components/buttons/FilterByAssigneeBtn'
+import { SelectorButton } from '@/components/buttons/SelectorButton'
+import FilterButtonGroup from '@/components/buttonsGroup/FilterButtonsGroup'
+import { CopilotPopSelector } from '@/components/inputs/CopilotSelector'
 import { DisplaySelector } from '@/components/inputs/DisplaySelector'
+import SearchBar from '@/components/searchBar'
+import { CrossIcon, FilterByAsigneeIcon } from '@/icons'
+import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
+import {
+  selectTaskBoard,
+  setFilterOptions,
+  setIsTasksLoading,
+  setViewSettings,
+  setViewSettingsTemp,
+} from '@/redux/features/taskBoardSlice'
+import store from '@/redux/store'
+import { IUTokenSchema } from '@/types/common'
+import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
+import { FilterOptions, FilterOptionsKeywords, IFilterOptions, UserIds } from '@/types/interfaces'
+import { filterTypeToButtonIndexMap } from '@/types/objectMaps'
+import { checkAssignee, emptyAssignee, getAssigneeId, UserIdsType } from '@/utils/assignee'
+import { NoAssignee } from '@/utils/noAssignee'
+import { getSelectedUserIds, getSelectorAssignee, getSelectorAssigneeFromFilterOptions } from '@/utils/selector'
+import { Box, IconButton, Stack } from '@mui/material'
+import { useState } from 'react'
+import { useSelector } from 'react-redux'
 
 interface FilterBarProps {
   mode: UserRole
   updateViewModeSetting: (payload: CreateViewSettingsDTO) => void
 }
 export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
-  const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
-  const { view, filteredAssigneeList, filterOptions, assignee, token, viewSettingsTemp, showArchived, showUnarchived } =
+  const { view, filterOptions, assignee, token, viewSettingsTemp, showArchived, showUnarchived } =
     useSelector(selectTaskBoard)
-  const [filteredAssignee, setFilteredAssignee] = useState(filteredAssigneeList)
-  const [loading, setLoading] = useState(false)
+
   const viewMode = viewSettingsTemp ? viewSettingsTemp.viewMode : view
   const archivedOptions = {
     showArchived: viewSettingsTemp ? viewSettingsTemp.showArchived : showArchived,
@@ -50,35 +44,8 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
 
   const viewModeFilterOptions = viewSettingsTemp ? (viewSettingsTemp.filterOptions as IFilterOptions) : filterOptions //ViewSettingsTemp used to apply temp values of viewSettings in filterOptions and viewMode because clientSideUpdate applies outdated cached values to original view and filterOptions if navigated
 
-  // Stores the initial assignee list for a particular filter type
-  const [initialAssignees, setInitialAssignees] = useState(filteredAssignee)
-  const [inputStatusValue, setInputStatusValue] = useState('')
-
-  useEffect(() => {
-    setFilteredAssignee(filteredAssigneeList)
-  }, [filteredAssigneeList]) //to prevent filteredAssignee not updating when filteredAssigneeList changes when fetching assignee is delayed
-
-  useEffect(() => {
-    // Base these initial values off of first fetch of filteredAssignee
-    if (!initialAssignees.length) {
-      setInitialAssignees(filteredAssignee)
-    }
-    // When focus is taken away from selector, make sure that assignee search results are replaced
-    if (filteredAssignee.length && initialAssignees.length && !inputStatusValue) {
-      loading && setLoading(false)
-      setFilteredAssignee(initialAssignees)
-    }
-  }, [initialAssignees, filteredAssignee, inputStatusValue])
-
-  const handleFilterOptionsChange = async (optionType: FilterOptions, newValue: string | null) => {
+  const handleFilterOptionsChange = async (optionType: FilterOptions, newValue: string | null | UserIdsType) => {
     store.dispatch(setFilterOptions({ optionType, newValue }))
-    if (optionType === FilterOptions.TYPE) {
-      const filterFunction = filterOptionsToAssigneeMap[newValue as string] || filterOptionsToAssigneeMap.default
-      setFilteredAssignee(filterFunction(assignee))
-      const newAssignees = filterFunction(assignee)
-      setInitialAssignees(newAssignees)
-    }
-
     //FilteredAssignee is also updated in the component's state and used in Selector's autocomplete to mitigate the time taken to update the store and fetch values to the Selector's autocomplete.
     const updatedFilterOptions = viewSettingsTemp
       ? (store.getState().taskBoard.viewSettingsTemp?.filterOptions as IFilterOptions)
@@ -106,23 +73,23 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
   const ButtonIndex = filterTypeToButtonIndexMap[viewModeFilterOptions.type] ?? 0
 
   const [noAssigneOptionFlag, setNoAssigneeOptionFlag] = useState<boolean>(true)
+
   const { tokenPayload } = useSelector(selectAuthDetails)
-  const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
-    item:
-      viewModeFilterOptions.assignee == 'No assignee'
-        ? NoAssigneeExtraOptions
-        : filteredAssigneeList.find((item) => item.id == viewModeFilterOptions.assignee),
-    type: SelectorType.ASSIGNEE_SELECTOR,
-    mode: HandleSelectorComponentModes.CreateTaskFieldUpdate,
-  })
+
+  const [assigneeValue, setAssigneeValue] = useState(
+    viewModeFilterOptions.assignee[UserIds.INTERNAL_USER_ID] == 'No assignee'
+      ? NoAssignee
+      : getSelectorAssigneeFromFilterOptions(assignee, viewModeFilterOptions.assignee),
+  )
+
   const filterButtons = [
     {
       name: 'My tasks',
       onClick: () => {
         const selfAssigneeId = IUTokenSchema.parse(tokenPayload).internalUserId
         handleFilterOptionsChange(FilterOptions.TYPE, selfAssigneeId)
-        updateAssigneeValue(null)
-        filterOptions.assignee !== '' && handleFilterOptionsChange(FilterOptions.ASSIGNEE, '')
+        setAssigneeValue(undefined)
+        handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
       },
       id: 'MyTasks',
     },
@@ -130,9 +97,9 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
       name: "My team's tasks",
       onClick: () => {
         handleFilterOptionsChange(FilterOptions.TYPE, FilterOptionsKeywords.TEAM)
-        updateAssigneeValue(null)
+        setAssigneeValue(undefined)
         setNoAssigneeOptionFlag(false)
-        filterOptions.assignee !== '' && handleFilterOptionsChange(FilterOptions.ASSIGNEE, '')
+        handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
       },
       id: 'TeamTasks',
     },
@@ -140,9 +107,9 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
       name: 'Client tasks',
       onClick: () => {
         handleFilterOptionsChange(FilterOptions.TYPE, FilterOptionsKeywords.CLIENTS)
-        updateAssigneeValue(null)
+        setAssigneeValue(undefined)
         setNoAssigneeOptionFlag(false)
-        filterOptions.assignee !== '' && handleFilterOptionsChange(FilterOptions.ASSIGNEE, '')
+        handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
       },
       id: 'ClientTasks',
     },
@@ -150,15 +117,13 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
       name: 'All tasks',
       onClick: () => {
         handleFilterOptionsChange(FilterOptions.TYPE, '')
-        updateAssigneeValue(null)
+        setAssigneeValue(undefined)
         setNoAssigneeOptionFlag(true)
-        filterOptions.assignee !== '' && handleFilterOptionsChange(FilterOptions.ASSIGNEE, '')
+        handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
       },
       id: 'AllTasks',
     },
   ]
-
-  const assigneeValue = _assigneeValue as IAssigneeCombined
 
   return (
     <Box
@@ -169,7 +134,6 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
     >
       <Box
         sx={{
-          overflowX: 'hidden',
           padding: '12px 20px',
           display: { xs: 'none', sm: 'none', sd: 'block' },
         }}
@@ -185,82 +149,54 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
                       display: { xs: 'none', sm: 'none', sd: 'block' },
                     }}
                   >
-                    <Selector
-                      inputStatusValue={inputStatusValue}
-                      setInputStatusValue={setInputStatusValue}
-                      getSelectedValue={(_newValue) => {
-                        const newValue = _newValue as IAssigneeCombined
-                        updateAssigneeValue(newValue)
-                        handleFilterOptionsChange(FilterOptions.ASSIGNEE, newValue?.id as string)
-                      }}
-                      startIcon={<FilterByAsigneeIcon />}
-                      endIcon={
-                        checkAssignee(assigneeValue) && (
-                          <IconButton
-                            aria-label="remove"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              updateAssigneeValue(null)
-                              handleFilterOptionsChange(FilterOptions.ASSIGNEE, '')
-                            }}
-                            sx={{
-                              cursor: 'default',
-                              borderRadius: 0,
-                              padding: '6px 5px 6px 6px',
+                    <CopilotPopSelector
+                      hideClientsList={filterOptions[FilterOptions.TYPE] === FilterOptionsKeywords.TEAM}
+                      hideIusList={filterOptions[FilterOptions.TYPE] === FilterOptionsKeywords.CLIENTS}
+                      initialValue={assigneeValue}
+                      buttonContent={
+                        <SelectorButton
+                          startIcon={<FilterByAsigneeIcon />}
+                          endIcon={
+                            checkAssignee(assigneeValue) && (
+                              <IconButton
+                                aria-label="remove"
+                                onClick={(e) => {
+                                  e.preventDefault()
+                                  e.stopPropagation()
+                                  setAssigneeValue(undefined)
+                                  handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
+                                }}
+                                sx={{
+                                  cursor: 'default',
+                                  borderRadius: 0,
+                                  padding: '6px 5px 6px 6px',
 
-                              '&:hover': {
-                                bgcolor: (theme) => theme.color.gray[100],
-                              },
-                            }}
-                            disableRipple
-                            disableTouchRipple
-                          >
-                            <CrossIcon />
-                          </IconButton>
-                        )
+                                  '&:hover': {
+                                    bgcolor: (theme) => theme.color.gray[100],
+                                  },
+                                }}
+                                disableRipple
+                                disableTouchRipple
+                              >
+                                <CrossIcon />
+                              </IconButton>
+                            )
+                          }
+                          buttonContent={<FilterByAssigneeBtn assigneeValue={assigneeValue} />}
+                        />
                       }
-                      options={loading ? [] : filteredAssignee.length ? filteredAssignee : [NoDataFoundOption]}
-                      placeholder="Assignee"
-                      value={assigneeValue}
-                      selectorType={SelectorType.ASSIGNEE_SELECTOR}
-                      extraOption={NoAssigneeExtraOptions}
-                      extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
-                        return (
-                          noAssigneOptionFlag && (
-                            <>
-                              {/* //****Disabling re-assignment completely for now*** */}
-                              {/* <ExtraOptionRendererAssignee
-                              props={props}
-                              onClick={(e) => {
-                                updateAssigneeValue({ id: '', name: 'No assignee' })
-                                setAnchorEl(anchorEl ? null : e.currentTarget)
-                                handleFilterOptionsChange(FilterOptions.ASSIGNEE, 'No assignee')
-                              }}
-                            /> */}
-                              {loading && <MiniLoader />}
-                            </>
-                          )
-                        )
-                      }}
-                      buttonContent={<FilterByAssigneeBtn assigneeValue={assigneeValue} />}
-                      padding="2px 10px 2px 10px"
-                      handleInputChange={async (newInputValue: string) => {
-                        if (!newInputValue) {
-                          setFilteredAssignee(initialAssignees)
-                          return
+                      name="Filter by assignee"
+                      onChange={(inputValue) => {
+                        const newUserIds = getSelectedUserIds(inputValue)
+                        const newAssignee = getAssigneeId(newUserIds)
+                        if (newAssignee) {
+                          setAssigneeValue(getSelectorAssignee(assignee, inputValue))
+                          handleFilterOptionsChange(FilterOptions.ASSIGNEE, newUserIds)
+                        } else {
+                          setAssigneeValue(undefined)
+                          handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
                         }
-
-                        setDebouncedFilteredAssignees(
-                          activeDebounceTimeoutId,
-                          setActiveDebounceTimeoutId,
-                          setLoading,
-                          setFilteredAssignee,
-                          z.string().parse(token),
-                          newInputValue,
-                          filterOptions.type,
-                        )
                       }}
-                      filterOption={(x: unknown) => x}
                     />
                   </Box>
                 )}
@@ -352,82 +288,54 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
           >
             <Box>
               {filterOptions[FilterOptions.TYPE] !== tokenPayload?.internalUserId && mode === UserRole.IU && (
-                <Selector
-                  inputStatusValue={inputStatusValue}
-                  setInputStatusValue={setInputStatusValue}
-                  getSelectedValue={(_newValue) => {
-                    const newValue = _newValue as IAssigneeCombined
-                    updateAssigneeValue(newValue)
-                    handleFilterOptionsChange(FilterOptions.ASSIGNEE, newValue?.id as string)
-                  }}
-                  startIcon={<FilterByAsigneeIcon />}
-                  endIcon={
-                    checkAssignee(assigneeValue) && (
-                      <IconButton
-                        aria-label="remove"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          updateAssigneeValue(null)
-                          handleFilterOptionsChange(FilterOptions.ASSIGNEE, '')
-                        }}
-                        sx={{
-                          cursor: 'default',
-                          borderRadius: 0,
-                          padding: '6px 5px 6px 6px',
+                <CopilotPopSelector
+                  hideClientsList={filterOptions[FilterOptions.TYPE] === FilterOptionsKeywords.TEAM}
+                  hideIusList={filterOptions[FilterOptions.TYPE] === FilterOptionsKeywords.CLIENTS}
+                  initialValue={assigneeValue}
+                  buttonContent={
+                    <SelectorButton
+                      startIcon={<FilterByAsigneeIcon />}
+                      endIcon={
+                        checkAssignee(assigneeValue) && (
+                          <IconButton
+                            aria-label="remove"
+                            onClick={(e) => {
+                              e.preventDefault()
+                              e.stopPropagation()
+                              setAssigneeValue(undefined)
+                              handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
+                            }}
+                            sx={{
+                              cursor: 'default',
+                              borderRadius: 0,
+                              padding: '6px 5px 6px 6px',
 
-                          '&:hover': {
-                            bgcolor: (theme) => theme.color.gray[100],
-                          },
-                        }}
-                        disableRipple
-                        disableTouchRipple
-                      >
-                        <CrossIcon />
-                      </IconButton>
-                    )
+                              '&:hover': {
+                                bgcolor: (theme) => theme.color.gray[100],
+                              },
+                            }}
+                            disableRipple
+                            disableTouchRipple
+                          >
+                            <CrossIcon />
+                          </IconButton>
+                        )
+                      }
+                      buttonContent={<FilterByAssigneeBtn assigneeValue={assigneeValue} />}
+                    />
                   }
-                  options={loading ? [] : filteredAssignee.length ? filteredAssignee : [NoDataFoundOption]}
-                  placeholder="Assignee"
-                  value={assigneeValue}
-                  selectorType={SelectorType.ASSIGNEE_SELECTOR}
-                  extraOption={NoAssigneeExtraOptions}
-                  extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
-                    return (
-                      noAssigneOptionFlag && (
-                        <>
-                          {/* //****Disabling re-assignment completely for now*** */}
-                          {/* <ExtraOptionRendererAssignee
-                             props={props}
-                             onClick={(e) => {
-                               updateAssigneeValue({ id: '', name: 'No assignee' })
-                               setAnchorEl(anchorEl ? null : e.currentTarget)
-                               handleFilterOptionsChange(FilterOptions.ASSIGNEE, 'No assignee')
-                             }}
-                           /> */}
-                          {loading && <MiniLoader />}
-                        </>
-                      )
-                    )
-                  }}
-                  buttonContent={<FilterByAssigneeBtn assigneeValue={assigneeValue} />}
-                  padding="2px 10px 2px 10px"
-                  handleInputChange={async (newInputValue: string) => {
-                    if (!newInputValue) {
-                      setFilteredAssignee(initialAssignees)
-                      return
+                  name="Filter by assignee"
+                  onChange={(inputValue) => {
+                    const newUserIds = getSelectedUserIds(inputValue)
+                    const newAssignee = getAssigneeId(newUserIds)
+                    if (newAssignee) {
+                      setAssigneeValue(getSelectorAssignee(assignee, inputValue))
+                      handleFilterOptionsChange(FilterOptions.ASSIGNEE, newUserIds)
+                    } else {
+                      setAssigneeValue(undefined)
+                      handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
                     }
-
-                    setDebouncedFilteredAssignees(
-                      activeDebounceTimeoutId,
-                      setActiveDebounceTimeoutId,
-                      setLoading,
-                      setFilteredAssignee,
-                      z.string().parse(token),
-                      newInputValue,
-                      filterOptions.type,
-                    )
                   }}
-                  filterOption={(x: unknown) => x}
                 />
               )}
             </Box>

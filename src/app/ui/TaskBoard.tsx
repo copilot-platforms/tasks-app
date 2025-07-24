@@ -1,39 +1,38 @@
 'use client'
 
 import { updateTask, updateViewModeSettings } from '@/app/(home)/actions'
-import { TaskCard } from '@/components/cards/TaskCard'
-import { TaskColumn } from '@/components/cards/TaskColumn'
-import { TaskRow } from '@/components/cards/TaskRow'
-import { DragDropHandler } from '@/hoc/DragDropHandler'
-import { selectTaskBoard, updateWorkflowStateIdByTaskId } from '@/redux/features/taskBoardSlice'
-import store from '@/redux/store'
-import { TaskResponse } from '@/types/dto/tasks.dto'
-import { View } from '@/types/interfaces'
-import { Box, Stack } from '@mui/material'
-import { useCallback, useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
-import { z } from 'zod'
-
 import { TaskDataFetcher } from '@/app/_fetchers/TaskDataFetcher'
 import { clientUpdateTask } from '@/app/detail/[task_id]/[user_type]/actions'
 import { TaskCardList } from '@/app/detail/ui/TaskCardList'
 import { TaskBoardAppBridge } from '@/app/ui/TaskBoardAppBridge'
 import { CustomDragLayer } from '@/components/CustomDragLayer'
 import { CardDragLayer } from '@/components/cards/CardDragLayer'
+import { TaskCard } from '@/components/cards/TaskCard'
+import { TaskColumn } from '@/components/cards/TaskColumn'
+import { TaskRow } from '@/components/cards/TaskRow'
 import DashboardEmptyState from '@/components/layouts/EmptyState/DashboardEmptyState'
 import { NoFilteredTasksState } from '@/components/layouts/EmptyState/NoFilteredTasksState'
 import { FilterBar } from '@/components/layouts/FilterBar'
 import { Header } from '@/components/layouts/Header'
 import { CustomLink } from '@/hoc/CustomLink'
 import CustomScrollBar from '@/hoc/CustomScrollBar'
+import { DragDropHandler } from '@/hoc/DragDropHandler'
 import { useFilter } from '@/hooks/useFilter'
+import { selectTaskBoard, updateWorkflowStateIdByTaskId } from '@/redux/features/taskBoardSlice'
+import store from '@/redux/store'
 import { WorkspaceResponse } from '@/types/common'
+import { TaskResponse } from '@/types/dto/tasks.dto'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
-import { WorkflowState, WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
+import { View } from '@/types/interfaces'
+import { checkEmptyAssignee } from '@/utils/assignee'
 import { getCardHref } from '@/utils/getCardHref'
 import { sortTaskByDescendingOrder } from '@/utils/sortTask'
 import { prioritizeStartedStates } from '@/utils/workflowStates'
 import { UserRole } from '@api/core/types/user'
+import { Box, Stack } from '@mui/material'
+import { useCallback, useEffect, useState } from 'react'
+import { useSelector } from 'react-redux'
+import { z } from 'zod'
 
 interface TaskBoardProps {
   mode: UserRole
@@ -95,7 +94,7 @@ export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
     filterOptions &&
     !filterOptions.type &&
     !filterOptions.keyword &&
-    (!filterOptions.assignee || previewMode) &&
+    (checkEmptyAssignee(filterOptions.assignee) || previewMode) &&
     archivedOptions.showUnarchived &&
     !archivedOptions.showArchived
 

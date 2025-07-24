@@ -1,8 +1,9 @@
+import { UserIdsSchema } from '@/utils/assignee'
 import { ViewMode } from '@prisma/client'
 import { z } from 'zod'
 
 export const FilterOptionsSchema = z.object({
-  assignee: z.string(),
+  assignee: UserIdsSchema,
   keyword: z.string(),
   type: z.string(),
 })

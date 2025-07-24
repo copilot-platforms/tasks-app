@@ -1,11 +1,9 @@
-import { CrossIcon } from '@/icons'
-import store from '@/redux/store'
-import { FilterOptions, IAssigneeCombined } from '@/types/interfaces'
-import { Avatar, IconButton, Stack, Typography } from '@mui/material'
-import { CopilotAvatar } from '../atoms/CopilotAvatar'
+import { IAssigneeCombined } from '@/types/interfaces'
 import { getAssigneeName } from '@/utils/assignee'
+import { Stack, Typography } from '@mui/material'
+import { CopilotAvatar } from '../atoms/CopilotAvatar'
 
-export const FilterByAssigneeBtn = ({ assigneeValue }: { assigneeValue: IAssigneeCombined }) => {
+export const FilterByAssigneeBtn = ({ assigneeValue }: { assigneeValue?: IAssigneeCombined }) => {
   return (
     <Stack direction="row" alignItems="center" columnGap={1}>
       <Typography

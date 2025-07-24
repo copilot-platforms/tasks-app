@@ -1,5 +1,6 @@
+import { NotificationSender, NotificationSenderSchema } from '@/types/common'
 import { getAssigneeName } from '@/utils/assignee'
-import { bottleneck } from '@/utils/bottleneck'
+import { copilotBottleneck } from '@/utils/bottleneck'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { CommentRepository } from '@api/comment/comment.repository'
 import { CommentService } from '@api/comment/comment.service'
@@ -15,6 +16,9 @@ type CommentCreateNotificationPayload = {
   comment: Comment
 }
 
+/**
+ * This job is used to send notifications to all active users commenting on a thread, when a new reply is created to a comment.
+ */
 export const sendReplyCreateNotifications = task({
   id: 'send-reply-create-notifications',
   machine: { preset: 'medium-1x' },
@@ -40,7 +44,7 @@ export const sendReplyCreateNotifications = task({
 
     const notificationPromises: Promise<unknown>[] = []
     const queueNotificationPromise = <T>(promise: Promise<T>): void => {
-      notificationPromises.push(bottleneck.schedule(() => promise))
+      notificationPromises.push(copilotBottleneck.schedule(() => promise))
     }
 
     // Get all initiators involved in thread except the current user
@@ -50,7 +54,17 @@ export const sendReplyCreateNotifications = task({
 
     // Queue notifications to every unique reply initiator
     for (let initiator of threadInitiators) {
-      const promise = getInitiatorNotificationPromises(copilot, initiator, senderId, deliveryTargets)
+      const promise = getInitiatorNotificationPromises(
+        copilot,
+        initiator,
+        senderId,
+        deliveryTargets,
+        // NOTE: We are sending payload.task.companyId here. This might sound silly, i agree.
+        // However, it is very safe to assume that client users can ONLY reply to comments in tasks
+        // assigned to their company, or to them. In both cases, payload.task.companyId works
+        // For IU tasks, this will be undefined
+        payload.task.companyId || undefined,
+      )
       promise && queueNotificationPromise(promise) // It's certain we will get a promise here
     }
 
@@ -67,10 +81,16 @@ export const sendReplyCreateNotifications = task({
         (initiator) => initiator.initiatorId === parentComment.initiatorId,
       )
       if (!isParentCommentDeleted && !parentInitiatorIsCurrentUser && !isNotificationAlreadySent) {
-        let promise = getInitiatorNotificationPromises(copilot, parentComment, senderId, deliveryTargets)
+        let promise = getInitiatorNotificationPromises(
+          copilot,
+          parentComment,
+          senderId,
+          deliveryTargets,
+          payload.task.companyId || undefined,
+        )
         // If there is no "initiatorType" for parentComment we have to be slightly creative (coughhackycough)
         if (!promise) {
-          promise = getNotificationToUntypedInitiator(copilot, parentComment, senderId, deliveryTargets)
+          promise = getNotificationToUntypedInitiator(copilot, parentComment, payload.task, senderId, deliveryTargets)
         }
         queueNotificationPromise(promise)
       }
@@ -80,11 +100,11 @@ export const sendReplyCreateNotifications = task({
   },
 })
 
-async function getNotificationDetails(copilot: CopilotAPI, user: User, comment: Comment) {
+const getNotificationDetails = async (copilot: CopilotAPI, user: User, comment: Comment) => {
   // Get parent task for title
   const tasksService = new TasksService(user)
   const task = await tasksService.getOneTask(comment.taskId)
-  const senderType = user.internalUserId ? CommentInitiator.internalUser : CommentInitiator.client
+  const senderType: NotificationSender = user.internalUserId ? CommentInitiator.internalUser : CommentInitiator.client
   const senderId = z
     .string()
     .uuid()
@@ -112,23 +132,29 @@ async function getNotificationDetails(copilot: CopilotAPI, user: User, comment: 
   return deliveryTargets
 }
 
-async function getInitiatorNotificationPromises(
+const getInitiatorNotificationPromises = async (
   copilot: CopilotAPI,
+  // Initiator in this context means previous initiators that were active in the thread, NOT the currently commenting user
   initiator: { initiatorId: string; initiatorType: CommentInitiator | null },
   senderId: string,
   deliveryTargets: { inProduct: Record<'title', any>; email: object },
+  initiatorCompanyId?: string,
+  // Overrides the default senderType for the notification
   assume?: CommentInitiator,
-) {
+) => {
   if (initiator.initiatorType === CommentInitiator.internalUser || assume === CommentInitiator.internalUser) {
     return copilot.createNotification({
       senderId,
-      recipientId: initiator.initiatorId,
+      senderType: assume || NotificationSenderSchema.parse(initiator.initiatorType),
+      recipientInternalUserId: initiator.initiatorId,
       deliveryTargets: { inProduct: deliveryTargets.inProduct },
     })
   } else if (initiator.initiatorType === CommentInitiator.client || assume === CommentInitiator.client) {
     return copilot.createNotification({
       senderId,
-      recipientId: initiator.initiatorId,
+      senderType: assume || NotificationSenderSchema.parse(initiator.initiatorType),
+      recipientClientId: initiator.initiatorId,
+      recipientCompanyId: initiatorCompanyId,
       deliveryTargets: { email: deliveryTargets.email },
     })
   } else {
@@ -136,12 +162,13 @@ async function getInitiatorNotificationPromises(
   }
 }
 
-async function getNotificationToUntypedInitiator(
+const getNotificationToUntypedInitiator = async (
   copilot: CopilotAPI,
   parentComment: Comment,
+  task: Task,
   senderId: string,
   deliveryTargets: { inProduct: Record<'title', any>; email: object },
-) {
+) => {
   let promise
   try {
     await copilot.getInternalUser(parentComment.initiatorId)
@@ -150,11 +177,19 @@ async function getNotificationToUntypedInitiator(
       parentComment,
       senderId,
       deliveryTargets,
+      task.companyId || undefined,
       CommentInitiator.internalUser,
     )
   } catch (e) {
     try {
-      promise = getInitiatorNotificationPromises(copilot, parentComment, senderId, deliveryTargets, CommentInitiator.client)
+      promise = getInitiatorNotificationPromises(
+        copilot,
+        parentComment,
+        senderId,
+        deliveryTargets,
+        task.companyId || undefined,
+        CommentInitiator.client,
+      )
     } catch (e) {
       console.error(e)
       throw new Error('Unable to resolve comment initiator as IU or Client')
