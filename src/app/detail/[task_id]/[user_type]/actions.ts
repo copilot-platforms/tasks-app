@@ -29,7 +29,6 @@ export const updateTaskDetail = async ({
       isArchived: payload.isArchived,
     }),
   })
-  revalidateTag('getOneTask')
 }
 
 /**
