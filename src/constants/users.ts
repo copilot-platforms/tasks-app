@@ -1,1 +1,1 @@
-export const MAX_FETCH_ASSIGNEE_COUNT = 10_000
+export const MAX_FETCH_ASSIGNEE_COUNT = 15_000
