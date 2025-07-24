@@ -150,7 +150,7 @@ export class CopilotAPI {
     return CompanyResponseSchema.parse(await this.copilot.retrieveCompany({ id }))
   }
 
-  async _getCompanies(args: CopilotListArgs = {}): Promise<CompaniesResponse> {
+  async _getCompanies(args: CopilotListArgs & { isPlaceholder?: boolean } = {}): Promise<CompaniesResponse> {
     console.info('CopilotAPI#_getCompanies', this.token)
     return CompaniesResponseSchema.parse(await this.copilot.listCompanies(args))
   }
