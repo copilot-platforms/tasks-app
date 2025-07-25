@@ -54,19 +54,22 @@ export class ActivityLogService extends BaseService {
           END;
     `
     const parsedActivityLogs = DBActivityLogArraySchema.parse(activityLogs)
-    const copilotService = new CopilotAPI(this.user.token)
+    const copilot = new CopilotAPI(this.user.token)
 
     let filteredActivityLogs = parsedActivityLogs
 
     if (this.user.role == AssigneeType.internalUser && this.user.internalUserId) {
-      const currentInternalUser = await copilotService.getInternalUser(this.user.internalUserId)
+      const currentInternalUser = await copilot.getInternalUser(this.user.internalUserId)
       if (currentInternalUser?.isClientAccessLimited) {
         filteredActivityLogs = await this.filterActivityLogsForLimitedAccess(
           parsedActivityLogs,
-          copilotService,
+          copilot,
           currentInternalUser,
         )
       }
+    }
+    if (this.user.clientId) {
+      filteredActivityLogs = await this.filterActivityLogsForClient(taskId, parsedActivityLogs, copilot)
     }
 
     const commentIds = filteredActivityLogs
@@ -127,13 +130,7 @@ export class ActivityLogService extends BaseService {
           throw new APIError(httpStatus.NOT_FOUND, `Error while finding comment with id ${payload.id}`)
         }
 
-        let replies = allReplies.filter((reply) => reply.parentId === comment.id)
-
-        replies = replies
-          .map((comment) => ({
-            ...comment,
-          }))
-          .reverse()
+        const replies = allReplies.filter((reply) => reply.parentId === comment.id).reverse()
 
         return {
           ...payload,
@@ -149,6 +146,40 @@ export class ActivityLogService extends BaseService {
       default:
         return payload
     }
+  }
+
+  private async filterActivityLogsForClient(taskId: string, parsedActivityLogs: DBActivityLogArray, copilot: CopilotAPI) {
+    const task = await this.db.task.findFirstOrThrow({
+      where: { id: taskId, workspaceId: this.user.workspaceId },
+    })
+
+    // If task is a client task, then we only show activity logs authored by
+    // IUs, or self client
+    if (task.clientId) {
+      return parsedActivityLogs.filter(
+        (log) => log.userRole === AssigneeType.internalUser || log.userId === this.user.clientId,
+      )
+    }
+    // If task is a company task, then we only show activity logs authored by IU, or other clients
+    // within the same company
+    if (!task.clientId && task.companyId) {
+      const companyClients = (await copilot.getClients({ companyId: task.companyId }))?.data || []
+      return parsedActivityLogs.filter((log) => {
+        console.log(
+          log,
+          log.userRole === AssigneeType.internalUser,
+          log.userId === this.user.clientId,
+          companyClients.some((client) => client.id === log.userId),
+        )
+        return (
+          log.userRole === AssigneeType.internalUser ||
+          log.userId === this.user.clientId ||
+          companyClients.some((client) => client.id === log.userId)
+        )
+      })
+    }
+
+    return parsedActivityLogs
   }
 
   private async filterActivityLogsForLimitedAccess(
