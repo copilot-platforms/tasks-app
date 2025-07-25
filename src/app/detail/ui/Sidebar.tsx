@@ -112,7 +112,7 @@ export const Sidebar = ({
     return match ?? undefined
   }
 
-  if (!activeTask) return <SidebarSkeleton />
+  if (!activeTask || !isHydrated) return <SidebarSkeleton />
 
   const handleAssigneeChange = (inputValue: InputValue[]) => {
     const newUserIds = getSelectedUserIds(inputValue)
@@ -127,8 +127,6 @@ export const Sidebar = ({
       updateAssignee(newUserIds)
     }
   }
-
-  if (!activeTask || !isHydrated) return <SidebarSkeleton />
 
   if (!showSidebar) {
     return (
