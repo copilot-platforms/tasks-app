@@ -1,5 +1,6 @@
 import config from '@cmd/load-testing/load-testing.config.json'
-import LoadTester from '@cmd/load-testing/load-testing.service'
+import LoadTester from '@cmd/load-testing/load-testing-v2.service'
+import { AssigneeType } from '@prisma/client'
 
 /**
     Load testing script for Tasks App
@@ -18,21 +19,14 @@ export const run = async () => {
   }
 
   const loadTester = new LoadTester()
-
-  const individualClients = await loadTester.seedClients(config.individualClients)
-  const { companies, clients: companyClients } = await loadTester.seedCompanyClients(config.companies, config.companyClients)
-
-  await Promise.all([
-    loadTester.seedClientTasks(
-      individualClients.slice(0, config.countsToAssign.individualClients),
-      config.taskPerAssigneeType.individualClients,
-    ),
-    loadTester.seedCompanyTasks(companies.slice(0, config.countsToAssign.companies), config.taskPerAssigneeType.companies),
-    loadTester.seedClientTasks(
-      companyClients.slice(0, config.countsToAssign.companyClients),
-      config.taskPerAssigneeType.companyClients,
-    ),
-  ])
+  // seed companies
+  await loadTester.seedCompanies(200)
+  // seed clients without a company
+  await loadTester.seedClients(200)
+  // seed clients with a single company
+  await loadTester.seedClients(200, true)
+  // seed tasks
+  await loadTester.seedTasks(100, AssigneeType.client)
 }
 
 run()
