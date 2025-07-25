@@ -14,6 +14,7 @@ import { getAssigneeName } from '@/utils/assignee'
 import { isTaskCompleted } from '@/utils/isTaskCompleted'
 import { TaskMetaItems } from '@/components/atoms/TaskMetaItems'
 import store from '@/redux/store'
+import { useSubtaskCount } from '@/hooks/useSubtaskCount'
 
 const TaskCardContainer = styled(Stack)(({ theme }) => ({
   border: `1px solid ${theme.color.borders.border}`,
@@ -37,6 +38,8 @@ interface TaskCardProps {
 export const TaskCard = ({ task, href }: TaskCardProps) => {
   const { assignee, workflowStates, assigneeCache } = useSelector(selectTaskBoard)
 
+  const subtaskCount = useSubtaskCount(task.id)
+
   const [currentAssignee, setCurrentAssignee] = useState<IAssigneeCombined | undefined>(() => {
     return assigneeCache[task.id]
   })
@@ -45,9 +48,7 @@ export const TaskCard = ({ task, href }: TaskCardProps) => {
     if (assignee.length > 0) {
       const currentAssignee = assignee.find((el) => el.id === task.assigneeId)
       const finalAssignee = currentAssignee ?? NoAssignee
-      //@ts-expect-error  "type" property has mismatching types in between NoAssignee and IAssigneeCombined
       store.dispatch(setAssigneeCache({ key: task.id, value: finalAssignee }))
-      //@ts-expect-error  "type" property has mismatching types in between NoAssignee and IAssigneeCombined
       setCurrentAssignee(finalAssignee)
     }
   }, [assignee, task.id, task.assigneeId])
@@ -57,7 +58,7 @@ export const TaskCard = ({ task, href }: TaskCardProps) => {
       <Stack rowGap={1}>
         <Stack direction="row" justifyContent="space-between">
           <Stack direction="column" rowGap={'4px'}>
-            {(task.isArchived || task.subtaskCount > 0) && (
+            {(task.isArchived || subtaskCount > 0) && (
               <Stack direction="row" sx={{ display: 'flex', gap: '12px', flexShrink: 0, alignItems: 'center' }}>
                 <TaskMetaItems task={task} lineHeight="18px" />
               </Stack>

@@ -1,9 +1,10 @@
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
-import { MiniLoader } from '@/components/atoms/MiniLoader'
 import AttachmentLayout from '@/components/AttachmentLayout'
 import { ManageTemplatesEndOption } from '@/components/buttons/ManageTemplatesEndOptions'
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
+import { SelectorButton } from '@/components/buttons/SelectorButton'
+import { CopilotPopSelector } from '@/components/inputs/CopilotSelector'
 import { DatePickerComponent } from '@/components/inputs/DatePickerComponent'
 import Selector, { SelectorType } from '@/components/inputs/Selector'
 import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
@@ -15,33 +16,25 @@ import { AssigneePlaceholderSmall, CloseIcon, TemplateIconSm } from '@/icons'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import {
   selectCreateTask,
-  setCreateTaskFields,
-  setErrors,
   setAppliedDescription,
   setAppliedTitle,
+  setCreateTaskFields,
+  setErrors,
 } from '@/redux/features/createTaskSlice'
-import { selectTaskBoard, setAssigneeList } from '@/redux/features/taskBoardSlice'
+import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { selectCreateTemplate } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import {
-  CreateTaskErrors,
-  FilterOptions,
-  HandleSelectorComponentModes,
-  IAssigneeCombined,
-  ITemplate,
-} from '@/types/interfaces'
-import { getAssigneeName } from '@/utils/assignee'
+import { CreateTaskErrors, FilterOptions, IAssigneeCombined, ITemplate, UserIds } from '@/types/interfaces'
+import { checkEmptyAssignee, emptyAssignee, getAssigneeName } from '@/utils/assignee'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
-import { NoAssigneeExtraOptions } from '@/utils/noAssignee'
+import { getSelectedUserIds, getSelectorAssignee, getSelectorAssigneeFromFilterOptions } from '@/utils/selector'
 import { trimAllTags } from '@/utils/trimTags'
-import { setDebouncedFilteredAssignees } from '@/utils/users'
 import { Box, Stack, Typography, styled } from '@mui/material'
 import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
-import { z } from 'zod'
 
 interface NewTaskFormInputsProps {
   isEditorReadonly?: boolean
@@ -54,11 +47,8 @@ interface NewTaskFormProps {
 }
 
 export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => {
-  const { activeWorkflowStateId, errors } = useSelector(selectCreateTask)
-  const { workflowStates, assignee, token, filterOptions, previewMode } = useSelector(selectTaskBoard)
-  const [filteredAssignees, setFilteredAssignees] = useState(assignee)
-  const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
-  const [loading, setLoading] = useState(false)
+  const { activeWorkflowStateId } = useSelector(selectCreateTask)
+  const { workflowStates, assignee, previewMode, filterOptions } = useSelector(selectTaskBoard)
 
   const todoWorkflowState = workflowStates.find((el) => el.key === 'todo') || workflowStates[0]
   const defaultWorkflowState = activeWorkflowStateId
@@ -69,28 +59,33 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
     item: defaultWorkflowState,
     type: SelectorType.STATUS_SELECTOR,
   })
-  const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
-    item:
-      assignee.find(
-        (item) => item.id == filterOptions[FilterOptions.ASSIGNEE] || item.id == filterOptions[FilterOptions.TYPE],
-      ) ?? null,
-    type: SelectorType.ASSIGNEE_SELECTOR,
-    mode: HandleSelectorComponentModes.CreateTaskFieldUpdate,
-  })
 
   const statusValue = _statusValue as WorkflowStateResponse //typecasting
-  const assigneeValue = _assigneeValue as IAssigneeCombined //typecasting
-  // use temp state pattern so that we don't fall into an infinite loop of assigneeValue set -> trigger -> set
-  const [tempAssignee, setTempAssignee] = useState<IAssigneeCombined | null>(assigneeValue)
-
-  const [inputStatusValue, setInputStatusValue] = useState('')
 
   const [isEditorReadonly, setIsEditorReadonly] = useState(false)
 
-  const handleCreateWithAssignee = () => {
-    if (!!tempAssignee?.id && !assignee.find((assignee) => assignee.id === tempAssignee.id)) {
-      store.dispatch(setAssigneeList([...assignee, tempAssignee]))
+  const [assigneeValue, setAssigneeValue] = useState<IAssigneeCombined | null>(
+    getSelectorAssigneeFromFilterOptions(
+      assignee,
+      filterOptions[FilterOptions.ASSIGNEE],
+      filterOptions[FilterOptions.TYPE],
+    ) ?? null,
+  )
+  useEffect(() => {
+    if (!checkEmptyAssignee(filterOptions[FilterOptions.ASSIGNEE])) {
+      store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: filterOptions[FilterOptions.ASSIGNEE] }))
+    } else if (filterOptions[FilterOptions.TYPE]) {
+      if (!assigneeValue) return
+      const correctedObject = getAssigneeTypeCorrected(assigneeValue)
+      if (!correctedObject) return
+      const newUserIds = getSelectedUserIds([{ ...assigneeValue, object: correctedObject }])
+      store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: newUserIds }))
+    } else {
+      store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: emptyAssignee }))
     }
+  }, []) //if assigneeValue has an intial value before selection (when my tasks, filter by assignee filter is applied), then update the task creation field for userIds.
+
+  const handleCreateWithAssignee = () => {
     handleCreate()
   }
 
@@ -125,10 +120,10 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
 
       <AppMargin size={SizeofAppMargin.MEDIUM} py="16px">
         <NewTaskFormInputs isEditorReadonly={isEditorReadonly} />
-
         <Stack direction="row" columnGap={3} position="relative" sx={{ flexWrap: 'wrap' }}>
           <Box sx={{ padding: 0.1 }}>
             <WorkflowStateSelector
+              padding="4px"
               option={workflowStates}
               value={statusValue}
               getValue={(value) => {
@@ -137,90 +132,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
               }}
             />
           </Box>
-          <Stack alignSelf="flex-start">
-            <Selector
-              disabled={!!previewMode}
-              inputStatusValue={inputStatusValue}
-              setInputStatusValue={setInputStatusValue}
-              placeholder="Set assignee"
-              getSelectedValue={(_newValue) => {
-                store.dispatch(setErrors({ key: CreateTaskErrors.ASSIGNEE, value: false }))
-                const newValue = _newValue as IAssigneeCombined
-                setTempAssignee(newValue)
-                updateAssigneeValue(newValue)
-                store.dispatch(
-                  setCreateTaskFields({
-                    targetField: 'assigneeType',
-                    value: getAssigneeTypeCorrected(newValue),
-                  }),
-                )
-                store.dispatch(setCreateTaskFields({ targetField: 'assigneeId', value: newValue?.id }))
-              }}
-              startIcon={tempAssignee ? <CopilotAvatar currentAssignee={tempAssignee} /> : <AssigneePlaceholderSmall />}
-              onClick={() => {
-                if (activeDebounceTimeoutId) {
-                  clearTimeout(activeDebounceTimeoutId)
-                }
-                setLoading(true)
-                setFilteredAssignees(assignee)
-                setLoading(false)
-              }}
-              options={loading ? [] : filteredAssignees}
-              value={tempAssignee}
-              extraOption={NoAssigneeExtraOptions}
-              extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
-                return (
-                  <>
-                    {/* //****Disabling re-assignment completely for now*** */}
-                    {/* <ExtraOptionRendererAssignee
-                      props={props}
-                      onClick={(e) => {
-                        updateAssigneeValue({ id: '', name: 'No assignee' })
-                        setAnchorEl(anchorEl ? null : e.currentTarget)
-                        store.dispatch(setCreateTaskFields({ targetField: 'assigneeType', value: null }))
-                        store.dispatch(setCreateTaskFields({ targetField: 'assigneeId', value: null }))
-                      }}
-                    /> */}
-                    {loading && <MiniLoader />}
-                  </>
-                )
-              }}
-              selectorType={SelectorType.ASSIGNEE_SELECTOR}
-              handleInputChange={async (newInputValue: string) => {
-                if (!newInputValue) {
-                  setFilteredAssignees(assignee)
-                  return
-                }
-                setDebouncedFilteredAssignees(
-                  activeDebounceTimeoutId,
-                  setActiveDebounceTimeoutId,
-                  setLoading,
-                  setFilteredAssignees,
-                  z.string().parse(token),
-                  newInputValue,
-                )
-              }}
-              filterOption={(x: unknown) => x}
-              buttonHeight="auto"
-              buttonContent={
-                <Typography
-                  variant="bodySm"
-                  sx={{
-                    color: (theme) => (tempAssignee ? theme.color.gray[600] : theme.color.text.textDisabled),
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
 
-                    overflow: 'hidden',
-                    fontSize: '12px',
-                    maxWidth: { xs: '60px', sm: '100px' },
-                  }}
-                >
-                  {getAssigneeName(tempAssignee as IAssigneeCombined, 'Assignee')}
-                </Typography>
-              }
-              error={errors.assignee}
-            />
-          </Stack>
           <Stack alignSelf="flex-start">
             <Box
               sx={{
@@ -231,10 +143,49 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
               }}
             >
               <DatePickerComponent
+                padding="4px"
                 getDate={(value) => store.dispatch(setCreateTaskFields({ targetField: 'dueDate', value: value as string }))}
                 variant="button"
               />
             </Box>
+          </Stack>
+          <Stack alignSelf="flex-start">
+            <CopilotPopSelector
+              disabled={!!previewMode}
+              name="Set assignee"
+              initialValue={assigneeValue || undefined}
+              onChange={(inputValue) => {
+                const newUserIds = getSelectedUserIds(inputValue)
+                const selectedAssignee = getSelectorAssignee(assignee, inputValue)
+                setAssigneeValue(selectedAssignee || null)
+                store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: newUserIds }))
+              }}
+              buttonContent={
+                <SelectorButton
+                  disabled={!!previewMode}
+                  startIcon={
+                    assigneeValue ? <CopilotAvatar currentAssignee={assigneeValue} /> : <AssigneePlaceholderSmall />
+                  }
+                  height="30px"
+                  padding="4px 4px 4px 8px"
+                  buttonContent={
+                    <Typography
+                      variant="bodySm"
+                      sx={{
+                        color: (theme) => (assigneeValue ? theme.color.gray[600] : theme.color.text.textDisabled),
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        fontSize: '12px',
+                        maxWidth: { xs: '60px', sm: '100px' },
+                      }}
+                    >
+                      {getAssigneeName(assigneeValue as IAssigneeCombined, 'Assignee')}
+                    </Typography>
+                  }
+                />
+              }
+            />
           </Stack>
         </Stack>
       </AppMargin>
@@ -311,7 +262,7 @@ const NewTaskFooter = ({
 }: NewTaskFormProps & { updateWorkflowStatusValue: (value: unknown) => void }) => {
   const [inputStatusValue, setInputStatusValue] = useState('')
 
-  const { title, assigneeId, showModal, description, appliedDescription, appliedTitle } = useSelector(selectCreateTask)
+  const { title, showModal, description, appliedDescription, appliedTitle } = useSelector(selectCreateTask)
   const { token, workflowStates } = useSelector(selectTaskBoard)
   const { templates } = useSelector(selectCreateTemplate)
 
@@ -373,7 +324,17 @@ const NewTaskFooter = ({
       fetchTemplate()
       return controller
     },
-    [token, setIsEditorReadonly, workflowStates, title, description, appliedDescription, appliedTitle],
+    [
+      token,
+      setIsEditorReadonly,
+      workflowStates,
+      title,
+      description,
+      appliedDescription,
+      appliedTitle,
+      showModal,
+      updateWorkflowStatusValue,
+    ],
   )
 
   const applyTemplateHandler = (newValue: ITemplate) => {
@@ -401,7 +362,7 @@ const NewTaskFooter = ({
             placeholder="Search..."
             value={templateValue}
             selectorType={SelectorType.TEMPLATE_SELECTOR}
-            endOption={<ManageTemplatesEndOption />}
+            endOption={<ManageTemplatesEndOption hasTemplates={!!templates?.length} />}
             endOptionHref={`/manage-templates?token=${token}`}
             listAutoHeightMax="147px"
             buttonContent={
@@ -433,11 +394,8 @@ const NewTaskFooter = ({
               />
               <PrimaryBtn
                 handleClick={() => {
-                  const hasTitleError = !title.trim()
-                  const hasAssigneeError = !assigneeId
-                  if (hasTitleError || hasAssigneeError) {
-                    hasTitleError && store.dispatch(setErrors({ key: CreateTaskErrors.TITLE, value: true }))
-                    hasAssigneeError && store.dispatch(setErrors({ key: CreateTaskErrors.ASSIGNEE, value: true }))
+                  if (!title.trim()) {
+                    store.dispatch(setErrors({ key: CreateTaskErrors.TITLE, value: true }))
                   } else {
                     handleCreate()
                   }

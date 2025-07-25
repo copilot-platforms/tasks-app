@@ -33,6 +33,7 @@ import { RealTime } from '@/hoc/RealTime'
 import { WorkspaceResponse } from '@/types/common'
 import { AncestorTaskResponse, SubTaskStatusResponse, TaskResponse } from '@/types/dto/tasks.dto'
 import { UserType } from '@/types/interfaces'
+import { UserIdsType } from '@/utils/assignee'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import EscapeHandler from '@/utils/escapeHandler'
 import { getPreviewMode } from '@/utils/previewMode'
@@ -196,7 +197,6 @@ export default async function TaskDetailPage({
                   userType={params.user_type}
                   isPreview={!!getPreviewMode(tokenPayload)}
                   task={task}
-                  clientCompanyId={task.assigneeType !== 'internalUser' ? task.assigneeId : undefined}
                 />
                 <Sidebar
                   task_id={task_id}
@@ -208,9 +208,9 @@ export default async function TaskDetailPage({
                       ? await clientUpdateTask(token, task_id, workflowState.id)
                       : await updateWorkflowStateIdOfTask(token, task_id, workflowState?.id)
                   }}
-                  updateAssignee={async (assigneeType, assigneeId) => {
+                  updateAssignee={async ({ internalUserId, clientId, companyId }: UserIdsType) => {
                     'use server'
-                    await updateAssignee(token, task_id, assigneeType, assigneeId)
+                    await updateAssignee(token, task_id, internalUserId, clientId, companyId)
                   }}
                   updateTask={async (payload) => {
                     'use server'

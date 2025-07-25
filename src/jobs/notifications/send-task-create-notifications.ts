@@ -12,7 +12,7 @@ export const sendTaskCreateNotifications = task({
   id: 'send-task-create-notifications',
   machine: { preset: 'medium-1x' },
   queue: {
-    concurrencyLimit: 25,
+    concurrencyLimit: 5,
   },
 
   run: async (payload: CreateTaskNotificationPayload, { ctx }) => {

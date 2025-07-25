@@ -15,7 +15,7 @@ export const sendCommentCreateNotifications = task({
   id: 'send-comment-create-notifications',
   machine: { preset: 'medium-1x' },
   queue: {
-    concurrencyLimit: 25,
+    concurrencyLimit: 5,
   },
 
   run: async (payload: CommentCreateNotificationPayload, { ctx }) => {

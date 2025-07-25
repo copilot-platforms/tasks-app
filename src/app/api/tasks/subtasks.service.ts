@@ -4,13 +4,13 @@ import { buildLtreeNodeString } from '@/utils/ltree'
 import APIError from '@api/core/exceptions/api'
 import { BaseService } from '@api/core/services/base.service'
 import { UserRole } from '@api/core/types/user'
-import { AssigneeType } from '@prisma/client'
 import httpStatus from 'http-status'
 import { z } from 'zod'
 
 interface Assignable {
-  assigneeId: string
-  assigneeType: AssigneeType
+  internalUserId: string | null
+  clientId: string | null
+  companyId: string | null
 }
 
 export class SubtaskService extends BaseService {
@@ -99,27 +99,35 @@ export class SubtaskService extends BaseService {
 
       // If user is an internal user with client access limitations, they can only access tasks assigned to clients or company they have access to
       const clients = await copilot.getClients({ limit: MAX_FETCH_ASSIGNEE_COUNT })
-      let companyId: string
+      let companyIds: string[]
       latestAccessibleTaskIndex = tasks.findLastIndex((task) => {
-        if (task.assigneeType === AssigneeType.internalUser) return false
+        if (task.internalUserId) return false
         // Now find the last index of the task that is inaccessible to the user.
         // We can them return all tasks following this inacessible task
-        else if (task.assigneeType === AssigneeType.client) {
-          const client = clients.data?.find((client) => client.id === task.assigneeId)
-          if (!client || !client.companyId) {
+        else if (task.clientId) {
+          const client = clients.data?.find((client) => client.id === task.clientId)
+          if (!client || !client.companyIds?.length) {
             return true
           }
-          companyId = z.string().parse(client?.companyId)
+          companyIds = z
+            .string()
+            .array()
+            .parse(client.companyIds)
+            .filter((id) => iu.companyAccessList?.includes(id))
         } else {
           // company
-          companyId = task.assigneeId
+          companyIds = task.companyId && iu.companyAccessList?.includes(task.companyId) ? [task.companyId] : []
         }
-        return !iu.companyAccessList?.includes(companyId)
+        return companyIds.length === 0
       })
     } else if (this.user.role === UserRole.Client) {
       // If user is a client, just check index of which task was last assigned to client
       latestAccessibleTaskIndex = tasks.findLastIndex(
-        (task) => task.assigneeId !== this.user.clientId && task.assigneeId !== this.user.companyId,
+        (task) =>
+          !(
+            (task.clientId === this.user.clientId && task.companyId === this.user.companyId) ||
+            (task.clientId === null && task.companyId === this.user.companyId)
+          ),
       )
     } else {
       throw new APIError(httpStatus.BAD_REQUEST, 'Failed to parse user role from token')

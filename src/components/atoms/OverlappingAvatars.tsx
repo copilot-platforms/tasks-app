@@ -5,7 +5,7 @@ import { getAssigneeName } from '@/utils/assignee'
 import { Avatar, SxProps, Theme } from '@mui/material'
 
 type OverlappingAvatarsProps = {
-  assignees: (IAssigneeCombined | null)[]
+  assignees: (IAssigneeCombined | undefined)[]
   width?: string
   height?: string
   fontSize?: string
@@ -40,7 +40,7 @@ export const OverlappingAvatars: React.FC<OverlappingAvatarsProps> = ({
     },
   }
 
-  const renderAvatar = (assignee: IAssigneeCombined | null, index: number) => {
+  const renderAvatar = (assignee: IAssigneeCombined | undefined, index: number) => {
     const avatarVariant: 'circular' | 'rounded' | 'square' = assignee?.type === 'companies' ? 'rounded' : 'circular'
 
     if (!assignee || assignee?.name || assignee?.givenName === 'No assignee') {
