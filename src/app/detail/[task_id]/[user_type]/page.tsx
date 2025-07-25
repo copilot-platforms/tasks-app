@@ -190,36 +190,33 @@ export default async function TaskDetailPage({
             </CustomScrollBar>
           </ToggleController>
           <Box>
-            <Suspense fallback={<SidebarSkeleton />}>
-              <WorkflowStateFetcher token={token} task={task}>
-                <AssigneeFetcher
-                  token={token}
-                  userType={params.user_type}
-                  isPreview={!!getPreviewMode(tokenPayload)}
-                  task={task}
-                />
-                <Sidebar
-                  task_id={task_id}
-                  selectedAssigneeId={task?.assigneeId}
-                  selectedWorkflowState={task?.workflowState}
-                  updateWorkflowState={async (workflowState) => {
-                    'use server'
-                    params.user_type === UserType.CLIENT_USER && !getPreviewMode(tokenPayload)
-                      ? await clientUpdateTask(token, task_id, workflowState.id)
-                      : await updateWorkflowStateIdOfTask(token, task_id, workflowState?.id)
-                  }}
-                  updateAssignee={async ({ internalUserId, clientId, companyId }: UserIdsType) => {
-                    'use server'
-                    await updateAssignee(token, task_id, internalUserId, clientId, companyId)
-                  }}
-                  updateTask={async (payload) => {
-                    'use server'
-                    await updateTaskDetail({ token, taskId: task_id, payload })
-                  }}
-                  disabled={params.user_type === UserType.CLIENT_USER}
-                />
-              </WorkflowStateFetcher>
-            </Suspense>
+            <AssigneeFetcher
+              token={token}
+              userType={params.user_type}
+              isPreview={!!getPreviewMode(tokenPayload)}
+              task={task}
+            />
+            <WorkflowStateFetcher token={token} task={task} />
+            <Sidebar
+              task_id={task_id}
+              selectedAssigneeId={task?.assigneeId}
+              selectedWorkflowState={task?.workflowState}
+              updateWorkflowState={async (workflowState) => {
+                'use server'
+                params.user_type === UserType.CLIENT_USER && !getPreviewMode(tokenPayload)
+                  ? await clientUpdateTask(token, task_id, workflowState.id)
+                  : await updateWorkflowStateIdOfTask(token, task_id, workflowState?.id)
+              }}
+              updateAssignee={async ({ internalUserId, clientId, companyId }: UserIdsType) => {
+                'use server'
+                await updateAssignee(token, task_id, internalUserId, clientId, companyId)
+              }}
+              updateTask={async (payload) => {
+                'use server'
+                await updateTaskDetail({ token, taskId: task_id, payload })
+              }}
+              disabled={params.user_type === UserType.CLIENT_USER}
+            />
           </Box>
         </ResponsiveStack>
       </RealTime>
