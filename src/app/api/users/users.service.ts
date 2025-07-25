@@ -34,11 +34,13 @@ class UsersService extends BaseService {
     // NOTE: Get currentInternalUser with a separate CopilotAPI call. This adds a
     // Copilot call, but saves us from having to `.find` in a potentially large array
 
+    const listArgs = { limit: MAX_FETCH_ASSIGNEE_COUNT, nextToken }
+
     const [currentInternalUser, ius, clients, companies, currentWorkspace] = await Promise.all([
       this.copilot.getInternalUser(user.internalUserId!),
-      this.copilot.getInternalUsers({ limit: MAX_FETCH_ASSIGNEE_COUNT, nextToken }),
-      this.copilot.getClients({ limit: MAX_FETCH_ASSIGNEE_COUNT, nextToken }),
-      this.copilot.getCompanies({ limit: MAX_FETCH_ASSIGNEE_COUNT, nextToken, isPlaceholder: false }),
+      this.copilot.getInternalUsers(listArgs),
+      this.copilot.getClients(listArgs),
+      this.copilot.getCompanies({ ...listArgs, isPlaceholder: false }),
       this.copilot.getWorkspace(),
     ])
 
