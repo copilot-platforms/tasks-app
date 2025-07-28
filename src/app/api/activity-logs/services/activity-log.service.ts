@@ -1,5 +1,5 @@
 import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
-import { ClientsResponse, CompaniesResponse, CopilotListArgs, InternalUsers, InternalUsersResponse } from '@/types/common'
+import { CopilotListArgs, InternalUsers } from '@/types/common'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { signMediaForComments } from '@/utils/signedUrlReplacer'
 import {
@@ -13,7 +13,7 @@ import { CommentService } from '@api/comment/comment.service'
 import APIError from '@api/core/exceptions/api'
 import User from '@api/core/models/User.model'
 import { BaseService } from '@api/core/services/base.service'
-import { ActivityType, AssigneeType, Comment, CommentInitiator } from '@prisma/client'
+import { ActivityType, AssigneeType, Comment } from '@prisma/client'
 import httpStatus from 'http-status'
 import { z } from 'zod'
 
@@ -155,27 +155,39 @@ export class ActivityLogService extends BaseService {
 
     // If task is a client task, then we only show activity logs authored by
     // IUs, or self client
+    const isIuLog = (log: { userRole: AssigneeType }) => log.userRole === AssigneeType.internalUser
+
+    // Check if log is from the current company's client, do not include logs from the same client but different company
+    const isCurrentCompanysClientLog = (log: { userId: string; userCompanyId?: string | null }) => {
+      const isCorrectClient = log.userId === this.user.clientId
+      // The reason we do !log.userCompanyId is because there are a lot of legacy logs that don't have userCompanyId
+      const isCorrectCompany = !log.userCompanyId || log.userCompanyId === this.user.companyId
+      return isCorrectClient && isCorrectCompany
+    }
+
+    const isCompanyMemberLog = (
+      companyClients: { id: string; companyId: string }[],
+      log: { userId: string; userCompanyId?: string | null },
+    ) => {
+      const isCorrectClient = companyClients.some((client) => client.id === log.userId)
+      // Backwards compatibility for legacy logs that don't have userCompanyId
+      const isCorrectCompany = !log.userCompanyId || log.userCompanyId === this.user.companyId
+      return isCorrectClient && isCorrectCompany
+    }
+
     if (task.clientId) {
-      return parsedActivityLogs.filter(
-        (log) => log.userRole === AssigneeType.internalUser || log.userId === this.user.clientId,
-      )
+      return parsedActivityLogs.filter((log) => isIuLog(log) || isCurrentCompanysClientLog(log))
     }
     // If task is a company task, then we only show activity logs authored by IU, or other clients
     // within the same company
     if (!task.clientId && task.companyId) {
       const companyClients = (await copilot.getClients({ companyId: task.companyId }))?.data || []
       return parsedActivityLogs.filter((log) => {
-        console.log(
-          log,
-          log.userRole === AssigneeType.internalUser,
-          log.userId === this.user.clientId,
-          companyClients.some((client) => client.id === log.userId),
-        )
-        return (
-          log.userRole === AssigneeType.internalUser ||
-          log.userId === this.user.clientId ||
-          companyClients.some((client) => client.id === log.userId)
-        )
+        console.log('\n\n\n\n\n\n')
+        console.log(log)
+        console.log(isIuLog(log), isCurrentCompanysClientLog(log), isCompanyMemberLog(companyClients, log))
+        console.log('\n\n\n\n\n\n')
+        return isIuLog(log) || isCurrentCompanysClientLog(log) || isCompanyMemberLog(companyClients, log)
       })
     }
 

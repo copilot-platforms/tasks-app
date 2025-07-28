@@ -27,6 +27,7 @@ export const DBActivityLogSchema = z.object({
   details: DBActivityLogDetailsSchema,
   taskId: z.string().uuid(),
   userId: z.string().uuid(),
+  userCompanyId: z.string().uuid().nullable(),
   userRole: z.nativeEnum(AssigneeType),
   workspaceId: z.string(),
   createdAt: z.date(),
