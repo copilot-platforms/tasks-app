@@ -1,6 +1,7 @@
+import { Token } from '@/types/common'
 import { TruncateMaxNumber } from '@/types/constants'
 import { TaskResponse } from '@/types/dto/tasks.dto'
-import { IAssigneeCombined, ISelectorOption } from '@/types/interfaces'
+import { IAssigneeCombined, ISelectorOption, UserType } from '@/types/interfaces'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { truncateText } from '@/utils/truncateText'
 import { AssigneeType } from '@prisma/client'
@@ -72,4 +73,11 @@ export const emptyAssignee: UserIdsType = {
 
 export const checkEmptyAssignee = (userIds: UserIdsType) => {
   return deepEqual(emptyAssignee, userIds)
+}
+
+export const getAssigneeCacheLookupKey = (userType: string, tokenPayload: Token): string => {
+  if (userType === UserType.INTERNAL_USER) {
+    return tokenPayload.internalUserId!
+  }
+  return `${tokenPayload.clientId}.${tokenPayload.companyId}`
 }
