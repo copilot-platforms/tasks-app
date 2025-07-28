@@ -183,10 +183,6 @@ export class ActivityLogService extends BaseService {
     if (!task.clientId && task.companyId) {
       const companyClients = (await copilot.getClients({ companyId: task.companyId }))?.data || []
       return parsedActivityLogs.filter((log) => {
-        console.log('\n\n\n\n\n\n')
-        console.log(log)
-        console.log(isIuLog(log), isCurrentCompanysClientLog(log), isCompanyMemberLog(companyClients, log))
-        console.log('\n\n\n\n\n\n')
         return isIuLog(log) || isCurrentCompanysClientLog(log) || isCompanyMemberLog(companyClients, log)
       })
     }
