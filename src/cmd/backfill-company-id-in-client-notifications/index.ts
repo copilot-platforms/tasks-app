@@ -80,7 +80,7 @@ const updateClientNotifications = async (
   return { failedClientNotifications }
 }
 
-const run = async () => {
+export const backfillCompanyIdInClientNotifications = async () => {
   console.info(`backfill-company-id#run | Using clients endpoint:`, COPILOT_CLIENTS_ENDPOINT)
 
   const db = DBClient.getInstance()
@@ -112,4 +112,4 @@ const run = async () => {
   console.info(`Failed update on clientNotifications (${failedClientNotifications.length})`, failedClientNotifications)
 }
 
-run()
+backfillCompanyIdInClientNotifications()
