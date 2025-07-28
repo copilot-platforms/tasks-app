@@ -34,22 +34,32 @@ export class TasksActivityLogger extends BaseService {
 
   async logTaskUpdated(prevTask: Task & { workflowState: WorkflowState }) {
     const tasksService = new TasksService(this.user)
+    let shouldUpdateLastActivityLog = false
+    const setUpdate = () => (shouldUpdateLastActivityLog = true)
     if (this.task.assigneeId !== prevTask.assigneeId) {
       await this.logTaskAssigneeUpdated(prevTask)
+      setUpdate()
     }
     if (this.task.workflowStateId !== prevTask?.workflowStateId) {
       await this.logWorkflowStateUpdated(prevTask)
+      setUpdate()
     }
     if (this.task.isArchived !== prevTask.isArchived) {
       await this.logArchiveStateUpdated(prevTask)
+      setUpdate()
     }
     if (this.task.dueDate !== prevTask.dueDate) {
       await this.logDueDateChanged(prevTask)
+      setUpdate()
     }
     if (this.task.title.trim() !== prevTask.title.trim()) {
       await this.logTitleUpdated(prevTask)
+      setUpdate()
     }
-    await tasksService.setNewLastActivityLogUpdated(this.task.id)
+
+    if (shouldUpdateLastActivityLog) {
+      await tasksService.setNewLastActivityLogUpdated(this.task.id)
+    }
   }
 
   private async logWorkflowStateUpdated(prevTask: Task & { workflowState: WorkflowState }) {

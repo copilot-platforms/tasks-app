@@ -655,6 +655,7 @@ export class TasksService extends BaseService {
   async setNewLastActivityLogUpdated(taskId: string) {
     // This shouldn't crash our app, just in case
     try {
+      console.info('TasksService#setNewLastActivityLogUpdated:: Updating lastActivityLogUpdated for task', taskId)
       await this.db.task.update({
         where: { id: taskId, workspaceId: this.user.workspaceId },
         data: {
