@@ -38,9 +38,9 @@ import { CopilotAPI } from '@/utils/CopilotAPI'
 import EscapeHandler from '@/utils/escapeHandler'
 import { getPreviewMode } from '@/utils/previewMode'
 import { Box, Stack } from '@mui/material'
-import { Suspense } from 'react'
 import { z } from 'zod'
 import { fetchWithErrorHandler } from '@/app/_fetchers/fetchWithErrorHandler'
+import { AssigneeCacheGetter } from '@/app/_cache/AssigneeCacheGetter'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const data = await fetchWithErrorHandler<{ task: TaskResponse }>(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
@@ -190,11 +190,19 @@ export default async function TaskDetailPage({
             </CustomScrollBar>
           </ToggleController>
           <Box>
+            <AssigneeCacheGetter
+              lookupKey={
+                user_type === UserType.INTERNAL_USER
+                  ? tokenPayload.internalUserId!
+                  : `${tokenPayload.clientId}.${tokenPayload.companyId}`
+              }
+            />
             <AssigneeFetcher
               token={token}
               userType={params.user_type}
               isPreview={!!getPreviewMode(tokenPayload)}
               task={task}
+              tokenPayload={tokenPayload}
             />
             <WorkflowStateFetcher token={token} task={task} />
             <Sidebar
