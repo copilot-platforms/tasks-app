@@ -1,7 +1,5 @@
-import config from '@cmd/load-testing/load-testing.config.json'
-import LoadTester from '@cmd/load-testing/load-testing.service'
-
 /**
+ * @deprecated - Deprecated in favor of load-testing-v2 service
     Load testing script for Tasks App
     Add a `LOAD_TESTING_COPILOT_TOKEN` env var with the corresponding workspace's IU token, and let it work its magic.
 
@@ -11,6 +9,10 @@ import LoadTester from '@cmd/load-testing/load-testing.service'
       - 5000 clients / companies
       - 2000 tasks
 */
+
+import config from '@cmd/load-testing/load-testing.config.json'
+import LoadTester from '@cmd/load-testing/load-testing.service'
+
 export const run = async () => {
   if (process.env.VERCEL_ENV === 'production') {
     console.error("It's a bad idea to run this in prod")
