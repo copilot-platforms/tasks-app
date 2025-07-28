@@ -275,73 +275,81 @@ export const Sidebar = ({
           <StyledText variant="md" minWidth="80px">
             Status
           </StyledText>
-          <Box
-            sx={{
-              ':hover': {
-                bgcolor: (theme) => theme.color.background.bgCallout,
-              },
-              padding: '4px',
-              borderRadius: '4px',
-              width: 'fit-content',
-            }}
-          >
-            <WorkflowStateSelector
-              option={workflowStates}
-              value={statusValue}
-              getValue={(value) => {
-                updateStatusValue(value)
-                updateWorkflowState(value)
+          {workflowStates.length > 0 && statusValue ? ( // show skelete if statusValue and workflow state list is empty
+            <Box
+              sx={{
+                ':hover': {
+                  bgcolor: (theme) => theme.color.background.bgCallout,
+                },
+                padding: '4px',
+                borderRadius: '4px',
+                width: 'fit-content',
               }}
-              disabled={workflowDisabled}
-              variant={'normal'}
-              responsiveNoHide
-            />
-          </Box>
+            >
+              <WorkflowStateSelector
+                option={workflowStates}
+                value={statusValue}
+                getValue={(value) => {
+                  updateStatusValue(value)
+                  updateWorkflowState(value)
+                }}
+                disabled={workflowDisabled}
+                variant={'normal'}
+                responsiveNoHide
+              />
+            </Box>
+          ) : (
+            <SidebarElementSkeleton />
+          )}
         </Stack>
         <Stack direction="row" m="8px 0px" alignItems="center" columnGap="10px">
           <StyledText variant="md" minWidth="80px">
             Assignee
           </StyledText>
-          <Box
-            sx={{
-              ':hover': {
-                bgcolor: (theme) => (disabled ? 'none' : theme.color.background.bgCallout),
-              },
-              padding: '4px',
-              borderRadius: '4px',
-              width: 'fit-content',
-            }}
-          >
-            <CopilotPopSelector
-              name="Set assignee"
-              onChange={handleAssigneeChange}
-              disabled={disabled}
-              initialValue={assigneeValue}
-              buttonContent={
-                <SelectorButton
-                  disabled={disabled}
-                  padding="4px 8px"
-                  startIcon={<CopilotAvatar currentAssignee={assigneeValue} />}
-                  outlined={true}
-                  buttonContent={
-                    <Typography
-                      variant="md"
-                      lineHeight="22px"
-                      sx={{
-                        color: (theme) => theme.color.gray[600],
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        maxWidth: '150px',
-                      }}
-                    >
-                      {assigneeValue?.name == 'No assignee' ? 'Unassigned' : getAssigneeName(assigneeValue, 'Unassigned')}
-                    </Typography>
-                  }
-                />
-              }
-            />
-          </Box>
+          {assignee.length > 0 ? ( // show skeleton if assignee list is empty
+            <Box
+              sx={{
+                ':hover': {
+                  bgcolor: (theme) => (disabled ? 'none' : theme.color.background.bgCallout),
+                },
+                padding: '4px',
+                borderRadius: '4px',
+                width: 'fit-content',
+              }}
+            >
+              <CopilotPopSelector
+                name="Set assignee"
+                onChange={handleAssigneeChange}
+                disabled={disabled}
+                initialValue={assigneeValue}
+                buttonContent={
+                  <SelectorButton
+                    disabled={disabled}
+                    padding="4px 8px"
+                    startIcon={<CopilotAvatar currentAssignee={assigneeValue} />}
+                    outlined={true}
+                    buttonContent={
+                      <Typography
+                        variant="md"
+                        lineHeight="22px"
+                        sx={{
+                          color: (theme) => theme.color.gray[600],
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          maxWidth: '150px',
+                        }}
+                      >
+                        {assigneeValue?.name == 'No assignee' ? 'Unassigned' : getAssigneeName(assigneeValue, 'Unassigned')}
+                      </Typography>
+                    }
+                  />
+                }
+              />
+            </Box>
+          ) : (
+            <SidebarElementSkeleton />
+          )}
         </Stack>
         <Stack direction="row" m="8px 0px" alignItems="center" columnGap="10px" minWidth="fit-content">
           <StyledText variant="md" minWidth="80px">
@@ -482,6 +490,25 @@ export const SidebarSkeleton = () => {
           </Box>
         </Stack>
       </AppMargin>
+    </Box>
+  )
+}
+
+export const SidebarElementSkeleton = () => {
+  const windowWidth = useWindowWidth()
+  const isMobile = windowWidth < 600 && windowWidth !== 0
+
+  return (
+    <Box
+      sx={{
+        height: `${isMobile ? '30px' : '38px'}`,
+        alignItems: 'center',
+        justifyContent: 'center',
+        display: 'flex',
+        width: 'fit-content',
+      }}
+    >
+      <Skeleton variant="rectangular" width={`${isMobile ? '140px' : '120px'}`} height={15} />
     </Box>
   )
 }
