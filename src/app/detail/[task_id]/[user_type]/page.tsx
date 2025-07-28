@@ -33,7 +33,7 @@ import { RealTime } from '@/hoc/RealTime'
 import { WorkspaceResponse } from '@/types/common'
 import { AncestorTaskResponse, SubTaskStatusResponse, TaskResponse } from '@/types/dto/tasks.dto'
 import { UserType } from '@/types/interfaces'
-import { UserIdsType } from '@/utils/assignee'
+import { getAssigneeCacheLookupKey, UserIdsType } from '@/utils/assignee'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import EscapeHandler from '@/utils/escapeHandler'
 import { getPreviewMode } from '@/utils/previewMode'
@@ -190,13 +190,7 @@ export default async function TaskDetailPage({
             </CustomScrollBar>
           </ToggleController>
           <Box>
-            <AssigneeCacheGetter
-              lookupKey={
-                user_type === UserType.INTERNAL_USER
-                  ? tokenPayload.internalUserId!
-                  : `${tokenPayload.clientId}.${tokenPayload.companyId}`
-              }
-            />
+            <AssigneeCacheGetter lookupKey={getAssigneeCacheLookupKey(user_type, tokenPayload)} />
             <AssigneeFetcher
               token={token}
               userType={params.user_type}
