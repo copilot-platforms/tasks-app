@@ -79,12 +79,17 @@ export const Sidebar = ({
       const currentTask = activeTask
       const currentWorkflowState = workflowStates.find((el) => el?.id === currentTask?.workflowStateId)
       updateStatusValue(currentWorkflowState)
-      //UPDATE THE VALUE OF ASSIGNEE IN COPILOT SELECTOR after it supports value prop. (REALTIME)
       setDueDate(currentTask?.dueDate)
+    }
+  }, [activeTask, workflowStates, updateStatusValue])
+
+  // effect depended on activeTask and assignee to update assigneeValue
+  useEffect(() => {
+    if (activeTask && assignee.length > 0) {
       const currentAssignee = getSelectorAssigneeFromTask(assignee, activeTask)
       setAssigneeValue(currentAssignee)
     }
-  }, [activeTask, workflowStates, assignee, updateStatusValue])
+  }, [assignee, activeTask])
 
   const windowWidth = useWindowWidth()
   const isMobile = windowWidth < 600 && windowWidth !== 0
