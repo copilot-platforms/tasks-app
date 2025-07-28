@@ -43,7 +43,8 @@
     "cmd:backfill-completed-tasks": "tsx ./src/cmd/backfill-completed-tasks",
     "cmd:backfill-new-user-ids": "tsx ./src/cmd/backfill-new-user-ids",
     "cmd:normalize-filterOptions-assignee": "tsx ./src/cmd/normalize-filterOptions-assignee",
-    "cmd:backfill-company-id-in-client-notifications": "tsx ./src/cmd/backfill-company-id-in-client-notifications"
+    "cmd:backfill-company-id-in-client-notifications": "tsx ./src/cmd/backfill-company-id-in-client-notifications",
+    "cmd:post-deploy-m15": "tsx ./src/cmd/post-deploy-m15"
   },
   "dependencies": {
     "@cyntler/react-doc-viewer": "^1.17.0",
