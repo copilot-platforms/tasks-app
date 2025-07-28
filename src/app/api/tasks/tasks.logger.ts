@@ -29,7 +29,13 @@ export class TasksActivityLogger extends BaseService {
     this.activityLogger = new ActivityLogger({ taskId: this.task.id, user })
   }
 
-  async logNewTask(createdBy?: { userId: string; role: AssigneeType }) {
+  async logNewTask(createdBy?: {
+    userId: string
+    // We don't need to pass userCompanyId here because Clients currently cannot create tasks
+    // Remove this commented code if this feature is implemented in the future
+    // userCompanyId?: string
+    role: AssigneeType
+  }) {
     await this.logTaskCreated(createdBy)
   }
 
