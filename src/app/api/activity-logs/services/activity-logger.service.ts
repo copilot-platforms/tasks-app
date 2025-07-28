@@ -16,8 +16,10 @@ export class ActivityLogger extends BaseService {
   async log<ActivityLog extends keyof typeof SchemaByActivityType = keyof typeof SchemaByActivityType>(
     activityType: ActivityLog,
     payload: NonNullable<z.input<(typeof SchemaByActivityType)[ActivityLog]>>,
+    // Overrides inferring createdBy data from the user's token payload
     createdBy?: {
       userId: string
+      userCompanyId?: string
       role: AssigneeType
     },
   ) {
@@ -27,6 +29,7 @@ export class ActivityLogger extends BaseService {
         workspaceId: this.user.workspaceId,
         type: activityType,
         userId: createdBy?.userId ?? z.string().parse(this.user.internalUserId || this.user.clientId),
+        userCompanyId: createdBy?.userCompanyId || this.user.companyId,
         userRole: createdBy?.role ?? this.user.role,
         details: payload,
       },
