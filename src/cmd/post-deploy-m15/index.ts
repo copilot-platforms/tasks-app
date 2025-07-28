@@ -8,6 +8,8 @@ const run = async () => {
   console.info('⚒️ Running script to backfill companyId in ClientNotifications')
   await backfillCompanyIdInClientNotifications()
   console.info('🔥 Completed : backfill companyId in ClientNotifications')
+
+  //DO NOT FORGET to run trigger deploy action once milestone 15 has been promoted to production
 }
 
 run()
