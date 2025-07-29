@@ -1,6 +1,7 @@
 import { withRetry } from '@/app/api/core/utils/withRetry'
 import { copilotAPIKey as apiKey, APP_ID } from '@/config'
 import { API_DOMAIN } from '@/constants/domains'
+import { MAX_LIMIT_CLIENT_COUNT } from '@/constants/users'
 import {
   ClientRequest,
   ClientResponse,
@@ -126,7 +127,30 @@ export class CopilotAPI {
 
   async _getClients(args: CopilotListArgs & { companyId?: string } = {}) {
     console.info('CopilotAPI#_getClients', this.token)
-    return ClientsResponseSchema.parse(await this.copilot.listClients(args))
+    const maxLimit = MAX_LIMIT_CLIENT_COUNT
+    const requestedLimit = args.limit || maxLimit
+    let clients: ClientResponse[] = []
+    let nextToken: string | undefined = undefined
+
+    if (requestedLimit <= maxLimit) {
+      return ClientsResponseSchema.parse(await this.copilot.listClients(args))
+    }
+
+    //fetching client data in batches of MAX_LIMIT_CLIENT_COUNT instead of fetching it as a whole.
+    do {
+      const remaining = requestedLimit - clients.length
+      const fetchLimit = Math.min(maxLimit, remaining)
+      const response = await this.copilot.listClients({
+        ...args,
+        limit: fetchLimit,
+        nextToken,
+      })
+      const parsedData = ClientsResponseSchema.parse(response)?.data ?? []
+      clients.push(...parsedData)
+      nextToken = response?.nextToken || undefined
+    } while (nextToken && clients.length < requestedLimit)
+
+    return ClientsResponseSchema.parse({ data: clients })
   }
 
   async _updateClient(id: string, requestBody: ClientRequest): Promise<ClientResponse> {
