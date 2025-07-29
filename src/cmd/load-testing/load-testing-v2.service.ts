@@ -3,6 +3,7 @@ import DBClient from '@/lib/db'
 import {
   ClientRequest,
   ClientRequestSchema,
+  ClientResponse,
   ClientResponseSchema,
   CompanyCreateRequest,
   CompanyCreateRequestSchema,
@@ -26,8 +27,8 @@ class LoadTester {
   private apiKey = z.string().parse(process.env.COPILOT_API_KEY)
   private copilot: CopilotAPI = new CopilotAPI(this.token, this.apiKey)
   private bottlenecks = {
-    copilot: new Bottleneck({ minTime: 250, maxConcurrent: 2 }),
-    db: new Bottleneck({ minTime: 100, maxConcurrent: 5 }),
+    copilot: new Bottleneck({ minTime: 250, maxConcurrent: 4 }),
+    db: new Bottleneck({ minTime: 100, maxConcurrent: 10 }),
   }
 
   async seedCompanies(numOfCompanies: number) {
@@ -89,6 +90,77 @@ class LoadTester {
     } else if (userType == AssigneeType.internalUser) {
       return (await this.copilot.getInternalUsers({ limit: MAX_FETCH_ASSIGNEE_COUNT })).data
     }
+  }
+
+  async seedSubtasks() {
+    // Get a fixed number of random parent tasks
+    const TASKS_TO_SEED = 400
+    const MIN_SUBTASKS_PER_TASK = 1
+    const MAX_SUBTASKS_PER_TASK = 60
+    const parentTaskCount = await this.db.task.count({ where: { parentId: null } })
+    const skip = Math.floor(Math.random() * parentTaskCount)
+    const sampleTasks = await this.db.task.findMany({
+      where: { parentId: null },
+      take: TASKS_TO_SEED,
+      skip,
+    })
+
+    // Get a list of all users + workflow states + token payload
+    const [internalUsers, clients, companies, workflowStates, tokenPayload] = await Promise.all([
+      this.getAssigneeList('internalUser'),
+      this.getAssigneeList('client'),
+      this.getAssigneeList('company'),
+      this.getAllWorkflowStates(this.token),
+      this.getTokenPayload(this.token),
+    ])
+
+    const seedPromises = []
+
+    // For each task in sample tasks, create a random number of subtasks between MIN_SUBTASKS_PER_TASK and MAX_SUBTASKS_PER_TASK
+    for (const task of sampleTasks) {
+      const subtaskCount =
+        Math.floor(Math.random() * (MAX_SUBTASKS_PER_TASK - MIN_SUBTASKS_PER_TASK + 1)) + MIN_SUBTASKS_PER_TASK
+      for (let i = 0; i < subtaskCount; i++) {
+        const rand = Math.random() * 100
+        let assignee = null
+        let assigneeType: AssigneeType | null = null
+        // 20% chance of internal user, 40% chance of client, 40% chance of company
+        if (rand < 20) {
+          assignee = internalUsers?.[Math.floor(Math.random() * internalUsers.length)]
+          assigneeType = AssigneeType.internalUser
+        } else if (rand < 60) {
+          assignee = clients?.[Math.floor(Math.random() * clients.length)]
+          assigneeType = AssigneeType.client
+        } else {
+          assignee = companies?.[Math.floor(Math.random() * companies.length)]
+          assigneeType = AssigneeType.company
+        }
+
+        const subtask = CreateTaskRequestSchema.parse({
+          title: faker.hacker.phrase(),
+          body: faker.lorem.paragraph(),
+          workflowStateId: workflowStates[Math.floor(Math.random() * workflowStates.length)].id,
+          parentId: task.id,
+          createdById: tokenPayload.internalUserId,
+          internalUserId: assigneeType === AssigneeType.internalUser ? assignee?.id : null,
+          clientId: assigneeType === AssigneeType.client ? assignee?.id : null,
+          companyId:
+            assigneeType === AssigneeType.client
+              ? (assignee as ClientResponse)?.companyId
+              : assigneeType === AssigneeType.company
+                ? assignee?.id
+                : null,
+        })
+
+        const seedPromiseWithBottleneck = this.bottlenecks.copilot.schedule(() => {
+          console.info(`Seeding subtask ${subtask.title}`)
+          return this.handleCreate(this.token, subtask)
+        })
+        seedPromises.push(seedPromiseWithBottleneck)
+      }
+    }
+    const responses = await Promise.all(seedPromises)
+    return responses
   }
 
   async seedTasks(noOfTasks: number, userType: AssigneeType) {
@@ -156,7 +228,7 @@ class LoadTester {
     const outputPath = path.resolve(process.cwd(), `seeded_${type}_${Date.now()}.csv`)
 
     fs.writeFileSync(outputPath, csvContent)
-    console.log(`✅ CSV written to ${outputPath}`)
+    console.info(`✅ CSV written to ${outputPath}`)
   }
 
   private async getTokenPayload(token: string): Promise<Token> {
@@ -173,6 +245,7 @@ class LoadTester {
 
   private async handleCreate(token: string, payload: CreateTaskRequest) {
     try {
+      console.info('Creating task', payload)
       const response = await fetch(`${this.apiUrl}/api/tasks?token=${token}`, {
         method: 'POST',
         body: JSON.stringify(payload),
