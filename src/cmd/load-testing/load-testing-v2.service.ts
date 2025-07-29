@@ -21,12 +21,12 @@ import { z } from 'zod'
 
 class LoadTester {
   protected db: PrismaClient = DBClient.getInstance()
-  private apiUrl = 'https://tasks-app-git-feature-m16-load-testing-copilot-platforms.vercel.app'
+  private apiUrl = 'https://tasks-app-git-feature-m16-copilot-platforms.vercel.app'
   private token = z.string().parse(process.env.LOAD_TESTING_COPILOT_TOKEN)
   private apiKey = z.string().parse(process.env.COPILOT_API_KEY)
   private copilot: CopilotAPI = new CopilotAPI(this.token, this.apiKey)
   private bottlenecks = {
-    copilot: new Bottleneck({ minTime: 150, maxConcurrent: 2 }),
+    copilot: new Bottleneck({ minTime: 250, maxConcurrent: 2 }),
     db: new Bottleneck({ minTime: 100, maxConcurrent: 5 }),
   }
 
@@ -79,11 +79,21 @@ class LoadTester {
     return responses
   }
 
+  private async getAssigneeList(userType: AssigneeType) {
+    if (userType == AssigneeType.client) {
+      return (await this.copilot.getClients({ limit: MAX_FETCH_ASSIGNEE_COUNT })).data
+    } else if (userType == AssigneeType.company) {
+      return (await this.copilot.getCompanies({ limit: MAX_FETCH_ASSIGNEE_COUNT })).data?.filter(
+        (data) => !data.isPlaceholder,
+      )
+    } else if (userType == AssigneeType.internalUser) {
+      return (await this.copilot.getInternalUsers({ limit: MAX_FETCH_ASSIGNEE_COUNT })).data
+    }
+  }
+
   async seedTasks(noOfTasks: number, userType: AssigneeType) {
     const [assigneeList, workflowStates, tokenPayload] = await Promise.all([
-      userType == AssigneeType.client
-        ? (await this.copilot.getClients({ limit: MAX_FETCH_ASSIGNEE_COUNT })).data
-        : (await this.copilot.getCompanies({ limit: MAX_FETCH_ASSIGNEE_COUNT })).data?.filter((data) => !data.isPlaceholder),
+      this.getAssigneeList(userType),
       this.getAllWorkflowStates(this.token),
       this.getTokenPayload(this.token),
     ])
@@ -123,9 +133,9 @@ class LoadTester {
         })
         seedPromises.push(seedPromiseWithBottleneck)
       }
-      const responses = await Promise.all(seedPromises)
-      return responses
     }
+    const responses = await Promise.all(seedPromises)
+    return responses
   }
 
   private exportToCSV(data: Record<string, any>[], type: AssigneeType) {
