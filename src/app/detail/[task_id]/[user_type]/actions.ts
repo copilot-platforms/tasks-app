@@ -5,7 +5,6 @@ import { ScrapMediaRequest } from '@/types/common'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { CreateComment, UpdateComment } from '@/types/dto/comment.dto'
 import { UpdateTaskRequest } from '@/types/dto/tasks.dto'
-import { revalidateTag } from 'next/cache'
 
 export const updateTaskDetail = async ({
   token,
@@ -40,8 +39,6 @@ export const updateWorkflowStateIdOfTask = async (token: string, taskId: string,
       workflowStateId: targetWorkflowStateId,
     }),
   })
-  revalidateTag('getOneTask')
-  // revalidateTag('getActivities')
 }
 
 export const updateAssignee = async (
@@ -57,15 +54,12 @@ export const updateAssignee = async (
       assigneeId,
     }),
   })
-  revalidateTag('getOneTask')
-  // revalidateTag('getActivities')
 }
 
 export const clientUpdateTask = async (token: string, taskId: string, targetWorkflowStateId: string) => {
   await fetch(`${apiUrl}/api/tasks/${taskId}/client?token=${token}&workflowStateId=${targetWorkflowStateId}`, {
     method: 'PATCH',
   })
-  revalidateTag('getOneTask')
 }
 
 export const deleteTask = async (token: string, task_id: string) => {
@@ -79,14 +73,12 @@ export const postAttachment = async (token: string, payload: CreateAttachmentReq
     method: 'POST',
     body: JSON.stringify(payload),
   })
-  revalidateTag('getAttachments')
 }
 
 export const deleteAttachment = async (token: string, id: string) => {
   await fetch(`${apiUrl}/api/attachments/${id}/?token=${token}`, {
     method: 'DELETE',
   })
-  revalidateTag('getAttachments')
 }
 
 export const postComment = async (token: string, payload: CreateComment) => {
@@ -96,7 +88,6 @@ export const postComment = async (token: string, payload: CreateComment) => {
   })
   const data = await res.json()
   return data.comment
-  // revalidateTag('getActivities')
 }
 
 export const updateComment = async (token: string, id: string, payload: UpdateComment) => {
@@ -112,7 +103,6 @@ export const deleteComment = async (token: string, id: string) => {
   await fetch(`${apiUrl}/api/comment/${id}?token=${token}`, {
     method: 'DELETE',
   })
-  // revalidateTag('getActivities')
 }
 
 export const postScrapMedia = async (token: string, payload: ScrapMediaRequest) => {
