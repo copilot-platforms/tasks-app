@@ -57,6 +57,7 @@ export const updateAssignee = async (
       assigneeId,
     }),
   })
+  console.log('test')
   revalidateTag('getOneTask')
   // revalidateTag('getActivities')
 }
