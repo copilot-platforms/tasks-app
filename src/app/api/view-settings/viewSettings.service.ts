@@ -59,7 +59,11 @@ export class ViewSettingsService extends BaseService {
         workspaceId: this.user.workspaceId,
         viewMode: this.DEFAULT_VIEW_MODE,
         filterOptions: {
-          [FilterOptions.ASSIGNEE]: '',
+          [FilterOptions.ASSIGNEE]: {
+            internalUserId: null,
+            clientId: null,
+            companyId: null,
+          },
           [FilterOptions.KEYWORD]: '',
           [FilterOptions.TYPE]: '',
         },

@@ -20,7 +20,7 @@ fs.readFile(filePath, 'utf8', (err, data) => {
   const newLine = `const syncWorkerFile = "${resolvedPath}";`
 
   if (!oldLine.test(data)) {
-    console.log('⚠️ Patch not applied: Pattern not found.')
+    console.info('⚠️ Patch not applied: Pattern not found.')
     return
   }
 
@@ -28,6 +28,6 @@ fs.readFile(filePath, 'utf8', (err, data) => {
 
   fs.writeFile(filePath, updated, 'utf8', (err) => {
     if (err) throw err
-    console.log('✅ Patched XMLHttpRequest-impl.js with resolved syncWorker path.')
+    console.info('✅ Patched XMLHttpRequest-impl.js with resolved syncWorker path.')
   })
 })

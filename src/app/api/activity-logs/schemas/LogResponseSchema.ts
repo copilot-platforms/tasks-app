@@ -11,7 +11,6 @@ export const LogResponseSchema = z.object({
   userId: z.string().uuid(),
   userRole: z.nativeEnum(AssigneeType),
   workspaceId: z.string(),
-  initiator: z.union([InternalUsersSchema, ClientResponseSchema]).nullable(),
   createdAt: z.string().datetime(),
 })
 

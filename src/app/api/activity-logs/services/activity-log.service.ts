@@ -1,5 +1,5 @@
 import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
-import { ClientsResponse, CompaniesResponse, CopilotListArgs, InternalUsers, InternalUsersResponse } from '@/types/common'
+import { CopilotListArgs, InternalUsers } from '@/types/common'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { signMediaForComments } from '@/utils/signedUrlReplacer'
 import {
@@ -13,7 +13,7 @@ import { CommentService } from '@api/comment/comment.service'
 import APIError from '@api/core/exceptions/api'
 import User from '@api/core/models/User.model'
 import { BaseService } from '@api/core/services/base.service'
-import { ActivityType, AssigneeType, Comment, CommentInitiator } from '@prisma/client'
+import { ActivityType, AssigneeType, Comment } from '@prisma/client'
 import httpStatus from 'http-status'
 import { z } from 'zod'
 
@@ -41,7 +41,7 @@ export class ActivityLogService extends BaseService {
             "ActivityLogs".type <> ${ActivityType.COMMENT_ADDED}::"ActivityType"
             OR
             (
-                "ActivityLogs".type = ${ActivityType.COMMENT_ADDED}::"ActivityType" 
+                "ActivityLogs".type = ${ActivityType.COMMENT_ADDED}::"ActivityType"
                 AND C."parentId" IS NULL
             )
           )
@@ -54,39 +54,23 @@ export class ActivityLogService extends BaseService {
           END;
     `
     const parsedActivityLogs = DBActivityLogArraySchema.parse(activityLogs)
-    const copilotService = new CopilotAPI(this.user.token)
-
-    const userOpts: CopilotListArgs = { limit: MAX_FETCH_ASSIGNEE_COUNT }
-    const [internalUsers, clientUsers, companies] = await Promise.all([
-      copilotService.getInternalUsers(userOpts),
-      copilotService.getClients(userOpts),
-      copilotService.getCompanies(userOpts),
-    ])
+    const copilot = new CopilotAPI(this.user.token)
 
     let filteredActivityLogs = parsedActivityLogs
 
-    if (this.user.role == AssigneeType.internalUser) {
-      const currentInternalUser = internalUsers.data.find((iu) => iu.id === this.user.internalUserId)
+    if (this.user.role == AssigneeType.internalUser && this.user.internalUserId) {
+      const currentInternalUser = await copilot.getInternalUser(this.user.internalUserId)
       if (currentInternalUser?.isClientAccessLimited) {
-        filteredActivityLogs = this.filterActivityLogsForLimitedAccess(
+        filteredActivityLogs = await this.filterActivityLogsForLimitedAccess(
           parsedActivityLogs,
-          clientUsers,
-          companies,
+          copilot,
           currentInternalUser,
         )
       }
     }
-
-    const copilotUsers = filteredActivityLogs
-      .map((activityLog) => {
-        if (activityLog.userRole === AssigneeType.internalUser) {
-          return internalUsers.data.find((iu) => iu.id === activityLog.userId)
-        }
-        if (activityLog.userRole === AssigneeType.client) {
-          return clientUsers.data?.find((client) => client.id === activityLog.userId)
-        }
-      })
-      .filter((user): user is NonNullable<typeof user> => user !== undefined)
+    if (this.user.clientId) {
+      filteredActivityLogs = await this.filterActivityLogsForClient(taskId, parsedActivityLogs, copilot)
+    }
 
     const commentIds = filteredActivityLogs
       .filter((activityLog) => activityLog.type === ActivityType.COMMENT_ADDED)
@@ -100,28 +84,22 @@ export class ActivityLogService extends BaseService {
     const [allReplies, replyCounts, initiators] = await Promise.all([
       commentService.getReplies(commentIds, opts?.expandComments),
       commentService.getReplyCounts(commentIds),
-      commentService.getThreadInitiators(commentIds, internalUsers, clientUsers),
+      commentService.getThreadInitiators(commentIds),
     ])
     const signedReplies = await signMediaForComments(allReplies)
 
     const logResponseData = filteredActivityLogs.map((activityLog) => {
-      const initiator = copilotUsers.find((iu) => iu.id === activityLog.userId) || null
       return {
         ...activityLog,
         details: this.formatActivityLogDetails(
           activityLog.type,
-          activityLog.userRole,
           activityLog.details,
           signedComments,
           signedReplies,
           replyCounts,
           initiators,
-          internalUsers,
-          clientUsers,
-          companies,
         ),
         createdAt: activityLog.createdAt.toISOString(),
-        initiator,
       }
     })
 
@@ -139,15 +117,11 @@ export class ActivityLogService extends BaseService {
 
   formatActivityLogDetails<ActivityLog extends keyof typeof SchemaByActivityType>(
     activityType: ActivityLog,
-    userRole: AssigneeType,
     payload: DBActivityLogDetails,
     comments: Comment[],
     allReplies: Comment[],
     replyCounts: Record<string, number>,
     initiators: Record<string, Array<any>>,
-    internalUsers: InternalUsersResponse,
-    clientUsers: ClientsResponse,
-    companies: CompaniesResponse,
   ) {
     switch (activityType) {
       case ActivityType.COMMENT_ADDED:
@@ -156,25 +130,7 @@ export class ActivityLogService extends BaseService {
           throw new APIError(httpStatus.NOT_FOUND, `Error while finding comment with id ${payload.id}`)
         }
 
-        let replies = allReplies.filter((reply) => reply.parentId === comment.id)
-
-        const copilotUsers = replies
-          .map((reply) => {
-            if (reply.initiatorType === CommentInitiator.internalUser) {
-              return internalUsers.data.find((iu) => iu.id === reply.initiatorId)
-            }
-            if (reply.initiatorType === CommentInitiator.client) {
-              return clientUsers.data?.find((client) => client.id === reply.initiatorId)
-            }
-          })
-          .filter((user): user is NonNullable<typeof user> => user !== undefined)
-
-        replies = replies
-          .map((comment) => ({
-            ...comment,
-            initiator: copilotUsers.find((iu) => iu.id === comment.initiatorId) || null,
-          }))
-          .reverse()
+        const replies = allReplies.filter((reply) => reply.parentId === comment.id).reverse()
 
         return {
           ...payload,
@@ -192,12 +148,59 @@ export class ActivityLogService extends BaseService {
     }
   }
 
-  private filterActivityLogsForLimitedAccess(
+  private async filterActivityLogsForClient(taskId: string, parsedActivityLogs: DBActivityLogArray, copilot: CopilotAPI) {
+    const task = await this.db.task.findFirstOrThrow({
+      where: { id: taskId, workspaceId: this.user.workspaceId },
+    })
+
+    // If task is a client task, then we only show activity logs authored by
+    // IUs, or self client
+    const isIuLog = (log: { userRole: AssigneeType }) => log.userRole === AssigneeType.internalUser
+
+    // Check if log is from the current company's client, do not include logs from the same client but different company
+    const isCurrentCompanysClientLog = (log: { userId: string; userCompanyId?: string | null }) => {
+      const isCorrectClient = log.userId === this.user.clientId
+      // The reason we do !log.userCompanyId is because there are a lot of legacy logs that don't have userCompanyId
+      const isCorrectCompany = !log.userCompanyId || log.userCompanyId === this.user.companyId
+      return isCorrectClient && isCorrectCompany
+    }
+
+    const isCompanyMemberLog = (
+      companyClients: { id: string; companyId: string }[],
+      log: { userId: string; userCompanyId?: string | null },
+    ) => {
+      const isCorrectClient = companyClients.some((client) => client.id === log.userId)
+      // Backwards compatibility for legacy logs that don't have userCompanyId
+      const isCorrectCompany = !log.userCompanyId || log.userCompanyId === this.user.companyId
+      return isCorrectClient && isCorrectCompany
+    }
+
+    if (task.clientId) {
+      return parsedActivityLogs.filter((log) => isIuLog(log) || isCurrentCompanysClientLog(log))
+    }
+    // If task is a company task, then we only show activity logs authored by IU, or other clients
+    // within the same company
+    if (!task.clientId && task.companyId) {
+      const companyClients = (await copilot.getClients({ companyId: task.companyId }))?.data || []
+      return parsedActivityLogs.filter((log) => {
+        return isIuLog(log) || isCurrentCompanysClientLog(log) || isCompanyMemberLog(companyClients, log)
+      })
+    }
+
+    return parsedActivityLogs
+  }
+
+  private async filterActivityLogsForLimitedAccess(
     parsedActivityLogs: DBActivityLogArray,
-    clientUsers: ClientsResponse,
-    companies: CompaniesResponse,
+    copilotService: CopilotAPI,
     currentInternalUser: InternalUsers,
-  ): DBActivityLogArray {
+  ): Promise<DBActivityLogArray> {
+    const userOpts: CopilotListArgs = { limit: MAX_FETCH_ASSIGNEE_COUNT }
+    const [clientUsers, companies] = await Promise.all([
+      copilotService.getClients(userOpts),
+      copilotService.getCompanies(userOpts),
+    ])
+
     const previousAssigneeIds = parsedActivityLogs
       .filter(
         (log) =>

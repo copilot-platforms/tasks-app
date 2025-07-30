@@ -1,11 +1,5 @@
-import { getAssigneeList } from '@/services/users'
 import { FilterableUser } from '@/types/common'
-import { Dispatch, SetStateAction } from 'react'
-import { z } from 'zod'
-import { addTypeToAssignee } from '@/utils/addTypeToAssignee'
-import { IAssigneeCombined } from '@/types/interfaces'
 import { containsCaseInsensitiveSubstring, startsWithCaseInsensitiveSubstring } from '@/utils/string'
-import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 
 /**
  * Filters an array of Copilot IU / Client / Company to find keyword matching its name fields
@@ -42,52 +36,4 @@ export const filterUsersByKeyword = (users: FilterableUser[], keyword: string): 
   })
 
   return uniqueUsers
-}
-
-export const setDebouncedFilteredAssignees = (
-  activeDebounceTimeoutId: NodeJS.Timeout | null,
-  setActiveDebounceTimeoutId: Dispatch<SetStateAction<NodeJS.Timeout | null>>,
-  setLoading: Dispatch<SetStateAction<boolean>>,
-  setAssigneeState: Dispatch<SetStateAction<IAssigneeCombined[]>>,
-  token: string,
-  newInputValue: string,
-  filterOptions?: string,
-  clientCompanyId?: string,
-): void => {
-  if (activeDebounceTimeoutId) {
-    clearTimeout(activeDebounceTimeoutId)
-  }
-  const newTimeoutId = setTimeout(async () => {
-    setLoading(true)
-    const newAssignees = await getAssigneeList(
-      z.string().parse(token),
-      newInputValue,
-      MAX_FETCH_ASSIGNEE_COUNT,
-      '0',
-      filterOptions,
-      clientCompanyId,
-    )
-
-    setAssigneeState(addTypeToAssignee(newAssignees))
-    setLoading(false)
-
-    // TODO: Incremental refetching is being blocked by a fault(?) in Copilot API pagination
-    // https://www.loom.com/share/3e9598dcf0de4180a255c5ce1f1173f0?sid=b6d7bb71-248e-4c36-a045-7cb5f31466be
-
-    // First we fetch the first `CHUNK_SIZE` number of results for each of IU / client / company
-    // const CHUNK_SIZE = 500
-    // const MAX_DEPTH = 3000
-    // const MAX_ITERATIONS = MAX_DEPTH / CHUNK_SIZE
-
-    // Need to replace fetching logic to:
-    // const newAssignees = await getAssigneeList(z.string().parse(token), newInputValue, CHUNK_SIZE, '0')
-
-    // Then we update new data for assignee list in background incrementally until we hit max depth for each of them
-    // for (let i = 1; i <= MAX_ITERATIONS; i++) {
-    //   const newAssignees = await getAssigneeList(z.string().parse(token), newInputValue, CHUNK_SIZE, `${i}`)
-    //   const newAssineeState = addTypeToAssignee(newAssignees)
-    //   setAssigneeState((prev) => [...prev, ...newAssineeState])
-    // }
-  }, 200)
-  setActiveDebounceTimeoutId(newTimeoutId)
 }

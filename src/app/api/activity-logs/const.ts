@@ -1,7 +1,7 @@
 import { ArchivedStateUpdatedSchema } from '@api/activity-logs/schemas/ArchiveStateUpdatedSchema'
 import { CommentAddedSchema } from '@api/activity-logs/schemas/CommentAddedSchema'
 import { DueDateChangedSchema } from '@api/activity-logs/schemas/DueDateChangedSchema'
-import { TaskAssignedSchema } from '@api/activity-logs/schemas/TaskAssignedSchema'
+import { TaskAssignedSchema, TaskUnassignedSchema } from '@api/activity-logs/schemas/TaskAssignedSchema'
 import { TaskCreatedSchema } from '@api/activity-logs/schemas/TaskCreatedSchema'
 import { TitleUpdatedSchema } from '@api/activity-logs/schemas/TitleUpdatedSchema'
 import { WorkflowStateUpdatedSchema } from '@api/activity-logs/schemas/WorkflowStateUpdatedSchema'
@@ -11,6 +11,7 @@ import { z } from 'zod'
 export const SchemaByActivityType = {
   [ActivityType.TASK_CREATED]: TaskCreatedSchema,
   [ActivityType.TASK_ASSIGNED]: TaskAssignedSchema,
+  [ActivityType.TASK_UNASSIGNED]: TaskUnassignedSchema,
   [ActivityType.TITLE_UPDATED]: TitleUpdatedSchema,
   [ActivityType.WORKFLOW_STATE_UPDATED]: WorkflowStateUpdatedSchema,
   [ActivityType.COMMENT_ADDED]: CommentAddedSchema,
@@ -26,6 +27,7 @@ export const DBActivityLogSchema = z.object({
   details: DBActivityLogDetailsSchema,
   taskId: z.string().uuid(),
   userId: z.string().uuid(),
+  userCompanyId: z.string().uuid().nullable(),
   userRole: z.nativeEnum(AssigneeType),
   workspaceId: z.string(),
   createdAt: z.date(),

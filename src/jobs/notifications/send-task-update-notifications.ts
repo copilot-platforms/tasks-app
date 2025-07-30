@@ -13,7 +13,7 @@ export const sendTaskUpdateNotifications = task({
   id: 'send-task-update-notifications',
   machine: { preset: 'medium-1x' },
   queue: {
-    concurrencyLimit: 25,
+    concurrencyLimit: 5,
   },
 
   run: async (payload: UpdateTaskNotificationPayload, { ctx }) => {

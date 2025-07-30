@@ -2,6 +2,7 @@ import { RFC3339DateSchema } from '@/types/common'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { AssigneeType } from '@prisma/client'
 import { z } from 'zod'
+import { validateUserIds } from '@/types/dto/tasks.dto'
 
 export const TaskSourceSchema = z.enum(['web', 'api'])
 export type TaskSource = z.infer<typeof TaskSourceSchema>
@@ -145,32 +146,10 @@ export const PublicTaskUpdateDtoSchema = z
     dueDate: RFC3339DateSchema.nullish(),
     status: StatusSchema.optional(),
     isArchived: z.boolean().optional(),
-    internalUserId: z.string().uuid().optional(),
-    clientId: z.string().uuid().optional(),
-    companyId: z.string().uuid().optional(),
+    internalUserId: z.string().uuid().nullish(),
+    clientId: z.string().uuid().nullish(),
+    companyId: z.string().uuid().nullish(),
   })
-  .superRefine((data, ctx) => {
-    const { internalUserId, clientId, companyId } = data
-
-    const hasInternalUser = Boolean(internalUserId)
-    const hasClient = Boolean(clientId)
-    const hasCompany = Boolean(companyId)
-
-    if (hasInternalUser && (hasClient || hasCompany)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'internalUserId cannot be combined with clientId or companyId',
-        path: ['internalUserId'],
-      })
-    }
-
-    if (hasClient && !hasCompany) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'companyId is required when clientId is provided',
-        path: ['companyId'],
-      })
-    }
-  })
+  .superRefine(validateUserIds)
 
 export type PublicTaskUpdateDto = z.infer<typeof PublicTaskUpdateDtoSchema>

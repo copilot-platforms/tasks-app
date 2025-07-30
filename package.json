@@ -2,6 +2,9 @@
   "name": "task-app",
   "description": "A comprehensive task management app",
   "version": "0.1.0",
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "keywords": [
     "nextjs",
     "nodejs"
@@ -28,9 +31,9 @@
     "lint-staged": "npx lint-staged",
     "postinstall": "prisma generate",
     "test": "jest",
+    "trigger": "npx trigger.dev@latest",
     "predeploy": "node src/lib/patch-jsdom-xhr.cjs",
     "deploy": "npx trigger.dev@latest deploy",
-    "trigger": "npx trigger.dev@3.3.17",
     "trigger:deploy-staging": "yarn trigger deploy -e staging",
     "loadtest": "tsx ./src/cmd/load-testing",
     "loadtest:delete-clients": "tsx ./src/cmd/load-testing/deleteClients.ts",
@@ -38,7 +41,10 @@
     "cmd:delete-duplicate-notifications": "tsx ./src/cmd/delete-duplicate-notifications",
     "cmd:backfill-archived-by": "tsx ./src/cmd/backfill-archived-by",
     "cmd:backfill-completed-tasks": "tsx ./src/cmd/backfill-completed-tasks",
-    "cmd:backfill-new-user-ids": "tsx ./src/cmd/backfill-new-user-ids"
+    "cmd:backfill-new-user-ids": "tsx ./src/cmd/backfill-new-user-ids",
+    "cmd:normalize-filterOptions-assignee": "tsx ./src/cmd/normalize-filterOptions-assignee",
+    "cmd:backfill-company-id-in-client-notifications": "tsx ./src/cmd/backfill-company-id-in-client-notifications",
+    "cmd:post-deploy-m15": "tsx ./src/cmd/post-deploy-m15"
   },
   "dependencies": {
     "@cyntler/react-doc-viewer": "^1.17.0",
@@ -53,11 +59,14 @@
     "@supabase/supabase-js": "^2.47.5",
     "@trigger.dev/sdk": "3.3.17",
     "@types/date-fns": "^2.6.0",
+    "@types/deep-equal": "^1.0.4",
     "@vercel/blob": "^0.23.2",
     "@vercel/postgres": "^0.8.0",
     "bottleneck": "^2.19.5",
-    "copilot-node-sdk": "^3.5.1",
+    "copilot-design-system": "^2.1.2",
+    "copilot-node-sdk": "^3.12.1",
     "dayjs": "^1.11.10",
+    "deep-equal": "^2.2.3",
     "fetch-retry": "^6.0.0",
     "file-saver": "^2.0.5",
     "http-status": "^1.7.4",
@@ -72,7 +81,7 @@
     "react-dnd": "^16.0.1",
     "react-dnd-html5-backend": "^16.0.1",
     "react-dnd-touch-backend": "^16.0.1",
-    "react-dom": "^18",
+    "react-dom": "^18.3",
     "react-redux": "^9.1.0",
     "react-zoom-pan-pinch": "^3.7.0",
     "server-only": "^0.0.1",

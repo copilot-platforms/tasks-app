@@ -51,4 +51,5 @@ next-env.d.ts
 # Dumps
 dump.sql
 
+# API routes to test dev features
 src/app/api/testing

@@ -152,9 +152,9 @@ export class PublicTaskSerializer {
       dueDate: rfc3339ToDateString(payload.dueDate),
       isArchived: payload.isArchived,
       workflowStateId,
-      internalUserId: payload.internalUserId ?? null,
-      clientId: payload.clientId ?? null,
-      companyId: payload.companyId ?? null,
+      internalUserId: payload.internalUserId,
+      clientId: payload.clientId,
+      companyId: payload.companyId,
     })
   }
 }

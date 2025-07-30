@@ -2,9 +2,10 @@
 
 import { StyledBox, StyledModal } from '@/app/detail/ui/styledComponent'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
-import { MiniLoader } from '@/components/atoms/MiniLoader'
+import { SelectorButton } from '@/components/buttons/SelectorButton'
+import { CopilotPopSelector } from '@/components/inputs/CopilotSelector'
 import { DatePickerComponent } from '@/components/inputs/DatePickerComponent'
-import Selector, { SelectorType } from '@/components/inputs/Selector'
+import { SelectorType } from '@/components/inputs/Selector'
 import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
 import { ConfirmUI } from '@/components/layouts/ConfirmUI'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
@@ -17,16 +18,14 @@ import store from '@/redux/store'
 import { DateStringSchema } from '@/types/date'
 import { UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { IAssigneeCombined, Sizes } from '@/types/interfaces'
-import { getAssigneeName, isAssigneeTextMatching } from '@/utils/assignee'
+import { IAssigneeCombined, InputValue, Sizes } from '@/types/interfaces'
+import { getAssigneeId, getAssigneeName, getUserIds, UserIdsType } from '@/utils/assignee'
 import { createDateFromFormattedDateString, formatDate } from '@/utils/dateHelper'
-import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
-import { NoAssignee, NoAssigneeExtraOptions, NoDataFoundOption } from '@/utils/noAssignee'
-import { ShouldConfirmBeforeReassignment } from '@/utils/shouldConfirmBeforeReassign'
-import { setDebouncedFilteredAssignees } from '@/utils/users'
-import { Box, Skeleton, Stack, Typography, styled } from '@mui/material'
-import { AssigneeType as AssigneeTypeEnum } from '@prisma/client'
-import { useEffect, useMemo, useState } from 'react'
+import { getSelectedUserIds, getSelectorAssignee, getSelectorAssigneeFromTask } from '@/utils/selector'
+import { NoAssignee } from '@/utils/noAssignee'
+import { shouldConfirmBeforeReassignment } from '@/utils/shouldConfirmBeforeReassign'
+import { Box, Skeleton, Stack, styled, Typography } from '@mui/material'
+import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { z } from 'zod'
 
@@ -47,13 +46,13 @@ export const Sidebar = ({
   selectedWorkflowState: WorkflowStateResponse
   selectedAssigneeId: string | undefined
   updateWorkflowState: (workflowState: WorkflowStateResponse) => void
-  updateAssignee: (assigneeType: string | null, assigneeId: string | null) => void
+  updateAssignee: (userIds: UserIdsType) => void
   updateTask: (payload: UpdateTaskRequest) => void
   disabled: boolean
   workflowDisabled?: false
 }) => {
-  const { activeTask, token, workflowStates, assignee, previewMode } = useSelector(selectTaskBoard)
-  const { showSidebar, showConfirmAssignModal, activeTaskAssignees } = useSelector(selectTaskDetails)
+  const { activeTask, workflowStates, assignee, previewMode } = useSelector(selectTaskBoard)
+  const { showSidebar, showConfirmAssignModal } = useSelector(selectTaskDetails)
 
   const [isHydrated, setIsHydrated] = useState(false)
 
@@ -61,58 +60,43 @@ export const Sidebar = ({
     setIsHydrated(true)
   }, [])
 
-  const initialAssignees = useMemo(
-    () => (activeTaskAssignees.length ? activeTaskAssignees : assignee),
-    [activeTaskAssignees, assignee],
-  )
-  const [filteredAssignees, setFilteredAssignees] = useState(initialAssignees)
-  const clientCompanyId =
-    activeTask && activeTask.assigneeType !== AssigneeTypeEnum.internalUser ? activeTask.assigneeId : undefined
-
-  const [activeDebounceTimeoutId, setActiveDebounceTimeoutId] = useState<NodeJS.Timeout | null>(null)
-  const [loading, setLoading] = useState(false)
   const [dueDate, setDueDate] = useState<Date | string | undefined>()
 
-  const [inputStatusValue, setInputStatusValue] = useState('')
-  const [selectedAssignee, setSelectedAssignee] = useState<IAssigneeCombined | undefined>(undefined)
+  const [assigneeValue, setAssigneeValue] = useState<IAssigneeCombined | undefined>()
+
+  const [selectedAssignee, setSelectedAssignee] = useState<UserIdsType | undefined>(undefined)
 
   const { renderingItem: _statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
     // item: selectedWorkflowState,
     item: null,
     type: SelectorType.STATUS_SELECTOR,
   })
-  const { renderingItem: _assigneeValue, updateRenderingItem: updateAssigneeValue } = useHandleSelectorComponent({
-    // item: selectedAssigneeId ? assignee.find((el) => el.id === selectedAssigneeId) : NoAssignee,
-    item: null,
-    type: SelectorType.ASSIGNEE_SELECTOR,
-  })
 
   const statusValue = _statusValue as WorkflowStateResponse //typecasting
-  const assigneeValue = _assigneeValue as IAssigneeCombined //typecasting
 
   useEffect(() => {
-    if (activeTask && workflowStates) {
+    if (activeTask && workflowStates && updateStatusValue) {
       const currentTask = activeTask
-
       const currentWorkflowState = workflowStates.find((el) => el?.id === currentTask?.workflowStateId)
-      const currentAssigneeId = currentTask?.assigneeId
       updateStatusValue(currentWorkflowState)
-      updateAssigneeValue(currentAssigneeId ? assignee.find((el) => el.id === currentAssigneeId) : NoAssignee)
       setDueDate(currentTask?.dueDate)
     }
-  }, [activeTask, workflowStates, assignee])
+  }, [activeTask, workflowStates, updateStatusValue])
+
+  // effect depended on activeTask and assignee to update assigneeValue
+  useEffect(() => {
+    if (activeTask && assignee.length > 0) {
+      const currentAssignee = getSelectorAssigneeFromTask(assignee, activeTask)
+      setAssigneeValue(currentAssignee)
+    }
+  }, [assignee, activeTask])
 
   const windowWidth = useWindowWidth()
   const isMobile = windowWidth < 600 && windowWidth !== 0
 
-  const handleAssigneeChange = (assigneeValue: IAssigneeCombined) => {
-    updateAssigneeValue(assigneeValue)
-    const assigneeType = getAssigneeTypeCorrected(assigneeValue)
-    updateAssignee(assigneeType, assigneeValue?.id)
-  }
-
-  const handleConfirmAssigneeChange = (assigneeValue: IAssigneeCombined) => {
-    handleAssigneeChange(assigneeValue)
+  const handleConfirmAssigneeChange = (userIds: UserIdsType) => {
+    updateAssignee(userIds)
+    setAssigneeValue(getAssigneeValue(userIds) as IAssigneeCombined)
     store.dispatch(toggleShowConfirmAssignModal())
   }
 
@@ -122,7 +106,33 @@ export const Sidebar = ({
     }
   }, [isMobile])
 
+  const getAssigneeValue = (userIds?: UserIdsType) => {
+    if (!userIds) {
+      return NoAssignee
+    }
+    const assigneeId = getAssigneeId(userIds)
+    const match = assignee.find((assignee) =>
+      userIds.clientId ? assignee.id === assigneeId && assignee.companyId == userIds.companyId : assignee.id === assigneeId,
+    )
+    return match ?? undefined
+  }
+
   if (!activeTask || !isHydrated) return <SidebarSkeleton />
+
+  const handleAssigneeChange = (inputValue: InputValue[]) => {
+    const newUserIds = getSelectedUserIds(inputValue)
+    const previousAssignee = assignee.find((assignee) => assignee.id == getAssigneeId(getUserIds(activeTask)))
+    const nextAssignee = getSelectorAssignee(assignee, inputValue)
+    const shouldShowConfirmModal = shouldConfirmBeforeReassignment(previousAssignee, nextAssignee)
+    if (shouldShowConfirmModal) {
+      setSelectedAssignee(newUserIds)
+      store.dispatch(toggleShowConfirmAssignModal())
+    } else {
+      setAssigneeValue(getAssigneeValue(newUserIds) as IAssigneeCombined)
+      updateAssignee(newUserIds)
+    }
+  }
+
   if (!showSidebar) {
     return (
       <Stack
@@ -153,96 +163,48 @@ export const Sidebar = ({
         </Box>
         <Box
           sx={{
+            border: (theme) => `1px solid ${theme.color.borders.border}`,
             borderRadius: '4px',
             width: 'fit-content',
+            height: '30px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
-          <Selector
-            inputStatusValue={inputStatusValue}
-            setInputStatusValue={setInputStatusValue}
-            buttonWidth="100%"
-            padding={'3px 8px'}
-            placeholder="Set assignee"
-            getSelectedValue={(newValue) => {
-              const assignee = newValue as IAssigneeCombined
-              const shouldShowConfirmModal = ShouldConfirmBeforeReassignment(assigneeValue, assignee)
-              if (shouldShowConfirmModal) {
-                setSelectedAssignee(assignee)
-                store.dispatch(toggleShowConfirmAssignModal())
-              } else {
-                handleAssigneeChange(assignee)
-              }
-            }}
-            startIcon={
-              (assigneeValue as IAssigneeCombined)?.name == 'No assignee' ? (
-                <AssigneePlaceholder />
-              ) : (
-                <CopilotAvatar currentAssignee={assigneeValue} />
-              )
-            }
-            options={loading ? [] : filteredAssignees.length ? filteredAssignees : [NoDataFoundOption]}
-            value={assigneeValue?.name == 'No assignee' ? null : assigneeValue}
-            selectorType={SelectorType.ASSIGNEE_SELECTOR}
-            buttonHeight="auto"
-            buttonContent={
-              <Typography
-                variant="md"
-                lineHeight="22px"
-                sx={{
-                  color: (theme) => theme.color.gray[600],
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  maxWidth: '150px',
-                }}
-              >
-                {(assigneeValue as IAssigneeCombined)?.name == 'No assignee'
-                  ? 'Unassigned'
-                  : getAssigneeName(assigneeValue, 'Unassigned')}
-              </Typography>
-            }
-            handleInputChange={async (newInputValue: string) => {
-              if (!newInputValue || isAssigneeTextMatching(newInputValue, assigneeValue)) {
-                setFilteredAssignees(initialAssignees)
-                return
-              }
-
-              setDebouncedFilteredAssignees(
-                activeDebounceTimeoutId,
-                setActiveDebounceTimeoutId,
-                setLoading,
-                setFilteredAssignees,
-                z.string().parse(token),
-                newInputValue,
-                undefined,
-                clientCompanyId,
-              )
-            }}
-            extraOption={NoAssigneeExtraOptions}
-            extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
-              return (
-                <>
-                  {/* <ExtraOptionRendererAssignee
-                    props={props}
-                    onClick={(e) => {
-                      updateAssigneeValue({ id: '', name: 'No assignee' })
-                      setAnchorEl(anchorEl ? null : e.currentTarget)
-                      updateAssignee(null, null)
-                    }}
-                  /> */}
-                  {loading && <MiniLoader />}
-                </>
-              )
-            }}
+          <CopilotPopSelector
+            name="Set assignee"
+            onChange={handleAssigneeChange}
             disabled={disabled}
-            cursor="default"
-            filterOption={(x: unknown) => x}
-            responsiveNoHide
-            currentOption={assigneeValue}
+            initialValue={assigneeValue}
+            buttonContent={
+              <SelectorButton
+                disabled={disabled}
+                padding="4px 8px"
+                startIcon={<CopilotAvatar currentAssignee={assigneeValue} />}
+                outlined={true}
+                buttonContent={
+                  <Typography
+                    variant="md"
+                    lineHeight="22px"
+                    sx={{
+                      color: (theme) => theme.color.gray[600],
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      maxWidth: '150px',
+                    }}
+                  >
+                    {assigneeValue?.name == 'No assignee' ? 'Unassigned' : getAssigneeName(assigneeValue, 'Unassigned')}
+                  </Typography>
+                }
+              />
+            }
           />
         </Box>
         <Box sx={{}}>
           <DatePickerComponent
+            height={'30px'}
             getDate={(date) => {
               const isoDate = DateStringSchema.parse(formatDate(date))
               updateTask({
@@ -275,9 +237,11 @@ export const Sidebar = ({
             buttonText="Reassign"
             description={
               <>
-                You&apos;re about to reassign this task from <strong>{getAssigneeName(assigneeValue)}</strong> to{' '}
-                <strong>{getAssigneeName(selectedAssignee)}</strong>. This will give{' '}
-                <strong>{getAssigneeName(selectedAssignee)}</strong> access to all task comments and history.
+                You&apos;re about to reassign this task from{' '}
+                <strong>{getAssigneeName(getAssigneeValue(getUserIds(activeTask)))}</strong> to{' '}
+                <strong>{getAssigneeName(getAssigneeValue(selectedAssignee))}</strong>. This will give{' '}
+                <strong>{getAssigneeName(getAssigneeValue(selectedAssignee))}</strong> access to all task comments and
+                history.
               </>
             }
             title="Reassign task?"
@@ -311,115 +275,81 @@ export const Sidebar = ({
           <StyledText variant="md" minWidth="80px">
             Status
           </StyledText>
-          <Box
-            sx={{
-              ':hover': {
-                bgcolor: (theme) => theme.color.background.bgCallout,
-              },
-              padding: '4px',
-              borderRadius: '4px',
-              width: 'fit-content',
-            }}
-          >
-            <WorkflowStateSelector
-              option={workflowStates}
-              value={statusValue}
-              getValue={(value) => {
-                updateStatusValue(value)
-                updateWorkflowState(value)
+          {workflowStates.length > 0 && statusValue ? ( // show skelete if statusValue and workflow state list is empty
+            <Box
+              sx={{
+                ':hover': {
+                  bgcolor: (theme) => theme.color.background.bgCallout,
+                },
+                padding: '4px',
+                borderRadius: '4px',
+                width: 'fit-content',
               }}
-              disabled={workflowDisabled}
-              variant={'normal'}
-              responsiveNoHide
-            />
-          </Box>
+            >
+              <WorkflowStateSelector
+                option={workflowStates}
+                value={statusValue}
+                getValue={(value) => {
+                  updateStatusValue(value)
+                  updateWorkflowState(value)
+                }}
+                disabled={workflowDisabled}
+                variant={'normal'}
+                responsiveNoHide
+              />
+            </Box>
+          ) : (
+            <SidebarElementSkeleton />
+          )}
         </Stack>
         <Stack direction="row" m="8px 0px" alignItems="center" columnGap="10px">
           <StyledText variant="md" minWidth="80px">
             Assignee
           </StyledText>
-          <Box
-            sx={{
-              ':hover': {
-                // bgcolor: (theme) => theme.color.background.bgCallout,
-              },
-              padding: '4px',
-              borderRadius: '4px',
-              width: 'fit-content',
-            }}
-          >
-            <Selector
-              inputStatusValue={inputStatusValue}
-              setInputStatusValue={setInputStatusValue}
-              buttonWidth="100%"
-              placeholder="Set assignee"
-              getSelectedValue={(newValue) => {
-                const assignee = newValue as IAssigneeCombined
-                const shouldShowConfirmModal = ShouldConfirmBeforeReassignment(assigneeValue, assignee)
-                if (shouldShowConfirmModal) {
-                  setSelectedAssignee(assignee)
-                  store.dispatch(toggleShowConfirmAssignModal())
-                } else {
-                  handleAssigneeChange(assignee)
+          {assignee.length > 0 ? ( // show skeleton if assignee list is empty
+            <Box
+              sx={{
+                ':hover': {
+                  bgcolor: (theme) => (disabled ? 'none' : theme.color.background.bgCallout),
+                },
+                padding: '4px',
+                borderRadius: '4px',
+                width: 'fit-content',
+              }}
+            >
+              <CopilotPopSelector
+                name="Set assignee"
+                onChange={handleAssigneeChange}
+                disabled={disabled}
+                initialValue={assigneeValue}
+                buttonContent={
+                  <SelectorButton
+                    disabled={disabled}
+                    padding="4px 8px"
+                    startIcon={<CopilotAvatar currentAssignee={assigneeValue} />}
+                    outlined={true}
+                    buttonContent={
+                      <Typography
+                        variant="md"
+                        lineHeight="22px"
+                        sx={{
+                          color: (theme) => theme.color.gray[600],
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          maxWidth: '150px',
+                        }}
+                      >
+                        {assigneeValue?.name == 'No assignee' ? 'Unassigned' : getAssigneeName(assigneeValue, 'Unassigned')}
+                      </Typography>
+                    }
+                  />
                 }
-              }}
-              startIcon={
-                (assigneeValue as IAssigneeCombined)?.name == 'No assignee' ? (
-                  <AssigneePlaceholder />
-                ) : (
-                  <CopilotAvatar currentAssignee={assigneeValue} />
-                )
-              }
-              options={loading ? [] : filteredAssignees.length ? filteredAssignees : [NoDataFoundOption]}
-              value={assigneeValue?.name == 'No assignee' ? null : assigneeValue}
-              selectorType={SelectorType.ASSIGNEE_SELECTOR}
-              //****Disabling re-assignment completely for now***
-              extraOption={NoAssigneeExtraOptions}
-              extraOptionRenderer={(setAnchorEl, anchorEl, props) => {
-                return (
-                  <>
-                    {/* <ExtraOptionRendererAssignee
-                      props={props}
-                      onClick={(e) => {
-                        updateAssigneeValue({ id: '', name: 'No assignee' })
-                        setAnchorEl(anchorEl ? null : e.currentTarget)
-                        updateAssignee(null, null)
-                      }}
-                    /> */}
-                    {loading && <MiniLoader />}
-                  </>
-                )
-              }}
-              buttonContent={
-                <Typography variant="md" lineHeight="22px" sx={{ color: (theme) => theme.color.gray[600] }}>
-                  {(assigneeValue as IAssigneeCombined)?.name == 'No assignee'
-                    ? 'Unassigned'
-                    : getAssigneeName(assigneeValue, 'Unassigned')}
-                </Typography>
-              }
-              handleInputChange={async (newInputValue: string) => {
-                if (!newInputValue || isAssigneeTextMatching(newInputValue, assigneeValue)) {
-                  setFilteredAssignees(initialAssignees)
-                  return
-                }
-
-                setDebouncedFilteredAssignees(
-                  activeDebounceTimeoutId,
-                  setActiveDebounceTimeoutId,
-                  setLoading,
-                  setFilteredAssignees,
-                  z.string().parse(token),
-                  newInputValue,
-                )
-              }}
-              filterOption={(x: unknown) => x}
-              disabled={disabled}
-              cursor={'default'}
-              variant="normal"
-              responsiveNoHide
-              currentOption={assigneeValue}
-            />
-          </Box>
+              />
+            </Box>
+          ) : (
+            <SidebarElementSkeleton />
+          )}
         </Stack>
         <Stack direction="row" m="8px 0px" alignItems="center" columnGap="10px" minWidth="fit-content">
           <StyledText variant="md" minWidth="80px">
@@ -467,9 +397,10 @@ export const Sidebar = ({
           buttonText="Reassign"
           description={
             <>
-              You&apos;re about to reassign this task from <strong>{getAssigneeName(assigneeValue)}</strong> to{' '}
-              <strong>{getAssigneeName(selectedAssignee)}</strong>. This will give{' '}
-              <strong>{getAssigneeName(selectedAssignee)}</strong> access to all task comments and history.
+              You&apos;re about to reassign this task from{' '}
+              <strong>{getAssigneeName(getAssigneeValue(getUserIds(activeTask)))}</strong> to{' '}
+              <strong>{getAssigneeName(getAssigneeValue(selectedAssignee))}</strong>. This will give{' '}
+              <strong>{getAssigneeName(getAssigneeValue(selectedAssignee))}</strong> access to all task comments and history.
             </>
           }
           title="Reassign task?"
@@ -559,6 +490,25 @@ export const SidebarSkeleton = () => {
           </Box>
         </Stack>
       </AppMargin>
+    </Box>
+  )
+}
+
+export const SidebarElementSkeleton = () => {
+  const windowWidth = useWindowWidth()
+  const isMobile = windowWidth < 600 && windowWidth !== 0
+
+  return (
+    <Box
+      sx={{
+        height: `${isMobile ? '30px' : '38px'}`,
+        alignItems: 'center',
+        justifyContent: 'center',
+        display: 'flex',
+        width: 'fit-content',
+      }}
+    >
+      <Skeleton variant="rectangular" width={`${isMobile ? '140px' : '120px'}`} height={15} />
     </Box>
   )
 }

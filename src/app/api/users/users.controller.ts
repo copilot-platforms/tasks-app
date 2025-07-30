@@ -12,12 +12,11 @@ export const getUsers = async (req: NextRequest) => {
   const userType = req.nextUrl.searchParams.get('userType') || undefined
   const limit = rawLimit ? +rawLimit : undefined
   const nextToken = req.nextUrl.searchParams.get('nextToken') || undefined
-  const clientCompanyId = req.nextUrl.searchParams.get('clientCompanyId') || undefined
-  //Added a clientCompanyId param here to incorporate filtering of limited access IU for subtask creation if the parent task is assigned to client out of scope.
+
   // "search" param condition has been separated so we can unplug it in the future after CopilotAPI implements keyword match natively
   const users = await (keyword
-    ? usersService.getFilteredUsersStartingWith(keyword, userType, limit, nextToken, clientCompanyId)
-    : usersService.getGroupedUsers(limit, undefined, clientCompanyId))
+    ? usersService.getFilteredUsersStartingWith(keyword, userType, limit, nextToken) //keyword is not being used after we migrated to new Assignee Selector (UserCompanySelector). This was primarily used to filter out assignee on the old selector's autocomplete.
+    : usersService.getGroupedUsers(limit, undefined))
 
   return NextResponse.json({ users })
 }

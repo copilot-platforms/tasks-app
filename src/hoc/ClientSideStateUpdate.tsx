@@ -14,14 +14,14 @@ import {
   setViewSettings,
   setWorkflowStates,
 } from '@/redux/features/taskBoardSlice'
-import { setActiveTaskAssignees, setAssigneeSuggestion, setExpandedComments } from '@/redux/features/taskDetailsSlice'
+import { setAssigneeSuggestion, setExpandedComments } from '@/redux/features/taskDetailsSlice'
 import { setTemplates } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
 import { Token } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { IAssigneeCombined, IAssigneeSuggestions, ITemplate } from '@/types/interfaces'
+import { IAssignee, IAssigneeCombined, IAssigneeSuggestions, ISelectorAssignee, ITemplate } from '@/types/interfaces'
 import { filterOptionsMap } from '@/types/objectMaps'
 import { getPreviewMode, handlePreviewMode } from '@/utils/previewMode'
 import { ReactNode, useEffect } from 'react'
@@ -46,7 +46,6 @@ export const ClientSideStateUpdate = ({
   clearExpandedComments,
   accesibleTaskIds,
   accessibleTasks,
-  activeTaskAssignees,
 }: {
   children: ReactNode
   workflowStates?: WorkflowStateResponse[]
@@ -61,9 +60,8 @@ export const ClientSideStateUpdate = ({
   clearExpandedComments?: boolean
   accesibleTaskIds?: string[]
   accessibleTasks?: TaskResponse[]
-  activeTaskAssignees?: IAssigneeCombined[]
 }) => {
-  const { tasks: tasksInStore, viewSettingsTemp } = useSelector(selectTaskBoard)
+  const { tasks: tasksInStore, viewSettingsTemp, accessibleTasks: accessibleTaskInStore } = useSelector(selectTaskBoard)
   useEffect(() => {
     if (workflowStates) {
       store.dispatch(setWorkflowStates(workflowStates))
@@ -123,14 +121,12 @@ export const ClientSideStateUpdate = ({
     }
 
     if (accessibleTasks) {
-      store.dispatch(setAccessibleTasks(accessibleTasks))
+      const accessibleTaskData = accessibleTaskInStore.length ? accessibleTaskInStore : accessibleTasks
+      store.dispatch(setAccessibleTasks(accessibleTaskData))
     }
-    if (activeTaskAssignees) {
-      store.dispatch(setActiveTaskAssignees(activeTaskAssignees))
-    }
+
     return () => {
       store.dispatch(setActiveTask(undefined))
-      store.dispatch(setActiveTaskAssignees([]))
     } //when component is unmounted, we need to clear the active task.
   }, [
     workflowStates,
@@ -144,7 +140,6 @@ export const ClientSideStateUpdate = ({
     task,
     accesibleTaskIds,
     accessibleTasks,
-    activeTaskAssignees,
   ])
 
   return children

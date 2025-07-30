@@ -3,7 +3,15 @@ import { PreviewMode } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { CreateViewSettingsDTO, FilterOptionsType } from '@/types/dto/viewSettings.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { FilterByOptions, FilterOptions, IAssigneeCombined, IFilterOptions } from '@/types/interfaces'
+import {
+  FilterByOptions,
+  FilterOptions,
+  IAssigneeCombined,
+  IFilterOptions,
+  ISelectorAssignee,
+  UserIds,
+} from '@/types/interfaces'
+import { emptyAssignee, UserIdsType } from '@/utils/assignee'
 import { ViewMode } from '@prisma/client'
 import { createSlice } from '@reduxjs/toolkit'
 
@@ -36,7 +44,7 @@ const initialState: IInitialState = {
   view: ViewMode.board,
   filteredTasks: [], //contains tasks which are client-side filtered. is modified from the useFilter custom hook.
   filterOptions: {
-    [FilterOptions.ASSIGNEE]: '',
+    [FilterOptions.ASSIGNEE]: emptyAssignee,
     [FilterOptions.KEYWORD]: '',
     [FilterOptions.TYPE]: '',
   },
@@ -102,7 +110,7 @@ const taskBoardSlice = createSlice({
     setViewSettingsTemp: (state, action: { payload: CreateViewSettingsDTO }) => {
       state.viewSettingsTemp = action.payload
     },
-    setFilterOptions: (state, action: { payload: { optionType: FilterOptions; newValue: string | null } }) => {
+    setFilterOptions: (state, action: { payload: { optionType: FilterOptions; newValue: string | null | UserIdsType } }) => {
       state.filterOptions = {
         ...state.filterOptions,
         [action.payload.optionType]: action.payload.newValue,
@@ -124,13 +132,22 @@ const taskBoardSlice = createSlice({
     },
     updateFilterOption: (state, action: { payload: { filterOptions: FilterOptionsType } }) => {
       const { filterOptions } = action.payload
+      let updatedFilterOptions = { ...filterOptions }
       if (filterOptions?.assignee) {
-        const assigneeCheck = state.assignee.find((assignee) => assignee.id == filterOptions.assignee)
+        const assigneeCheck = state.assignee.find(
+          (assignee) =>
+            assignee.id === filterOptions.assignee[UserIds.INTERNAL_USER_ID] ||
+            assignee.id === filterOptions.assignee[UserIds.CLIENT_ID] ||
+            assignee.id === filterOptions.assignee[UserIds.COMPANY_ID],
+        )
         if (!assigneeCheck) {
-          filterOptions.assignee = ''
+          updatedFilterOptions = {
+            ...updatedFilterOptions,
+            assignee: emptyAssignee,
+          }
         }
       }
-      state.filterOptions = action.payload.filterOptions
+      state.filterOptions = updatedFilterOptions
     }, //updates filters according to viewSettings
 
     setIsTasksLoading: (state, action: { payload: boolean }) => {

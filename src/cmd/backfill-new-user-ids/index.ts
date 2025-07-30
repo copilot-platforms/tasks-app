@@ -18,7 +18,7 @@ const getCompanyMap = async (uniqueWorkspaceIds: Array<string>) => {
 
   // Fetch and set workspaceId + client-company id mapping
   for (let workspaceId of uniqueWorkspaceIds) {
-    console.log(`backfill-company-id#run | Running backfill for tasks under workspace id ${workspaceId}`)
+    console.info(`backfill-company-id#run | Running backfill for tasks under workspace id ${workspaceId}`)
     const resp = await fetch(COPILOT_CLIENTS_ENDPOINT, {
       headers: {
         'Content-Type': 'application/json',
@@ -92,7 +92,7 @@ const updateTasks = async (
 }
 
 const run = async () => {
-  console.log(`backfill-company-id#run | Using clients endpoint:`, COPILOT_CLIENTS_ENDPOINT)
+  console.info(`backfill-company-id#run | Using clients endpoint:`, COPILOT_CLIENTS_ENDPOINT)
 
   const db = DBClient.getInstance()
   const tasks = await db.task.findMany({
@@ -100,15 +100,15 @@ const run = async () => {
   })
 
   const uniqueWorkspaceIds = [...new Set(tasks.map((t) => t.workspaceId))]
-  console.log(`backfill-company-id#run | All workspace ids (${uniqueWorkspaceIds.length})`, uniqueWorkspaceIds)
+  console.info(`backfill-company-id#run | All workspace ids (${uniqueWorkspaceIds.length})`, uniqueWorkspaceIds)
   // Map with workspaceId -> clientId -> companyId
   const { workspaceClientCompanyIdMap, failedWorkspaces } = await getCompanyMap(uniqueWorkspaceIds)
 
   // Update tasks in db
   const { failedTasks } = await updateTasks(tasks, workspaceClientCompanyIdMap, failedWorkspaces)
 
-  console.log(`Failed workspaces (${failedWorkspaces.length})`, failedWorkspaces)
-  console.log(`Failed tasks (${failedTasks.length})`, failedTasks)
+  console.info(`Failed workspaces (${failedWorkspaces.length})`, failedWorkspaces)
+  console.info(`Failed tasks (${failedTasks.length})`, failedTasks)
 }
 
 run()

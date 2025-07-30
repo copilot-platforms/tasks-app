@@ -11,7 +11,11 @@ import { truncateText } from '@/utils/truncateText'
 import { ArchivedStateUpdatedSchema } from '@api/activity-logs/schemas/ArchiveStateUpdatedSchema'
 import { DueDateChangedSchema } from '@api/activity-logs/schemas/DueDateChangedSchema'
 import { LogResponse } from '@api/activity-logs/schemas/LogResponseSchema'
-import { TaskAssignedResponse, TaskAssignedResponseSchema } from '@api/activity-logs/schemas/TaskAssignedSchema'
+import {
+  TaskAssignedResponse,
+  TaskAssignedResponseSchema,
+  TaskUnassignedSchema,
+} from '@api/activity-logs/schemas/TaskAssignedSchema'
 import { TitleUpdatedSchema } from '@api/activity-logs/schemas/TitleUpdatedSchema'
 import { WorkflowStateUpdatedSchema } from '@api/activity-logs/schemas/WorkflowStateUpdatedSchema'
 import { Stack, Typography } from '@mui/material'
@@ -79,13 +83,22 @@ export const ActivityLog = ({ log }: Prop) => {
     ),
     [ActivityType.TASK_ASSIGNED]: (from: string, to: string) => (
       <>
-        <StyledTypography>reassigned task {from && `from `}</StyledTypography>
+        <StyledTypography>
+          {from ? 're' : ''}assigned task {from && `from `}
+        </StyledTypography>
         {from && <BoldTypography>{from}</BoldTypography>}
         <StyledTypography> to </StyledTypography>
         <BoldTypography>{to}</BoldTypography>
         <DotSeparator />
       </>
     ),
+    [ActivityType.TASK_UNASSIGNED]: () => (
+      <>
+        <StyledTypography>removed assignee</StyledTypography>
+        <DotSeparator />
+      </>
+    ),
+
     [ActivityType.TITLE_UPDATED]: (_from: string, to: string) => (
       <>
         <StyledTypography> changed title to </StyledTypography>
@@ -124,7 +137,7 @@ export const ActivityLog = ({ log }: Prop) => {
     [ActivityType.COMMENT_ADDED]: () => null,
   }
 
-  const activityUser = log.initiator as unknown as IAssigneeCombined
+  const activityUser = assignee.find((assignee) => assignee.id == log.userId)
 
   return (
     <Stack direction="row" columnGap={4} position="relative">
