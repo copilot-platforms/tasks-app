@@ -4,7 +4,6 @@ import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { AssigneeType } from '@prisma/client'
-import { revalidateTag } from 'next/cache'
 
 export const handleCreate = async (token: string, payload: CreateTaskRequest) => {
   try {
@@ -66,12 +65,4 @@ export const getSignedUrlFile = async (token: string, filePath: string) => {
   const res = await fetch(`${apiUrl}/api/attachments/sign-url?token=${token}&filePath=${filePath}`)
   const data = await res.json()
   return data.signedUrl
-}
-
-export const revalidateAllTasks = async (userRole: AssigneeType) => {
-  if (userRole === AssigneeType.client) {
-    revalidateTag('getAllTasks-client')
-  } else {
-    revalidateTag('getTasks')
-  }
 }
