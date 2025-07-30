@@ -48,7 +48,7 @@ export class TasksService extends BaseService {
       workspaceId: user.workspaceId,
     }
 
-    if (user.clientId) {
+    if (user.clientId || user.companyId) {
       filters = { ...filters, ...this.getClientOrCompanyAssigneeFilter() }
     }
 
@@ -501,24 +501,20 @@ export class TasksService extends BaseService {
   }
 
   private getClientOrCompanyAssigneeFilter(): Prisma.TaskWhereInput {
-    const parsedClientId = z.string().safeParse(this.user.clientId)
-    if (!parsedClientId.data) return {}
+    const clientId = z.string().safeParse(this.user.clientId).data
+    const companyId = z.string().safeParse(this.user.companyId).data
 
-    const clientId = parsedClientId.data
-    const parsedCompanyId = z.string().safeParse(this.user.companyId)
+    const filters = []
 
-    if (!parsedCompanyId.data) {
-      return {
-        OR: [{ assigneeId: clientId, assigneeType: 'client' }],
-      }
+    if (clientId) {
+      filters.push({ assigneeId: clientId, assigneeType: AssigneeType.client })
     }
 
-    return {
-      OR: [
-        { assigneeId: clientId as string, assigneeType: 'client' },
-        { assigneeId: parsedCompanyId.data, assigneeType: 'company' },
-      ],
+    if (companyId) {
+      filters.push({ assigneeId: companyId, assigneeType: AssigneeType.company })
     }
+
+    return filters.length > 0 ? { OR: filters } : {}
   }
 
   private getDisjointTasksFilter = (parentId?: string | null) => {
@@ -526,28 +522,30 @@ export class TasksService extends BaseService {
     // This n-node matcher matches any task tree chain where previous task's assigneeId is not self's
     // E.g. A -> B -> C, where A is assigned to user 1, B is assigned to user 2, C is assigned to user 2
     // For user 2, task B should show up as a parent task in the main task board
+
     const disjointTasksFilter: Promise<Prisma.TaskWhereInput> = (async () => {
-      if (this.user.role === UserRole.IU || parentId) {
-        return {}
+      if (this.user.companyId || this.user.clientId) {
+        return {
+          OR: [
+            // Parent is not assigned to client
+            {
+              ...this.getClientOrCompanyAssigneeFilter(), // Prevent overwriting of OR statement
+              parent: {
+                AND: [{ assigneeId: { not: this.user.clientId } }, { assigneeId: { not: this.user.companyId } }],
+              },
+            },
+            // Task is a parent / standalone task
+            {
+              ...this.getClientOrCompanyAssigneeFilter(),
+              parentId: null,
+            },
+          ],
+        }
       }
 
-      return {
-        OR: [
-          // Parent is not assigned to client
-          {
-            ...this.getClientOrCompanyAssigneeFilter(), // Prevent overwriting of OR statement
-            parent: {
-              AND: [{ assigneeId: { not: this.user.clientId } }, { assigneeId: { not: this.user.companyId } }],
-            },
-          },
-          // Task is a parent / standalone task
-          {
-            ...this.getClientOrCompanyAssigneeFilter(),
-            parentId: null,
-          },
-        ],
-      }
+      return {}
     })()
+
     return disjointTasksFilter
   }
 
@@ -555,6 +553,10 @@ export class TasksService extends BaseService {
     // If `parentId` is present, filter by parentId
     if (parentId) {
       return z.string().uuid().parse(parentId)
+    }
+    if (this.user.companyId) {
+      // If user is client, flatten subtasks by not filtering by parentId right now
+      return undefined
     }
     // If user is IU, no need to flatten subtasks
     if (this.user.role === UserRole.IU) {
@@ -567,7 +569,6 @@ export class TasksService extends BaseService {
       }
       return null
     }
-    // If user is client, flatten subtasks by not filtering by parentId right now
     return undefined
   }
 
