@@ -34,7 +34,7 @@ export const ClientDetailAppBridge = ({ handleTaskComplete, isTaskCompleted, por
   usePrimaryCta(
     {
       label: 'Mark as Done',
-      icon: Icons.CHECK,
+      icon: Icons.PLUS,
       onClick: handleMarkAsDone,
     },
     { portalUrl },
