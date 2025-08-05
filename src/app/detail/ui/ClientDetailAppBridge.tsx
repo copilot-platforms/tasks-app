@@ -36,7 +36,7 @@ export const ClientDetailAppBridge = ({ handleTaskComplete, isTaskCompleted, por
       ? null
       : {
           label: 'Mark as Done',
-          icon: Icons.CHECK,
+          icon: Icons.PLUS,
           onClick: handleMarkAsDone,
         },
     { portalUrl },
