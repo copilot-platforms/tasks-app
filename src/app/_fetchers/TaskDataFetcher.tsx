@@ -1,3 +1,5 @@
+'use client'
+
 import { selectTaskBoard, setIsTasksLoading, setTasks } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
 import { ArchivedOptionsType } from '@/types/dto/viewSettings.dto'
@@ -8,7 +10,7 @@ import { useSelector } from 'react-redux'
 import useSWR from 'swr'
 
 export const TaskDataFetcher = ({ token }: PropsWithToken) => {
-  const { showArchived, showUnarchived, tasks } = useSelector(selectTaskBoard)
+  const { showArchived, showUnarchived, tasks, filterOptions } = useSelector(selectTaskBoard)
 
   const buildQueryString = (token: string, archivedOptions?: ArchivedOptionsType) => {
     const queryParams = new URLSearchParams({ token })
@@ -18,6 +20,10 @@ export const TaskDataFetcher = ({ token }: PropsWithToken) => {
     if (archivedOptions?.showUnarchived !== undefined) {
       queryParams.append('showUnarchived', archivedOptions.showUnarchived.toString())
     }
+    if (filterOptions?.type) {
+      queryParams.append('type', filterOptions.type)
+    }
+
     return queryParams.toString()
   }
 

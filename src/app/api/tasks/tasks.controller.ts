@@ -12,12 +12,13 @@ export const getTasks = async (req: NextRequest) => {
   noStore()
   const user = await authenticate(req)
 
-  const { showArchived, showUnarchived, parentId, all } = getSearchParams(req.nextUrl.searchParams, [
+  const { showArchived, showUnarchived, parentId, all, type } = getSearchParams(req.nextUrl.searchParams, [
     'showArchived',
     'showUnarchived',
     'parentId',
     'all',
     'select',
+    'type',
   ])
 
   const tasksService = new TasksService(user)
@@ -27,6 +28,8 @@ export const getTasks = async (req: NextRequest) => {
 
     // Show archive tasks in response. Default to false
     showArchived: getBooleanQuery(showArchived, false),
+
+    type: type || undefined,
 
     // Show subtasks belonging to a particular task only. `null` returns top-level tasks
     parentId: parentId || null,

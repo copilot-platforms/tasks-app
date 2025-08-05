@@ -30,6 +30,7 @@ import { sortTaskByDescendingOrder } from '@/utils/sortTask'
 import { prioritizeStartedStates } from '@/utils/workflowStates'
 import { UserRole } from '@api/core/types/user'
 import { Box, Stack } from '@mui/material'
+import React, { useTransition } from 'react'
 import { useCallback, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { z } from 'zod'
@@ -39,6 +40,7 @@ interface TaskBoardProps {
   workspace?: WorkspaceResponse
 }
 export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
+  const [isPending, startTransition] = useTransition()
   const {
     workflowStates,
     tasks,
@@ -69,13 +71,37 @@ export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
     },
     [token],
   )
-  const filterTaskWithWorkflowStateId = (workflowStateId: string): TaskResponse[] => {
-    return filteredTasks.filter((task) => task.workflowStateId === workflowStateId)
+
+  const [filteredTasksByState, setFilteredTasksByState] = useState<Record<string, TaskResponse[]>>({})
+
+  useEffect(() => {
+    startTransition(() => {
+      const groupedTasks: Record<string, TaskResponse[]> = {}
+
+      for (const state of workflowStates) {
+        groupedTasks[state.id] = tasks.filter((task) => task.workflowStateId === state.id)
+      }
+
+      setFilteredTasksByState(groupedTasks)
+    })
+  }, [tasks, workflowStates])
+
+  const updateViewModeSetting = useCallback(
+    (payload: CreateViewSettingsDTO) => {
+      startTransition(() => {
+        updateViewModeSettings(z.string().parse(token), payload)
+      })
+    },
+    [token],
+  )
+
+  const filterTaskWithWorkflowStateId = (workflowStateId: string) => {
+    return filteredTasksByState[workflowStateId] ?? []
   }
 
   const taskCountForWorkflowStateId = (workflowStateId: string): string => {
     const taskCount = tasks.filter((task) => task.workflowStateId === workflowStateId).length
-    const filteredTaskCount = filteredTasks.filter((task) => task.workflowStateId === workflowStateId).length
+    const filteredTaskCount = tasks.filter((task) => task.workflowStateId === workflowStateId).length
     const isFilterOn = Object.values(filterOptions).some((value) => !!value)
     if (!isFilterOn) {
       return taskCount.toString()
@@ -89,7 +115,7 @@ export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
     showUnarchived: viewSettingsTemp ? viewSettingsTemp.showUnarchived : showUnarchived,
   }
 
-  useFilter(viewSettingsTemp ? viewSettingsTemp.filterOptions : filterOptions)
+  // useFilter(viewSettingsTemp ? viewSettingsTemp.filterOptions : filterOptions)
   const userHasNoFilter =
     filterOptions &&
     !filterOptions.type &&
@@ -98,7 +124,7 @@ export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
     archivedOptions.showUnarchived &&
     !archivedOptions.showArchived
 
-  const isNoTasksWithFilter = (!tasks.length || !userHasNoFilter) && !filteredTasks.length
+  const isNoTasksWithFilter = !tasks.length && !userHasNoFilter
 
   const [hasInitialized, setHasInitialized] = useState(false)
   useEffect(() => {
@@ -136,15 +162,10 @@ export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
       <TaskDataFetcher token={token ?? ''} />
       {mode == UserRole.IU && <TaskBoardAppBridge token={token ?? ''} role={UserRole.IU} portalUrl={workspace?.portalUrl} />}
       {showHeader && <Header showCreateTaskButton={mode === UserRole.IU || !!previewMode} showMenuBox={!previewMode} />}
-      <FilterBar
-        mode={mode}
-        updateViewModeSetting={async (payload: CreateViewSettingsDTO) => {
-          await updateViewModeSettings(z.string().parse(token), payload)
-        }}
-      />
+      <FilterBar mode={mode} updateViewModeSetting={updateViewModeSetting} />
       {isNoTasksWithFilter && <NoFilteredTasksState />}
 
-      {!!filteredTasks.length && !!tasks.length && viewBoardSettings === View.BOARD_VIEW && (
+      {!!tasks.length && viewBoardSettings === View.BOARD_VIEW && (
         <Box sx={{ padding: '12px 12px' }}>
           <Stack
             columnGap={2}

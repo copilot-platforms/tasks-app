@@ -5,6 +5,7 @@ import { sendClientUpdateTaskNotifications } from '@/jobs/notifications/send-cli
 import { ClientResponse, CompanyResponse, InternalUsers, Uuid } from '@/types/common'
 import { TaskWithWorkflowState } from '@/types/db'
 import { AncestorTaskResponse, CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
+import { FilterOptionsKeywords } from '@/types/interfaces'
 import { DISPATCHABLE_EVENT } from '@/types/webhook'
 import { UserIdsType } from '@/utils/assignee'
 import { CopilotAPI } from '@/utils/CopilotAPI'
@@ -73,6 +74,7 @@ export class TasksService extends BaseService {
     workflowState?: { type: StateType | { not: StateType } }
     limit?: number
     lastIdCursor?: string // When this id field cursor is provided, we return data AFTER this id
+    type?: string
   }): Promise<TaskWithWorkflowState[]> {
     // Check if given user role is authorized access to this resource
     const policyGate = new PoliciesService(this.user)
@@ -83,6 +85,8 @@ export class TasksService extends BaseService {
     const filters: Prisma.TaskWhereInput = this.buildTaskPermissions()
 
     let isArchived: boolean | undefined = false
+    let assigneeType
+    let assigneeId
     if (queryFilters.all) {
       isArchived = undefined
     } else {
@@ -92,6 +96,14 @@ export class TasksService extends BaseService {
         return []
       }
       isArchived = getArchivedStatus(queryFilters.showArchived, queryFilters.showUnarchived)
+    }
+
+    if (queryFilters.type === FilterOptionsKeywords.CLIENTS) {
+      assigneeType = AssigneeType.client
+    } else if (queryFilters.type === FilterOptionsKeywords.TEAM) {
+      assigneeType = AssigneeType.internalUser
+    } else if (queryFilters.type) {
+      assigneeId = this.user.internalUserId
     }
 
     if (queryFilters.showIncompleteOnly && !queryFilters.fromPublicApi) {
@@ -123,6 +135,8 @@ export class TasksService extends BaseService {
       createdById: queryFilters.createdById,
       workflowState: queryFilters.workflowState || filters.workflowState,
       isArchived,
+      assigneeType,
+      assigneeId,
     }
 
     const orderBy: Prisma.TaskOrderByWithRelationInput[] = [{ createdAt: 'desc' }]

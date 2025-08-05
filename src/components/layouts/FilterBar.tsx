@@ -70,7 +70,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
     })
   }
 
-  const ButtonIndex = filterTypeToButtonIndexMap[viewModeFilterOptions.type] ?? 0
+  let ButtonIndex = filterTypeToButtonIndexMap[viewModeFilterOptions.type] ?? 0
 
   const [noAssigneOptionFlag, setNoAssigneeOptionFlag] = useState<boolean>(true)
 
@@ -86,6 +86,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
     {
       name: 'My tasks',
       onClick: () => {
+        ButtonIndex = 0
         const selfAssigneeId = IUTokenSchema.parse(tokenPayload).internalUserId
         handleFilterOptionsChange(FilterOptions.TYPE, selfAssigneeId)
         setAssigneeValue(undefined)
@@ -96,6 +97,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
     {
       name: "My team's tasks",
       onClick: () => {
+        ButtonIndex = 1
         handleFilterOptionsChange(FilterOptions.TYPE, FilterOptionsKeywords.TEAM)
         setAssigneeValue(undefined)
         setNoAssigneeOptionFlag(false)
@@ -106,6 +108,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
     {
       name: 'Client tasks',
       onClick: () => {
+        ButtonIndex = 2
         handleFilterOptionsChange(FilterOptions.TYPE, FilterOptionsKeywords.CLIENTS)
         setAssigneeValue(undefined)
         setNoAssigneeOptionFlag(false)
@@ -116,6 +119,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
     {
       name: 'All tasks',
       onClick: () => {
+        ButtonIndex = 3
         handleFilterOptionsChange(FilterOptions.TYPE, '')
         setAssigneeValue(undefined)
         setNoAssigneeOptionFlag(true)

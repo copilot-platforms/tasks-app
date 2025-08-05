@@ -17,7 +17,7 @@ import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { UserType } from '@/types/interfaces'
+import { IFilterOptions, UserType } from '@/types/interfaces'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { redirectIfTaskCta, redirectToClientPortal } from '@/utils/redirect'
 import { UserRole } from '@api/core/types/user'
@@ -36,7 +36,7 @@ export async function getAllWorkflowStates(token: string): Promise<WorkflowState
 
 export async function getAllTasks(
   token: string,
-  filters?: { showArchived?: boolean; showUnarchived?: boolean },
+  filters?: { showArchived?: boolean; showUnarchived?: boolean; filterOptions?: IFilterOptions },
 ): Promise<TaskResponse[]> {
   const queryParams = new URLSearchParams({ token })
   if (filters?.showArchived !== undefined) {
@@ -90,7 +90,11 @@ export default async function Main({ searchParams }: { searchParams: { token: st
   const viewSettings = await getViewSettings(token)
   const [workflowStates, tasks, workspace] = await Promise.all([
     getAllWorkflowStates(token),
-    getAllTasks(token, { showArchived: viewSettings.showArchived, showUnarchived: viewSettings.showUnarchived }),
+    getAllTasks(token, {
+      showArchived: viewSettings.showArchived,
+      showUnarchived: viewSettings.showUnarchived,
+      filterOptions: viewSettings.filterOptions,
+    }),
     getWorkspace(token),
   ])
 
