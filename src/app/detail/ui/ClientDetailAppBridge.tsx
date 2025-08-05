@@ -9,18 +9,15 @@ import { useCallback, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 
 interface DetailAppBridgeProps {
-  handleTaskComplete: (workflowState: WorkflowStateResponse) => void
+  handleTaskComplete: () => void
+  isTaskCompleted: boolean
   portalUrl?: string
 }
 
-export const ClientDetailAppBridge = ({ handleTaskComplete, portalUrl }: DetailAppBridgeProps) => {
-  const { activeTask, workflowStates } = useSelector(selectTaskBoard)
-  const completedWorkflowState = workflowStates.find((state) => state.type === 'completed')
-  const isTaskCompleted = activeTask?.workflowStateId === completedWorkflowState?.id
-
-  console.log(portalUrl)
-
+export const ClientDetailAppBridge = ({ handleTaskComplete, isTaskCompleted, portalUrl }: DetailAppBridgeProps) => {
   const [awake, setAwake] = useState(false)
+
+  console.log(isTaskCompleted)
 
   useEffect(() => {
     setTimeout(() => {
@@ -29,7 +26,7 @@ export const ClientDetailAppBridge = ({ handleTaskComplete, portalUrl }: DetailA
   }, [])
 
   const handleMarkAsDone = useCallback(() => {
-    completedWorkflowState && handleTaskComplete(completedWorkflowState)
+    handleTaskComplete()
     // "awaken" callback using one more render to avoid hydration issues
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [awake])
@@ -37,7 +34,7 @@ export const ClientDetailAppBridge = ({ handleTaskComplete, portalUrl }: DetailA
   usePrimaryCta(
     {
       label: 'Mark as Done',
-      icon: Icons.PLUS,
+      icon: Icons.CHECK,
       onClick: handleMarkAsDone,
     },
     { portalUrl },
