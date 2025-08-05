@@ -209,6 +209,7 @@ export default async function TaskDetailPage({
             <Sidebar
               task_id={task_id}
               selectedAssigneeId={task?.assigneeId}
+              userType={user_type}
               selectedWorkflowState={task?.workflowState}
               updateWorkflowState={async (workflowState) => {
                 'use server'
