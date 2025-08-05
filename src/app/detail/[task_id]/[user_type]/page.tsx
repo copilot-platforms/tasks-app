@@ -210,6 +210,7 @@ export default async function TaskDetailPage({
               task_id={task_id}
               selectedAssigneeId={task?.assigneeId}
               userType={user_type}
+              portalUrl={workspace.portalUrl}
               selectedWorkflowState={task?.workflowState}
               updateWorkflowState={async (workflowState) => {
                 'use server'
