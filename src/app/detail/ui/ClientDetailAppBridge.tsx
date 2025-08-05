@@ -32,11 +32,13 @@ export const ClientDetailAppBridge = ({ handleTaskComplete, isTaskCompleted, por
   }, [awake])
 
   usePrimaryCta(
-    {
-      label: 'Mark as Done',
-      icon: Icons.PLUS,
-      onClick: handleMarkAsDone,
-    },
+    isTaskCompleted
+      ? null
+      : {
+          label: 'Mark as Done',
+          icon: Icons.CHECK,
+          onClick: handleMarkAsDone,
+        },
     { portalUrl },
   )
   useSecondaryCta(null, { portalUrl })
