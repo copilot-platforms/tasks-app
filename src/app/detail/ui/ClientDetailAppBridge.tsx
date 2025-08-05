@@ -17,8 +17,6 @@ interface DetailAppBridgeProps {
 export const ClientDetailAppBridge = ({ handleTaskComplete, isTaskCompleted, portalUrl }: DetailAppBridgeProps) => {
   const [awake, setAwake] = useState(false)
 
-  console.log(isTaskCompleted)
-
   useEffect(() => {
     setTimeout(() => {
       setAwake(true)
