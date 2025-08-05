@@ -43,6 +43,7 @@ export const Sidebar = ({
   disabled,
   workflowDisabled,
   userType,
+  portalUrl,
 }: {
   task_id: string
   selectedWorkflowState: WorkflowStateResponse
@@ -53,6 +54,7 @@ export const Sidebar = ({
   disabled: boolean
   workflowDisabled?: false
   userType: UserType
+  portalUrl?: string
 }) => {
   const { activeTask, workflowStates, assignee, previewMode } = useSelector(selectTaskBoard)
   const { showSidebar, showConfirmAssignModal } = useSelector(selectTaskDetails)
@@ -420,6 +422,7 @@ export const Sidebar = ({
             completedWorkflowState && updateStatusValue(completedWorkflowState)
             completedWorkflowState && updateWorkflowState(completedWorkflowState)
           }}
+          portalUrl={portalUrl}
         />
       )}
     </Box>
