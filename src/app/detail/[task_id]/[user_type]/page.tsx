@@ -41,6 +41,7 @@ import { Box, Stack } from '@mui/material'
 import { z } from 'zod'
 import { fetchWithErrorHandler } from '@/app/_fetchers/fetchWithErrorHandler'
 import { AssigneeCacheGetter } from '@/app/_cache/AssigneeCacheGetter'
+import { ClientDetailAppBridge } from '@/app/detail/ui/ClientDetailAppBridge'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const data = await fetchWithErrorHandler<{ task: TaskResponse }>(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
