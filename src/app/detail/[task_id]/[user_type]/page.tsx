@@ -41,6 +41,7 @@ import { Box, Stack } from '@mui/material'
 import { z } from 'zod'
 import { fetchWithErrorHandler } from '@/app/_fetchers/fetchWithErrorHandler'
 import { AssigneeCacheGetter } from '@/app/_cache/AssigneeCacheGetter'
+import { ClientDetailAppBridge } from '@/app/detail/ui/ClientDetailAppBridge'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const data = await fetchWithErrorHandler<{ task: TaskResponse }>(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
@@ -110,6 +111,15 @@ export default async function TaskDetailPage({
 
   return (
     <DetailStateUpdate isRedirect={!!searchParams.isRedirect} token={token} tokenPayload={tokenPayload} task={task}>
+      {params.user_type === UserType.CLIENT_USER && !getPreviewMode(tokenPayload) && (
+        <ClientDetailAppBridge
+          portalUrl={workspace.portalUrl}
+          handleTaskComplete={async (workflowState) => {
+            'use server'
+            await clientUpdateTask(token, task_id, workflowState.id)
+          }}
+        />
+      )}
       <RealTime tokenPayload={tokenPayload}>
         <EscapeHandler />
         <ResponsiveStack>
