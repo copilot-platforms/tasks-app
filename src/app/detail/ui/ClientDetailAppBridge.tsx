@@ -18,6 +18,8 @@ export const ClientDetailAppBridge = ({ handleTaskComplete, portalUrl }: DetailA
   const completedWorkflowState = workflowStates.find((state) => state.type === 'completed')
   const isTaskCompleted = activeTask?.workflowStateId === completedWorkflowState?.id
 
+  console.log(portalUrl)
+
   const [awake, setAwake] = useState(false)
 
   useEffect(() => {
