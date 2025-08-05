@@ -111,15 +111,6 @@ export default async function TaskDetailPage({
 
   return (
     <DetailStateUpdate isRedirect={!!searchParams.isRedirect} token={token} tokenPayload={tokenPayload} task={task}>
-      {params.user_type === UserType.CLIENT_USER && !getPreviewMode(tokenPayload) && (
-        <ClientDetailAppBridge
-          portalUrl={workspace.portalUrl}
-          handleTaskComplete={async (workflowState) => {
-            'use server'
-            await clientUpdateTask(token, task_id, workflowState.id)
-          }}
-        />
-      )}
       <RealTime tokenPayload={tokenPayload}>
         <EscapeHandler />
         <ResponsiveStack>
@@ -212,6 +203,7 @@ export default async function TaskDetailPage({
             <Sidebar
               task_id={task_id}
               selectedAssigneeId={task?.assigneeId}
+              userType={user_type}
               selectedWorkflowState={task?.workflowState}
               updateWorkflowState={async (workflowState) => {
                 'use server'
