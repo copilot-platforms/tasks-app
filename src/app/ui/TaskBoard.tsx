@@ -15,7 +15,6 @@ import { NoFilteredTasksState } from '@/components/layouts/EmptyState/NoFiltered
 import { FilterBar } from '@/components/layouts/FilterBar'
 import { Header } from '@/components/layouts/Header'
 import { CustomLink } from '@/hoc/CustomLink'
-import CustomScrollBar from '@/hoc/CustomScrollBar'
 import { DragDropHandler } from '@/hoc/DragDropHandler'
 import { useFilter } from '@/hooks/useFilter'
 import { selectTaskBoard, updateWorkflowStateIdByTaskId } from '@/redux/features/taskBoardSlice'
@@ -30,9 +29,11 @@ import { sortTaskByDescendingOrder } from '@/utils/sortTask'
 import { prioritizeStartedStates } from '@/utils/workflowStates'
 import { UserRole } from '@api/core/types/user'
 import { Box, Stack } from '@mui/material'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { z } from 'zod'
+import { useVirtualizer } from '@tanstack/react-virtual'
+import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 
 interface TaskBoardProps {
   mode: UserRole
@@ -176,35 +177,11 @@ export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
                   showAddBtn={mode === UserRole.IU || !!previewMode}
                   showHeader={showHeader}
                 >
-                  <CustomScrollBar>
-                    <Stack direction="column" rowGap="6px" sx={{ overflowX: 'auto' }}>
-                      {sortTaskByDescendingOrder<TaskResponse>(filterTaskWithWorkflowStateId(list.id)).map((task, index) => {
-                        return (
-                          <CustomLink
-                            key={task.id}
-                            href={{ pathname: getCardHref(task, mode), query: { token } }}
-                            style={{ width: 'fit-content' }}
-                          >
-                            <DragDropHandler
-                              key={task.id}
-                              accept={'taskCard'}
-                              index={index}
-                              task={task}
-                              draggable // Make TaskCard draggable
-                            >
-                              <Box key={task.id}>
-                                <TaskCard
-                                  task={task}
-                                  key={task.id}
-                                  href={{ pathname: getCardHref(task, mode), query: { token } }}
-                                />
-                              </Box>
-                            </DragDropHandler>
-                          </CustomLink>
-                        )
-                      })}
-                    </Stack>
-                  </CustomScrollBar>
+                  <TasksRowVirtualizer
+                    rows={sortTaskByDescendingOrder<TaskResponse>(filterTaskWithWorkflowStateId(list.id))}
+                    mode={mode}
+                    token={token ?? null}
+                  />
                 </TaskColumn>
               </DragDropHandler>
             ))}
@@ -220,47 +197,195 @@ export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
             margin: '0 auto',
           }}
         >
-          <CustomScrollBar>
-            {prioritizeStartedStates(workflowStates).map((list, index) => (
-              <DragDropHandler
+          {prioritizeStartedStates(workflowStates).map((list, index) => (
+            <DragDropHandler
+              key={list.id}
+              accept={'taskCard'}
+              index={index}
+              id={list.id}
+              onDropItem={onDropItem}
+              droppable // Make TaskRow droppable
+            >
+              <TaskRow
+                mode={mode}
+                workflowStateId={list.id}
                 key={list.id}
-                accept={'taskCard'}
-                index={index}
-                id={list.id}
-                onDropItem={onDropItem}
-                droppable // Make TaskRow droppable
+                columnName={list.name}
+                taskCount={taskCountForWorkflowStateId(list.id)}
+                display={!!filterTaskWithWorkflowStateId(list.id).length}
+                showAddBtn={mode === UserRole.IU || !!previewMode}
               >
-                <TaskRow
+                <TasksColumnVirtualizer
+                  rows={sortTaskByDescendingOrder<TaskResponse>(filterTaskWithWorkflowStateId(list.id))}
+                  list={list}
                   mode={mode}
-                  workflowStateId={list.id}
-                  key={list.id}
-                  columnName={list.name}
-                  taskCount={taskCountForWorkflowStateId(list.id)}
-                  display={!!filterTaskWithWorkflowStateId(list.id).length}
-                  showAddBtn={mode === UserRole.IU || !!previewMode}
-                >
-                  {sortTaskByDescendingOrder<TaskResponse>(filterTaskWithWorkflowStateId(list.id)).map((task, index) => {
-                    return (
-                      <DragDropHandler
-                        key={task.id}
-                        accept={'taskCard'}
-                        index={index}
-                        task={task}
-                        draggable // Make ListViewTaskCard draggable
-                      >
-                        <TaskCardList task={task} variant="task" key={task.id} workflowState={list} mode={mode} />
-                      </DragDropHandler>
-                    )
-                  })}
-                </TaskRow>
-              </DragDropHandler>
-            ))}
-          </CustomScrollBar>
+                  token={token ?? null}
+                />
+              </TaskRow>
+            </DragDropHandler>
+          ))}
         </Stack>
       )}
       <CustomDragLayer>
         <CardDragLayer />
       </CustomDragLayer>
     </>
+  )
+}
+
+interface TasksVirtualizerProps {
+  rows: TaskResponse[]
+  mode: UserRole
+  token: string | null
+}
+
+// virtualization component used in board view
+function TasksRowVirtualizer({ rows, mode, token }: TasksVirtualizerProps) {
+  const parentRef = useRef<HTMLDivElement>(null)
+
+  const rowVirtualizer = useVirtualizer({
+    count: rows.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: useCallback(
+      (index: number) => {
+        const task = rows[index]
+        let estimate = 70
+        if (task.isArchived) estimate += 24
+        if (task.dueDate) estimate += 24
+        if (task.title && task.title.length > 50) estimate += 20
+        return estimate
+      },
+      [rows],
+    ),
+    measureElement: (element) => element.getBoundingClientRect().height,
+    overscan: 20,
+  })
+
+  return (
+    <div
+      ref={parentRef}
+      className="List"
+      style={{
+        height: `100vh`,
+        width: '100%',
+        overflow: 'auto',
+        columnGap: '6px',
+      }}
+    >
+      <div
+        style={{
+          height: `${rowVirtualizer.getTotalSize()}px`,
+          width: '100%',
+          position: 'relative',
+        }}
+      >
+        {rowVirtualizer.getVirtualItems().map((virtualRow) => (
+          <div
+            key={virtualRow.key}
+            data-index={virtualRow.index}
+            ref={(node) => rowVirtualizer.measureElement(node)}
+            style={{
+              display: 'flex',
+              position: 'absolute',
+              transform: `translateY(${virtualRow.start}px)`,
+              width: '100%',
+            }}
+          >
+            <div style={{ padding: '3px 0' }}>
+              <CustomLink
+                key={rows[virtualRow.index].id}
+                href={{
+                  pathname: getCardHref(rows[virtualRow.index], mode),
+                  query: { token },
+                }}
+                style={{ width: 'fit-content' }}
+              >
+                <DragDropHandler
+                  key={rows[virtualRow.index].id}
+                  accept={'taskCard'}
+                  index={virtualRow.index}
+                  task={rows[virtualRow.index]}
+                  draggable
+                >
+                  <Box>
+                    <TaskCard
+                      task={rows[virtualRow.index]}
+                      key={rows[virtualRow.index].id}
+                      href={{
+                        pathname: getCardHref(rows[virtualRow.index], mode),
+                        query: { token },
+                      }}
+                    />
+                  </Box>
+                </DragDropHandler>
+              </CustomLink>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function TasksColumnVirtualizer({ rows, mode, token, list }: TasksVirtualizerProps & { list: WorkflowStateResponse }) {
+  const parentRef = useRef<HTMLDivElement>(null)
+  const columnVirtualizer = useVirtualizer({
+    count: rows.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 44,
+    measureElement: (element) => element.getBoundingClientRect().height,
+    overscan: 100,
+  })
+  return (
+    <div
+      ref={parentRef}
+      className="List"
+      style={{
+        height: `100vh`,
+        width: '100%',
+        overflow: 'auto',
+        columnGap: '6px',
+      }}
+    >
+      <div
+        style={{
+          height: `${columnVirtualizer.getTotalSize()}px`,
+          width: '100%',
+          position: 'relative',
+        }}
+      >
+        {columnVirtualizer.getVirtualItems().map((virtualRow) => (
+          <div
+            key={virtualRow.key}
+            data-index={virtualRow.index}
+            ref={(node) => columnVirtualizer.measureElement(node)}
+            style={{
+              display: 'flex',
+              position: 'absolute',
+              transform: `translateY(${virtualRow.start}px)`,
+              width: '100%',
+            }}
+          >
+            <div style={{ padding: '3px 0', width: '100%' }}>
+              <DragDropHandler
+                key={rows[virtualRow.index].id}
+                accept={'taskCard'}
+                index={virtualRow.index}
+                task={rows[virtualRow.index]}
+                draggable
+              >
+                <TaskCardList
+                  task={rows[virtualRow.index]}
+                  variant="task"
+                  key={rows[virtualRow.index].id}
+                  workflowState={list}
+                  mode={mode}
+                />
+              </DragDropHandler>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   )
 }
