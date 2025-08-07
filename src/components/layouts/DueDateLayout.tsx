@@ -13,13 +13,14 @@ dayjs.extend(isTomorrow)
 interface DueDateLayoutProp {
   dateString: DateString
   isDone: boolean
+  variant?: 'board' | 'detail'
 }
 
-export const DueDateLayout = ({ dateString, isDone }: DueDateLayoutProp) => {
+export const DueDateLayout = ({ dateString, isDone, variant = 'detail' }: DueDateLayoutProp) => {
   const date = createDateFromFormattedDateString(dateString)
   const now = dayjs()
   const calculateFormattedDueDate = useCallback(() => {
-    return DueDateFormatter(date, true)
+    return DueDateFormatter(date, true, variant)
   }, [date])
 
   const formattedDueDate = calculateFormattedDueDate()
