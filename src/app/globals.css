@@ -40,3 +40,29 @@ a {
 .scroll-thumb:hover {
   background-color: rgba(0, 0, 0, 0.5);
 }
+
+.List {
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.5) transparent;
+  position: relative;
+}
+
+.List::-webkit-scrollbar {
+  width: 8px;
+}
+
+.List::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.List::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 20px;
+  margin-right: 1px;
+  transition: background-color 0.15s ease-in-out;
+}
+
+.List::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.5);
+}
