@@ -176,27 +176,28 @@ export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
                     <Stack direction="column" rowGap="6px" sx={{ overflowX: 'auto' }}>
                       {sortTaskByDescendingOrder<TaskResponse>(filterTaskWithWorkflowStateId(list.id)).map((task, index) => {
                         return (
-                          <CustomLink
+                          // <CustomLink
+                          //   key={task.id}
+                          //   href={{ pathname: getCardHref(task, mode), query: { token } }}
+                          //   style={{ width: 'fit-content' }}
+                          // >
+                          <DragDropHandler
                             key={task.id}
-                            href={{ pathname: getCardHref(task, mode), query: { token } }}
-                            style={{ width: 'fit-content' }}
+                            accept={'taskCard'}
+                            index={index}
+                            task={task}
+                            draggable // Make TaskCard draggable
                           >
-                            <DragDropHandler
-                              key={task.id}
-                              accept={'taskCard'}
-                              index={index}
-                              task={task}
-                              draggable // Make TaskCard draggable
-                            >
-                              <Box key={task.id}>
-                                <TaskCard
-                                  task={task}
-                                  key={task.id}
-                                  href={{ pathname: getCardHref(task, mode), query: { token } }}
-                                />
-                              </Box>
-                            </DragDropHandler>
-                          </CustomLink>
+                            <Box key={task.id}>
+                              <TaskCard
+                                task={task}
+                                key={task.id}
+                                href={{ pathname: getCardHref(task, mode), query: { token } }}
+                                workflowState={list}
+                                mode={mode}
+                              />
+                            </Box>
+                          </DragDropHandler>
                         )
                       })}
                     </Stack>
