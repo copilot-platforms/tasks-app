@@ -1,6 +1,10 @@
 import dayjs from 'dayjs'
 
-export const DueDateFormatter = (date: string | Date, isRelativeDate: boolean = false, variant: 'board' | 'detail') => {
+export const DueDateFormatter = (
+  date: string | Date,
+  isRelativeDate: boolean = false,
+  variant: 'board' | 'detail' = 'detail',
+) => {
   const parsedDate = dayjs(date)
   if (isRelativeDate) {
     if (parsedDate.isToday()) {
