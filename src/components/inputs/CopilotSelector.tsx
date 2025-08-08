@@ -1,28 +1,28 @@
 import { StyledUserCompanySelector } from '@/app/detail/ui/styledComponent'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
-import { IAssigneeCombined, InputValue } from '@/types/interfaces'
+import { IAssigneeCombined, InputValue, ISelectorOption } from '@/types/interfaces'
 import { parseAssigneeToSelectorOption } from '@/utils/addTypeToAssignee'
 import { parseAssigneeToSelectorOptions } from '@/utils/assignee'
 import { selectorOptionsToInputValue } from '@/utils/selector'
 import { Box, ClickAwayListener, Popper, Stack } from '@mui/material'
-import { ReactNode, useEffect, useState } from 'react'
+import { ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 
 export const CopilotSelector = ({
   onChange,
   name,
-  initialValue,
+  initialAssignee,
   hideClientsList,
   hideIusList,
 }: {
   onChange: (inputValue: InputValue[]) => void
   name: string
-  initialValue?: IAssigneeCombined
+  initialAssignee?: ISelectorOption[]
   hideClientsList?: boolean
   hideIusList?: boolean
 }) => {
   const { assignee } = useSelector(selectTaskBoard)
-  const initialAssignee = initialValue && parseAssigneeToSelectorOptions(initialValue)
+
   // Currently selected assignee. This is not guarenteed to be the same as the final assignee
   // and is just the temporary state while the selector is still open
   const [currentlySelected, setCurrentlySelected] = useState<InputValue[]>(
@@ -74,15 +74,31 @@ export const CopilotPopSelector = ({
   hideIusList,
 }: CopilotPopSelectorProps) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-  const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
-    if (!disabled) {
-      setAnchorEl(anchorEl ? null : event.currentTarget)
-    }
-  }
 
-  const handleClose = () => {
+  const shouldCallOnChangeWithEmpty = useRef(false)
+
+  const handleClick = useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      if (!disabled) {
+        setAnchorEl(anchorEl ? null : event.currentTarget)
+      }
+    },
+    [anchorEl, disabled],
+  )
+
+  const initialAssignee = initialValue && parseAssigneeToSelectorOptions(initialValue)
+  const [selectedAssignee, setSelectedAssignee] = useState<InputValue[] | undefined>(
+    initialAssignee && selectorOptionsToInputValue(initialAssignee),
+  )
+
+  const handleClose = useCallback(() => {
+    if (shouldCallOnChangeWithEmpty.current && selectedAssignee && !selectedAssignee.length) {
+      onChange(selectedAssignee)
+      shouldCallOnChangeWithEmpty.current = false
+    }
     setAnchorEl(null)
-  }
+  }, [onChange, selectedAssignee])
+
   const open = Boolean(anchorEl)
   const id = open ? 'selector-popper' : ''
 
@@ -103,7 +119,14 @@ export const CopilotPopSelector = ({
   }, [open])
 
   return (
-    <ClickAwayListener onClickAway={handleClose}>
+    <ClickAwayListener
+      onClickAway={() => {
+        if (open) {
+          shouldCallOnChangeWithEmpty.current = true
+          handleClose()
+        }
+      }}
+    >
       <Stack direction="column">
         <Box onClick={handleClick}>{buttonContent}</Box>
         <Popper
@@ -119,11 +142,16 @@ export const CopilotPopSelector = ({
           <CopilotSelector
             hideClientsList={hideClientsList}
             hideIusList={hideIusList}
-            initialValue={initialValue}
+            initialAssignee={initialAssignee}
             name={name}
             onChange={(inputValue) => {
-              onChange(inputValue)
-              setAnchorEl(null)
+              setSelectedAssignee(inputValue)
+              if (inputValue.length) {
+                onChange(inputValue)
+                setAnchorEl(null)
+              } else {
+                shouldCallOnChangeWithEmpty.current = true
+              }
             }}
           />
         </Popper>
