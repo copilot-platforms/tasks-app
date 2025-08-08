@@ -256,7 +256,7 @@ export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
         </Stack>
       )}
       <CustomDragLayer>
-        <CardDragLayer />
+        <CardDragLayer mode={mode} />
       </CustomDragLayer>
     </>
   )
