@@ -54,7 +54,7 @@ interface TaskCardProps {
   href: string | UrlObject
   mode: UserRole
   workflowState?: WorkflowStateResponse
-  onSetInteractive: (taskId: string, value: boolean) => void
+  onSetInteractive?: (taskId: string, value: boolean) => void
 }
 
 export const TaskCard = ({ task, href, workflowState, mode, onSetInteractive }: TaskCardProps) => {
@@ -116,8 +116,8 @@ export const TaskCard = ({ task, href, workflowState, mode, onSetInteractive }: 
       <Stack direction={'row'} columnGap={'2px'}>
         <Box
           sx={{ alignItems: 'top' }}
-          onMouseEnter={() => onSetInteractive(task.id, false)}
-          onMouseLeave={() => onSetInteractive(task.id, true)}
+          onMouseEnter={() => onSetInteractive && onSetInteractive(task.id, false)}
+          onMouseLeave={() => onSetInteractive && onSetInteractive(task.id, true)}
         >
           <WorkflowStateSelector
             option={workflowStates}
@@ -156,7 +156,10 @@ export const TaskCard = ({ task, href, workflowState, mode, onSetInteractive }: 
             >
               {task.title}
             </Typography>
-            <Box onMouseEnter={() => onSetInteractive(task.id, false)} onMouseLeave={() => onSetInteractive(task.id, true)}>
+            <Box
+              onMouseEnter={() => onSetInteractive && onSetInteractive(task.id, false)}
+              onMouseLeave={() => onSetInteractive && onSetInteractive(task.id, true)}
+            >
               {assigneeValue ? (
                 <CopilotPopSelector
                   name="Set assignee"
@@ -209,8 +212,8 @@ export const TaskCard = ({ task, href, workflowState, mode, onSetInteractive }: 
           <Stack direction={'row'} columnGap={'10px'} justifyContent={'space-between'}>
             <Box
               sx={{ ml: '-4px' }}
-              onMouseEnter={() => onSetInteractive(task.id, false)}
-              onMouseLeave={() => onSetInteractive(task.id, true)}
+              onMouseEnter={() => onSetInteractive && onSetInteractive(task.id, false)}
+              onMouseLeave={() => onSetInteractive && onSetInteractive(task.id, true)}
             >
               {task.dueDate && (
                 <DatePickerComponent
