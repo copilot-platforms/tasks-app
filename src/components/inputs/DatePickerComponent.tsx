@@ -20,6 +20,7 @@ interface Prop {
   gap?: string
   variant?: 'button' | 'icon' | 'normal'
   isDone?: boolean
+  isShort?: boolean
 }
 
 export const DatePickerComponent = ({
@@ -32,6 +33,7 @@ export const DatePickerComponent = ({
   gap,
   variant = 'normal',
   isDone,
+  isShort = false,
 }: Prop) => {
   const [value, setValue] = useState(dateValue ? dayjs(dateValue) : null)
 
@@ -145,7 +147,11 @@ export const DatePickerComponent = ({
               alignItems: 'center',
             }}
           >
-            <DueDateLayout dateString={value?.format('YYYY-MM-DD') ?? ''} isDone={isDone ?? false} />
+            <DueDateLayout
+              dateString={value?.format('YYYY-MM-DD') ?? ''}
+              isDone={isDone ?? false}
+              variant={isShort ? 'short' : 'long'}
+            />
           </Box>
         )}
       </Stack>
