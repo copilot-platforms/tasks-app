@@ -3,7 +3,7 @@
 import { UserRole } from '@/app/api/core/types/user'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { SelectorType } from '@/components/inputs/Selector'
-import { DueDateLayout } from '@/components/layouts/DueDateLayout'
+import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { useSubtaskCount } from '@/hooks/useSubtaskCount'
 import {
@@ -23,14 +23,17 @@ import { Box, Skeleton, Stack, styled, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { UrlObject } from 'url'
-import { WorkflowStateSelector } from '../inputs/Selector-WorkflowState'
 
 import { updateTask } from '@/app/(home)/actions'
-import { clientUpdateTask, updateAssignee } from '@/app/detail/[task_id]/[user_type]/actions'
+import { clientUpdateTask, updateAssignee, updateTaskDetail } from '@/app/detail/[task_id]/[user_type]/actions'
+import { TaskMetaItems } from '@/components/atoms/TaskMetaItems'
+import { CopilotPopSelector } from '@/components/inputs/CopilotSelector'
+import { DatePickerComponent } from '@/components/inputs/DatePickerComponent'
+import { DateStringSchema } from '@/types/date'
+import { createDateFromFormattedDateString, formatDate } from '@/utils/dateHelper'
 import { getSelectedUserIds, getSelectorAssignee, getSelectorAssigneeFromTask } from '@/utils/selector'
 import { shouldConfirmBeforeReassignment } from '@/utils/shouldConfirmBeforeReassign'
 import z from 'zod'
-import { CopilotPopSelector } from '../inputs/CopilotSelector'
 
 const TaskCardContainer = styled(Stack)(({ theme }) => ({
   border: `1px solid ${theme.color.borders.border}`,
@@ -57,6 +60,8 @@ export const TaskCard = ({ task, href, workflowState, mode }: TaskCardProps) => 
   const { assignee, workflowStates, assigneeCache, previewMode, token } = useSelector(selectTaskBoard)
 
   const subtaskCount = useSubtaskCount(task.id)
+
+  const [currentDueDate, setCurrentDueDate] = useState<string | undefined>(task.dueDate)
 
   const [selectedAssignee, setSelectedAssignee] = useState<UserIdsType | undefined>(undefined)
 
@@ -107,78 +112,38 @@ export const TaskCard = ({ task, href, workflowState, mode }: TaskCardProps) => 
 
   return (
     <TaskCardContainer>
-      {/* <Stack rowGap={1}>
-        <Stack direction="row" justifyContent="space-between">
-          <Stack direction="column" rowGap={'4px'}>
-            {(task.isArchived || subtaskCount > 0) && (
-              <Stack direction="row" sx={{ display: 'flex', gap: '12px', flexShrink: 0, alignItems: 'center' }}>
-                <TaskMetaItems task={task} lineHeight="18px" />
-              </Stack>
-            )}
-
-            {currentAssignee ? (
-              <Stack direction="row" alignItems="center" columnGap={1}>
-                <CopilotAvatar currentAssignee={currentAssignee as IAssigneeCombined} />
-                <Typography
-                  variant="sm"
-                  fontSize="12px"
-                  sx={{
-                    color: (theme) => theme.color.gray[500],
-                    width: '146px',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {getAssigneeName(currentAssignee)}
-                </Typography>
-              </Stack>
-            ) : (
-              <Box>
-                <Stack direction="row" justifyContent="space-between" alignItems="center" columnGap={'4px'}>
-                  <Skeleton variant="circular" width={20} height={20} />
-                  <Skeleton variant="rectangular" width="146px" height="12px" />
-                </Stack>
-              </Box>
-            )}
-          </Stack>
-
-          <Typography variant="bodyXs" fontWeight={400} sx={{ color: (theme) => theme.color.gray[500] }}>
-            {task.label}
-          </Typography>
-        </Stack>
-        <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[600] }}>
-          {task.title}
-        </Typography>
-        {task.dueDate && <DueDateLayout dateString={task.dueDate} isDone={isTaskCompleted(task, workflowStates)} />}
-      </Stack> */}
-
-      <Stack direction={'row'} columnGap={'10px'} justifyContent={'space-between'}>
-        <Stack direction={'row'} columnGap={'2px'}>
-          <Box sx={{ alignItems: 'top' }}>
-            <WorkflowStateSelector
-              option={workflowStates}
-              value={statusValue}
-              variant="icon"
-              getValue={(value) => {
-                updateStatusValue(value)
-                store.dispatch(updateWorkflowStateIdByTaskId({ taskId: task.id, targetWorkflowStateId: value.id }))
-                if (mode === UserRole.Client && !previewMode) {
-                  clientUpdateTask(z.string().parse(token), task.id, value.id)
-                } else {
-                  updateTask({
-                    token: z.string().parse(token),
-                    taskId: task.id,
-                    payload: { workflowStateId: value.id },
-                  })
-                }
-              }}
-              responsiveNoHide
-              size={Sizes.MEDIUM}
-              padding={'4px'}
-            />
-          </Box>
-          <Stack direction="column" justifyContent="center" rowGap={'5px'}>
+      <Stack direction={'row'} columnGap={'2px'}>
+        <Box
+          sx={{ alignItems: 'top' }}
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+          }}
+        >
+          <WorkflowStateSelector
+            option={workflowStates}
+            value={statusValue}
+            variant="icon"
+            getValue={(value) => {
+              updateStatusValue(value)
+              store.dispatch(updateWorkflowStateIdByTaskId({ taskId: task.id, targetWorkflowStateId: value.id }))
+              if (mode === UserRole.Client && !previewMode) {
+                clientUpdateTask(z.string().parse(token), task.id, value.id)
+              } else {
+                updateTask({
+                  token: z.string().parse(token),
+                  taskId: task.id,
+                  payload: { workflowStateId: value.id },
+                })
+              }
+            }}
+            responsiveNoHide
+            size={Sizes.MEDIUM}
+            padding={'4px'}
+          />
+        </Box>
+        <Stack direction="column" justifyContent="center" rowGap={'5px'} sx={{ width: '100%' }}>
+          <Stack direction={'row'} columnGap={'10px'} justifyContent={'space-between'}>
             <Typography
               variant="bodyMd"
               sx={{
@@ -192,25 +157,40 @@ export const TaskCard = ({ task, href, workflowState, mode }: TaskCardProps) => 
             >
               {task.title}
             </Typography>
-            {task.dueDate && (
-              <DueDateLayout dateString={task.dueDate} isDone={isTaskCompleted(task, workflowStates)} variant="board" />
-            )}
-          </Stack>
-        </Stack>
-        {assigneeValue ? (
-          <CopilotPopSelector
-            name="Set assignee"
-            disabled={mode === UserRole.Client && !previewMode}
-            initialValue={(() => {
-              const value = assigneeValue as IAssigneeCombined
-              if (!value || value === NoAssignee) return undefined
-              return value
-            })()}
-            onChange={handleAssigneeChange}
-            buttonContent={
+
+            {assigneeValue ? (
+              <CopilotPopSelector
+                name="Set assignee"
+                disabled={mode === UserRole.Client && !previewMode}
+                initialValue={(() => {
+                  const value = assigneeValue as IAssigneeCombined
+                  if (!value || value === NoAssignee) return undefined
+                  return value
+                })()}
+                onChange={handleAssigneeChange}
+                buttonContent={
+                  <Box
+                    sx={{
+                      padding: '2px 2px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      borderRadius: '4px',
+                      ...(!(mode === UserRole.Client && !previewMode) && {
+                        ':hover': {
+                          cursor: 'pointer',
+                          background: (theme) => theme.color.gray[150],
+                        },
+                      }),
+                    }}
+                  >
+                    <CopilotAvatar currentAssignee={assigneeValue as IAssigneeCombined} />
+                  </Box>
+                }
+              />
+            ) : (
               <Box
                 sx={{
-                  padding: '2px 2px',
+                  padding: '2px 4px',
                   display: 'flex',
                   alignItems: 'center',
                   borderRadius: '4px',
@@ -222,28 +202,48 @@ export const TaskCard = ({ task, href, workflowState, mode }: TaskCardProps) => 
                   }),
                 }}
               >
-                <CopilotAvatar currentAssignee={assigneeValue as IAssigneeCombined} />
+                <Skeleton variant="circular" width={20} height={20} />
               </Box>
-            }
-          />
-        ) : (
-          <Box
-            sx={{
-              padding: '2px 4px',
-              display: 'flex',
-              alignItems: 'center',
-              borderRadius: '4px',
-              ...(!(mode === UserRole.Client && !previewMode) && {
-                ':hover': {
-                  cursor: 'pointer',
-                  background: (theme) => theme.color.gray[150],
-                },
-              }),
-            }}
-          >
-            <Skeleton variant="circular" width={20} height={20} />
-          </Box>
-        )}
+            )}
+          </Stack>
+          <Stack direction={'row'} columnGap={'10px'} justifyContent={'space-between'}>
+            <Box sx={{ ml: '-4px' }}>
+              {task.dueDate && (
+                <DatePickerComponent
+                  getDate={(date) => {
+                    const isoDate = DateStringSchema.parse(formatDate(date))
+                    token && updateTaskDetail({ token, taskId: task.id, payload: { dueDate: isoDate } })
+                    setCurrentDueDate(isoDate)
+                  }}
+                  variant="icon"
+                  padding="0px 4px"
+                  dateValue={
+                    currentDueDate ? createDateFromFormattedDateString(z.string().parse(currentDueDate)) : undefined
+                  }
+                  disabled={mode === UserRole.Client && !previewMode}
+                  isDone={isTaskCompleted(task, workflowStates)}
+                  isShort
+                />
+              )}
+            </Box>
+
+            {(task.isArchived || subtaskCount > 0) && (
+              <Stack
+                direction="row"
+                sx={{
+                  display: 'flex',
+                  gap: '12px',
+                  flexShrink: 0,
+                  alignItems: 'center',
+                  justifyContent: 'flex-end',
+                  padding: '0px 5px',
+                }}
+              >
+                <TaskMetaItems task={task} lineHeight="18px" />
+              </Stack>
+            )}
+          </Stack>
+        </Stack>
       </Stack>
     </TaskCardContainer>
   )
