@@ -53,6 +53,17 @@ export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
     previewMode,
   } = useSelector(selectTaskBoard)
 
+  const [isInteractiveElementActive, setIsInteractiveElementActive] = useState<Record<string, boolean>>(
+    () => Object.fromEntries(filteredTasks.map((task) => [task.id, false])) as Record<string, boolean>,
+  )
+
+  const setInteractiveElementValue = (taskId: string, value: boolean) => {
+    setIsInteractiveElementActive((prev) => ({
+      ...prev,
+      [taskId]: value,
+    }))
+  }
+
   const onDropItem = useCallback(
     (payload: { taskId: string; targetWorkflowStateId: string }) => {
       const { taskId, targetWorkflowStateId } = payload
@@ -175,12 +186,32 @@ export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
                   <CustomScrollBar>
                     <Stack direction="column" rowGap="6px" sx={{ overflowX: 'auto' }}>
                       {sortTaskByDescendingOrder<TaskResponse>(filterTaskWithWorkflowStateId(list.id)).map((task, index) => {
-                        return (
-                          // <CustomLink
-                          //   key={task.id}
-                          //   href={{ pathname: getCardHref(task, mode), query: { token } }}
-                          //   style={{ width: 'fit-content' }}
-                          // >
+                        return isInteractiveElementActive[task.id] ? (
+                          <CustomLink
+                            key={task.id}
+                            href={{ pathname: getCardHref(task, mode), query: { token } }}
+                            style={{ width: 'fit-content' }}
+                          >
+                            <DragDropHandler
+                              key={task.id}
+                              accept={'taskCard'}
+                              index={index}
+                              task={task}
+                              draggable // Make TaskCard draggable
+                            >
+                              <Box key={task.id}>
+                                <TaskCard
+                                  task={task}
+                                  key={task.id}
+                                  href={{ pathname: getCardHref(task, mode), query: { token } }}
+                                  workflowState={list}
+                                  mode={mode}
+                                  onSetInteractive={setInteractiveElementValue}
+                                />
+                              </Box>
+                            </DragDropHandler>
+                          </CustomLink>
+                        ) : (
                           <DragDropHandler
                             key={task.id}
                             accept={'taskCard'}
@@ -195,6 +226,7 @@ export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
                                 href={{ pathname: getCardHref(task, mode), query: { token } }}
                                 workflowState={list}
                                 mode={mode}
+                                onSetInteractive={setInteractiveElementValue}
                               />
                             </Box>
                           </DragDropHandler>
