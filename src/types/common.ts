@@ -150,7 +150,7 @@ export const InternalUsersSchema = z.object({
   familyName: z.string(),
   email: z.union([z.string().email(), z.literal('')]), // Deleted IUs can be queried, but have no email
   avatarImageUrl: z.string().optional(),
-  isClientAccessLimited: z.boolean(),
+  isClientAccessLimited: z.boolean().default(false),
   companyAccessList: z.array(z.string()).nullable(),
   fallbackColor: z.string().nullish(),
   createdAt: z.string().datetime(),
