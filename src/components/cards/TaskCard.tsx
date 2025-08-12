@@ -54,10 +54,9 @@ interface TaskCardProps {
   href: string | UrlObject
   mode: UserRole
   workflowState?: WorkflowStateResponse
-  onSetInteractive?: (taskId: string, value: boolean) => void
 }
 
-export const TaskCard = ({ task, href, workflowState, mode, onSetInteractive }: TaskCardProps) => {
+export const TaskCard = ({ task, href, workflowState, mode }: TaskCardProps) => {
   const { assignee, workflowStates, assigneeCache, previewMode, token } = useSelector(selectTaskBoard)
 
   const subtaskCount = useSubtaskCount(task.id)
@@ -114,11 +113,7 @@ export const TaskCard = ({ task, href, workflowState, mode, onSetInteractive }: 
   return (
     <TaskCardContainer>
       <Stack direction={'row'} columnGap={'2px'}>
-        <Box
-          sx={{ alignItems: 'top' }}
-          onMouseEnter={() => onSetInteractive && onSetInteractive(task.id, false)}
-          onMouseLeave={() => onSetInteractive && onSetInteractive(task.id, true)}
-        >
+        <Box sx={{ alignItems: 'top' }}>
           <WorkflowStateSelector
             option={workflowStates}
             value={statusValue}
@@ -156,65 +151,57 @@ export const TaskCard = ({ task, href, workflowState, mode, onSetInteractive }: 
             >
               {task.title}
             </Typography>
-            <Box
-              onMouseEnter={() => onSetInteractive && onSetInteractive(task.id, false)}
-              onMouseLeave={() => onSetInteractive && onSetInteractive(task.id, true)}
-            >
-              {assigneeValue ? (
-                <CopilotPopSelector
-                  name="Set assignee"
-                  disabled={mode === UserRole.Client && !previewMode}
-                  initialValue={(() => {
-                    const value = assigneeValue as IAssigneeCombined
-                    if (!value || value === NoAssignee) return undefined
-                    return value
-                  })()}
-                  onChange={handleAssigneeChange}
-                  buttonContent={
-                    <Box
-                      sx={{
-                        padding: '2px 2px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        borderRadius: '4px',
-                        ...(!(mode === UserRole.Client && !previewMode) && {
-                          ':hover': {
-                            cursor: 'pointer',
-                            background: (theme) => theme.color.gray[150],
-                          },
-                        }),
-                      }}
-                    >
-                      <CopilotAvatar currentAssignee={assigneeValue as IAssigneeCombined} />
-                    </Box>
-                  }
-                />
-              ) : (
-                <Box
-                  sx={{
-                    padding: '2px 4px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    borderRadius: '4px',
-                    ...(!(mode === UserRole.Client && !previewMode) && {
-                      ':hover': {
-                        cursor: 'pointer',
-                        background: (theme) => theme.color.gray[150],
-                      },
-                    }),
-                  }}
-                >
-                  <Skeleton variant="circular" width={20} height={20} />
-                </Box>
-              )}
-            </Box>
+
+            {assigneeValue ? (
+              <CopilotPopSelector
+                name="Set assignee"
+                disabled={mode === UserRole.Client && !previewMode}
+                initialValue={(() => {
+                  const value = assigneeValue as IAssigneeCombined
+                  if (!value || value === NoAssignee) return undefined
+                  return value
+                })()}
+                onChange={handleAssigneeChange}
+                buttonContent={
+                  <Box
+                    sx={{
+                      padding: '2px 2px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      borderRadius: '4px',
+                      ...(!(mode === UserRole.Client && !previewMode) && {
+                        ':hover': {
+                          cursor: 'pointer',
+                          background: (theme) => theme.color.gray[150],
+                        },
+                      }),
+                    }}
+                  >
+                    <CopilotAvatar currentAssignee={assigneeValue as IAssigneeCombined} />
+                  </Box>
+                }
+              />
+            ) : (
+              <Box
+                sx={{
+                  padding: '2px 4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  borderRadius: '4px',
+                  ...(!(mode === UserRole.Client && !previewMode) && {
+                    ':hover': {
+                      cursor: 'pointer',
+                      background: (theme) => theme.color.gray[150],
+                    },
+                  }),
+                }}
+              >
+                <Skeleton variant="circular" width={20} height={20} />
+              </Box>
+            )}
           </Stack>
           <Stack direction={'row'} columnGap={'10px'} justifyContent={'space-between'}>
-            <Box
-              sx={{ ml: '-4px' }}
-              onMouseEnter={() => onSetInteractive && onSetInteractive(task.id, false)}
-              onMouseLeave={() => onSetInteractive && onSetInteractive(task.id, true)}
-            >
+            <Box sx={{ ml: '-4px' }}>
               {task.dueDate && (
                 <DatePickerComponent
                   getDate={(date) => {
