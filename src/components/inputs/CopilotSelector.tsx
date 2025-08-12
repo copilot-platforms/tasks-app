@@ -133,7 +133,15 @@ export const CopilotPopSelector = ({
       }}
     >
       <Stack direction="column">
-        <Box onClick={handleClick}>{buttonContent}</Box>
+        <Box
+          onClickCapture={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            handleClick(e)
+          }}
+        >
+          {buttonContent}
+        </Box>
         <Popper
           id={id}
           open={open}

@@ -50,17 +50,6 @@ export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
     previewMode,
   } = useSelector(selectTaskBoard)
 
-  const [isInteractiveElementActive, setIsInteractiveElementActive] = useState<Record<string, boolean>>(
-    () => Object.fromEntries(filteredTasks.map((task) => [task.id, false])) as Record<string, boolean>,
-  )
-
-  const setInteractiveElementValue = (taskId: string, value: boolean) => {
-    setIsInteractiveElementActive((prev) => ({
-      ...prev,
-      [taskId]: value,
-    }))
-  }
-
   const onDropItem = useCallback(
     (payload: { taskId: string; targetWorkflowStateId: string }) => {
       const { taskId, targetWorkflowStateId } = payload
