@@ -62,7 +62,11 @@ export const DatePickerComponent = ({
         direction="row"
         alignItems="center"
         columnGap="7px"
-        onClick={handleClick}
+        onClickCapture={(e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          handleClick(e)
+        }}
         aria-describedby={id}
         sx={{
           cursor: disabled ? 'auto' : 'pointer',
