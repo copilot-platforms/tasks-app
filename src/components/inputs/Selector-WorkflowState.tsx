@@ -60,7 +60,14 @@ export const WorkflowStateSelector = ({
           borderRadius: '4px',
         }}
       >
-        <Box onClick={handleClick} aria-describedby={id}>
+        <Box
+          onClickCapture={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            handleClick(e)
+          }}
+          aria-describedby={id}
+        >
           {variant == 'normal' ? (
             <Stack
               direction="row"
