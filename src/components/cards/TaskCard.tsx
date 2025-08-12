@@ -45,6 +45,11 @@ const TaskCardContainer = styled(Stack)(({ theme }) => ({
   ':hover': {
     background: theme.color.gray[100],
   },
+  ':focus': {
+    borderColor: theme.color.borders.focusBorder2,
+    borderRadius: theme.spacing(theme.shape.radius100),
+    outline: 'none',
+  },
   cursor: 'pointer',
   width: '304px',
 }))
@@ -111,7 +116,7 @@ export const TaskCard = ({ task, href, workflowState, mode }: TaskCardProps) => 
   }) //Omitting type for NoAssignee
 
   return (
-    <TaskCardContainer>
+    <TaskCardContainer tabIndex={0}>
       <Stack direction={'row'} columnGap={'2px'}>
         <Box sx={{ alignItems: 'top' }}>
           <WorkflowStateSelector
