@@ -461,11 +461,11 @@ export class TasksService extends BaseService {
         include: { workflowState: true },
         data: { deletedAt: new Date(), deletedBy: deletedBy },
       })
+      await this.setNewLastSubtaskUpdated(task.parentId) //updates lastSubtaskUpdated timestamp of parent task if there is task.parentId
       const subtaskService = new SubtaskService(this.user)
       subtaskService.setTransaction(tx as PrismaClient)
       if (task.parentId) {
         await subtaskService.decreaseSubtaskCount(task.parentId)
-        await this.setNewLastSubtaskUpdated(task.parentId)
       }
       await subtaskService.softDeleteAllSubtasks(task.id)
       return deletedTask
