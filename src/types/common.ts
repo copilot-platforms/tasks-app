@@ -147,7 +147,7 @@ export const InternalUsersSchema = z.object({
   familyName: z.string(),
   email: z.string().email(),
   avatarImageUrl: z.string().optional(),
-  isClientAccessLimited: z.boolean(),
+  isClientAccessLimited: z.boolean().default(false),
   companyAccessList: z.array(z.string()).nullable(),
   fallbackColor: z.string().nullish(),
   createdAt: z.string().datetime(),
