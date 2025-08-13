@@ -1,8 +1,8 @@
 import { selectTaskBoard, setFilteredTasks } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
 import { TaskResponse } from '@/types/dto/tasks.dto'
-import { FilterOptions, FilterOptionsKeywords, IAssigneeCombined, IFilterOptions } from '@/types/interfaces'
-import { getAssigneeName } from '@/utils/assignee'
+import { FilterOptions, FilterOptionsKeywords, IAssigneeCombined, IFilterOptions, UserIds } from '@/types/interfaces'
+import { checkEmptyAssignee, getAssigneeName, UserIdsSchema, UserIdsType } from '@/utils/assignee'
 import { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 
@@ -11,6 +11,9 @@ interface KeywordMatchable {
   body?: string
   label?: string
   assigneeId?: string
+  internalUserId?: string | null
+  clientId?: string | null
+  companyId?: string | null
 }
 
 const FilterFunctions = {
@@ -19,12 +22,29 @@ const FilterFunctions = {
   [FilterOptions.TYPE]: filterByType,
 }
 
-function filterByAssignee(filteredTasks: TaskResponse[], filterValue: string | null): TaskResponse[] {
-  const assigneeId = filterValue
-  filteredTasks =
-    assigneeId === 'No assignee'
-      ? filteredTasks.filter((task) => !task.assigneeId)
-      : filteredTasks.filter((task) => task.assigneeId == assigneeId)
+function filterByAssignee(filteredTasks: TaskResponse[], filterValue: UserIdsType): TaskResponse[] {
+  const assigneeUserIds = filterValue
+
+  if (checkEmptyAssignee(assigneeUserIds)) {
+    return filteredTasks
+  }
+  const {
+    [UserIds.INTERNAL_USER_ID]: internalUserId,
+    [UserIds.CLIENT_ID]: clientId,
+    [UserIds.COMPANY_ID]: companyId,
+  } = assigneeUserIds
+
+  if (internalUserId === 'No assignee') {
+    //Change this when UserCompanySelector supports extra options for 'No assignee'
+    filteredTasks = filteredTasks.filter((task) => !task.assigneeId)
+  } else if (internalUserId) {
+    filteredTasks = filteredTasks.filter((task) => task.internalUserId === internalUserId)
+  } else if (clientId) {
+    filteredTasks = filteredTasks.filter((task) => task.clientId === clientId && task.companyId === companyId)
+  } else {
+    filteredTasks = filteredTasks.filter((task) => task.companyId === companyId)
+  }
+
   return filteredTasks
 }
 
@@ -35,15 +55,23 @@ function filterByKeyword(
   assignee?: IAssigneeCombined[],
 ): TaskResponse[] {
   const keyword = (filterValue as string).toLowerCase()
+
   const matchKeyword = (task: KeywordMatchable) =>
     // Match title, body or task label (case-insensitive)
-    task.title?.toLowerCase().includes(keyword) ||
-    task.body?.toLowerCase().includes(keyword) ||
-    task.label?.toLowerCase().includes(keyword) ||
-    getAssigneeName(assignee?.find((el) => el.id === task.assigneeId)) //also match assignee name
-      ?.toLowerCase()
-      .includes(keyword) ||
-    false
+    {
+      const assigneeNameMatches = [task.assigneeId, task.companyId]
+        .map((id) => getAssigneeName(assignee?.find((el) => el.id === id)))
+        .filter(Boolean)
+        .some((name) => name!.toLowerCase().includes(keyword)) //Logic to match tasks whose assignee name matches the keyword. Also, Extra logic to match client tasks' whose company name matches the keyword.
+
+      return (
+        task.title?.toLowerCase().includes(keyword) ||
+        task.body?.toLowerCase().includes(keyword) ||
+        task.label?.toLowerCase().includes(keyword) ||
+        assigneeNameMatches ||
+        false
+      )
+    }
 
   const keywordMatchingParentIds = accessibleTasks?.filter(matchKeyword).map((task) => task.parentId) || []
   filteredTasks = filteredTasks.filter((task) => {
@@ -74,8 +102,19 @@ export const useFilter = (filterOptions: IFilterOptions) => {
     let filteredTasks = [...tasks]
     for (const [filterType, filterValue] of Object.entries(filterOptions)) {
       if (!filterValue) continue
-      const filterFn = FilterFunctions[filterType as FilterOptions]
-      filteredTasks = filterFn(filteredTasks, filterValue, accessibleTasks, assignee)
+      if (filterType === FilterOptions.ASSIGNEE) {
+        const assigneeFilterValue = UserIdsSchema.parse(filterValue)
+        filteredTasks = FilterFunctions[FilterOptions.ASSIGNEE](filteredTasks, assigneeFilterValue)
+      } else if (filterType === FilterOptions.KEYWORD) {
+        filteredTasks = FilterFunctions[FilterOptions.KEYWORD](
+          filteredTasks,
+          filterValue as string,
+          accessibleTasks,
+          assignee,
+        )
+      } else if (filterType === FilterOptions.TYPE) {
+        filteredTasks = FilterFunctions[FilterOptions.TYPE](filteredTasks, filterValue as string)
+      }
     }
     store.dispatch(setFilteredTasks(filteredTasks))
   }

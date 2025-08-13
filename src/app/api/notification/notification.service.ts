@@ -1,5 +1,12 @@
-import { CompanyResponse, CopilotUser, NotificationCreatedResponse } from '@/types/common'
-import { bottleneck } from '@/utils/bottleneck'
+import {
+  CompanyResponse,
+  CopilotUser,
+  NotificationCreatedResponse,
+  NotificationCreatedResponseSchema,
+  NotificationRequestBody,
+  Uuid,
+} from '@/types/common'
+import { copilotBottleneck } from '@/utils/bottleneck'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import APIError from '@api/core/exceptions/api'
 import { BaseService } from '@api/core/services/base.service'
@@ -14,30 +21,54 @@ export class NotificationService extends BaseService {
   async create(
     action: NotificationTaskActions,
     task: Task,
-    opts: { disableEmail: boolean; disableInProduct?: boolean; commentId?: string } = {
-      disableEmail: false,
-    },
+    opts: {
+      disableEmail: boolean
+      disableInProduct?: boolean
+      commentId?: string
+      senderCompanyId?: string
+    } = { disableEmail: false },
   ) {
     try {
-      const copilot = new CopilotAPI(this.user.token)
+      // 1.Check for existing notification. Skip if duplicate
+      const existingNotification = task.clientId
+        ? await this.db.clientNotification.findFirst({
+            where: { taskId: task.id, clientId: task.clientId, companyId: task.companyId },
+          })
+        : null
+      if (task.clientId && existingNotification) {
+        console.error(`NotificationService#create | Found existing notification for ${task.clientId}`, existingNotification)
+        return
+      }
 
-      const { senderId, recipientId, actionUser, companyName } = await this.getNotificationParties(copilot, task, action)
+      // 2. Dispatch notification to Copilot
+      const copilot = new CopilotAPI(this.user.token)
+      const { senderId, senderCompanyId, recipientId, actionUser, companyName } = await this.getNotificationParties(
+        copilot,
+        task,
+        action,
+      )
 
       const inProduct = opts.disableInProduct
         ? undefined
         : getInProductNotificationDetails(actionUser, task, { companyName, commentId: opts?.commentId })[action]
-
       const email = opts.disableEmail ? undefined : getEmailDetails(actionUser, task, { commentId: opts?.commentId })[action]
 
-      const notificationDetails = {
+      const notificationDetails = this.buildNotificationDetails(
+        task,
         senderId,
         recipientId,
-        // If any of the given action is not present in details obj, that type of notification is not sent
-        deliveryTargets: { inProduct, email },
-      }
+        { inProduct, email },
+        senderCompanyId,
+      )
       console.info('NotificationService#create | Creating single notification:', notificationDetails)
 
       const notification = await copilot.createNotification(notificationDetails)
+      console.info('NotificationService#create | Created single notification:', notification)
+
+      // 3. Save notification to ClientNotification or InternalUserNotification table
+      if (task.assigneeType === AssigneeType.client) {
+        await this.addToClientNotifications(task, NotificationCreatedResponseSchema.parse(notification))
+      }
       // NOTE: There are cases where task.assigneeType does not account for IU notification!
       // E.g. When receiving notifications from others completing task that IU created.
       // For now we don't have to store these so this hasn't been accounted for
@@ -54,6 +85,7 @@ export class NotificationService extends BaseService {
           },
         })
       }
+
       return notification
     } catch (error) {
       console.error(`Failed to send notification for action: ${action}`, error)
@@ -64,7 +96,7 @@ export class NotificationService extends BaseService {
     action: NotificationTaskActions,
     task: Task,
     recipientIds: string[],
-    opts?: { email?: boolean; disableInProduct?: boolean; commentId?: string },
+    opts?: { email?: boolean; disableInProduct?: boolean; commentId?: string; senderCompanyId?: string },
   ) {
     try {
       const copilot = new CopilotAPI(this.user.token)
@@ -72,6 +104,7 @@ export class NotificationService extends BaseService {
       if (!userInfo) {
         throw new APIError(httpStatus.NOT_FOUND, `User not found for token ${this.user.token}`)
       }
+
       const senderId = z.string().parse(userInfo.id)
       const actionUserName = `${userInfo.givenName} ${userInfo.familyName}`
 
@@ -87,22 +120,90 @@ export class NotificationService extends BaseService {
           })[action]
       const email = opts?.email ? getEmailDetails(actionUserName, task, { commentId: opts?.commentId })[action] : undefined
 
+      // Get a list of all notifications dispatched for these taskId, clientId, companyId combinations
+      // This will be used to filter out any duplicate notifications during creation
+      const existingNotifications = await this.db.clientNotification.findMany({
+        where: { taskId: task.id, clientId: { in: recipientIds }, companyId: task.companyId },
+      })
+
+      // `notifications` array contains the original order of all notifications dispatched
+      // `clientNotifications` array contains notifications that are client notifications
+      // `iuNotifications` array contains notifications that are internal user notifications
+      // These two separate arrays are used to populate the appropriate DB tables "ClientNotifications" and "InternalUserNotifications"
       const notifications = []
+      const clientNotifications = []
+      const iuNotifications = []
+
+      // NOTE: The reason we are skipping using NotificationService#create and implementing notification dispatch + save manually is because
+      // we can just do one `createMany` DB call instead of one per notification, saving a ton of DB calls
+
       for (let recipientId of recipientIds) {
         try {
-          const notificationDetails = {
+          // 1.Check for existing notification. Skip if duplicate
+          const existingNotification = existingNotifications.find((notification) => notification.clientId === recipientId)
+          if (existingNotification) {
+            console.error(
+              `NotificationService#bulkCreate | Found existing notification for ${recipientId}`,
+              existingNotification,
+            )
+            continue
+          }
+
+          // 2. Dispatch notification to Copilot
+          const notificationDetails = this.buildNotificationDetails(
+            task,
             senderId,
             recipientId,
-            deliveryTargets: { inProduct, email },
-          }
+            { inProduct, email },
+            opts?.senderCompanyId,
+          )
           console.info('NotificationService#bulkCreate | Creating single notification:', notificationDetails)
+          const notification = await copilot.createNotification(notificationDetails)
+          console.info('NotificationService#bulkCreate | Created single notification:', notification)
+          if (!notification) {
+            console.error(`NotificationService#bulkCreate | Failed to send notifications to ${recipientId}:`)
+            continue
+          }
 
-          notifications.push(await copilot.createNotification(notificationDetails))
+          // 3. Maintain correct order of notifications in `notifications` array, else push to appropriate array
+          notifications.push(notification)
+          if (notification.recipientClientId) {
+            clientNotifications.push(notification)
+          } else if (notification.recipientInternalUserId) {
+            iuNotifications.push(notification)
+          } else {
+            console.error(`NotificationService#bulkCreate | Failed to save notification to DB:`, notification)
+          }
         } catch (err: unknown) {
-          console.error(`Failed to send notifications to ${recipientId}:`, err)
+          console.error(`NotificationService#bulkCreate | Failed to send notifications to ${recipientId}:`, err)
         }
       }
-      // TODO: Optimize to run parallely and not hit rate limits
+
+      // 4. Add client notifications and internalUserNotifications to DB
+      console.info('NotificationService#bulkCreate | Adding client notifications to db')
+      if (clientNotifications.length) {
+        await this.db.clientNotification.createMany({
+          data: clientNotifications.map((notification) => ({
+            clientId: Uuid.parse(notification.recipientClientId),
+            companyId: Uuid.parse(task.companyId),
+            notificationId: notification.id,
+            taskId: task.id,
+          })),
+        })
+      }
+      const shouldSendIUNotification =
+        iuNotifications.length &&
+        (action === NotificationTaskActions.Assigned || action === NotificationTaskActions.ReassignedToIU)
+      if (shouldSendIUNotification) {
+        await this.db.internalUserNotification.createMany({
+          data: iuNotifications.map((notification) => ({
+            internalUserId: Uuid.parse(notification.recipientInternalUserId),
+            notificationId: notification.id,
+            taskId: task.id,
+          })),
+        })
+      }
+
       return notifications
     } catch (error) {
       console.error(`Failed to send notifications for action: ${action}`, error)
@@ -118,7 +219,8 @@ export class NotificationService extends BaseService {
   async addToClientNotifications(task: Task, notification: NotificationCreatedResponse): Promise<ClientNotification> {
     return await this.db.clientNotification.create({
       data: {
-        clientId: z.string().parse(notification.recipientId),
+        clientId: Uuid.parse(notification.recipientClientId),
+        companyId: Uuid.parse(task.companyId),
         notificationId: notification.id,
         taskId: task.id,
       },
@@ -147,6 +249,13 @@ export class NotificationService extends BaseService {
     `
   }
 
+  deleteClientNotificationForTask = async (id: string) => {
+    await this.db.$executeRaw`
+      DELETE FROM "ClientNotifications"
+      WHERE "taskId" = ${id}::uuid
+    `
+  }
+
   /**
    * Marks a client notification in Copilot Notifications service as read
    * @param id Notification ID for object as exists in Copilot
@@ -154,21 +263,25 @@ export class NotificationService extends BaseService {
   markClientNotificationAsRead = async (task: Task) => {
     const copilot = new CopilotAPI(this.user.token)
     try {
-      const relatedNotification = await this.db.clientNotification.findFirst({
+      // Due to race conditions, we are forced to allow multiple client notifications for a single notification as well
+      const relatedNotifications = await this.db.clientNotification.findMany({
         where: {
-          clientId: z.string().parse(task.assigneeId),
+          // Accomodate company task lookups where clientId is null
+          clientId: Uuid.nullable().parse(task.clientId) || undefined,
+          companyId: Uuid.parse(task.companyId),
           taskId: task.id,
         },
       })
-      if (!relatedNotification) {
+      if (!relatedNotifications.length) {
         console.error(
           `Failed to delete client notification for task id ${task.id} because the notification for client ${task.assigneeId} was not found`,
         )
         return
       }
 
-      await copilot.markNotificationAsRead(relatedNotification.notificationId)
-      await this.db.clientNotification.delete({ where: { id: relatedNotification?.id } })
+      const notificationIds = relatedNotifications.map(({ notificationId }) => notificationId)
+      await copilot.bulkMarkNotificationsAsRead(notificationIds)
+      await this.db.clientNotification.deleteMany({ where: { notificationId: { in: notificationIds } } })
     } catch (e: unknown) {
       // There may be cases where existing notification has not been updated in the ClientNotifications table yet
       // So don't let it crash the entire program, instead just log it to stderr
@@ -221,7 +334,7 @@ export class NotificationService extends BaseService {
     const copilot = new CopilotAPI(this.user.token)
     const markAsReadPromises = []
     for (const id of notificationIds) {
-      markAsReadPromises.push(bottleneck.schedule(() => copilot.markNotificationAsRead(id)))
+      markAsReadPromises.push(copilotBottleneck.schedule(() => copilot.markNotificationAsRead(id)))
     }
     await Promise.all(markAsReadPromises)
   }
@@ -233,6 +346,7 @@ export class NotificationService extends BaseService {
    */
   async getNotificationParties(copilot: CopilotAPI, task: Task, action: NotificationTaskActions) {
     let senderId: string = ''
+    let senderCompanyId: string | undefined
     let recipientId: string = ''
     let recipientIds: string[] = []
     let actionTrigger: CopilotUser | CompanyResponse | null = null
@@ -264,6 +378,7 @@ export class NotificationService extends BaseService {
         break
       case NotificationTaskActions.CompletedByCompanyMember:
         senderId = z.string().parse(task.assigneeId)
+        senderCompanyId = z.string().parse(task.companyId)
         const internalUsers = await copilot.getInternalUsers()
         const client =
           task.assigneeType === AssigneeType.client
@@ -280,6 +395,7 @@ export class NotificationService extends BaseService {
         break
       case NotificationTaskActions.Completed:
         senderId = z.string().parse(task.assigneeId)
+        senderCompanyId = z.string().parse(task.companyId)
         recipientId = task.createdById
         actionTrigger = await getAssignedTo()
         break
@@ -356,11 +472,40 @@ export class NotificationService extends BaseService {
           : `${(actionTrigger as CopilotUser).givenName} ${(actionTrigger as CopilotUser).familyName}`
     }
 
-    return { senderId, recipientId, recipientIds, actionUser, companyName }
+    return { senderId, senderCompanyId, recipientId, recipientIds, actionUser, companyName }
   }
 
   async getAllForTasks(tasks: Task[]): Promise<ClientNotification[]> {
     const taskIds = tasks.map((task) => task.id)
     return await this.db.clientNotification.findMany({ where: { taskId: { in: taskIds } } })
+  }
+
+  private buildNotificationDetails(
+    task: Task,
+    senderId: string,
+    recipientId: string,
+    deliveryTargets: NotificationRequestBody['deliveryTargets'],
+    senderCompanyId?: string,
+  ): NotificationRequestBody {
+    // Assume client notification then change details body if IU
+    const notificationDetails: NotificationRequestBody = {
+      senderId,
+      senderCompanyId,
+      senderType: 'client',
+      recipientClientId: recipientId ?? undefined,
+      recipientCompanyId: task.companyId ?? undefined,
+      // If any of the given action is not present in details obj, that type of notification is not sent
+      deliveryTargets: deliveryTargets || {},
+    }
+    //! Since IU's NEVER get email notifications, we send recipientCompanyId only if email is present
+    const isIU = !notificationDetails.deliveryTargets?.email
+    // In case this logic ever changes, good luck
+    if (isIU) {
+      delete notificationDetails.recipientCompanyId
+      delete notificationDetails.recipientClientId
+      notificationDetails.recipientInternalUserId = recipientId
+      notificationDetails.senderType = 'internalUser'
+    }
+    return notificationDetails
   }
 }

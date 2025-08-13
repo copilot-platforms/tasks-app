@@ -31,8 +31,13 @@ export const getTempLog = (
   task_id: string,
   userDetails: IAssigneeCombined | undefined,
   userId: string | undefined,
-): LogResponse | ReplyResponse => {
-  const currentUserDetails = z.union([InternalUsersSchema, ClientResponseSchema]).parse(userDetails)
+): LogResponse | ReplyResponse | {} => {
+  const userDetailsParsed = z.union([InternalUsersSchema, ClientResponseSchema]).safeParse(userDetails)
+  if (!userDetailsParsed.success || !userDetailsParsed.data) {
+    console.error('Failed to parse user details:', userDetailsParsed)
+    return {}
+  }
+  const currentUserDetails = userDetailsParsed.data
   return postCommentPayload.parentId
     ? {
         id: tempId,
@@ -40,18 +45,18 @@ export const getTempLog = (
         taskId: task_id,
         parentId: postCommentPayload.parentId,
         workspaceId: '',
-        initiatorId: currentUserDetails?.id as string,
+        initiatorId: currentUserDetails.id as string,
         initiator: {
           status: '',
-          id: currentUserDetails?.id as string,
-          givenName: currentUserDetails?.givenName || '',
-          familyName: currentUserDetails?.familyName || '',
-          email: currentUserDetails?.email || '',
+          id: currentUserDetails.id as string,
+          givenName: currentUserDetails.givenName || '',
+          familyName: currentUserDetails.familyName || '',
+          email: currentUserDetails.email || '',
           companyId: '',
-          avatarImageUrl: currentUserDetails?.avatarImageUrl || null,
+          avatarImageUrl: currentUserDetails.avatarImageUrl || null,
           customFields: {},
-          fallbackColor: currentUserDetails?.fallbackColor || null,
-          createdAt: currentUserDetails?.createdAt || new Date().toISOString(),
+          fallbackColor: currentUserDetails.fallbackColor || null,
+          createdAt: currentUserDetails.createdAt || new Date().toISOString(),
           isClientAccessLimited: false,
           companyAccessList: null,
         },
@@ -72,15 +77,15 @@ export const getTempLog = (
         workspaceId: '',
         initiator: {
           status: '',
-          id: currentUserDetails?.id as string,
-          givenName: currentUserDetails?.givenName || '',
-          familyName: currentUserDetails?.familyName || '',
-          email: currentUserDetails?.email || '',
+          id: currentUserDetails.id as string,
+          givenName: currentUserDetails.givenName || '',
+          familyName: currentUserDetails.familyName || '',
+          email: currentUserDetails.email || '',
           companyId: '',
-          avatarImageUrl: currentUserDetails?.avatarImageUrl || null,
+          avatarImageUrl: currentUserDetails.avatarImageUrl || null,
           customFields: {},
-          fallbackColor: currentUserDetails?.fallbackColor || null,
-          createdAt: currentUserDetails?.createdAt || new Date().toISOString(),
+          fallbackColor: currentUserDetails.fallbackColor || null,
+          createdAt: currentUserDetails.createdAt || new Date().toISOString(),
           isClientAccessLimited: false,
           companyAccessList: null,
         },
@@ -92,7 +97,7 @@ export const getTempLog = (
 export const getOptimisticData = (
   postCommentPayload: CreateComment,
   activities: LogResponse[] | undefined,
-  tempLog: LogResponse | ReplyResponse,
+  tempLog: LogResponse | ReplyResponse | {},
 ) => {
   let optimisticData
   if (postCommentPayload.parentId) {

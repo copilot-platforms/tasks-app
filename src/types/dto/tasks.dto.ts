@@ -4,15 +4,25 @@ import { WorkflowStateResponseSchema } from './workflowStates.dto'
 import { DateStringSchema } from '@/types/date'
 import { ClientResponseSchema, CompanyResponseSchema, InternalUsersSchema } from '../common'
 
-const requireAssigneeTypeIfAssigneeId = (
-  data: { assigneeId?: string | null; assigneeType?: AssigneeType },
+export const validateUserIds = (
+  data: { internalUserId?: string | null; clientId?: string | null; companyId?: string | null },
   ctx: z.RefinementCtx,
 ) => {
-  if (data.assigneeId && !data.assigneeType) {
+  const { internalUserId, clientId, companyId } = data
+
+  if (internalUserId && (clientId || companyId)) {
     ctx.addIssue({
-      path: ['assigneeType'],
-      message: 'assigneeType is required when assigneeId is provided',
       code: z.ZodIssueCode.custom,
+      message: 'internalUserId cannot be combined with clientId or companyId',
+      path: ['internalUserId'],
+    })
+  }
+
+  if (clientId && !companyId) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: 'companyId is required when clientId is provided',
+      path: ['companyId'],
     })
   }
 }
@@ -22,8 +32,6 @@ export type AssigneeType = z.infer<typeof AssigneeTypeSchema>
 
 export const CreateTaskRequestSchema = z
   .object({
-    assigneeId: z.string().optional().nullish(),
-    assigneeType: AssigneeTypeSchema,
     title: z.string().min(1),
     body: z.string().optional(),
     workflowStateId: z.string().uuid(),
@@ -31,18 +39,16 @@ export const CreateTaskRequestSchema = z
     parentId: z.string().uuid().nullish(),
     templateId: z.string().uuid().nullish(),
     createdById: z.string().uuid().optional(),
-    internalUserId: z.string().uuid().nullish(),
-    clientId: z.string().uuid().nullish(),
-    companyId: z.string().uuid().nullish(),
+    internalUserId: z.string().uuid().nullish().default(null),
+    clientId: z.string().uuid().nullish().default(null),
+    companyId: z.string().uuid().nullish().default(null),
   })
-  .superRefine(requireAssigneeTypeIfAssigneeId)
+  .superRefine(validateUserIds)
 
 export type CreateTaskRequest = z.infer<typeof CreateTaskRequestSchema>
 
 export const UpdateTaskRequestSchema = z
   .object({
-    assigneeId: z.string().nullish(),
-    assigneeType: AssigneeTypeSchema,
     title: z.string().optional(),
     body: z.string().optional(),
     workflowStateId: z.string().uuid().optional(),
@@ -52,7 +58,8 @@ export const UpdateTaskRequestSchema = z
     clientId: z.string().uuid().nullish(),
     companyId: z.string().uuid().nullish(),
   })
-  .superRefine(requireAssigneeTypeIfAssigneeId)
+  .superRefine(validateUserIds)
+
 export type UpdateTaskRequest = z.infer<typeof UpdateTaskRequestSchema>
 
 export const TaskResponseSchema = z.object({
@@ -67,13 +74,18 @@ export const TaskResponseSchema = z.object({
   workflowStateId: z.string().uuid().optional(),
   workflowState: WorkflowStateResponseSchema,
   dueDate: DateStringSchema.optional(),
-  createdAt: z.date(),
-  assignee: z.union([ClientResponseSchema, InternalUsersSchema, CompanyResponseSchema]),
-  lastActivityLogUpdated: z.date().optional(),
+  createdAt: z.string().datetime(),
+  updatedAt: z.string().datetime().nullish(),
+  assignee: z.union([ClientResponseSchema, InternalUsersSchema, CompanyResponseSchema]).optional(),
+  lastActivityLogUpdated: z.string().datetime().nullish(),
+  lastSubtaskUpdated: z.string().datetime().nullish(),
   isArchived: z.boolean().optional(),
   lastArchivedDate: z.string().datetime(),
   parentId: z.string().nullish(),
   subtaskCount: z.number(),
+  internalUserId: z.string().uuid().nullish(),
+  clientId: z.string().uuid().nullish(),
+  companyId: z.string().uuid().nullish(),
 })
 
 export type TaskResponse = z.infer<typeof TaskResponseSchema>
@@ -86,6 +98,7 @@ export const SubTaskStatusSchema = z.object({
 export type SubTaskStatusResponse = z.infer<typeof SubTaskStatusSchema>
 
 export type AncestorTaskResponse = Pick<Task, 'id' | 'title' | 'label'> & {
-  assigneeId: string
-  assigneeType: NonNullable<AssigneeType>
+  internalUserId: string | null
+  clientId: string | null
+  companyId: string | null
 }

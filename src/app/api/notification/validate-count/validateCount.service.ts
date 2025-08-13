@@ -1,6 +1,7 @@
+import { MAX_NOTIFICATIONS_COUNT } from '@/constants/notifications'
 import { DuplicateNotificationsQuerySchema } from '@/types/client-notifications'
 import { getArrayDifference } from '@/utils/array'
-import { bottleneck } from '@/utils/bottleneck'
+import { copilotBottleneck } from '@/utils/bottleneck'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import User from '@api/core/models/User.model'
 import { NotificationService } from '@api/notification/notification.service'
@@ -10,7 +11,8 @@ import { z } from 'zod'
 
 export class ValidateCountService extends NotificationService {
   private readonly copilot: CopilotAPI
-  constructor(user: User) {
+
+  constructor(readonly user: User) {
     super(user)
     this.copilot = new CopilotAPI(user.token)
   }
@@ -19,11 +21,14 @@ export class ValidateCountService extends NotificationService {
    * Queries for notifications from CopilotAPI and fixes it if not in sync with task count
    * @param {string} clientId - Copilot client id for which notification fix has to be done
    */
-  async fixClientNotificationCount(clientId: string): Promise<void> {
-    const notifications = await this.copilot.getNotifications(clientId, this.user.workspaceId, { limit: 1_000_000 })
+  async fixClientNotificationCount(clientId: string, companyId: string, workspaceId: string): Promise<void> {
+    const notifications = await this.copilot.getClientNotifications(clientId, companyId, workspaceId, {
+      limit: MAX_NOTIFICATIONS_COUNT,
+    })
     console.info('ValidateCount :: Total Copilot Notifications:', notifications.length)
     await this.validateWithTasks(
       clientId,
+      companyId,
       notifications.map((n) => n.id),
     )
   }
@@ -33,14 +38,15 @@ export class ValidateCountService extends NotificationService {
    * Creates / removes notifications from Copilot as necessary
    * @param {string[]} copilotNotificationIds - Notification Ids for a particular user for an app in Copilot
    */
-  private async validateWithTasks(clientId: string, copilotNotificationIds: string[]): Promise<void> {
+  private async validateWithTasks(clientId: string, companyId: string, copilotNotificationIds: string[]): Promise<void> {
     const tasksService = new TasksService(this.user)
     const tasks = await tasksService.getAllTasks({
+      companyId,
       showArchived: false,
       showUnarchived: true,
       showIncompleteOnly: true,
     })
-    console.info('ValidateCount :: User tasks', tasks.length)
+    console.info('ValidateCount :: User tasks for company', companyId, ':', tasks.length)
 
     // Query all notifications triggered for a list of client/company tasks
     const appNotifications = await this.getAllForTasks(tasks)
@@ -143,12 +149,18 @@ export class ValidateCountService extends NotificationService {
     const createNotificationPromises = []
     // Create missing task notifications in Copilot
     for (const task of tasksWithoutNotifications) {
+      if (appNotifications.find((n) => n.taskId === task.id && n.clientId === clientId && n.companyId === task.companyId)) {
+        // This is a duplicate notification, SKIP
+        continue
+      }
       createNotificationPromises.push(
-        bottleneck.schedule(() => {
+        copilotBottleneck.schedule(() => {
           console.info(`ValidateCount :: Creating missing notification for task ${task.id} - ${task.title}`)
+          // @ts-expect-error SDK types for new notification payload is not up to datelike always, SDK types are not up to date
           return this.copilot.createNotification({
             senderId: task.createdById,
-            recipientId: clientId,
+            recipientClientId: clientId,
+            recipientCompanyId: task.companyId || undefined,
             deliveryTargets: {
               inProduct: {
                 // doesn't matter what you add here since notification details cannot be viewed
@@ -168,10 +180,9 @@ export class ValidateCountService extends NotificationService {
         notificationId: newNotifications[i].id,
         taskId: tasksWithoutNotifications[i].id,
         clientId,
+        companyId: tasksWithoutNotifications[i].companyId,
       })
     }
-    await this.db.clientNotification.createMany({
-      data: newClientNotificationData,
-    })
+    await this.db.clientNotification.createMany({ data: newClientNotificationData })
   }
 }

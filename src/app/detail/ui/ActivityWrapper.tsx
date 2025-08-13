@@ -1,27 +1,27 @@
 'use client'
 
+import { ReplyResponse } from '@/app/api/activity-logs/schemas/CommentAddedSchema'
 import { deleteComment, postComment } from '@/app/detail/[task_id]/[user_type]/actions'
 import { ActivityLog } from '@/app/detail/ui/ActivityLog'
 import { Comments } from '@/app/detail/ui/Comments'
 import { CommentInput } from '@/components/inputs/CommentInput'
+import { useDebounce } from '@/hooks/useDebounce'
 import useScrollToElement from '@/hooks/useScrollToElement'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
-import { ClientResponseSchema, InternalUsersSchema, Token } from '@/types/common'
+import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
+import { Token } from '@/types/common'
 import { CreateComment } from '@/types/dto/comment.dto'
 import { fetcher } from '@/utils/fetcher'
 import { generateRandomString } from '@/utils/generateRandomString'
+import { checkOptimisticStableId, getOptimisticData, getTempLog } from '@/utils/optimisticCommentUtils'
 import { LogResponse } from '@api/activity-logs/schemas/LogResponseSchema'
 import { Box, Collapse, Skeleton, Stack, Typography } from '@mui/material'
 import { ActivityType } from '@prisma/client'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import { useSelector } from 'react-redux'
+import { TransitionGroup } from 'react-transition-group'
 import useSWR, { useSWRConfig } from 'swr'
 import { z } from 'zod'
-import { TransitionGroup } from 'react-transition-group'
-import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
-import { ReplyResponse } from '@/app/api/activity-logs/schemas/CommentAddedSchema'
-import { checkOptimisticStableId, getOptimisticData, getTempLog } from '@/utils/optimisticCommentUtils'
-import { IAssigneeCombined } from '@/types/interfaces'
 
 interface OptimisticUpdate {
   tempId: string
@@ -38,27 +38,44 @@ export const ActivityWrapper = ({
   task_id: string
   tokenPayload: Token
 }) => {
-  const { activeTask } = useSelector(selectTaskBoard)
+  const { activeTask, assignee } = useSelector(selectTaskBoard)
   const { expandedComments } = useSelector(selectTaskDetails)
   const task = activeTask
-  const [lastUpdated, setLastUpdated] = useState(task?.lastActivityLogUpdated)
+  const didMount = useRef(false)
+  const [lastUpdated, setLastUpdated] = useState<string | null>()
   const [optimisticUpdates, setOptimisticUpdates] = useState<OptimisticUpdate[]>([])
   const expandedCommentsQueryString = expandedComments.map((id) => encodeURIComponent(id)).join(',')
   const cacheKey = `/api/tasks/${task_id}/activity-logs?token=${token}`
   const { data: activities, isLoading } = useSWR(`/api/tasks/${task_id}/activity-logs?token=${token}`, fetcher, {
     refreshInterval: 0,
+    revalidateOnFocus: false,
   })
-  const { assignee } = useSelector(selectTaskBoard)
   const { mutate } = useSWRConfig()
+
   useScrollToElement('commentId')
+
+  const _debounceMutate = async (cacheKey: string) => await mutate(cacheKey)
+  const debounceMutate = useDebounce(_debounceMutate, 300)
+
+  const shouldRefetchRef = useRef(true) //preventing double fetching from comment apis. Due to optimistic update revalidation, we are already fetching logs there. So no need to refetch in case for comment creation and deletion.
+
   useEffect(() => {
-    const refetchActivityLog = async () => {
-      await mutate(cacheKey)
+    if (task) {
+      if (!didMount.current || !shouldRefetchRef.current) {
+        didMount.current = true
+        shouldRefetchRef.current = true
+        setLastUpdated(task?.lastActivityLogUpdated)
+        return //skip the refetch on first mount.
+      }
+      const refetchActivityLog = async () => {
+        debounceMutate(cacheKey) //if subsequent update comes under 300 ms, only mutate once.
+      }
+
+      if (task?.lastActivityLogUpdated && task?.lastActivityLogUpdated !== lastUpdated) {
+        refetchActivityLog()
+      }
+      setLastUpdated(task?.lastActivityLogUpdated)
     }
-    if (lastUpdated && lastUpdated !== task?.lastActivityLogUpdated) {
-      refetchActivityLog()
-    }
-    setLastUpdated(task?.lastActivityLogUpdated)
   }, [task?.lastActivityLogUpdated])
 
   const currentUserId = tokenPayload.internalUserId ?? tokenPayload.clientId
@@ -87,6 +104,7 @@ export const ActivityWrapper = ({
       mutate(
         cacheKey,
         async () => {
+          shouldRefetchRef.current = false
           // Post the actual comment to the server
           const comment = await postComment(token, postCommentPayload)
           setOptimisticUpdates((prev) =>
@@ -98,7 +116,7 @@ export const ActivityWrapper = ({
         {
           optimisticData: { data: optimisticData },
           rollbackOnError: true,
-          revalidate: true, // Make sure to revalidate after mutation
+          revalidate: false,
         },
       )
     } catch (error) {
@@ -153,6 +171,7 @@ export const ActivityWrapper = ({
       await mutate(
         cacheKey,
         async () => {
+          shouldRefetchRef.current = false
           let commentIdToDelete = commentId
           if (commentIdToDelete.includes('temp-comment')) {
             const maxAttempts = 6
@@ -176,7 +195,7 @@ export const ActivityWrapper = ({
         {
           optimisticData: { data: optimisticData },
           rollbackOnError: true,
-          revalidate: true, // Make sure to revalidate after mutation
+          revalidate: false, // Make sure to revalidate after mutation
         },
       )
     } catch (error) {
@@ -216,7 +235,7 @@ export const ActivityWrapper = ({
                         stableId={z.string().parse(item.details.id) ?? item.id}
                         optimisticUpdates={optimisticUpdates}
                       />
-                    ) : (
+                    ) : Object.keys(item).length === 0 ? null : (
                       <ActivityLog log={item} />
                     )}
                   </Box>

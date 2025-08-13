@@ -1,18 +1,21 @@
-import { ClientUpdatedEventData, HANDLEABLE_EVENT, WebhookEntitySchema, WebhookEvent, WebhookSchema } from '@/types/webhook'
-import { BaseService } from '@api/core/services/base.service'
-import { NextRequest } from 'next/server'
-import APIError from '@api/core/exceptions/api'
-import httpStatus from 'http-status'
-import { AssigneeType, StateType } from '@prisma/client'
-import { CopilotAPI } from '@/utils/CopilotAPI'
-import { TasksService } from '@api/tasks/tasks.service'
-import Bottleneck from 'bottleneck'
-import { getInProductNotificationDetails } from '@api/notification/notification.helpers'
-import { NotificationTaskActions } from '@api/core/types/tasks'
-import { NotificationService } from '@api/notification/notification.service'
-import User from '@api/core/models/User.model'
 import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
+import { NotificationRequestBody } from '@/types/common'
+import { ClientUpdatedEventData, HANDLEABLE_EVENT, WebhookEntitySchema, WebhookEvent, WebhookSchema } from '@/types/webhook'
+import { getArrayDifference } from '@/utils/array'
+import { copilotBottleneck, dbBottleneck } from '@/utils/bottleneck'
+import { CopilotAPI } from '@/utils/CopilotAPI'
+import APIError from '@api/core/exceptions/api'
+import User from '@api/core/models/User.model'
+import { BaseService } from '@api/core/services/base.service'
+import { NotificationTaskActions } from '@api/core/types/tasks'
+import { getInProductNotificationDetails } from '@api/notification/notification.helpers'
+import { NotificationService } from '@api/notification/notification.service'
+import { TasksService } from '@api/tasks/tasks.service'
+import { AssigneeType, StateType } from '@prisma/client'
+import httpStatus from 'http-status'
+import { NextRequest } from 'next/server'
 
+// TODO: This will be broken for a while until OUT-1985
 class WebhookService extends BaseService {
   private copilot
   constructor(user: User, customCopilotApiKey?: string) {
@@ -54,18 +57,25 @@ class WebhookService extends BaseService {
     return { assigneeId, assigneeType }
   }
 
-  async handleClientCreated(assigneeId: string) {
+  async handleClientCreated(clientId: string, forCompanyId?: string) {
     // First fetch all the current non-complete tasks for client's company, if exists
-    const client = await this.copilot.getClient(assigneeId)
+    const client = await this.copilot.getClient(clientId)
     let company
     try {
       // Accomodate indididual client's company id behavior for copilot
-      company = await this.copilot.getCompany(client.companyId)
+      // Note: When a client is created, only one company can be assigned to it.
+      // This is why we don't need to check for multiple companies here.
+      //
+      // NOTE: forCompanyId is used when a client is created for a company that is not the first company in the client's companyIds array
+      const companyId = forCompanyId || client.companyIds?.[0] || client.companyId
+      company = await this.copilot.getCompany(companyId)
     } catch (e: unknown) {
       company = null
     }
     if (!company?.name) {
-      console.info("Ignoring client.activated event for client that doesn't have a company")
+      console.info(
+        `WebhookService#handleClientCreated :: Ignoring event for client that doesn't have a company (has placeholder company)`,
+      )
       return
     }
 
@@ -74,18 +84,17 @@ class WebhookService extends BaseService {
     if (!tasks.length) return
 
     // Then trigger appropriate notifications
-    const bottleneck = new Bottleneck({ minTime: 250, maxConcurrent: 2 })
     const createNotificationPromises = []
 
     const internalUsers = (await this.copilot.getInternalUsers({ limit: MAX_FETCH_ASSIGNEE_COUNT })).data
     const existingNotifications = await this.db.clientNotification.findMany({
-      where: { clientId: assigneeId },
+      where: { clientId, companyId: company.id },
     })
 
     for (let task of tasks) {
       const actionUser = internalUsers.find((iu) => iu.id === task.createdById)
       if (!actionUser) {
-        console.error(`WebhookService#handleClientCreated :: could not get action user for company task ${task.id}`)
+        console.error(`WebhookService#handleClientCreated :: Could not get action user for company task ${task.id}`)
         continue
       }
 
@@ -96,24 +105,25 @@ class WebhookService extends BaseService {
       const inProduct = getInProductNotificationDetails(actionUserName, task, { companyName: company.name })[
         NotificationTaskActions.AssignedToCompany
       ]
-      const notificationDetails = {
+      const notificationDetails: NotificationRequestBody = {
         senderId: task.createdById,
-        recipientId: assigneeId,
+        senderType: 'internalUser',
+        recipientClientId: clientId,
+        recipientCompanyId: company.id,
         // If any of the given action is not present in details obj, that type of notification is not sent
         deliveryTargets: { inProduct },
       }
-      createNotificationPromises.push(bottleneck.schedule(() => this.copilot.createNotification(notificationDetails)))
+      createNotificationPromises.push(copilotBottleneck.schedule(() => this.copilot.createNotification(notificationDetails)))
     }
     const notifications = await Promise.all(createNotificationPromises)
 
     // Now add appropriate records to our ClientNotifications table
-    const insertBottleneck = new Bottleneck({ minTime: 100, maxConcurrent: 4 })
     const insertPromises = []
     const notificationService = new NotificationService(this.user)
     for (let i = 0; i < notifications.length; i++) {
       insertPromises.push(
         // This is assuming a 1:1 map for tasks and notifications
-        insertBottleneck.schedule(() => notificationService.addToClientNotifications(tasks[i], notifications[i])),
+        dbBottleneck.schedule(() => notificationService.addToClientNotifications(tasks[i], notifications[i])),
       )
     }
     await Promise.all(insertPromises)
@@ -122,7 +132,7 @@ class WebhookService extends BaseService {
   async handleUserDeleted(assigneeId: string, assigneeType: AssigneeType) {
     const tasksService = new TasksService(this.user)
     // Delete corresponding tasks
-    console.info(`Deleting all tasks for ${assigneeType} ${assigneeId}`)
+    console.info(`WebhookService#handleUserDeleted :: Deleting all tasks for ${assigneeType} ${assigneeId}`)
     const tasks = await tasksService.deleteAllAssigneeTasks(assigneeId, assigneeType)
 
     // Now delete any and all associated notifications triggered on behalf of company tasks for clients.
@@ -150,42 +160,35 @@ class WebhookService extends BaseService {
   async handleClientUpdated(data: ClientUpdatedEventData) {
     const {
       id: clientId,
-      companyId: newCompanyId,
-      previousAttributes: { companyId: prevCompanyId },
+      companyIds: newCompanyIds,
+      previousAttributes: { companyIds: prevCompanyIds },
     } = data
-    // If company hasn't been changed - don't bother with any of this
-    if (prevCompanyId === newCompanyId || !prevCompanyId) return
+    // If companies haven't been changed then we don't have to migrate any tasks / notifications
+    // When companies have been changed, the previousAttributes object will contain `companyIds` array with the previous company ids
+    if (!prevCompanyIds || !newCompanyIds) return
 
-    // Only delete prev notifications if client had a valid company before
-    let prevCompany, newCompany
-    try {
-      prevCompany = await this.copilot.getCompany(prevCompanyId)
-    } catch (e: unknown) {
-      prevCompany = null
-    }
-    try {
-      newCompany = await this.copilot.getCompany(newCompanyId)
-    } catch (e: unknown) {
-      newCompany = null
-    }
+    const removedCompanies = getArrayDifference(prevCompanyIds, newCompanyIds || [])
+    const addedCompanies = getArrayDifference(newCompanyIds || [], prevCompanyIds)
 
-    // Cases for company change - assignment / unassignment / reassignment
-    if (!prevCompany?.name && newCompany?.name) {
-      await this.handleCompanyAssignment(clientId)
-    } else if (!newCompany?.name && prevCompany?.name) {
-      await this.handleCompanyUnassignment(clientId, prevCompanyId)
-    } else if (prevCompany?.name && newCompany?.name) {
-      await this.handleCompanyUnassignment(clientId, prevCompanyId)
-      await this.handleCompanyAssignment(clientId)
-    } else {
-      // This should never happen, still we want to be reported if this ever does
-      throw new APIError(httpStatus.INTERNAL_SERVER_ERROR, 'Could not identify company change')
+    // Technically having multiple companies updated in one webhook event is not possible and accessing
+    // removedCompanies[0] or addedCompanies[0] should be enough,
+    // However I'm keeping this for future-proofing
+    if (removedCompanies.length) {
+      for (let companyId of removedCompanies) {
+        await this.handleCompanyUnassignment(clientId, companyId)
+      }
     }
+    if (addedCompanies.length) {
+      for (let companyId of addedCompanies) {
+        await this.handleCompanyAssignment(clientId, companyId)
+      }
+    }
+    return
   }
 
-  private async handleCompanyAssignment(clientId: string) {
+  private async handleCompanyAssignment(clientId: string, companyId: string) {
     // Notifications logic is the same as when a new client is created
-    await this.handleClientCreated(clientId)
+    await this.handleClientCreated(clientId, companyId)
   }
 
   private async handleCompanyUnassignment(clientId: string, prevCompanyId: string) {
@@ -194,19 +197,23 @@ class WebhookService extends BaseService {
     // NOTE: If prev company was not a valid company, instead a randomly generated placeholder company,
     // prevCompany.name will be an empty string
     if (!company.name) {
-      throw new APIError(httpStatus.INTERNAL_SERVER_ERROR, 'Cannot unassign from a company that does not exist')
+      // Fail safely since there can be multiple unassignments in one webhook event
+      console.error(`WebhookService#handleCompanyUnassignment :: Cannot unassign from a company that does not exist`)
+      return
     }
 
     // First find all tasks related to previous company
     const prevCompanyTasks = await this.db.task.findMany({
       where: {
-        assigneeId: company.id,
-        assigneeType: AssigneeType.company,
+        companyId: prevCompanyId,
+        clientId: null,
         workflowState: {
           type: { not: StateType.completed },
         },
       },
     })
+    if (!prevCompanyTasks.length) return
+
     const prevCompanyTaskIds = prevCompanyTasks.map((task) => task.id)
 
     // Find all triggered notifications for this client, on behalf of prev company
@@ -220,14 +227,8 @@ class WebhookService extends BaseService {
 
     // Delete all task notifications triggered for client for previous company
     const deletePromises = []
-    const bottleneck = new Bottleneck({ minTime: 250, maxConcurrent: 2 })
-
-    for (let notification of prevCompanyNotifications) {
-      deletePromises.push(
-        bottleneck.schedule(() => {
-          return this.copilot.markNotificationAsRead(notification.notificationId)
-        }),
-      )
+    for (let { notificationId } of prevCompanyNotifications) {
+      deletePromises.push(copilotBottleneck.schedule(() => this.copilot.markNotificationAsRead(notificationId)))
     }
     await Promise.all(deletePromises)
     await this.db.clientNotification.deleteMany({ where: { id: { in: notificationIds } } })

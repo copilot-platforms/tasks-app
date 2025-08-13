@@ -1,13 +1,12 @@
-import { createSlice } from '@reduxjs/toolkit'
-import { RootState } from '../store'
-import { AssigneeType } from '@prisma/client'
-import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
+import { RootState } from '@/redux/store'
 import { DateString } from '@/types/date'
-import { CreateTaskErrors } from '@/types/interfaces'
+import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
+import { CreateTaskErrors, UserIds } from '@/types/interfaces'
+import { UserIdsType } from '@/utils/assignee'
+import { createSlice } from '@reduxjs/toolkit'
 
 interface IErrors {
   [CreateTaskErrors.TITLE]: boolean
-  [CreateTaskErrors.ASSIGNEE]: boolean
 }
 
 interface IInitialState {
@@ -16,14 +15,13 @@ interface IInitialState {
   title: string
   description: string
   workflowStateId: string
-  assigneeType?: AssigneeType | null
-  assigneeId: string | null
   attachments: CreateAttachmentRequest[]
   dueDate: DateString | null
   errors: IErrors
   appliedTitle: string | null
   appliedDescription: string | null
   templateId: string | null
+  userIds: UserIdsType
 }
 
 const initialState: IInitialState = {
@@ -32,17 +30,19 @@ const initialState: IInitialState = {
   title: '',
   workflowStateId: '',
   description: '',
-  assigneeType: null,
-  assigneeId: null,
   attachments: [],
   dueDate: null,
   errors: {
     [CreateTaskErrors.TITLE]: false,
-    [CreateTaskErrors.ASSIGNEE]: false,
   },
   appliedTitle: null,
   appliedDescription: null,
   templateId: null,
+  userIds: {
+    [UserIds.INTERNAL_USER_ID]: null,
+    [UserIds.CLIENT_ID]: null,
+    [UserIds.COMPANY_ID]: null,
+  },
 }
 
 const createTaskSlice = createSlice({
@@ -79,14 +79,16 @@ const createTaskSlice = createSlice({
       state.description = ''
       state.templateId = null
       if (!isFilterOn) {
-        state.assigneeType = null
-        state.assigneeId = null
+        state.userIds = {
+          [UserIds.INTERNAL_USER_ID]: null,
+          [UserIds.CLIENT_ID]: null,
+          [UserIds.COMPANY_ID]: null,
+        }
       }
       state.attachments = []
       state.dueDate = null
       state.errors = {
         [CreateTaskErrors.TITLE]: false,
-        [CreateTaskErrors.ASSIGNEE]: false,
       }
       state.appliedDescription = null
       state.appliedTitle = null

@@ -1,16 +1,18 @@
 // export const fetchCache = 'force-no-store'
 // export const revalidate = 0
 
+import { ProgressLoad } from '@/components/TopLoader'
+import { InterrupCmdK } from '@/hoc/Interrupt_CmdK'
+import { swrConfig } from '@/lib/swr-config'
+import { ProviderWrapper } from '@/redux/ProviderWrapper'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
-import './globals.css'
-import ThemeRegistry from './ThemeRegistry'
-import { ProviderWrapper } from '@/redux/ProviderWrapper'
-import './tapwrite.css'
-import { InterrupCmdK } from '@/hoc/Interrupt_CmdK'
-import { ProgressLoad } from '@/components/TopLoader'
 import { SWRConfig } from 'swr'
-import { swrConfig } from '@/lib/swr-config'
+import ThemeRegistry from './ThemeRegistry'
+
+import 'copilot-design-system/dist/styles/main.css'
+import './globals.css'
+import './tapwrite.css'
 
 const inter = Inter({ subsets: ['latin'] })
 

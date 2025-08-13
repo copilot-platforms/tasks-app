@@ -19,8 +19,9 @@ export const updateTaskDetail = async ({
     method: 'PATCH',
     body: JSON.stringify({
       workflowStateId: payload.workflowStateId,
-      assigneeId: payload.assigneeId,
-      assigneeType: payload.assigneeType,
+      internalUserId: payload.internalUserId,
+      clientId: payload.clientId,
+      companyId: payload.companyId,
       body: payload.body,
       title: payload.title,
       dueDate: payload.dueDate,
@@ -44,14 +45,16 @@ export const updateWorkflowStateIdOfTask = async (token: string, taskId: string,
 export const updateAssignee = async (
   token: string,
   task_id: string,
-  assigneeType: string | null,
-  assigneeId: string | null,
+  internalUserId: string | null,
+  clientId: string | null,
+  companyId: string | null,
 ) => {
   await fetch(`${apiUrl}/api/tasks/${task_id}?token=${token}`, {
     method: 'PATCH',
     body: JSON.stringify({
-      assigneeType,
-      assigneeId,
+      internalUserId,
+      clientId,
+      companyId,
     }),
   })
 }

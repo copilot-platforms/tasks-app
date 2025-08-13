@@ -14,7 +14,7 @@ export const deleteTaskNotifications = task({
     preset: 'medium-1x',
   },
   queue: {
-    concurrencyLimit: 25,
+    concurrencyLimit: 5,
   },
 
   run: async (payload: DeleteTaskNotificationPayload, { ctx }) => {

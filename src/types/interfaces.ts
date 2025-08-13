@@ -1,6 +1,7 @@
 import { UserSchema } from '@/types/common'
 import { UpdateTaskRequestSchema } from '@/types/dto/tasks.dto'
-import { PropsWithChildren } from 'react'
+import { ObjectType } from '@/utils/addTypeToAssignee'
+import { UserIdsType } from '@/utils/assignee'
 import { z } from 'zod'
 
 export enum TargetMethod {
@@ -20,7 +21,6 @@ export enum View {
 
 export enum CreateTaskErrors {
   TITLE = 'title',
-  ASSIGNEE = 'assignee',
 }
 
 export enum createTemplateErrors {
@@ -74,8 +74,14 @@ export enum HandleSelectorComponentModes {
   //add more modes here if we are to extend useHandleSelectorComponent with more features.
 }
 
+export enum UserIds {
+  INTERNAL_USER_ID = 'internalUserId',
+  CLIENT_ID = 'clientId',
+  COMPANY_ID = 'companyId',
+}
+
 export type IFilterOptions = {
-  [key in FilterOptions]: string
+  [key in FilterOptions]: key extends FilterOptions.ASSIGNEE ? UserIdsType : string
 }
 
 export interface IAssignee {
@@ -83,6 +89,27 @@ export interface IAssignee {
   internalUsers: Omit<IIus, 'type'>[]
   clients: Omit<IClient, 'type'>[]
   companies: Omit<ICompany, 'type'>[]
+}
+
+export interface ISelectorOption {
+  value: string
+  label: string
+  avatarSrc?: string
+  avatarFallbackColor?: string
+  companyId?: string
+  type: ObjectType
+}
+
+export interface ISelectorAssignee {
+  clients: ISelectorOption[]
+  internalUsers: Omit<ISelectorOption, 'companyId'>[]
+  companies: Omit<ISelectorOption, 'companyId'>[]
+}
+
+export interface InputValue {
+  id: string
+  companyId?: string
+  object: ObjectType
 }
 
 export interface IIus {
@@ -103,6 +130,7 @@ export interface IClient {
   avatarImageUrl: string
   customFields: unknown
   type: AssigneeType
+  companyIds: string[]
 }
 
 export interface ICompany {

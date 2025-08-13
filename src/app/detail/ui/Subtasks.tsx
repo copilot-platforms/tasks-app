@@ -6,6 +6,7 @@ import { NewTaskCard } from '@/app/detail/ui/NewTaskCard'
 import { TaskCardList } from '@/app/detail/ui/TaskCardList'
 import { AddBtn } from '@/components/buttons/AddBtn'
 import { GhostBtn } from '@/components/buttons/GhostBtn'
+import { useDebounce } from '@/hooks/useDebounce'
 import { GrayAddMediumIcon } from '@/icons'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
@@ -16,7 +17,7 @@ import { checkOptimisticStableId } from '@/utils/optimisticCommentUtils'
 import { getTempTask } from '@/utils/optimisticTaskUtils'
 import { sortTaskByDescendingOrder } from '@/utils/sortTask'
 import { Box, Stack, Typography } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import useSWR, { useSWRConfig } from 'swr'
 
@@ -29,7 +30,6 @@ interface OptimisticUpdate {
 export const Subtasks = ({
   task_id,
   token,
-  userType,
   canCreateSubtasks,
 }: {
   task_id: string
@@ -41,31 +41,39 @@ export const Subtasks = ({
   const { workflowStates, assignee, activeTask } = useSelector(selectTaskBoard)
   const { tokenPayload } = useSelector(selectAuthDetails)
   const [optimisticUpdates, setOptimisticUpdates] = useState<OptimisticUpdate[]>([]) //might need this server-temp id maps in the future.
-
-  const handleFormCancel = () => {
-    setOpenTaskForm(false)
-  }
-  const handleFormOpen = () => {
-    setOpenTaskForm(!openTaskForm)
-  }
+  const [lastUpdated, setLastUpdated] = useState<string | null>()
+  const handleFormCancel = () => setOpenTaskForm(false)
+  const handleFormOpen = () => setOpenTaskForm(!openTaskForm)
 
   const mode = tokenPayload?.companyId ? UserRole.Client : UserRole.IU
 
   const cacheKey = `/api/tasks/?token=${token}&showArchived=1&showUnarchived=1&parentId=${task_id}`
 
-  const { data: subTasks } = useSWR(cacheKey, fetcher, { refreshInterval: 0 })
+  const { data: subTasks } = useSWR(cacheKey, fetcher, {
+    refreshInterval: 0,
+    revalidateOnFocus: false,
+  })
+  const didMount = useRef(false)
+  const shouldRefetchRef = useRef(true) //preventing double fetching from subtask update apis. Due to optimistic update revalidation, we are already fetching logs there. So no need to refetch in case for subtask update.
 
   const { mutate } = useSWRConfig()
 
+  const _debounceMutate = async (cacheKey: string) => await mutate(cacheKey)
+  const debounceMutate = useDebounce(_debounceMutate, 200)
+
   useEffect(() => {
-    const taskListLength = subTasks?.tasks?.length
-
-    if (!activeTask || typeof taskListLength !== 'number') return
-
-    if (activeTask.subtaskCount !== taskListLength) {
-      mutate(cacheKey)
+    if (!activeTask) return
+    if (!didMount.current || !shouldRefetchRef.current) {
+      didMount.current = true
+      shouldRefetchRef.current = true
+      setLastUpdated(activeTask?.lastSubtaskUpdated)
+      return //skip the refetch on first mount and shouldRefetch is false.
     }
-  }, [activeTask?.subtaskCount, activeTask?.isArchived, subTasks?.tasks?.length])
+    if (activeTask?.lastSubtaskUpdated && activeTask?.lastSubtaskUpdated !== lastUpdated) {
+      debounceMutate(cacheKey)
+    }
+    setLastUpdated(activeTask?.lastSubtaskUpdated)
+  }, [activeTask?.lastSubtaskUpdated])
 
   const handleSubTaskCreation = (payload: CreateTaskRequest) => {
     const tempId = generateRandomString('temp-task')
@@ -116,13 +124,14 @@ export const Subtasks = ({
       await mutate(
         cacheKey,
         async () => {
+          shouldRefetchRef.current = false
           await updater()
           return await fetcher(cacheKey)
         },
         {
           optimisticData: { tasks: updatedTasks },
           rollbackOnError: true,
-          revalidate: true,
+          revalidate: false,
         },
       )
     } catch (error) {
@@ -180,7 +189,7 @@ export const Subtasks = ({
 
       {openTaskForm && <NewTaskCard handleClose={handleFormCancel} handleSubTaskCreation={handleSubTaskCreation} />}
       <Box>
-        {subTasks?.tasks?.map((item: TaskResponse, index: number) => {
+        {subTasks?.tasks?.map((item: TaskResponse) => {
           const isTempId = item.id.includes('temp')
 
           return (

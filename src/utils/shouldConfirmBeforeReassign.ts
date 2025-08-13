@@ -4,11 +4,21 @@ import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { AssigneeType } from '@prisma/client'
 import { z } from 'zod'
 
-export const ShouldConfirmBeforeReassignment = (previousAssignee: IAssigneeCombined, currentAssignee: IAssigneeCombined) => {
+export const shouldConfirmBeforeReassignment = (
+  previousAssignee?: IAssigneeCombined,
+  currentAssignee?: IAssigneeCombined,
+) => {
+  if (!currentAssignee || !previousAssignee) {
+    return false // donot show confirmation modal for now if there is no previous assignee. Most likely we should set this to true when no assignee option is implemented.
+  }
+
   const currentAssigneeType = getAssigneeTypeCorrected(currentAssignee)
   const previousAssigneeCompanyAccessList = getPreviousCompanyList(previousAssignee)
   const previousAssigneeType = getAssigneeTypeCorrected(previousAssignee)
-  if (!previousAssigneeCompanyAccessList.length && previousAssigneeType == AssigneeType.internalUser) {
+  if (
+    (!previousAssigneeCompanyAccessList.length && previousAssigneeType == AssigneeType.internalUser) ||
+    previousAssignee.id == currentAssignee.id //might be the same client with different company
+  ) {
     return false
   } // case when previous assignee is an IU with full access to clients.
 

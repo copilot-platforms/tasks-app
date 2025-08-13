@@ -1,94 +1,84 @@
+import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
+import { ClientResponse, CompanyResponse, FilterableUser, InternalUsers } from '@/types/common'
+import { FilterOptionsKeywords } from '@/types/interfaces'
 import { CopilotAPI } from '@/utils/CopilotAPI'
-import { BaseService } from '@api/core/services/base.service'
+import { orderByRecentlyCreatedAt } from '@/utils/ordering'
+import { filterUsersByKeyword } from '@/utils/users'
+import APIError from '@api/core/exceptions/api'
 import User from '@api/core/models/User.model'
+import { BaseService } from '@api/core/services/base.service'
 import { PoliciesService } from '@api/core/services/policies.service'
 import { Resource } from '@api/core/types/api'
 import { UserAction, UserRole } from '@api/core/types/user'
-import APIError from '@api/core/exceptions/api'
 import httpStatus from 'http-status'
-import { CompanyResponse, CopilotListArgs, FilterableUser } from '@/types/common'
-import { filterUsersByKeyword } from '@/utils/users'
-import { z } from 'zod'
-import { FilterOptionsKeywords } from '@/types/interfaces'
-import { orderByRecentlyCreatedAt } from '@/utils/ordering'
-import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 
 class UsersService extends BaseService {
   private copilot: CopilotAPI
-  private DEFAULT_USERS_LIMIT = 10
 
   constructor(user: User) {
     super(user)
     this.copilot = new CopilotAPI(this.user.token)
   }
 
-  async getGroupedUsers(limit: number = this.DEFAULT_USERS_LIMIT, nextToken?: string, clientCompanyId?: string) {
+  private limitUsers<T>(users: T[], limit?: number): T[] {
+    if (!limit) return users
+
+    // Do not slice array unless limit is present - minor optimization
+    return users.slice(0, limit)
+  }
+
+  async getGroupedUsers(limit?: number, nextToken?: string) {
     const user = this.user
     new PoliciesService(user).authorize(UserAction.Read, Resource.Users)
 
-    const listArgs: CopilotListArgs = { limit, nextToken }
+    // NOTE: Get currentInternalUser with a separate CopilotAPI call. This adds a
+    // Copilot call, but saves us from having to `.find` in a potentially large array
 
-    const [ius, clients, companies, currentWorkspace] = await Promise.all([
+    const listArgs = { limit: MAX_FETCH_ASSIGNEE_COUNT, nextToken }
+
+    const [currentInternalUser, ius, clients, companies, currentWorkspace] = await Promise.all([
+      this.copilot.getInternalUser(user.internalUserId!),
       this.copilot.getInternalUsers(listArgs),
-      this.copilot.getClients({ limit: MAX_FETCH_ASSIGNEE_COUNT, nextToken }),
-      this.copilot.getCompanies({ limit: MAX_FETCH_ASSIGNEE_COUNT, nextToken }),
+      this.copilot.getClients(listArgs),
+      this.copilot.getCompanies({ ...listArgs, isPlaceholder: false }),
       this.copilot.getWorkspace(),
     ])
 
-    // Get current internal user as only IUs are authenticated to access this route
-    const currentInternalUser = ius.data.find((iu) => iu.id === user.internalUserId)
     if (!currentInternalUser) {
       throw new APIError(httpStatus.UNAUTHORIZED, 'Only internal users are allowed to access this resource')
     }
-    // Filter out companies where isPlaceholder is true if companies.data is not null
-    // Also filter out just companies which are accessible to this IU, since copilot doesn't do that
-    // If current workspace setting does not have companies enabled, don't return any companies
-    let filteredCompanies: CompanyResponse[] = []
-    if (currentWorkspace.isCompaniesEnabled && companies.data) {
-      filteredCompanies = companies.data
-        .filter((company) => !company.isPlaceholder)
-        .filter((company) =>
-          currentInternalUser.isClientAccessLimited ? currentInternalUser.companyAccessList?.includes(company.id) : true,
-        )
-        .slice(0, limit)
+
+    const processIus = (ius: InternalUsers[]) => {
+      return [currentInternalUser, ...orderByRecentlyCreatedAt(ius.filter((user) => user.id !== currentInternalUser.id))]
     }
 
-    // Same for clients
-    const clientsWithCompanyData = clients.data || []
-    const accessibleClients = (
-      currentInternalUser.isClientAccessLimited
-        ? clientsWithCompanyData?.filter((client) => currentInternalUser.companyAccessList?.includes(client.companyId))
-        : clientsWithCompanyData
-    )?.slice(0, limit)
+    const processClients = (clients: ClientResponse[]) => {
+      if (!currentInternalUser.isClientAccessLimited) return clients
 
-    const internalUsers = [
-      currentInternalUser,
-      ...orderByRecentlyCreatedAt(ius.data.filter((user) => user.id !== currentInternalUser.id)),
-    ] //Always keeping the current user at the first of the list.
-    let companyId
-    if (clientCompanyId) {
-      const matchingClient = accessibleClients.find((client) => client.id === clientCompanyId)
-      if (matchingClient) {
-        companyId = matchingClient.companyId
-      } else {
-        const matchingCompany = filteredCompanies.find((company) => company.id === clientCompanyId)
-        if (matchingCompany) {
-          companyId = matchingCompany.id
+      return clients.reduce((acc, client) => {
+        const allowedCompanyIds = client.companyIds?.filter((id) => currentInternalUser.companyAccessList?.includes(id))
+        if (allowedCompanyIds?.length) {
+          acc.push({ ...client, companyIds: allowedCompanyIds })
         }
-      }
+        return acc
+      }, [] as ClientResponse[])
     }
-    let filteredIUs = internalUsers
-    if (companyId) {
-      filteredIUs = filteredIUs.filter((iu) => {
-        !iu.isClientAccessLimited || iu.companyAccessList?.includes(companyId)
-      })
+
+    const processCompanies = (companies: CompanyResponse[]) => {
+      if (!currentWorkspace.isCompaniesEnabled) return []
+      if (!currentInternalUser.isClientAccessLimited) return companies
+
+      return companies.filter((company) => currentInternalUser.companyAccessList?.includes(company.id))
     }
+
+    const processedIus = processIus(ius.data)
+    const processedClients = processClients(clients.data || [])
+    const processedCompanies = processCompanies(companies.data || [])
 
     return {
-      // CopilotAPI doesn't currently support sorting data, so manually sort them before returning a response
-      internalUsers: filteredIUs,
-      clients: orderByRecentlyCreatedAt(accessibleClients),
-      companies: orderByRecentlyCreatedAt(filteredCompanies),
+      internalUsers: this.limitUsers(processedIus, limit),
+      clients: this.limitUsers(processedClients, limit),
+      companies: this.limitUsers(processedCompanies, limit),
     }
   }
 
@@ -97,18 +87,12 @@ class UsersService extends BaseService {
    * @param keyword
    * @returns
    */
-  async getFilteredUsersStartingWith(
-    keyword: string,
-    userType?: string,
-    limit?: number,
-    nextToken?: string,
-    clientCompanyId?: string,
-  ) {
+  async getFilteredUsersStartingWith(keyword: string, userType?: string, limit?: number, nextToken?: string) {
     const filterByKeyword = (users: FilterableUser[]) => filterUsersByKeyword(users, keyword)
 
     if (userType) {
       if (userType === FilterOptionsKeywords.CLIENTS) {
-        const { clients, companies } = await this.getGroupedUsers(limit || 500, nextToken, clientCompanyId)
+        const { clients, companies } = await this.getGroupedUsers(limit || 500, nextToken)
         return {
           clients: filterByKeyword(clients),
           companies: filterByKeyword(companies),
@@ -116,13 +100,13 @@ class UsersService extends BaseService {
       }
 
       if (userType === FilterOptionsKeywords.TEAM) {
-        const { internalUsers } = await this.getGroupedUsers(limit || 500, nextToken, clientCompanyId)
+        const { internalUsers } = await this.getGroupedUsers(limit || 500, nextToken)
         return {
           internalUsers: filterByKeyword(internalUsers),
         }
       }
     }
-    const { internalUsers, clients, companies } = await this.getGroupedUsers(limit || 500, nextToken, clientCompanyId)
+    const { internalUsers, clients, companies } = await this.getGroupedUsers(limit || 500, nextToken)
     return {
       internalUsers: filterByKeyword(internalUsers),
       clients: filterByKeyword(clients),
@@ -130,7 +114,7 @@ class UsersService extends BaseService {
     }
   }
 
-  async getUsersForClients(limit: number = this.DEFAULT_USERS_LIMIT) {
+  async getUsersForClients(limit?: number) {
     const user = this.user
     //Apply custom authorization here. Policy service is not used because this api is for client's task-assignee match function to get clients from same organizations only. Only clients can use this.
     if (user.role !== UserRole.Client) {
@@ -138,14 +122,11 @@ class UsersService extends BaseService {
     }
     const [clients, companies, internalUsers] = await Promise.all([
       this.copilot.getClients({ limit }),
-      this.copilot.getCompanies({ limit }),
+      this.copilot.getCompanies({ limit, isPlaceholder: false }),
       this.copilot.getInternalUsers({ limit }),
     ])
 
-    // Filter out companies where isPlaceholder is true if companies.data is not null
-    const filteredCompanies = companies.data ? companies.data.filter((company) => !company.isPlaceholder) : []
-
-    return { clients: clients.data, companies: filteredCompanies, internalUsers: internalUsers.data }
+    return { clients: clients.data, companies: companies.data, internalUsers: internalUsers.data }
   }
 }
 

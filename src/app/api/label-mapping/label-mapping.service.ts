@@ -11,8 +11,9 @@ export class LabelMappingService extends BaseService {
    * @param assigneeType
    * @returns string | null
    */
-  async getLabel(assigneeId: string | null | undefined, assigneeType: string | null | undefined) {
-    if (!assigneeId) {
+  async getLabel(userIds: { internalUserId: string | null; clientId: string | null; companyId: string | null }) {
+    const { internalUserId, clientId, companyId } = userIds
+    if (!internalUserId && !clientId && !companyId) {
       const existingLabel = await this.db.label.findFirst({
         where: {
           labelledEntity: 'Unassigned',
@@ -33,22 +34,21 @@ export class LabelMappingService extends BaseService {
 
     const copilotUtils = new CopilotAPI(this.user.token, this.customApiKey)
 
-    if (assigneeType === AssigneeType.internalUser) {
-      await copilotUtils.getInternalUser(assigneeId)
+    if (internalUserId) {
       const workspace = await copilotUtils.getWorkspace()
       return await this.generateLabel(z.string().parse(workspace.brandName))
     }
-    if (assigneeType === AssigneeType.client) {
-      const client = await copilotUtils.getClient(assigneeId)
-      const company = await copilotUtils.getCompany(client.companyId)
+    if (clientId) {
+      const client = await copilotUtils.getClient(clientId)
+      const company = await copilotUtils.getCompany(companyId ?? client.companyId)
       //client is not assigned in a company
       if (company.isPlaceholder) {
         return await this.generateLabel(client.givenName)
       }
       return await this.generateLabel(company.name)
     }
-    if (assigneeType === AssigneeType.company) {
-      const company = await copilotUtils.getCompany(assigneeId)
+    if (companyId) {
+      const company = await copilotUtils.getCompany(companyId)
       return await this.generateLabel(company.name)
     }
   }

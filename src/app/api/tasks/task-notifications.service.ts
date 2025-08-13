@@ -1,4 +1,4 @@
-import { NotificationCreatedResponseSchema } from '@/types/common'
+import { Uuid } from '@/types/common'
 import { TaskWithWorkflowState } from '@/types/db'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import User from '@api/core/models/User.model'
@@ -12,6 +12,10 @@ export class TaskNotificationsService extends BaseService {
   constructor(user: User) {
     super(user)
     this.notificationService = new NotificationService(user)
+  }
+
+  async getExistingClientNotificationForTask(taskId: string, clientId: string, companyId: string) {
+    return await this.db.clientNotification.findFirst({ where: { taskId, clientId, companyId } })
   }
 
   async removeDeletedTaskNotifications(task: TaskWithWorkflowState) {
@@ -91,7 +95,7 @@ export class TaskNotificationsService extends BaseService {
     }
 
     // Return if not workflowState / assignee updated
-    const isReassigned = updatedTask.assigneeId && prevTask.assigneeId !== updatedTask.assigneeId
+    const isReassigned = prevTask.assigneeId !== updatedTask.assigneeId
     if (prevTask.workflowStateId === updatedTask.workflowStateId && !isReassigned) return
 
     // Case 2
@@ -246,25 +250,29 @@ export class TaskNotificationsService extends BaseService {
   private handleTaskCompleted = async (updatedTask: Task) => {
     const copilot = new CopilotAPI(this.user.token)
     if (updatedTask.assigneeType === AssigneeType.company) {
-      const { recipientIds } = await this.notificationService.getNotificationParties(
+      const { recipientIds, senderCompanyId } = await this.notificationService.getNotificationParties(
         copilot,
         updatedTask,
         NotificationTaskActions.CompletedByCompanyMember,
       )
+
       await this.notificationService.createBulkNotification(
         NotificationTaskActions.CompletedByCompanyMember,
         updatedTask,
         recipientIds,
+        { senderCompanyId },
       )
       await this.notificationService.markAsReadForAllRecipients(updatedTask)
     } else {
       // Get every IU with access to company first
-      const { recipientIds } = await this.notificationService.getNotificationParties(
+      const { recipientIds, senderCompanyId } = await this.notificationService.getNotificationParties(
         copilot,
         updatedTask,
         NotificationTaskActions.CompletedByCompanyMember,
       )
-      await this.notificationService.createBulkNotification(NotificationTaskActions.Completed, updatedTask, recipientIds)
+      await this.notificationService.createBulkNotification(NotificationTaskActions.Completed, updatedTask, recipientIds, {
+        senderCompanyId,
+      })
       await this.notificationService.markClientNotificationAsRead(updatedTask)
     }
   }
@@ -283,21 +291,28 @@ export class TaskNotificationsService extends BaseService {
       return properCopy[task.assigneeType]
     })()
 
+    // --- Validation to check for duplication ---
+    // When we are triggering bulk notifications, it's possible that we will be running a lot of db queries in parallel,
+    // This is okay because this service runs only on async jobs, it's not user facing.
+    const existingNotification =
+      task.assigneeType === AssigneeType.client
+        ? await this.getExistingClientNotificationForTask(task.id, Uuid.parse(task.clientId), Uuid.parse(task.companyId))
+        : undefined
+    if (existingNotification) {
+      console.error('Found an existing notification. Skipping creating a new one:', existingNotification)
+      return
+    }
+
     const notification = await this.notificationService.create(
       // In future when reassignment is supported, change this logic to support reassigned to client as well
       notificationType,
       task,
-      {
-        disableEmail: task.assigneeType === AssigneeType.internalUser,
-      },
+      { disableEmail: task.assigneeType === AssigneeType.internalUser },
     )
     // Create a new entry in ClientNotifications table so we can mark as read on
     // behalf of client later
     if (!notification) {
       console.error('Notification failed to trigger for task:', task)
-    }
-    if (task.assigneeType === AssigneeType.client) {
-      await this.notificationService.addToClientNotifications(task, NotificationCreatedResponseSchema.parse(notification))
     }
   }
 
@@ -308,28 +323,12 @@ export class TaskNotificationsService extends BaseService {
       task,
       NotificationTaskActions.AssignedToCompany,
     )
-    const notifications = await this.notificationService.createBulkNotification(
+    await this.notificationService.createBulkNotification(
       isReassigned ? NotificationTaskActions.ReassignedToCompany : NotificationTaskActions.AssignedToCompany,
       task,
       recipientIds,
       { email: true },
     )
-
-    // This is a hacky way to bulk create ClientNotifications for all company members.
-    if (notifications) {
-      const notificationPromises = []
-      for (let i = 0; i < notifications.length; i++) {
-        // Basically we are treating an individual company member as a client recipient for a notification
-        // For each loop we are considering a separate task where that particular member is the assignee
-        notificationPromises.push(
-          this.notificationService.addToClientNotifications(
-            { ...task, assigneeId: recipientIds[i], assigneeType: AssigneeType.client },
-            notifications[i],
-          ),
-        )
-      }
-      await Promise.all(notificationPromises)
-    }
   }
 
   private handleTaskArchiveToggle = async (prevTask: TaskWithWorkflowState, updatedTask: TaskWithWorkflowState) => {

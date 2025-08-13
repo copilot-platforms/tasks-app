@@ -1,6 +1,6 @@
 interface Sortable {
   dueDate?: string
-  createdAt: Date
+  createdAt: string
   id: string
 }
 

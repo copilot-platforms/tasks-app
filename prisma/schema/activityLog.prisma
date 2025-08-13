@@ -1,6 +1,7 @@
 enum ActivityType {
   TASK_CREATED
   TASK_ASSIGNED
+  TASK_UNASSIGNED
   TITLE_UPDATED
   WORKFLOW_STATE_UPDATED
   COMMENT_ADDED
@@ -9,20 +10,23 @@ enum ActivityType {
 }
 
 model ActivityLog {
-  id          String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  taskId      String       @db.Uuid
-  task        Task         @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  workspaceId String       @db.VarChar(32)
-  type        ActivityType
-  details     Json         @db.JsonB
-  userId      String       @db.Uuid
-  userRole    AssigneeType
-  createdAt   DateTime     @default(now()) @db.Timestamptz()
-  updatedAt   DateTime     @updatedAt @ignore @db.Timestamptz()
-  deletedAt   DateTime?
+  id            String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  taskId        String       @db.Uuid
+  task          Task         @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  workspaceId   String       @db.VarChar(32)
+  type          ActivityType
+  details       Json         @db.JsonB
+  userId        String       @db.Uuid
+  userCompanyId String?      @db.Uuid
+  userRole      AssigneeType
+  createdAt     DateTime     @default(now()) @db.Timestamptz()
+  updatedAt     DateTime     @updatedAt @ignore @db.Timestamptz()
+  deletedAt     DateTime?
 
   @@index([createdAt])
   @@index([taskId], name: "IX_ActivityLogs_taskId")
+  // Single + composite index on userId for IU + Client initiated activities
   @@index([userId], name: "IX_ActivityLogs_userId")
+  @@index([userId, userCompanyId], name: "IX_ActivityLogs_userId_userCompanyId")
   @@map("ActivityLogs")
 }

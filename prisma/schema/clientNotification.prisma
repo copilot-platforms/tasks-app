@@ -3,6 +3,8 @@ model ClientNotification {
 
   /// Client ID on Copilot for the assigned client user
   clientId       String    @db.Uuid
+  /// Company ID on Copilot for the assigned client user -> update after copilot supporting multiple companies for a client
+  companyId      String?   @db.Uuid
   /// Notification ID for triggered notification on Copilot
   notificationId String    @db.Uuid
   /// Related task
@@ -13,6 +15,10 @@ model ClientNotification {
   deletedAt      DateTime?
 
   @@unique([notificationId], name: "UQ_ClientNotifications_notificationId")
+  // WARNING: This is going to make it so that we cannot bulk soft-delete multiple duplicate client notifications at once
+  // since there is "deletedAt" in the unique constraint.
+  // Either way, soft deleting client notifications (not IU ones) is not very useful in the first place
+  @@unique([taskId, clientId, companyId, deletedAt], name: "UQ_ClientNotifications_taskId_clientId_companyId_deletedAt")
   @@index([notificationId], name: "IX_ClientNotifications_notificationId")
   @@map("ClientNotifications")
 }

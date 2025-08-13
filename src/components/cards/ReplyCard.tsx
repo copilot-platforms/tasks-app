@@ -34,6 +34,7 @@ export const ReplyCard = ({
   handleImagePreview,
   deleteReply,
   setDeletedReplies,
+  replyInitiator,
 }: {
   item: ReplyResponse
   uploadFn: ((file: File) => Promise<string | undefined>) | undefined
@@ -41,6 +42,7 @@ export const ReplyCard = ({
   handleImagePreview: (e: React.MouseEvent<unknown>) => void
   deleteReply: (id: string, replyId: string) => void
   setDeletedReplies: Dispatch<SetStateAction<string[]>>
+  replyInitiator: IAssigneeCombined | undefined
 }) => {
   const [isReadOnly, setIsReadOnly] = useState<boolean>(true)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -55,7 +57,7 @@ export const ReplyCard = ({
   const [isFocused, setIsFocused] = useState(false)
   const editRef = useRef<HTMLDivElement>(null)
 
-  const canEdit = tokenPayload?.internalUserId == item?.initiator?.id || tokenPayload?.clientId == item?.initiator?.id
+  const canEdit = tokenPayload?.internalUserId == item?.initiatorId || tokenPayload?.clientId == item?.initiatorId
 
   const isMobile = () => {
     return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || windowWidth < 600
@@ -71,7 +73,7 @@ export const ReplyCard = ({
     setEditedContent(content)
   }
 
-  const canDelete = tokenPayload?.internalUserId == item?.initiator?.id
+  const canDelete = tokenPayload?.internalUserId == item?.initiatorId
 
   const handleEdit = async () => {
     if (isTapwriteContentEmpty(editedContent)) {
@@ -111,8 +113,6 @@ export const ReplyCard = ({
     }
   }, [editedContent, isListOrMenuActive, isFocused, isMobile])
 
-  const replyUser = item.initiator as unknown as IAssigneeCombined
-
   return (
     <>
       <Stack
@@ -130,7 +130,7 @@ export const ReplyCard = ({
           width="20px"
           height="20px"
           fontSize="10px"
-          currentAssignee={replyUser}
+          currentAssignee={replyInitiator}
           sx={{
             border: (theme) => `1.1px solid ${theme.color.gray[200]}`,
             marginTop: '1px',
@@ -158,7 +158,7 @@ export const ReplyCard = ({
                   whiteSpace: 'nowrap',
                 }}
               >
-                {replyUser ? getAssigneeName(replyUser) : 'Deleted User'}
+                {replyInitiator ? getAssigneeName(replyInitiator) : 'Deleted User'}
               </BoldTypography>
               <Stack direction="row" columnGap={1} alignItems={'center'}>
                 <DotSeparator />
