@@ -26,6 +26,7 @@ import { UrlObject } from 'url'
 
 import { updateTask } from '@/app/(home)/actions'
 import { clientUpdateTask, updateAssignee, updateTaskDetail } from '@/app/detail/[task_id]/[user_type]/actions'
+import { CopilotTooltip } from '@/components/atoms/CopilotTooltip'
 import { TaskMetaItems } from '@/components/atoms/TaskMetaItems'
 import { CopilotPopSelector } from '@/components/inputs/CopilotSelector'
 import { DatePickerComponent } from '@/components/inputs/DatePickerComponent'
@@ -45,7 +46,7 @@ const TaskCardContainer = styled(Stack)(({ theme }) => ({
   ':hover': {
     background: theme.color.gray[100],
   },
-  ':focus': {
+  ':focus-visible': {
     borderColor: theme.color.borders.focusBorder2,
     borderRadius: theme.spacing(theme.shape.radius100),
     outline: 'none',
@@ -119,27 +120,29 @@ export const TaskCard = ({ task, href, workflowState, mode }: TaskCardProps) => 
     <TaskCardContainer tabIndex={0}>
       <Stack direction={'row'} columnGap={'2px'}>
         <Box sx={{ alignItems: 'top' }}>
-          <WorkflowStateSelector
-            option={workflowStates}
-            value={statusValue}
-            variant="icon"
-            getValue={(value) => {
-              updateStatusValue(value)
-              store.dispatch(updateWorkflowStateIdByTaskId({ taskId: task.id, targetWorkflowStateId: value.id }))
-              if (mode === UserRole.Client && !previewMode) {
-                clientUpdateTask(z.string().parse(token), task.id, value.id)
-              } else {
-                updateTask({
-                  token: z.string().parse(token),
-                  taskId: task.id,
-                  payload: { workflowStateId: value.id },
-                })
-              }
-            }}
-            responsiveNoHide
-            size={Sizes.MEDIUM}
-            padding={'4px'}
-          />
+          <CopilotTooltip content={'Change status'}>
+            <WorkflowStateSelector
+              option={workflowStates}
+              value={statusValue}
+              variant="icon"
+              getValue={(value) => {
+                updateStatusValue(value)
+                store.dispatch(updateWorkflowStateIdByTaskId({ taskId: task.id, targetWorkflowStateId: value.id }))
+                if (mode === UserRole.Client && !previewMode) {
+                  clientUpdateTask(z.string().parse(token), task.id, value.id)
+                } else {
+                  updateTask({
+                    token: z.string().parse(token),
+                    taskId: task.id,
+                    payload: { workflowStateId: value.id },
+                  })
+                }
+              }}
+              responsiveNoHide
+              size={Sizes.MEDIUM}
+              padding={'4px'}
+            />
+          </CopilotTooltip>
         </Box>
         <Stack direction="column" justifyContent="center" rowGap={'5px'} sx={{ width: '100%' }}>
           <Stack direction={'row'} columnGap={'10px'} justifyContent={'space-between'}>
@@ -168,22 +171,24 @@ export const TaskCard = ({ task, href, workflowState, mode }: TaskCardProps) => 
                 })()}
                 onChange={handleAssigneeChange}
                 buttonContent={
-                  <Box
-                    sx={{
-                      padding: '2px 2px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      borderRadius: '4px',
-                      ...(!(mode === UserRole.Client && !previewMode) && {
-                        ':hover': {
-                          cursor: 'pointer',
-                          background: (theme) => theme.color.gray[150],
-                        },
-                      }),
-                    }}
-                  >
-                    <CopilotAvatar currentAssignee={assigneeValue as IAssigneeCombined} />
-                  </Box>
+                  <CopilotTooltip content={assigneeValue === NoAssignee ? 'Set Assignee' : 'Change Assignee'}>
+                    <Box
+                      sx={{
+                        padding: '2px 2px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        borderRadius: '4px',
+                        ...(!(mode === UserRole.Client && !previewMode) && {
+                          ':hover': {
+                            cursor: 'pointer',
+                            background: (theme) => theme.color.gray[150],
+                          },
+                        }),
+                      }}
+                    >
+                      <CopilotAvatar currentAssignee={assigneeValue as IAssigneeCombined} />
+                    </Box>
+                  </CopilotTooltip>
                 }
               />
             ) : (
@@ -208,21 +213,23 @@ export const TaskCard = ({ task, href, workflowState, mode }: TaskCardProps) => 
           <Stack direction={'row'} columnGap={'10px'} justifyContent={'space-between'}>
             <Box sx={{ ml: '-4px' }}>
               {task.dueDate && (
-                <DatePickerComponent
-                  getDate={(date) => {
-                    const isoDate = DateStringSchema.parse(formatDate(date))
-                    token && updateTaskDetail({ token, taskId: task.id, payload: { dueDate: isoDate } })
-                    setCurrentDueDate(isoDate)
-                  }}
-                  variant="icon"
-                  padding="0px 4px"
-                  dateValue={
-                    currentDueDate ? createDateFromFormattedDateString(z.string().parse(currentDueDate)) : undefined
-                  }
-                  disabled={mode === UserRole.Client && !previewMode}
-                  isDone={isTaskCompleted(task, workflowStates)}
-                  isShort
-                />
+                <CopilotTooltip content={'Change Due Date'}>
+                  <DatePickerComponent
+                    getDate={(date) => {
+                      const isoDate = DateStringSchema.parse(formatDate(date))
+                      token && updateTaskDetail({ token, taskId: task.id, payload: { dueDate: isoDate } })
+                      setCurrentDueDate(isoDate)
+                    }}
+                    variant="icon"
+                    padding="0px 4px"
+                    dateValue={
+                      currentDueDate ? createDateFromFormattedDateString(z.string().parse(currentDueDate)) : undefined
+                    }
+                    disabled={mode === UserRole.Client && !previewMode}
+                    isDone={isTaskCompleted(task, workflowStates)}
+                    isShort
+                  />
+                </CopilotTooltip>
               )}
             </Box>
 
