@@ -155,6 +155,7 @@ export const DatePickerComponent = ({
               dateString={value?.format('YYYY-MM-DD') ?? ''}
               isDone={isDone ?? false}
               variant={isShort ? 'short' : 'long'}
+              isClient={disabled}
             />
           </Box>
         )}

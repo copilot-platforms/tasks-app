@@ -14,13 +14,14 @@ interface DueDateLayoutProp {
   dateString: DateString
   isDone: boolean
   variant?: 'short' | 'long'
+  isClient?: boolean
 }
 
-export const DueDateLayout = ({ dateString, isDone, variant = 'long' }: DueDateLayoutProp) => {
+export const DueDateLayout = ({ dateString, isDone, variant = 'long', isClient = false }: DueDateLayoutProp) => {
   const date = createDateFromFormattedDateString(dateString)
   const now = dayjs()
   const calculateFormattedDueDate = useCallback(() => {
-    return DueDateFormatter(date, true, variant)
+    return DueDateFormatter(date, true, variant, isClient)
   }, [date])
 
   const formattedDueDate = calculateFormattedDueDate()
