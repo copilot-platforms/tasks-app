@@ -314,6 +314,7 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate,
                 dateValue={currentDueDate ? createDateFromFormattedDateString(z.string().parse(currentDueDate)) : undefined}
                 disabled={mode === UserRole.Client && !previewMode}
                 isDone={isTaskCompleted(task, workflowStates)}
+                isShort
               />
             </CopilotTooltip>
           </Box>
