@@ -3,19 +3,15 @@
 import { updateTask, updateViewModeSettings } from '@/app/(home)/actions'
 import { TaskDataFetcher } from '@/app/_fetchers/TaskDataFetcher'
 import { clientUpdateTask } from '@/app/detail/[task_id]/[user_type]/actions'
-import { TaskCardList } from '@/app/detail/ui/TaskCardList'
 import { TaskBoardAppBridge } from '@/app/ui/TaskBoardAppBridge'
 import { CustomDragLayer } from '@/components/CustomDragLayer'
 import { CardDragLayer } from '@/components/cards/CardDragLayer'
-import { TaskCard } from '@/components/cards/TaskCard'
 import { TaskColumn } from '@/components/cards/TaskColumn'
 import { TaskRow } from '@/components/cards/TaskRow'
 import DashboardEmptyState from '@/components/layouts/EmptyState/DashboardEmptyState'
 import { NoFilteredTasksState } from '@/components/layouts/EmptyState/NoFilteredTasksState'
 import { FilterBar } from '@/components/layouts/FilterBar'
 import { Header } from '@/components/layouts/Header'
-import { CustomLink } from '@/hoc/CustomLink'
-import CustomScrollBar from '@/hoc/CustomScrollBar'
 import { DragDropHandler } from '@/hoc/DragDropHandler'
 import { useFilter } from '@/hooks/useFilter'
 import { selectTaskBoard, updateWorkflowStateIdByTaskId } from '@/redux/features/taskBoardSlice'
@@ -25,7 +21,6 @@ import { TaskResponse } from '@/types/dto/tasks.dto'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { View } from '@/types/interfaces'
 import { checkEmptyAssignee } from '@/utils/assignee'
-import { getCardHref } from '@/utils/getCardHref'
 import { sortTaskByDescendingOrder } from '@/utils/sortTask'
 import { prioritizeStartedStates } from '@/utils/workflowStates'
 import { UserRole } from '@api/core/types/user'
@@ -33,6 +28,7 @@ import { Box, Stack } from '@mui/material'
 import { useCallback, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { z } from 'zod'
+import { TasksColumnVirtualizer, TasksRowVirtualizer } from '@/app/ui/VirtualizedTasksLists'
 
 interface TaskBoardProps {
   mode: UserRole
@@ -172,35 +168,11 @@ export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
                   showAddBtn={mode === UserRole.IU || !!previewMode}
                   showHeader={showHeader}
                 >
-                  <CustomScrollBar>
-                    <Stack direction="column" rowGap="6px" sx={{ overflowX: 'auto' }}>
-                      {sortTaskByDescendingOrder<TaskResponse>(filterTaskWithWorkflowStateId(list.id)).map((task, index) => {
-                        return (
-                          <CustomLink
-                            key={task.id}
-                            href={{ pathname: getCardHref(task, mode), query: { token } }}
-                            style={{ width: 'fit-content' }}
-                          >
-                            <DragDropHandler
-                              key={task.id}
-                              accept={'taskCard'}
-                              index={index}
-                              task={task}
-                              draggable // Make TaskCard draggable
-                            >
-                              <Box key={task.id}>
-                                <TaskCard
-                                  task={task}
-                                  key={task.id}
-                                  href={{ pathname: getCardHref(task, mode), query: { token } }}
-                                />
-                              </Box>
-                            </DragDropHandler>
-                          </CustomLink>
-                        )
-                      })}
-                    </Stack>
-                  </CustomScrollBar>
+                  <TasksRowVirtualizer
+                    rows={sortTaskByDescendingOrder<TaskResponse>(filterTaskWithWorkflowStateId(list.id))}
+                    mode={mode}
+                    token={token ?? null}
+                  />
                 </TaskColumn>
               </DragDropHandler>
             ))}
@@ -216,42 +188,33 @@ export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
             margin: '0 auto',
           }}
         >
-          <CustomScrollBar>
-            {prioritizeStartedStates(workflowStates).map((list, index) => (
-              <DragDropHandler
+          {prioritizeStartedStates(workflowStates).map((list, index) => (
+            <DragDropHandler
+              key={list.id}
+              accept={'taskCard'}
+              index={index}
+              id={list.id}
+              onDropItem={onDropItem}
+              droppable // Make TaskRow droppable
+            >
+              <TaskRow
+                mode={mode}
+                workflowStateId={list.id}
                 key={list.id}
-                accept={'taskCard'}
-                index={index}
-                id={list.id}
-                onDropItem={onDropItem}
-                droppable // Make TaskRow droppable
+                columnName={list.name}
+                taskCount={taskCountForWorkflowStateId(list.id)}
+                display={!!filterTaskWithWorkflowStateId(list.id).length}
+                showAddBtn={mode === UserRole.IU || !!previewMode}
               >
-                <TaskRow
+                <TasksColumnVirtualizer
+                  rows={sortTaskByDescendingOrder<TaskResponse>(filterTaskWithWorkflowStateId(list.id))}
+                  list={list}
                   mode={mode}
-                  workflowStateId={list.id}
-                  key={list.id}
-                  columnName={list.name}
-                  taskCount={taskCountForWorkflowStateId(list.id)}
-                  display={!!filterTaskWithWorkflowStateId(list.id).length}
-                  showAddBtn={mode === UserRole.IU || !!previewMode}
-                >
-                  {sortTaskByDescendingOrder<TaskResponse>(filterTaskWithWorkflowStateId(list.id)).map((task, index) => {
-                    return (
-                      <DragDropHandler
-                        key={task.id}
-                        accept={'taskCard'}
-                        index={index}
-                        task={task}
-                        draggable // Make ListViewTaskCard draggable
-                      >
-                        <TaskCardList task={task} variant="task" key={task.id} workflowState={list} mode={mode} />
-                      </DragDropHandler>
-                    )
-                  })}
-                </TaskRow>
-              </DragDropHandler>
-            ))}
-          </CustomScrollBar>
+                  token={token ?? null}
+                />
+              </TaskRow>
+            </DragDropHandler>
+          ))}
         </Stack>
       )}
       <CustomDragLayer>
