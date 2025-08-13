@@ -144,9 +144,10 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate,
           cursor: 'pointer',
           background: (theme) => theme.color.gray[100],
         },
+
         ':focus-visible': {
-          border: (theme) => `1px solid ${theme.color.borders.focusBorder2}`,
-          outline: 'none',
+          outline: (theme) => `1px solid ${theme.color.borders.focusBorder2}`,
+          outlineOffset: -1,
         },
       }}
     >
