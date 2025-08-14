@@ -35,6 +35,9 @@ import { createDateFromFormattedDateString, formatDate } from '@/utils/dateHelpe
 import { getSelectedUserIds, getSelectorAssignee, getSelectorAssigneeFromTask } from '@/utils/selector'
 import { shouldConfirmBeforeReassignment } from '@/utils/shouldConfirmBeforeReassign'
 import z from 'zod'
+import { TaskCardList } from '@/app/detail/ui/TaskCardList'
+import { CustomLink } from '@/hoc/CustomLink'
+import { getCardHref } from '@/utils/getCardHref'
 
 const TaskCardContainer = styled(Stack)(({ theme }) => ({
   border: `1px solid ${theme.color.borders.border}`,
@@ -63,7 +66,7 @@ interface TaskCardProps {
 }
 
 export const TaskCard = ({ task, href, workflowState, mode }: TaskCardProps) => {
-  const { assignee, workflowStates, assigneeCache, previewMode, token } = useSelector(selectTaskBoard)
+  const { assignee, workflowStates, assigneeCache, previewMode, token, accessibleTasks } = useSelector(selectTaskBoard)
 
   const subtaskCount = useSubtaskCount(task.id)
 
@@ -118,140 +121,165 @@ export const TaskCard = ({ task, href, workflowState, mode }: TaskCardProps) => 
 
   return (
     <TaskCardContainer tabIndex={0}>
-      <Stack direction={'row'} columnGap={'2px'}>
-        <Box sx={{ alignItems: 'top' }}>
-          <CopilotTooltip content={'Change status'}>
-            <WorkflowStateSelector
-              option={workflowStates}
-              value={statusValue}
-              variant="icon"
-              getValue={(value) => {
-                updateStatusValue(value)
-                store.dispatch(updateWorkflowStateIdByTaskId({ taskId: task.id, targetWorkflowStateId: value.id }))
-                if (mode === UserRole.Client && !previewMode) {
-                  clientUpdateTask(z.string().parse(token), task.id, value.id)
-                } else {
-                  updateTask({
-                    token: z.string().parse(token),
-                    taskId: task.id,
-                    payload: { workflowStateId: value.id },
-                  })
-                }
-              }}
-              responsiveNoHide
-              size={Sizes.MEDIUM}
-              padding={'4px'}
-            />
-          </CopilotTooltip>
-        </Box>
-        <Stack direction="column" justifyContent="center" rowGap={'5px'} sx={{ width: '100%' }}>
-          <Stack direction={'row'} columnGap={'10px'} justifyContent={'space-between'}>
-            <Typography
-              variant="bodyMd"
-              sx={{
-                color: (theme) => theme.color.gray[600],
-                display: '-webkit-box',
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-              }}
-            >
-              {task.title}
-            </Typography>
-
-            {assigneeValue ? (
-              <CopilotPopSelector
-                name="Set assignee"
-                disabled={mode === UserRole.Client && !previewMode}
-                initialValue={(() => {
-                  const value = assigneeValue as IAssigneeCombined
-                  if (!value || value === NoAssignee) return undefined
-                  return value
-                })()}
-                onChange={handleAssigneeChange}
-                buttonContent={
-                  <CopilotTooltip
-                    content={assigneeValue === NoAssignee ? 'Set Assignee' : 'Change Assignee'}
-                    disabled={mode === UserRole.Client && !previewMode}
-                  >
-                    <Box
-                      sx={{
-                        padding: '2px 2px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        borderRadius: '4px',
-                        ...(!(mode === UserRole.Client && !previewMode) && {
-                          ':hover': {
-                            cursor: 'pointer',
-                            background: (theme) => theme.color.gray[150],
-                          },
-                        }),
-                      }}
-                    >
-                      <CopilotAvatar currentAssignee={assigneeValue as IAssigneeCombined} />
-                    </Box>
-                  </CopilotTooltip>
-                }
+      <Stack direction="column" rowGap={'12px'}>
+        <Stack direction={'row'} columnGap={'2px'}>
+          <Box sx={{ alignItems: 'top' }}>
+            <CopilotTooltip content={'Change status'}>
+              <WorkflowStateSelector
+                option={workflowStates}
+                value={statusValue}
+                variant="icon"
+                getValue={(value) => {
+                  updateStatusValue(value)
+                  store.dispatch(updateWorkflowStateIdByTaskId({ taskId: task.id, targetWorkflowStateId: value.id }))
+                  if (mode === UserRole.Client && !previewMode) {
+                    clientUpdateTask(z.string().parse(token), task.id, value.id)
+                  } else {
+                    updateTask({
+                      token: z.string().parse(token),
+                      taskId: task.id,
+                      payload: { workflowStateId: value.id },
+                    })
+                  }
+                }}
+                responsiveNoHide
+                size={Sizes.MEDIUM}
+                padding={'4px'}
               />
-            ) : (
-              <Box
+            </CopilotTooltip>
+          </Box>
+          <Stack direction="column" justifyContent="center" rowGap={'5px'} sx={{ width: '100%' }}>
+            <Stack direction={'row'} columnGap={'10px'} justifyContent={'space-between'}>
+              <Typography
+                variant="bodyMd"
                 sx={{
-                  padding: '2px 4px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  borderRadius: '4px',
-                  ...(!(mode === UserRole.Client && !previewMode) && {
-                    ':hover': {
-                      cursor: 'pointer',
-                      background: (theme) => theme.color.gray[150],
-                    },
-                  }),
+                  color: (theme) => theme.color.gray[600],
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
                 }}
               >
-                <Skeleton variant="circular" width={20} height={20} />
-              </Box>
-            )}
-          </Stack>
-          <Stack direction={'row'} columnGap={'10px'} justifyContent={'space-between'}>
-            <Box sx={{ ml: '-4px' }}>
-              {task.dueDate && (
-                <CopilotTooltip content={'Change Due Date'} disabled={mode === UserRole.Client && !previewMode}>
-                  <DatePickerComponent
-                    getDate={(date) => {
-                      const isoDate = DateStringSchema.parse(formatDate(date))
-                      token && updateTaskDetail({ token, taskId: task.id, payload: { dueDate: isoDate } })
-                      setCurrentDueDate(isoDate)
-                    }}
-                    variant="icon"
-                    padding="0px 4px"
-                    dateValue={
-                      currentDueDate ? createDateFromFormattedDateString(z.string().parse(currentDueDate)) : undefined
-                    }
-                    disabled={mode === UserRole.Client && !previewMode}
-                    isDone={isTaskCompleted(task, workflowStates)}
-                    isShort
-                  />
-                </CopilotTooltip>
-              )}
-            </Box>
+                {task.title}
+              </Typography>
 
-            {(task.isArchived || subtaskCount > 0) && (
-              <Stack
-                direction="row"
-                sx={{
-                  display: 'flex',
-                  gap: '12px',
-                  flexShrink: 0,
-                  alignItems: 'center',
-                  justifyContent: 'flex-end',
-                  padding: '0px 5px',
-                }}
-              >
-                <TaskMetaItems task={task} lineHeight="18px" />
-              </Stack>
-            )}
+              {assigneeValue ? (
+                <CopilotPopSelector
+                  name="Set assignee"
+                  disabled={mode === UserRole.Client && !previewMode}
+                  initialValue={(() => {
+                    const value = assigneeValue as IAssigneeCombined
+                    if (!value || value === NoAssignee) return undefined
+                    return value
+                  })()}
+                  onChange={handleAssigneeChange}
+                  buttonContent={
+                    <CopilotTooltip
+                      content={assigneeValue === NoAssignee ? 'Set Assignee' : 'Change Assignee'}
+                      disabled={mode === UserRole.Client && !previewMode}
+                    >
+                      <Box
+                        sx={{
+                          padding: '2px 2px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          borderRadius: '4px',
+                          ...(!(mode === UserRole.Client && !previewMode) && {
+                            ':hover': {
+                              cursor: 'pointer',
+                              background: (theme) => theme.color.gray[150],
+                            },
+                          }),
+                        }}
+                      >
+                        <CopilotAvatar currentAssignee={assigneeValue as IAssigneeCombined} />
+                      </Box>
+                    </CopilotTooltip>
+                  }
+                />
+              ) : (
+                <Box
+                  sx={{
+                    padding: '2px 4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    borderRadius: '4px',
+                    ...(!(mode === UserRole.Client && !previewMode) && {
+                      ':hover': {
+                        cursor: 'pointer',
+                        background: (theme) => theme.color.gray[150],
+                      },
+                    }),
+                  }}
+                >
+                  <Skeleton variant="circular" width={20} height={20} />
+                </Box>
+              )}
+            </Stack>
+            <Stack direction={'row'} columnGap={'10px'} justifyContent={'space-between'}>
+              <Box sx={{ ml: '-4px' }}>
+                {task.dueDate && (
+                  <CopilotTooltip content={'Change Due Date'} disabled={mode === UserRole.Client && !previewMode}>
+                    <DatePickerComponent
+                      getDate={(date) => {
+                        const isoDate = DateStringSchema.parse(formatDate(date))
+                        token && updateTaskDetail({ token, taskId: task.id, payload: { dueDate: isoDate } })
+                        setCurrentDueDate(isoDate)
+                      }}
+                      variant="icon"
+                      padding="0px 4px"
+                      dateValue={
+                        currentDueDate ? createDateFromFormattedDateString(z.string().parse(currentDueDate)) : undefined
+                      }
+                      disabled={mode === UserRole.Client && !previewMode}
+                      isDone={isTaskCompleted(task, workflowStates)}
+                      isShort
+                    />
+                  </CopilotTooltip>
+                )}
+              </Box>
+
+              {(task.isArchived || subtaskCount > 0) && (
+                <Stack
+                  direction="row"
+                  sx={{
+                    display: 'flex',
+                    gap: '12px',
+                    flexShrink: 0,
+                    alignItems: 'center',
+                    justifyContent: 'flex-end',
+                    padding: '0px 5px',
+                  }}
+                >
+                  <TaskMetaItems task={task} lineHeight="18px" />
+                </Stack>
+              )}
+            </Stack>
           </Stack>
+        </Stack>
+        <Stack direction="column">
+          {accessibleTasks
+            .filter((item) => item.parentId == task.id)
+            .map((subtask) => {
+              return (
+                <CustomLink key={task.id} href={{ pathname: getCardHref(subtask, mode), query: { token } }}>
+                  <Box
+                    sx={{
+                      marginLeft: '-12px',
+                      marginRight: '-12px',
+                      paddingLeft: '32px',
+                      paddingRight: '12px',
+                      ':hover': {
+                        background: (theme) => theme.color.gray[150],
+                      },
+                    }}
+                  >
+                    <TaskCardList task={subtask} variant="subtask-board" mode={mode} />
+                  </Box>
+                </CustomLink>
+              )
+            })}
         </Stack>
       </Stack>
     </TaskCardContainer>
