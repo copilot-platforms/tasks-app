@@ -295,7 +295,7 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate,
       >
         {task.dueDate && (
           <Box sx={{ minWidth: '105px', display: 'flex', justifyContent: 'flex-end' }}>
-            <CopilotTooltip content={'Change Due Date'}>
+            <CopilotTooltip content={'Change Due Date'} disabled={mode === UserRole.Client && !previewMode}>
               <DatePickerComponent
                 getDate={(date) => {
                   const isoDate = DateStringSchema.parse(formatDate(date))
@@ -320,7 +320,11 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate,
           </Box>
         )}
         {assigneeValue ? (
-          <CopilotTooltip content={assigneeValue === NoAssignee ? 'Set Assignee' : 'Change Assignee'} placement="left">
+          <CopilotTooltip
+            content={assigneeValue === NoAssignee ? 'Set Assignee' : 'Change Assignee'}
+            placement="left"
+            disabled={mode === UserRole.Client && !previewMode}
+          >
             <CopilotPopSelector
               name="Set assignee"
               disabled={mode === UserRole.Client && !previewMode}

@@ -171,7 +171,10 @@ export const TaskCard = ({ task, href, workflowState, mode }: TaskCardProps) => 
                 })()}
                 onChange={handleAssigneeChange}
                 buttonContent={
-                  <CopilotTooltip content={assigneeValue === NoAssignee ? 'Set Assignee' : 'Change Assignee'}>
+                  <CopilotTooltip
+                    content={assigneeValue === NoAssignee ? 'Set Assignee' : 'Change Assignee'}
+                    disabled={mode === UserRole.Client && !previewMode}
+                  >
                     <Box
                       sx={{
                         padding: '2px 2px',
@@ -213,7 +216,7 @@ export const TaskCard = ({ task, href, workflowState, mode }: TaskCardProps) => 
           <Stack direction={'row'} columnGap={'10px'} justifyContent={'space-between'}>
             <Box sx={{ ml: '-4px' }}>
               {task.dueDate && (
-                <CopilotTooltip content={'Change Due Date'}>
+                <CopilotTooltip content={'Change Due Date'} disabled={mode === UserRole.Client && !previewMode}>
                   <DatePickerComponent
                     getDate={(date) => {
                       const isoDate = DateStringSchema.parse(formatDate(date))
