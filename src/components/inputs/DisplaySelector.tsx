@@ -4,21 +4,21 @@ import { ViewMode } from '@prisma/client'
 import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
 import { useState } from 'react'
 import { StyledSwitch } from '@/components/inputs/StyledSwitch'
-import { ArchivedOptionsType } from '@/types/dto/viewSettings.dto'
+import { DisplayOptions } from '@/types/dto/viewSettings.dto'
 
 interface DisplaySelectorProps {
   handleModeChange: (mode: ViewMode) => void
   selectedMode: ViewMode
-  archivedOptions: ArchivedOptionsType
-  handleArchivedOptionsChange: (archivedOptions: ArchivedOptionsType) => void
+  displayOptions: DisplayOptions
+  handleDisplayOptionsChange: (displayOptions: DisplayOptions) => void
   mobileView?: boolean
 }
 
 export const DisplaySelector = ({
   handleModeChange,
   selectedMode,
-  archivedOptions,
-  handleArchivedOptionsChange,
+  displayOptions,
+  handleDisplayOptionsChange,
   mobileView,
 }: DisplaySelectorProps) => {
   const [anchorEl, setAnchorEl] = useState<null | Element>(null)
@@ -118,6 +118,30 @@ export const DisplaySelector = ({
             </Typography>
           </IconContainer>
         </Stack>
+
+        <Stack
+          direction="row"
+          columnGap={'8px'}
+          sx={{
+            display: 'flex',
+            alignSelf: 'stretch',
+            alignItems: 'center',
+            padding: '4px 0px',
+            justifyContent: 'space-between',
+          }}
+        >
+          <Typography variant="bodyMd"> Show subtasks</Typography>
+          <StyledSwitch
+            checked={displayOptions.showSubtasks}
+            onChange={(e) =>
+              handleDisplayOptionsChange({
+                ...displayOptions,
+                showSubtasks: e.target.checked,
+              })
+            }
+          />
+        </Stack>
+
         <Stack
           direction="row"
           columnGap={'8px'}
@@ -131,12 +155,16 @@ export const DisplaySelector = ({
         >
           <Typography variant="bodyMd"> Show unarchived tasks</Typography>
           <StyledSwitch
-            checked={archivedOptions.showUnarchived}
+            checked={displayOptions.showUnarchived}
             onChange={(e) =>
-              handleArchivedOptionsChange({ showArchived: archivedOptions.showArchived, showUnarchived: e.target.checked })
+              handleDisplayOptionsChange({
+                ...displayOptions,
+                showUnarchived: e.target.checked,
+              })
             }
           />
         </Stack>
+
         <Stack
           direction="row"
           columnGap={'8px'}
@@ -150,9 +178,12 @@ export const DisplaySelector = ({
         >
           <Typography variant="bodyMd"> Show archived tasks</Typography>
           <StyledSwitch
-            checked={archivedOptions.showArchived}
+            checked={displayOptions.showArchived}
             onChange={(e) =>
-              handleArchivedOptionsChange({ showArchived: e.target.checked, showUnarchived: archivedOptions.showUnarchived })
+              handleDisplayOptionsChange({
+                ...displayOptions,
+                showArchived: e.target.checked,
+              })
             }
           />
         </Stack>
