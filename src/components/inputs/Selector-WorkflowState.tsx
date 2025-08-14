@@ -138,6 +138,9 @@ export const WorkflowStateSelector = ({
             zIndex: '99999999',
           }}
           placement="bottom-start"
+          onClick={(e) => {
+            e.stopPropagation()
+          }}
         >
           <Stack
             direction="column"

@@ -169,6 +169,9 @@ export const DatePickerComponent = ({
         sx={{
           opacity: 0,
         }}
+        onClick={(e) => {
+          e.stopPropagation()
+        }}
       >
         <DatePicker
           disablePast
