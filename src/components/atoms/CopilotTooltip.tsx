@@ -6,15 +6,23 @@ interface CopilotTooltipProps {
   children: React.ReactElement
   position?: 'top' | 'bottom' | 'left' | 'right'
   placement?: 'left' | 'right' | 'center'
+  disabled?: boolean
 }
 
-export const CopilotTooltip = ({ content, children, position = 'bottom', placement = 'center' }: CopilotTooltipProps) => {
+export const CopilotTooltip = ({
+  content,
+  children,
+  position = 'bottom',
+  placement = 'center',
+  disabled = false,
+}: CopilotTooltipProps) => {
   return (
     <Tooltip
       content={content}
       position={position}
       tooltipClassname="tooltip"
-      offset={{ x: placement == 'right' ? 50 : placement == 'left' ? -50 : 0, y: -10 }}
+      offset={{ x: placement == 'right' ? 50 : placement == 'left' ? -50 : 5, y: -10 }}
+      disabled={disabled}
     >
       {children}
     </Tooltip>
