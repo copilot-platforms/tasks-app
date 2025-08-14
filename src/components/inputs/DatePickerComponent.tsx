@@ -4,7 +4,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import dayjs, { Dayjs } from 'dayjs'
 import { CalenderIcon, CalenderIconSmall } from '@/icons'
-import { Box, Popper, Stack, Typography } from '@mui/material'
+import { Box, Popper, Stack, Theme, Typography } from '@mui/material'
 import { SecondaryBtn } from '../buttons/SecondaryBtn'
 import { useState } from 'react'
 import { Sizes } from '@/types/interfaces'
@@ -21,6 +21,7 @@ interface Prop {
   variant?: 'button' | 'icon' | 'normal'
   isDone?: boolean
   isShort?: boolean
+  hoverColor?: keyof Theme['color']['gray']
 }
 
 export const DatePickerComponent = ({
@@ -34,6 +35,7 @@ export const DatePickerComponent = ({
   variant = 'normal',
   isDone,
   isShort = false,
+  hoverColor,
 }: Prop) => {
   const [value, setValue] = useState(dateValue ? dayjs(dateValue) : null)
 
@@ -144,7 +146,7 @@ export const DatePickerComponent = ({
               ':hover': {
                 cursor: 'pointer',
                 ...(!disabled && {
-                  background: (theme) => theme.color.gray[150],
+                  background: (theme) => theme.color.gray[hoverColor ?? 150],
                 }),
               },
               display: 'flex',
