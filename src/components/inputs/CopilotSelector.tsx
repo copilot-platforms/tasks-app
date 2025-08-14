@@ -151,6 +151,9 @@ export const CopilotPopSelector = ({
             width: 'fit-content',
           }}
           placement="bottom-start"
+          onClick={(e) => {
+            e.stopPropagation()
+          }}
         >
           <CopilotSelector
             hideClientsList={hideClientsList}
