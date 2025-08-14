@@ -155,6 +155,7 @@ export const DatePickerComponent = ({
               dateString={value?.format('YYYY-MM-DD') ?? ''}
               isDone={isDone ?? false}
               variant={isShort ? 'short' : 'long'}
+              isClient={disabled}
             />
           </Box>
         )}
@@ -167,6 +168,9 @@ export const DatePickerComponent = ({
         // This hides popper's tooltip that helps position the content. display: none would mess up the positioning
         sx={{
           opacity: 0,
+        }}
+        onClick={(e) => {
+          e.stopPropagation()
         }}
       >
         <DatePicker
