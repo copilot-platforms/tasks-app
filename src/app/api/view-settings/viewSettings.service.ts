@@ -69,6 +69,7 @@ export class ViewSettingsService extends BaseService {
         },
         showUnarchived: true,
         showArchived: false,
+        showSubtasks: true, // If we DO need to default to false for IUs, we can add a condition here after confirmation
       },
     })
   }
