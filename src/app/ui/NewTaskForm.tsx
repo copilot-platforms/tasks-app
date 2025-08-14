@@ -123,7 +123,6 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
         <Stack direction="row" columnGap={3} position="relative" sx={{ flexWrap: 'wrap' }}>
           <Box sx={{ padding: 0.1 }}>
             <WorkflowStateSelector
-              padding="4px"
               option={workflowStates}
               value={statusValue}
               getValue={(value) => {
@@ -133,22 +132,6 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
             />
           </Box>
 
-          <Stack alignSelf="flex-start">
-            <Box
-              sx={{
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                maxWidth: { xs: '102px', sm: 'none' },
-              }}
-            >
-              <DatePickerComponent
-                padding="4px"
-                getDate={(value) => store.dispatch(setCreateTaskFields({ targetField: 'dueDate', value: value as string }))}
-                variant="button"
-              />
-            </Box>
-          </Stack>
           <Stack alignSelf="flex-start">
             <CopilotPopSelector
               disabled={!!previewMode}
@@ -167,7 +150,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
                     assigneeValue ? <CopilotAvatar currentAssignee={assigneeValue} /> : <AssigneePlaceholderSmall />
                   }
                   height="30px"
-                  padding="4px 4px 4px 8px"
+                  padding="4px 16px"
                   buttonContent={
                     <Typography
                       variant="bodySm"
@@ -186,6 +169,22 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
                 />
               }
             />
+          </Stack>
+          <Stack alignSelf="flex-start">
+            <Box
+              sx={{
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                maxWidth: { xs: '102px', sm: 'none' },
+              }}
+            >
+              <DatePickerComponent
+                padding="4px 16px"
+                getDate={(value) => store.dispatch(setCreateTaskFields({ targetField: 'dueDate', value: value as string }))}
+                variant="button"
+              />
+            </Box>
           </Stack>
         </Stack>
       </AppMargin>
