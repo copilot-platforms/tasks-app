@@ -1,7 +1,7 @@
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { Sizes } from '@/types/interfaces'
 import { statusIcons } from '@/utils/iconMatcher'
-import { Box, ClickAwayListener, Popper, Stack, Typography } from '@mui/material'
+import { Box, ClickAwayListener, Popper, Stack, Theme, Typography } from '@mui/material'
 import React, { ReactNode, useState } from 'react'
 import { SecondaryBtn } from '../buttons/SecondaryBtn'
 
@@ -16,6 +16,7 @@ export const WorkflowStateSelector = ({
   padding,
   height,
   gap,
+  hoverColor,
 }: {
   value: WorkflowStateResponse
   option: WorkflowStateResponse[]
@@ -27,6 +28,7 @@ export const WorkflowStateSelector = ({
   padding?: string
   height?: string
   gap?: string
+  hoverColor?: keyof Theme['color']['gray']
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const open = Boolean(anchorEl)
@@ -121,7 +123,7 @@ export const WorkflowStateSelector = ({
                 borderRadius: '4px',
                 ':hover': {
                   cursor: 'pointer',
-                  background: (theme) => theme.color.gray[150],
+                  background: (theme) => theme.color.gray[hoverColor ?? 150],
                 },
               }}
             >
