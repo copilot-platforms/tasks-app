@@ -13,6 +13,7 @@ model ViewSetting {
   filterOptions  Json      @db.JsonB
   showUnarchived Boolean   @default(true)
   showArchived   Boolean   @default(false)
+  showSubtasks   Boolean  @default(true)
 
   @@unique([userId, workspaceId], name: "UQ_ViewSettings_userId_workspaceId")
   @@index([userId, workspaceId], name: "IX_ViewSettings_userId_workspaceId")
