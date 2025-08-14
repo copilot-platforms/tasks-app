@@ -40,12 +40,12 @@ import { z } from 'zod'
 
 interface TaskCardListProps {
   task: TaskResponse
-  variant: 'task' | 'subtask' //task variant is used in task board list view, subtask variant is used for sub task list in details page
+  variant: 'task' | 'subtask' | 'subtask-board' //task variant is used in task board list view, subtask variant is used for sub task list in details page aud subtask-board variant is used for sub task list in board page
   workflowState?: WorkflowStateResponse
   mode: UserRole
   assignee?: IAssigneeCombined
   handleUpdate?: (taskId: string, changes: Partial<TaskResponse>, updater: () => Promise<void>) => Promise<void>
-  isTemp?: boolean
+  isTemp?: Boolean
 }
 
 export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate, isTemp }: TaskCardListProps) => {
@@ -73,7 +73,7 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate,
 
   const { renderingItem: _statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
     // item: selectedWorkflowState,
-    item: workflowState ?? task.workflowState,
+    item: workflowState ?? task.workflowState ?? workflowStates.find((ws) => ws.id === task.workflowStateId),
     type: SelectorType.STATUS_SELECTOR,
   })
 
@@ -142,9 +142,8 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate,
         minWidth: 0,
         ':hover': {
           cursor: 'pointer',
-          background: (theme) => theme.color.gray[100],
+          background: (theme) => (variant == 'subtask-board' ? theme.color.gray[150] : theme.color.gray[100]),
         },
-
         ':focus-visible': {
           outline: (theme) => `1px solid ${theme.color.borders.focusBorder2}`,
           outlineOffset: -1,
@@ -185,9 +184,10 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate,
             responsiveNoHide
             size={Sizes.MEDIUM}
             padding={'2px 4px'}
+            hoverColor={200}
           />
         </CopilotTooltip>
-        {isTemp ? (
+        {isTemp || variant === 'subtask-board' ? (
           <div
             key={task.id}
             style={{
@@ -315,6 +315,7 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate,
                 disabled={mode === UserRole.Client && !previewMode}
                 isDone={isTaskCompleted(task, workflowStates)}
                 isShort
+                hoverColor={200}
               />
             </CopilotTooltip>
           </Box>
@@ -344,7 +345,7 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate,
                     ...(!(mode === UserRole.Client && !previewMode) && {
                       ':hover': {
                         cursor: 'pointer',
-                        background: (theme) => theme.color.gray[150],
+                        background: (theme) => theme.color.gray[variant === 'subtask-board' ? 200 : 150],
                       },
                     }),
                   }}
