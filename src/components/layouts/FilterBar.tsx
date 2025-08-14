@@ -18,7 +18,7 @@ import {
 } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
 import { IUTokenSchema } from '@/types/common'
-import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
+import { CreateViewSettingsDTO, DisplayOptions } from '@/types/dto/viewSettings.dto'
 import { FilterOptions, FilterOptionsKeywords, IFilterOptions, UserIds } from '@/types/interfaces'
 import { filterTypeToButtonIndexMap } from '@/types/objectMaps'
 import { checkAssignee, emptyAssignee, getAssigneeId, UserIdsType } from '@/utils/assignee'
@@ -33,14 +33,16 @@ interface FilterBarProps {
   mode: UserRole
   updateViewModeSetting: (payload: CreateViewSettingsDTO) => void
 }
+
 export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
-  const { view, filterOptions, assignee, token, viewSettingsTemp, showArchived, showUnarchived } =
+  const { view, filterOptions, assignee, viewSettingsTemp, showArchived, showUnarchived, showSubtasks } =
     useSelector(selectTaskBoard)
 
   const viewMode = viewSettingsTemp ? viewSettingsTemp.viewMode : view
-  const archivedOptions = {
+  const displayOptions = {
     showArchived: viewSettingsTemp ? viewSettingsTemp.showArchived : showArchived,
     showUnarchived: viewSettingsTemp ? viewSettingsTemp.showUnarchived : showUnarchived,
+    showSubtasks: viewSettingsTemp ? viewSettingsTemp.showSubtasks : showSubtasks,
   }
 
   const viewModeFilterOptions = viewSettingsTemp ? (viewSettingsTemp.filterOptions as IFilterOptions) : filterOptions //ViewSettingsTemp used to apply temp values of viewSettings in filterOptions and viewMode because clientSideUpdate applies outdated cached values to original view and filterOptions if navigated
@@ -82,6 +84,18 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
       ? NoAssignee
       : getSelectorAssigneeFromFilterOptions(assignee, viewModeFilterOptions.assignee),
   )
+
+  const handleDisplayOptionsChange = (displayOptions: DisplayOptions) => {
+    store.dispatch(setIsTasksLoading(true))
+    const newViewSettings = {
+      viewMode,
+      filterOptions,
+      ...displayOptions,
+    }
+    store.dispatch(setViewSettings(newViewSettings))
+    updateViewModeSetting(newViewSettings)
+    store.dispatch(setViewSettingsTemp(newViewSettings))
+  }
 
   const filterButtons = [
     {
@@ -240,32 +254,8 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
                   }),
                 )
               }}
-              archivedOptions={archivedOptions}
-              handleArchivedOptionsChange={(archivedOptions) => {
-                store.dispatch(setIsTasksLoading(true))
-                store.dispatch(
-                  setViewSettings({
-                    viewMode: viewMode,
-                    filterOptions: filterOptions,
-                    showArchived: archivedOptions.showArchived,
-                    showUnarchived: archivedOptions.showUnarchived,
-                  }),
-                )
-                updateViewModeSetting({
-                  viewMode: viewMode,
-                  filterOptions: filterOptions,
-                  showArchived: archivedOptions.showArchived,
-                  showUnarchived: archivedOptions.showUnarchived,
-                })
-                store.dispatch(
-                  setViewSettingsTemp({
-                    viewMode: viewMode,
-                    filterOptions: filterOptions,
-                    showArchived: archivedOptions.showArchived,
-                    showUnarchived: archivedOptions.showUnarchived,
-                  }),
-                )
-              }}
+              displayOptions={displayOptions}
+              handleDisplayOptionsChange={handleDisplayOptionsChange}
             />
           </Stack>
         </Stack>
@@ -377,32 +367,8 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
                     }),
                   )
                 }}
-                archivedOptions={archivedOptions}
-                handleArchivedOptionsChange={(archivedOptions) => {
-                  store.dispatch(setIsTasksLoading(true))
-                  store.dispatch(
-                    setViewSettings({
-                      viewMode: viewMode,
-                      filterOptions: filterOptions,
-                      showArchived: archivedOptions.showArchived,
-                      showUnarchived: archivedOptions.showUnarchived,
-                    }),
-                  )
-                  updateViewModeSetting({
-                    viewMode: viewMode,
-                    filterOptions: filterOptions,
-                    showArchived: archivedOptions.showArchived,
-                    showUnarchived: archivedOptions.showUnarchived,
-                  })
-                  store.dispatch(
-                    setViewSettingsTemp({
-                      viewMode: viewMode,
-                      filterOptions: filterOptions,
-                      showArchived: archivedOptions.showArchived,
-                      showUnarchived: archivedOptions.showUnarchived,
-                    }),
-                  )
-                }}
+                displayOptions={displayOptions}
+                handleDisplayOptionsChange={handleDisplayOptionsChange}
               />
             </Stack>
           </Stack>
