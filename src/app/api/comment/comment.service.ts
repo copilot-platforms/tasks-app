@@ -59,7 +59,12 @@ export class CommentService extends BaseService {
       )
       await sendCommentCreateNotifications.trigger({ user: this.user, task, comment })
     } else {
-      await sendReplyCreateNotifications.trigger({ user: this.user, task, comment })
+      const tasksService = new TasksService(this.user)
+      await Promise.all([
+        // Update last activity log timestamp for task even on replies so they are reflected in realtime
+        tasksService.setNewLastActivityLogUpdated(data.taskId),
+        sendReplyCreateNotifications.trigger({ user: this.user, task, comment }),
+      ])
     }
 
     return comment
