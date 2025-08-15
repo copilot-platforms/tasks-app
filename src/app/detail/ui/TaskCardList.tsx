@@ -44,7 +44,7 @@ interface TaskCardListProps {
   mode: UserRole
   assignee?: IAssigneeCombined
   handleUpdate?: (taskId: string, changes: Partial<TaskResponse>, updater: () => Promise<void>) => Promise<void>
-  isTemp?: Boolean
+  isTemp?: boolean
 }
 
 export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate, isTemp }: TaskCardListProps) => {
