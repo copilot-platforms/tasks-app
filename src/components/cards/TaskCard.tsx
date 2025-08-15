@@ -263,7 +263,7 @@ export const TaskCard = ({ task, href, workflowState, mode }: TaskCardProps) => 
         <Stack direction="column">
           {subtasks.map((subtask) => {
             return (
-              <CustomLink key={task.id} href={{ pathname: getCardHref(subtask, mode), query: { token } }}>
+              <CustomLink key={subtask.id} href={{ pathname: getCardHref(subtask, mode), query: { token } }}>
                 <Box
                   sx={{
                     marginLeft: '-12px',
