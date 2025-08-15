@@ -1,7 +1,7 @@
 import { Tooltip } from 'copilot-design-system'
 import React from 'react'
 
-interface CopilotTooltipProps {
+export interface CopilotTooltipProps {
   content: React.ReactNode
   children: React.ReactElement
   position?: 'top' | 'bottom' | 'left' | 'right'
