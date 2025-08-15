@@ -13,13 +13,6 @@ export const TaskMetaItems = ({ task, lineHeight }: { task: TaskResponse; lineHe
           <Box sx={{ marginTop: '-2px' }}>
             <ArchiveBoxIcon />
           </Box>
-
-          <Typography
-            variant="bodyXs"
-            sx={{ color: (theme) => theme.color.text.textSecondary, lineHeight: lineHeight ?? '21px' }}
-          >
-            Archived
-          </Typography>
         </Stack>
       )}
       {subtaskCount > 0 && (

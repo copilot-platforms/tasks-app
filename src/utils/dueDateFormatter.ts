@@ -1,6 +1,10 @@
 import dayjs from 'dayjs'
 
-export const DueDateFormatter = (date: string | Date, isRelativeDate: boolean = false) => {
+export const DueDateFormatter = (
+  date: string | Date,
+  isRelativeDate: boolean = false,
+  variant: 'short' | 'long' = 'long',
+) => {
   const parsedDate = dayjs(date)
   if (isRelativeDate) {
     if (parsedDate.isToday()) {
@@ -31,5 +35,5 @@ export const DueDateFormatter = (date: string | Date, isRelativeDate: boolean = 
 
   const formattedMonth = month.length <= 5 ? month : monthFormats[month]
 
-  return `${formattedMonth} ${day}, ${year}`
+  return variant == 'short' ? `Due: ${formattedMonth} ${day}` : `${formattedMonth} ${day}, ${year}`
 }

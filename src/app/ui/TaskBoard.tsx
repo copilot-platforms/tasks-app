@@ -193,6 +193,8 @@ export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
                                   task={task}
                                   key={task.id}
                                   href={{ pathname: getCardHref(task, mode), query: { token } }}
+                                  workflowState={list}
+                                  mode={mode}
                                 />
                               </Box>
                             </DragDropHandler>
@@ -255,7 +257,7 @@ export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
         </Stack>
       )}
       <CustomDragLayer>
-        <CardDragLayer />
+        <CardDragLayer mode={mode} />
       </CustomDragLayer>
     </>
   )
