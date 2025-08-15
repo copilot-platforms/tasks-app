@@ -51,7 +51,7 @@ class WorkflowStatesService extends BaseService {
   private async setDefaultWorkflowStates() {
     return await this.db.workflowState.createMany({
       data: [
-        { type: 'unstarted', name: 'Todo', key: 'todo', workspaceId: this.user.workspaceId },
+        { type: 'unstarted', name: 'To Do', key: 'todo', workspaceId: this.user.workspaceId },
         { type: 'started', name: 'In Progress', key: 'inProgress', workspaceId: this.user.workspaceId },
         { type: 'completed', name: 'Done', key: 'completed', workspaceId: this.user.workspaceId },
       ],
