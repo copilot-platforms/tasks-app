@@ -4,11 +4,12 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import dayjs, { Dayjs } from 'dayjs'
 import { CalenderIcon, CalenderIconSmall } from '@/icons'
-import { Box, Popper, Stack, Typography } from '@mui/material'
+import { Box, Popper, Stack, Theme, Typography } from '@mui/material'
 import { SecondaryBtn } from '../buttons/SecondaryBtn'
 import { useState } from 'react'
 import { Sizes } from '@/types/interfaces'
 import { DueDateLayout } from '@/components/layouts/DueDateLayout'
+import { CopilotTooltip, CopilotTooltipProps } from '@/components/atoms/CopilotTooltip'
 
 interface Prop {
   getDate: (value: string) => void
@@ -21,6 +22,8 @@ interface Prop {
   variant?: 'button' | 'icon' | 'normal'
   isDone?: boolean
   isShort?: boolean
+  hoverColor?: keyof Theme['color']['gray']
+  tooltipProps?: Omit<CopilotTooltipProps, 'content' | 'children'>
 }
 
 export const DatePickerComponent = ({
@@ -34,6 +37,8 @@ export const DatePickerComponent = ({
   variant = 'normal',
   isDone,
   isShort = false,
+  hoverColor,
+  tooltipProps,
 }: Prop) => {
   const [value, setValue] = useState(dateValue ? dayjs(dateValue) : null)
 
@@ -137,27 +142,35 @@ export const DatePickerComponent = ({
             </Typography>
           </>
         ) : (
-          <Box
-            sx={{
-              padding: padding,
-              borderRadius: '4px',
-              ':hover': {
-                cursor: 'pointer',
-                ...(!disabled && {
-                  background: (theme) => theme.color.gray[150],
-                }),
-              },
-              display: 'flex',
-              alignItems: 'center',
-            }}
+          // Right now Tooltip support is applied to the icon variant only
+          <CopilotTooltip
+            content={'Change Due Date'}
+            disabled={tooltipProps?.disabled}
+            placement={tooltipProps?.placement}
+            position={tooltipProps?.position}
           >
-            <DueDateLayout
-              dateString={value?.format('YYYY-MM-DD') ?? ''}
-              isDone={isDone ?? false}
-              variant={isShort ? 'short' : 'long'}
-              isClient={disabled}
-            />
-          </Box>
+            <Box
+              sx={{
+                padding: padding,
+                borderRadius: '4px',
+                ':hover': {
+                  cursor: 'pointer',
+                  ...(!disabled && {
+                    background: (theme) => theme.color.gray[hoverColor ?? 150],
+                  }),
+                },
+                display: 'flex',
+                alignItems: 'center',
+              }}
+            >
+              <DueDateLayout
+                dateString={value?.format('YYYY-MM-DD') ?? ''}
+                isDone={isDone ?? false}
+                variant={isShort ? 'short' : 'long'}
+                isClient={disabled}
+              />
+            </Box>
+          </CopilotTooltip>
         )}
       </Stack>
       <Popper

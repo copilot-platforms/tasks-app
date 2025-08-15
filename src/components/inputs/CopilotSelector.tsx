@@ -7,6 +7,7 @@ import { selectorOptionsToInputValue } from '@/utils/selector'
 import { Box, ClickAwayListener, Popper, Stack } from '@mui/material'
 import { ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
+import { CopilotTooltip, CopilotTooltipProps } from '@/components/atoms/CopilotTooltip'
 
 export const CopilotSelector = ({
   onChange,
@@ -62,6 +63,8 @@ interface CopilotPopSelectorProps {
   initialValue?: IAssigneeCombined
   hideClientsList?: boolean
   hideIusList?: boolean
+  tooltipProps?: Omit<CopilotTooltipProps, 'children'>
+  variant?: 'icon' | 'normal'
 }
 
 export const CopilotPopSelector = ({
@@ -72,6 +75,8 @@ export const CopilotPopSelector = ({
   initialValue,
   hideClientsList,
   hideIusList,
+  tooltipProps,
+  variant = 'normal',
 }: CopilotPopSelectorProps) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
@@ -135,7 +140,14 @@ export const CopilotPopSelector = ({
             handleClick(e)
           }}
         >
-          {buttonContent}
+          <CopilotTooltip
+            content={tooltipProps?.content ?? 'Change Assignee'}
+            disabled={tooltipProps?.disabled || variant == 'normal'}
+            placement={tooltipProps?.placement}
+            position={tooltipProps?.position}
+          >
+            <>{buttonContent}</>
+          </CopilotTooltip>
         </Box>
         <Popper
           id={id}
