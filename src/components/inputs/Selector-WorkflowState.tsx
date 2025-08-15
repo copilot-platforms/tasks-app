@@ -4,6 +4,7 @@ import { statusIcons } from '@/utils/iconMatcher'
 import { Box, ClickAwayListener, Popper, Stack, Theme, Typography } from '@mui/material'
 import React, { ReactNode, useState } from 'react'
 import { SecondaryBtn } from '../buttons/SecondaryBtn'
+import { CopilotTooltip, CopilotTooltipProps } from '../atoms/CopilotTooltip'
 
 export const WorkflowStateSelector = ({
   value,
@@ -17,6 +18,7 @@ export const WorkflowStateSelector = ({
   height,
   gap,
   hoverColor,
+  tooltipProps,
 }: {
   value: WorkflowStateResponse
   option: WorkflowStateResponse[]
@@ -29,6 +31,7 @@ export const WorkflowStateSelector = ({
   height?: string
   gap?: string
   hoverColor?: keyof Theme['color']['gray']
+  tooltipProps?: Omit<CopilotTooltipProps, 'content' | 'children'>
 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const open = Boolean(anchorEl)
@@ -117,18 +120,26 @@ export const WorkflowStateSelector = ({
               }
             />
           ) : (
-            <Box
-              sx={{
-                padding: padding,
-                borderRadius: '4px',
-                ':hover': {
-                  cursor: 'pointer',
-                  background: (theme) => theme.color.gray[hoverColor ?? 150],
-                },
-              }}
+            // Right now Tooltip support is applied to the icon variant only
+            <CopilotTooltip
+              content={'Change status'}
+              disabled={tooltipProps?.disabled}
+              placement={tooltipProps?.placement}
+              position={tooltipProps?.position}
             >
-              {statusIcons[size][value?.type]}
-            </Box>
+              <Box
+                sx={{
+                  padding: padding,
+                  borderRadius: '4px',
+                  ':hover': {
+                    cursor: 'pointer',
+                    background: (theme) => theme.color.gray[hoverColor ?? 150],
+                  },
+                }}
+              >
+                {statusIcons[size][value?.type]}
+              </Box>
+            </CopilotTooltip>
           )}
         </Box>
         <Popper
