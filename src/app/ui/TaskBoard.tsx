@@ -51,6 +51,7 @@ export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
     showUnarchived,
     isTasksLoading,
     previewMode,
+    accessibleTasks,
   } = useSelector(selectTaskBoard)
 
   const onDropItem = useCallback(
@@ -238,16 +239,35 @@ export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
                   showAddBtn={mode === UserRole.IU || !!previewMode}
                 >
                   {sortTaskByDescendingOrder<TaskResponse>(filterTaskWithWorkflowStateId(list.id)).map((task, index) => {
+                    const subtasks = sortTaskByDescendingOrder<TaskResponse>(
+                      accessibleTasks.filter((item) => item.parentId === task.id),
+                    )
                     return (
-                      <DragDropHandler
-                        key={task.id}
-                        accept={'taskCard'}
-                        index={index}
-                        task={task}
-                        draggable // Make ListViewTaskCard draggable
-                      >
-                        <TaskCardList task={task} variant="task" key={task.id} workflowState={list} mode={mode} />
-                      </DragDropHandler>
+                      <>
+                        <DragDropHandler
+                          key={task.id}
+                          accept={'taskCard'}
+                          index={index}
+                          task={task}
+                          draggable // Make ListViewTaskCard draggable
+                        >
+                          <TaskCardList task={task} variant="task" key={task.id} workflowState={list} mode={mode} />
+                        </DragDropHandler>
+                        {subtasks.map((subtask) => {
+                          return (
+                            <TaskCardList
+                              task={subtask}
+                              variant="subtask"
+                              key={subtask.id}
+                              mode={mode}
+                              sx={{
+                                padding: { xs: '10px 12px 10px 34px', sm: '10px 20px 10px 44px' },
+                                height: '44px',
+                              }}
+                            />
+                          )
+                        })}
+                      </>
                     )
                   })}
                 </TaskRow>
