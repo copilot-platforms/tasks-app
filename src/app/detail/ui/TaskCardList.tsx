@@ -338,7 +338,7 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate,
             onChange={handleAssigneeChange}
             variant="icon"
             tooltipProps={{
-              content: assigneeValue === NoAssignee ? 'Set Assignee' : 'Change Assignee',
+              content: assigneeValue === NoAssignee ? 'Set assignee' : 'Change assignee',
               placement: 'left',
               disabled: (mode === UserRole.Client && !previewMode) || tooltipDisabled,
             }}
