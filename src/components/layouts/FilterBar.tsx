@@ -234,23 +234,26 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
                 store.dispatch(
                   setViewSettings({
                     viewMode: mode,
-                    filterOptions: filterOptions,
-                    showArchived: showArchived,
-                    showUnarchived: showUnarchived,
+                    filterOptions,
+                    showArchived,
+                    showUnarchived,
+                    showSubtasks,
                   }),
                 )
                 updateViewModeSetting({
                   viewMode: mode,
-                  filterOptions: filterOptions,
-                  showArchived: showArchived,
-                  showUnarchived: showUnarchived,
+                  filterOptions,
+                  showArchived,
+                  showUnarchived,
+                  showSubtasks,
                 })
                 store.dispatch(
                   setViewSettingsTemp({
                     viewMode: mode,
-                    filterOptions: viewModeFilterOptions,
-                    showArchived: showArchived,
-                    showUnarchived: showUnarchived,
+                    filterOptions,
+                    showArchived,
+                    showUnarchived,
+                    showSubtasks,
                   }),
                 )
               }}
