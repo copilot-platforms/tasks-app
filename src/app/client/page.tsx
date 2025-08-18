@@ -104,7 +104,7 @@ export default async function ClientPage({ searchParams }: { searchParams: { tok
         <TaskBoardAppBridge token={token} role={UserRole.Client} portalUrl={workspace.portalUrl} />
         <RealTime tokenPayload={tokenPayload}>
           <DndWrapper>
-            <TaskBoard mode={UserRole.Client} />
+            <TaskBoard mode={UserRole.Client} token={token} />
           </DndWrapper>
           <ModalNewTaskForm
             handleCreateMultipleAttachments={async (attachments: CreateAttachmentRequest[]) => {

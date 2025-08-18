@@ -33,12 +33,13 @@ import { TasksColumnVirtualizer, TasksRowVirtualizer } from '@/app/ui/Virtualize
 interface TaskBoardProps {
   mode: UserRole
   workspace?: WorkspaceResponse
+  token: string
 }
-export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
+export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
   const {
     workflowStates,
     tasks,
-    token,
+
     filteredTasks,
     view,
     viewSettingsTemp,
@@ -104,20 +105,15 @@ export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
   }, [isTasksLoading])
 
   if (!hasInitialized) {
-    return <TaskDataFetcher token={token ?? ''} />
+    return <TaskDataFetcher token={token} />
   } //fix this logic as soon as copilot API natively supports access scopes by creating an endpoint which shows the count of filteredTask and total tasks.
 
   if (tasks && tasks.length === 0 && userHasNoFilter && !isTasksLoading) {
     return (
       <>
-        <TaskDataFetcher token={token ?? ''} />
+        <TaskDataFetcher token={token} />
         {mode == UserRole.IU && (
-          <TaskBoardAppBridge
-            token={token ?? ''}
-            role={UserRole.IU}
-            portalUrl={workspace?.portalUrl}
-            isTaskBoardEmpty={true}
-          />
+          <TaskBoardAppBridge token={token} role={UserRole.IU} portalUrl={workspace?.portalUrl} isTaskBoardEmpty={true} />
         )}
 
         <DashboardEmptyState userType={mode} />
@@ -129,8 +125,8 @@ export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
 
   return (
     <>
-      <TaskDataFetcher token={token ?? ''} />
-      {mode == UserRole.IU && <TaskBoardAppBridge token={token ?? ''} role={UserRole.IU} portalUrl={workspace?.portalUrl} />}
+      <TaskDataFetcher token={token} />
+      {mode == UserRole.IU && <TaskBoardAppBridge token={token} role={UserRole.IU} portalUrl={workspace?.portalUrl} />}
       {showHeader && <Header showCreateTaskButton={mode === UserRole.IU || !!previewMode} showMenuBox={!previewMode} />}
       <FilterBar
         mode={mode}
@@ -175,7 +171,7 @@ export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
                   <TasksRowVirtualizer
                     rows={sortTaskByDescendingOrder<TaskResponse>(filterTaskWithWorkflowStateId(list.id))}
                     mode={mode}
-                    token={token ?? null}
+                    token={token}
                   />
                 </TaskColumn>
               </DragDropHandler>
@@ -214,7 +210,7 @@ export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
                   rows={sortTaskByDescendingOrder<TaskResponse>(filterTaskWithWorkflowStateId(list.id))}
                   list={list}
                   mode={mode}
-                  token={token ?? null}
+                  token={token}
                 />
               </TaskRow>
             </DragDropHandler>
