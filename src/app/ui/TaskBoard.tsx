@@ -272,7 +272,7 @@ export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
                         </DragDropHandler>
 
                         {showSubtasks &&
-                          subtasks?.length &&
+                          subtasks?.length > 0 &&
                           subtasks.map((subtask) => {
                             return (
                               <TaskCardList
