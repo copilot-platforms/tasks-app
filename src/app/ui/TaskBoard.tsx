@@ -30,7 +30,7 @@ import { sortTaskByDescendingOrder } from '@/utils/sortTask'
 import { prioritizeStartedStates } from '@/utils/workflowStates'
 import { UserRole } from '@api/core/types/user'
 import { Box, Stack } from '@mui/material'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { z } from 'zod'
 
@@ -108,6 +108,23 @@ export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
       setHasInitialized(true)
     }
   }, [isTasksLoading])
+
+  const subtasksByTaskId = useMemo(() => {
+    if (!showSubtasks) return {}
+    const grouped: Record<string, TaskResponse[]> = {}
+
+    accessibleTasks.forEach((item) => {
+      if (!item.parentId) return
+      if (!grouped[item.parentId]) grouped[item.parentId] = []
+      grouped[item.parentId].push(item)
+    })
+
+    Object.keys(grouped).forEach((id) => {
+      grouped[id] = sortTaskByDescendingOrder<TaskResponse>(grouped[id])
+    })
+
+    return grouped
+  }, [accessibleTasks, showSubtasks])
 
   if (!hasInitialized) {
     return <TaskDataFetcher token={token ?? ''} />
@@ -197,6 +214,7 @@ export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
                                   href={{ pathname: getCardHref(task, mode), query: { token } }}
                                   workflowState={list}
                                   mode={mode}
+                                  subtasks={showSubtasks ? (subtasksByTaskId[task.id] ?? []) : []}
                                 />
                               </Box>
                             </DragDropHandler>
@@ -240,9 +258,7 @@ export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
                   showAddBtn={mode === UserRole.IU || !!previewMode}
                 >
                   {sortTaskByDescendingOrder<TaskResponse>(filterTaskWithWorkflowStateId(list.id)).map((task, index) => {
-                    const subtasks = sortTaskByDescendingOrder<TaskResponse>(
-                      accessibleTasks.filter((item) => item.parentId === task.id),
-                    )
+                    const subtasks = showSubtasks ? (subtasksByTaskId[task.id] ?? []) : []
                     return (
                       <>
                         <DragDropHandler
@@ -256,6 +272,7 @@ export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
                         </DragDropHandler>
 
                         {showSubtasks &&
+                          subtasks?.length &&
                           subtasks.map((subtask) => {
                             return (
                               <TaskCardList

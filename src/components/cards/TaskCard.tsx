@@ -64,9 +64,10 @@ interface TaskCardProps {
   href: string | UrlObject
   mode: UserRole
   workflowState?: WorkflowStateResponse
+  subtasks?: TaskResponse[]
 }
 
-export const TaskCard = ({ task, href, workflowState, mode }: TaskCardProps) => {
+export const TaskCard = ({ task, href, workflowState, mode, subtasks }: TaskCardProps) => {
   const { assignee, workflowStates, assigneeCache, previewMode, token, accessibleTasks, showSubtasks } =
     useSelector(selectTaskBoard)
 
@@ -120,8 +121,6 @@ export const TaskCard = ({ task, href, workflowState, mode }: TaskCardProps) => 
   const [assigneeValue, setAssigneeValue] = useState<IAssigneeCombined | Omit<IAssigneeCombined, 'type'> | undefined>(() => {
     return assigneeCache[task.id]
   }) //Omitting type for NoAssignee
-
-  const subtasks = sortTaskByDescendingOrder<TaskResponse>(accessibleTasks.filter((item) => item.parentId === task.id))
 
   return (
     <TaskCardContainer tabIndex={0}>
@@ -263,25 +262,26 @@ export const TaskCard = ({ task, href, workflowState, mode }: TaskCardProps) => 
         </Stack>
         {showSubtasks && (
           <Stack direction="column">
-            {subtasks.map((subtask) => {
-              return (
-                <CustomLink key={subtask.id} href={{ pathname: getCardHref(subtask, mode), query: { token } }}>
-                  <Box
-                    sx={{
-                      marginLeft: '-12px',
-                      marginRight: '-12px',
-                      paddingLeft: '32px',
-                      paddingRight: '12px',
-                      ':hover': {
-                        background: (theme) => theme.color.gray[150],
-                      },
-                    }}
-                  >
-                    <TaskCardList task={subtask} variant="subtask-board" mode={mode} />
-                  </Box>
-                </CustomLink>
-              )
-            })}
+            {subtasks?.length &&
+              subtasks.map((subtask) => {
+                return (
+                  <CustomLink key={subtask.id} href={{ pathname: getCardHref(subtask, mode), query: { token } }}>
+                    <Box
+                      sx={{
+                        marginLeft: '-12px',
+                        marginRight: '-12px',
+                        paddingLeft: '32px',
+                        paddingRight: '12px',
+                        ':hover': {
+                          background: (theme) => theme.color.gray[150],
+                        },
+                      }}
+                    >
+                      <TaskCardList task={subtask} variant="subtask-board" mode={mode} />
+                    </Box>
+                  </CustomLink>
+                )
+              })}
           </Stack>
         )}
       </Stack>
