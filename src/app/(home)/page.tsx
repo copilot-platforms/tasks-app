@@ -124,7 +124,7 @@ export default async function Main({ searchParams }: { searchParams: { token: st
 
         <RealTime tokenPayload={tokenPayload}>
           <DndWrapper>
-            <TaskBoard mode={UserRole.IU} workspace={workspace} />
+            <TaskBoard mode={UserRole.IU} workspace={workspace} token={token} />
           </DndWrapper>
           <ModalNewTaskForm
             handleCreateMultipleAttachments={async (attachments: CreateAttachmentRequest[]) => {
