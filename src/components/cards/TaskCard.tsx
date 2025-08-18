@@ -176,7 +176,7 @@ export const TaskCard = ({ task, href, workflowState, mode, subtasks }: TaskCard
                   })()}
                   onChange={handleAssigneeChange}
                   tooltipProps={{
-                    content: assigneeValue === NoAssignee ? 'Set Assignee' : 'Change Assignee',
+                    content: assigneeValue === NoAssignee ? 'Set assignee' : 'Change assignee',
                     disabled: mode === UserRole.Client && !previewMode,
                   }}
                   variant="icon"
