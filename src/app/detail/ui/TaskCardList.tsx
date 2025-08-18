@@ -32,7 +32,7 @@ import { isTaskCompleted } from '@/utils/isTaskCompleted'
 import { NoAssignee } from '@/utils/noAssignee'
 import { getSelectedUserIds, getSelectorAssignee, getSelectorAssigneeFromTask } from '@/utils/selector'
 import { shouldConfirmBeforeReassignment } from '@/utils/shouldConfirmBeforeReassign'
-import { Box, Skeleton, Stack, Typography } from '@mui/material'
+import { Box, Skeleton, Stack, SxProps, Theme, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { z } from 'zod'
@@ -45,9 +45,10 @@ interface TaskCardListProps {
   assignee?: IAssigneeCombined
   handleUpdate?: (taskId: string, changes: Partial<TaskResponse>, updater: () => Promise<void>) => Promise<void>
   isTemp?: boolean
+  sx?: SxProps<Theme> | undefined
 }
 
-export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate, isTemp }: TaskCardListProps) => {
+export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate, isTemp, sx }: TaskCardListProps) => {
   const { assignee, workflowStates, previewMode, token, confirmAssignModalId, assigneeCache } = useSelector(selectTaskBoard)
 
   const [currentDueDate, setCurrentDueDate] = useState<string | undefined>(task.dueDate)
@@ -148,6 +149,7 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate,
           outline: (theme) => `1px solid ${theme.color.borders.focusBorder2}`,
           outlineOffset: -1,
         },
+        ...sx, //option to override the fixed styles
       }}
     >
       <Stack
