@@ -155,9 +155,7 @@ export const DatePickerComponent = ({
                 borderRadius: '4px',
                 ':hover': {
                   cursor: 'pointer',
-                  ...(!disabled && {
-                    background: (theme) => theme.color.gray[hoverColor ?? 150],
-                  }),
+                  background: disabled ? undefined : (theme) => theme.color.gray[hoverColor ?? 150],
                 },
                 display: 'flex',
                 alignItems: 'center',
