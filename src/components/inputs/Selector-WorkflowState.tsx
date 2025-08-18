@@ -4,7 +4,7 @@ import { statusIcons } from '@/utils/iconMatcher'
 import { Box, ClickAwayListener, Popper, Stack, Theme, Typography } from '@mui/material'
 import React, { ReactNode, useState } from 'react'
 import { SecondaryBtn } from '../buttons/SecondaryBtn'
-import { CopilotTooltip, CopilotTooltipProps } from '../atoms/CopilotTooltip'
+import { CopilotTooltip, CopilotTooltipProps } from '@/components/atoms/CopilotTooltip'
 
 export const WorkflowStateSelector = ({
   value,
