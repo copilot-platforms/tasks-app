@@ -106,23 +106,6 @@ export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
     }
   }, [isTasksLoading])
 
-  const subtasksByTaskId = useMemo(() => {
-    if (!showSubtasks) return {}
-    const grouped: Record<string, TaskResponse[]> = {}
-
-    accessibleTasks.forEach((item) => {
-      if (!item.parentId) return
-      if (!grouped[item.parentId]) grouped[item.parentId] = []
-      grouped[item.parentId].push(item)
-    })
-
-    Object.keys(grouped).forEach((id) => {
-      grouped[id] = sortTaskByDescendingOrder<TaskResponse>(grouped[id])
-    })
-
-    return grouped
-  }, [accessibleTasks, showSubtasks])
-
   if (!hasInitialized) {
     return <TaskDataFetcher token={token} />
   } //fix this logic as soon as copilot API natively supports access scopes by creating an endpoint which shows the count of filteredTask and total tasks.
@@ -187,6 +170,7 @@ export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
                     rows={sortTaskByDescendingOrder<TaskResponse>(filterTaskWithWorkflowStateId(list.id))}
                     mode={mode}
                     token={token}
+                    workflowState={list}
                   />
                 </TaskColumn>
               </DragDropHandler>
