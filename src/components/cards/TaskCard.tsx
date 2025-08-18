@@ -260,28 +260,27 @@ export const TaskCard = ({ task, href, workflowState, mode, subtasks }: TaskCard
             </Stack>
           </Stack>
         </Stack>
-        {showSubtasks && (
+        {showSubtasks && subtasks && subtasks.length > 0 && (
           <Stack direction="column">
-            {subtasks?.length &&
-              subtasks.map((subtask) => {
-                return (
-                  <CustomLink key={subtask.id} href={{ pathname: getCardHref(subtask, mode), query: { token } }}>
-                    <Box
-                      sx={{
-                        marginLeft: '-12px',
-                        marginRight: '-12px',
-                        paddingLeft: '32px',
-                        paddingRight: '12px',
-                        ':hover': {
-                          background: (theme) => theme.color.gray[150],
-                        },
-                      }}
-                    >
-                      <TaskCardList task={subtask} variant="subtask-board" mode={mode} />
-                    </Box>
-                  </CustomLink>
-                )
-              })}
+            {subtasks.map((subtask) => {
+              return (
+                <CustomLink key={subtask.id} href={{ pathname: getCardHref(subtask, mode), query: { token } }}>
+                  <Box
+                    sx={{
+                      marginLeft: '-12px',
+                      marginRight: '-12px',
+                      paddingLeft: '32px',
+                      paddingRight: '12px',
+                      ':hover': {
+                        background: (theme) => theme.color.gray[150],
+                      },
+                    }}
+                  >
+                    <TaskCardList task={subtask} variant="subtask-board" mode={mode} />
+                  </Box>
+                </CustomLink>
+              )
+            })}
           </Stack>
         )}
       </Stack>
