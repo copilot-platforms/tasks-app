@@ -25,7 +25,7 @@ import { sortTaskByDescendingOrder } from '@/utils/sortTask'
 import { prioritizeStartedStates } from '@/utils/workflowStates'
 import { UserRole } from '@api/core/types/user'
 import { Box, Stack } from '@mui/material'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { z } from 'zod'
 import { TasksColumnVirtualizer, TasksRowVirtualizer } from '@/app/ui/VirtualizedTasksLists'
@@ -105,6 +105,23 @@ export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
       setHasInitialized(true)
     }
   }, [isTasksLoading])
+
+  const subtasksByTaskId = useMemo(() => {
+    if (!showSubtasks) return {}
+    const grouped: Record<string, TaskResponse[]> = {}
+
+    accessibleTasks.forEach((item) => {
+      if (!item.parentId) return
+      if (!grouped[item.parentId]) grouped[item.parentId] = []
+      grouped[item.parentId].push(item)
+    })
+
+    Object.keys(grouped).forEach((id) => {
+      grouped[id] = sortTaskByDescendingOrder<TaskResponse>(grouped[id])
+    })
+
+    return grouped
+  }, [accessibleTasks, showSubtasks])
 
   if (!hasInitialized) {
     return <TaskDataFetcher token={token} />
