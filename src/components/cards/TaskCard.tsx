@@ -67,7 +67,8 @@ interface TaskCardProps {
 }
 
 export const TaskCard = ({ task, href, workflowState, mode }: TaskCardProps) => {
-  const { assignee, workflowStates, assigneeCache, previewMode, token, accessibleTasks } = useSelector(selectTaskBoard)
+  const { assignee, workflowStates, assigneeCache, previewMode, token, accessibleTasks, showSubtasks } =
+    useSelector(selectTaskBoard)
 
   const subtaskCount = useSubtaskCount(task.id)
 
@@ -260,27 +261,29 @@ export const TaskCard = ({ task, href, workflowState, mode }: TaskCardProps) => 
             </Stack>
           </Stack>
         </Stack>
-        <Stack direction="column">
-          {subtasks.map((subtask) => {
-            return (
-              <CustomLink key={subtask.id} href={{ pathname: getCardHref(subtask, mode), query: { token } }}>
-                <Box
-                  sx={{
-                    marginLeft: '-12px',
-                    marginRight: '-12px',
-                    paddingLeft: '32px',
-                    paddingRight: '12px',
-                    ':hover': {
-                      background: (theme) => theme.color.gray[150],
-                    },
-                  }}
-                >
-                  <TaskCardList task={subtask} variant="subtask-board" mode={mode} />
-                </Box>
-              </CustomLink>
-            )
-          })}
-        </Stack>
+        {showSubtasks && (
+          <Stack direction="column">
+            {subtasks.map((subtask) => {
+              return (
+                <CustomLink key={subtask.id} href={{ pathname: getCardHref(subtask, mode), query: { token } }}>
+                  <Box
+                    sx={{
+                      marginLeft: '-12px',
+                      marginRight: '-12px',
+                      paddingLeft: '32px',
+                      paddingRight: '12px',
+                      ':hover': {
+                        background: (theme) => theme.color.gray[150],
+                      },
+                    }}
+                  >
+                    <TaskCardList task={subtask} variant="subtask-board" mode={mode} />
+                  </Box>
+                </CustomLink>
+              )
+            })}
+          </Stack>
+        )}
       </Stack>
     </TaskCardContainer>
   )

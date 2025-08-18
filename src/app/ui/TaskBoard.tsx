@@ -52,6 +52,7 @@ export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
     isTasksLoading,
     previewMode,
     accessibleTasks,
+    showSubtasks,
   } = useSelector(selectTaskBoard)
 
   const onDropItem = useCallback(
@@ -253,20 +254,22 @@ export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
                         >
                           <TaskCardList task={task} variant="task" key={task.id} workflowState={list} mode={mode} />
                         </DragDropHandler>
-                        {subtasks.map((subtask) => {
-                          return (
-                            <TaskCardList
-                              task={subtask}
-                              variant="subtask"
-                              key={subtask.id}
-                              mode={mode}
-                              sx={{
-                                padding: { xs: '10px 12px 10px 34px', sm: '10px 20px 10px 44px' },
-                                height: '44px',
-                              }}
-                            />
-                          )
-                        })}
+
+                        {showSubtasks &&
+                          subtasks.map((subtask) => {
+                            return (
+                              <TaskCardList
+                                task={subtask}
+                                variant="subtask"
+                                key={subtask.id}
+                                mode={mode}
+                                sx={{
+                                  padding: { xs: '10px 12px 10px 34px', sm: '10px 20px 10px 44px' },
+                                  height: '44px',
+                                }}
+                              />
+                            )
+                          })}
                       </>
                     )
                   })}
