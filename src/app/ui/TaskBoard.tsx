@@ -49,6 +49,7 @@ export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
     isTasksLoading,
     previewMode,
     accessibleTasks,
+    showSubtasks,
   } = useSelector(selectTaskBoard)
 
   const onDropItem = useCallback(
