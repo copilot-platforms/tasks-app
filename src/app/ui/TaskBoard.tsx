@@ -207,6 +207,7 @@ export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
             height: `calc(100vh - ${showHeader ? '135px' : '75px'})`,
             width: '99.92%',
             margin: '0 auto',
+            overflowY: 'auto',
           }}
         >
           {prioritizeStartedStates(workflowStates).map((list, index) => (
