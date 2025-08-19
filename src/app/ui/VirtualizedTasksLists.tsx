@@ -4,6 +4,7 @@ import { TaskCardList } from '@/app/detail/ui/TaskCardList'
 import { TaskCard } from '@/components/cards/TaskCard'
 import { CustomLink } from '@/hoc/CustomLink'
 import { DragDropHandler } from '@/hoc/DragDropHandler'
+import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { getCardHref } from '@/utils/getCardHref'
@@ -11,15 +12,19 @@ import { UserRole } from '@api/core/types/user'
 import { Box } from '@mui/material'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { useCallback, useRef } from 'react'
+import { useSelector } from 'react-redux'
 
 interface TasksVirtualizerProps {
   rows: TaskResponse[]
   mode: UserRole
   token: string | null
+  subtasksByTaskId: Record<string, TaskResponse[]>
+  workflowState?: WorkflowStateResponse
 }
 
 // virtualization component used in board view
-export function TasksRowVirtualizer({ rows, mode, token }: TasksVirtualizerProps) {
+export function TasksRowVirtualizer({ rows, mode, token, subtasksByTaskId, workflowState }: TasksVirtualizerProps) {
+  const { showSubtasks } = useSelector(selectTaskBoard)
   const parentRef = useRef<HTMLDivElement>(null)
 
   const rowVirtualizer = useVirtualizer({
@@ -94,6 +99,9 @@ export function TasksRowVirtualizer({ rows, mode, token }: TasksVirtualizerProps
                         pathname: getCardHref(rows[virtualRow.index], mode),
                         query: { token },
                       }}
+                      workflowState={workflowState}
+                      mode={mode}
+                      subtasks={showSubtasks ? (subtasksByTaskId[rows[virtualRow.index].id] ?? []) : []}
                     />
                   </Box>
                 </DragDropHandler>
@@ -106,7 +114,13 @@ export function TasksRowVirtualizer({ rows, mode, token }: TasksVirtualizerProps
   )
 }
 
-export function TasksColumnVirtualizer({ rows, mode, list }: TasksVirtualizerProps & { list: WorkflowStateResponse }) {
+export function TasksColumnVirtualizer({
+  rows,
+  mode,
+  list,
+  subtasksByTaskId,
+}: TasksVirtualizerProps & { list: WorkflowStateResponse }) {
+  const { showSubtasks } = useSelector(selectTaskBoard)
   const parentRef = useRef<HTMLDivElement>(null)
   const columnVirtualizer = useVirtualizer({
     count: rows.length,
@@ -133,37 +147,58 @@ export function TasksColumnVirtualizer({ rows, mode, list }: TasksVirtualizerPro
           position: 'relative',
         }}
       >
-        {columnVirtualizer.getVirtualItems().map((virtualRow) => (
-          <div
-            key={virtualRow.key}
-            data-index={virtualRow.index}
-            ref={(node) => columnVirtualizer.measureElement(node)}
-            style={{
-              display: 'flex',
-              position: 'absolute',
-              transform: `translateY(${virtualRow.start}px)`,
-              width: '100%',
-            }}
-          >
-            <div style={{ padding: '3px 0', width: '100%' }}>
-              <DragDropHandler
-                key={rows[virtualRow.index].id}
-                accept={'taskCard'}
-                index={virtualRow.index}
-                task={rows[virtualRow.index]}
-                draggable
-              >
-                <TaskCardList
-                  task={rows[virtualRow.index]}
-                  variant="task"
-                  key={rows[virtualRow.index].id}
-                  workflowState={list}
-                  mode={mode}
-                />
-              </DragDropHandler>
+        {columnVirtualizer.getVirtualItems().map((virtualRow) => {
+          const subtasks = showSubtasks ? (subtasksByTaskId[rows[virtualRow.index].id] ?? []) : []
+          return (
+            <div
+              key={virtualRow.key}
+              data-index={virtualRow.index}
+              ref={(node) => columnVirtualizer.measureElement(node)}
+              style={{
+                display: 'flex',
+                position: 'absolute',
+                transform: `translateY(${virtualRow.start}px)`,
+                width: '100%',
+              }}
+            >
+              <div style={{ padding: '3px 0', width: '100%' }}>
+                <>
+                  <DragDropHandler
+                    key={rows[virtualRow.index].id}
+                    accept={'taskCard'}
+                    index={virtualRow.index}
+                    task={rows[virtualRow.index]}
+                    draggable
+                  >
+                    <TaskCardList
+                      task={rows[virtualRow.index]}
+                      variant="task"
+                      key={rows[virtualRow.index].id}
+                      workflowState={list}
+                      mode={mode}
+                    />
+                  </DragDropHandler>
+                  {showSubtasks &&
+                    subtasks?.length > 0 &&
+                    subtasks.map((subtask) => {
+                      return (
+                        <TaskCardList
+                          task={subtask}
+                          variant="subtask"
+                          key={subtask.id}
+                          mode={mode}
+                          sx={{
+                            padding: { xs: '10px 12px 10px 34px', sm: '10px 20px 10px 44px' },
+                            height: '44px',
+                          }}
+                        />
+                      )
+                    })}
+                </>
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
     </div>
   )

@@ -191,6 +191,8 @@ export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
                     rows={sortTaskByDescendingOrder<TaskResponse>(filterTaskWithWorkflowStateId(list.id))}
                     mode={mode}
                     token={token}
+                    subtasksByTaskId={subtasksByTaskId}
+                    workflowState={list}
                   />
                 </TaskColumn>
               </DragDropHandler>
@@ -230,6 +232,7 @@ export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
                   list={list}
                   mode={mode}
                   token={token}
+                  subtasksByTaskId={subtasksByTaskId}
                 />
               </TaskRow>
             </DragDropHandler>
