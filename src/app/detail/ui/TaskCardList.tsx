@@ -6,6 +6,7 @@ import { clientUpdateTask, updateAssignee, updateTaskDetail } from '@/app/detail
 import { StyledModal } from '@/app/detail/ui/styledComponent'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { TaskMetaItems } from '@/components/atoms/TaskMetaItems'
+import TaskTitle from '@/components/atoms/TaskTitle'
 import { CopilotPopSelector } from '@/components/inputs/CopilotSelector'
 import { DatePickerComponent } from '@/components/inputs/DatePickerComponent'
 import { SelectorType } from '@/components/inputs/Selector'
@@ -263,21 +264,7 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate,
                 flexShrink: 1,
               }}
             >
-              <Typography
-                variant="bodySm"
-                sx={{
-                  lineHeight: variant == 'task' ? '22px' : '21px',
-                  fontSize: variant == 'task' ? '14px' : '13px',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  flexShrink: 1,
-                  flexGrow: 0,
-                  minWidth: 0,
-                }}
-              >
-                {task.title}
-              </Typography>
+              <TaskTitle variant="list" title={task.title} />
               {(task.subtaskCount > 0 || task.isArchived) && (
                 <Stack direction="row" sx={{ display: 'flex', gap: '12px', flexShrink: 0, alignItems: 'center' }}>
                   <TaskMetaItems task={task} lineHeight="21px" />
