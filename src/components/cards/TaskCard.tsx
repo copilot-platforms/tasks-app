@@ -19,26 +19,25 @@ import { IAssigneeCombined, InputValue, Sizes } from '@/types/interfaces'
 import { getAssigneeId, getUserIds, UserIdsType } from '@/utils/assignee'
 import { isTaskCompleted } from '@/utils/isTaskCompleted'
 import { NoAssignee } from '@/utils/noAssignee'
-import { Box, Skeleton, Stack, styled, Typography } from '@mui/material'
+import { Box, Skeleton, Stack, styled } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { UrlObject } from 'url'
 
 import { updateTask } from '@/app/(home)/actions'
 import { clientUpdateTask, updateAssignee, updateTaskDetail } from '@/app/detail/[task_id]/[user_type]/actions'
-import { CopilotTooltip } from '@/components/atoms/CopilotTooltip'
+import { TaskCardList } from '@/app/detail/ui/TaskCardList'
 import { TaskMetaItems } from '@/components/atoms/TaskMetaItems'
+import TaskTitle from '@/components/atoms/TaskTitle'
 import { CopilotPopSelector } from '@/components/inputs/CopilotSelector'
 import { DatePickerComponent } from '@/components/inputs/DatePickerComponent'
+import { CustomLink } from '@/hoc/CustomLink'
 import { DateStringSchema } from '@/types/date'
 import { createDateFromFormattedDateString, formatDate } from '@/utils/dateHelper'
+import { getCardHref } from '@/utils/getCardHref'
 import { getSelectedUserIds, getSelectorAssignee, getSelectorAssigneeFromTask } from '@/utils/selector'
 import { shouldConfirmBeforeReassignment } from '@/utils/shouldConfirmBeforeReassign'
 import z from 'zod'
-import { TaskCardList } from '@/app/detail/ui/TaskCardList'
-import { CustomLink } from '@/hoc/CustomLink'
-import { getCardHref } from '@/utils/getCardHref'
-import { sortTaskByDescendingOrder } from '@/utils/sortTask'
 
 const TaskCardContainer = styled(Stack)(({ theme }) => ({
   border: `1px solid ${theme.color.borders.border}`,
@@ -151,19 +150,7 @@ export const TaskCard = ({ task, href, workflowState, mode, subtasks }: TaskCard
           </Box>
           <Stack direction="column" justifyContent="center" rowGap={'5px'} sx={{ width: '100%' }}>
             <Stack direction={'row'} columnGap={'10px'} justifyContent={'space-between'}>
-              <Typography
-                variant="bodyMd"
-                sx={{
-                  color: (theme) => theme.color.gray[600],
-                  display: '-webkit-box',
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: 'vertical',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                }}
-              >
-                {task.title}
-              </Typography>
+              <TaskTitle title={task.title ?? ''} variant="board" />
 
               {assigneeValue ? (
                 <CopilotPopSelector

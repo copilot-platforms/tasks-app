@@ -76,7 +76,12 @@ a {
   gap: 16px;
   min-height: 29px;
   min-width: 109px;
+  max-width: 350px;
   font-size: 13px;
   font-weight: 400;
   line-height: 21px;
+}
+
+.displayoff {
+  display: none;
 }
