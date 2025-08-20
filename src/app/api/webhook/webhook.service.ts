@@ -86,7 +86,12 @@ class WebhookService extends BaseService {
     // Then trigger appropriate notifications
     const createNotificationPromises = []
 
-    const internalUsers = (await this.copilot.getInternalUsers({ limit: MAX_FETCH_ASSIGNEE_COUNT })).data
+    const [workspace, internalUsersResponse] = await Promise.all([
+      this.copilot.getWorkspace(),
+      this.copilot.getInternalUsers({ limit: MAX_FETCH_ASSIGNEE_COUNT }),
+    ])
+
+    const internalUsers = internalUsersResponse.data
     const existingNotifications = await this.db.clientNotification.findMany({
       where: { clientId, companyId: company.id },
     })
@@ -102,7 +107,7 @@ class WebhookService extends BaseService {
       if (existingNotification) continue
 
       const actionUserName = `${actionUser.givenName} ${actionUser.familyName}`
-      const inProduct = getInProductNotificationDetails(actionUserName, task, { companyName: company.name })[
+      const inProduct = getInProductNotificationDetails(workspace, actionUserName, task, { companyName: company.name })[
         NotificationTaskActions.AssignedToCompany
       ]
       const notificationDetails: NotificationRequestBody = {

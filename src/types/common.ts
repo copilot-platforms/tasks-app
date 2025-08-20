@@ -63,6 +63,12 @@ export const WorkspaceResponseSchema = z.object({
   metaTitle: z.string().optional(),
   metaDescription: z.string().optional(),
   portalUrl: z.string().optional(),
+  label: z.object({
+    individualTerm: z.string().optional(),
+    individualTermPlural: z.string(),
+    groupTerm: z.string().optional(),
+    groupTermPlural: z.string().optional(),
+  }),
 })
 export type WorkspaceResponse = z.infer<typeof WorkspaceResponseSchema>
 
