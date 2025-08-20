@@ -43,6 +43,7 @@ export class NotificationService extends BaseService {
 
       // 2. Dispatch notification to Copilot
       const copilot = new CopilotAPI(this.user.token)
+      const workspace = await copilot.getWorkspace()
       const { senderId, senderCompanyId, recipientId, actionUser, companyName } = await this.getNotificationParties(
         copilot,
         task,
@@ -51,8 +52,10 @@ export class NotificationService extends BaseService {
 
       const inProduct = opts.disableInProduct
         ? undefined
-        : getInProductNotificationDetails(actionUser, task, { companyName, commentId: opts?.commentId })[action]
-      const email = opts.disableEmail ? undefined : getEmailDetails(actionUser, task, { commentId: opts?.commentId })[action]
+        : getInProductNotificationDetails(workspace, actionUser, task, { companyName, commentId: opts?.commentId })[action]
+      const email = opts.disableEmail
+        ? undefined
+        : getEmailDetails(workspace, actionUser, task, { commentId: opts?.commentId })[action]
 
       const notificationDetails = this.buildNotificationDetails(
         task,
@@ -107,7 +110,7 @@ export class NotificationService extends BaseService {
   ) {
     try {
       const copilot = new CopilotAPI(this.user.token)
-      const userInfo = await copilot.me()
+      const [workspace, userInfo] = await Promise.all([copilot.getWorkspace(), copilot.me()])
       if (!userInfo) {
         throw new APIError(httpStatus.NOT_FOUND, `User not found for token ${this.user.token}`)
       }
@@ -121,11 +124,13 @@ export class NotificationService extends BaseService {
           : undefined
       const inProduct = opts?.disableInProduct
         ? undefined
-        : getInProductNotificationDetails(actionUserName, task, {
+        : getInProductNotificationDetails(workspace, actionUserName, task, {
             companyName: company?.name,
             commentId: opts?.commentId,
           })[action]
-      const email = opts?.email ? getEmailDetails(actionUserName, task, { commentId: opts?.commentId })[action] : undefined
+      const email = opts?.email
+        ? getEmailDetails(workspace, actionUserName, task, { commentId: opts?.commentId })[action]
+        : undefined
 
       // Get a list of all notifications dispatched for these taskId, clientId, companyId combinations
       // This will be used to filter out any duplicate notifications during creation

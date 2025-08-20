@@ -95,9 +95,7 @@ export class CopilotAPI {
 
   async _getWorkspace(): Promise<WorkspaceResponse> {
     console.info('CopilotAPI#_getWorkspace', this.token)
-    const workspace = await this.copilot.retrieveWorkspace()
-    console.log('W0rkspace', workspace)
-    return WorkspaceResponseSchema.parse(workspace)
+    return WorkspaceResponseSchema.parse(await this.copilot.retrieveWorkspace())
   }
 
   async _getClientTokenPayload(): Promise<ClientToken | null> {

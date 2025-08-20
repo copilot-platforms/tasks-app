@@ -97,7 +97,11 @@ const dispatchMissingEmailNotificationsForWorkspace = async (missedTasks: Task[]
 
   const iuToken = encodePayload(copilotAPIKey, { internalUserId, workspaceId })
   const copilot = new CopilotAPI(iuToken)
-  const clients = await copilot.getClients({ limit: MAX_FETCH_ASSIGNEE_COUNT })
+  const [clients, workspace] = await Promise.all([
+    copilot.getClients({ limit: MAX_FETCH_ASSIGNEE_COUNT }),
+    copilot.getWorkspace(),
+  ])
+
   const numClients = clients.data?.length || 0
   const workspaceClientTasks = missedTasks.filter((t) => t.workspaceId === workspaceId && t.clientId)
   const workspaceCompanyTasks = missedTasks.filter((t) => t.workspaceId === workspaceId && t.companyId && !t.clientId)
@@ -116,7 +120,7 @@ const dispatchMissingEmailNotificationsForWorkspace = async (missedTasks: Task[]
       recipientClientId: task.clientId!,
       recipientCompanyId: task.companyId!,
       deliveryTargets: {
-        email: getEmailDetails(task.createdById, task)[NotificationTaskActions.Assigned],
+        email: getEmailDetails(workspace, task.createdById, task)[NotificationTaskActions.Assigned],
       },
     }
     notificationDispatchPromises.push(
@@ -136,7 +140,7 @@ const dispatchMissingEmailNotificationsForWorkspace = async (missedTasks: Task[]
         recipientClientId: client.id,
         recipientCompanyId: client.companyId,
         deliveryTargets: {
-          email: getEmailDetails(task.createdById, task)[NotificationTaskActions.AssignedToCompany],
+          email: getEmailDetails(workspace, task.createdById, task)[NotificationTaskActions.AssignedToCompany],
         },
       })) || []
 

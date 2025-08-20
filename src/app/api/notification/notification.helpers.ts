@@ -1,8 +1,11 @@
+import { WorkspaceResponse } from '@/types/common'
+import { getWorkspaceLabels } from '@/utils/getWorkspaceLabels'
 import { NotificationTaskActions } from '@api/core/types/tasks'
 import { Task } from '@prisma/client'
 
 /**
  * Helper function that sets the in-product notification title and body for a given notification trigger
+ * @param {WorkspaceResponse} workspace - Current workspace to extract labels from the workspace
  * @param {string} actionUser - The user's name that triggered this action.
  * @param {Task} [task] - The task for which the mention is triggered.
  * @param {{companyName?: string, commentId?: string}} [opts] - Opts for optional notification fields
@@ -10,6 +13,7 @@ import { Task } from '@prisma/client'
  * @returns {Object.<NotificationTaskActions, {title: string, body: string}>} - The notification details.
  */
 export const getInProductNotificationDetails = (
+  workspace: WorkspaceResponse,
   actionUser: string,
   task?: Task,
   opts?: {
@@ -38,8 +42,8 @@ export const getInProductNotificationDetails = (
       ctaParams,
     },
     [NotificationTaskActions.AssignedToCompany]: {
-      title: 'Task was assigned to your company',
-      body: `A new task ‘${task?.title}’ was assigned to your company by ${actionUser}. To see details about the task, navigate to the Tasks App below.`,
+      title: `Task was assigned to your ${getWorkspaceLabels(workspace).groupTerm}`,
+      body: `A new task ‘${task?.title}’ was assigned to your ${getWorkspaceLabels(workspace).groupTerm} by ${actionUser}. To see details about the task, navigate to the Tasks App below.`,
     },
 
     [NotificationTaskActions.ReassignedToIU]: {
@@ -54,7 +58,7 @@ export const getInProductNotificationDetails = (
     },
     [NotificationTaskActions.ReassignedToCompany]: {
       title: 'View task',
-      body: `The task ‘${task?.title}’ was reassigned to your company by ${actionUser}. To see details about the task open it below.`,
+      body: `The task ‘${task?.title}’ was reassigned to your ${getWorkspaceLabels(workspace).groupTerm} by ${actionUser}. To see details about the task open it below.`,
       ctaParams,
     },
 
@@ -98,6 +102,7 @@ export const getInProductNotificationDetails = (
  * @returns {object} - The email notification details.
  */
 export const getEmailDetails = (
+  workspace: WorkspaceResponse,
   actionUser: string,
   task?: Task,
   opts?: {
@@ -129,9 +134,9 @@ export const getEmailDetails = (
       ctaParams,
     },
     [NotificationTaskActions.AssignedToCompany]: {
-      subject: 'Task was assigned to your company',
-      header: 'Task was assigned to your company',
-      body: `A new task ‘${task?.title}’ was assigned to your company by ${actionUser}. To see details about the task, open it below.`,
+      subject: `Task was assigned to your ${getWorkspaceLabels(workspace).groupTerm}`,
+      header: `Task was assigned to your ${getWorkspaceLabels(workspace).groupTerm}`,
+      body: `A new task ‘${task?.title}’ was assigned to your ${getWorkspaceLabels(workspace).groupTerm} by ${actionUser}. To see details about the task, open it below.`,
       title: 'View task',
       ctaParams,
     },
@@ -164,10 +169,10 @@ export const getEmailDetails = (
       ctaParams,
     },
     [NotificationTaskActions.ReassignedToCompany]: {
-      subject: 'A task was reassigned to your company',
-      header: 'A task was reassigned to your company',
+      subject: `A task was reassigned to your ${getWorkspaceLabels(workspace).groupTerm}`,
+      header: `A task was reassigned to your ${getWorkspaceLabels(workspace).groupTerm}`,
       title: 'View task',
-      body: `The task ‘${task?.title}’ was reassigned to your company by ${actionUser}. To see details about the task open it below.`,
+      body: `The task ‘${task?.title}’ was reassigned to your ${getWorkspaceLabels(workspace).groupTerm} by ${actionUser}. To see details about the task open it below.`,
       ctaParams,
     },
   }
