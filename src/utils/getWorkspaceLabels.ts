@@ -18,7 +18,7 @@ export const getWorkspaceLabels = (workspace: WorkspaceResponse, shouldCapitaliz
         individualTerm: workspace.label && workspace.label.individualTerm ? workspace.label.individualTerm : 'client',
         individualTermPlural:
           workspace.label && workspace.label.individualTermPlural ? workspace.label.individualTermPlural : 'clients',
-        groupTerm: workspace.label && workspace.label.groupTerm ? workspace.label.groupTerm : 'company',
+        groupTerm: workspace.label && workspace.label.groupTerm ? workspace.label.groupTerm : 'gang',
         groupTermPlural: workspace.label && workspace.label.groupTermPlural ? workspace.label.groupTermPlural : 'companies',
       }
 
