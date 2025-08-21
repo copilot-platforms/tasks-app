@@ -7,6 +7,7 @@ import {
   Uuid,
 } from '@/types/common'
 import { copilotBottleneck } from '@/utils/bottleneck'
+import { isMessagableError } from '@/utils/copilotError'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import APIError from '@api/core/exceptions/api'
 import { BaseService } from '@api/core/services/base.service'
@@ -62,7 +63,13 @@ export class NotificationService extends BaseService {
       )
       console.info('NotificationService#create | Creating single notification:', notificationDetails)
 
-      const notification = await copilot.createNotification(notificationDetails)
+      let notification: NotificationCreatedResponse
+      try {
+        notification = await copilot.createNotification(notificationDetails)
+      } catch (e: unknown) {
+        notification = await this.handleIfSenderCompanyIdError(e, copilot, notificationDetails)
+      }
+
       console.info('NotificationService#create | Created single notification:', notification)
 
       // 3. Save notification to ClientNotification or InternalUserNotification table
@@ -157,8 +164,15 @@ export class NotificationService extends BaseService {
             { inProduct, email },
             opts?.senderCompanyId,
           )
+
           console.info('NotificationService#bulkCreate | Creating single notification:', notificationDetails)
-          const notification = await copilot.createNotification(notificationDetails)
+          let notification: NotificationCreatedResponse
+          try {
+            notification = await copilot.createNotification(notificationDetails)
+          } catch (e: unknown) {
+            notification = await this.handleIfSenderCompanyIdError(e, copilot, notificationDetails)
+          }
+
           console.info('NotificationService#bulkCreate | Created single notification:', notification)
           if (!notification) {
             console.error(`NotificationService#bulkCreate | Failed to send notifications to ${recipientId}:`)
@@ -478,6 +492,23 @@ export class NotificationService extends BaseService {
   async getAllForTasks(tasks: Task[]): Promise<ClientNotification[]> {
     const taskIds = tasks.map((task) => task.id)
     return await this.db.clientNotification.findMany({ where: { taskId: { in: taskIds } } })
+  }
+
+  private async handleIfSenderCompanyIdError(e: unknown, copilot: CopilotAPI, notificationDetails: NotificationRequestBody) {
+    // Account for workspaces that don't have multi-companies enabled, thus don't support the senderCompanyId key
+    // Yes, this is hacky. No, I don't have a choice (I can't find out if workspace has single/multi company at all from the Copilot API)
+    if (isMessagableError(e) && e.body?.message === 'sender company ID is invalid based on sender') {
+      console.info('NotificationService#create | senderCompanyId is not supported for this workspace (not multi-companies)')
+      return await copilot.createNotification({
+        ...notificationDetails,
+        senderCompanyId: undefined,
+      })
+    } else if (e instanceof Error) {
+      throw e
+    } else {
+      console.error(e)
+      throw new Error('Failure while sending notification') // This is run in trigger so avoid using APIError
+    }
   }
 
   private buildNotificationDetails(
