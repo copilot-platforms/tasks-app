@@ -504,6 +504,7 @@ export class NotificationService extends BaseService {
         senderCompanyId: undefined,
       })
     } else if (e instanceof Error) {
+      console.error('Error when handling sender companyId:')
       throw e
     } else {
       console.error(e)
