@@ -36,6 +36,7 @@ export const CopilotSelector = ({
     <>
       <StyledUserCompanySelector
         openMenuOnFocus
+        menuIsOpen={true}
         autoFocus
         placeholder={'Set assignee'}
         initialValue={initialAssignee}
