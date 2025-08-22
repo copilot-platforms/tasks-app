@@ -14,8 +14,7 @@ const TaskTitle = ({ title, variant = 'board' }: TaskTitleProps) => {
   useEffect(() => {
     const element = textRef.current
     if (element) {
-      const isTextOverflowing =
-        variant == 'board' ? element.scrollHeight > element.clientHeight : element.scrollWidth > element.clientWidth
+      const isTextOverflowing = element.scrollHeight > element.clientHeight || element.scrollWidth > element.clientWidth
       setIsOverflowing(isTextOverflowing)
     }
   }, [title])
