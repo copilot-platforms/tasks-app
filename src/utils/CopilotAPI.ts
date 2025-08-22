@@ -177,7 +177,6 @@ export class CopilotAPI {
 
   async _createNotification(requestBody: NotificationRequestBody): Promise<NotificationCreatedResponse> {
     console.info('CopilotAPI#_createNotification', this.token)
-    // @ts-expect-error like always, SDK types are not up to date
     const notification = await this.copilot.createNotification({ requestBody })
     return NotificationCreatedResponseSchema.parse(notification)
   }
