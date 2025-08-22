@@ -109,7 +109,13 @@ export default async function TaskDetailPage({
   }))
 
   return (
-    <DetailStateUpdate isRedirect={!!searchParams.isRedirect} token={token} tokenPayload={tokenPayload} task={task}>
+    <DetailStateUpdate
+      isRedirect={!!searchParams.isRedirect}
+      token={token}
+      tokenPayload={tokenPayload}
+      task={task}
+      workspace={workspace}
+    >
       <RealTime tokenPayload={tokenPayload}>
         <EscapeHandler />
         <ResponsiveStack>

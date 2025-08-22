@@ -1,8 +1,10 @@
 import { StyledUserCompanySelector } from '@/app/detail/ui/styledComponent'
+import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { IAssigneeCombined, InputValue, ISelectorOption } from '@/types/interfaces'
 import { parseAssigneeToSelectorOption } from '@/utils/addTypeToAssignee'
 import { parseAssigneeToSelectorOptions } from '@/utils/assignee'
+import { getWorkspaceLabels } from '@/utils/getWorkspaceLabels'
 import { selectorOptionsToInputValue } from '@/utils/selector'
 import { Box, ClickAwayListener, Popper, Stack } from '@mui/material'
 import { ReactNode, useCallback, useEffect, useRef, useState } from 'react'
@@ -22,6 +24,7 @@ export const CopilotSelector = ({
   hideIusList?: boolean
 }) => {
   const { assignee } = useSelector(selectTaskBoard)
+  const { workspace } = useSelector(selectAuthDetails)
 
   // Currently selected assignee. This is not guarenteed to be the same as the final assignee
   // and is just the temporary state while the selector is still open
@@ -49,6 +52,7 @@ export const CopilotSelector = ({
         }}
         grouped={true}
         limitSelectedOptions={1}
+        customLabels={getWorkspaceLabels(workspace, true)}
       />
     </>
   )

@@ -1,6 +1,6 @@
 'use client'
 
-import { setTokenPayload } from '@/redux/features/authDetailsSlice'
+import { setTokenPayload, setWorkspace } from '@/redux/features/authDetailsSlice'
 import {
   selectTaskBoard,
   setAccesibleTaskIds,
@@ -17,11 +17,11 @@ import {
 import { setAssigneeSuggestion, setExpandedComments } from '@/redux/features/taskDetailsSlice'
 import { setTemplates } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
-import { Token } from '@/types/common'
+import { Token, WorkspaceResponse } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { IAssignee, IAssigneeCombined, IAssigneeSuggestions, ISelectorAssignee, ITemplate } from '@/types/interfaces'
+import { IAssigneeCombined, IAssigneeSuggestions, ITemplate } from '@/types/interfaces'
 import { filterOptionsMap } from '@/types/objectMaps'
 import { getPreviewMode, handlePreviewMode } from '@/utils/previewMode'
 import { ReactNode, useEffect } from 'react'
@@ -46,6 +46,7 @@ export const ClientSideStateUpdate = ({
   clearExpandedComments,
   accesibleTaskIds,
   accessibleTasks,
+  workspace,
 }: {
   children: ReactNode
   workflowStates?: WorkflowStateResponse[]
@@ -60,6 +61,7 @@ export const ClientSideStateUpdate = ({
   clearExpandedComments?: boolean
   accesibleTaskIds?: string[]
   accessibleTasks?: TaskResponse[]
+  workspace?: WorkspaceResponse
 }) => {
   const { tasks: tasksInStore, viewSettingsTemp, accessibleTasks: accessibleTaskInStore } = useSelector(selectTaskBoard)
   useEffect(() => {
@@ -123,6 +125,10 @@ export const ClientSideStateUpdate = ({
     if (accessibleTasks) {
       const accessibleTaskData = accessibleTaskInStore.length ? accessibleTaskInStore : accessibleTasks
       store.dispatch(setAccessibleTasks(accessibleTaskData))
+    }
+
+    if (workspace) {
+      store.dispatch(setWorkspace(workspace))
     }
 
     return () => {

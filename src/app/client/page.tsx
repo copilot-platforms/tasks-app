@@ -85,6 +85,7 @@ export default async function ClientPage({ searchParams }: { searchParams: { tok
         tokenPayload={tokenPayload}
         viewSettings={viewSettings}
         clearExpandedComments={true}
+        workspace={workspace}
       >
         {/* Async fetchers */}
         <Suspense fallback={null}>

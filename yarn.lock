@@ -4536,10 +4536,10 @@ convert-source-map@^2.0.0:
   resolved "https://registry.yarnpkg.com/convert-source-map/-/convert-source-map-2.0.0.tgz#4b560f649fc4e918dd0ab75cf4961e8bc882d82a"
   integrity sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg==
 
-copilot-design-system@^2.1.10:
-  version "2.1.10"
-  resolved "https://registry.yarnpkg.com/copilot-design-system/-/copilot-design-system-2.1.10.tgz#e16d0db5687fdc27a13c2860e1576546c8c5920d"
-  integrity sha512-+ZC0gFxz+x6NMzEwirU2mRt9HB4v8soNbeRges26c5YYvsR8J87sMdq0U5ZuHRcB5sbEe/Xqw8DsFP7o9RpJ0g==
+copilot-design-system@^2.2.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/copilot-design-system/-/copilot-design-system-2.2.0.tgz#111d54ceb6a105b8d885437051b0359cfc506e93"
+  integrity sha512-fJJiN9Qy68B24PdSKCa6WfBgasZxRHDVhK2ZykNUZaxW8hPRCPZtj95m1PN7SMPaIm2Ye71mSv8gEne6IsM9+g==
   dependencies:
     "@radix-ui/react-avatar" "^1.0.4"
     "@radix-ui/react-toast" "^1.2.1"
@@ -4549,10 +4549,10 @@ copilot-design-system@^2.1.10:
     tailwind-merge "^2.3.0"
     uuid "^9.0.1"
 
-copilot-node-sdk@^3.12.1:
-  version "3.12.1"
-  resolved "https://registry.yarnpkg.com/copilot-node-sdk/-/copilot-node-sdk-3.12.1.tgz#dc68de569809a74537159e2a425b736d6aa311b9"
-  integrity sha512-P/4tTkyit2kny++evnAKq2wNL4LRwFPamUHXp1K49ohhZ5f8es32yWcN5ghIFqm5vzFn0iJciXNcreSGQrQeKA==
+copilot-node-sdk@^3.16.0:
+  version "3.16.0"
+  resolved "https://registry.yarnpkg.com/copilot-node-sdk/-/copilot-node-sdk-3.16.0.tgz#c1335c768bd3f9d091c154f930fce9a2633ade8d"
+  integrity sha512-wqqeJuW+uge39nC1/+cqMWSSgCCNThtCR+JykPYFB2PTj0d0tfROCXofwtqZZccUUzk/xXXkJF53QfweVxmMLg==
   dependencies:
     isomorphic-fetch "^3.0.0"
     next "^14.0.2"

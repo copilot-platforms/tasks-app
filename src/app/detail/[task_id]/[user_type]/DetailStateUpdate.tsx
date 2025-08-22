@@ -1,6 +1,6 @@
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import { getAllTasks, getAllWorkflowStates, getViewSettings } from '@/app/(home)/page'
-import { Token } from '@/types/common'
+import { Token, WorkspaceResponse } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 
 interface DetailStateUpdateProps {
@@ -9,12 +9,20 @@ interface DetailStateUpdateProps {
   tokenPayload: Token | null
   task: TaskResponse
   children: React.ReactNode
+  workspace?: WorkspaceResponse
 }
 
-export const DetailStateUpdate = async ({ isRedirect, token, tokenPayload, task, children }: DetailStateUpdateProps) => {
+export const DetailStateUpdate = async ({
+  isRedirect,
+  token,
+  tokenPayload,
+  task,
+  workspace,
+  children,
+}: DetailStateUpdateProps) => {
   if (!isRedirect) {
     return (
-      <ClientSideStateUpdate token={token} tokenPayload={tokenPayload} task={task}>
+      <ClientSideStateUpdate token={token} tokenPayload={tokenPayload} task={task} workspace={workspace}>
         {children}
       </ClientSideStateUpdate>
     )
@@ -35,6 +43,7 @@ export const DetailStateUpdate = async ({ isRedirect, token, tokenPayload, task,
       viewSettings={viewSettings}
       tokenPayload={tokenPayload}
       task={task}
+      workspace={workspace}
     >
       {children}
     </ClientSideStateUpdate>
