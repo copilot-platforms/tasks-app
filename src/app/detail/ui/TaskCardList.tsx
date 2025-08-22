@@ -128,7 +128,6 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate,
     return assigneeCache[task.id]
   }) //Omitting type for NoAssignee
 
-  const tooltipDisabled = variant == 'subtask' || variant == 'subtask-board'
   return (
     <Stack
       tabIndex={0}
@@ -188,8 +187,7 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate,
           padding={'2px 4px'}
           hoverColor={200}
           tooltipProps={{
-            disabled: tooltipDisabled,
-            placement: 'right',
+            placement: variant !== 'subtask-board' ? 'right' : 'center',
           }}
         />
 
@@ -246,9 +244,7 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate,
             style={{
               display: 'flex',
               gap: '2px',
-              minWidth: 0,
-              flexGrow: 0,
-              flexShrink: 1,
+
               width: '100%',
             }}
           >
@@ -258,10 +254,6 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate,
                 gap: '8px',
                 display: 'flex',
                 alignItems: 'center',
-                marginRight: 'auto',
-                minWidth: 0,
-                flexGrow: 1,
-                flexShrink: 1,
               }}
             >
               <TaskTitle variant="list" title={task.title} />
@@ -308,7 +300,9 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate,
               isShort
               hoverColor={200}
               tooltipProps={{
-                disabled: (mode === UserRole.Client && !previewMode) || tooltipDisabled,
+                placement: variant !== 'subtask-board' ? 'left' : 'center',
+
+                disabled: mode === UserRole.Client && !previewMode,
               }}
             />
           </Box>
@@ -326,8 +320,8 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate,
             variant="icon"
             tooltipProps={{
               content: assigneeValue === NoAssignee ? 'Set assignee' : 'Change assignee',
-              placement: 'left',
-              disabled: (mode === UserRole.Client && !previewMode) || tooltipDisabled,
+              placement: variant !== 'subtask-board' ? 'left' : 'center',
+              disabled: mode === UserRole.Client && !previewMode,
             }}
             buttonContent={
               <Box

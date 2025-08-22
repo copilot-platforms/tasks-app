@@ -38,17 +38,17 @@ const TaskTitle = ({ title, variant = 'board' }: TaskTitleProps) => {
       </Typography>
     ) : (
       <Typography
-        // ref={textRef}
+        ref={textRef}
         variant="bodySm"
         sx={{
           lineHeight: variant == 'list' ? '22px' : '21px',
           fontSize: variant == 'list' ? '14px' : '13px',
+          display: '-webkit-box',
+          WebkitBoxOrient: 'vertical',
+          WebkitLineClamp: 1,
           overflow: 'hidden',
           textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
-          flexShrink: 1,
-          flexGrow: 0,
-          minWidth: 0,
+          width: '100%',
         }}
       >
         {title}
