@@ -198,7 +198,7 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate,
               display: 'flex',
               gap: '2px',
               minWidth: 0,
-              flexGrow: 0,
+              flexGrow: 1,
               flexShrink: 1,
               width: '100%',
             }}
@@ -215,21 +215,8 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate,
                 flexShrink: 1,
               }}
             >
-              <Typography
-                variant="bodySm"
-                sx={{
-                  lineHeight: variant == 'task' ? '22px' : '21px',
-                  fontSize: variant == 'task' ? '14px' : '13px',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  flexShrink: 1,
-                  flexGrow: 0,
-                  minWidth: 0,
-                }}
-              >
-                {task.title}
-              </Typography>
+              <TaskTitle variant={variant == 'task' ? 'list' : 'subtasks'} title={task.title} />
+
               {(task.subtaskCount > 0 || task.isArchived) && (
                 <Stack direction="row" sx={{ display: 'flex', gap: '12px', flexShrink: 0, alignItems: 'center' }}>
                   <TaskMetaItems task={task} lineHeight="21px" />
@@ -278,7 +265,7 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate,
         }}
       >
         {task.dueDate && (
-          <Box sx={{ minWidth: '105px', display: 'flex', justifyContent: 'flex-end' }}>
+          <Box sx={{ minWidth: '55px', display: 'flex', justifyContent: 'flex-end' }}>
             <DatePickerComponent
               getDate={(date) => {
                 const isoDate = DateStringSchema.parse(formatDate(date))
