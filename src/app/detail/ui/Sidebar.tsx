@@ -204,7 +204,7 @@ export const Sidebar = ({
                       maxWidth: '150px',
                     }}
                   >
-                    {assigneeValue?.name == 'No assignee' ? 'Unassigned' : getAssigneeName(assigneeValue, 'Unassigned')}
+                    {assigneeValue?.name == 'No assignee' ? 'Set assignee' : getAssigneeName(assigneeValue, 'Set assignee')}
                   </Typography>
                 }
               />
@@ -349,7 +349,9 @@ export const Sidebar = ({
                           maxWidth: '150px',
                         }}
                       >
-                        {assigneeValue?.name == 'No assignee' ? 'Unassigned' : getAssigneeName(assigneeValue, 'Unassigned')}
+                        {assigneeValue?.name == 'No assignee'
+                          ? 'Set assignee'
+                          : getAssigneeName(assigneeValue, 'Set assignee')}
                       </Typography>
                     }
                   />

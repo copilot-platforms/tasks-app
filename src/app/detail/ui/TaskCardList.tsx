@@ -184,7 +184,7 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate,
           }}
           responsiveNoHide
           size={Sizes.MEDIUM}
-          padding={'2px 4px'}
+          padding={'4px'}
           hoverColor={200}
           tooltipProps={{
             disabled: tooltipDisabled,
