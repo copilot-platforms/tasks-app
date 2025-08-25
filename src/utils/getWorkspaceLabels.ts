@@ -12,7 +12,7 @@ export const getWorkspaceLabels = (workspace?: WorkspaceResponse, shouldCapitali
   const deCapitalize = (str: string) => str.charAt(0).toLowerCase() + str.slice(1)
 
   const format = (value: string | undefined, fallback: string) => {
-    if (!value) return fallback
+    if (!value) return shouldCapitalize ? capitalize(fallback) : deCapitalize(fallback)
     return shouldCapitalize ? capitalize(value) : deCapitalize(value)
   }
 
