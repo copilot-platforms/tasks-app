@@ -94,6 +94,10 @@ export const TaskCard = ({ task, href, workflowState, mode, subtasks }: TaskCard
     }
   }, [assignee, task.id, task.assigneeId])
 
+  useEffect(() => {
+    setCurrentDueDate(task.dueDate)
+  }, [task.dueDate])
+
   const handleConfirmAssigneeChange = (userIds: UserIdsType) => {
     const { internalUserId, clientId, companyId } = userIds
 
