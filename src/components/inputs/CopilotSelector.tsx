@@ -148,7 +148,6 @@ export const CopilotPopSelector = ({
           <CopilotTooltip
             content={tooltipProps?.content ?? 'Change assignee'}
             disabled={tooltipProps?.disabled || variant == 'normal'}
-            placement={tooltipProps?.placement}
             position={tooltipProps?.position}
           >
             <>{buttonContent}</>
