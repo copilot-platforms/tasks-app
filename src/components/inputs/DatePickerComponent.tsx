@@ -143,12 +143,7 @@ export const DatePickerComponent = ({
           </>
         ) : (
           // Right now Tooltip support is applied to the icon variant only
-          <CopilotTooltip
-            content={'Change due date'}
-            disabled={tooltipProps?.disabled}
-            placement={tooltipProps?.placement}
-            position={tooltipProps?.position}
-          >
+          <CopilotTooltip content={'Change due date'} disabled={tooltipProps?.disabled} position={tooltipProps?.position}>
             <Box
               sx={{
                 padding: padding,

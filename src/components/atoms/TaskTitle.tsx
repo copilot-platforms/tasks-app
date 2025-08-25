@@ -54,7 +54,13 @@ const TaskTitle = ({ title, variant = 'board' }: TaskTitleProps) => {
       </Typography>
     )
 
-  return isOverflowing ? <CopilotTooltip content={title}>{typographyComponent}</CopilotTooltip> : typographyComponent
+  return isOverflowing ? (
+    <CopilotTooltip content={title} allowMaxWidth={true}>
+      {typographyComponent}
+    </CopilotTooltip>
+  ) : (
+    typographyComponent
+  )
 }
 
 export default TaskTitle
