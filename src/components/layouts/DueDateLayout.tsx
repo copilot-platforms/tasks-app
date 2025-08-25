@@ -28,7 +28,10 @@ export const DueDateLayout = ({ dateString, isDone, variant = 'long', isClient =
 
   const isPast = now.isAfter(dateString)
   return (
-    <Typography variant="bodySm" sx={{ color: (theme) => (isPast && !isDone ? theme.color.error : theme.color.gray[500]) }}>
+    <Typography
+      variant="bodySm"
+      sx={{ color: (theme) => (isPast && !isDone ? theme.color.red[200] : theme.color.gray[500]) }}
+    >
       {formattedDueDate}
     </Typography>
   )

@@ -45,6 +45,9 @@ export const CopilotTooltip = ({
       disabled={disabled || isMobileScreen}
     >
       <span
+        style={{
+          display: 'flex',
+        }}
         onMouseEnter={(e) => {
           handlePosition(e.currentTarget)
           timer.current = setTimeout(() => setOpen(true), 500)
