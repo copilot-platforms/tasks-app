@@ -86,6 +86,9 @@ export declare module '@mui/material/styles' {
         bgCommentDrag: string
         avatarBackground: string
       }
+      red: {
+        200: string
+      }
       error: string
       muiError: string
     }
@@ -174,6 +177,9 @@ export declare module '@mui/material/styles' {
         bgHover: React.CSSProperties['color']
         bgCommentDrag: React.CSSProperties['color']
         avatarBackground: React.CSSProperties['color']
+      }
+      red: {
+        200: React.CSSProperties['color']
       }
       error: React.CSSProperties['color']
       muiError: React.CSSProperties['color']
