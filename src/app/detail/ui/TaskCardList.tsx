@@ -186,9 +186,6 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate,
           size={Sizes.MEDIUM}
           padding={'2px 4px'}
           hoverColor={200}
-          tooltipProps={{
-            placement: variant !== 'subtask-board' ? 'right' : 'center',
-          }}
         />
 
         {isTemp || variant === 'subtask-board' ? (
@@ -287,8 +284,6 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate,
               isShort
               hoverColor={200}
               tooltipProps={{
-                placement: variant !== 'subtask-board' ? 'left' : 'center',
-
                 disabled: mode === UserRole.Client && !previewMode,
               }}
             />
@@ -307,7 +302,7 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate,
             variant="icon"
             tooltipProps={{
               content: assigneeValue === NoAssignee ? 'Set assignee' : 'Change assignee',
-              placement: variant !== 'subtask-board' ? 'left' : 'center',
+
               disabled: mode === UserRole.Client && !previewMode,
             }}
             buttonContent={

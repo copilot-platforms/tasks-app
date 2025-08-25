@@ -121,12 +121,7 @@ export const WorkflowStateSelector = ({
             />
           ) : (
             // Right now Tooltip support is applied to the icon variant only
-            <CopilotTooltip
-              content={'Change status'}
-              disabled={tooltipProps?.disabled}
-              placement={tooltipProps?.placement}
-              position={tooltipProps?.position}
-            >
+            <CopilotTooltip content={'Change status'} disabled={tooltipProps?.disabled} position={tooltipProps?.position}>
               <Box
                 sx={{
                   padding: padding,

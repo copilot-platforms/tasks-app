@@ -1,3 +1,4 @@
+import { Box, useMediaQuery } from '@mui/material'
 import { Tooltip } from 'copilot-design-system'
 import React, { useRef, useState } from 'react'
 
@@ -5,30 +6,47 @@ export interface CopilotTooltipProps {
   content: React.ReactNode
   children: React.ReactElement
   position?: 'top' | 'bottom' | 'left' | 'right'
-  placement?: 'left' | 'right' | 'center'
   disabled?: boolean
+  allowMaxWidth?: boolean
 }
 
 export const CopilotTooltip = ({
   content,
   children,
   position = 'bottom',
-  placement = 'center',
   disabled = false,
+  allowMaxWidth = false,
 }: CopilotTooltipProps) => {
   const [open, setOpen] = useState(false)
   const timer = useRef<NodeJS.Timeout | null>(null)
+  const isMobileScreen = useMediaQuery('(max-width:600px)')
+  const [dynamicPlacement, setDynamicPlacement] = useState<'left' | 'right' | 'center'>('center')
+
+  const handlePosition = (el: HTMLElement) => {
+    const rect = el.getBoundingClientRect()
+    const tooltipWidth = 100
+    const viewportWidth = window.innerWidth
+
+    if (rect.right + tooltipWidth > viewportWidth) {
+      setDynamicPlacement('left')
+    } else if (rect.left - tooltipWidth < 0) {
+      setDynamicPlacement('right')
+    } else {
+      setDynamicPlacement('center')
+    }
+  }
 
   return (
     <Tooltip
       content={content}
       position={position}
-      tooltipClassname={open ? 'tooltip' : 'displayoff'}
-      offset={{ x: placement == 'right' ? 50 : placement == 'left' ? -50 : 5, y: -10 }}
-      disabled={disabled}
+      tooltipClassname={open ? `tooltip${allowMaxWidth ? ' tooltip-max' : ''}` : 'displayoff'}
+      offset={{ x: dynamicPlacement == 'right' ? 40 : dynamicPlacement == 'left' ? -55 : 7, y: -5 }}
+      disabled={disabled || isMobileScreen}
     >
       <span
-        onMouseEnter={() => {
+        onMouseEnter={(e) => {
+          handlePosition(e.currentTarget)
           timer.current = setTimeout(() => setOpen(true), 500)
         }}
         onMouseLeave={() => {
