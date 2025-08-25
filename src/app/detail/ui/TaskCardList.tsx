@@ -228,7 +228,8 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate,
             style={{
               display: 'flex',
               gap: '2px',
-
+              minWidth: 0,
+              flexShrink: 1,
               width: '100%',
             }}
           >
@@ -238,6 +239,8 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate,
                 gap: '8px',
                 display: 'flex',
                 alignItems: 'center',
+                minWidth: 0,
+                flexShrink: 1,
               }}
             >
               <TaskTitle variant="list" title={task.title} />

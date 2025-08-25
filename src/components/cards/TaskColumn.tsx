@@ -11,11 +11,11 @@ const TaskColumnHeader = styled(Stack)({
   justifyContent: 'space-between',
   alignItems: 'center',
   paddingBottom: '8px',
-  width: '304px',
+  width: '336px',
 })
 
 const TaskColumnContainer = styled(Stack)<{ showHeader?: boolean }>(({ showHeader }) => ({
-  width: '316px',
+  width: '348px',
   height: `calc(100vh - ${showHeader ? '195px' : '145px'})`,
   marginTop: '6px',
   justifyContent: 'space-between',

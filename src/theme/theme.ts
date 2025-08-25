@@ -88,6 +88,9 @@ export const theme = createTheme({
       bgCommentDrag: '#E6F0FF',
       avatarBackground: '#E8EBF1',
     },
+    red: {
+      200: '#991A00',
+    },
     error: '#CC0000',
     muiError: '#D32F2F',
   },

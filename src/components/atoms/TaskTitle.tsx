@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react'
-import { Typography } from '@mui/material'
+import { Box, Typography } from '@mui/material'
 import { CopilotTooltip } from './CopilotTooltip'
 
 interface TaskTitleProps {
@@ -42,12 +42,12 @@ const TaskTitle = ({ title, variant = 'board' }: TaskTitleProps) => {
         sx={{
           lineHeight: variant == 'list' ? '22px' : '21px',
           fontSize: variant == 'list' ? '14px' : '13px',
-          display: '-webkit-box',
-          WebkitBoxOrient: 'vertical',
-          WebkitLineClamp: 1,
           overflow: 'hidden',
           textOverflow: 'ellipsis',
-          width: '100%',
+          whiteSpace: 'nowrap',
+          flexShrink: 1,
+          flexGrow: 0,
+          minWidth: 0,
         }}
       >
         {title}
@@ -55,9 +55,11 @@ const TaskTitle = ({ title, variant = 'board' }: TaskTitleProps) => {
     )
 
   return isOverflowing ? (
-    <CopilotTooltip content={title} allowMaxWidth={true}>
-      {typographyComponent}
-    </CopilotTooltip>
+    <Box sx={{ flexShrink: 1, minWidth: 0, overflow: 'hidden' }}>
+      <CopilotTooltip content={title} allowMaxWidth={true}>
+        {typographyComponent}
+      </CopilotTooltip>
+    </Box>
   ) : (
     typographyComponent
   )
