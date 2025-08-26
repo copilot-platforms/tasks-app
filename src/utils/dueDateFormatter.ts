@@ -9,10 +9,10 @@ export const DueDateFormatter = (
   const parsedDate = dayjs(date)
   if (isRelativeDate) {
     if (parsedDate.isToday()) {
-      return 'Today'
+      return isClient ? 'Due: Today' : 'Today'
     }
     if (parsedDate.isTomorrow()) {
-      return 'Tomorrow'
+      return isClient ? 'Due: Tomorrow' : 'Tomorrow'
     }
   }
   const monthFormats: { [key: string]: string } = {
@@ -30,7 +30,7 @@ export const DueDateFormatter = (
     December: 'Dec',
   }
 
-  const month = parsedDate.format('MMMM')
+  const month = parsedDate.format('MMM')
   const day = parsedDate.format('D')
   const year = parsedDate.format('YYYY')
 
