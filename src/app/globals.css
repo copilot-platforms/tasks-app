@@ -70,13 +70,20 @@ a {
   display: inline-flex;
   border: 1px solid #dfe1e4;
   box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.14);
-  padding: 8px;
+  padding: 4px 8px;
   align-items: center;
   justify-content: center;
   gap: 16px;
-  min-height: 29px;
-  min-width: 109px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 400;
-  line-height: 21px;
+  line-height: 22px;
+  white-space: nowrap;
+}
+.tooltip-max {
+  max-width: 350px;
+  white-space: normal;
+}
+
+.displayoff {
+  display: none;
 }
