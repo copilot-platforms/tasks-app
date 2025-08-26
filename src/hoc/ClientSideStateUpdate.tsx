@@ -82,7 +82,7 @@ export const ClientSideStateUpdate = ({
     }
 
     if (viewSettings) {
-      const viewSettingsCopy = structuredClone(viewSettings) //deep cloning for immutability and prevent the reducer mutating the original object.
+      const viewSettingsCopy = viewSettingsTemp ? structuredClone(viewSettingsTemp) : structuredClone(viewSettings) //deep cloning for immutability and prevent the reducer mutating the original object.
       store.dispatch(setViewSettings(viewSettingsCopy))
       const view = viewSettingsTemp ? viewSettingsTemp.filterOptions : viewSettingsCopy.filterOptions
       store.dispatch(setFilteredAssigneeList({ filteredType: filterOptionsMap[view?.type] || filterOptionsMap.default }))
