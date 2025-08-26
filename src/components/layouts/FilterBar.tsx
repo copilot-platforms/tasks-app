@@ -59,6 +59,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
         filterOptions: { ...updatedFilterOptions, [optionType]: newValue },
         showArchived: showArchived,
         showUnarchived: showUnarchived,
+        showSubtasks: showSubtasks,
       }),
     )
     updateViewModeSetting({
@@ -69,6 +70,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
       },
       showArchived: showArchived,
       showUnarchived: showUnarchived,
+      showSubtasks: showSubtasks,
     })
   }
 
@@ -352,6 +354,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
                       filterOptions: filterOptions,
                       showArchived: showArchived,
                       showUnarchived: showUnarchived,
+                      showSubtasks: showSubtasks,
                     }),
                   )
                   updateViewModeSetting({
@@ -359,6 +362,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
                     filterOptions: filterOptions,
                     showArchived: showArchived,
                     showUnarchived: showUnarchived,
+                    showSubtasks: showSubtasks,
                   })
                   store.dispatch(
                     setViewSettingsTemp({
@@ -366,6 +370,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
                       filterOptions: viewModeFilterOptions,
                       showArchived: showArchived,
                       showUnarchived: showUnarchived,
+                      showSubtasks: showSubtasks,
                     }),
                   )
                 }}
