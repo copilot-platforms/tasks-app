@@ -6,6 +6,7 @@ import { clientUpdateTask, updateAssignee, updateTaskDetail } from '@/app/detail
 import { StyledModal } from '@/app/detail/ui/styledComponent'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { TaskMetaItems } from '@/components/atoms/TaskMetaItems'
+import TaskTitle from '@/components/atoms/TaskTitle'
 import { CopilotPopSelector } from '@/components/inputs/CopilotSelector'
 import { DatePickerComponent } from '@/components/inputs/DatePickerComponent'
 import { SelectorType } from '@/components/inputs/Selector'
@@ -127,7 +128,6 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate,
     return assigneeCache[task.id]
   }) //Omitting type for NoAssignee
 
-  const tooltipDisabled = variant == 'subtask' || variant == 'subtask-board'
   return (
     <Stack
       tabIndex={0}
@@ -186,10 +186,6 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate,
           size={Sizes.MEDIUM}
           padding={'2px 4px'}
           hoverColor={200}
-          tooltipProps={{
-            disabled: tooltipDisabled,
-            placement: 'right',
-          }}
         />
 
         {isTemp || variant === 'subtask-board' ? (
@@ -199,7 +195,7 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate,
               display: 'flex',
               gap: '2px',
               minWidth: 0,
-              flexGrow: 0,
+              flexGrow: 1,
               flexShrink: 1,
               width: '100%',
             }}
@@ -216,21 +212,8 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate,
                 flexShrink: 1,
               }}
             >
-              <Typography
-                variant="bodySm"
-                sx={{
-                  lineHeight: variant == 'task' ? '22px' : '21px',
-                  fontSize: variant == 'task' ? '14px' : '13px',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  flexShrink: 1,
-                  flexGrow: 0,
-                  minWidth: 0,
-                }}
-              >
-                {task.title}
-              </Typography>
+              <TaskTitle variant={variant == 'task' ? 'list' : 'subtasks'} title={task.title} />
+
               {(task.subtaskCount > 0 || task.isArchived) && (
                 <Stack direction="row" sx={{ display: 'flex', gap: '12px', flexShrink: 0, alignItems: 'center' }}>
                   <TaskMetaItems task={task} lineHeight="21px" />
@@ -245,9 +228,7 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate,
             style={{
               display: 'flex',
               gap: '2px',
-              minWidth: 0,
-              flexGrow: 0,
-              flexShrink: 1,
+
               width: '100%',
             }}
           >
@@ -257,27 +238,9 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate,
                 gap: '8px',
                 display: 'flex',
                 alignItems: 'center',
-                marginRight: 'auto',
-                minWidth: 0,
-                flexGrow: 1,
-                flexShrink: 1,
               }}
             >
-              <Typography
-                variant="bodySm"
-                sx={{
-                  lineHeight: variant == 'task' ? '22px' : '21px',
-                  fontSize: variant == 'task' ? '14px' : '13px',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  flexShrink: 1,
-                  flexGrow: 0,
-                  minWidth: 0,
-                }}
-              >
-                {task.title}
-              </Typography>
+              <TaskTitle variant="list" title={task.title} />
               {(task.subtaskCount > 0 || task.isArchived) && (
                 <Stack direction="row" sx={{ display: 'flex', gap: '12px', flexShrink: 0, alignItems: 'center' }}>
                   <TaskMetaItems task={task} lineHeight="21px" />
@@ -299,7 +262,7 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate,
         }}
       >
         {task.dueDate && (
-          <Box sx={{ minWidth: '105px', display: 'flex', justifyContent: 'flex-end' }}>
+          <Box sx={{ minWidth: '55px', display: 'flex', justifyContent: 'flex-end' }}>
             <DatePickerComponent
               getDate={(date) => {
                 const isoDate = DateStringSchema.parse(formatDate(date))
@@ -321,7 +284,7 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate,
               isShort
               hoverColor={200}
               tooltipProps={{
-                disabled: (mode === UserRole.Client && !previewMode) || tooltipDisabled,
+                disabled: mode === UserRole.Client && !previewMode,
               }}
             />
           </Box>
@@ -339,8 +302,8 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate,
             variant="icon"
             tooltipProps={{
               content: assigneeValue === NoAssignee ? 'Set assignee' : 'Change assignee',
-              placement: 'left',
-              disabled: (mode === UserRole.Client && !previewMode) || tooltipDisabled,
+
+              disabled: mode === UserRole.Client && !previewMode,
             }}
             buttonContent={
               <Box
