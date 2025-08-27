@@ -177,23 +177,23 @@ export function TasksColumnVirtualizer({
                       workflowState={list}
                       mode={mode}
                     />
+                    {showSubtasks &&
+                      subtasks?.length > 0 &&
+                      subtasks.map((subtask) => {
+                        return (
+                          <TaskCardList
+                            task={subtask}
+                            variant="subtask"
+                            key={subtask.id}
+                            mode={mode}
+                            sx={{
+                              padding: { xs: '10px 12px 10px 34px', sm: '10px 20px 10px 44px' },
+                              height: '44px',
+                            }}
+                          />
+                        )
+                      })}
                   </DragDropHandler>
-                  {showSubtasks &&
-                    subtasks?.length > 0 &&
-                    subtasks.map((subtask) => {
-                      return (
-                        <TaskCardList
-                          task={subtask}
-                          variant="subtask"
-                          key={subtask.id}
-                          mode={mode}
-                          sx={{
-                            padding: { xs: '10px 12px 10px 34px', sm: '10px 20px 10px 44px' },
-                            height: '44px',
-                          }}
-                        />
-                      )
-                    })}
                 </>
               </div>
             </div>
