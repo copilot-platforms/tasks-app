@@ -22,6 +22,7 @@ import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { FilterOptions, FilterOptionsKeywords, IFilterOptions, UserIds } from '@/types/interfaces'
 import { filterTypeToButtonIndexMap } from '@/types/objectMaps'
 import { checkAssignee, emptyAssignee, getAssigneeId, UserIdsType } from '@/utils/assignee'
+import { getWorkspaceLabels } from '@/utils/getWorkspaceLabels'
 import { NoAssignee } from '@/utils/noAssignee'
 import { getSelectedUserIds, getSelectorAssignee, getSelectorAssigneeFromFilterOptions } from '@/utils/selector'
 import { Box, IconButton, Stack } from '@mui/material'
@@ -74,7 +75,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
 
   const [noAssigneOptionFlag, setNoAssigneeOptionFlag] = useState<boolean>(true)
 
-  const { tokenPayload } = useSelector(selectAuthDetails)
+  const { tokenPayload, workspace } = useSelector(selectAuthDetails)
 
   const [assigneeValue, setAssigneeValue] = useState(
     viewModeFilterOptions.assignee[UserIds.INTERNAL_USER_ID] == 'No assignee'
@@ -104,7 +105,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
       id: 'TeamTasks',
     },
     {
-      name: 'Client tasks',
+      name: `${getWorkspaceLabels(workspace, true).individualTerm} tasks`,
       onClick: () => {
         handleFilterOptionsChange(FilterOptions.TYPE, FilterOptionsKeywords.CLIENTS)
         setAssigneeValue(undefined)
