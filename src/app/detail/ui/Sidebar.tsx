@@ -18,7 +18,7 @@ import store from '@/redux/store'
 import { DateStringSchema } from '@/types/date'
 import { UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { IAssigneeCombined, InputValue, Sizes } from '@/types/interfaces'
+import { IAssigneeCombined, InputValue, Sizes, UserType } from '@/types/interfaces'
 import { getAssigneeId, getAssigneeName, getUserIds, UserIdsType } from '@/utils/assignee'
 import { createDateFromFormattedDateString, formatDate } from '@/utils/dateHelper'
 import { getSelectedUserIds, getSelectorAssignee, getSelectorAssigneeFromTask } from '@/utils/selector'
@@ -28,6 +28,7 @@ import { Box, Skeleton, Stack, styled, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { z } from 'zod'
+import { ClientDetailAppBridge } from '@/app/detail/ui/ClientDetailAppBridge'
 
 const StyledText = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[500],
@@ -41,6 +42,8 @@ export const Sidebar = ({
   updateTask,
   disabled,
   workflowDisabled,
+  userType,
+  portalUrl,
 }: {
   task_id: string
   selectedWorkflowState: WorkflowStateResponse
@@ -50,6 +53,8 @@ export const Sidebar = ({
   updateTask: (payload: UpdateTaskRequest) => void
   disabled: boolean
   workflowDisabled?: false
+  userType: UserType
+  portalUrl?: string
 }) => {
   const { activeTask, workflowStates, assignee, previewMode } = useSelector(selectTaskBoard)
   const { showSidebar, showConfirmAssignModal } = useSelector(selectTaskDetails)
@@ -73,6 +78,10 @@ export const Sidebar = ({
   })
 
   const statusValue = _statusValue as WorkflowStateResponse //typecasting
+
+  const completedWorkflowState = workflowStates.find((state) => state.type === 'completed')
+
+  const isTaskCompleted = activeTask?.workflowStateId === completedWorkflowState?.id
 
   useEffect(() => {
     if (activeTask && workflowStates && updateStatusValue) {
@@ -195,7 +204,7 @@ export const Sidebar = ({
                       maxWidth: '150px',
                     }}
                   >
-                    {assigneeValue?.name == 'No assignee' ? 'Unassigned' : getAssigneeName(assigneeValue, 'Unassigned')}
+                    {assigneeValue?.name == 'No assignee' ? 'Set assignee' : getAssigneeName(assigneeValue, 'Set assignee')}
                   </Typography>
                 }
               />
@@ -340,7 +349,9 @@ export const Sidebar = ({
                           maxWidth: '150px',
                         }}
                       >
-                        {assigneeValue?.name == 'No assignee' ? 'Unassigned' : getAssigneeName(assigneeValue, 'Unassigned')}
+                        {assigneeValue?.name == 'No assignee'
+                          ? 'Set assignee'
+                          : getAssigneeName(assigneeValue, 'Set assignee')}
                       </Typography>
                     }
                   />
@@ -406,6 +417,16 @@ export const Sidebar = ({
           title="Reassign task?"
         />
       </StyledModal>
+      {userType == UserType.CLIENT_USER && !previewMode && (
+        <ClientDetailAppBridge
+          isTaskCompleted={isTaskCompleted}
+          handleTaskComplete={() => {
+            completedWorkflowState && updateStatusValue(completedWorkflowState)
+            completedWorkflowState && updateWorkflowState(completedWorkflowState)
+          }}
+          portalUrl={portalUrl}
+        />
+      )}
     </Box>
   )
 }

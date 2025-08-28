@@ -4,6 +4,7 @@ export enum Icons {
   PLUS = 'Plus',
   TEMPLATES = 'Templates',
   TRASH = 'Trash',
+  CHECK = 'Check',
 }
 
 export interface BreadcrumbsPayload {

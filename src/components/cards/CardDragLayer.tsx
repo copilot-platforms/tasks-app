@@ -1,3 +1,4 @@
+import { UserRole } from '@/app/api/core/types/user'
 import { TaskCard } from '@/components/cards/TaskCard'
 import { ArchiveBoxIcon } from '@/icons'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
@@ -31,10 +32,11 @@ const getItemStyles = (currentOffset: XYCoord | null, previewWidth: number, view
 interface Prop {
   currentOffset?: XYCoord | null
   item?: { task: TaskResponse }
+  mode: UserRole
 }
 
 export const CardDragLayer: FC<Prop> = (props) => {
-  const { item, currentOffset } = props
+  const { item, currentOffset, mode } = props
 
   const { view, token } = useSelector(selectTaskBoard)
 
@@ -57,6 +59,7 @@ export const CardDragLayer: FC<Prop> = (props) => {
         }}
       >
         <TaskCard
+          mode={mode}
           task={currentTask}
           key={currentTask.id}
           href={{ pathname: `/detail/${currentTask.id}/iu`, query: { token } }}
