@@ -154,7 +154,11 @@ export const TaskCard = ({ task, href, workflowState, mode, subtasks }: TaskCard
           </Box>
           <Stack direction="column" justifyContent="center" rowGap={'5px'} sx={{ width: '100%' }}>
             <Stack direction={'row'} columnGap={'10px'} justifyContent={'space-between'}>
-              <TaskTitle title={task.title ?? ''} variant="board" />
+              <TaskTitle
+                title={task.title ?? ''}
+                variant="board"
+                metaItems={(task.isArchived || subtaskCount > 0) && <TaskMetaItems task={task} lineHeight="21px" />}
+              />
 
               {assigneeValue ? (
                 <CopilotPopSelector
@@ -209,46 +213,29 @@ export const TaskCard = ({ task, href, workflowState, mode, subtasks }: TaskCard
                 </Box>
               )}
             </Stack>
-            <Stack direction={'row'} columnGap={'10px'} justifyContent={'space-between'}>
-              <Box sx={{ ml: '-4px' }}>
-                {task.dueDate && (
-                  <DatePickerComponent
-                    getDate={(date) => {
-                      const isoDate = DateStringSchema.parse(formatDate(date))
-                      token && updateTaskDetail({ token, taskId: task.id, payload: { dueDate: isoDate } })
-                      setCurrentDueDate(isoDate)
-                    }}
-                    variant="icon"
-                    padding="0px 4px"
-                    dateValue={
-                      currentDueDate ? createDateFromFormattedDateString(z.string().parse(currentDueDate)) : undefined
-                    }
-                    disabled={mode === UserRole.Client && !previewMode}
-                    isDone={isTaskCompleted(task, workflowStates)}
-                    isShort
-                    tooltipProps={{
-                      disabled: mode === UserRole.Client && !previewMode,
-                    }}
-                  />
-                )}
-              </Box>
 
-              {(task.isArchived || subtaskCount > 0) && (
-                <Stack
-                  direction="row"
-                  sx={{
-                    display: 'flex',
-                    gap: '12px',
-                    flexShrink: 0,
-                    alignItems: 'center',
-                    justifyContent: 'flex-end',
-                    padding: '0px 5px',
+            <Box sx={{ ml: '-4px' }}>
+              {task.dueDate && (
+                <DatePickerComponent
+                  getDate={(date) => {
+                    const isoDate = DateStringSchema.parse(formatDate(date))
+                    token && updateTaskDetail({ token, taskId: task.id, payload: { dueDate: isoDate } })
+                    setCurrentDueDate(isoDate)
                   }}
-                >
-                  <TaskMetaItems task={task} lineHeight="18px" />
-                </Stack>
+                  variant="icon"
+                  padding="0px 4px"
+                  dateValue={
+                    currentDueDate ? createDateFromFormattedDateString(z.string().parse(currentDueDate)) : undefined
+                  }
+                  disabled={mode === UserRole.Client && !previewMode}
+                  isDone={isTaskCompleted(task, workflowStates)}
+                  isShort
+                  tooltipProps={{
+                    disabled: mode === UserRole.Client && !previewMode,
+                  }}
+                />
               )}
-            </Stack>
+            </Box>
           </Stack>
         </Stack>
         {showSubtasks && subtasks && subtasks.length > 0 && (
