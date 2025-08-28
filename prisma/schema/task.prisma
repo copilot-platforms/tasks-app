@@ -58,6 +58,8 @@ model Task {
 
   taskUpdateBacklogs TaskUpdateBacklog[]
 
+  viewers         String[]      @db.Uuid @default([])
+
   @@index([path], type: Gist)
   @@map("Tasks")
 }
