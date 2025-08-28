@@ -3,14 +3,7 @@ import { PreviewMode } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { CreateViewSettingsDTO, FilterOptionsType } from '@/types/dto/viewSettings.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import {
-  FilterByOptions,
-  FilterOptions,
-  IAssigneeCombined,
-  IFilterOptions,
-  ISelectorAssignee,
-  UserIds,
-} from '@/types/interfaces'
+import { FilterByOptions, FilterOptions, IAssigneeCombined, IFilterOptions, UserIds } from '@/types/interfaces'
 import { emptyAssignee, UserIdsType } from '@/utils/assignee'
 import { ViewMode } from '@prisma/client'
 import { createSlice } from '@reduxjs/toolkit'
@@ -26,6 +19,7 @@ interface IInitialState {
   filteredAssigneeList: IAssigneeCombined[]
   showArchived: boolean | undefined
   showUnarchived: boolean | undefined
+  showSubtasks: boolean | undefined
   viewSettingsTemp: CreateViewSettingsDTO | undefined
   isTasksLoading: boolean
   activeTask: TaskResponse | undefined
@@ -51,6 +45,7 @@ const initialState: IInitialState = {
   filteredAssigneeList: [],
   showArchived: undefined,
   showUnarchived: undefined,
+  showSubtasks: undefined,
   viewSettingsTemp: undefined,
   // Use this state as a global loading flag for tasks
   isTasksLoading: true,
@@ -101,10 +96,11 @@ const taskBoardSlice = createSlice({
       state.filteredAssigneeList = action.payload
     },
     setViewSettings: (state, action: { payload: CreateViewSettingsDTO }) => {
-      const { viewMode, filterOptions, showArchived, showUnarchived } = action.payload
+      const { viewMode, filterOptions, showArchived, showUnarchived, showSubtasks } = action.payload
       state.view = viewMode
       state.showArchived = showArchived
       state.showUnarchived = showUnarchived
+      state.showSubtasks = showSubtasks
       taskBoardSlice.caseReducers.updateFilterOption(state, { payload: { filterOptions } })
     },
     setViewSettingsTemp: (state, action: { payload: CreateViewSettingsDTO }) => {
