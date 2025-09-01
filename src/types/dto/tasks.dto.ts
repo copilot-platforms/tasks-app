@@ -42,6 +42,7 @@ export const CreateTaskRequestSchema = z
     internalUserId: z.string().uuid().nullish().default(null),
     clientId: z.string().uuid().nullish().default(null),
     companyId: z.string().uuid().nullish().default(null),
+    viewers: z.array(z.string().uuid()).max(1).optional(), //right now, we only need the feature to have max of 1 viewer per task
   })
   .superRefine(validateUserIds)
 
@@ -57,6 +58,7 @@ export const UpdateTaskRequestSchema = z
     internalUserId: z.string().uuid().nullish(),
     clientId: z.string().uuid().nullish(),
     companyId: z.string().uuid().nullish(),
+    viewers: z.array(z.string().uuid()).max(1).optional(), //right now, we only need the feature to have max of 1 viewer per task
   })
   .superRefine(validateUserIds)
 
@@ -86,6 +88,7 @@ export const TaskResponseSchema = z.object({
   internalUserId: z.string().uuid().nullish(),
   clientId: z.string().uuid().nullish(),
   companyId: z.string().uuid().nullish(),
+  viewers: z.array(z.string().uuid()).max(1).optional(),
 })
 
 export type TaskResponse = z.infer<typeof TaskResponseSchema>
