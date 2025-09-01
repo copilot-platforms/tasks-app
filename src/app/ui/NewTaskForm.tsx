@@ -12,7 +12,7 @@ import { StyledTextField } from '@/components/inputs/TextField'
 import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
-import { AssigneePlaceholderSmall, CloseIcon, TemplateIconSm } from '@/icons'
+import { AssigneePlaceholderSmall, CloseIcon, TempalteIconMd } from '@/icons'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import {
   selectCreateTask,
@@ -42,6 +42,11 @@ interface NewTaskFormInputsProps {
 
 interface NewTaskFormProps {
   handleCreate: () => void
+  handleClose: () => void
+  setIsEditorReadonly?: Dispatch<SetStateAction<boolean>>
+}
+
+type NewTaskFormHeaderProps = {
   handleClose: () => void
   setIsEditorReadonly?: Dispatch<SetStateAction<boolean>>
 }
@@ -109,12 +114,11 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
         }}
       >
         <AppMargin size={SizeofAppMargin.MEDIUM} py="12px">
-          <Stack direction="row" alignItems="center" justifyContent="space-between">
-            <Typography variant="md" fontSize={'15px'} lineHeight={'18.15px'}>
-              Create task
-            </Typography>
-            <CloseIcon style={{ cursor: 'pointer' }} onClick={() => handleClose()} />
-          </Stack>
+          <NewTaskHeader
+            handleClose={handleClose}
+            setIsEditorReadonly={setIsEditorReadonly}
+            updateWorkflowStatusValue={updateStatusValue}
+          />
         </AppMargin>
       </Stack>
 
@@ -191,79 +195,22 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
       <NewTaskFooter
         handleCreate={handleCreateWithAssignee}
         handleClose={handleClose}
-        setIsEditorReadonly={setIsEditorReadonly}
         updateWorkflowStatusValue={updateStatusValue}
       />
     </NewTaskContainer>
   )
 }
 
-const NewTaskFormInputs = ({ isEditorReadonly }: NewTaskFormInputsProps) => {
-  const { title, description } = useSelector(selectCreateTask)
-  const { errors } = useSelector(selectCreateTask)
-  const { token } = useSelector(selectTaskBoard)
-  const { tokenPayload } = useSelector(selectAuthDetails)
-
-  const handleDetailChange = (content: string) => {
-    store.dispatch(setCreateTaskFields({ targetField: 'description', value: content }))
-  }
-
-  const uploadFn =
-    token && tokenPayload?.workspaceId
-      ? (file: File) => uploadImageHandler(file, token, tokenPayload.workspaceId, null)
-      : undefined
-
-  return (
-    <>
-      <Stack direction="column" rowGap={1}>
-        <Typography variant="md">Task name</Typography>
-        <StyledTextField
-          type="text"
-          padding="8px 0px"
-          autoFocus={true}
-          value={title}
-          onChange={(e) => {
-            store.dispatch(setCreateTaskFields({ targetField: 'title', value: e.target.value }))
-            store.dispatch(setErrors({ key: CreateTaskErrors.TITLE, value: false }))
-          }}
-          error={errors.title}
-          helperText={errors.title && 'Required'}
-          inputProps={{
-            maxLength: 255,
-          }}
-          disabled={isEditorReadonly}
-        />
-      </Stack>
-      <Stack direction="column" rowGap={1} m="16px 0px">
-        <Typography variant="md">Description</Typography>
-        <Tapwrite
-          content={description}
-          getContent={handleDetailChange}
-          placeholder="Add description..."
-          editorClass="tapwrite-task-description"
-          uploadFn={uploadFn}
-          readonly={isEditorReadonly}
-          deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', null, null)}
-          attachmentLayout={AttachmentLayout}
-          maxUploadLimit={MAX_UPLOAD_LIMIT}
-          parentContainerStyle={{ gap: '0px' }}
-        />
-      </Stack>
-    </>
-  )
-}
-
-const NewTaskFooter = ({
-  handleCreate,
+const NewTaskHeader = ({
   handleClose,
   setIsEditorReadonly,
   updateWorkflowStatusValue,
-}: NewTaskFormProps & { updateWorkflowStatusValue: (value: unknown) => void }) => {
+}: NewTaskFormHeaderProps & { updateWorkflowStatusValue: (value: unknown) => void }) => {
   const [inputStatusValue, setInputStatusValue] = useState('')
 
-  const { title, showModal, description, appliedDescription, appliedTitle } = useSelector(selectCreateTask)
   const { token, workflowStates } = useSelector(selectTaskBoard)
   const { templates } = useSelector(selectCreateTemplate)
+  const { title, showModal, description, appliedDescription, appliedTitle } = useSelector(selectCreateTask)
 
   const { renderingItem: _templateValue, updateRenderingItem: updateTemplateValue } = useHandleSelectorComponent({
     item: undefined, //initially we don't want any value to be selected
@@ -345,9 +292,12 @@ const NewTaskFooter = ({
   }
 
   return (
-    <Box sx={{ borderTop: (theme) => `1px solid ${theme.color.borders.border2}` }}>
-      <AppMargin size={SizeofAppMargin.MEDIUM} py="21px">
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+    <>
+      <Stack direction="row" alignItems="center" justifyContent="space-between">
+        <Stack direction="row" alignItems="center">
+          <Typography variant="md" fontSize={'15px'} lineHeight={'18.15px'}>
+            Create task
+          </Typography>
           <Selector
             inputStatusValue={inputStatusValue}
             setInputStatusValue={setInputStatusValue}
@@ -356,7 +306,7 @@ const NewTaskFooter = ({
               updateTemplateValue(newValue)
               applyTemplateHandler(newValue)
             }}
-            startIcon={<TemplateIconSm />}
+            startIcon={<TempalteIconMd />}
             options={templates || []}
             placeholder="Search..."
             value={templateValue}
@@ -364,46 +314,140 @@ const NewTaskFooter = ({
             endOption={<ManageTemplatesEndOption hasTemplates={!!templates?.length} />}
             endOptionHref={`/manage-templates?token=${token}`}
             listAutoHeightMax="147px"
-            buttonContent={
-              <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[600], lineHeight: '24px' }}>
-                {'Apply template'}
-              </Typography>
-            }
             variant="normal"
             responsiveNoHide
             buttonWidth="auto"
             useClickHandler
           />
-          <Stack
-            direction="row"
-            justifyContent="flex-end"
-            alignItems="center"
-            sx={{
-              marginLeft: 'auto',
-            }}
-          >
-            <Stack direction="row" columnGap={4}>
-              <SecondaryBtn
-                handleClick={() => handleClose()}
-                buttonContent={
-                  <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[700] }}>
-                    Discard
-                  </Typography>
-                }
-              />
-              <PrimaryBtn
-                handleClick={() => {
-                  if (!title.trim()) {
-                    store.dispatch(setErrors({ key: CreateTaskErrors.TITLE, value: true }))
-                  } else {
-                    handleCreate()
-                  }
-                }}
-                buttonText="Create"
-              />
-            </Stack>
-          </Stack>
+        </Stack>
+        <CloseIcon style={{ cursor: 'pointer' }} onClick={() => handleClose()} />
+      </Stack>
+    </>
+  )
+}
+
+const NewTaskFormInputs = ({ isEditorReadonly }: NewTaskFormInputsProps) => {
+  const { title, description } = useSelector(selectCreateTask)
+  const { errors } = useSelector(selectCreateTask)
+  const { token } = useSelector(selectTaskBoard)
+  const { tokenPayload } = useSelector(selectAuthDetails)
+
+  const handleDetailChange = (content: string) => {
+    store.dispatch(setCreateTaskFields({ targetField: 'description', value: content }))
+  }
+
+  const uploadFn =
+    token && tokenPayload?.workspaceId
+      ? (file: File) => uploadImageHandler(file, token, tokenPayload.workspaceId, null)
+      : undefined
+
+  return (
+    <>
+      <Stack
+        direction="column"
+        sx={{
+          display: 'flex',
+          padding: '0px 12px 12px',
+          alignItems: 'center',
+          gap: '4px',
+          alignSelf: 'stretch',
+          border: '1px solid #EFF1F4',
+          borderRadius: '4px',
+          marginBottom: '12px',
+        }}
+      >
+        <StyledTextField
+          type="text"
+          padding="8px 0px"
+          autoFocus={true}
+          value={title}
+          borderLess
+          onChange={(e) => {
+            store.dispatch(setCreateTaskFields({ targetField: 'title', value: e.target.value }))
+            store.dispatch(setErrors({ key: CreateTaskErrors.TITLE, value: false }))
+          }}
+          error={errors.title}
+          helperText={errors.title && 'Required'}
+          inputProps={{
+            maxLength: 255,
+          }}
+          sx={{
+            width: '100%',
+            '& .MuiInputBase-input': {
+              fontSize: '16px',
+              lineHeight: '24px',
+              color: (theme) => theme.color.gray[600],
+              fontWeight: 500,
+            },
+            '& .MuiInputBase-input.Mui-disabled': {
+              WebkitTextFillColor: (theme) => theme.color.gray[600],
+            },
+            '& .MuiInputBase-root': {
+              padding: '0px 0px',
+            },
+          }}
+          placeholder="Task name"
+          multiline
+          disabled={isEditorReadonly}
+        />
+        <Box sx={{ height: '100%', width: '100%' }}>
+          <Tapwrite
+            content={description}
+            getContent={handleDetailChange}
+            placeholder="Add description.."
+            editorClass="tapwrite-task-editor h-full"
+            uploadFn={uploadFn}
+            readonly={isEditorReadonly}
+            deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', null, null)}
+            attachmentLayout={AttachmentLayout}
+            maxUploadLimit={MAX_UPLOAD_LIMIT}
+            parentContainerStyle={{ gap: '0px', height: '66px' }}
+            className="h-full"
+          />
         </Box>
+      </Stack>
+    </>
+  )
+}
+
+const NewTaskFooter = ({
+  handleCreate,
+  handleClose,
+}: NewTaskFormProps & { updateWorkflowStatusValue: (value: unknown) => void }) => {
+  const { title } = useSelector(selectCreateTask)
+
+  return (
+    <Box sx={{ borderTop: (theme) => `1px solid ${theme.color.borders.border2}` }}>
+      <AppMargin size={SizeofAppMargin.MEDIUM} py="16px">
+        <Stack
+          direction="row"
+          justifyContent="flex-end"
+          alignItems="center"
+          sx={{
+            marginLeft: 'auto',
+          }}
+        >
+          <Stack direction="row" columnGap={4}>
+            <SecondaryBtn
+              handleClick={() => handleClose()}
+              buttonContent={
+                <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[700] }}>
+                  Discard
+                </Typography>
+              }
+            />
+            <PrimaryBtn
+              handleClick={() => {
+                if (!title.trim()) {
+                  store.dispatch(setErrors({ key: CreateTaskErrors.TITLE, value: true }))
+                } else {
+                  handleCreate()
+                }
+              }}
+              buttonText="Create"
+            />
+          </Stack>
+        </Stack>
       </AppMargin>
     </Box>
   )
