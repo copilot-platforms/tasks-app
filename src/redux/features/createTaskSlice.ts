@@ -22,6 +22,7 @@ interface IInitialState {
   appliedDescription: string | null
   templateId: string | null
   userIds: UserIdsType
+  viewers: string[]
 }
 
 const initialState: IInitialState = {
@@ -43,6 +44,7 @@ const initialState: IInitialState = {
     [UserIds.CLIENT_ID]: null,
     [UserIds.COMPANY_ID]: null,
   },
+  viewers: [],
 }
 
 const createTaskSlice = createSlice({
@@ -85,6 +87,7 @@ const createTaskSlice = createSlice({
           [UserIds.COMPANY_ID]: null,
         }
       }
+      state.viewers = []
       state.attachments = []
       state.dueDate = null
       state.errors = {

@@ -69,3 +69,9 @@ export const getSelectorAssigneeFromFilterOptions = (
       (typeFilterOptions && item.id == typeFilterOptions),
   )
 } //util to get initial assignee from filterOptions for selector.
+
+export const getSelectedViewerIds = (inputValue: InputValue[]): string[] => {
+  if (!inputValue?.length || inputValue[0].object !== 'client') return [] // when no user is selected.
+
+  return [inputValue[0].id] // currently id of single client id
+}

@@ -24,7 +24,7 @@ export const ModalNewTaskForm = ({
   handleCreateMultipleAttachments: (attachments: CreateAttachmentRequest[]) => Promise<void>
 }) => {
   const { token, filterOptions } = useSelector(selectTaskBoard)
-  const { title, description, workflowStateId, userIds, attachments, dueDate, showModal, templateId } =
+  const { title, description, workflowStateId, userIds, attachments, dueDate, showModal, templateId, viewers } =
     useSelector(selectCreateTask)
 
   const handleModalClose = async (isKeyboard: boolean = false) => {
@@ -63,6 +63,7 @@ export const ModalNewTaskForm = ({
             ...userIds,
             dueDate: formattedDueDate,
             templateId,
+            ...(viewers.length > 0 && { viewers }),
           }
 
           store.dispatch(clearCreateTaskFields({ isFilterOn: !checkEmptyAssignee(filterOptions[FilterOptions.ASSIGNEE]) }))

@@ -17,12 +17,14 @@ export const CopilotSelector = ({
   initialAssignee,
   hideClientsList,
   hideIusList,
+  hideCompanysList,
 }: {
   onChange: (inputValue: InputValue[]) => void
   name: string
   initialAssignee?: ISelectorOption[]
   hideClientsList?: boolean
   hideIusList?: boolean
+  hideCompanysList?: boolean
 }) => {
   const { assignee } = useSelector(selectTaskBoard)
   const { workspace } = useSelector(selectAuthDetails)
@@ -41,12 +43,12 @@ export const CopilotSelector = ({
         openMenuOnFocus
         menuIsOpen={true}
         autoFocus
-        placeholder={'Set assignee'}
+        placeholder={name}
         initialValue={initialAssignee}
         clientUsers={hideClientsList ? [] : selectorAssignee.clients}
         name={name}
         internalUsers={hideIusList ? [] : selectorAssignee.internalUsers}
-        companies={hideClientsList ? [] : selectorAssignee.companies}
+        companies={hideClientsList || hideCompanysList ? [] : selectorAssignee.companies}
         onChange={(inputValue: InputValue[]) => {
           setCurrentlySelected(inputValue)
           onChange(inputValue)
@@ -68,6 +70,7 @@ interface CopilotPopSelectorProps {
   initialValue?: IAssigneeCombined
   hideClientsList?: boolean
   hideIusList?: boolean
+  hideCompanysList?: boolean
   tooltipProps?: Omit<CopilotTooltipProps, 'children'>
   variant?: 'icon' | 'normal'
 }
@@ -80,6 +83,7 @@ export const CopilotPopSelector = ({
   initialValue,
   hideClientsList,
   hideIusList,
+  hideCompanysList,
   tooltipProps,
   variant = 'normal',
 }: CopilotPopSelectorProps) => {
@@ -169,6 +173,7 @@ export const CopilotPopSelector = ({
           <CopilotSelector
             hideClientsList={hideClientsList}
             hideIusList={hideIusList}
+            hideCompanysList={hideCompanysList}
             initialAssignee={initialAssignee}
             name={name}
             onChange={(inputValue) => {

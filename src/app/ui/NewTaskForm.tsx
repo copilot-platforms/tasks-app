@@ -12,7 +12,7 @@ import { StyledTextField } from '@/components/inputs/TextField'
 import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
-import { AssigneePlaceholderSmall, CloseIcon, TempalteIconMd } from '@/icons'
+import { PersonSmall, CloseIcon, TempalteIconMd } from '@/icons'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import {
   selectCreateTask,
@@ -25,11 +25,16 @@ import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { selectCreateTemplate } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { CreateTaskErrors, FilterOptions, IAssigneeCombined, ITemplate, UserIds } from '@/types/interfaces'
+import { CreateTaskErrors, FilterByOptions, FilterOptions, IAssigneeCombined, ITemplate, UserIds } from '@/types/interfaces'
 import { checkEmptyAssignee, emptyAssignee, getAssigneeName } from '@/utils/assignee'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
-import { getSelectedUserIds, getSelectorAssignee, getSelectorAssigneeFromFilterOptions } from '@/utils/selector'
+import {
+  getSelectedUserIds,
+  getSelectedViewerIds,
+  getSelectorAssignee,
+  getSelectorAssigneeFromFilterOptions,
+} from '@/utils/selector'
 import { trimAllTags } from '@/utils/trimTags'
 import { Box, Stack, Typography, styled } from '@mui/material'
 import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react'
@@ -53,7 +58,7 @@ type NewTaskFormHeaderProps = {
 
 export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => {
   const { activeWorkflowStateId } = useSelector(selectCreateTask)
-  const { workflowStates, assignee, previewMode, filterOptions } = useSelector(selectTaskBoard)
+  const { workflowStates, assignee, taskViewers, previewMode, filterOptions } = useSelector(selectTaskBoard)
 
   const todoWorkflowState = workflowStates.find((el) => el.key === 'todo') || workflowStates[0]
   const defaultWorkflowState = activeWorkflowStateId
@@ -76,6 +81,8 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
       filterOptions[FilterOptions.TYPE],
     ) ?? null,
   )
+  const [taskViewerValue, setTaskViewerValue] = useState<IAssigneeCombined | null>(null)
+
   useEffect(() => {
     if (!checkEmptyAssignee(filterOptions[FilterOptions.ASSIGNEE])) {
       store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: filterOptions[FilterOptions.ASSIGNEE] }))
@@ -139,11 +146,29 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
           </Box>
 
           <Stack alignSelf="flex-start">
+            <Box
+              sx={{
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                maxWidth: { xs: '102px', sm: 'none' },
+              }}
+            >
+              <DatePickerComponent
+                padding="4px 8px"
+                getDate={(value) => store.dispatch(setCreateTaskFields({ targetField: 'dueDate', value: value as string }))}
+                variant="button"
+              />
+            </Box>
+          </Stack>
+
+          <Stack alignSelf="flex-start">
             <CopilotPopSelector
               disabled={!!previewMode}
               name="Set assignee"
               initialValue={assigneeValue || undefined}
               onChange={(inputValue) => {
+                if (inputValue.length === 0) setTaskViewerValue(null) // remove task viewers if assignee is cleared
                 const newUserIds = getSelectedUserIds(inputValue)
                 const selectedAssignee = getSelectorAssignee(assignee, inputValue)
                 setAssigneeValue(selectedAssignee || null)
@@ -152,9 +177,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
               buttonContent={
                 <SelectorButton
                   disabled={!!previewMode}
-                  startIcon={
-                    assigneeValue ? <CopilotAvatar currentAssignee={assigneeValue} /> : <AssigneePlaceholderSmall />
-                  }
+                  startIcon={assigneeValue ? <CopilotAvatar currentAssignee={assigneeValue} /> : <PersonSmall />}
                   height="30px"
                   padding="4px 8px"
                   buttonContent={
@@ -176,22 +199,46 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
               }
             />
           </Stack>
-          <Stack alignSelf="flex-start">
-            <Box
-              sx={{
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                maxWidth: { xs: '102px', sm: 'none' },
-              }}
-            >
-              <DatePickerComponent
-                padding="4px 8px"
-                getDate={(value) => store.dispatch(setCreateTaskFields({ targetField: 'dueDate', value: value as string }))}
-                variant="button"
+          {assigneeValue && assigneeValue.type === FilterByOptions.IUS && (
+            <Stack alignSelf="flex-start">
+              <CopilotPopSelector
+                hideIusList
+                hideCompanysList
+                disabled={!!previewMode}
+                name="Set client visibility"
+                initialValue={taskViewerValue || undefined}
+                onChange={(inputValue) => {
+                  const newUserIds = getSelectedViewerIds(inputValue)
+                  const selectedTaskViewers = getSelectorAssignee(taskViewers, inputValue)
+                  setTaskViewerValue(selectedTaskViewers || null)
+                  store.dispatch(setCreateTaskFields({ targetField: 'viewers', value: newUserIds }))
+                }}
+                buttonContent={
+                  <SelectorButton
+                    disabled={!!previewMode}
+                    startIcon={taskViewerValue ? <CopilotAvatar currentAssignee={taskViewerValue} /> : <PersonSmall />}
+                    height="30px"
+                    padding="4px 8px"
+                    buttonContent={
+                      <Typography
+                        variant="bodySm"
+                        sx={{
+                          color: (theme) => (taskViewerValue ? theme.color.gray[600] : theme.color.text.textDisabled),
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          fontSize: '12px',
+                          maxWidth: { xs: '60px', sm: '100px' },
+                        }}
+                      >
+                        {getAssigneeName(taskViewerValue as IAssigneeCombined, 'Client Visibility')}
+                      </Typography>
+                    }
+                  />
+                }
               />
-            </Box>
-          </Stack>
+            </Stack>
+          )}
         </Stack>
       </AppMargin>
       <NewTaskFooter

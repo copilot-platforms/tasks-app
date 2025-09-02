@@ -11,6 +11,7 @@ import { createSlice } from '@reduxjs/toolkit'
 interface IInitialState {
   workflowStates: WorkflowStateResponse[]
   assignee: IAssigneeCombined[]
+  taskViewers: IAssigneeCombined[]
   tasks: TaskResponse[]
   token: string | undefined
   view: ViewMode
@@ -35,6 +36,7 @@ const initialState: IInitialState = {
   tasks: [],
   token: undefined,
   assignee: [],
+  taskViewers: [],
   view: ViewMode.board,
   filteredTasks: [], //contains tasks which are client-side filtered. is modified from the useFilter custom hook.
   filterOptions: {
@@ -94,6 +96,9 @@ const taskBoardSlice = createSlice({
     setAssigneeList: (state, action: { payload: IAssigneeCombined[] }) => {
       state.assignee = action.payload
       state.filteredAssigneeList = action.payload
+    },
+    setTaskViewersList: (state, action: { payload: IAssigneeCombined[] }) => {
+      state.taskViewers = action.payload
     },
     setViewSettings: (state, action: { payload: CreateViewSettingsDTO }) => {
       const { viewMode, filterOptions, showArchived, showUnarchived, showSubtasks } = action.payload
@@ -180,6 +185,7 @@ export const {
   updateWorkflowStateIdByTaskId,
   setToken,
   setAssigneeList,
+  setTaskViewersList,
   setFilteredTasks,
   setViewSettings,
   setFilterOptions,

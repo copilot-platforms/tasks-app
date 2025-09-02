@@ -48,6 +48,7 @@ export { default as NoAssigneeAvatarSmall } from './no-assignee-avatar-small.svg
 export { default as AssigneePlaceholderSmall } from './assignee-placeholder-small.svg'
 export { default as NoAssigneeAvatarLarge } from './no-assignee-avatar-large.svg'
 export { default as AssigneePlaceholder } from './assignee-placeholder.svg'
+export { default as PersonSmall } from './person-small.svg'
 export { default as InreviewIconSmall } from './inreview-small.svg'
 export { default as InreviewIconMedium } from './inreview-medium.svg'
 export { default as AddLargeIcon } from './add-large.svg'
