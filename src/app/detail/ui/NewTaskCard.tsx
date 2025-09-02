@@ -1,3 +1,4 @@
+import { UserRole } from '@/app/api/core/types/user'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import AttachmentLayout from '@/components/AttachmentLayout'
 import { ManageTemplatesEndOption } from '@/components/buttons/ManageTemplatesEndOptions'
@@ -365,7 +366,11 @@ export const NewTaskCard = ({
             disabled={!!previewMode}
             name="Set assignee"
             onChange={(inputValue) => {
-              if (inputValue.length === 0) setTaskViewerValue(null) // remove task viewers if assignee is cleared
+              // remove task viewers if assignee is cleared or changed to client or company
+              if (inputValue.length === 0 || inputValue[0].object !== UserRole.IU) {
+                setTaskViewerValue(null)
+                handleFieldChange('viewers', [])
+              }
               const newUserIds = getSelectedUserIds(inputValue)
               const selectedAssignee = getSelectorAssignee(assignee, inputValue)
               setAssigneeValue(selectedAssignee || null)

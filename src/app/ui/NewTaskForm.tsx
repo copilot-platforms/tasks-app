@@ -40,6 +40,7 @@ import { Box, Stack, Typography, styled } from '@mui/material'
 import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
+import { UserRole } from '../api/core/types/user'
 
 interface NewTaskFormInputsProps {
   isEditorReadonly?: boolean
@@ -168,7 +169,12 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
               name="Set assignee"
               initialValue={assigneeValue || undefined}
               onChange={(inputValue) => {
-                if (inputValue.length === 0) setTaskViewerValue(null) // remove task viewers if assignee is cleared
+                // remove task viewers if assignee is cleared or changed to client or company
+                if (inputValue.length === 0 || inputValue[0].object !== UserRole.IU) {
+                  setTaskViewerValue(null)
+                  store.dispatch(setCreateTaskFields({ targetField: 'viewers', value: [] }))
+                }
+
                 const newUserIds = getSelectedUserIds(inputValue)
                 const selectedAssignee = getSelectorAssignee(assignee, inputValue)
                 setAssigneeValue(selectedAssignee || null)
