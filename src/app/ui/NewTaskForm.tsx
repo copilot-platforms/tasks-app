@@ -439,16 +439,7 @@ const NewTaskFooter = ({
                 </Typography>
               }
             />
-            <PrimaryBtn
-              handleClick={() => {
-                if (!title.trim()) {
-                  store.dispatch(setErrors({ key: CreateTaskErrors.TITLE, value: true }))
-                } else {
-                  handleCreate()
-                }
-              }}
-              buttonText="Create"
-            />
+            <PrimaryBtn disabled={!title.trim()} handleClick={handleCreate} buttonText="Create" />
           </Stack>
         </Stack>
       </AppMargin>
