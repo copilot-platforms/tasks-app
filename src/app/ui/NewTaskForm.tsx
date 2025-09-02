@@ -122,11 +122,13 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
         </AppMargin>
       </Stack>
 
-      <AppMargin size={SizeofAppMargin.MEDIUM} py="16px">
+      <AppMargin size={SizeofAppMargin.MEDIUM} py="20px">
         <NewTaskFormInputs isEditorReadonly={isEditorReadonly} />
-        <Stack direction="row" columnGap={3} position="relative" sx={{ flexWrap: 'wrap' }}>
+        <Stack direction="row" columnGap={2} position="relative" sx={{ flexWrap: 'wrap' }}>
           <Box sx={{ padding: 0.1 }}>
             <WorkflowStateSelector
+              padding="4px 8px"
+              gap="6px"
               option={workflowStates}
               value={statusValue}
               getValue={(value) => {
@@ -154,7 +156,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
                     assigneeValue ? <CopilotAvatar currentAssignee={assigneeValue} /> : <AssigneePlaceholderSmall />
                   }
                   height="30px"
-                  padding="4px 16px"
+                  padding="4px 8px"
                   buttonContent={
                     <Typography
                       variant="bodySm"
@@ -184,7 +186,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
               }}
             >
               <DatePickerComponent
-                padding="4px 16px"
+                padding="4px 8px"
                 getDate={(value) => store.dispatch(setCreateTaskFields({ targetField: 'dueDate', value: value as string }))}
                 variant="button"
               />
@@ -294,8 +296,8 @@ const NewTaskHeader = ({
   return (
     <>
       <Stack direction="row" alignItems="center" justifyContent="space-between">
-        <Stack direction="row" alignItems="center">
-          <Typography variant="md" fontSize={'15px'} lineHeight={'18.15px'}>
+        <Stack direction="row" alignItems="center" gap={'4px'}>
+          <Typography variant="md" fontSize={'16px'} lineHeight={'24px'}>
             Create task
           </Typography>
           <Selector
@@ -318,6 +320,7 @@ const NewTaskHeader = ({
             responsiveNoHide
             buttonWidth="auto"
             useClickHandler
+            padding="5px"
           />
         </Stack>
         <CloseIcon style={{ cursor: 'pointer' }} onClick={() => handleClose()} />

@@ -26,7 +26,7 @@ export const AppMargin = ({
   }
 
   if (size === SizeofAppMargin.MEDIUM) {
-    return <Box sx={{ ...sx, padding: { xs: `${py ? py : '0px'} 20px`, sm: `${py ? py : '0px'} 28px` } }}>{children}</Box>
+    return <Box sx={{ ...sx, padding: { xs: `${py ? py : '0px'} 20px` } }}>{children}</Box>
   }
 
   if (size === SizeofAppMargin.SMALL) {
