@@ -350,7 +350,7 @@ const NewTaskFormInputs = ({ isEditorReadonly }: NewTaskFormInputsProps) => {
         direction="column"
         sx={{
           display: 'flex',
-          padding: '0px 12px 12px',
+          padding: '0px 12px 8px',
           alignItems: 'center',
           gap: '4px',
           alignSelf: 'stretch',
@@ -361,7 +361,7 @@ const NewTaskFormInputs = ({ isEditorReadonly }: NewTaskFormInputsProps) => {
       >
         <StyledTextField
           type="text"
-          padding="8px 0px"
+          padding="8px 0px 0px"
           autoFocus={true}
           value={title}
           borderLess
