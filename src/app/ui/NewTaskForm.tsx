@@ -397,7 +397,7 @@ const NewTaskFormInputs = ({ isEditorReadonly }: NewTaskFormInputsProps) => {
           <Tapwrite
             content={description}
             getContent={handleDetailChange}
-            placeholder="Add description.."
+            placeholder="Add description..."
             editorClass="tapwrite-task-editor h-full"
             uploadFn={uploadFn}
             readonly={isEditorReadonly}
