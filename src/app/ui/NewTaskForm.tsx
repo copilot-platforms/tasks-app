@@ -430,7 +430,7 @@ const NewTaskFooter = ({
             marginLeft: 'auto',
           }}
         >
-          <Stack direction="row" columnGap={4}>
+          <Stack direction="row" columnGap={2}>
             <SecondaryBtn
               handleClick={() => handleClose()}
               buttonContent={
