@@ -66,7 +66,7 @@ export const DatePickerComponent = ({
       <Stack
         direction="row"
         alignItems="center"
-        columnGap="7px"
+        columnGap="6px"
         onClickCapture={(e) => {
           e.preventDefault()
           e.stopPropagation()

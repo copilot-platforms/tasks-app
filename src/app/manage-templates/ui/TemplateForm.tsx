@@ -67,7 +67,7 @@ export const TemplateForm = ({ handleCreate }: { handleCreate: () => void }) => 
           />
         </Stack>
 
-        <AppMargin size={SizeofAppMargin.MEDIUM} py="12px">
+        <AppMargin size={SizeofAppMargin.MEDIUM} py="20px">
           <NewTaskFormInputs />
         </AppMargin>
         <NewTaskFooter handleCreate={handleCreate} targetMethod={targetMethod} />
@@ -105,15 +105,25 @@ const NewTaskFormInputs = () => {
 
   return (
     <>
-      <Stack direction="column" rowGap={1}>
-        <Typography variant="md" lineHeight={'22px'}>
-          Name
-        </Typography>
+      <Stack
+        direction="column"
+        sx={{
+          display: 'flex',
+          padding: '0px 12px 8px',
+          alignItems: 'center',
+          gap: '4px',
+          alignSelf: 'stretch',
+          border: '1px solid #EFF1F4',
+          borderRadius: '4px',
+          marginBottom: '12px',
+        }}
+      >
         <StyledTextField
           type="text"
-          padding="8px 0px"
+          padding="8px 0px 0px"
           autoFocus={true}
           value={taskName}
+          borderLess
           onChange={(e) => {
             store.dispatch(setCreateTemplateFields({ targetField: 'taskName', value: e.target.value }))
             store.dispatch(setErrors({ key: createTemplateErrors.TITLE, value: false }))
@@ -123,34 +133,51 @@ const NewTaskFormInputs = () => {
           inputProps={{
             maxLength: 255,
           }}
+          sx={{
+            width: '100%',
+            '& .MuiInputBase-input': {
+              fontSize: '16px',
+              lineHeight: '24px',
+              color: (theme) => theme.color.gray[600],
+              fontWeight: 500,
+            },
+            '& .MuiInputBase-input.Mui-disabled': {
+              WebkitTextFillColor: (theme) => theme.color.gray[600],
+            },
+            '& .MuiInputBase-root': {
+              padding: '0px 0px',
+            },
+          }}
+          placeholder="Template name"
+          multiline
         />
-      </Stack>
-      <Stack direction="column" rowGap={1} m="16px 0px">
-        <Typography variant="md" lineHeight={'22px'}>
-          Description
-        </Typography>
-        <Tapwrite
-          content={description}
-          getContent={handleDescriptionChange}
-          placeholder="Add description..."
-          editorClass="tapwrite-task-description"
-          uploadFn={uploadFn}
-          deleteEditorAttachments={(url) =>
-            deleteEditorAttachmentsHandler(
-              url,
-              token ?? '',
-              null,
-              targetMethod == TargetMethod.POST ? null : targetTemplateId,
-            )
-          }
-          attachmentLayout={AttachmentLayout}
-          maxUploadLimit={MAX_UPLOAD_LIMIT}
-          parentContainerStyle={{ gap: '0px' }}
-        />
+        <Box sx={{ height: '100%', width: '100%' }}>
+          <Tapwrite
+            content={description}
+            getContent={handleDescriptionChange}
+            placeholder="Add description..."
+            editorClass="tapwrite-task-editor h-full"
+            uploadFn={uploadFn}
+            deleteEditorAttachments={(url) =>
+              deleteEditorAttachmentsHandler(
+                url,
+                token ?? '',
+                null,
+                targetMethod == TargetMethod.POST ? null : targetTemplateId,
+              )
+            }
+            attachmentLayout={AttachmentLayout}
+            maxUploadLimit={MAX_UPLOAD_LIMIT}
+            parentContainerStyle={{ gap: '0px', height: '66px' }}
+            className="h-full"
+          />
+        </Box>
       </Stack>
       <Stack direction="column" rowGap={1} m="0px 0px">
         <Box sx={{ padding: 0.1 }}>
           <WorkflowStateSelector
+            padding="4px 8px"
+            gap="6px"
             option={workflowStates}
             value={statusValue}
             getValue={(value) => {
@@ -178,8 +205,9 @@ const NewTaskFooter = ({ handleCreate, targetMethod }: { handleCreate: () => voi
     <Box sx={{ borderTop: (theme) => `1px solid ${theme.color.borders.border2}` }}>
       <AppMargin size={SizeofAppMargin.MEDIUM} py="16px">
         <Stack direction="row" justifyContent="right" alignItems="center">
-          <Stack direction="row" columnGap={4}>
+          <Stack direction="row" columnGap={2}>
             <SecondaryBtn
+              padding="3px 8px"
               handleClick={() => {
                 store.dispatch(setShowTemplateModal({}))
                 store.dispatch(clearTemplateFields())
@@ -191,6 +219,7 @@ const NewTaskFooter = ({ handleCreate, targetMethod }: { handleCreate: () => voi
               }
             />
             <PrimaryBtn
+              padding="3px 8px"
               handleClick={handleTemplateCreation}
               buttonText={targetMethod === TargetMethod.POST ? 'Create' : 'Save'}
             />
