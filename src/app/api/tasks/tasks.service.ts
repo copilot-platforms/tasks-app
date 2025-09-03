@@ -364,7 +364,6 @@ export class TasksService extends BaseService {
 
     let viewers: string[] = prevTask.viewers
     if (data.viewers?.length) {
-      console.log(internalUserId)
       viewers = !internalUserId ? [] : await this.validateViewers(data.viewers) //reset viewers to [] if the task is reassigned from IU to other roles' users.
     }
 
@@ -1033,14 +1032,12 @@ export class TasksService extends BaseService {
 
   private async validateViewers(viewers: string[], Copilot?: CopilotAPI) {
     const copilot = Copilot ?? new CopilotAPI(this.user.token)
-
-    for (const viewer of viewers) {
-      try {
-        await copilot.getClient(viewer)
-      } catch (err) {
-        throw new APIError(httpStatus.BAD_REQUEST, `Viewer should be a CU.`)
-      }
+    try {
+      await copilot.getClient(viewers[0]) //support looping viewers and filtering from getClients instead of doing getClient if we do support many viewers in the future.
+    } catch (err) {
+      throw new APIError(httpStatus.BAD_REQUEST, `Viewer should be a CU.`)
     }
+
     return viewers
   }
 }
