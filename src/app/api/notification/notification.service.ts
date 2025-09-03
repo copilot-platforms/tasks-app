@@ -17,16 +17,8 @@ import { AssigneeType, ClientNotification, Task } from '@prisma/client'
 import Bottleneck from 'bottleneck'
 import httpStatus from 'http-status'
 import { z } from 'zod'
-import User from '@api/core/models/User.model'
 
 export class NotificationService extends BaseService {
-  public isComment: boolean
-
-  constructor(user: User, isComment: boolean = false) {
-    super(user)
-    this.isComment = isComment
-  }
-
   async create(
     action: NotificationTaskActions,
     task: Task,
@@ -44,7 +36,7 @@ export class NotificationService extends BaseService {
             where: { taskId: task.id, clientId: task.clientId, companyId: task.companyId },
           })
         : null
-      if (task.clientId && existingNotification && !this.isComment) {
+      if (task.clientId && existingNotification && !opts.commentId) {
         console.error(`NotificationService#create | Found existing notification for ${task.clientId}`, existingNotification)
         return
       }
@@ -161,7 +153,7 @@ export class NotificationService extends BaseService {
         try {
           // 1.Check for existing notification. Skip if duplicate
           const existingNotification = existingNotifications.find((notification) => notification.clientId === recipientId)
-          if (existingNotification && !this.isComment) {
+          if (existingNotification && !opts?.commentId) {
             console.error(
               `NotificationService#bulkCreate | Found existing notification for ${recipientId}`,
               existingNotification,
