@@ -18,7 +18,7 @@ import {
   selectCreateTask,
   setAppliedDescription,
   setAppliedTitle,
-  setBulkCreateTaskFields,
+  setAllCreateTaskFields,
   setCreateTaskFields,
   setErrors,
 } from '@/redux/features/createTaskSlice'
@@ -36,7 +36,7 @@ import { Box, Stack, Typography, styled } from '@mui/material'
 import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
-import { PublicTaskCreateDto, publicTaskCreateDtoSchemaFactory } from '../api/tasks/public/public.dto'
+import { PublicTaskCreateDto, publicTaskCreateDtoSchemaFactory } from '@/app/api/tasks/public/public.dto'
 import { HomeParamActions } from '@/types/constants'
 
 interface NewTaskFormInputsProps {
@@ -51,7 +51,7 @@ interface NewTaskFormProps {
 
 export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => {
   const { activeWorkflowStateId } = useSelector(selectCreateTask)
-  const { workflowStates, assignee, previewMode, filterOptions, actionParams, token } = useSelector(selectTaskBoard)
+  const { workflowStates, assignee, previewMode, filterOptions, urlActionParams, token } = useSelector(selectTaskBoard)
   const [actionParamPayload, setActionParamPayload] = useState<PublicTaskCreateDto | null>(null)
 
   const todoWorkflowState = workflowStates.find((el) => el.key === 'todo') || workflowStates[0]
@@ -80,12 +80,12 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
   )
   useEffect(() => {
     if (
-      Object.keys(actionParams).length > 0 &&
-      actionParams.action === HomeParamActions.CREATE_TASK &&
-      actionParams.oldPf !== actionParams.pf
+      Object.keys(urlActionParams).length > 0 &&
+      urlActionParams.action === HomeParamActions.CREATE_TASK &&
+      urlActionParams.oldPf !== urlActionParams.pf
     ) {
-      // handle action param for deep link
-      handleActionParam()
+      // handle url action param for deep link
+      handleUrlActionParam()
     } else {
       if (!checkEmptyAssignee(filterOptions[FilterOptions.ASSIGNEE])) {
         store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: filterOptions[FilterOptions.ASSIGNEE] }))
@@ -117,9 +117,10 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
     }
   }, [handleClose])
 
-  const handleActionParam = useCallback(async () => {
-    if (actionParams.pf && token) {
-      const parsedPayload = await publicTaskCreateDtoSchemaFactory(token).parseAsync(JSON.parse(atob(actionParams.pf)))
+  // this function handles the action param passed in the url and fill the values in the form
+  const handleUrlActionParam = useCallback(async () => {
+    if (urlActionParams.pf && token) {
+      const parsedPayload = await publicTaskCreateDtoSchemaFactory(token).parseAsync(JSON.parse(atob(urlActionParams.pf)))
       const assigneeFilter = {
         [UserIds.INTERNAL_USER_ID]: parsedPayload?.internalUserId || null,
         [UserIds.CLIENT_ID]: parsedPayload?.clientId || null,
@@ -138,9 +139,9 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
 
       setAssigneeValue(getSelectorAssigneeFromFilterOptions(assignee, assigneeFilter) || null)
       setActionParamPayload(parsedPayload)
-      store.dispatch(setBulkCreateTaskFields(taskPayload))
+      store.dispatch(setAllCreateTaskFields(taskPayload))
     }
-  }, [actionParams])
+  }, [urlActionParams])
 
   return (
     <NewTaskContainer>

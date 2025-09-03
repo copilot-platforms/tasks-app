@@ -268,7 +268,7 @@ export type RFC3339Date = z.infer<typeof RFC3339DateSchema>
 
 export const StateTypeSchema = z.nativeEnum(StateType)
 
-export type HomeActionParamsType = {
+export type UrlActionParamsType = {
   action?: string
   pf?: string
   oldPf?: string

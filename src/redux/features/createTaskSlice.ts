@@ -79,7 +79,8 @@ const createTaskSlice = createSlice({
       state[targetField] = value
     },
 
-    setBulkCreateTaskFields: (state, action: { payload: CreateTaskFieldType }) => {
+    // sets all the fields of the create task form
+    setAllCreateTaskFields: (state, action: { payload: CreateTaskFieldType }) => {
       state.title = action.payload.title
       state.description = action.payload.description
       state.workflowStateId = action.payload.workflowStateId
@@ -138,7 +139,7 @@ export const {
   setErrors,
   setAppliedDescription,
   setAppliedTitle,
-  setBulkCreateTaskFields,
+  setAllCreateTaskFields,
 } = createTaskSlice.actions
 
 export default createTaskSlice.reducer
