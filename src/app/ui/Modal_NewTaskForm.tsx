@@ -7,7 +7,7 @@ import {
   setActiveWorkflowStateId,
   setShowModal,
 } from '@/redux/features/createTaskSlice'
-import { selectTaskBoard, setHomeActionParams } from '@/redux/features/taskBoardSlice'
+import { selectTaskBoard, SetUrlActionParams } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { CreateTaskRequestSchema } from '@/types/dto/tasks.dto'
@@ -25,7 +25,7 @@ export const ModalNewTaskForm = ({
 }: {
   handleCreateMultipleAttachments: (attachments: CreateAttachmentRequest[]) => Promise<void>
 }) => {
-  const { token, filterOptions, actionParams } = useSelector(selectTaskBoard)
+  const { token, filterOptions, urlActionParams } = useSelector(selectTaskBoard)
   const { title, description, workflowStateId, userIds, attachments, dueDate, showModal, templateId, parentId } =
     useSelector(selectCreateTask)
 
@@ -36,20 +36,20 @@ export const ModalNewTaskForm = ({
     store.dispatch(setShowModal())
     store.dispatch(clearCreateTaskFields({ isFilterOn: !checkEmptyAssignee(filterOptions[FilterOptions.ASSIGNEE]) }))
     store.dispatch(setActiveWorkflowStateId(null))
-    store.dispatch(setHomeActionParams({ oldPf: actionParams.pf }))
+    store.dispatch(SetUrlActionParams({ oldPf: urlActionParams.pf }))
     // NOTE: Reimplement in M3
     // await bulkRemoveAttachments(attachments)
   }
 
   useEffect(() => {
     if (
-      Object.keys(actionParams).length > 0 &&
-      actionParams.action === HomeParamActions.CREATE_TASK &&
-      actionParams.pf !== actionParams.oldPf
+      Object.keys(urlActionParams).length > 0 &&
+      urlActionParams.action === HomeParamActions.CREATE_TASK &&
+      urlActionParams.pf !== urlActionParams.oldPf
     ) {
       store.dispatch(setShowModal())
     }
-  }, [actionParams])
+  }, [urlActionParams])
 
   return (
     <StyledModal

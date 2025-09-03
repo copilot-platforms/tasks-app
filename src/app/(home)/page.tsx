@@ -12,7 +12,7 @@ import { apiUrl } from '@/config'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import { DndWrapper } from '@/hoc/DndWrapper'
 import { RealTime } from '@/hoc/RealTime'
-import { HomeActionParamsType, Token, TokenSchema, WorkspaceResponse } from '@/types/common'
+import { UrlActionParamsType, Token, TokenSchema, WorkspaceResponse } from '@/types/common'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
@@ -74,7 +74,7 @@ export async function getViewSettings(token: string): Promise<CreateViewSettings
 export default async function Main({
   searchParams,
 }: {
-  searchParams: { token: string; taskId?: string } & HomeActionParamsType
+  searchParams: { token: string; taskId?: string } & UrlActionParamsType
 }) {
   const token = searchParams.token
 
