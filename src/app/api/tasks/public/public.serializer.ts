@@ -58,6 +58,7 @@ export class PublicTaskSerializer {
       internalUserId: task.internalUserId,
       clientId: task.clientId,
       companyId: task.companyId,
+      viewers: task.viewers,
     }
   }
 
@@ -141,6 +142,7 @@ export class PublicTaskSerializer {
       internalUserId: payload.internalUserId ?? null,
       clientId: payload.clientId ?? null,
       companyId: payload.companyId ?? null,
+      viewers: payload.viewers ?? [],
     })
   }
 
@@ -155,6 +157,7 @@ export class PublicTaskSerializer {
       internalUserId: payload.internalUserId,
       clientId: payload.clientId,
       companyId: payload.companyId,
+      viewers: payload.viewers,
     })
   }
 }

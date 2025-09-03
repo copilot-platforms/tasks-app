@@ -203,6 +203,14 @@ export class TasksService extends BaseService {
       createdById = createdBy.id
     }
 
+    let viewers: string[] = []
+    if (data.viewers?.length) {
+      if (!validatedIds.internalUserId) {
+        throw new APIError(httpStatus.BAD_REQUEST, `Task cannot be created with viewers if its not assigned to an IU.`)
+      }
+      viewers = await this.validateViewers(data.viewers, copilot)
+    }
+
     // Create a new task associated with current workspaceId. Also inject current request user as the creator.
     const newTask = await this.db.task.create({
       data: {
@@ -215,6 +223,7 @@ export class TasksService extends BaseService {
         source: opts?.isPublicApi ? Source.api : Source.web,
         assigneeId,
         assigneeType,
+        viewers: viewers,
         ...validatedIds,
         ...(await getTaskTimestamps('create', this.user, data)),
       },
@@ -353,6 +362,11 @@ export class TasksService extends BaseService {
       companyId: validatedIds?.companyId ?? null,
     })
 
+    let viewers: string[] = prevTask.viewers
+    if (data.viewers?.length) {
+      viewers = !internalUserId ? [] : await this.validateViewers(data.viewers) //reset viewers to [] if the task is reassigned from IU to other roles' users.
+    }
+
     const userAssignmentFields = shouldUpdateUserIds
       ? {
           ...validatedIds,
@@ -399,6 +413,7 @@ export class TasksService extends BaseService {
           archivedBy,
           completedBy,
           completedByUserType,
+          viewers,
           ...userAssignmentFields,
           ...(await getTaskTimestamps('update', this.user, data, prevTask)),
         },
@@ -1013,5 +1028,16 @@ export class TasksService extends BaseService {
     } catch (e) {
       console.error('TaskService#setNewLastSubtaskUpdated::', e)
     }
+  }
+
+  private async validateViewers(viewers: string[], Copilot?: CopilotAPI) {
+    const copilot = Copilot ?? new CopilotAPI(this.user.token)
+    try {
+      await copilot.getClient(viewers[0]) //support looping viewers and filtering from getClients instead of doing getClient if we do support many viewers in the future.
+    } catch (err) {
+      throw new APIError(httpStatus.BAD_REQUEST, `Viewer should be a CU.`)
+    }
+
+    return viewers
   }
 }
