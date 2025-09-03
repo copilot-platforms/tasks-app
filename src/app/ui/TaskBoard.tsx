@@ -139,7 +139,11 @@ export const TaskBoard = ({ mode, workspace }: TaskBoardProps) => {
       <FilterBar
         mode={mode}
         updateViewModeSetting={async (payload: CreateViewSettingsDTO) => {
-          await updateViewModeSettings(z.string().parse(token), payload)
+          try {
+            await updateViewModeSettings(z.string().parse(token), payload)
+          } catch (error) {
+            console.error('view settings update error', error)
+          }
         }}
       />
       {isNoTasksWithFilter && <NoFilteredTasksState />}
