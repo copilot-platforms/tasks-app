@@ -432,6 +432,7 @@ const NewTaskFooter = ({
         >
           <Stack direction="row" columnGap={2}>
             <SecondaryBtn
+              padding="3px 8px"
               handleClick={() => handleClose()}
               buttonContent={
                 <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[700] }}>
@@ -439,7 +440,7 @@ const NewTaskFooter = ({
                 </Typography>
               }
             />
-            <PrimaryBtn disabled={!title.trim()} handleClick={handleCreate} buttonText="Create" />
+            <PrimaryBtn padding="3px 8px" disabled={!title.trim()} handleClick={handleCreate} buttonText="Create" />
           </Stack>
         </Stack>
       </AppMargin>

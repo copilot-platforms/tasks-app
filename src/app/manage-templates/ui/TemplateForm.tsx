@@ -207,6 +207,7 @@ const NewTaskFooter = ({ handleCreate, targetMethod }: { handleCreate: () => voi
         <Stack direction="row" justifyContent="right" alignItems="center">
           <Stack direction="row" columnGap={2}>
             <SecondaryBtn
+              padding="3px 8px"
               handleClick={() => {
                 store.dispatch(setShowTemplateModal({}))
                 store.dispatch(clearTemplateFields())
@@ -218,6 +219,7 @@ const NewTaskFooter = ({ handleCreate, targetMethod }: { handleCreate: () => voi
               }
             />
             <PrimaryBtn
+              padding="3px 8px"
               handleClick={handleTemplateCreation}
               buttonText={targetMethod === TargetMethod.POST ? 'Create' : 'Save'}
             />
