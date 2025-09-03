@@ -26,7 +26,7 @@ export const sendCommentCreateNotifications = task({
     // If task is unassigned, there's nobody to send notifications to
     if (!task.assigneeId || !task.assigneeType) return
 
-    const commentNotificationService = new NotificationService(user)
+    const commentNotificationService = new NotificationService(user, true)
     const copilot = new CopilotAPI(user.token)
     const { recipientIds: clientRecipientIds } = await commentNotificationService.getNotificationParties(
       copilot,
