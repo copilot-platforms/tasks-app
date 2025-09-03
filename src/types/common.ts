@@ -267,3 +267,9 @@ export const RFC3339DateSchema = z.string().refine((val) => rfc3339Regex.test(va
 export type RFC3339Date = z.infer<typeof RFC3339DateSchema>
 
 export const StateTypeSchema = z.nativeEnum(StateType)
+
+export type HomeActionParamsType = {
+  action?: string
+  pf?: string
+  oldPf?: string
+}

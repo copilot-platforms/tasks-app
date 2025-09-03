@@ -8,6 +8,7 @@ import {
   setActiveTask,
   setAssigneeList,
   setFilteredAssigneeList,
+  setHomeActionParams,
   setPreviewMode,
   setTasks,
   setToken,
@@ -17,7 +18,8 @@ import {
 import { setAssigneeSuggestion, setExpandedComments } from '@/redux/features/taskDetailsSlice'
 import { setTemplates } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
-import { Token, WorkspaceResponse } from '@/types/common'
+import { HomeActionParamsType, Token, WorkspaceResponse } from '@/types/common'
+import { HomeParamActions } from '@/types/constants'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
@@ -47,6 +49,8 @@ export const ClientSideStateUpdate = ({
   accesibleTaskIds,
   accessibleTasks,
   workspace,
+  action,
+  pf,
 }: {
   children: ReactNode
   workflowStates?: WorkflowStateResponse[]
@@ -62,7 +66,7 @@ export const ClientSideStateUpdate = ({
   accesibleTaskIds?: string[]
   accessibleTasks?: TaskResponse[]
   workspace?: WorkspaceResponse
-}) => {
+} & HomeActionParamsType) => {
   const { tasks: tasksInStore, viewSettingsTemp, accessibleTasks: accessibleTaskInStore } = useSelector(selectTaskBoard)
   useEffect(() => {
     if (workflowStates) {
@@ -79,6 +83,10 @@ export const ClientSideStateUpdate = ({
 
     if (assignee) {
       store.dispatch(setAssigneeList(assignee))
+    }
+
+    if (action && action === HomeParamActions.CREATE_TASK) {
+      store.dispatch(setHomeActionParams({ action, pf }))
     }
 
     if (viewSettings) {
