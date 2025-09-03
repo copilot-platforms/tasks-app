@@ -12,7 +12,7 @@ import { apiUrl } from '@/config'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import { DndWrapper } from '@/hoc/DndWrapper'
 import { RealTime } from '@/hoc/RealTime'
-import { Token, TokenSchema, WorkspaceResponse } from '@/types/common'
+import { UrlActionParamsType, Token, TokenSchema, WorkspaceResponse } from '@/types/common'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
@@ -71,7 +71,11 @@ export async function getViewSettings(token: string): Promise<CreateViewSettings
   return resp
 }
 
-export default async function Main({ searchParams }: { searchParams: { token: string; taskId?: string } }) {
+export default async function Main({
+  searchParams,
+}: {
+  searchParams: { token: string; taskId?: string } & UrlActionParamsType
+}) {
   const token = searchParams.token
 
   const parsedToken = z.string().safeParse(searchParams.token)
@@ -110,6 +114,8 @@ export default async function Main({ searchParams }: { searchParams: { token: st
         tokenPayload={tokenPayload}
         clearExpandedComments={true}
         workspace={workspace}
+        action={searchParams?.action}
+        pf={searchParams?.pf}
       >
         {/* Async fetchers */}
         <Suspense fallback={null}>
