@@ -37,10 +37,7 @@ async function getAllWorkflowStates(token: string): Promise<WorkflowStateRespons
 }
 
 async function getAllTasks(token: string): Promise<TaskResponse[]> {
-  const res = await fetch(`${apiUrl}/api/tasks?token=${token}`, {
-    next: { tags: ['getAllTasks-client'] },
-  })
-
+  const res = await fetch(`${apiUrl}/api/tasks?token=${token}`)
   const data = await res.json()
   return data.tasks
 }
