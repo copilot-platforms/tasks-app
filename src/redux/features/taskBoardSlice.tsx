@@ -1,5 +1,5 @@
 import { RootState } from '@/redux/store'
-import { PreviewMode } from '@/types/common'
+import { UrlActionParamsType, PreviewMode } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { CreateViewSettingsDTO, FilterOptionsType } from '@/types/dto/viewSettings.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
@@ -28,6 +28,7 @@ interface IInitialState {
   accessibleTasks: TaskResponse[]
   confirmAssignModalId: string | undefined
   assigneeCache: Record<string, IAssigneeCombined>
+  urlActionParams: UrlActionParamsType
 }
 
 const initialState: IInitialState = {
@@ -55,6 +56,11 @@ const initialState: IInitialState = {
   accessibleTasks: [],
   confirmAssignModalId: '',
   assigneeCache: {},
+  urlActionParams: {
+    action: '',
+    pf: '',
+    oldPf: '', // to avoid re-open of the modal when navigating
+  },
 }
 
 const taskBoardSlice = createSlice({
@@ -168,6 +174,9 @@ const taskBoardSlice = createSlice({
     setAssigneeCache: (state, action: { payload: { key: string; value: IAssigneeCombined } }) => {
       state.assigneeCache[action.payload.key] = action.payload.value
     }, //used in memory cache rather than useMemo for cross-view(board and list) caching. The alternate idea would be to include assignee object in the response of getTasks api for each task but that would be a bit expensive.
+    SetUrlActionParams: (state, action: { payload: UrlActionParamsType }) => {
+      state.urlActionParams = { ...state.urlActionParams, ...action.payload }
+    },
   },
 })
 
@@ -192,6 +201,7 @@ export const {
   setAccessibleTasks,
   setConfirmAssigneeModalId,
   setAssigneeCache,
+  SetUrlActionParams,
 } = taskBoardSlice.actions
 
 export default taskBoardSlice.reducer
