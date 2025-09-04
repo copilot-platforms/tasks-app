@@ -531,6 +531,12 @@ export class TasksService extends BaseService {
         { clientId, companyId },
         // Get company tasks for the client's companyId
         { companyId, clientId: null },
+        // Get tasks that includes the client as a viewer
+        {
+          viewers: {
+            has: { clientId, companyId },
+          },
+        },
       )
     } else if (companyId) {
       filters.push(
@@ -571,19 +577,28 @@ export class TasksService extends BaseService {
           {
             ...this.getClientOrCompanyAssigneeFilter(), // Prevent overwriting of OR statement
             parent: {
-              OR: [
-                // Disjoint task if parent has no assignee
-                { clientId: null, companyId: null },
+              AND: [
+                {
+                  OR: [
+                    // Disjoint task if parent has no assignee
+                    { clientId: null, companyId: null },
+                    {
+                      NOT: {
+                        // Do not disjoint task if parent task belongs to the same client / company
+                        OR: [
+                          // Disjoint task if parent is a client task for a different client under the same company
+                          { clientId: this.user.clientId, companyId: this.user.companyId },
+                          // Disjoint task if parent is not a company task for the same company that client belongs to
+                          { clientId: null, companyId: this.user.companyId },
+                        ],
+                      },
+                    },
+                  ],
+                },
                 {
                   NOT: {
-                    // Do not disjoint task if parent task belongs to the same client / company
-                    OR: [
-                      // Disjoint task if parent is a client task for a different client under the same company
-                      { clientId: this.user.clientId, companyId: this.user.companyId },
-                      // Disjoint task if parent is not a company task for the same company that client belongs to
-                      { clientId: null, companyId: this.user.companyId },
-                    ],
-                  },
+                    viewers: { has: { clientId: this.user.clientId, companyId: this.user.companyId } },
+                  }, //AND the task is disjoint if parent is accesible to the client through client visibility.
                 },
               ],
             },
@@ -596,6 +611,7 @@ export class TasksService extends BaseService {
         ],
       }
     })()
+
     return disjointTasksFilter
   }
 
