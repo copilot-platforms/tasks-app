@@ -58,6 +58,11 @@ export const getSelectorAssigneeFromTask = (assignee: IAssigneeCombined[], task:
   )
 } //util to get initial assignee from task for selector.
 
+export const getSelectorViewerFromTask = (assignee: IAssigneeCombined[], task: TaskResponse) => {
+  if (!task) return undefined
+  return assignee.find((assignee) => task?.viewers?.includes(assignee.id))
+}
+
 export const getSelectorAssigneeFromFilterOptions = (
   assignee: IAssigneeCombined[],
   assigneeFilterOptions: UserIdsType,

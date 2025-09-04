@@ -12,7 +12,7 @@ import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowStat
 import { StyledTextField } from '@/components/inputs/TextField'
 import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
-import { PersonSmall, TempalteIconMd } from '@/icons'
+import { PersonIconSmall, TempalteIconMd } from '@/icons'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { selectCreateTemplate } from '@/redux/features/templateSlice'
@@ -384,7 +384,7 @@ export const NewTaskCard = ({
                 height="28px"
                 buttonContent={
                   <Stack direction="row" alignItems={'center'} columnGap={'6px'} height="26px">
-                    {assigneeValue ? <CopilotAvatar currentAssignee={assigneeValue} /> : <PersonSmall />}
+                    {assigneeValue ? <CopilotAvatar currentAssignee={assigneeValue} /> : <PersonIconSmall />}
                     <Typography
                       variant="bodySm"
                       sx={{
@@ -424,7 +424,7 @@ export const NewTaskCard = ({
                   height="28px"
                   buttonContent={
                     <Stack direction="row" alignItems={'center'} columnGap={'6px'} height="26px">
-                      {taskViewerValue ? <CopilotAvatar currentAssignee={taskViewerValue} /> : <PersonSmall />}
+                      {taskViewerValue ? <CopilotAvatar currentAssignee={taskViewerValue} /> : <PersonIconSmall />}
                       <Typography
                         variant="bodySm"
                         sx={{

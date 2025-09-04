@@ -48,6 +48,7 @@ export const updateAssignee = async (
   internalUserId: string | null,
   clientId: string | null,
   companyId: string | null,
+  viewers?: string[],
 ) => {
   await fetch(`${apiUrl}/api/tasks/${task_id}?token=${token}`, {
     method: 'PATCH',
@@ -55,7 +56,7 @@ export const updateAssignee = async (
       internalUserId,
       clientId,
       companyId,
-      ...(!internalUserId && { viewers: [] }), // if assignee is not internal user, remove viewers
+      ...(viewers && { viewers: !internalUserId ? [] : viewers }), // if assignee is not internal user, remove viewers. Only include viewers if viewer are changed. Not including viewer means not chaning the current state of viewers in DB.
     }),
   })
 }
