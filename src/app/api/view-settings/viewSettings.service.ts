@@ -53,24 +53,33 @@ export class ViewSettingsService extends BaseService {
   }
 
   private async createInitialViewSettings(userId: string) {
-    return await this.db.viewSetting.create({
-      data: {
+    const where = {
+      UQ_ViewSettings_userId_workspaceId: {
         userId,
         workspaceId: this.user.workspaceId,
-        viewMode: this.DEFAULT_VIEW_MODE,
-        filterOptions: {
-          [FilterOptions.ASSIGNEE]: {
-            internalUserId: null,
-            clientId: null,
-            companyId: null,
-          },
-          [FilterOptions.KEYWORD]: '',
-          [FilterOptions.TYPE]: '',
-        },
-        showUnarchived: true,
-        showArchived: false,
-        showSubtasks: true, // If we DO need to default to false for IUs, we can add a condition here after confirmation
       },
+    }
+    const create = {
+      userId,
+      workspaceId: this.user.workspaceId,
+      viewMode: this.DEFAULT_VIEW_MODE,
+      filterOptions: {
+        [FilterOptions.ASSIGNEE]: {
+          internalUserId: null,
+          clientId: null,
+          companyId: null,
+        },
+        [FilterOptions.KEYWORD]: '',
+        [FilterOptions.TYPE]: '',
+      },
+      showUnarchived: true,
+      showArchived: false,
+      showSubtasks: true,
+    }
+    return await this.db.viewSetting.upsert({
+      where,
+      update: {}, //DO NOT update anything if it already exists
+      create,
     })
   }
 }
