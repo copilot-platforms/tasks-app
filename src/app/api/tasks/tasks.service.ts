@@ -599,7 +599,7 @@ export class TasksService extends BaseService {
                 {
                   NOT: {
                     viewers: { has: { clientId: this.user.clientId, companyId: this.user.companyId } },
-                  }, //AND the task is disjoint if parent is accesible to the client through client visibility.
+                  }, //AND do not disjoint if parent is accesible to the client through client visibility.
                 },
               ],
             },
