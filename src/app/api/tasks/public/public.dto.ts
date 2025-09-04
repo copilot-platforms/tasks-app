@@ -2,7 +2,7 @@ import { RFC3339DateSchema } from '@/types/common'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { AssigneeType } from '@prisma/client'
 import { z } from 'zod'
-import { validateUserIds } from '@/types/dto/tasks.dto'
+import { validateUserIds, ViewersSchema } from '@/types/dto/tasks.dto'
 
 export const TaskSourceSchema = z.enum(['web', 'api'])
 export type TaskSource = z.infer<typeof TaskSourceSchema>
@@ -40,7 +40,7 @@ export const PublicTaskDtoSchema = z.object({
   internalUserId: z.string().uuid().nullable(),
   clientId: z.string().uuid().nullable(),
   companyId: z.string().uuid().nullable(),
-  viewers: z.array(z.string().uuid()).max(1).optional(),
+  viewers: ViewersSchema,
 })
 export type PublicTaskDto = z.infer<typeof PublicTaskDtoSchema>
 
@@ -57,7 +57,7 @@ export const publicTaskCreateDtoSchemaFactory = (token: string) => {
       internalUserId: z.string().uuid().optional(),
       clientId: z.string().uuid().optional(),
       companyId: z.string().uuid().optional(),
-      viewers: z.array(z.string().uuid()).max(1).optional(), //right now, we only need the feature to have max of 1 viewer per task
+      viewers: ViewersSchema, //right now, we only need the feature to have max of 1 viewer per task
     })
     .superRefine(async (data, ctx) => {
       const { name, templateId, internalUserId, clientId, status } = data
@@ -151,7 +151,7 @@ export const PublicTaskUpdateDtoSchema = z
     internalUserId: z.string().uuid().nullish(),
     clientId: z.string().uuid().nullish(),
     companyId: z.string().uuid().nullish(),
-    viewers: z.array(z.string().uuid()).max(1).optional(),
+    viewers: ViewersSchema,
   })
   .superRefine(validateUserIds)
 

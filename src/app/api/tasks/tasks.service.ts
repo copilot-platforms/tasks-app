@@ -4,7 +4,7 @@ import { deleteTaskNotifications, sendTaskCreateNotifications, sendTaskUpdateNot
 import { sendClientUpdateTaskNotifications } from '@/jobs/notifications/send-client-task-update-notifications'
 import { ClientResponse, CompanyResponse, InternalUsers, Uuid } from '@/types/common'
 import { TaskWithWorkflowState } from '@/types/db'
-import { AncestorTaskResponse, CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
+import { AncestorTaskResponse, CreateTaskRequest, UpdateTaskRequest, Viewers, ViewersSchema } from '@/types/dto/tasks.dto'
 import { DISPATCHABLE_EVENT } from '@/types/webhook'
 import { UserIdsType } from '@/utils/assignee'
 import { CopilotAPI } from '@/utils/CopilotAPI'
@@ -203,7 +203,7 @@ export class TasksService extends BaseService {
       createdById = createdBy.id
     }
 
-    let viewers: string[] = []
+    let viewers: Viewers = []
     if (data.viewers?.length) {
       if (!validatedIds.internalUserId) {
         throw new APIError(httpStatus.BAD_REQUEST, `Task cannot be created with viewers if its not assigned to an IU.`)
@@ -362,9 +362,14 @@ export class TasksService extends BaseService {
       companyId: validatedIds?.companyId ?? null,
     })
 
-    let viewers: string[] = prevTask.viewers
-    if (data.viewers?.length) {
-      viewers = !internalUserId ? [] : await this.validateViewers(data.viewers) //reset viewers to [] if the task is reassigned from IU to other roles' users.
+    let viewers: Viewers = ViewersSchema.parse(prevTask.viewers)
+
+    if (data.viewers?.length || viewers?.length) {
+      if (!internalUserId) {
+        viewers = [] // reset viewers to [] if task is not reassigned to IU.
+      } else if (data.viewers?.length) {
+        viewers = await this.validateViewers(data.viewers)
+      }
     }
 
     const userAssignmentFields = shouldUpdateUserIds
@@ -1030,11 +1035,18 @@ export class TasksService extends BaseService {
     }
   }
 
-  private async validateViewers(viewers: string[], Copilot?: CopilotAPI) {
+  private async validateViewers(viewers: Viewers, Copilot?: CopilotAPI) {
+    if (!viewers?.length) return []
     const copilot = Copilot ?? new CopilotAPI(this.user.token)
     try {
-      await copilot.getClient(viewers[0]) //support looping viewers and filtering from getClients instead of doing getClient if we do support many viewers in the future.
+      const client = await copilot.getClient(viewers[0].clientId) //support looping viewers and filtering from getClients instead of doing getClient if we do support many viewers in the future.
+      if (!client.companyIds?.includes(viewers[0].companyId)) {
+        throw new APIError(httpStatus.BAD_REQUEST, 'Invalid companyId for the provided viewer.')
+      }
     } catch (err) {
+      if (err instanceof APIError) {
+        throw err
+      }
       throw new APIError(httpStatus.BAD_REQUEST, `Viewer should be a CU.`)
     }
 
