@@ -5,8 +5,9 @@
 import { FilterByOptions, IAssigneeCombined, IFilterOptions, InputValue, ISelectorOption, UserIds } from '@/types/interfaces'
 import { userIdFieldMap } from '@/types/objectMaps'
 import { UserIdsType } from './assignee'
-import { TaskResponse } from '@/types/dto/tasks.dto'
+import { TaskResponse, Viewers } from '@/types/dto/tasks.dto'
 import { UserRole } from '@/app/api/core/types/user'
+import { z } from 'zod'
 
 export const getSelectedUserIds = (inputValue: InputValue[]): UserIdsType => {
   let userIds: UserIdsType = {
@@ -71,8 +72,8 @@ export const getSelectorAssigneeFromFilterOptions = (
   )
 } //util to get initial assignee from filterOptions for selector.
 
-export const getSelectedViewerIds = (inputValue: InputValue[]): string[] => {
+export const getSelectedViewerIds = (inputValue: InputValue[]): Viewers => {
   if (!inputValue?.length || inputValue[0].object !== UserRole.Client) return [] // when no user is selected.
 
-  return [inputValue[0].id] // currently id of single client id
+  return [{ clientId: inputValue[0].id, companyId: z.string().parse(inputValue[0].companyId) }] // currently id of single client id
 }

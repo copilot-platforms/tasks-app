@@ -63,7 +63,7 @@ export const ModalNewTaskForm = ({
             ...userIds,
             dueDate: formattedDueDate,
             templateId,
-            ...(viewers.length > 0 && { viewers }),
+            ...(viewers && viewers.length > 0 && { viewers }),
           }
 
           store.dispatch(clearCreateTaskFields({ isFilterOn: !checkEmptyAssignee(filterOptions[FilterOptions.ASSIGNEE]) }))

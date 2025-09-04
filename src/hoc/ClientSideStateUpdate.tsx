@@ -7,7 +7,6 @@ import {
   setAccessibleTasks,
   setActiveTask,
   setAssigneeList,
-  setTaskViewersList,
   setFilteredAssigneeList,
   setPreviewMode,
   setTasks,
@@ -80,7 +79,6 @@ export const ClientSideStateUpdate = ({
 
     if (assignee) {
       store.dispatch(setAssigneeList(assignee))
-      store.dispatch(setTaskViewersList(assignee))
     }
 
     if (viewSettings) {

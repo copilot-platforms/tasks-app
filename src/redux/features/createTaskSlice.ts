@@ -1,6 +1,7 @@
 import { RootState } from '@/redux/store'
 import { DateString } from '@/types/date'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
+import { Viewers } from '@/types/dto/tasks.dto'
 import { CreateTaskErrors, UserIds } from '@/types/interfaces'
 import { UserIdsType } from '@/utils/assignee'
 import { createSlice } from '@reduxjs/toolkit'
@@ -22,7 +23,7 @@ interface IInitialState {
   appliedDescription: string | null
   templateId: string | null
   userIds: UserIdsType
-  viewers: string[]
+  viewers: Viewers
 }
 
 const initialState: IInitialState = {

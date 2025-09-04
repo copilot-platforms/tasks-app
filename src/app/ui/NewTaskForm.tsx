@@ -59,7 +59,7 @@ type NewTaskFormHeaderProps = {
 
 export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => {
   const { activeWorkflowStateId } = useSelector(selectCreateTask)
-  const { workflowStates, assignee, taskViewers, previewMode, filterOptions } = useSelector(selectTaskBoard)
+  const { workflowStates, assignee, previewMode, filterOptions } = useSelector(selectTaskBoard)
 
   const todoWorkflowState = workflowStates.find((el) => el.key === 'todo') || workflowStates[0]
   const defaultWorkflowState = activeWorkflowStateId
@@ -215,7 +215,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
                 initialValue={taskViewerValue || undefined}
                 onChange={(inputValue) => {
                   const newUserIds = getSelectedViewerIds(inputValue)
-                  const selectedTaskViewers = getSelectorAssignee(taskViewers, inputValue)
+                  const selectedTaskViewers = getSelectorAssignee(assignee, inputValue)
                   setTaskViewerValue(selectedTaskViewers || null)
                   store.dispatch(setCreateTaskFields({ targetField: 'viewers', value: newUserIds }))
                 }}

@@ -17,7 +17,7 @@ import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { selectCreateTemplate } from '@/redux/features/templateSlice'
 import { DateString } from '@/types/date'
-import { CreateTaskRequest } from '@/types/dto/tasks.dto'
+import { CreateTaskRequest, Viewers } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { FilterByOptions, FilterOptions, IAssigneeCombined, ITemplate, UserIds } from '@/types/interfaces'
 import { getAssigneeName, UserIdsType } from '@/utils/assignee'
@@ -41,7 +41,7 @@ interface SubTaskFields {
   workflowStateId: string
   userIds: UserIdsType
   dueDate: DateString | null
-  viewers?: string[]
+  viewers?: Viewers
 }
 
 export const NewTaskCard = ({
@@ -95,7 +95,7 @@ export const NewTaskCard = ({
     setAssigneeValue(null)
   }
 
-  const handleFieldChange = (field: keyof SubTaskFields, value: string | DateString | null | UserIdsType | string[]) => {
+  const handleFieldChange = (field: keyof SubTaskFields, value: string | DateString | null | UserIdsType | Viewers) => {
     setSubTaskFields((prev) => ({
       ...prev,
       [field]: value,
