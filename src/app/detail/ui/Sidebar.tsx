@@ -164,12 +164,13 @@ export const Sidebar = ({
       const newTaskViewerIds = getSelectedViewerIds(inputValue)
       setTaskViewerValue(getSelectorAssignee(assignee, inputValue) || null)
 
-      updateAssignee({
-        internalUserId: assigneeValue.id,
-        clientId: null,
-        companyId: null,
-        viewers: newTaskViewerIds,
-      })
+      newTaskViewerIds &&
+        updateAssignee({
+          internalUserId: assigneeValue.id,
+          clientId: null,
+          companyId: null,
+          viewers: newTaskViewerIds,
+        })
     }
   }
 

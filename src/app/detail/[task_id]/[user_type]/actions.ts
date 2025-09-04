@@ -4,7 +4,7 @@ import { advancedFeatureFlag, apiUrl } from '@/config'
 import { ScrapMediaRequest } from '@/types/common'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { CreateComment, UpdateComment } from '@/types/dto/comment.dto'
-import { UpdateTaskRequest } from '@/types/dto/tasks.dto'
+import { UpdateTaskRequest, Viewers } from '@/types/dto/tasks.dto'
 
 export const updateTaskDetail = async ({
   token,
@@ -48,7 +48,7 @@ export const updateAssignee = async (
   internalUserId: string | null,
   clientId: string | null,
   companyId: string | null,
-  viewers?: string[],
+  viewers?: Viewers,
 ) => {
   await fetch(`${apiUrl}/api/tasks/${task_id}?token=${token}`, {
     method: 'PATCH',
