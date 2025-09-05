@@ -36,7 +36,7 @@ export class NotificationService extends BaseService {
             where: { taskId: task.id, clientId: task.clientId, companyId: task.companyId },
           })
         : null
-      if (task.clientId && existingNotification) {
+      if (task.clientId && existingNotification && !opts.commentId) {
         console.error(`NotificationService#create | Found existing notification for ${task.clientId}`, existingNotification)
         return
       }
@@ -153,7 +153,7 @@ export class NotificationService extends BaseService {
         try {
           // 1.Check for existing notification. Skip if duplicate
           const existingNotification = existingNotifications.find((notification) => notification.clientId === recipientId)
-          if (existingNotification) {
+          if (existingNotification && !opts?.commentId) {
             console.error(
               `NotificationService#bulkCreate | Found existing notification for ${recipientId}`,
               existingNotification,

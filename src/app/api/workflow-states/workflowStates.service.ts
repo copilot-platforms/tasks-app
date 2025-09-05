@@ -55,6 +55,7 @@ class WorkflowStatesService extends BaseService {
         { type: 'started', name: 'In Progress', key: 'inProgress', workspaceId: this.user.workspaceId },
         { type: 'completed', name: 'Done', key: 'completed', workspaceId: this.user.workspaceId },
       ],
+      skipDuplicates: true, //doesnt create if there is an existing workflowState.
     })
   }
 
