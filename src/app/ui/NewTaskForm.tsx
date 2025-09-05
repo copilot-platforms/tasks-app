@@ -237,7 +237,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
                           maxWidth: { xs: '60px', sm: '100px' },
                         }}
                       >
-                        {getAssigneeName(taskViewerValue as IAssigneeCombined, 'Client Visibility')}
+                        {getAssigneeName(taskViewerValue as IAssigneeCombined, 'Client visibility')}
                       </Typography>
                     }
                   />

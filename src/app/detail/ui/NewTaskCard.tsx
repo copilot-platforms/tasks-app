@@ -437,7 +437,7 @@ export const NewTaskCard = ({
                           maxWidth: '120px',
                         }}
                       >
-                        {getAssigneeName(taskViewerValue as IAssigneeCombined, 'Client Visibility')}
+                        {getAssigneeName(taskViewerValue as IAssigneeCombined, 'Client visibility')}
                       </Typography>
                     </Stack>
                   }
