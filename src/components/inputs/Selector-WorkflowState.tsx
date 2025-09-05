@@ -108,7 +108,7 @@ export const WorkflowStateSelector = ({
                 <Stack direction="row" alignItems={'center'} columnGap={gap ?? '8px'}>
                   {statusIcons[size][value?.type]}
                   {size == Sizes.SMALL ? (
-                    <Typography variant="bodySm" sx={{ color: (theme) => theme.color.gray[600], fontSize: '12px' }}>
+                    <Typography variant="bodySm" sx={{ color: (theme) => theme.color.gray[600], fontSize: '14px' }}>
                       {value?.name as ReactNode}
                     </Typography>
                   ) : (

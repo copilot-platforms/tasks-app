@@ -94,7 +94,7 @@ export const DatePickerComponent = ({
                       sx={{
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',
-                        fontSize: '12px',
+                        fontSize: '14px',
                         overflow: 'hidden',
                         maxWidth: { xs: '100px', sm: 'none' },
                         color: (theme) => theme.color.gray[600],
@@ -111,7 +111,7 @@ export const DatePickerComponent = ({
                   <Typography
                     variant={size === Sizes.SMALL ? 'bodySm' : 'md'}
                     sx={{
-                      fontSize: size === Sizes.SMALL ? '12px' : undefined,
+                      fontSize: size === Sizes.SMALL ? '14px' : undefined,
                       color: (theme) => theme.color.text.textDisabled,
                     }}
                   >

@@ -393,7 +393,7 @@ export const NewTaskCard = ({
                         whiteSpace: 'nowrap',
                         lineHeight: '22px',
                         overflow: 'hidden',
-                        fontSize: '12px',
+                        fontSize: '14px',
                         maxWidth: '120px',
                       }}
                     >
@@ -433,7 +433,7 @@ export const NewTaskCard = ({
                           whiteSpace: 'nowrap',
                           lineHeight: '22px',
                           overflow: 'hidden',
-                          fontSize: '12px',
+                          fontSize: '14px',
                           maxWidth: '120px',
                         }}
                       >

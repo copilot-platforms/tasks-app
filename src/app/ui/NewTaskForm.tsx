@@ -25,7 +25,7 @@ import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { selectCreateTemplate } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { CreateTaskErrors, FilterByOptions, FilterOptions, IAssigneeCombined, ITemplate, UserIds } from '@/types/interfaces'
+import { CreateTaskErrors, FilterByOptions, FilterOptions, IAssigneeCombined, ITemplate } from '@/types/interfaces'
 import { checkEmptyAssignee, emptyAssignee, getAssigneeName } from '@/utils/assignee'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
@@ -194,8 +194,9 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
-                        fontSize: '12px',
+                        fontSize: '14px',
                         maxWidth: { xs: '60px', sm: '100px' },
+                        lineHeight: '22px',
                       }}
                     >
                       {getAssigneeName(assigneeValue as IAssigneeCombined, 'Assignee')}
@@ -233,7 +234,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
                           textOverflow: 'ellipsis',
                           whiteSpace: 'nowrap',
                           overflow: 'hidden',
-                          fontSize: '12px',
+                          fontSize: '14px',
                           maxWidth: { xs: '60px', sm: '100px' },
                         }}
                       >
