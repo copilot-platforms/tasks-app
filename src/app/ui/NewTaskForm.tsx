@@ -120,11 +120,18 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
   // this function handles the action param passed in the url and fill the values in the form
   const handleUrlActionParam = useCallback(async () => {
     if (urlActionParams.pf && token) {
-      const parsedPayload = await publicTaskCreateDtoSchemaFactory(token).parseAsync(JSON.parse(atob(urlActionParams.pf)))
+      const payload = JSON.parse(atob(decodeURIComponent(urlActionParams.pf)))
+      const parsedPayload = await publicTaskCreateDtoSchemaFactory(token).parseAsync({
+        ...payload,
+        dueDate: payload?.dueDate ? new Date(payload.dueDate).toISOString() : undefined,
+      })
+
+      // respect the filter Ids first. This is needed for CRM deep link for respective clients
       const assigneeFilter = {
-        [UserIds.INTERNAL_USER_ID]: parsedPayload?.internalUserId || null,
-        [UserIds.CLIENT_ID]: parsedPayload?.clientId || null,
-        [UserIds.COMPANY_ID]: parsedPayload?.companyId || null,
+        [UserIds.INTERNAL_USER_ID]:
+          filterOptions[FilterOptions.ASSIGNEE].internalUserId || parsedPayload?.internalUserId || null,
+        [UserIds.CLIENT_ID]: filterOptions[FilterOptions.ASSIGNEE].clientId || parsedPayload?.clientId || null,
+        [UserIds.COMPANY_ID]: filterOptions[FilterOptions.ASSIGNEE].companyId || parsedPayload?.companyId || null,
       }
 
       const taskPayload = {
