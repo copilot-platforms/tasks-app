@@ -123,7 +123,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
       const payload = JSON.parse(atob(decodeURIComponent(urlActionParams.pf)))
       const parsedPayload = await publicTaskCreateDtoSchemaFactory(token).parseAsync({
         ...payload,
-        dueDate: dueDate ? new Date(payload.dueDate).toISOString() : undefined,
+        dueDate: payload?.dueDate ? new Date(payload.dueDate).toISOString() : undefined,
       })
 
       // respect the filter Ids first. This is needed for CRM deep link for respective clients
