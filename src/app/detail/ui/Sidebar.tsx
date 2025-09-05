@@ -202,6 +202,22 @@ export const Sidebar = ({
             padding={'3px 8px'}
           />
         </Box>
+        <Box sx={{}}>
+          <DatePickerComponent
+            height={'30px'}
+            getDate={(date) => {
+              const isoDate = DateStringSchema.parse(formatDate(date))
+              updateTask({
+                dueDate: isoDate,
+              })
+            }}
+            dateValue={dueDate ? createDateFromFormattedDateString(z.string().parse(dueDate)) : undefined}
+            disabled={disabled && !previewMode}
+            variant="button"
+            size={Sizes.MEDIUM}
+            padding={'3px 8px'}
+          />
+        </Box>
         <Box
           sx={{
             border: (theme) => `1px solid ${theme.color.borders.border}`,
@@ -242,22 +258,49 @@ export const Sidebar = ({
             }
           />
         </Box>
-        <Box sx={{}}>
-          <DatePickerComponent
-            height={'30px'}
-            getDate={(date) => {
-              const isoDate = DateStringSchema.parse(formatDate(date))
-              updateTask({
-                dueDate: isoDate,
-              })
+        {assigneeValue && assigneeValue.type === FilterByOptions.IUS && (
+          <Box
+            sx={{
+              border: (theme) => `1px solid ${theme.color.borders.border}`,
+              borderRadius: '4px',
+              width: 'fit-content',
+              height: '30px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
-            dateValue={dueDate ? createDateFromFormattedDateString(z.string().parse(dueDate)) : undefined}
-            disabled={disabled && !previewMode}
-            variant="button"
-            size={Sizes.MEDIUM}
-            padding={'3px 8px'}
-          />
-        </Box>
+          >
+            <CopilotPopSelector
+              hideIusList
+              name="Set client visibility"
+              onChange={handleTaskViewerChange}
+              disabled={disabled}
+              initialValue={taskViewerValue || undefined}
+              buttonContent={
+                <SelectorButton
+                  disabled={disabled}
+                  startIcon={<CopilotAvatar currentAssignee={taskViewerValue || undefined} />}
+                  outlined={true}
+                  buttonContent={
+                    <Typography
+                      variant="md"
+                      lineHeight="22px"
+                      sx={{
+                        color: (theme) => theme.color.gray[400],
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        maxWidth: '150px',
+                      }}
+                    >
+                      {getAssigneeName(taskViewerValue || undefined, 'Set client visibility')}
+                    </Typography>
+                  }
+                />
+              }
+            />
+          </Box>
+        )}
         <StyledModal
           open={showConfirmAssignModal}
           onClose={() => store.dispatch(toggleShowConfirmAssignModal())}
