@@ -535,7 +535,10 @@ export class TasksService extends BaseService {
         // Get tasks that includes the client as a viewer
         {
           viewers: {
-            has: { clientId, companyId },
+            hasSome: [
+              { clientId, companyId },
+              { clientId: null, companyId },
+            ],
           },
         },
       )
@@ -598,7 +601,12 @@ export class TasksService extends BaseService {
                 },
                 {
                   NOT: {
-                    viewers: { has: { clientId: this.user.clientId, companyId: this.user.companyId } },
+                    viewers: {
+                      hasSome: [
+                        { clientId: this.user.clientId, companyId: this.user.companyId },
+                        { clientId: null, companyId: this.user.companyId },
+                      ],
+                    },
                   }, //AND do not disjoint if parent is accesible to the client through client visibility.
                 },
               ],
@@ -1055,10 +1063,15 @@ export class TasksService extends BaseService {
   private async validateViewers(viewers: Viewers, Copilot?: CopilotAPI) {
     if (!viewers?.length) return []
     const copilot = Copilot ?? new CopilotAPI(this.user.token)
+    const viewer = viewers[0]
     try {
-      const client = await copilot.getClient(viewers[0].clientId) //support looping viewers and filtering from getClients instead of doing getClient if we do support many viewers in the future.
-      if (!client.companyIds?.includes(viewers[0].companyId)) {
-        throw new APIError(httpStatus.BAD_REQUEST, 'Invalid companyId for the provided viewer.')
+      if (viewer.clientId) {
+        const client = await copilot.getClient(viewer.clientId) //support looping viewers and filtering from getClients instead of doing getClient if we do support many viewers in the future.
+        if (!client.companyIds?.includes(viewers[0].companyId)) {
+          throw new APIError(httpStatus.BAD_REQUEST, 'Invalid companyId for the provided viewer.')
+        }
+      } else {
+        await copilot.getCompany(viewer.companyId)
       }
     } catch (err) {
       if (err instanceof APIError) {

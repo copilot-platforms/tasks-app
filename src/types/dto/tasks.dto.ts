@@ -7,7 +7,7 @@ import { ClientResponseSchema, CompanyResponseSchema, InternalUsersSchema } from
 export const ViewersSchema = z
   .array(
     z.object({
-      clientId: z.string().uuid(),
+      clientId: z.string().uuid().optional(),
       companyId: z.string().uuid(),
     }),
   )
