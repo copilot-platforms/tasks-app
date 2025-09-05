@@ -111,7 +111,7 @@ export const Sidebar = ({
   const windowWidth = useWindowWidth()
   const isMobile = windowWidth < 600 && windowWidth !== 0
 
-  const checkTaskViewerCompatible = (userIds: UserIdsType): UserIdsWithViewersType => {
+  const checkViewersCompatibility = (userIds: UserIdsType): UserIdsWithViewersType => {
     // remove task viewers if assignee is cleared or changed to client or company
     if (!userIds.internalUserId) {
       setTaskViewerValue(null)
@@ -121,7 +121,7 @@ export const Sidebar = ({
   }
 
   const handleConfirmAssigneeChange = (userIds: UserIdsType) => {
-    updateAssignee(checkTaskViewerCompatible(userIds))
+    updateAssignee(checkViewersCompatibility(userIds))
     setAssigneeValue(getAssigneeValue(userIds) as IAssigneeCombined)
     store.dispatch(toggleShowConfirmAssignModal())
   }
@@ -155,7 +155,7 @@ export const Sidebar = ({
       store.dispatch(toggleShowConfirmAssignModal())
     } else {
       setAssigneeValue(getAssigneeValue(newUserIds) as IAssigneeCombined)
-      updateAssignee(checkTaskViewerCompatible(newUserIds))
+      updateAssignee(checkViewersCompatibility(newUserIds))
     }
   }
 
