@@ -55,6 +55,7 @@ export const updateAssignee = async (
       internalUserId,
       clientId,
       companyId,
+      ...(!internalUserId && { viewers: [] }), // if assignee is not internal user, remove viewers
     }),
   })
 }
