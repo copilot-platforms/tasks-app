@@ -6,6 +6,7 @@ import {
   CreateTaskRequestSchema,
   UpdateTaskRequest,
   UpdateTaskRequestSchema,
+  ViewersSchema,
 } from '@/types/dto/tasks.dto'
 import { rfc3339ToDateString, toRFC3339 } from '@/utils/dateHelper'
 import { copyTemplateMediaToTask } from '@/utils/signedTemplateUrlReplacer'
@@ -58,6 +59,7 @@ export class PublicTaskSerializer {
       internalUserId: task.internalUserId,
       clientId: task.clientId,
       companyId: task.companyId,
+      viewers: ViewersSchema.parse(task.viewers),
     }
   }
 
@@ -141,6 +143,7 @@ export class PublicTaskSerializer {
       internalUserId: payload.internalUserId ?? null,
       clientId: payload.clientId ?? null,
       companyId: payload.companyId ?? null,
+      viewers: payload.viewers ?? [],
     })
   }
 
@@ -155,6 +158,7 @@ export class PublicTaskSerializer {
       internalUserId: payload.internalUserId,
       clientId: payload.clientId,
       companyId: payload.companyId,
+      viewers: payload.viewers,
     })
   }
 }

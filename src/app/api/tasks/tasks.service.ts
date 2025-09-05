@@ -4,7 +4,7 @@ import { deleteTaskNotifications, sendTaskCreateNotifications, sendTaskUpdateNot
 import { sendClientUpdateTaskNotifications } from '@/jobs/notifications/send-client-task-update-notifications'
 import { ClientResponse, CompanyResponse, InternalUsers, Uuid } from '@/types/common'
 import { TaskWithWorkflowState } from '@/types/db'
-import { AncestorTaskResponse, CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
+import { AncestorTaskResponse, CreateTaskRequest, UpdateTaskRequest, Viewers, ViewersSchema } from '@/types/dto/tasks.dto'
 import { DISPATCHABLE_EVENT } from '@/types/webhook'
 import { UserIdsType } from '@/utils/assignee'
 import { CopilotAPI } from '@/utils/CopilotAPI'
@@ -203,6 +203,14 @@ export class TasksService extends BaseService {
       createdById = createdBy.id
     }
 
+    let viewers: Viewers = []
+    if (data.viewers?.length) {
+      if (!validatedIds.internalUserId) {
+        throw new APIError(httpStatus.BAD_REQUEST, `Task cannot be created with viewers if its not assigned to an IU.`)
+      }
+      viewers = await this.validateViewers(data.viewers, copilot)
+    }
+
     // Create a new task associated with current workspaceId. Also inject current request user as the creator.
     const newTask = await this.db.task.create({
       data: {
@@ -215,6 +223,7 @@ export class TasksService extends BaseService {
         source: opts?.isPublicApi ? Source.api : Source.web,
         assigneeId,
         assigneeType,
+        viewers: viewers,
         ...validatedIds,
         ...(await getTaskTimestamps('create', this.user, data)),
       },
@@ -353,6 +362,17 @@ export class TasksService extends BaseService {
       companyId: validatedIds?.companyId ?? null,
     })
 
+    let viewers: Viewers = ViewersSchema.parse(prevTask.viewers)
+
+    if (data.viewers) {
+      // only update of viewers attribute is available. No viewers in payload attribute means the data remains as it is in DB.
+      if (!internalUserId || !data.viewers?.length) {
+        viewers = [] // reset viewers to [] if task is not reassigned to IU.
+      } else if (data.viewers?.length) {
+        viewers = await this.validateViewers(data.viewers)
+      }
+    }
+
     const userAssignmentFields = shouldUpdateUserIds
       ? {
           ...validatedIds,
@@ -399,6 +419,7 @@ export class TasksService extends BaseService {
           archivedBy,
           completedBy,
           completedByUserType,
+          viewers,
           ...userAssignmentFields,
           ...(await getTaskTimestamps('update', this.user, data, prevTask)),
         },
@@ -511,6 +532,15 @@ export class TasksService extends BaseService {
         { clientId, companyId },
         // Get company tasks for the client's companyId
         { companyId, clientId: null },
+        // Get tasks that includes the client as a viewer
+        {
+          viewers: {
+            hasSome: [
+              { clientId, companyId },
+              { clientId: null, companyId },
+            ],
+          },
+        },
       )
     } else if (companyId) {
       filters.push(
@@ -551,19 +581,33 @@ export class TasksService extends BaseService {
           {
             ...this.getClientOrCompanyAssigneeFilter(), // Prevent overwriting of OR statement
             parent: {
-              OR: [
-                // Disjoint task if parent has no assignee
-                { clientId: null, companyId: null },
+              AND: [
+                {
+                  OR: [
+                    // Disjoint task if parent has no assignee
+                    { clientId: null, companyId: null },
+                    {
+                      NOT: {
+                        // Do not disjoint task if parent task belongs to the same client / company
+                        OR: [
+                          // Disjoint task if parent is a client task for a different client under the same company
+                          { clientId: this.user.clientId, companyId: this.user.companyId },
+                          // Disjoint task if parent is not a company task for the same company that client belongs to
+                          { clientId: null, companyId: this.user.companyId },
+                        ],
+                      },
+                    },
+                  ],
+                },
                 {
                   NOT: {
-                    // Do not disjoint task if parent task belongs to the same client / company
-                    OR: [
-                      // Disjoint task if parent is a client task for a different client under the same company
-                      { clientId: this.user.clientId, companyId: this.user.companyId },
-                      // Disjoint task if parent is not a company task for the same company that client belongs to
-                      { clientId: null, companyId: this.user.companyId },
-                    ],
-                  },
+                    viewers: {
+                      hasSome: [
+                        { clientId: this.user.clientId, companyId: this.user.companyId },
+                        { clientId: null, companyId: this.user.companyId },
+                      ],
+                    },
+                  }, //AND do not disjoint if parent is accesible to the client through client visibility.
                 },
               ],
             },
@@ -576,6 +620,7 @@ export class TasksService extends BaseService {
         ],
       }
     })()
+
     return disjointTasksFilter
   }
 
@@ -1013,5 +1058,28 @@ export class TasksService extends BaseService {
     } catch (e) {
       console.error('TaskService#setNewLastSubtaskUpdated::', e)
     }
+  }
+
+  private async validateViewers(viewers: Viewers, Copilot?: CopilotAPI) {
+    if (!viewers?.length) return []
+    const copilot = Copilot ?? new CopilotAPI(this.user.token)
+    const viewer = viewers[0]
+    try {
+      if (viewer.clientId) {
+        const client = await copilot.getClient(viewer.clientId) //support looping viewers and filtering from getClients instead of doing getClient if we do support many viewers in the future.
+        if (!client.companyIds?.includes(viewers[0].companyId)) {
+          throw new APIError(httpStatus.BAD_REQUEST, 'Invalid companyId for the provided viewer.')
+        }
+      } else {
+        await copilot.getCompany(viewer.companyId)
+      }
+    } catch (err) {
+      if (err instanceof APIError) {
+        throw err
+      }
+      throw new APIError(httpStatus.BAD_REQUEST, `Viewer should be a CU.`)
+    }
+
+    return viewers
   }
 }

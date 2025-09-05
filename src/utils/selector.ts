@@ -2,10 +2,12 @@
  * All utils related to the Copilot selector component
  */
 
-import { FilterByOptions, IAssigneeCombined, IFilterOptions, InputValue, ISelectorOption, UserIds } from '@/types/interfaces'
+import { IAssigneeCombined, InputValue, ISelectorOption, UserIds } from '@/types/interfaces'
 import { userIdFieldMap } from '@/types/objectMaps'
 import { UserIdsType } from './assignee'
-import { TaskResponse } from '@/types/dto/tasks.dto'
+import { TaskResponse, Viewers } from '@/types/dto/tasks.dto'
+import { UserRole } from '@/app/api/core/types/user'
+import { z } from 'zod'
 
 export const getSelectedUserIds = (inputValue: InputValue[]): UserIdsType => {
   let userIds: UserIdsType = {
@@ -56,6 +58,11 @@ export const getSelectorAssigneeFromTask = (assignee: IAssigneeCombined[], task:
   )
 } //util to get initial assignee from task for selector.
 
+export const getSelectorViewerFromTask = (assignee: IAssigneeCombined[], task: TaskResponse) => {
+  if (!task) return undefined
+  return assignee.find((assignee) => task?.viewers?.[0]?.clientId == assignee.id)
+}
+
 export const getSelectorAssigneeFromFilterOptions = (
   assignee: IAssigneeCombined[],
   assigneeFilterOptions: UserIdsType,
@@ -69,3 +76,9 @@ export const getSelectorAssigneeFromFilterOptions = (
       (typeFilterOptions && item.id == typeFilterOptions),
   )
 } //util to get initial assignee from filterOptions for selector.
+
+export const getSelectedViewerIds = (inputValue: InputValue[]): Viewers => {
+  if (!inputValue?.length || inputValue[0].object !== UserRole.Client) return [] // when no user is selected.
+
+  return [{ clientId: inputValue[0].id, companyId: z.string().parse(inputValue[0].companyId) }] // currently id of single client id
+}
