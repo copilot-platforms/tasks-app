@@ -209,7 +209,6 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
             <Stack alignSelf="flex-start">
               <CopilotPopSelector
                 hideIusList
-                hideCompanysList
                 disabled={!!previewMode}
                 name="Set client visibility"
                 initialValue={taskViewerValue || undefined}
