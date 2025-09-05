@@ -448,7 +448,6 @@ export const Sidebar = ({
               >
                 <CopilotPopSelector
                   hideIusList
-                  hideCompanysList
                   name="Set client visibility"
                   onChange={handleTaskViewerChange}
                   disabled={disabled}

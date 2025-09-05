@@ -407,7 +407,6 @@ export const NewTaskCard = ({
           {assigneeValue && assigneeValue.type === FilterByOptions.IUS && (
             <CopilotPopSelector
               hideIusList
-              hideCompanysList
               disabled={!!previewMode}
               name="Set client visibility"
               onChange={(inputValue) => {
