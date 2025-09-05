@@ -1,4 +1,4 @@
-import { NoAssigneeAvatar, NoAssigneeAvatarSmall, NoAssigneeAvatarLarge, TrashIcon } from '@/icons'
+import { NoAssigneeAvatarLarge, PersonIconSmall, PersonIcon } from '@/icons'
 import { copilotTheme } from '@/theme/copilot'
 import { IAssigneeCombined } from '@/types/interfaces'
 import { getAssigneeName } from '@/utils/assignee'
@@ -50,7 +50,7 @@ export const CopilotAvatar = ({
   if (!currentAssignee || (currentAssignee?.name || currentAssignee?.givenName) === 'No assignee') {
     return (
       <Box sx={{ marginTop: (sx as { marginTop?: string })?.marginTop || '0px' }}>
-        {size == 'small' ? <NoAssigneeAvatarSmall /> : size == 'large' ? <NoAssigneeAvatarLarge /> : <NoAssigneeAvatar />}
+        {size == 'small' ? <PersonIconSmall /> : size == 'large' ? <NoAssigneeAvatarLarge /> : <PersonIcon />}
       </Box>
     )
   }

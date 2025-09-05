@@ -12,7 +12,7 @@ import { StyledTextField } from '@/components/inputs/TextField'
 import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
-import { PersonSmall, CloseIcon, TempalteIconMd } from '@/icons'
+import { PersonIconSmall, CloseIcon, TempalteIconMd } from '@/icons'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import {
   selectCreateTask,
@@ -183,7 +183,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
               buttonContent={
                 <SelectorButton
                   disabled={!!previewMode}
-                  startIcon={assigneeValue ? <CopilotAvatar currentAssignee={assigneeValue} /> : <PersonSmall />}
+                  startIcon={assigneeValue ? <CopilotAvatar currentAssignee={assigneeValue} /> : <PersonIconSmall />}
                   height="30px"
                   padding="4px 8px"
                   buttonContent={
@@ -223,7 +223,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
                 buttonContent={
                   <SelectorButton
                     disabled={!!previewMode}
-                    startIcon={taskViewerValue ? <CopilotAvatar currentAssignee={taskViewerValue} /> : <PersonSmall />}
+                    startIcon={taskViewerValue ? <CopilotAvatar currentAssignee={taskViewerValue} /> : <PersonIconSmall />}
                     height="30px"
                     padding="4px 8px"
                     buttonContent={
@@ -238,7 +238,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
                           maxWidth: { xs: '60px', sm: '100px' },
                         }}
                       >
-                        {getAssigneeName(taskViewerValue as IAssigneeCombined, 'Client Visibility')}
+                        {getAssigneeName(taskViewerValue as IAssigneeCombined, 'Client visibility')}
                       </Typography>
                     }
                   />

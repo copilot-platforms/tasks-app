@@ -2,7 +2,7 @@
  * All utils related to the Copilot selector component
  */
 
-import { FilterByOptions, IAssigneeCombined, IFilterOptions, InputValue, ISelectorOption, UserIds } from '@/types/interfaces'
+import { IAssigneeCombined, InputValue, ISelectorOption, UserIds } from '@/types/interfaces'
 import { userIdFieldMap } from '@/types/objectMaps'
 import { UserIdsType } from './assignee'
 import { TaskResponse, Viewers } from '@/types/dto/tasks.dto'
@@ -57,6 +57,11 @@ export const getSelectorAssigneeFromTask = (assignee: IAssigneeCombined[], task:
       : assignee.id == task?.assigneeId,
   )
 } //util to get initial assignee from task for selector.
+
+export const getSelectorViewerFromTask = (assignee: IAssigneeCombined[], task: TaskResponse) => {
+  if (!task) return undefined
+  return assignee.find((assignee) => task?.viewers?.[0]?.clientId == assignee.id)
+}
 
 export const getSelectorAssigneeFromFilterOptions = (
   assignee: IAssigneeCombined[],

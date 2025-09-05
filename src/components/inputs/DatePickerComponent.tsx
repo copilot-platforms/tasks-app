@@ -17,6 +17,7 @@ interface Prop {
   disabled?: boolean
   size?: Sizes
   padding?: string
+  containerPadding?: string
   height?: string
   gap?: string
   variant?: 'button' | 'icon' | 'normal'
@@ -32,6 +33,7 @@ export const DatePickerComponent = ({
   disabled,
   size = Sizes.SMALL,
   padding,
+  containerPadding,
   height,
   gap,
   variant = 'normal',
@@ -75,7 +77,7 @@ export const DatePickerComponent = ({
         aria-describedby={id}
         sx={{
           cursor: disabled ? 'auto' : 'pointer',
-          padding: variant == 'button' || variant == 'icon' ? '0px' : '4px 8px',
+          padding: containerPadding ? containerPadding : variant == 'button' || variant == 'icon' ? '0px' : '4px 8px',
           borderRadius: '4px',
         }}
       >
@@ -136,6 +138,7 @@ export const DatePickerComponent = ({
                 overflow: 'hidden',
                 maxWidth: '150px',
                 userSelect: 'none',
+                fontWeight: 400,
               }}
             >
               {value ? formatDate(value) : 'None'}

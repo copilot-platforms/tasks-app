@@ -99,9 +99,9 @@ export const TaskCard = ({ task, href, workflowState, mode, subtasks }: TaskCard
 
   const handleConfirmAssigneeChange = (userIds: UserIdsType) => {
     const { internalUserId, clientId, companyId } = userIds
+    const viewers = !internalUserId ? [] : undefined
 
-    token && updateAssignee(token, task.id, internalUserId, clientId, companyId)
-
+    token && updateAssignee(token, task.id, internalUserId, clientId, companyId, viewers)
     store.dispatch(setConfirmAssigneeModalId(undefined))
   }
 
@@ -115,9 +115,9 @@ export const TaskCard = ({ task, href, workflowState, mode, subtasks }: TaskCard
       store.dispatch(setConfirmAssigneeModalId(task.id))
     } else {
       const { internalUserId, clientId, companyId } = newUserIds
+      const viewers = !internalUserId ? [] : undefined
 
-      token && updateAssignee(token, task.id, internalUserId, clientId, companyId)
-
+      token && updateAssignee(token, task.id, internalUserId, clientId, companyId, viewers)
       setAssigneeValue(nextAssignee ?? NoAssignee)
     }
   }

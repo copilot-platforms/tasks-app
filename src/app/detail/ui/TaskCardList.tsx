@@ -81,14 +81,15 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate,
   const statusValue = _statusValue as WorkflowStateResponse
 
   const handleConfirmAssigneeChange = (userIds: UserIdsType) => {
+    const viewers = !userIds.internalUserId ? [] : undefined
     const { internalUserId, clientId, companyId } = userIds
     if (handleUpdate) {
       token &&
         handleUpdate(task.id, { internalUserId, clientId, companyId }, () =>
-          updateAssignee(token, task.id, internalUserId, clientId, companyId),
+          updateAssignee(token, task.id, internalUserId, clientId, companyId, viewers),
         )
     } else {
-      token && updateAssignee(token, task.id, internalUserId, clientId, companyId)
+      token && updateAssignee(token, task.id, internalUserId, clientId, companyId, viewers)
     }
     store.dispatch(setConfirmAssigneeModalId(undefined))
   }
@@ -102,14 +103,15 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate,
       setSelectedAssignee(newUserIds)
       store.dispatch(setConfirmAssigneeModalId(task.id))
     } else {
+      const viewers = !newUserIds.internalUserId ? [] : undefined
       const { internalUserId, clientId, companyId } = newUserIds
       if (handleUpdate) {
         token &&
           handleUpdate(task.id, { assigneeId: nextAssignee?.id }, () =>
-            updateAssignee(token, task.id, internalUserId, clientId, companyId),
+            updateAssignee(token, task.id, internalUserId, clientId, companyId, viewers),
           )
       } else {
-        token && updateAssignee(token, task.id, internalUserId, clientId, companyId)
+        token && updateAssignee(token, task.id, internalUserId, clientId, companyId, viewers)
       }
       setAssigneeValue(nextAssignee ?? NoAssignee)
     }
