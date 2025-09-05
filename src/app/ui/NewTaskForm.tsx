@@ -12,7 +12,7 @@ import { StyledTextField } from '@/components/inputs/TextField'
 import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
-import { AssigneePlaceholderSmall, CloseIcon, TempalteIconMd } from '@/icons'
+import { PersonIconSmall, CloseIcon, TempalteIconMd } from '@/icons'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import {
   selectCreateTask,
@@ -25,16 +25,22 @@ import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { selectCreateTemplate } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { CreateTaskErrors, FilterOptions, IAssigneeCombined, ITemplate, UserIds } from '@/types/interfaces'
+import { CreateTaskErrors, FilterByOptions, FilterOptions, IAssigneeCombined, ITemplate } from '@/types/interfaces'
 import { checkEmptyAssignee, emptyAssignee, getAssigneeName } from '@/utils/assignee'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
-import { getSelectedUserIds, getSelectorAssignee, getSelectorAssigneeFromFilterOptions } from '@/utils/selector'
+import {
+  getSelectedUserIds,
+  getSelectedViewerIds,
+  getSelectorAssignee,
+  getSelectorAssigneeFromFilterOptions,
+} from '@/utils/selector'
 import { trimAllTags } from '@/utils/trimTags'
 import { Box, Stack, Typography, styled } from '@mui/material'
 import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
+import { UserRole } from '../api/core/types/user'
 
 interface NewTaskFormInputsProps {
   isEditorReadonly?: boolean
@@ -76,6 +82,8 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
       filterOptions[FilterOptions.TYPE],
     ) ?? null,
   )
+  const [taskViewerValue, setTaskViewerValue] = useState<IAssigneeCombined | null>(null)
+
   useEffect(() => {
     if (!checkEmptyAssignee(filterOptions[FilterOptions.ASSIGNEE])) {
       store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: filterOptions[FilterOptions.ASSIGNEE] }))
@@ -139,44 +147,6 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
           </Box>
 
           <Stack alignSelf="flex-start">
-            <CopilotPopSelector
-              disabled={!!previewMode}
-              name="Set assignee"
-              initialValue={assigneeValue || undefined}
-              onChange={(inputValue) => {
-                const newUserIds = getSelectedUserIds(inputValue)
-                const selectedAssignee = getSelectorAssignee(assignee, inputValue)
-                setAssigneeValue(selectedAssignee || null)
-                store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: newUserIds }))
-              }}
-              buttonContent={
-                <SelectorButton
-                  disabled={!!previewMode}
-                  startIcon={
-                    assigneeValue ? <CopilotAvatar currentAssignee={assigneeValue} /> : <AssigneePlaceholderSmall />
-                  }
-                  height="30px"
-                  padding="4px 8px"
-                  buttonContent={
-                    <Typography
-                      variant="bodySm"
-                      sx={{
-                        color: (theme) => (assigneeValue ? theme.color.gray[600] : theme.color.text.textDisabled),
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        fontSize: '12px',
-                        maxWidth: { xs: '60px', sm: '100px' },
-                      }}
-                    >
-                      {getAssigneeName(assigneeValue as IAssigneeCombined, 'Assignee')}
-                    </Typography>
-                  }
-                />
-              }
-            />
-          </Stack>
-          <Stack alignSelf="flex-start">
             <Box
               sx={{
                 textOverflow: 'ellipsis',
@@ -192,6 +162,89 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
               />
             </Box>
           </Stack>
+
+          <Stack alignSelf="flex-start">
+            <CopilotPopSelector
+              disabled={!!previewMode}
+              name="Set assignee"
+              initialValue={assigneeValue || undefined}
+              onChange={(inputValue) => {
+                // remove task viewers if assignee is cleared or changed to client or company
+                if (inputValue.length === 0 || inputValue[0].object !== UserRole.IU) {
+                  setTaskViewerValue(null)
+                  store.dispatch(setCreateTaskFields({ targetField: 'viewers', value: [] }))
+                }
+
+                const newUserIds = getSelectedUserIds(inputValue)
+                const selectedAssignee = getSelectorAssignee(assignee, inputValue)
+                setAssigneeValue(selectedAssignee || null)
+                store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: newUserIds }))
+              }}
+              buttonContent={
+                <SelectorButton
+                  disabled={!!previewMode}
+                  startIcon={assigneeValue ? <CopilotAvatar currentAssignee={assigneeValue} /> : <PersonIconSmall />}
+                  height="30px"
+                  padding="4px 8px"
+                  buttonContent={
+                    <Typography
+                      variant="bodySm"
+                      sx={{
+                        color: (theme) => (assigneeValue ? theme.color.gray[600] : theme.color.text.textDisabled),
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        fontSize: '14px',
+                        maxWidth: { xs: '60px', sm: '100px' },
+                        lineHeight: '22px',
+                      }}
+                    >
+                      {getAssigneeName(assigneeValue as IAssigneeCombined, 'Assignee')}
+                    </Typography>
+                  }
+                />
+              }
+            />
+          </Stack>
+          {assigneeValue && assigneeValue.type === FilterByOptions.IUS && (
+            <Stack alignSelf="flex-start">
+              <CopilotPopSelector
+                hideIusList
+                disabled={!!previewMode}
+                name="Set client visibility"
+                initialValue={taskViewerValue || undefined}
+                onChange={(inputValue) => {
+                  const newUserIds = getSelectedViewerIds(inputValue)
+                  const selectedTaskViewers = getSelectorAssignee(assignee, inputValue)
+                  setTaskViewerValue(selectedTaskViewers || null)
+                  store.dispatch(setCreateTaskFields({ targetField: 'viewers', value: newUserIds }))
+                }}
+                buttonContent={
+                  <SelectorButton
+                    disabled={!!previewMode}
+                    startIcon={taskViewerValue ? <CopilotAvatar currentAssignee={taskViewerValue} /> : <PersonIconSmall />}
+                    height="30px"
+                    padding="4px 8px"
+                    buttonContent={
+                      <Typography
+                        variant="bodySm"
+                        sx={{
+                          color: (theme) => (taskViewerValue ? theme.color.gray[600] : theme.color.text.textDisabled),
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          fontSize: '14px',
+                          maxWidth: { xs: '60px', sm: '100px' },
+                        }}
+                      >
+                        {getAssigneeName(taskViewerValue as IAssigneeCombined, 'Client visibility')}
+                      </Typography>
+                    }
+                  />
+                }
+              />
+            </Stack>
+          )}
         </Stack>
       </AppMargin>
       <NewTaskFooter

@@ -41,7 +41,7 @@ export const CopilotSelector = ({
         openMenuOnFocus
         menuIsOpen={true}
         autoFocus
-        placeholder={'Set assignee'}
+        placeholder={name}
         initialValue={initialAssignee}
         clientUsers={hideClientsList ? [] : selectorAssignee.clients}
         name={name}

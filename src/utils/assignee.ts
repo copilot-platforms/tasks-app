@@ -1,6 +1,6 @@
 import { Token } from '@/types/common'
 import { TruncateMaxNumber } from '@/types/constants'
-import { TaskResponse } from '@/types/dto/tasks.dto'
+import { TaskResponse, Viewers } from '@/types/dto/tasks.dto'
 import { IAssigneeCombined, ISelectorOption, UserType } from '@/types/interfaces'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { truncateText } from '@/utils/truncateText'
@@ -15,6 +15,8 @@ export const UserIdsSchema = z.object({
 })
 
 export type UserIdsType = z.infer<typeof UserIdsSchema>
+
+export type UserIdsWithViewersType = UserIdsType & { viewers?: Viewers }
 
 export const isAssigneeTextMatching = (newInputValue: string, assigneeValue: IAssigneeCombined): boolean => {
   const truncate = (newInputValue: string) => truncateText(newInputValue, TruncateMaxNumber.SELECTOR)
