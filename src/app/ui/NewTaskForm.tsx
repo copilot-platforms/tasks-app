@@ -18,6 +18,7 @@ import {
   selectCreateTask,
   setAppliedDescription,
   setAppliedTitle,
+  setAllCreateTaskFields,
   setCreateTaskFields,
   setErrors,
 } from '@/redux/features/createTaskSlice'
@@ -35,6 +36,8 @@ import { Box, Stack, Typography, styled } from '@mui/material'
 import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
+import { PublicTaskCreateDto, publicTaskCreateDtoSchemaFactory } from '@/app/api/tasks/public/public.dto'
+import { HomeParamActions } from '@/types/constants'
 
 interface NewTaskFormInputsProps {
   isEditorReadonly?: boolean
@@ -48,12 +51,16 @@ interface NewTaskFormProps {
 
 export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => {
   const { activeWorkflowStateId } = useSelector(selectCreateTask)
-  const { workflowStates, assignee, previewMode, filterOptions } = useSelector(selectTaskBoard)
+  const { workflowStates, assignee, previewMode, filterOptions, urlActionParams, token } = useSelector(selectTaskBoard)
+  const [actionParamPayload, setActionParamPayload] = useState<PublicTaskCreateDto | null>(null)
 
   const todoWorkflowState = workflowStates.find((el) => el.key === 'todo') || workflowStates[0]
+  const actionParamWorkflowState = actionParamPayload
+    ? workflowStates.find((el) => el.key === actionParamPayload.status)
+    : todoWorkflowState
   const defaultWorkflowState = activeWorkflowStateId
     ? workflowStates.find((state) => state.id === activeWorkflowStateId)
-    : todoWorkflowState
+    : actionParamWorkflowState
 
   const { renderingItem: _statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
     item: defaultWorkflowState,
@@ -72,16 +79,25 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
     ) ?? null,
   )
   useEffect(() => {
-    if (!checkEmptyAssignee(filterOptions[FilterOptions.ASSIGNEE])) {
-      store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: filterOptions[FilterOptions.ASSIGNEE] }))
-    } else if (filterOptions[FilterOptions.TYPE]) {
-      if (!assigneeValue) return
-      const correctedObject = getAssigneeTypeCorrected(assigneeValue)
-      if (!correctedObject) return
-      const newUserIds = getSelectedUserIds([{ ...assigneeValue, object: correctedObject }])
-      store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: newUserIds }))
+    if (
+      Object.keys(urlActionParams).length > 0 &&
+      urlActionParams.action === HomeParamActions.CREATE_TASK &&
+      urlActionParams.oldPf !== urlActionParams.pf
+    ) {
+      // handle url action param for deep link
+      handleUrlActionParam()
     } else {
-      store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: emptyAssignee }))
+      if (!checkEmptyAssignee(filterOptions[FilterOptions.ASSIGNEE])) {
+        store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: filterOptions[FilterOptions.ASSIGNEE] }))
+      } else if (filterOptions[FilterOptions.TYPE]) {
+        if (!assigneeValue) return
+        const correctedObject = getAssigneeTypeCorrected(assigneeValue)
+        if (!correctedObject) return
+        const newUserIds = getSelectedUserIds([{ ...assigneeValue, object: correctedObject }])
+        store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: newUserIds }))
+      } else {
+        store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: emptyAssignee }))
+      }
     }
   }, []) //if assigneeValue has an intial value before selection (when my tasks, filter by assignee filter is applied), then update the task creation field for userIds.
 
@@ -100,6 +116,39 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
       document.removeEventListener('keydown', handleEscPress)
     }
   }, [handleClose])
+
+  // this function handles the action param passed in the url and fill the values in the form
+  const handleUrlActionParam = useCallback(async () => {
+    if (urlActionParams.pf && token) {
+      const payload = JSON.parse(atob(decodeURIComponent(urlActionParams.pf)))
+      const parsedPayload = await publicTaskCreateDtoSchemaFactory(token).parseAsync({
+        ...payload,
+        dueDate: payload?.dueDate ? new Date(payload.dueDate).toISOString() : undefined,
+      })
+
+      // respect the filter Ids first. This is needed for CRM deep link for respective clients
+      const assigneeFilter = {
+        [UserIds.INTERNAL_USER_ID]:
+          filterOptions[FilterOptions.ASSIGNEE].internalUserId || parsedPayload?.internalUserId || null,
+        [UserIds.CLIENT_ID]: filterOptions[FilterOptions.ASSIGNEE].clientId || parsedPayload?.clientId || null,
+        [UserIds.COMPANY_ID]: filterOptions[FilterOptions.ASSIGNEE].companyId || parsedPayload?.companyId || null,
+      }
+
+      const taskPayload = {
+        title: parsedPayload?.name || '',
+        description: parsedPayload?.description || '',
+        workflowStateId: workflowStates.find((state) => state.key === parsedPayload?.status)?.id || '',
+        dueDate: parsedPayload?.dueDate || null,
+        templateId: parsedPayload?.templateId || null,
+        userIds: assigneeFilter,
+        parentId: parsedPayload?.parentTaskId || null,
+      }
+
+      setAssigneeValue(getSelectorAssigneeFromFilterOptions(assignee, assigneeFilter) || null)
+      setActionParamPayload(parsedPayload)
+      store.dispatch(setAllCreateTaskFields(taskPayload))
+    }
+  }, [urlActionParams])
 
   return (
     <NewTaskContainer>
@@ -180,6 +229,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
               }}
             >
               <DatePickerComponent
+                dateValue={actionParamPayload?.dueDate}
                 padding="4px 16px"
                 getDate={(value) => store.dispatch(setCreateTaskFields({ targetField: 'dueDate', value: value as string }))}
                 variant="button"

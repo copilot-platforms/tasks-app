@@ -1,13 +1,18 @@
 import dayjs from 'dayjs'
 
-export const DueDateFormatter = (date: string | Date, isRelativeDate: boolean = false) => {
+export const DueDateFormatter = (
+  date: string | Date,
+  isRelativeDate: boolean = false,
+  variant: 'short' | 'long' = 'long',
+  isClient: boolean = false,
+) => {
   const parsedDate = dayjs(date)
   if (isRelativeDate) {
     if (parsedDate.isToday()) {
-      return 'Today'
+      return isClient ? 'Due: Today' : 'Today'
     }
     if (parsedDate.isTomorrow()) {
-      return 'Tomorrow'
+      return isClient ? 'Due: Tomorrow' : 'Tomorrow'
     }
   }
   const monthFormats: { [key: string]: string } = {
@@ -25,11 +30,11 @@ export const DueDateFormatter = (date: string | Date, isRelativeDate: boolean = 
     December: 'Dec',
   }
 
-  const month = parsedDate.format('MMMM')
+  const month = parsedDate.format('MMM')
   const day = parsedDate.format('D')
   const year = parsedDate.format('YYYY')
 
   const formattedMonth = month.length <= 5 ? month : monthFormats[month]
 
-  return `${formattedMonth} ${day}, ${year}`
+  return variant === 'short' ? `${isClient ? 'Due: ' : ''}${formattedMonth} ${day}` : `${formattedMonth} ${day}, ${year}`
 }
