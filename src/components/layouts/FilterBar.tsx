@@ -214,6 +214,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
                           handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
                         }
                       }}
+                      captureClick={false}
                     />
                   </Box>
                 )}
@@ -332,6 +333,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
                       handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
                     }
                   }}
+                  captureClick={false}
                 />
               )}
             </Box>
