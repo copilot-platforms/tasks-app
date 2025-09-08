@@ -141,8 +141,10 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
           payload.companyId = assigneeVal.companyId
         } else if (Array.isArray(assigneeVal?.companyIds)) {
           // If client has multiple companies, set error
+          delete payload.clientId
           setErrorMessage('companyId must be provided for clients with more than one company')
         } else {
+          delete payload.clientId
           setErrorMessage('companyId must be provided when clientId is provided')
         }
       }
