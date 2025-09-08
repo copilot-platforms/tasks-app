@@ -8,6 +8,7 @@ import {
   setActiveTask,
   setAssigneeList,
   setFilteredAssigneeList,
+  SetUrlActionParams,
   setPreviewMode,
   setTasks,
   setToken,
@@ -17,7 +18,8 @@ import {
 import { setAssigneeSuggestion, setExpandedComments } from '@/redux/features/taskDetailsSlice'
 import { setTemplates } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
-import { Token, WorkspaceResponse } from '@/types/common'
+import { UrlActionParamsType, Token, WorkspaceResponse } from '@/types/common'
+import { HomeParamActions } from '@/types/constants'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
@@ -26,6 +28,23 @@ import { filterOptionsMap } from '@/types/objectMaps'
 import { getPreviewMode, handlePreviewMode } from '@/utils/previewMode'
 import { ReactNode, useEffect } from 'react'
 import { useSelector } from 'react-redux'
+
+type ClientSideStateUpdateProps = {
+  children: ReactNode
+  workflowStates?: WorkflowStateResponse[]
+  tasks?: TaskResponse[]
+  assignee?: IAssigneeCombined[]
+  viewSettings?: CreateViewSettingsDTO
+  token?: string
+  tokenPayload?: Token | null
+  templates?: ITemplate[]
+  assigneeSuggestions?: IAssigneeSuggestions[]
+  task?: TaskResponse
+  clearExpandedComments?: boolean
+  accesibleTaskIds?: string[]
+  accessibleTasks?: TaskResponse[]
+  workspace?: WorkspaceResponse
+} & UrlActionParamsType
 
 /**
  * This HOC is responsible in updating the client side state of the responses that are fetched in the server components.
@@ -47,22 +66,9 @@ export const ClientSideStateUpdate = ({
   accesibleTaskIds,
   accessibleTasks,
   workspace,
-}: {
-  children: ReactNode
-  workflowStates?: WorkflowStateResponse[]
-  tasks?: TaskResponse[]
-  assignee?: IAssigneeCombined[]
-  viewSettings?: CreateViewSettingsDTO
-  token?: string
-  tokenPayload?: Token | null
-  templates?: ITemplate[]
-  assigneeSuggestions?: IAssigneeSuggestions[]
-  task?: TaskResponse
-  clearExpandedComments?: boolean
-  accesibleTaskIds?: string[]
-  accessibleTasks?: TaskResponse[]
-  workspace?: WorkspaceResponse
-}) => {
+  action,
+  pf,
+}: ClientSideStateUpdateProps) => {
   const { tasks: tasksInStore, viewSettingsTemp, accessibleTasks: accessibleTaskInStore } = useSelector(selectTaskBoard)
   useEffect(() => {
     if (workflowStates) {
@@ -81,8 +87,12 @@ export const ClientSideStateUpdate = ({
       store.dispatch(setAssigneeList(assignee))
     }
 
+    if (action && action === HomeParamActions.CREATE_TASK) {
+      store.dispatch(SetUrlActionParams({ action, pf }))
+    }
+
     if (viewSettings) {
-      const viewSettingsCopy = structuredClone(viewSettings) //deep cloning for immutability and prevent the reducer mutating the original object.
+      const viewSettingsCopy = viewSettingsTemp ? structuredClone(viewSettingsTemp) : structuredClone(viewSettings) //deep cloning for immutability and prevent the reducer mutating the original object.
       store.dispatch(setViewSettings(viewSettingsCopy))
       const view = viewSettingsTemp ? viewSettingsTemp.filterOptions : viewSettingsCopy.filterOptions
       store.dispatch(setFilteredAssigneeList({ filteredType: filterOptionsMap[view?.type] || filterOptionsMap.default }))

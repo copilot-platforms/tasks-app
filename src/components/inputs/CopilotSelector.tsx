@@ -9,6 +9,7 @@ import { selectorOptionsToInputValue } from '@/utils/selector'
 import { Box, ClickAwayListener, Popper, Stack } from '@mui/material'
 import { ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
+import { CopilotTooltip, CopilotTooltipProps } from '@/components/atoms/CopilotTooltip'
 
 export const CopilotSelector = ({
   onChange,
@@ -67,6 +68,9 @@ interface CopilotPopSelectorProps {
   initialValue?: IAssigneeCombined
   hideClientsList?: boolean
   hideIusList?: boolean
+  tooltipProps?: Omit<CopilotTooltipProps, 'children'>
+  variant?: 'icon' | 'normal'
+  captureClick?: boolean
 }
 
 export const CopilotPopSelector = ({
@@ -77,6 +81,9 @@ export const CopilotPopSelector = ({
   initialValue,
   hideClientsList,
   hideIusList,
+  tooltipProps,
+  variant = 'normal',
+  captureClick = true,
 }: CopilotPopSelectorProps) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
@@ -84,6 +91,8 @@ export const CopilotPopSelector = ({
 
   const handleClick = useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
+      event.preventDefault()
+      event.stopPropagation()
       if (!disabled) {
         setAnchorEl(anchorEl ? null : event.currentTarget)
       }
@@ -133,7 +142,15 @@ export const CopilotPopSelector = ({
       }}
     >
       <Stack direction="column">
-        <Box onClick={handleClick}>{buttonContent}</Box>
+        <Box {...(captureClick ? { onClickCapture: handleClick } : { onClick: handleClick })}>
+          <CopilotTooltip
+            content={tooltipProps?.content ?? 'Change assignee'}
+            disabled={tooltipProps?.disabled || variant == 'normal'}
+            position={tooltipProps?.position}
+          >
+            <>{buttonContent}</>
+          </CopilotTooltip>
+        </Box>
         <Popper
           id={id}
           open={open}
@@ -143,6 +160,9 @@ export const CopilotPopSelector = ({
             width: 'fit-content',
           }}
           placement="bottom-start"
+          onClick={(e) => {
+            e.stopPropagation()
+          }}
         >
           <CopilotSelector
             hideClientsList={hideClientsList}

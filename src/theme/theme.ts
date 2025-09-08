@@ -79,6 +79,7 @@ export const theme = createTheme({
       border2: '#EDEDF0',
       border3: '#DADBDC',
       focusBorder: '#053299',
+      focusBorder2: '#0C41BB',
     },
     background: {
       bgCard: '#DFE1E4',
@@ -86,6 +87,9 @@ export const theme = createTheme({
       bgHover: '#F1F3F8',
       bgCommentDrag: '#E6F0FF',
       avatarBackground: '#E8EBF1',
+    },
+    red: {
+      200: '#991A00',
     },
     error: '#CC0000',
     muiError: '#D32F2F',
