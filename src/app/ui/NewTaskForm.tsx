@@ -121,7 +121,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
   const handleUrlActionParam = useCallback(async () => {
     if (urlActionParams.pf && token) {
       const payload = JSON.parse(atob(decodeURIComponent(urlActionParams.pf)))
-      const parsedPayload = await publicTaskCreateDtoSchemaFactory(token).parseAsync({
+      const parsedPayload = await publicTaskCreateDtoSchemaFactory(token, true).parseAsync({
         ...payload,
         dueDate: payload?.dueDate ? new Date(payload.dueDate).toISOString() : undefined,
       })
