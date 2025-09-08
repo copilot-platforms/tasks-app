@@ -38,6 +38,7 @@ import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
 import { PublicTaskCreateDto, publicTaskCreateDtoSchemaFactory } from '@/app/api/tasks/public/public.dto'
 import { HomeParamActions } from '@/types/constants'
+import { StyledHelperText } from '@/components/error/FormHelperText'
 
 interface NewTaskFormInputsProps {
   isEditorReadonly?: boolean
@@ -70,6 +71,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
   const statusValue = _statusValue as WorkflowStateResponse //typecasting
 
   const [isEditorReadonly, setIsEditorReadonly] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const [assigneeValue, setAssigneeValue] = useState<IAssigneeCombined | null>(
     getSelectorAssigneeFromFilterOptions(
@@ -121,6 +123,29 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
   const handleUrlActionParam = useCallback(async () => {
     if (urlActionParams.pf && token) {
       const payload = JSON.parse(atob(decodeURIComponent(urlActionParams.pf)))
+
+      if (!payload.companyId && payload.clientId) {
+        const assigneeVal = assignee.find((val) => val.id === payload.clientId)
+
+        if (!assigneeVal) {
+          setErrorMessage('Assignee not found')
+          return
+        }
+
+        if (Array.isArray(assigneeVal.companyIds) && assigneeVal.companyIds.length === 1) {
+          payload.companyId = assigneeVal.companyIds[0]
+        } else if (
+          assigneeVal.companyId &&
+          (!assigneeVal.companyIds || (Array.isArray(assigneeVal.companyIds) && !assigneeVal.companyIds.length))
+        ) {
+          payload.companyId = assigneeVal.companyId
+        } else if (Array.isArray(assigneeVal?.companyIds)) {
+          // If client has multiple companies, set error
+          setErrorMessage('companyId must be provided for clients with more than one company')
+        } else {
+          setErrorMessage('companyId must be provided when clientId is provided')
+        }
+      }
       const parsedPayload = await publicTaskCreateDtoSchemaFactory(token, true).parseAsync({
         ...payload,
         dueDate: payload?.dueDate ? new Date(payload.dueDate).toISOString() : undefined,
@@ -190,6 +215,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
                 const newUserIds = getSelectedUserIds(inputValue)
                 const selectedAssignee = getSelectorAssignee(assignee, inputValue)
                 setAssigneeValue(selectedAssignee || null)
+                setErrorMessage(null)
                 store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: newUserIds }))
               }}
               buttonContent={
@@ -215,6 +241,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
                       {getAssigneeName(assigneeValue as IAssigneeCombined, 'Assignee')}
                     </Typography>
                   }
+                  error={!!errorMessage}
                 />
               }
             />
@@ -237,6 +264,12 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
             </Box>
           </Stack>
         </Stack>
+        {errorMessage && (
+          <StyledHelperText sx={{ paddingTop: '6px', textAlign: 'left', marginLeft: '0px' }}>
+            {' '}
+            {errorMessage}{' '}
+          </StyledHelperText>
+        )}
       </AppMargin>
       <NewTaskFooter
         handleCreate={handleCreateWithAssignee}
