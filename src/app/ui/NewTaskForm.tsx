@@ -129,23 +129,23 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
 
         if (!assigneeVal) {
           setErrorMessage('Assignee not found')
-          return
-        }
-
-        if (Array.isArray(assigneeVal.companyIds) && assigneeVal.companyIds.length === 1) {
-          payload.companyId = assigneeVal.companyIds[0]
-        } else if (
-          assigneeVal.companyId &&
-          (!assigneeVal.companyIds || (Array.isArray(assigneeVal.companyIds) && !assigneeVal.companyIds.length))
-        ) {
-          payload.companyId = assigneeVal.companyId
-        } else if (Array.isArray(assigneeVal?.companyIds)) {
-          // If client has multiple companies, set error
           delete payload.clientId
-          setErrorMessage('companyId must be provided for clients with more than one company')
         } else {
-          delete payload.clientId
-          setErrorMessage('companyId must be provided when clientId is provided')
+          if (Array.isArray(assigneeVal.companyIds) && assigneeVal.companyIds.length === 1) {
+            payload.companyId = assigneeVal.companyIds[0]
+          } else if (
+            assigneeVal.companyId &&
+            (!assigneeVal.companyIds || (Array.isArray(assigneeVal.companyIds) && !assigneeVal.companyIds.length))
+          ) {
+            payload.companyId = assigneeVal.companyId
+          } else if (Array.isArray(assigneeVal?.companyIds)) {
+            // If client has multiple companies, set error
+            delete payload.clientId
+            setErrorMessage('companyId must be provided for clients with more than one company')
+          } else {
+            delete payload.clientId
+            setErrorMessage('companyId must be provided when clientId is provided')
+          }
         }
       }
       const parsedPayload = await publicTaskCreateDtoSchemaFactory(token, true).parseAsync({
