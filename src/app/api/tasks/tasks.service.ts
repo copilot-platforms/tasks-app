@@ -40,7 +40,7 @@ export class TasksService extends BaseService {
    * If user is a client, return filter for just the tasks assigned to this clientId.
    * If user is a client and has a companyId, return filter for just the tasks assigned to this clientId `OR` to this companyId
    */
-  private buildTaskPermissions(id?: string) {
+  private buildTaskPermissions(id?: string, includeViewer: boolean = true) {
     const user = this.user
 
     // Default filters
@@ -50,7 +50,7 @@ export class TasksService extends BaseService {
     }
 
     if (user.clientId || user.companyId) {
-      filters = { ...filters, ...this.getClientOrCompanyAssigneeFilter() }
+      filters = { ...filters, ...this.getClientOrCompanyAssigneeFilter(includeViewer) }
     }
 
     return filters
@@ -520,7 +520,7 @@ export class TasksService extends BaseService {
     )?.[0]?.path
   }
 
-  private getClientOrCompanyAssigneeFilter(): Prisma.TaskWhereInput {
+  private getClientOrCompanyAssigneeFilter(includeViewer: boolean = true): Prisma.TaskWhereInput {
     const clientId = z.string().uuid().safeParse(this.user.clientId).data
     const companyId = z.string().uuid().parse(this.user.companyId)
 
@@ -532,16 +532,16 @@ export class TasksService extends BaseService {
         { clientId, companyId },
         // Get company tasks for the client's companyId
         { companyId, clientId: null },
-        // Get tasks that includes the client as a viewer
-        {
-          viewers: {
-            hasSome: [
-              { clientId, companyId },
-              { clientId: null, companyId },
-            ],
-          },
-        },
       )
+      if (includeViewer)
+        filters.push(
+          // Get tasks that includes the client as a viewer
+          {
+            viewers: {
+              hasSome: [{ clientId, companyId }, { companyId }],
+            },
+          },
+        )
     } else if (companyId) {
       filters.push(
         // Get only company tasks for the client's companyId
@@ -604,7 +604,7 @@ export class TasksService extends BaseService {
                     viewers: {
                       hasSome: [
                         { clientId: this.user.clientId, companyId: this.user.companyId },
-                        { clientId: null, companyId: this.user.companyId },
+                        { companyId: this.user.companyId },
                       ],
                     },
                   }, //AND do not disjoint if parent is accesible to the client through client visibility.
@@ -788,7 +788,7 @@ export class TasksService extends BaseService {
     const { completedBy, completedByUserType } = await this.getCompletionInfo(targetWorkflowStateId)
 
     // Query previous task
-    const filters = this.buildTaskPermissions(id)
+    const filters = this.buildTaskPermissions(id, false) // condition 'false' to exclude viewers from the query to get prev task. This will prevent viewer to update the task workflow status
     const prevTask = await this.db.task.findFirst({
       where: filters,
       relationLoadStrategy: 'join',
