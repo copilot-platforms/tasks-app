@@ -228,6 +228,7 @@ export class RealtimeHandler {
       }
     }
     // --- Client
+
     if (this.userRole === AssigneeType.client) {
       // Return if:
       // - task is unassigned
@@ -237,7 +238,7 @@ export class RealtimeHandler {
       if (
         !this.isViewer(newTask) &&
         (!newTask.assigneeId ||
-          newTask.internalUserId ||
+          !!newTask.internalUserId ||
           (newTask.clientId && newTask.clientId !== this.tokenPayload.clientId) ||
           this.tokenPayload.companyId !== newTask.companyId)
       ) {
@@ -320,9 +321,10 @@ export class RealtimeHandler {
     // CASE III: Reassignment into scope
     const isReassignedIntoClientScope =
       this.userRole === AssigneeType.client &&
-      (this.isViewer(updatedTask) || !updatedTask.clientId
-        ? updatedTask.companyId === this.tokenPayload.companyId
-        : updatedTask.companyId === this.tokenPayload.companyId && updatedTask.clientId === this.tokenPayload.clientId)
+      (this.isViewer(updatedTask) ||
+        (!updatedTask.clientId
+          ? updatedTask.companyId === this.tokenPayload.companyId
+          : updatedTask.companyId === this.tokenPayload.companyId && updatedTask.clientId === this.tokenPayload.clientId))
 
     const isReassignedIntoLimitedIUScope = (() => {
       if (this.userRole !== AssigneeType.internalUser) return false
