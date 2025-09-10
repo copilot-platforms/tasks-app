@@ -12,7 +12,7 @@ import { StyledTextField } from '@/components/inputs/TextField'
 import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
-import { AssigneePlaceholderSmall, CloseIcon, TemplateIconSm } from '@/icons'
+import { PersonIconSmall, CloseIcon, TempalteIconMd } from '@/icons'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import {
   selectCreateTask,
@@ -25,16 +25,22 @@ import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { selectCreateTemplate } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { CreateTaskErrors, FilterOptions, IAssigneeCombined, ITemplate, UserIds } from '@/types/interfaces'
+import { CreateTaskErrors, FilterByOptions, FilterOptions, IAssigneeCombined, ITemplate } from '@/types/interfaces'
 import { checkEmptyAssignee, emptyAssignee, getAssigneeName } from '@/utils/assignee'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
-import { getSelectedUserIds, getSelectorAssignee, getSelectorAssigneeFromFilterOptions } from '@/utils/selector'
+import {
+  getSelectedUserIds,
+  getSelectedViewerIds,
+  getSelectorAssignee,
+  getSelectorAssigneeFromFilterOptions,
+} from '@/utils/selector'
 import { trimAllTags } from '@/utils/trimTags'
 import { Box, Stack, Typography, styled } from '@mui/material'
 import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
+import { UserRole } from '../api/core/types/user'
 
 interface NewTaskFormInputsProps {
   isEditorReadonly?: boolean
@@ -42,6 +48,11 @@ interface NewTaskFormInputsProps {
 
 interface NewTaskFormProps {
   handleCreate: () => void
+  handleClose: () => void
+  setIsEditorReadonly?: Dispatch<SetStateAction<boolean>>
+}
+
+type NewTaskFormHeaderProps = {
   handleClose: () => void
   setIsEditorReadonly?: Dispatch<SetStateAction<boolean>>
 }
@@ -71,6 +82,8 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
       filterOptions[FilterOptions.TYPE],
     ) ?? null,
   )
+  const [taskViewerValue, setTaskViewerValue] = useState<IAssigneeCombined | null>(null)
+
   useEffect(() => {
     if (!checkEmptyAssignee(filterOptions[FilterOptions.ASSIGNEE])) {
       store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: filterOptions[FilterOptions.ASSIGNEE] }))
@@ -109,20 +122,21 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
         }}
       >
         <AppMargin size={SizeofAppMargin.MEDIUM} py="12px">
-          <Stack direction="row" alignItems="center" justifyContent="space-between">
-            <Typography variant="md" fontSize={'15px'} lineHeight={'18.15px'}>
-              Create task
-            </Typography>
-            <CloseIcon style={{ cursor: 'pointer' }} onClick={() => handleClose()} />
-          </Stack>
+          <NewTaskHeader
+            handleClose={handleClose}
+            setIsEditorReadonly={setIsEditorReadonly}
+            updateWorkflowStatusValue={updateStatusValue}
+          />
         </AppMargin>
       </Stack>
 
-      <AppMargin size={SizeofAppMargin.MEDIUM} py="16px">
+      <AppMargin size={SizeofAppMargin.MEDIUM} py="20px">
         <NewTaskFormInputs isEditorReadonly={isEditorReadonly} />
-        <Stack direction="row" columnGap={3} position="relative" sx={{ flexWrap: 'wrap' }}>
+        <Stack direction="row" columnGap={2} position="relative" sx={{ flexWrap: 'wrap' }}>
           <Box sx={{ padding: 0.1 }}>
             <WorkflowStateSelector
+              padding="4px 8px"
+              gap="6px"
               option={workflowStates}
               value={statusValue}
               getValue={(value) => {
@@ -133,44 +147,6 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
           </Box>
 
           <Stack alignSelf="flex-start">
-            <CopilotPopSelector
-              disabled={!!previewMode}
-              name="Set assignee"
-              initialValue={assigneeValue || undefined}
-              onChange={(inputValue) => {
-                const newUserIds = getSelectedUserIds(inputValue)
-                const selectedAssignee = getSelectorAssignee(assignee, inputValue)
-                setAssigneeValue(selectedAssignee || null)
-                store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: newUserIds }))
-              }}
-              buttonContent={
-                <SelectorButton
-                  disabled={!!previewMode}
-                  startIcon={
-                    assigneeValue ? <CopilotAvatar currentAssignee={assigneeValue} /> : <AssigneePlaceholderSmall />
-                  }
-                  height="30px"
-                  padding="4px 16px"
-                  buttonContent={
-                    <Typography
-                      variant="bodySm"
-                      sx={{
-                        color: (theme) => (assigneeValue ? theme.color.gray[600] : theme.color.text.textDisabled),
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        fontSize: '12px',
-                        maxWidth: { xs: '60px', sm: '100px' },
-                      }}
-                    >
-                      {getAssigneeName(assigneeValue as IAssigneeCombined, 'Assignee')}
-                    </Typography>
-                  }
-                />
-              }
-            />
-          </Stack>
-          <Stack alignSelf="flex-start">
             <Box
               sx={{
                 textOverflow: 'ellipsis',
@@ -180,90 +156,117 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
               }}
             >
               <DatePickerComponent
-                padding="4px 16px"
+                gap="6px"
+                padding="4px 8px"
                 getDate={(value) => store.dispatch(setCreateTaskFields({ targetField: 'dueDate', value: value as string }))}
                 variant="button"
               />
             </Box>
           </Stack>
+
+          <Stack alignSelf="flex-start">
+            <CopilotPopSelector
+              disabled={!!previewMode}
+              name="Set assignee"
+              initialValue={assigneeValue || undefined}
+              onChange={(inputValue) => {
+                // remove task viewers if assignee is cleared or changed to client or company
+                if (inputValue.length === 0 || inputValue[0].object !== UserRole.IU) {
+                  setTaskViewerValue(null)
+                  store.dispatch(setCreateTaskFields({ targetField: 'viewers', value: [] }))
+                }
+
+                const newUserIds = getSelectedUserIds(inputValue)
+                const selectedAssignee = getSelectorAssignee(assignee, inputValue)
+                setAssigneeValue(selectedAssignee || null)
+                store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: newUserIds }))
+              }}
+              buttonContent={
+                <SelectorButton
+                  disabled={!!previewMode}
+                  startIcon={assigneeValue ? <CopilotAvatar currentAssignee={assigneeValue} /> : <PersonIconSmall />}
+                  height="30px"
+                  padding="4px 8px"
+                  buttonContent={
+                    <Typography
+                      variant="bodySm"
+                      sx={{
+                        color: (theme) => (assigneeValue ? theme.color.gray[600] : theme.color.text.textDisabled),
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        fontSize: '14px',
+                        maxWidth: { xs: '60px', sm: '100px' },
+                        lineHeight: '22px',
+                      }}
+                    >
+                      {getAssigneeName(assigneeValue as IAssigneeCombined, 'Assignee')}
+                    </Typography>
+                  }
+                />
+              }
+            />
+          </Stack>
+          {assigneeValue && assigneeValue.type === FilterByOptions.IUS && (
+            <Stack alignSelf="flex-start">
+              <CopilotPopSelector
+                hideIusList
+                disabled={!!previewMode}
+                name="Set client visibility"
+                initialValue={taskViewerValue || undefined}
+                onChange={(inputValue) => {
+                  const newUserIds = getSelectedViewerIds(inputValue)
+                  const selectedTaskViewers = getSelectorAssignee(assignee, inputValue)
+                  setTaskViewerValue(selectedTaskViewers || null)
+                  store.dispatch(setCreateTaskFields({ targetField: 'viewers', value: newUserIds }))
+                }}
+                buttonContent={
+                  <SelectorButton
+                    disabled={!!previewMode}
+                    startIcon={taskViewerValue ? <CopilotAvatar currentAssignee={taskViewerValue} /> : <PersonIconSmall />}
+                    height="30px"
+                    padding="4px 8px"
+                    buttonContent={
+                      <Typography
+                        variant="bodySm"
+                        sx={{
+                          color: (theme) => (taskViewerValue ? theme.color.gray[600] : theme.color.text.textDisabled),
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          fontSize: '14px',
+                          maxWidth: { xs: '60px', sm: '100px' },
+                        }}
+                      >
+                        {getAssigneeName(taskViewerValue as IAssigneeCombined, 'Client visibility')}
+                      </Typography>
+                    }
+                  />
+                }
+              />
+            </Stack>
+          )}
         </Stack>
       </AppMargin>
       <NewTaskFooter
         handleCreate={handleCreateWithAssignee}
         handleClose={handleClose}
-        setIsEditorReadonly={setIsEditorReadonly}
         updateWorkflowStatusValue={updateStatusValue}
       />
     </NewTaskContainer>
   )
 }
 
-const NewTaskFormInputs = ({ isEditorReadonly }: NewTaskFormInputsProps) => {
-  const { title, description } = useSelector(selectCreateTask)
-  const { errors } = useSelector(selectCreateTask)
-  const { token } = useSelector(selectTaskBoard)
-  const { tokenPayload } = useSelector(selectAuthDetails)
-
-  const handleDetailChange = (content: string) => {
-    store.dispatch(setCreateTaskFields({ targetField: 'description', value: content }))
-  }
-
-  const uploadFn =
-    token && tokenPayload?.workspaceId
-      ? (file: File) => uploadImageHandler(file, token, tokenPayload.workspaceId, null)
-      : undefined
-
-  return (
-    <>
-      <Stack direction="column" rowGap={1}>
-        <Typography variant="md">Task name</Typography>
-        <StyledTextField
-          type="text"
-          padding="8px 0px"
-          autoFocus={true}
-          value={title}
-          onChange={(e) => {
-            store.dispatch(setCreateTaskFields({ targetField: 'title', value: e.target.value }))
-            store.dispatch(setErrors({ key: CreateTaskErrors.TITLE, value: false }))
-          }}
-          error={errors.title}
-          helperText={errors.title && 'Required'}
-          inputProps={{
-            maxLength: 255,
-          }}
-          disabled={isEditorReadonly}
-        />
-      </Stack>
-      <Stack direction="column" rowGap={1} m="16px 0px">
-        <Typography variant="md">Description</Typography>
-        <Tapwrite
-          content={description}
-          getContent={handleDetailChange}
-          placeholder="Add description..."
-          editorClass="tapwrite-task-description"
-          uploadFn={uploadFn}
-          readonly={isEditorReadonly}
-          deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', null, null)}
-          attachmentLayout={AttachmentLayout}
-          maxUploadLimit={MAX_UPLOAD_LIMIT}
-          parentContainerStyle={{ gap: '0px' }}
-        />
-      </Stack>
-    </>
-  )
-}
-
-const NewTaskFooter = ({
-  handleCreate,
+const NewTaskHeader = ({
   handleClose,
   setIsEditorReadonly,
   updateWorkflowStatusValue,
-}: NewTaskFormProps & { updateWorkflowStatusValue: (value: unknown) => void }) => {
+}: NewTaskFormHeaderProps & { updateWorkflowStatusValue: (value: unknown) => void }) => {
   const [inputStatusValue, setInputStatusValue] = useState('')
 
-  const { title, showModal, description, appliedDescription, appliedTitle } = useSelector(selectCreateTask)
   const { token, workflowStates } = useSelector(selectTaskBoard)
   const { templates } = useSelector(selectCreateTemplate)
+  const { title, showModal, description, appliedDescription, appliedTitle } = useSelector(selectCreateTask)
 
   const { renderingItem: _templateValue, updateRenderingItem: updateTemplateValue } = useHandleSelectorComponent({
     item: undefined, //initially we don't want any value to be selected
@@ -345,9 +348,12 @@ const NewTaskFooter = ({
   }
 
   return (
-    <Box sx={{ borderTop: (theme) => `1px solid ${theme.color.borders.border2}` }}>
-      <AppMargin size={SizeofAppMargin.MEDIUM} py="21px">
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+    <>
+      <Stack direction="row" alignItems="center" justifyContent="space-between">
+        <Stack direction="row" alignItems="center" gap={'4px'}>
+          <Typography variant="md" fontSize={'16px'} lineHeight={'24px'}>
+            Create task
+          </Typography>
           <Selector
             inputStatusValue={inputStatusValue}
             setInputStatusValue={setInputStatusValue}
@@ -356,7 +362,7 @@ const NewTaskFooter = ({
               updateTemplateValue(newValue)
               applyTemplateHandler(newValue)
             }}
-            startIcon={<TemplateIconSm />}
+            startIcon={<TempalteIconMd />}
             options={templates || []}
             placeholder="Search..."
             value={templateValue}
@@ -364,46 +370,133 @@ const NewTaskFooter = ({
             endOption={<ManageTemplatesEndOption hasTemplates={!!templates?.length} />}
             endOptionHref={`/manage-templates?token=${token}`}
             listAutoHeightMax="147px"
-            buttonContent={
-              <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[600], lineHeight: '24px' }}>
-                {'Apply template'}
-              </Typography>
-            }
             variant="normal"
             responsiveNoHide
             buttonWidth="auto"
             useClickHandler
+            padding="5px"
           />
-          <Stack
-            direction="row"
-            justifyContent="flex-end"
-            alignItems="center"
-            sx={{
-              marginLeft: 'auto',
-            }}
-          >
-            <Stack direction="row" columnGap={4}>
-              <SecondaryBtn
-                handleClick={() => handleClose()}
-                buttonContent={
-                  <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[700] }}>
-                    Discard
-                  </Typography>
-                }
-              />
-              <PrimaryBtn
-                handleClick={() => {
-                  if (!title.trim()) {
-                    store.dispatch(setErrors({ key: CreateTaskErrors.TITLE, value: true }))
-                  } else {
-                    handleCreate()
-                  }
-                }}
-                buttonText="Create"
-              />
-            </Stack>
-          </Stack>
+        </Stack>
+        <CloseIcon style={{ cursor: 'pointer' }} onClick={() => handleClose()} />
+      </Stack>
+    </>
+  )
+}
+
+const NewTaskFormInputs = ({ isEditorReadonly }: NewTaskFormInputsProps) => {
+  const { title, description } = useSelector(selectCreateTask)
+  const { errors } = useSelector(selectCreateTask)
+  const { token } = useSelector(selectTaskBoard)
+  const { tokenPayload } = useSelector(selectAuthDetails)
+
+  const handleDetailChange = (content: string) => {
+    store.dispatch(setCreateTaskFields({ targetField: 'description', value: content }))
+  }
+
+  const uploadFn =
+    token && tokenPayload?.workspaceId
+      ? (file: File) => uploadImageHandler(file, token, tokenPayload.workspaceId, null)
+      : undefined
+
+  return (
+    <>
+      <Stack
+        direction="column"
+        sx={{
+          display: 'flex',
+          padding: '0px 12px 8px',
+          alignItems: 'center',
+          gap: '4px',
+          alignSelf: 'stretch',
+          border: '1px solid #EFF1F4',
+          borderRadius: '4px',
+          marginBottom: '12px',
+        }}
+      >
+        <StyledTextField
+          type="text"
+          padding="8px 0px 0px"
+          autoFocus={true}
+          value={title}
+          borderLess
+          onChange={(e) => {
+            store.dispatch(setCreateTaskFields({ targetField: 'title', value: e.target.value }))
+            store.dispatch(setErrors({ key: CreateTaskErrors.TITLE, value: false }))
+          }}
+          error={errors.title}
+          helperText={errors.title && 'Required'}
+          inputProps={{
+            maxLength: 255,
+          }}
+          sx={{
+            width: '100%',
+            '& .MuiInputBase-input': {
+              fontSize: '16px',
+              lineHeight: '24px',
+              color: (theme) => theme.color.gray[600],
+              fontWeight: 500,
+            },
+            '& .MuiInputBase-input.Mui-disabled': {
+              WebkitTextFillColor: (theme) => theme.color.gray[600],
+            },
+            '& .MuiInputBase-root': {
+              padding: '0px 0px',
+            },
+          }}
+          placeholder="Task name"
+          multiline
+          disabled={isEditorReadonly}
+        />
+        <Box sx={{ height: '100%', width: '100%' }}>
+          <Tapwrite
+            content={description}
+            getContent={handleDetailChange}
+            placeholder="Add description..."
+            editorClass="tapwrite-task-editor h-full"
+            uploadFn={uploadFn}
+            readonly={isEditorReadonly}
+            deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', null, null)}
+            attachmentLayout={AttachmentLayout}
+            maxUploadLimit={MAX_UPLOAD_LIMIT}
+            parentContainerStyle={{ gap: '0px', height: '66px' }}
+            className="h-full"
+          />
         </Box>
+      </Stack>
+    </>
+  )
+}
+
+const NewTaskFooter = ({
+  handleCreate,
+  handleClose,
+}: NewTaskFormProps & { updateWorkflowStatusValue: (value: unknown) => void }) => {
+  const { title } = useSelector(selectCreateTask)
+
+  return (
+    <Box sx={{ borderTop: (theme) => `1px solid ${theme.color.borders.border2}` }}>
+      <AppMargin size={SizeofAppMargin.MEDIUM} py="16px">
+        <Stack
+          direction="row"
+          justifyContent="flex-end"
+          alignItems="center"
+          sx={{
+            marginLeft: 'auto',
+          }}
+        >
+          <Stack direction="row" columnGap={2}>
+            <SecondaryBtn
+              padding="3px 8px"
+              handleClick={() => handleClose()}
+              buttonContent={
+                <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[700] }}>
+                  Discard
+                </Typography>
+              }
+            />
+            <PrimaryBtn padding="3px 8px" disabled={!title.trim()} handleClick={handleCreate} buttonText="Create" />
+          </Stack>
+        </Stack>
       </AppMargin>
     </Box>
   )

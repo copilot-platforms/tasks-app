@@ -4,6 +4,18 @@ import { WorkflowStateResponseSchema } from './workflowStates.dto'
 import { DateStringSchema } from '@/types/date'
 import { ClientResponseSchema, CompanyResponseSchema, InternalUsersSchema } from '../common'
 
+export const ViewersSchema = z
+  .array(
+    z.object({
+      clientId: z.string().uuid().optional(),
+      companyId: z.string().uuid(),
+    }),
+  )
+  .max(1)
+  .optional()
+
+export type Viewers = z.infer<typeof ViewersSchema>
+
 export const validateUserIds = (
   data: { internalUserId?: string | null; clientId?: string | null; companyId?: string | null },
   ctx: z.RefinementCtx,
@@ -42,6 +54,7 @@ export const CreateTaskRequestSchema = z
     internalUserId: z.string().uuid().nullish().default(null),
     clientId: z.string().uuid().nullish().default(null),
     companyId: z.string().uuid().nullish().default(null),
+    viewers: ViewersSchema, //right now, we only need the feature to have max of 1 viewer per task
   })
   .superRefine(validateUserIds)
 
@@ -57,6 +70,7 @@ export const UpdateTaskRequestSchema = z
     internalUserId: z.string().uuid().nullish(),
     clientId: z.string().uuid().nullish(),
     companyId: z.string().uuid().nullish(),
+    viewers: ViewersSchema, //right now, we only need the feature to have max of 1 viewer per task
   })
   .superRefine(validateUserIds)
 
@@ -86,6 +100,7 @@ export const TaskResponseSchema = z.object({
   internalUserId: z.string().uuid().nullish(),
   clientId: z.string().uuid().nullish(),
   companyId: z.string().uuid().nullish(),
+  viewers: ViewersSchema,
 })
 
 export type TaskResponse = z.infer<typeof TaskResponseSchema>

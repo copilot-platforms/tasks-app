@@ -1,9 +1,25 @@
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { Sizes } from '@/types/interfaces'
 import { statusIcons } from '@/utils/iconMatcher'
-import { Box, ClickAwayListener, Popper, Stack, Typography } from '@mui/material'
+import { Box, ClickAwayListener, Popper, Stack, Theme, Typography } from '@mui/material'
 import React, { ReactNode, useState } from 'react'
 import { SecondaryBtn } from '../buttons/SecondaryBtn'
+import { CopilotTooltip, CopilotTooltipProps } from '@/components/atoms/CopilotTooltip'
+
+type WorkflowStateSelectorProps = {
+  value: WorkflowStateResponse
+  option: WorkflowStateResponse[]
+  disabled?: boolean
+  getValue: (value: WorkflowStateResponse) => void
+  variant?: 'outlined' | 'icon' | 'normal'
+  responsiveNoHide?: boolean
+  size?: Exclude<Sizes, Sizes.LARGE>
+  padding?: string
+  height?: string
+  gap?: string
+  hoverColor?: keyof Theme['color']['gray']
+  tooltipProps?: Omit<CopilotTooltipProps, 'content' | 'children'>
+}
 
 export const WorkflowStateSelector = ({
   value,
@@ -16,18 +32,9 @@ export const WorkflowStateSelector = ({
   padding,
   height,
   gap,
-}: {
-  value: WorkflowStateResponse
-  option: WorkflowStateResponse[]
-  disabled?: boolean
-  getValue: (value: WorkflowStateResponse) => void
-  variant?: 'outlined' | 'icon' | 'normal'
-  responsiveNoHide?: boolean
-  size?: Exclude<Sizes, Sizes.LARGE>
-  padding?: string
-  height?: string
-  gap?: string
-}) => {
+  hoverColor,
+  tooltipProps,
+}: WorkflowStateSelectorProps) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const open = Boolean(anchorEl)
   const id = open ? 'selector-workflowStateSelector-popper' : ''
@@ -60,15 +67,22 @@ export const WorkflowStateSelector = ({
           borderRadius: '4px',
         }}
       >
-        <Box onClick={handleClick} aria-describedby={id}>
+        <Box
+          onClickCapture={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            handleClick(e)
+          }}
+          aria-describedby={id}
+        >
           {variant == 'normal' ? (
             <Stack
               direction="row"
               alignItems="center"
-              columnGap="7px"
+              columnGap={gap ?? '7px'}
               justifyContent="flex-start"
               sx={{
-                padding: '4px 8px',
+                padding: padding || '4px 8px',
                 justifyContent: { xs: 'end', sm: 'flex-start' },
                 cursor: disabled ? 'auto' : 'pointer',
               }}
@@ -83,6 +97,7 @@ export const WorkflowStateSelector = ({
                   display: { xs: responsiveNoHide ? 'block' : 'none', sm: 'block' },
                   lineHeight: '22px',
                   userSelect: 'none',
+                  fontWeight: 400,
                 }}
               >
                 {value?.name as ReactNode}
@@ -96,7 +111,7 @@ export const WorkflowStateSelector = ({
                 <Stack direction="row" alignItems={'center'} columnGap={gap ?? '8px'}>
                   {statusIcons[size][value?.type]}
                   {size == Sizes.SMALL ? (
-                    <Typography variant="bodySm" sx={{ color: (theme) => theme.color.gray[600], fontSize: '12px' }}>
+                    <Typography variant="bodySm" sx={{ color: (theme) => theme.color.gray[600], fontSize: '14px' }}>
                       {value?.name as ReactNode}
                     </Typography>
                   ) : (
@@ -108,18 +123,21 @@ export const WorkflowStateSelector = ({
               }
             />
           ) : (
-            <Box
-              sx={{
-                padding: padding,
-                borderRadius: '4px',
-                ':hover': {
-                  cursor: 'pointer',
-                  background: (theme) => theme.color.gray[150],
-                },
-              }}
-            >
-              {statusIcons[size][value?.type]}
-            </Box>
+            // Right now Tooltip support is applied to the icon variant only
+            <CopilotTooltip content={'Change status'} disabled={tooltipProps?.disabled} position={tooltipProps?.position}>
+              <Box
+                sx={{
+                  padding: padding,
+                  borderRadius: '4px',
+                  ':hover': {
+                    cursor: 'pointer',
+                    background: (theme) => theme.color.gray[hoverColor ?? 150],
+                  },
+                }}
+              >
+                {statusIcons[size][value?.type]}
+              </Box>
+            </CopilotTooltip>
           )}
         </Box>
         <Popper
@@ -131,6 +149,9 @@ export const WorkflowStateSelector = ({
             zIndex: '99999999',
           }}
           placement="bottom-start"
+          onClick={(e) => {
+            e.stopPropagation()
+          }}
         >
           <Stack
             direction="column"

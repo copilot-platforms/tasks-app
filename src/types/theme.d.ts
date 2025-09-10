@@ -77,6 +77,7 @@ export declare module '@mui/material/styles' {
         border2: string
         border3: string
         focusBorder: string
+        focusBorder2: string
       }
       background: {
         bgCard: string
@@ -84,6 +85,9 @@ export declare module '@mui/material/styles' {
         bgHover: string
         bgCommentDrag: string
         avatarBackground: string
+      }
+      red: {
+        200: string
       }
       error: string
       muiError: string
@@ -165,6 +169,7 @@ export declare module '@mui/material/styles' {
         border2: React.CSSProperties['color']
         border3: React.CSSProperties['color']
         focusBorder: React.CSSProperties['color']
+        focusBorder2: React.CSSProperties['color']
       }
       background: {
         bgCard: React.CSSProperties['color']
@@ -172,6 +177,9 @@ export declare module '@mui/material/styles' {
         bgHover: React.CSSProperties['color']
         bgCommentDrag: React.CSSProperties['color']
         avatarBackground: React.CSSProperties['color']
+      }
+      red: {
+        200: React.CSSProperties['color']
       }
       error: React.CSSProperties['color']
       muiError: React.CSSProperties['color']

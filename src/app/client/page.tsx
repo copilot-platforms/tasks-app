@@ -37,10 +37,7 @@ async function getAllWorkflowStates(token: string): Promise<WorkflowStateRespons
 }
 
 async function getAllTasks(token: string): Promise<TaskResponse[]> {
-  const res = await fetch(`${apiUrl}/api/tasks?token=${token}`, {
-    next: { tags: ['getAllTasks-client'] },
-  })
-
+  const res = await fetch(`${apiUrl}/api/tasks?token=${token}`)
   const data = await res.json()
   return data.tasks
 }
@@ -104,7 +101,7 @@ export default async function ClientPage({ searchParams }: { searchParams: { tok
         <TaskBoardAppBridge token={token} role={UserRole.Client} portalUrl={workspace.portalUrl} />
         <RealTime tokenPayload={tokenPayload}>
           <DndWrapper>
-            <TaskBoard mode={UserRole.Client} />
+            <TaskBoard mode={UserRole.Client} token={token} />
           </DndWrapper>
           <ModalNewTaskForm
             handleCreateMultipleAttachments={async (attachments: CreateAttachmentRequest[]) => {

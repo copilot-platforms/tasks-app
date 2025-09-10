@@ -33,7 +33,7 @@ import { RealTime } from '@/hoc/RealTime'
 import { WorkspaceResponse } from '@/types/common'
 import { AncestorTaskResponse, SubTaskStatusResponse, TaskResponse } from '@/types/dto/tasks.dto'
 import { UserType } from '@/types/interfaces'
-import { getAssigneeCacheLookupKey, UserIdsType } from '@/utils/assignee'
+import { getAssigneeCacheLookupKey, UserIdsType, UserIdsWithViewersType } from '@/utils/assignee'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import EscapeHandler from '@/utils/escapeHandler'
 import { getPreviewMode } from '@/utils/previewMode'
@@ -41,6 +41,7 @@ import { Box, Stack } from '@mui/material'
 import { z } from 'zod'
 import { fetchWithErrorHandler } from '@/app/_fetchers/fetchWithErrorHandler'
 import { AssigneeCacheGetter } from '@/app/_cache/AssigneeCacheGetter'
+import { ClientDetailAppBridge } from '@/app/detail/ui/ClientDetailAppBridge'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const data = await fetchWithErrorHandler<{ task: TaskResponse }>(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
@@ -107,6 +108,15 @@ export default async function TaskDetailPage({
     label,
     href: `/detail/${id}/${user_type}?token=${token}`,
   }))
+
+  // flag that determines if the current user is the task viewer
+  const isViewer =
+    Array.isArray(task.viewers) &&
+    task.viewers.length > 0 &&
+    (!task.viewers[0].clientId || task.viewers[0].clientId === tokenPayload.clientId) &&
+    task.viewers[0].companyId === tokenPayload.companyId
+      ? true
+      : false
 
   return (
     <DetailStateUpdate
@@ -208,6 +218,8 @@ export default async function TaskDetailPage({
             <Sidebar
               task_id={task_id}
               selectedAssigneeId={task?.assigneeId}
+              userType={user_type}
+              portalUrl={workspace.portalUrl}
               selectedWorkflowState={task?.workflowState}
               updateWorkflowState={async (workflowState) => {
                 'use server'
@@ -215,15 +227,16 @@ export default async function TaskDetailPage({
                   ? await clientUpdateTask(token, task_id, workflowState.id)
                   : await updateWorkflowStateIdOfTask(token, task_id, workflowState?.id)
               }}
-              updateAssignee={async ({ internalUserId, clientId, companyId }: UserIdsType) => {
+              updateAssignee={async ({ internalUserId, clientId, companyId, viewers }: UserIdsWithViewersType) => {
                 'use server'
-                await updateAssignee(token, task_id, internalUserId, clientId, companyId)
+                await updateAssignee(token, task_id, internalUserId, clientId, companyId, viewers)
               }}
               updateTask={async (payload) => {
                 'use server'
                 await updateTaskDetail({ token, taskId: task_id, payload })
               }}
               disabled={params.user_type === UserType.CLIENT_USER}
+              workflowDisabled={isViewer}
             />
           </Box>
         </ResponsiveStack>
