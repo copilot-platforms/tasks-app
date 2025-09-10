@@ -109,6 +109,15 @@ export default async function TaskDetailPage({
     href: `/detail/${id}/${user_type}?token=${token}`,
   }))
 
+  // flag that determines if the current user is the task viewer
+  const isViewer =
+    Array.isArray(task.viewers) &&
+    task.viewers.length > 0 &&
+    (!task.viewers[0].clientId || task.viewers[0].clientId === tokenPayload.clientId) &&
+    task.viewers[0].companyId === tokenPayload.companyId
+      ? true
+      : false
+
   return (
     <DetailStateUpdate
       isRedirect={!!searchParams.isRedirect}
@@ -227,6 +236,7 @@ export default async function TaskDetailPage({
                 await updateTaskDetail({ token, taskId: task_id, payload })
               }}
               disabled={params.user_type === UserType.CLIENT_USER}
+              workflowDisabled={isViewer}
             />
           </Box>
         </ResponsiveStack>

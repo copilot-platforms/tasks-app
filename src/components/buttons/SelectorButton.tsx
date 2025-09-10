@@ -64,6 +64,7 @@ export const SelectorButton = ({
           marginRight: '6px',
         },
         height: height ?? '32px',
+        minWidth: 'auto',
       })}
       onClick={handleClick}
       disableRipple
