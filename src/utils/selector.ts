@@ -60,7 +60,11 @@ export const getSelectorAssigneeFromTask = (assignee: IAssigneeCombined[], task:
 
 export const getSelectorViewerFromTask = (assignee: IAssigneeCombined[], task: TaskResponse) => {
   if (!task) return undefined
-  return assignee.find((assignee) => task?.viewers?.[0]?.clientId == assignee.id)
+  return assignee.find(
+    (assignee) =>
+      (task.viewers?.[0]?.clientId == assignee.id && task.viewers?.[0]?.companyId == assignee.companyId) ||
+      task.viewers?.[0]?.companyId == assignee.id,
+  )
 }
 
 export const getSelectorAssigneeFromFilterOptions = (
@@ -78,7 +82,10 @@ export const getSelectorAssigneeFromFilterOptions = (
 } //util to get initial assignee from filterOptions for selector.
 
 export const getSelectedViewerIds = (inputValue: InputValue[]): Viewers => {
-  if (!inputValue?.length || inputValue[0].object !== UserRole.Client) return [] // when no user is selected.
+  if (!inputValue?.length || inputValue[0].object === UserRole.IU) return [] // when no user is selected.
 
-  return [{ clientId: inputValue[0].id, companyId: z.string().parse(inputValue[0].companyId) }] // currently id of single client id
+  if (inputValue[0].object === UserRole.Client)
+    return [{ clientId: inputValue[0].id, companyId: z.string().parse(inputValue[0].companyId) }] // currently id of single client id
+
+  return [{ companyId: inputValue[0].id }]
 }

@@ -150,6 +150,7 @@ export interface IAssigneeCombined {
   email?: string
   type: AssigneeType
   companyId?: string
+  companyIds?: string[]
   status?: string
   avatarImageUrl?: string
   customFields?: unknown

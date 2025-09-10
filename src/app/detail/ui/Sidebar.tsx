@@ -47,7 +47,7 @@ export const Sidebar = ({
   updateAssignee,
   updateTask,
   disabled,
-  workflowDisabled,
+  workflowDisabled = false,
   userType,
   portalUrl,
 }: {
@@ -58,7 +58,7 @@ export const Sidebar = ({
   updateAssignee: (userIds: UserIdsWithViewersType) => void
   updateTask: (payload: UpdateTaskRequest) => void
   disabled: boolean
-  workflowDisabled?: false
+  workflowDisabled?: boolean
   userType: UserType
   portalUrl?: string
 }) => {
@@ -368,7 +368,7 @@ export const Sidebar = ({
             <Box
               sx={{
                 ':hover': {
-                  bgcolor: (theme) => theme.color.background.bgCallout,
+                  bgcolor: (theme) => (!!workflowDisabled ? '' : theme.color.background.bgCallout),
                 },
                 padding: '4px',
                 borderRadius: '4px',
