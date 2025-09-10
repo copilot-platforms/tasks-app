@@ -1,5 +1,6 @@
 import { Uuid } from '@/types/common'
 import { TaskWithWorkflowState } from '@/types/db'
+import { ViewersSchema } from '@/types/dto/tasks.dto'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import User from '@api/core/models/User.model'
 import { BaseService } from '@api/core/services/base.service'
@@ -35,15 +36,26 @@ export class TaskNotificationsService extends BaseService {
 
       const parentTask = await this.db.task.findFirst({
         where: { id: task.parentId, workspaceId: this.user.workspaceId },
-        select: { assigneeId: true, assigneeType: true },
+        select: { assigneeId: true, assigneeType: true, viewers: true },
       })
       if (!parentTask) return false
 
+      const parentViewers = ViewersSchema.parse(parentTask.viewers)
+      const viewers = ViewersSchema.parse(task.viewers)
+
       const copilot = new CopilotAPI(this.user.token)
-      if (task.assigneeType === AssigneeType.client) {
+      if (task.assigneeType === AssigneeType.client || !!viewers?.length) {
         const client = await copilot.getClient(task.assigneeId)
         if (parentTask.assigneeId === client.id || parentTask.assigneeId === client.companyId) {
           return true
+        }
+        if (!!parentViewers?.length) {
+          if (
+            (parentViewers[0].clientId === client.id && client.companyIds?.includes(parentViewers[0].companyId)) ||
+            (parentViewers[0].clientId === null && client.companyIds?.includes(parentViewers[0].companyId))
+          ) {
+            return true
+          }
         }
       } else {
         const clients = await copilot.getClients()
@@ -61,14 +73,19 @@ export class TaskNotificationsService extends BaseService {
     // If task is unassigned, there's nobody to send notifications to
     if (!task.assigneeId) return
 
-    // If task is assigned to the same person that created it, no need to notify yourself
-    if (task.assigneeId === task.createdById) return
-
     // If task is created as status completed for whatever reason, don't send a notification as well
     if (task.workflowState.type === NotificationTaskActions.Completed) return
 
     // If task is a subtask for a client/company and isn't visible on task board (is disjoint)
     if (await this.checkParentAccessible(task)) return
+
+    const viewers = ViewersSchema.parse(task.viewers)
+    if (!!viewers?.length) {
+      await this.sendTaskSharedNotifications(task)
+    }
+
+    // If task is assigned to the same person that created it, no need to notify yourself
+    if (task.assigneeId === task.createdById) return
 
     // If new task is assigned to someone (IU / Client / Company), send proper notification + email to them
     const sendTaskNotifications =
@@ -308,6 +325,43 @@ export class TaskNotificationsService extends BaseService {
       notificationType,
       task,
       { disableEmail: task.assigneeType === AssigneeType.internalUser },
+    )
+    // Create a new entry in ClientNotifications table so we can mark as read on
+    // behalf of client later
+    if (!notification) {
+      console.error('Notification failed to trigger for task:', task)
+    }
+  }
+
+  private sendTaskSharedNotifications = async (task: Task) => {
+    if (!task.assigneeType) return
+
+    const notificationType = NotificationTaskActions.Shared
+
+    // --- Validation to check for duplication ---
+    // When we are triggering bulk notifications, it's possible that we will be running a lot of db queries in parallel,
+    // This is okay because this service runs only on async jobs, it's not user facing.
+    const viewers = ViewersSchema.parse(task.viewers)
+    if (!viewers?.length) {
+      console.error('Invalid viewer to send task shared notification')
+      return
+    }
+
+    const existingNotification = await this.getExistingClientNotificationForTask(
+      task.id,
+      Uuid.parse(viewers[0].clientId),
+      Uuid.parse(viewers[0].companyId),
+    )
+    if (existingNotification) {
+      console.error('Found an existing notification. Skipping creating a new one:', existingNotification)
+      return
+    }
+
+    const notification = await this.notificationService.create(
+      // In future when reassignment is supported, change this logic to support reassigned to client as well
+      notificationType,
+      task,
+      { disableEmail: false },
     )
     // Create a new entry in ClientNotifications table so we can mark as read on
     // behalf of client later

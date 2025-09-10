@@ -91,6 +91,11 @@ export const getInProductNotificationDetails = (
       body: `You were mentioned in a comment on task ‘${task?.title}’ by ${actionUser}. To see details about the task, navigate to the Tasks App below. `,
       ctaParams,
     },
+    [NotificationTaskActions.Shared]: {
+      title: 'View task',
+      body: `${actionUser} shared the task '${task?.title}'. View the task below to see updates and leave comments.`,
+      ctaParams,
+    },
   }
 }
 
@@ -173,6 +178,13 @@ export const getEmailDetails = (
       header: `A task was reassigned to your ${getWorkspaceLabels(workspace).groupTerm}`,
       title: 'View task',
       body: `The task ‘${task?.title}’ was reassigned to your ${getWorkspaceLabels(workspace).groupTerm} by ${actionUser}. To see details about the task open it below.`,
+      ctaParams,
+    },
+    [NotificationTaskActions.Shared]: {
+      subject: `A task has been shared with you`,
+      header: `A task was shared with you by ${actionUser}`,
+      title: 'View task',
+      body: `${actionUser} shared the task '${task?.title}'. View the task below to see updates and leave comments.`,
       ctaParams,
     },
   }

@@ -17,6 +17,7 @@ import { AssigneeType, ClientNotification, Task } from '@prisma/client'
 import Bottleneck from 'bottleneck'
 import httpStatus from 'http-status'
 import { z } from 'zod'
+import { ViewersSchema } from '@/types/dto/tasks.dto'
 
 export class NotificationService extends BaseService {
   async create(
@@ -76,7 +77,7 @@ export class NotificationService extends BaseService {
       console.info('NotificationService#create | Created single notification:', notification)
 
       // 3. Save notification to ClientNotification or InternalUserNotification table
-      if (task.assigneeType === AssigneeType.client) {
+      if (task.assigneeType === AssigneeType.client || !!task.viewers.length) {
         await this.addToClientNotifications(task, NotificationCreatedResponseSchema.parse(notification))
       }
       // NOTE: There are cases where task.assigneeType does not account for IU notification!
@@ -385,6 +386,16 @@ export class NotificationService extends BaseService {
     }
 
     switch (action) {
+      case NotificationTaskActions.Shared:
+        const viewers = ViewersSchema.parse(task.viewers)
+        if (!viewers?.[0]?.clientId) {
+          throw new APIError(httpStatus.NOT_FOUND, `Unknown viewer type: ${viewers}`)
+        }
+        senderId = task.createdById
+        recipientId = z.string().uuid().parse(viewers[0].clientId) //supporting only one viewer as of now.
+        senderCompanyId = z.string().uuid().parse(viewers[0].companyId)
+        actionTrigger = await copilot.getInternalUser(senderId)
+        break
       case NotificationTaskActions.Assigned:
         senderId = task.createdById
         recipientId = z.string().parse(task.assigneeId)
