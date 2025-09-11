@@ -31,31 +31,38 @@ export class TaskNotificationsService extends BaseService {
   }
 
   private async checkParentAccessible(task: TaskWithWorkflowState): Promise<boolean> {
-    if ((task.assigneeType === AssigneeType.client || task.assigneeType === AssigneeType.company) && task.parentId) {
-      if (!task.assigneeId) return false
+    if (!task.assigneeId || !task.parentId) return false
+    const parentTask = await this.db.task.findFirst({
+      where: { id: task.parentId, workspaceId: this.user.workspaceId },
+      select: { assigneeId: true, assigneeType: true, viewers: true },
+    })
+    if (!parentTask) return false
 
-      const parentTask = await this.db.task.findFirst({
-        where: { id: task.parentId, workspaceId: this.user.workspaceId },
-        select: { assigneeId: true, assigneeType: true, viewers: true },
-      })
-      if (!parentTask) return false
+    const viewers = ViewersSchema.parse(task.viewers)
 
+    const checkParentViewers = (clientId: string | null, companyIds?: string[]) => {
       const parentViewers = ViewersSchema.parse(parentTask.viewers)
-      const viewers = ViewersSchema.parse(task.viewers)
 
+      if (!!parentViewers?.length) {
+        if (
+          (parentViewers[0].clientId === clientId && companyIds?.includes(parentViewers[0].companyId)) ||
+          (parentViewers[0].clientId === null && companyIds?.includes(parentViewers[0].companyId))
+        ) {
+          return true
+        }
+      }
+      return false
+    }
+
+    if (task.assigneeType === AssigneeType.client || task.assigneeType === AssigneeType.company || !!viewers?.length) {
       const copilot = new CopilotAPI(this.user.token)
-      if (task.assigneeType === AssigneeType.client || !!viewers?.length) {
+      if (task.assigneeType === AssigneeType.client) {
         const client = await copilot.getClient(task.assigneeId)
         if (parentTask.assigneeId === client.id || parentTask.assigneeId === client.companyId) {
           return true
         }
-        if (!!parentViewers?.length) {
-          if (
-            (parentViewers[0].clientId === client.id && client.companyIds?.includes(parentViewers[0].companyId)) ||
-            (parentViewers[0].clientId === null && client.companyIds?.includes(parentViewers[0].companyId))
-          ) {
-            return true
-          }
+        if (checkParentViewers(client.id, client.companyIds)) {
+          return true
         }
       } else {
         const clients = await copilot.getClients()
@@ -64,7 +71,33 @@ export class TaskNotificationsService extends BaseService {
         if (companyClientIds.includes(parentTask.assigneeId || '__empty__')) {
           return true
         }
-      }
+        if (checkParentViewers(null, [task.assigneeId])) {
+          return true
+        }
+      } //for assignment notifications
+
+      if (!!viewers?.length) {
+        const copilot = new CopilotAPI(this.user.token)
+        if (viewers[0].clientId) {
+          const client = await copilot.getClient(viewers[0].clientId)
+          if (parentTask.assigneeId === client.id || parentTask.assigneeId === client.companyId) {
+            return true
+          }
+          if (checkParentViewers(client.id, client.companyIds)) {
+            return true
+          }
+        } else {
+          const clients = await copilot.getClients()
+          const companyClientIds =
+            clients.data?.filter((client) => client.companyId === task.assigneeId).map((client) => client.id) || []
+          if (companyClientIds.includes(parentTask.assigneeId || '__empty__')) {
+            return true
+          }
+          if (checkParentViewers(null, [task.assigneeId])) {
+            return true
+          }
+        }
+      } //for viewers notifications
     }
     return false
   }
