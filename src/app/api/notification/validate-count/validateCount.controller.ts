@@ -14,7 +14,8 @@ export const validateCount = async (req: NextRequest) => {
   const user = await authenticate(req)
   const clientId = Uuid.safeParse(user.clientId)
   const companyId = Uuid.safeParse(user.companyId)
-  if (clientId.error || companyId.error) {
+  if (!clientId.success || !companyId.success) {
+    // safe parse returns success as false if the uuid is invalid
     throw new APIError(httpStatus.UNAUTHORIZED, 'Only client users are allowed to access this feature')
   }
 
