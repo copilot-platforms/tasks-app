@@ -61,7 +61,6 @@ export const SelectorButton = ({
             fontWeight: '400',
           },
           marginLeft: '0px',
-          marginRight: '4px',
         },
         height: height ?? '32px',
       })}
