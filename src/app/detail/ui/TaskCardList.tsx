@@ -135,7 +135,7 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate,
       sx={{
         height: variant == 'task' ? '44px' : '36px',
         display: 'flex',
-        padding: variant == 'task' ? { xs: '10px 12px 10px 12px', sm: '10px 20px 10px 20px' } : '6px 0px 6px 0px',
+        padding: variant == 'task' ? { xs: '10px 20px 10px 20px' } : '6px 0px 6px 0px',
         alignItems: 'center',
         alignSelf: 'stretch',
         gap: '20px',
