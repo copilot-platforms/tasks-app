@@ -63,6 +63,10 @@ export class CopilotAPI {
 
     console.info('CopilotAPI#manualFetch |', url, headers)
     const resp = await fetch(url, { headers })
+    if (!resp.ok) {
+      console.error('CopilotAPI#manualFetch | Response is not ok', resp)
+      throw new Error('CopilotAPI#manualFetch | Response is not ok | Response' + JSON.stringify(resp))
+    }
     return await resp.json()
   }
 
