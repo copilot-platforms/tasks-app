@@ -348,7 +348,7 @@ export const Sidebar = ({
                 handleConfirmAssigneeChange(selectedAssignee)
               }
             }}
-            buttonText="Reassign"
+            buttonText={showConfirmViewershipModal ? 'Remove' : 'Reassign'}
             description={
               showConfirmAssignModal ? (
                 <>
@@ -584,7 +584,7 @@ export const Sidebar = ({
               handleConfirmAssigneeChange(selectedAssignee)
             }
           }}
-          buttonText="Reassign"
+          buttonText={showConfirmViewershipModal ? 'Remove' : 'Reassign'}
           description={
             showConfirmAssignModal ? (
               <>
