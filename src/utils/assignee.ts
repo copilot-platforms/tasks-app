@@ -1,7 +1,7 @@
 import { Token } from '@/types/common'
 import { TruncateMaxNumber } from '@/types/constants'
 import { TaskResponse, Viewers } from '@/types/dto/tasks.dto'
-import { IAssigneeCombined, ISelectorOption, UserType } from '@/types/interfaces'
+import { IAssigneeCombined, ISelectorOption, UserIds, UserType } from '@/types/interfaces'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { truncateText } from '@/utils/truncateText'
 import { AssigneeType } from '@prisma/client'
@@ -82,4 +82,9 @@ export const getAssigneeCacheLookupKey = (userType: string, tokenPayload: Token)
     return tokenPayload.internalUserId!
   }
   return `${tokenPayload.clientId}.${tokenPayload.companyId}`
+}
+
+export const isEmptyAssignee = (userIds?: UserIdsType) => {
+  if (!userIds) return true
+  return Object.values(userIds).every((value) => value === null)
 }

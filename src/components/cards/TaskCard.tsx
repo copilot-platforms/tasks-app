@@ -16,7 +16,7 @@ import store from '@/redux/store'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { IAssigneeCombined, InputValue, Sizes } from '@/types/interfaces'
-import { getAssigneeId, getUserIds, UserIdsType } from '@/utils/assignee'
+import { getAssigneeId, getAssigneeName, getUserIds, UserIdsType } from '@/utils/assignee'
 import { isTaskCompleted } from '@/utils/isTaskCompleted'
 import { NoAssignee } from '@/utils/noAssignee'
 import { Box, Skeleton, Stack, styled } from '@mui/material'
@@ -38,6 +38,8 @@ import { getCardHref } from '@/utils/getCardHref'
 import { getSelectedUserIds, getSelectorAssignee, getSelectorAssigneeFromTask } from '@/utils/selector'
 import { shouldConfirmBeforeReassignment } from '@/utils/shouldConfirmBeforeReassign'
 import z from 'zod'
+import { StyledModal } from '@/app/detail/ui/styledComponent'
+import { ConfirmUI } from '@/components/layouts/ConfirmUI'
 
 const TaskCardContainer = styled(Stack)(({ theme }) => ({
   border: `1px solid ${theme.color.borders.border}`,
@@ -68,8 +70,16 @@ interface TaskCardProps {
 }
 
 export const TaskCard = ({ task, href, workflowState, mode, subtasks, workflowDisabled = false }: TaskCardProps) => {
-  const { assignee, workflowStates, assigneeCache, previewMode, token, accessibleTasks, showSubtasks } =
-    useSelector(selectTaskBoard)
+  const {
+    assignee,
+    workflowStates,
+    assigneeCache,
+    previewMode,
+    token,
+    accessibleTasks,
+    showSubtasks,
+    confirmAssignModalId,
+  } = useSelector(selectTaskBoard)
 
   const subtaskCount = useSubtaskCount(task.id)
 
@@ -122,6 +132,15 @@ export const TaskCard = ({ task, href, workflowState, mode, subtasks, workflowDi
       setAssigneeValue(nextAssignee ?? NoAssignee)
     }
   }
+  const getAssigneeValue = (userIds?: UserIdsType) => {
+    if (!userIds) {
+      return NoAssignee
+    }
+    const assigneeId = getAssigneeId(userIds)
+    const match = assignee.find((assignee) => assignee.id === assigneeId)
+    return match ?? NoAssignee
+  }
+
   const [assigneeValue, setAssigneeValue] = useState<IAssigneeCombined | Omit<IAssigneeCombined, 'type'> | undefined>(() => {
     return assigneeCache[task.id]
   }) //Omitting type for NoAssignee
@@ -277,6 +296,34 @@ export const TaskCard = ({ task, href, workflowState, mode, subtasks, workflowDi
           </Stack>
         )}
       </Stack>
+      <StyledModal
+        open={confirmAssignModalId === task.id}
+        onClose={() => store.dispatch(setConfirmAssigneeModalId(undefined))}
+        aria-labelledby="confirm-reassignment-modal"
+        aria-describedby="confirm-reassignment"
+      >
+        <ConfirmUI
+          handleCancel={() => {
+            setSelectedAssignee(undefined)
+            store.dispatch(setConfirmAssigneeModalId(undefined))
+          }}
+          handleConfirm={() => {
+            if (selectedAssignee) {
+              handleConfirmAssigneeChange(selectedAssignee)
+            }
+          }}
+          buttonText="Reassign"
+          description={
+            <>
+              You&apos;re about to reassign this task from{' '}
+              <strong>{getAssigneeName(getAssigneeValue(getUserIds(task)))}</strong> to{' '}
+              <strong>{getAssigneeName(getAssigneeValue(selectedAssignee))}</strong>. This will give{' '}
+              <strong>{getAssigneeName(getAssigneeValue(selectedAssignee))}</strong> access to all task comments and history.
+            </>
+          }
+          title="Reassign task?"
+        />
+      </StyledModal>
     </TaskCardContainer>
   )
 }
