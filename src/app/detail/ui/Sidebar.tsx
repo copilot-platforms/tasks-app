@@ -19,7 +19,14 @@ import { DateStringSchema } from '@/types/date'
 import { UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { FilterByOptions, IAssigneeCombined, InputValue, Sizes, UserType } from '@/types/interfaces'
-import { getAssigneeId, getAssigneeName, getUserIds, UserIdsType, UserIdsWithViewersType } from '@/utils/assignee'
+import {
+  getAssigneeId,
+  getAssigneeName,
+  getUserIds,
+  isEmptyAssignee,
+  UserIdsType,
+  UserIdsWithViewersType,
+} from '@/utils/assignee'
 import { createDateFromFormattedDateString, formatDate } from '@/utils/dateHelper'
 import {
   getSelectedUserIds,
@@ -29,13 +36,18 @@ import {
   getSelectorViewerFromTask,
 } from '@/utils/selector'
 import { NoAssignee } from '@/utils/noAssignee'
-import { shouldConfirmBeforeReassignment } from '@/utils/shouldConfirmBeforeReassign'
+import {
+  shouldConfirmBeforeReassignment,
+  shouldConfirmViewershipBeforeReassignment,
+} from '@/utils/shouldConfirmBeforeReassign'
 import { Box, Skeleton, Stack, styled, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { z } from 'zod'
 import { ClientDetailAppBridge } from '@/app/detail/ui/ClientDetailAppBridge'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
+import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
+import { AssigneeType } from '@prisma/client'
 
 const StyledText = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[500],
@@ -77,6 +89,7 @@ export const Sidebar = ({
     userType == UserType.CLIENT_USER && !previewMode && activeTask?.assigneeId === tokenPayload?.clientId
 
   const [dueDate, setDueDate] = useState<Date | string | undefined>()
+  const [showConfirmViewershipModal, setShowConfirmViewershipModal] = useState(false) //this is used only in sidebar.
 
   const [assigneeValue, setAssigneeValue] = useState<IAssigneeCombined | undefined>()
   const [selectedAssignee, setSelectedAssignee] = useState<UserIdsType | undefined>(undefined)
@@ -128,7 +141,7 @@ export const Sidebar = ({
   const handleConfirmAssigneeChange = (userIds: UserIdsType) => {
     updateAssignee(checkViewersCompatibility(userIds))
     setAssigneeValue(getAssigneeValue(userIds) as IAssigneeCombined)
-    store.dispatch(toggleShowConfirmAssignModal())
+    showConfirmAssignModal ? store.dispatch(toggleShowConfirmAssignModal()) : setShowConfirmViewershipModal(false)
   }
 
   useEffect(() => {
@@ -148,16 +161,32 @@ export const Sidebar = ({
     return match ?? undefined
   }
 
-  if (!activeTask || !isHydrated) return <SidebarSkeleton />
+  const getAssigneeValueFromViewers = (viewer: IAssigneeCombined | null) => {
+    if (!viewer) {
+      return NoAssignee
+    }
+    const viewerType = getAssigneeTypeCorrected(viewer)
+    const match = assignee.find((assignee) =>
+      viewerType === AssigneeType.client
+        ? assignee.id === viewer.id && assignee.companyId == viewer.companyId
+        : assignee.id === viewer?.id,
+    )
+    return match ?? undefined
+  }
 
+  if (!activeTask || !isHydrated) return <SidebarSkeleton />
   const handleAssigneeChange = (inputValue: InputValue[]) => {
     const newUserIds = getSelectedUserIds(inputValue)
     const previousAssignee = assignee.find((assignee) => assignee.id == getAssigneeId(getUserIds(activeTask)))
     const nextAssignee = getSelectorAssignee(assignee, inputValue)
     const shouldShowConfirmModal = shouldConfirmBeforeReassignment(previousAssignee, nextAssignee)
+    const shouldShowConfirmViewershipModal = shouldConfirmViewershipBeforeReassignment(taskViewerValue, nextAssignee)
     if (shouldShowConfirmModal) {
       setSelectedAssignee(newUserIds)
       store.dispatch(toggleShowConfirmAssignModal())
+    } else if (shouldShowConfirmViewershipModal) {
+      setSelectedAssignee(newUserIds)
+      setShowConfirmViewershipModal(true)
     } else {
       setAssigneeValue(getAssigneeValue(newUserIds) as IAssigneeCombined)
       updateAssignee(checkViewersCompatibility(newUserIds))
@@ -307,15 +336,17 @@ export const Sidebar = ({
           </Box>
         )}
         <StyledModal
-          open={showConfirmAssignModal}
-          onClose={() => store.dispatch(toggleShowConfirmAssignModal())}
+          open={showConfirmAssignModal || showConfirmViewershipModal}
+          onClose={() =>
+            showConfirmAssignModal ? store.dispatch(toggleShowConfirmAssignModal()) : setShowConfirmViewershipModal(false)
+          }
           aria-labelledby="confirm-reassignment-modal"
           aria-describedby="confirm-reassignment"
         >
           <ConfirmUI
             handleCancel={() => {
               setSelectedAssignee(undefined)
-              store.dispatch(toggleShowConfirmAssignModal())
+              showConfirmAssignModal ? store.dispatch(toggleShowConfirmAssignModal()) : setShowConfirmViewershipModal(false)
             }}
             handleConfirm={() => {
               if (selectedAssignee) {
@@ -324,15 +355,23 @@ export const Sidebar = ({
             }}
             buttonText="Reassign"
             description={
-              <>
-                You&apos;re about to reassign this task from{' '}
-                <strong>{getAssigneeName(getAssigneeValue(getUserIds(activeTask)))}</strong> to{' '}
-                <strong>{getAssigneeName(getAssigneeValue(selectedAssignee))}</strong>. This will give{' '}
-                <strong>{getAssigneeName(getAssigneeValue(selectedAssignee))}</strong> access to all task comments and
-                history.
-              </>
+              showConfirmAssignModal ? (
+                <>
+                  You&apos;re about to reassign this task from{' '}
+                  <strong>{getAssigneeName(getAssigneeValue(getUserIds(activeTask)))}</strong> to{' '}
+                  <strong>{getAssigneeName(getAssigneeValue(selectedAssignee))}</strong>. This will give{' '}
+                  <strong>{getAssigneeName(getAssigneeValue(selectedAssignee))}</strong> access to all task comments and
+                  history.
+                </>
+              ) : (
+                <>
+                  <strong>{getAssigneeName(getAssigneeValueFromViewers(taskViewerValue))}</strong> will also lose visibility
+                  to the task.
+                </>
+              )
             }
-            title="Reassign task?"
+            title={showConfirmViewershipModal && isEmptyAssignee(selectedAssignee) ? 'Remove assignee?' : 'Reassign task?'}
+            variant={showConfirmViewershipModal ? 'danger' : 'default'}
           />
         </StyledModal>
       </Stack>
@@ -533,15 +572,17 @@ export const Sidebar = ({
         )}
       </AppMargin>
       <StyledModal
-        open={showConfirmAssignModal}
-        onClose={() => store.dispatch(toggleShowConfirmAssignModal())}
+        open={showConfirmAssignModal || showConfirmViewershipModal}
+        onClose={() =>
+          showConfirmAssignModal ? store.dispatch(toggleShowConfirmAssignModal()) : setShowConfirmViewershipModal(false)
+        }
         aria-labelledby="confirm-reassignment-modal"
         aria-describedby="confirm-reassignment"
       >
         <ConfirmUI
           handleCancel={() => {
             setSelectedAssignee(undefined)
-            store.dispatch(toggleShowConfirmAssignModal())
+            showConfirmAssignModal ? store.dispatch(toggleShowConfirmAssignModal()) : setShowConfirmViewershipModal(false)
           }}
           handleConfirm={() => {
             if (selectedAssignee) {
@@ -550,17 +591,26 @@ export const Sidebar = ({
           }}
           buttonText="Reassign"
           description={
-            <>
-              You&apos;re about to reassign this task from{' '}
-              <strong>{getAssigneeName(getAssigneeValue(getUserIds(activeTask)))}</strong> to{' '}
-              <strong>{getAssigneeName(getAssigneeValue(selectedAssignee))}</strong>. This will give{' '}
-              <strong>{getAssigneeName(getAssigneeValue(selectedAssignee))}</strong> access to all task comments and history.
-            </>
+            showConfirmAssignModal ? (
+              <>
+                You&apos;re about to reassign this task from{' '}
+                <strong>{getAssigneeName(getAssigneeValue(getUserIds(activeTask)))}</strong> to{' '}
+                <strong>{getAssigneeName(getAssigneeValue(selectedAssignee))}</strong>. This will give{' '}
+                <strong>{getAssigneeName(getAssigneeValue(selectedAssignee))}</strong> access to all task comments and
+                history.
+              </>
+            ) : (
+              <>
+                <strong>{getAssigneeName(getAssigneeValueFromViewers(taskViewerValue))}</strong> will also lose visibility to
+                the task.
+              </>
+            )
           }
-          title="Reassign task?"
+          title={showConfirmViewershipModal && isEmptyAssignee(selectedAssignee) ? 'Remove assignee?' : 'Reassign task?'}
+          variant={showConfirmViewershipModal ? 'danger' : 'default'}
         />
       </StyledModal>
-      {isAssignedToCU && (
+      {isAssignedToCU && userType == UserType.CLIENT_USER && !previewMode && (
         <ClientDetailAppBridge
           isTaskCompleted={isTaskCompleted}
           handleTaskComplete={() => {
