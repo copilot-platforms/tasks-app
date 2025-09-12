@@ -136,6 +136,7 @@ export const CopilotPopSelector = ({
           handleClose()
         }
       }}
+      touchEvent="onTouchEnd"
     >
       <Stack direction="column">
         <Box
