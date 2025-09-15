@@ -36,7 +36,7 @@ import { Box, Stack, Typography, styled } from '@mui/material'
 import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
-import { PublicTaskCreateDto, publicTaskCreateDtoSchemaFactory } from '@/app/api/tasks/public/public.dto'
+import { PublicTaskCreateDto } from '@/app/api/tasks/public/public.dto'
 import { HomeParamActions } from '@/types/constants'
 import { StyledHelperText } from '@/components/error/FormHelperText'
 
@@ -123,6 +123,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
   const handleUrlActionParam = useCallback(async () => {
     if (urlActionParams.pf && token) {
       const payload = JSON.parse(atob(decodeURIComponent(urlActionParams.pf)))
+      console.info(`payload: `, payload)
 
       if (!payload.companyId && payload.clientId) {
         const assigneeVal = assignee.find((val) => val.id === payload.clientId)
@@ -147,32 +148,29 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
             setErrorMessage('companyId must be provided when clientId is provided')
           }
         }
+      } else if (!payload.companyId && !payload.clientId) {
+        setErrorMessage('clientId or companyId must be provided')
       }
-      const parsedPayload = await publicTaskCreateDtoSchemaFactory(token, true).parseAsync({
-        ...payload,
-        dueDate: payload?.dueDate ? new Date(payload.dueDate).toISOString() : undefined,
-      })
 
       // respect the filter Ids first. This is needed for CRM deep link for respective clients
       const assigneeFilter = {
-        [UserIds.INTERNAL_USER_ID]:
-          filterOptions[FilterOptions.ASSIGNEE].internalUserId || parsedPayload?.internalUserId || null,
-        [UserIds.CLIENT_ID]: filterOptions[FilterOptions.ASSIGNEE].clientId || parsedPayload?.clientId || null,
-        [UserIds.COMPANY_ID]: filterOptions[FilterOptions.ASSIGNEE].companyId || parsedPayload?.companyId || null,
+        [UserIds.INTERNAL_USER_ID]: filterOptions[FilterOptions.ASSIGNEE].internalUserId || payload?.internalUserId || null,
+        [UserIds.CLIENT_ID]: filterOptions[FilterOptions.ASSIGNEE].clientId || payload?.clientId || null,
+        [UserIds.COMPANY_ID]: filterOptions[FilterOptions.ASSIGNEE].companyId || payload?.companyId || null,
       }
 
       const taskPayload = {
-        title: parsedPayload?.name || '',
-        description: parsedPayload?.description || '',
-        workflowStateId: workflowStates.find((state) => state.key === parsedPayload?.status)?.id || '',
-        dueDate: parsedPayload?.dueDate || null,
-        templateId: parsedPayload?.templateId || null,
+        title: payload?.name || '',
+        description: payload?.description || '',
+        workflowStateId: workflowStates.find((state) => state.key === payload?.status)?.id || '',
+        dueDate: payload?.dueDate || null,
+        templateId: payload?.templateId || null,
         userIds: assigneeFilter,
-        parentId: parsedPayload?.parentTaskId || null,
+        parentId: payload?.parentTaskId || null,
       }
 
       setAssigneeValue(getSelectorAssigneeFromFilterOptions(assignee, assigneeFilter) || null)
-      setActionParamPayload(parsedPayload)
+      setActionParamPayload(payload)
       store.dispatch(setAllCreateTaskFields(taskPayload))
     }
   }, [urlActionParams])
