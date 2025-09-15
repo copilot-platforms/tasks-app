@@ -35,6 +35,7 @@ import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { z } from 'zod'
 import { ClientDetailAppBridge } from '@/app/detail/ui/ClientDetailAppBridge'
+import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 
 const StyledText = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[500],
@@ -64,12 +65,16 @@ export const Sidebar = ({
 }) => {
   const { activeTask, workflowStates, assignee, previewMode } = useSelector(selectTaskBoard)
   const { showSidebar, showConfirmAssignModal } = useSelector(selectTaskDetails)
+  const { tokenPayload } = useSelector(selectAuthDetails)
 
   const [isHydrated, setIsHydrated] = useState(false)
 
   useEffect(() => {
     setIsHydrated(true)
   }, [])
+
+  const isAssignedToCU =
+    userType == UserType.CLIENT_USER && !previewMode && activeTask?.assigneeId === tokenPayload?.clientId
 
   const [dueDate, setDueDate] = useState<Date | string | undefined>()
 
@@ -555,7 +560,7 @@ export const Sidebar = ({
           title="Reassign task?"
         />
       </StyledModal>
-      {userType == UserType.CLIENT_USER && !previewMode && (
+      {isAssignedToCU && (
         <ClientDetailAppBridge
           isTaskCompleted={isTaskCompleted}
           handleTaskComplete={() => {
