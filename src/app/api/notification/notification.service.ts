@@ -17,6 +17,7 @@ import { AssigneeType, ClientNotification, Task } from '@prisma/client'
 import Bottleneck from 'bottleneck'
 import httpStatus from 'http-status'
 import { z } from 'zod'
+import { ViewersSchema } from '@/types/dto/tasks.dto'
 
 export class NotificationService extends BaseService {
   async create(
@@ -383,8 +384,21 @@ export class NotificationService extends BaseService {
           throw new APIError(httpStatus.NOT_FOUND, `Unknown assignee type: ${task.assigneeType}`)
       }
     }
+    const viewers = ViewersSchema.parse(task.viewers)
 
     switch (action) {
+      case NotificationTaskActions.Shared:
+        senderId = task.createdById
+        recipientId = !!viewers?.length ? z.string().parse(viewers[0].clientId) : ''
+        actionTrigger = await copilot.getInternalUser(senderId)
+        break
+      case NotificationTaskActions.SharedToCompany:
+        senderId = task.createdById
+        recipientIds = !!viewers?.length
+          ? (await copilot.getCompanyClients(z.string().parse(viewers[0].companyId))).map((client) => client.id)
+          : []
+        actionTrigger = await copilot.getInternalUser(senderId)
+        break
       case NotificationTaskActions.Assigned:
         senderId = task.createdById
         recipientId = z.string().parse(task.assigneeId)
