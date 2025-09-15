@@ -123,7 +123,6 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
   const handleUrlActionParam = useCallback(async () => {
     if (urlActionParams.pf && token) {
       const payload = JSON.parse(atob(decodeURIComponent(urlActionParams.pf)))
-      console.info(`payload: `, payload)
 
       if (!payload.companyId && payload.clientId) {
         const assigneeVal = assignee.find((val) => val.id === payload.clientId)
