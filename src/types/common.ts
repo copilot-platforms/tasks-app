@@ -16,7 +16,10 @@ export type CopilotListArgs = {
 
 export const TokenSchema = z.object({
   clientId: z.string().optional(),
-  companyId: z.string().optional(),
+  companyId: z
+    .string()
+    .transform((val) => (val === 'default' ? undefined : val))
+    .optional(),
   internalUserId: z.string().optional(),
   workspaceId: z.string(),
 })
