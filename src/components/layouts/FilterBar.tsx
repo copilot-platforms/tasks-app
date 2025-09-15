@@ -20,7 +20,7 @@ import store from '@/redux/store'
 import { IUTokenSchema } from '@/types/common'
 import { CreateViewSettingsDTO, DisplayOptions } from '@/types/dto/viewSettings.dto'
 import { FilterOptions, FilterOptionsKeywords, IFilterOptions, UserIds } from '@/types/interfaces'
-import { filterTypeToButtonIndexMap } from '@/types/objectMaps'
+import { clientFilterTypeToButtonIndexMap, filterTypeToButtonIndexMap } from '@/types/objectMaps'
 import { checkAssignee, emptyAssignee, getAssigneeId, UserIdsType } from '@/utils/assignee'
 import { getWorkspaceLabels } from '@/utils/getWorkspaceLabels'
 import { NoAssignee } from '@/utils/noAssignee'
@@ -75,7 +75,10 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
     })
   }
 
-  const ButtonIndex = filterTypeToButtonIndexMap[viewModeFilterOptions.type] ?? 0
+  const ButtonIndex =
+    mode === UserRole.IU
+      ? (filterTypeToButtonIndexMap[viewModeFilterOptions.type] ?? 0)
+      : (clientFilterTypeToButtonIndexMap[viewModeFilterOptions.type] ?? 0)
 
   const [noAssigneOptionFlag, setNoAssigneeOptionFlag] = useState<boolean>(true)
 
@@ -99,48 +102,85 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
     store.dispatch(setViewSettingsTemp(newViewSettings))
   }
 
-  const filterButtons = [
+  /**
+   * Filters button functions start
+   */
+  const handleMyTasksClickForIU = () => {
+    const selfAssigneeId = IUTokenSchema.parse(tokenPayload).internalUserId
+    handleFilterOptionsChange(FilterOptions.TYPE, selfAssigneeId)
+    setAssigneeValue(undefined)
+    handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
+  }
+
+  const handleTeamTasksClickForIU = () => {
+    handleFilterOptionsChange(FilterOptions.TYPE, FilterOptionsKeywords.TEAM)
+    setAssigneeValue(undefined)
+    setNoAssigneeOptionFlag(false)
+    handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
+  }
+
+  const handleClientTasksClickForIU = () => {
+    handleFilterOptionsChange(FilterOptions.TYPE, FilterOptionsKeywords.CLIENTS)
+    setAssigneeValue(undefined)
+    setNoAssigneeOptionFlag(false)
+    handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
+  }
+
+  const handleAllTasksClickForIU = () => {
+    handleFilterOptionsChange(FilterOptions.TYPE, '')
+    setAssigneeValue(undefined)
+    setNoAssigneeOptionFlag(true)
+    handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
+  }
+
+  const handleMyTasksClickForClient = () => {
+    handleFilterOptionsChange(FilterOptions.TYPE, FilterOptionsKeywords.CLIENTS)
+  }
+
+  const handleAllTasksClickForClient = () => {
+    handleFilterOptionsChange(FilterOptions.TYPE, FilterOptionsKeywords.CLIENT_WITH_VIEWERS)
+  }
+  /**
+   * Filter button functions end
+   */
+
+  const IuFilterButtons = [
     {
       name: 'My tasks',
-      onClick: () => {
-        const selfAssigneeId = IUTokenSchema.parse(tokenPayload).internalUserId
-        handleFilterOptionsChange(FilterOptions.TYPE, selfAssigneeId)
-        setAssigneeValue(undefined)
-        handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
-      },
+      onClick: handleMyTasksClickForIU,
       id: 'MyTasks',
     },
     {
       name: "My team's tasks",
-      onClick: () => {
-        handleFilterOptionsChange(FilterOptions.TYPE, FilterOptionsKeywords.TEAM)
-        setAssigneeValue(undefined)
-        setNoAssigneeOptionFlag(false)
-        handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
-      },
+      onClick: handleTeamTasksClickForIU,
       id: 'TeamTasks',
     },
     {
       name: `${getWorkspaceLabels(workspace, true).individualTerm} tasks`,
-      onClick: () => {
-        handleFilterOptionsChange(FilterOptions.TYPE, FilterOptionsKeywords.CLIENTS)
-        setAssigneeValue(undefined)
-        setNoAssigneeOptionFlag(false)
-        handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
-      },
+      onClick: handleClientTasksClickForIU,
       id: 'ClientTasks',
     },
     {
       name: 'All tasks',
-      onClick: () => {
-        handleFilterOptionsChange(FilterOptions.TYPE, '')
-        setAssigneeValue(undefined)
-        setNoAssigneeOptionFlag(true)
-        handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
-      },
+      onClick: handleAllTasksClickForIU,
       id: 'AllTasks',
     },
   ]
+
+  const CuFilterButtons = [
+    {
+      name: 'All tasks',
+      onClick: handleAllTasksClickForClient,
+      id: 'AllTasks',
+    },
+    {
+      name: 'My tasks',
+      onClick: handleMyTasksClickForClient,
+      id: 'MyTasks',
+    },
+  ]
+
+  const filterButtons = mode === UserRole.IU ? IuFilterButtons : CuFilterButtons
 
   return (
     <Box
@@ -157,9 +197,9 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
       >
         <Stack direction={'row'} justifyContent={'space-between'} sx={{ maxHeight: '32px' }}>
           <Stack direction={'row'} columnGap={3}>
+            <FilterButtonGroup filterButtons={filterButtons} activeButtonIndex={ButtonIndex} />
             {mode === UserRole.IU && (
               <>
-                <FilterButtonGroup filterButtons={filterButtons} activeButtonIndex={ButtonIndex} />
                 {filterOptions[FilterOptions.TYPE] !== tokenPayload?.internalUserId && (
                   <Box
                     sx={{

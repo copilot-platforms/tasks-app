@@ -67,6 +67,7 @@ export enum FilterByOptions {
 export enum FilterOptionsKeywords {
   CLIENTS = 'clients_companies',
   TEAM = 'ius',
+  CLIENT_WITH_VIEWERS = 'client_with_viewers',
 }
 
 export enum HandleSelectorComponentModes {
