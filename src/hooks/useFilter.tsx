@@ -3,7 +3,7 @@ import store from '@/redux/store'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { FilterOptions, FilterOptionsKeywords, IAssigneeCombined, IFilterOptions, UserIds } from '@/types/interfaces'
 import { checkEmptyAssignee, getAssigneeName, UserIdsSchema, UserIdsType } from '@/utils/assignee'
-import { useEffect } from 'react'
+import { useEffect, useTransition } from 'react'
 import { useSelector } from 'react-redux'
 
 interface KeywordMatchable {
@@ -54,32 +54,32 @@ function filterByKeyword(
   accessibleTasks?: TaskResponse[],
   assignee?: IAssigneeCombined[],
 ): TaskResponse[] {
-  const keyword = (filterValue as string).toLowerCase()
+  const keyword = filterValue.toLowerCase()
 
-  const matchKeyword = (task: KeywordMatchable) =>
-    // Match title, body or task label (case-insensitive)
-    {
-      const assigneeNameMatches = [task.assigneeId, task.companyId]
-        .map((id) => getAssigneeName(assignee?.find((el) => el.id === id)))
-        .filter(Boolean)
-        .some((name) => name!.toLowerCase().includes(keyword)) //Logic to match tasks whose assignee name matches the keyword. Also, Extra logic to match client tasks' whose company name matches the keyword.
+  const assigneeNameMap = new Map(assignee?.map((a) => [a.id, getAssigneeName(a)?.toLowerCase() ?? '']) ?? [])
 
-      return (
-        task.title?.toLowerCase().includes(keyword) ||
-        task.body?.toLowerCase().includes(keyword) ||
-        task.label?.toLowerCase().includes(keyword) ||
-        assigneeNameMatches ||
-        false
-      )
-    }
+  const matchKeyword = (task: KeywordMatchable) => {
+    const assigneeMatches = [task.assigneeId, task.companyId]
+      .map((id) => assigneeNameMap.get(id || ''))
+      .filter(Boolean)
+      .some((name) => name && name.includes(keyword))
 
-  const keywordMatchingParentIds = accessibleTasks?.filter(matchKeyword).map((task) => task.parentId) || []
-  filteredTasks = filteredTasks.filter((task) => {
-    // Either match parent with keyword, or match child task with keyword and link it to its parentId
-    return matchKeyword(task) || keywordMatchingParentIds.includes(task.id)
-  })
+    return (
+      task.title?.toLowerCase().includes(keyword) ||
+      task.body?.toLowerCase().includes(keyword) ||
+      task.label?.toLowerCase().includes(keyword) ||
+      assigneeMatches
+    )
+  }
 
-  return filteredTasks
+  const keywordMatchingParentIds = new Set(
+    accessibleTasks
+      ?.filter(matchKeyword)
+      .map((task) => task.parentId)
+      .filter(Boolean),
+  )
+
+  return filteredTasks.filter((task) => matchKeyword(task) || keywordMatchingParentIds.has(task.id))
 }
 
 function filterByType(filteredTasks: TaskResponse[], filterValue: string): TaskResponse[] {
@@ -97,6 +97,7 @@ function filterByType(filteredTasks: TaskResponse[], filterValue: string): TaskR
 
 export const useFilter = (filterOptions: IFilterOptions) => {
   const { tasks, accessibleTasks, assignee } = useSelector(selectTaskBoard)
+  const [isPending, startTransition] = useTransition()
 
   function applyFilter(tasks: TaskResponse[], filterOptions: IFilterOptions) {
     let filteredTasks = [...tasks]
@@ -116,7 +117,9 @@ export const useFilter = (filterOptions: IFilterOptions) => {
         filteredTasks = FilterFunctions[FilterOptions.TYPE](filteredTasks, filterValue as string)
       }
     }
-    store.dispatch(setFilteredTasks(filteredTasks))
+    startTransition(() => {
+      store.dispatch(setFilteredTasks(filteredTasks))
+    })
   }
 
   useEffect(() => {
