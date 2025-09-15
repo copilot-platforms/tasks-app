@@ -87,10 +87,15 @@ function filterByType(filteredTasks: TaskResponse[], filterValue: string): TaskR
   filteredTasks = assigneeType.includes('all')
     ? filteredTasks
     : assigneeType == FilterOptionsKeywords.CLIENTS
-      ? filteredTasks.filter((task) => task?.assigneeType?.includes('client') || task?.assigneeType?.includes('company'))
-      : assigneeType == FilterOptionsKeywords.TEAM
-        ? filteredTasks.filter((task) => task?.assigneeType?.includes('internalUser'))
-        : filteredTasks.filter((task) => task.assigneeId == assigneeType)
+      ? filteredTasks.filter((task) => task?.assigneeType?.includes('client') || task?.assigneeType?.includes('company')) // show shared tasks
+      : assigneeType == FilterOptionsKeywords.CLIENT_WITH_VIEWERS
+        ? filteredTasks.filter(
+            (task) =>
+              !!task?.viewers?.length || task?.assigneeType?.includes('client') || task?.assigneeType?.includes('company'),
+          )
+        : assigneeType == FilterOptionsKeywords.TEAM
+          ? filteredTasks.filter((task) => task?.assigneeType?.includes('internalUser'))
+          : filteredTasks.filter((task) => task.assigneeId == assigneeType)
 
   return filteredTasks
 }
