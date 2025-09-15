@@ -2,6 +2,7 @@ import { maxSubTaskDepth } from '@/constants/tasks'
 import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 import { deleteTaskNotifications, sendTaskCreateNotifications, sendTaskUpdateNotifications } from '@/jobs/notifications'
 import { sendClientUpdateTaskNotifications } from '@/jobs/notifications/send-client-task-update-notifications'
+import { sendTaskShareNotifications } from '@/jobs/notifications/send-task-share-notifications'
 import { ClientResponse, CompanyResponse, InternalUsers, Uuid } from '@/types/common'
 import { TaskWithWorkflowState } from '@/types/db'
 import { AncestorTaskResponse, CreateTaskRequest, UpdateTaskRequest, Viewers, ViewersSchema } from '@/types/dto/tasks.dto'
@@ -275,6 +276,7 @@ export class TasksService extends BaseService {
     // Send task created notifications to users + dispatch webhook
     await Promise.all([
       sendTaskCreateNotifications.trigger({ user: this.user, task: newTask }),
+      sendTaskShareNotifications.trigger({ user: this.user, task: newTask }),
       copilot.dispatchWebhook(DISPATCHABLE_EVENT.TaskCreated, {
         payload: PublicTaskSerializer.serialize(newTask),
         workspaceId: this.user.workspaceId,

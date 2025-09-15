@@ -1,11 +1,13 @@
 import { Uuid } from '@/types/common'
 import { TaskWithWorkflowState } from '@/types/db'
+import { Viewers, ViewersSchema } from '@/types/dto/tasks.dto'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import User from '@api/core/models/User.model'
 import { BaseService } from '@api/core/services/base.service'
 import { NotificationTaskActions } from '@api/core/types/tasks'
 import { NotificationService } from '@api/notification/notification.service'
 import { AssigneeType, StateType, Task, WorkflowState } from '@prisma/client'
+import { z } from 'zod'
 
 export class TaskNotificationsService extends BaseService {
   private notificationService: NotificationService
@@ -30,19 +32,44 @@ export class TaskNotificationsService extends BaseService {
   }
 
   private async checkParentAccessible(task: TaskWithWorkflowState): Promise<boolean> {
-    if ((task.assigneeType === AssigneeType.client || task.assigneeType === AssigneeType.company) && task.parentId) {
-      if (!task.assigneeId) return false
+    if (!task.assigneeId || !task.parentId) return false
 
+    const viewers = ViewersSchema.parse(task.viewers)
+    const checkParentViewers = (
+      clientId: string | null,
+      companyIds?: string[],
+      parentViewers?: Viewers,
+      clientIds?: string[],
+    ) => {
+      if (!!parentViewers?.length) {
+        if (
+          (parentViewers[0].clientId === clientId && companyIds?.includes(parentViewers[0].companyId)) ||
+          (parentViewers[0].clientId && clientIds?.includes(parentViewers[0].clientId)) ||
+          (parentViewers[0].clientId === null && companyIds?.includes(parentViewers[0].companyId))
+        ) {
+          return true
+        }
+      }
+      return false
+    }
+
+    if (task.assigneeType === AssigneeType.client || task.assigneeType === AssigneeType.company || !!viewers?.length) {
       const parentTask = await this.db.task.findFirst({
         where: { id: task.parentId, workspaceId: this.user.workspaceId },
-        select: { assigneeId: true, assigneeType: true },
+        select: { assigneeId: true, assigneeType: true, viewers: true },
       })
       if (!parentTask) return false
 
+      const parentViewers = ViewersSchema.parse(parentTask.viewers)
+
       const copilot = new CopilotAPI(this.user.token)
+
       if (task.assigneeType === AssigneeType.client) {
         const client = await copilot.getClient(task.assigneeId)
         if (parentTask.assigneeId === client.id || parentTask.assigneeId === client.companyId) {
+          return true
+        }
+        if (checkParentViewers(client.id, client.companyIds, parentViewers)) {
           return true
         }
       } else {
@@ -52,9 +79,56 @@ export class TaskNotificationsService extends BaseService {
         if (companyClientIds.includes(parentTask.assigneeId || '__empty__')) {
           return true
         }
-      }
+        if (checkParentViewers(null, [task.assigneeId], parentViewers, companyClientIds)) {
+          return true
+        }
+      } //for assignment notifications
+
+      if (!!viewers?.length) {
+        const copilot = new CopilotAPI(this.user.token)
+        if (viewers[0].clientId) {
+          const client = await copilot.getClient(viewers[0].clientId)
+          if (parentTask.assigneeId === client.id || parentTask.assigneeId === client.companyId) {
+            return true
+          }
+          if (checkParentViewers(client.id, client.companyIds, parentViewers)) {
+            return true
+          }
+        } else {
+          const clients = await copilot.getClients()
+          const companyClientIds =
+            clients.data?.filter((client) => client.companyId === viewers[0].companyId).map((client) => client.id) || []
+          if (companyClientIds.includes(parentTask.assigneeId || '__empty__')) {
+            return true
+          }
+          if (checkParentViewers(null, [viewers[0].companyId], parentViewers, companyClientIds)) {
+            return true
+          }
+        }
+      } //for viewers notifications
     }
     return false
+  }
+
+  async sendTaskSharedNotifications(task: TaskWithWorkflowState) {
+    const viewers = ViewersSchema.parse(task.viewers)
+    // Shared Notifications cannot be sent with no viewers.
+    if (!viewers?.length) return
+
+    // If task is unassigned, there are no viewers so nobody to send notifications to
+    if (!task.assigneeId) return
+
+    if (task.workflowState.type === NotificationTaskActions.Completed)
+      // If task is created as status completed for whatever reason, don't send a notification as well
+      return
+
+    // // If task is a subtask for a the client and isn't visible on task board (is disjoint)
+    if (await this.checkParentAccessible(task)) return
+
+    const clientId = viewers[0].clientId
+
+    const sendViewersNotifications = clientId ? this.sendUserTaskSharedNotification : this.sendCompanyTaskSharedNotification
+    await sendViewersNotifications(task, viewers)
   }
 
   async sendTaskCreateNotifications(task: TaskWithWorkflowState, isReassigned = false) {
@@ -275,6 +349,42 @@ export class TaskNotificationsService extends BaseService {
       })
       await this.notificationService.markClientNotificationAsRead(updatedTask)
     }
+  }
+
+  private sendUserTaskSharedNotification = async (task: Task, viewers: Viewers) => {
+    if (!viewers?.length) return
+
+    const notificationType = NotificationTaskActions.Shared
+
+    const existingNotification = await this.getExistingClientNotificationForTask(
+      task.id,
+      Uuid.parse(viewers[0].clientId),
+      Uuid.parse(viewers[0].companyId),
+    )
+    if (existingNotification) {
+      console.error('Found an existing notification. Skipping creating a new one:', existingNotification)
+      return
+    }
+
+    const notification = await this.notificationService.create(notificationType, task)
+    // Create a new entry in ClientNotifications table so we can mark as read on
+    // behalf of client later
+
+    if (!notification) {
+      console.error('Notification failed to trigger for task:', task)
+    }
+  }
+
+  private sendCompanyTaskSharedNotification = async (task: Task) => {
+    const copilot = new CopilotAPI(this.user.token)
+    const { recipientIds } = await this.notificationService.getNotificationParties(
+      copilot,
+      task,
+      NotificationTaskActions.SharedToCompany,
+    )
+    await this.notificationService.createBulkNotification(NotificationTaskActions.SharedToCompany, task, recipientIds, {
+      email: true,
+    })
   }
 
   private sendUserTaskNotification = async (task: Task, isReassigned = false) => {

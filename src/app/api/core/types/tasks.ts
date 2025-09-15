@@ -14,6 +14,8 @@ export enum NotificationTaskActions {
   CommentToCU = 'commentToCU',
   CommentToIU = 'commentToIU',
   Mentioned = 'mentioned',
+  Shared = 'shared',
+  SharedToCompany = 'sharedToCompany',
 }
 
 export type TaskTimestamps = {
