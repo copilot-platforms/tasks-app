@@ -523,7 +523,6 @@ export class TasksService extends BaseService {
   private getClientOrCompanyAssigneeFilter(includeViewer: boolean = true): Prisma.TaskWhereInput {
     const clientId = z.string().uuid().safeParse(this.user.clientId).data
     const companyId = z.string().uuid().parse(this.user.companyId)
-    const internalUserId = z.string().uuid().safeParse(this.user.internalUserId).data // if present denotes preview mode
 
     const filters = []
 
@@ -534,14 +533,6 @@ export class TasksService extends BaseService {
         // Get company tasks for the client's companyId
         { companyId, clientId: null },
       )
-      if (internalUserId)
-        // get all IU tasks visible to the client/company for preview mode
-        filters.push({
-          assigneeType: UserRole.IU,
-          viewers: {
-            hasSome: [{ clientId, companyId }, { companyId }],
-          },
-        })
       if (includeViewer)
         filters.push(
           // Get tasks that includes the client as a viewer
