@@ -120,6 +120,7 @@ export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
         updateViewModeSetting={async (payload: CreateViewSettingsDTO) => {
           await updateViewModeSettings(z.string().parse(token), payload)
         }}
+        isPreviewMode={!!previewMode}
       />
 
       {viewBoardSettings === View.BOARD_VIEW && (

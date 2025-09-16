@@ -11,6 +11,11 @@ export const clientFilterTypeToButtonIndexMap: Record<string, number> = {
   [FilterOptionsKeywords.CLIENTS]: 1,
 }
 
+export const previewFilterTypeToButtonIndexMap: Record<string, number> = {
+  [FilterOptionsKeywords.CLIENTS]: 2,
+  [FilterOptionsKeywords.TEAM]: 1,
+}
+
 export const filterOptionsMap: Record<string, FilterByOptions> = {
   [FilterOptionsKeywords.CLIENTS]: FilterByOptions.CLIENT,
   [FilterOptionsKeywords.TEAM]: FilterByOptions.IUS,
