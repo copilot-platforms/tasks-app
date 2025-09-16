@@ -110,44 +110,34 @@ export class TaskNotificationsService extends BaseService {
     return false
   }
 
-  async sendTaskSharedNotifications(task: TaskWithWorkflowState) {
-    const viewers = ViewersSchema.parse(task.viewers)
-    // Shared Notifications cannot be sent with no viewers.
-    if (!viewers?.length) return
-
-    // If task is unassigned, there are no viewers so nobody to send notifications to
-    if (!task.assigneeId) return
-
-    if (task.workflowState.type === NotificationTaskActions.Completed)
-      // If task is created as status completed for whatever reason, don't send a notification as well
-      return
-
-    // // If task is a subtask for a the client and isn't visible on task board (is disjoint)
-    if (await this.checkParentAccessible(task)) return
-
-    const clientId = viewers[0].clientId
-
-    const sendViewersNotifications = clientId ? this.sendUserTaskSharedNotification : this.sendCompanyTaskSharedNotification
-    await sendViewersNotifications(task, viewers)
-  }
-
   async sendTaskCreateNotifications(task: TaskWithWorkflowState, isReassigned = false) {
     // If task is unassigned, there's nobody to send notifications to
     if (!task.assigneeId) return
-
-    // If task is assigned to the same person that created it, no need to notify yourself
-    if (task.assigneeId === task.createdById) return
 
     // If task is created as status completed for whatever reason, don't send a notification as well
     if (task.workflowState.type === NotificationTaskActions.Completed) return
 
     // If task is a subtask for a client/company and isn't visible on task board (is disjoint)
     if (await this.checkParentAccessible(task)) return
+    const notificationPromises: Promise<void>[] = []
+
+    const viewers = ViewersSchema.parse(task.viewers)
+    if (viewers?.length) {
+      const clientId = viewers[0].clientId
+      const sendViewersNotifications = clientId
+        ? this.sendUserTaskSharedNotification
+        : this.sendCompanyTaskSharedNotification
+      notificationPromises.push(sendViewersNotifications(task, viewers))
+    }
+
+    // If task is assigned to the same person that created it, no need to notify yourself
+    if (task.assigneeId === task.createdById) return
 
     // If new task is assigned to someone (IU / Client / Company), send proper notification + email to them
     const sendTaskNotifications =
       task.assigneeType === AssigneeType.company ? this.sendCompanyTaskNotifications : this.sendUserTaskNotification
-    await sendTaskNotifications(task, isReassigned)
+    notificationPromises.push(sendTaskNotifications(task, isReassigned))
+    await Promise.all(notificationPromises)
   }
 
   async sendTaskUpdateNotifications(prevTask: TaskWithWorkflowState, updatedTask: TaskWithWorkflowState) {

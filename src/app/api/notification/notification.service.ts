@@ -539,12 +539,14 @@ export class NotificationService extends BaseService {
     senderCompanyId?: string,
   ): NotificationRequestBody {
     // Assume client notification then change details body if IU
+    const viewers = ViewersSchema.parse(task.viewers)
+    const viewer = viewers ? viewers[0] : undefined
     const notificationDetails: NotificationRequestBody = {
       senderId,
       senderCompanyId,
       senderType: 'client',
       recipientClientId: recipientId ?? undefined,
-      recipientCompanyId: task.companyId ?? undefined,
+      recipientCompanyId: task.companyId ?? viewer?.companyId ?? undefined,
       // If any of the given action is not present in details obj, that type of notification is not sent
       deliveryTargets: deliveryTargets || {},
     }
