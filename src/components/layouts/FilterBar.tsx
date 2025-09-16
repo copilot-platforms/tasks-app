@@ -20,7 +20,11 @@ import store from '@/redux/store'
 import { IUTokenSchema } from '@/types/common'
 import { CreateViewSettingsDTO, DisplayOptions } from '@/types/dto/viewSettings.dto'
 import { FilterOptions, FilterOptionsKeywords, IFilterOptions, UserIds } from '@/types/interfaces'
-import { clientFilterTypeToButtonIndexMap, filterTypeToButtonIndexMap } from '@/types/objectMaps'
+import {
+  clientFilterTypeToButtonIndexMap,
+  filterTypeToButtonIndexMap,
+  previewFilterTypeToButtonIndexMap,
+} from '@/types/objectMaps'
 import { checkAssignee, emptyAssignee, getAssigneeId, UserIdsType } from '@/utils/assignee'
 import { getWorkspaceLabels } from '@/utils/getWorkspaceLabels'
 import { NoAssignee } from '@/utils/noAssignee'
@@ -32,9 +36,10 @@ import { useSelector } from 'react-redux'
 interface FilterBarProps {
   mode: UserRole
   updateViewModeSetting: (payload: CreateViewSettingsDTO) => void
+  isPreviewMode: boolean
 }
 
-export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
+export const FilterBar = ({ mode, updateViewModeSetting, isPreviewMode }: FilterBarProps) => {
   const { view, filterOptions, assignee, viewSettingsTemp, showArchived, showUnarchived, showSubtasks } =
     useSelector(selectTaskBoard)
 
@@ -75,8 +80,9 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
     })
   }
 
-  const ButtonIndex =
-    mode === UserRole.IU
+  const ButtonIndex = isPreviewMode
+    ? (previewFilterTypeToButtonIndexMap[viewModeFilterOptions.type] ?? 0)
+    : mode === UserRole.IU
       ? (filterTypeToButtonIndexMap[viewModeFilterOptions.type] ?? 0)
       : (clientFilterTypeToButtonIndexMap[viewModeFilterOptions.type] ?? 0)
 
@@ -124,7 +130,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
       id: 'MyTasks',
     },
     {
-      name: "My team's tasks",
+      name: 'Team tasks',
       onClick: () => handleFilterTypeClick({ filterTypeValue: FilterOptionsKeywords.TEAM }),
       id: 'TeamTasks',
     },
@@ -154,7 +160,25 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
     },
   ]
 
-  const filterButtons = mode === UserRole.IU ? IuFilterButtons : CuFilterButtons
+  const previewFilterButtons = [
+    {
+      name: 'My tasks',
+      onClick: () => handleFilterTypeClick({ filterTypeValue: IUTokenSchema.parse(tokenPayload).internalUserId }),
+      id: 'MyTasks',
+    },
+    {
+      name: 'Team tasks',
+      onClick: () => handleFilterTypeClick({ filterTypeValue: FilterOptionsKeywords.TEAM }),
+      id: 'TeamTasks',
+    },
+    {
+      name: `${getWorkspaceLabels(workspace, true).individualTerm} tasks`,
+      onClick: () => handleFilterTypeClick({ filterTypeValue: FilterOptionsKeywords.CLIENTS }),
+      id: 'ClientTasks',
+    },
+  ]
+
+  const filterButtons = isPreviewMode ? previewFilterButtons : mode === UserRole.IU ? IuFilterButtons : CuFilterButtons
 
   return (
     <Box
