@@ -25,7 +25,7 @@ export const ConfirmUI = ({
   variant = 'default',
 }: ConfirmUIProps) => {
   return (
-    <UIContainer sx={{ width: { xs: '80%', sm: '540px' } }}>
+    <UIContainer sx={{ width: { xs: '80%', sm: '540px' } }} onClick={(e) => e.preventDefault()}>
       <StyledBox>
         <Stack direction="column" rowGap={4} sx={{ padding: '12px 12px 12px 20px' }}>
           <Typography variant="lg">{title}</Typography>

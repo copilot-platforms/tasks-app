@@ -7,6 +7,7 @@ import { truncateText } from '@/utils/truncateText'
 import { AssigneeType } from '@prisma/client'
 import deepEqual from 'deep-equal'
 import { z } from 'zod'
+import { NoAssignee } from '@/utils/noAssignee'
 
 export const UserIdsSchema = z.object({
   internalUserId: z.string().nullable(),
@@ -87,4 +88,17 @@ export const getAssigneeCacheLookupKey = (userType: string, tokenPayload: Token)
 export const isEmptyAssignee = (userIds?: UserIdsType) => {
   if (!userIds) return true
   return Object.values(userIds).every((value) => value === null)
+}
+
+export const getAssigneeValueFromViewers = (viewer: IAssigneeCombined | null, assignee: IAssigneeCombined[]) => {
+  if (!viewer) {
+    return NoAssignee
+  }
+  const viewerType = getAssigneeTypeCorrected(viewer)
+  const match = assignee.find((assignee) =>
+    viewerType === AssigneeType.client
+      ? assignee.id === viewer.id && assignee.companyId == viewer.companyId
+      : assignee.id === viewer?.id,
+  )
+  return match ?? undefined
 }
