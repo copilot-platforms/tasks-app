@@ -64,9 +64,10 @@ interface TaskCardProps {
   mode: UserRole
   workflowState?: WorkflowStateResponse
   subtasks?: TaskResponse[]
+  workflowDisabled?: boolean
 }
 
-export const TaskCard = ({ task, href, workflowState, mode, subtasks }: TaskCardProps) => {
+export const TaskCard = ({ task, href, workflowState, mode, subtasks, workflowDisabled = false }: TaskCardProps) => {
   const { assignee, workflowStates, assigneeCache, previewMode, token, accessibleTasks, showSubtasks } =
     useSelector(selectTaskBoard)
 
@@ -150,6 +151,7 @@ export const TaskCard = ({ task, href, workflowState, mode, subtasks }: TaskCard
               responsiveNoHide
               size={Sizes.MEDIUM}
               padding={'4px'}
+              disabled={workflowDisabled}
             />
           </Box>
           <Stack direction="column" justifyContent="center" rowGap={'5px'} sx={{ width: '100%' }}>
