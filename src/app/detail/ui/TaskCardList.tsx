@@ -15,6 +15,7 @@ import { ConfirmUI } from '@/components/layouts/ConfirmUI'
 import { CustomLink } from '@/hoc/CustomLink'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { useSubtaskCount } from '@/hooks/useSubtaskCount'
+import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import {
   selectTaskBoard,
   setAssigneeCache,
@@ -33,6 +34,7 @@ import { isTaskCompleted } from '@/utils/isTaskCompleted'
 import { NoAssignee } from '@/utils/noAssignee'
 import { getSelectedUserIds, getSelectorAssignee, getSelectorAssigneeFromTask } from '@/utils/selector'
 import { shouldConfirmBeforeReassignment } from '@/utils/shouldConfirmBeforeReassign'
+import { checkIfTaskViewer } from '@/utils/taskViewer'
 import { Box, Skeleton, Stack, SxProps, Theme, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
@@ -51,6 +53,7 @@ interface TaskCardListProps {
 
 export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate, isTemp, sx }: TaskCardListProps) => {
   const { assignee, workflowStates, previewMode, token, confirmAssignModalId, assigneeCache } = useSelector(selectTaskBoard)
+  const { tokenPayload } = useSelector(selectAuthDetails)
 
   const [currentDueDate, setCurrentDueDate] = useState<string | undefined>(task.dueDate)
   const [selectedAssignee, setSelectedAssignee] = useState<UserIdsType | undefined>(undefined)
@@ -188,6 +191,7 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate,
           size={Sizes.MEDIUM}
           padding={'4px'}
           hoverColor={200}
+          disabled={checkIfTaskViewer(task.viewers, tokenPayload)}
         />
 
         {isTemp || variant === 'subtask-board' ? (
