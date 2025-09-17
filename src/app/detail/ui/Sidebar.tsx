@@ -279,11 +279,11 @@ export const Sidebar = ({
               hideIusList
               name="Set client visibility"
               onChange={handleTaskViewerChange}
-              disabled={disabled}
+              disabled={disabled && !previewMode}
               initialValue={taskViewerValue || undefined}
               buttonContent={
                 <SelectorButton
-                  disabled={disabled}
+                  disabled={disabled && !previewMode}
                   startIcon={<CopilotAvatar currentAssignee={taskViewerValue || undefined} />}
                   outlined={true}
                   buttonContent={
@@ -487,7 +487,7 @@ export const Sidebar = ({
               <Box
                 sx={{
                   ':hover': {
-                    bgcolor: (theme) => (disabled ? 'none' : theme.color.background.bgCallout),
+                    bgcolor: (theme) => (disabled && !previewMode ? 'none' : theme.color.background.bgCallout),
                   },
                   padding: '4px',
                   borderRadius: '4px',
@@ -498,11 +498,11 @@ export const Sidebar = ({
                   hideIusList
                   name="Set client visibility"
                   onChange={handleTaskViewerChange}
-                  disabled={disabled}
+                  disabled={disabled && !previewMode} // allow visibility change in preview mode
                   initialValue={taskViewerValue || undefined}
                   buttonContent={
                     <SelectorButton
-                      disabled={disabled}
+                      disabled={disabled && !previewMode}
                       padding="0px"
                       startIcon={<CopilotAvatar width="16px" height="16px" currentAssignee={taskViewerValue || undefined} />}
                       outlined={true}

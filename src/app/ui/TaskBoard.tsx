@@ -78,7 +78,7 @@ export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
 
   const viewBoardSettings = viewSettingsTemp ? viewSettingsTemp.viewMode : view
 
-  useFilter(viewSettingsTemp ? viewSettingsTemp.filterOptions : filterOptions)
+  useFilter(viewSettingsTemp ? viewSettingsTemp.filterOptions : filterOptions, !!previewMode)
 
   const [hasInitialized, setHasInitialized] = useState(false)
   useEffect(() => {
@@ -120,6 +120,7 @@ export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
         updateViewModeSetting={async (payload: CreateViewSettingsDTO) => {
           await updateViewModeSettings(z.string().parse(token), payload)
         }}
+        isPreviewMode={!!previewMode}
       />
 
       {viewBoardSettings === View.BOARD_VIEW && (

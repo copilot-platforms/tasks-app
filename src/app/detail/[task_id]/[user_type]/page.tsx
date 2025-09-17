@@ -114,7 +114,8 @@ export default async function TaskDetailPage({
     Array.isArray(task.viewers) &&
     task.viewers.length > 0 &&
     (!task.viewers[0].clientId || task.viewers[0].clientId === tokenPayload.clientId) &&
-    task.viewers[0].companyId === tokenPayload.companyId
+    task.viewers[0].companyId === tokenPayload.companyId &&
+    !isPreviewMode
       ? true
       : false
 

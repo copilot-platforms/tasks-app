@@ -363,10 +363,10 @@ export class TasksService extends BaseService {
     })
 
     let viewers: Viewers = ViewersSchema.parse(prevTask.viewers)
-
+    const viewersResetCondition = shouldUpdateUserIds ? !!clientId || !!companyId : !prevTask.internalUserId
     if (data.viewers) {
       // only update of viewers attribute is available. No viewers in payload attribute means the data remains as it is in DB.
-      if (!internalUserId || !data.viewers?.length) {
+      if (viewersResetCondition || !data.viewers?.length) {
         viewers = [] // reset viewers to [] if task is not reassigned to IU.
       } else if (data.viewers?.length) {
         viewers = await this.validateViewers(data.viewers)
