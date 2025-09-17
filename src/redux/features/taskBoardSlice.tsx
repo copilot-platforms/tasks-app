@@ -27,6 +27,7 @@ interface IInitialState {
   accesibleTaskIds: string[]
   accessibleTasks: TaskResponse[]
   confirmAssignModalId: string | undefined
+  confirmViewershipModalId: string | undefined
   assigneeCache: Record<string, IAssigneeCombined>
 }
 
@@ -54,6 +55,7 @@ const initialState: IInitialState = {
   accesibleTaskIds: [],
   accessibleTasks: [],
   confirmAssignModalId: '',
+  confirmViewershipModalId: '',
   assigneeCache: {},
 }
 
@@ -165,6 +167,9 @@ const taskBoardSlice = createSlice({
     setConfirmAssigneeModalId: (state, action: { payload: string | undefined }) => {
       state.confirmAssignModalId = action.payload
     },
+    setConfirmViewershipModalId: (state, action: { payload: string | undefined }) => {
+      state.confirmViewershipModalId = action.payload
+    },
     setAssigneeCache: (state, action: { payload: { key: string; value: IAssigneeCombined } }) => {
       state.assigneeCache[action.payload.key] = action.payload.value
     }, //used in memory cache rather than useMemo for cross-view(board and list) caching. The alternate idea would be to include assignee object in the response of getTasks api for each task but that would be a bit expensive.
@@ -191,6 +196,7 @@ export const {
   setAccesibleTaskIds,
   setAccessibleTasks,
   setConfirmAssigneeModalId,
+  setConfirmViewershipModalId,
   setAssigneeCache,
 } = taskBoardSlice.actions
 

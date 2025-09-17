@@ -22,6 +22,7 @@ import { FilterByOptions, IAssigneeCombined, InputValue, Sizes, UserType } from 
 import {
   getAssigneeId,
   getAssigneeName,
+  getAssigneeValueFromViewers,
   getUserIds,
   isEmptyAssignee,
   UserIdsType,
@@ -157,19 +158,6 @@ export const Sidebar = ({
     const assigneeId = getAssigneeId(userIds)
     const match = assignee.find((assignee) =>
       userIds.clientId ? assignee.id === assigneeId && assignee.companyId == userIds.companyId : assignee.id === assigneeId,
-    )
-    return match ?? undefined
-  }
-
-  const getAssigneeValueFromViewers = (viewer: IAssigneeCombined | null) => {
-    if (!viewer) {
-      return NoAssignee
-    }
-    const viewerType = getAssigneeTypeCorrected(viewer)
-    const match = assignee.find((assignee) =>
-      viewerType === AssigneeType.client
-        ? assignee.id === viewer.id && assignee.companyId == viewer.companyId
-        : assignee.id === viewer?.id,
     )
     return match ?? undefined
   }
@@ -365,8 +353,8 @@ export const Sidebar = ({
                 </>
               ) : (
                 <>
-                  <strong>{getAssigneeName(getAssigneeValueFromViewers(taskViewerValue))}</strong> will also lose visibility
-                  to the task.
+                  <strong>{getAssigneeName(getAssigneeValueFromViewers(taskViewerValue, assignee))}</strong> will also lose
+                  visibility to the task.
                 </>
               )
             }
@@ -601,8 +589,8 @@ export const Sidebar = ({
               </>
             ) : (
               <>
-                <strong>{getAssigneeName(getAssigneeValueFromViewers(taskViewerValue))}</strong> will also lose visibility to
-                the task.
+                <strong>{getAssigneeName(getAssigneeValueFromViewers(taskViewerValue, assignee))}</strong> will also lose
+                visibility to the task.
               </>
             )
           }
