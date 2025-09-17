@@ -105,7 +105,7 @@ function filterByType(filteredTasks: TaskResponse[], filterValue: string): TaskR
   }
 }
 
-export const useFilter = (filterOptions: IFilterOptions) => {
+export const useFilter = (filterOptions: IFilterOptions, isPreviewMode: boolean) => {
   const { tasks, accessibleTasks, assignee } = useSelector(selectTaskBoard)
   const [isPending, startTransition] = useTransition()
 
@@ -113,7 +113,8 @@ export const useFilter = (filterOptions: IFilterOptions) => {
     let filteredTasks = [...tasks]
     for (const [filterType, filterValue] of Object.entries(filterOptions)) {
       if (!filterValue) continue
-      if (filterType === FilterOptions.ASSIGNEE) {
+      if (filterType === FilterOptions.ASSIGNEE && !isPreviewMode) {
+        // there is no filter by assignee in preview mode
         const assigneeFilterValue = UserIdsSchema.parse(filterValue)
         filteredTasks = FilterFunctions[FilterOptions.ASSIGNEE](filteredTasks, assigneeFilterValue)
       } else if (filterType === FilterOptions.KEYWORD) {

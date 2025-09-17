@@ -78,7 +78,7 @@ export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
 
   const viewBoardSettings = viewSettingsTemp ? viewSettingsTemp.viewMode : view
 
-  useFilter(viewSettingsTemp ? viewSettingsTemp.filterOptions : filterOptions)
+  useFilter(viewSettingsTemp ? viewSettingsTemp.filterOptions : filterOptions, !!previewMode)
 
   const [hasInitialized, setHasInitialized] = useState(false)
   useEffect(() => {
