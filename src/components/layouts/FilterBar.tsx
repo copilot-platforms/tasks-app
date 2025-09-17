@@ -17,7 +17,7 @@ import {
   setViewSettingsTemp,
 } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
-import { IUTokenSchema } from '@/types/common'
+import { ClientTokenSchema, IUTokenSchema } from '@/types/common'
 import { CreateViewSettingsDTO, DisplayOptions } from '@/types/dto/viewSettings.dto'
 import { FilterOptions, FilterOptionsKeywords, IFilterOptions, UserIds } from '@/types/interfaces'
 import {
@@ -109,9 +109,11 @@ export const FilterBar = ({ mode, updateViewModeSetting, isPreviewMode }: Filter
   // handles click on filter by type buttons
   const handleFilterTypeClick = ({
     emptyAssigneeFlag = true,
+    isPreviewMode = false,
     filterTypeValue,
   }: {
     emptyAssigneeFlag?: boolean
+    isPreviewMode?: boolean
     filterTypeValue: string | null | UserIdsType
   }) => {
     let filterValue = filterTypeValue
@@ -120,6 +122,16 @@ export const FilterBar = ({ mode, updateViewModeSetting, isPreviewMode }: Filter
     if (emptyAssigneeFlag) {
       setAssigneeValue(undefined)
       handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
+    }
+
+    // this block helps to set the assignee filter in preview mode which by default sets the assignee of the task (i.e the CU)
+    if (isPreviewMode) {
+      const clientUserIds = ClientTokenSchema.parse(tokenPayload)
+      handleFilterOptionsChange(FilterOptions.ASSIGNEE, {
+        clientId: clientUserIds.clientId,
+        companyId: clientUserIds?.companyId || null,
+        internalUserId: null,
+      })
     }
   }
 
@@ -163,17 +175,19 @@ export const FilterBar = ({ mode, updateViewModeSetting, isPreviewMode }: Filter
   const previewFilterButtons = [
     {
       name: 'My tasks',
-      onClick: () => handleFilterTypeClick({ filterTypeValue: IUTokenSchema.parse(tokenPayload).internalUserId }),
+      onClick: () => {
+        handleFilterTypeClick({ filterTypeValue: IUTokenSchema.parse(tokenPayload).internalUserId, isPreviewMode: true })
+      },
       id: 'MyTasks',
     },
     {
       name: 'Team tasks',
-      onClick: () => handleFilterTypeClick({ filterTypeValue: FilterOptionsKeywords.TEAM }),
+      onClick: () => handleFilterTypeClick({ filterTypeValue: FilterOptionsKeywords.TEAM, isPreviewMode: true }),
       id: 'TeamTasks',
     },
     {
       name: `${getWorkspaceLabels(workspace, true).individualTerm} tasks`,
-      onClick: () => handleFilterTypeClick({ filterTypeValue: FilterOptionsKeywords.CLIENTS }),
+      onClick: () => handleFilterTypeClick({ filterTypeValue: FilterOptionsKeywords.CLIENTS, isPreviewMode: true }),
       id: 'ClientTasks',
     },
   ]
