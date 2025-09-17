@@ -266,16 +266,12 @@ export class CopilotAPI {
     } = { limit: 100 },
   ) {
     console.info('CopilotAPI#_getClientNotifications', this.token)
-    const response = await this.manualFetch(
-      'notifications',
-      {
-        recipientClientId,
-        recipientCompanyId,
-        limit: `${opts.limit}`,
-        workspaceId,
-      },
+    const response = await this.manualFetch('notifications', {
+      recipientClientId,
+      recipientCompanyId,
+      limit: `${opts.limit}`,
       workspaceId,
-    )
+    })
     const notifications = z.array(NotificationCreatedResponseSchema).parse(response.data)
     // Return only all notifications triggered by tasks-app
     return notifications
