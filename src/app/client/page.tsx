@@ -21,6 +21,7 @@ import { TaskResponse } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { UserType } from '@/types/interfaces'
 import { CopilotAPI } from '@/utils/CopilotAPI'
+import { safeFetchJSON } from '@/utils/fetcher'
 import { getPreviewMode } from '@/utils/previewMode'
 import { redirectIfTaskCta } from '@/utils/redirect'
 import { UserRole } from '@api/core/types/user'
@@ -28,20 +29,18 @@ import { Suspense } from 'react'
 import { z } from 'zod'
 
 async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
-  const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
+  const data = await safeFetchJSON<any>(`${apiUrl}/api/workflow-states?token=${token}`, {
     next: { tags: ['getAllWorkflowStates'] },
   })
 
-  const data = await res.json()
   return data.workflowStates
 }
 
 async function getAllTasks(token: string): Promise<TaskResponse[]> {
-  const res = await fetch(`${apiUrl}/api/tasks?token=${token}`, {
+  const data = await safeFetchJSON<any>(`${apiUrl}/api/tasks?token=${token}`, {
     next: { tags: ['getAllTasks-client'] },
   })
 
-  const data = await res.json()
   return data.tasks
 }
 
