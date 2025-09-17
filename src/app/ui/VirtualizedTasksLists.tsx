@@ -4,10 +4,12 @@ import { TaskCardList } from '@/app/detail/ui/TaskCardList'
 import { TaskCard } from '@/components/cards/TaskCard'
 import { CustomLink } from '@/hoc/CustomLink'
 import { DragDropHandler } from '@/hoc/DragDropHandler'
+import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { getCardHref } from '@/utils/getCardHref'
+import { checkIfTaskViewer } from '@/utils/taskViewer'
 import { UserRole } from '@api/core/types/user'
 import { Box } from '@mui/material'
 import { useVirtualizer } from '@tanstack/react-virtual'
@@ -25,6 +27,7 @@ interface TasksVirtualizerProps {
 // virtualization component used in board view
 export function TasksRowVirtualizer({ rows, mode, token, subtasksByTaskId, workflowState }: TasksVirtualizerProps) {
   const { showSubtasks } = useSelector(selectTaskBoard)
+  const { tokenPayload } = useSelector(selectAuthDetails)
   const parentRef = useRef<HTMLDivElement>(null)
 
   const rowVirtualizer = useVirtualizer({
@@ -89,7 +92,7 @@ export function TasksRowVirtualizer({ rows, mode, token, subtasksByTaskId, workf
                   accept={'taskCard'}
                   index={virtualRow.index}
                   task={rows[virtualRow.index]}
-                  draggable
+                  draggable={!checkIfTaskViewer(rows[virtualRow.index].viewers, tokenPayload)}
                 >
                   <Box>
                     <TaskCard
@@ -102,6 +105,7 @@ export function TasksRowVirtualizer({ rows, mode, token, subtasksByTaskId, workf
                       workflowState={workflowState}
                       mode={mode}
                       subtasks={showSubtasks ? (subtasksByTaskId[rows[virtualRow.index].id] ?? []) : []}
+                      workflowDisabled={checkIfTaskViewer(rows[virtualRow.index].viewers, tokenPayload)}
                     />
                   </Box>
                 </DragDropHandler>
@@ -121,6 +125,8 @@ export function TasksColumnVirtualizer({
   subtasksByTaskId,
 }: TasksVirtualizerProps & { list: WorkflowStateResponse }) {
   const { showSubtasks } = useSelector(selectTaskBoard)
+  const { tokenPayload } = useSelector(selectAuthDetails)
+
   const parentRef = useRef<HTMLDivElement>(null)
   const columnVirtualizer = useVirtualizer({
     count: rows.length,
@@ -168,7 +174,7 @@ export function TasksColumnVirtualizer({
                     accept={'taskCard'}
                     index={virtualRow.index}
                     task={rows[virtualRow.index]}
-                    draggable
+                    draggable={!checkIfTaskViewer(rows[virtualRow.index].viewers, tokenPayload)}
                   >
                     <TaskCardList
                       task={rows[virtualRow.index]}

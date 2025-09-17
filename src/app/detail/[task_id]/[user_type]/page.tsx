@@ -18,7 +18,7 @@ import { ArchiveWrapper } from '@/app/detail/ui/ArchiveWrapper'
 import { LastArchivedField } from '@/app/detail/ui/LastArchiveField'
 import { MenuBoxContainer } from '@/app/detail/ui/MenuBoxContainer'
 import { ResponsiveStack } from '@/app/detail/ui/ResponsiveStack'
-import { Sidebar, SidebarSkeleton } from '@/app/detail/ui/Sidebar'
+import { Sidebar } from '@/app/detail/ui/Sidebar'
 import { StyledBox, StyledTiptapDescriptionWrapper, TaskDetailsContainer } from '@/app/detail/ui/styledComponent'
 import { Subtasks } from '@/app/detail/ui/Subtasks'
 import { TaskEditor } from '@/app/detail/ui/TaskEditor'
@@ -33,7 +33,7 @@ import { RealTime } from '@/hoc/RealTime'
 import { WorkspaceResponse } from '@/types/common'
 import { AncestorTaskResponse, SubTaskStatusResponse, TaskResponse } from '@/types/dto/tasks.dto'
 import { UserType } from '@/types/interfaces'
-import { getAssigneeCacheLookupKey, UserIdsType, UserIdsWithViewersType } from '@/utils/assignee'
+import { getAssigneeCacheLookupKey, UserIdsWithViewersType } from '@/utils/assignee'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import EscapeHandler from '@/utils/escapeHandler'
 import { getPreviewMode } from '@/utils/previewMode'
@@ -41,7 +41,7 @@ import { Box, Stack } from '@mui/material'
 import { z } from 'zod'
 import { fetchWithErrorHandler } from '@/app/_fetchers/fetchWithErrorHandler'
 import { AssigneeCacheGetter } from '@/app/_cache/AssigneeCacheGetter'
-import { ClientDetailAppBridge } from '@/app/detail/ui/ClientDetailAppBridge'
+import { checkIfTaskViewer } from '@/utils/taskViewer'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
   const data = await fetchWithErrorHandler<{ task: TaskResponse }>(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
@@ -110,14 +110,7 @@ export default async function TaskDetailPage({
   }))
 
   // flag that determines if the current user is the task viewer
-  const isViewer =
-    Array.isArray(task.viewers) &&
-    task.viewers.length > 0 &&
-    (!task.viewers[0].clientId || task.viewers[0].clientId === tokenPayload.clientId) &&
-    task.viewers[0].companyId === tokenPayload.companyId &&
-    !isPreviewMode
-      ? true
-      : false
+  const isViewer = checkIfTaskViewer(task.viewers, tokenPayload)
 
   return (
     <DetailStateUpdate
