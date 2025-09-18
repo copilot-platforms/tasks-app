@@ -59,7 +59,7 @@ type NewTaskFormHeaderProps = {
 
 export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => {
   const { activeWorkflowStateId } = useSelector(selectCreateTask)
-  const { workflowStates, assignee, previewMode, filterOptions } = useSelector(selectTaskBoard)
+  const { workflowStates, assignee, previewMode, filterOptions, previewClientCompany } = useSelector(selectTaskBoard)
 
   const todoWorkflowState = workflowStates.find((el) => el.key === 'todo') || workflowStates[0]
   const defaultWorkflowState = activeWorkflowStateId
@@ -78,14 +78,18 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
   const [assigneeValue, setAssigneeValue] = useState<IAssigneeCombined | null>(
     getSelectorAssigneeFromFilterOptions(
       assignee,
-      filterOptions[FilterOptions.ASSIGNEE],
+      !previewMode ? filterOptions[FilterOptions.ASSIGNEE] : { internalUserId: null, ...previewClientCompany },
       filterOptions[FilterOptions.TYPE],
     ) ?? null,
   )
   const [taskViewerValue, setTaskViewerValue] = useState<IAssigneeCombined | null>(null)
 
   useEffect(() => {
-    if (!checkEmptyAssignee(filterOptions[FilterOptions.ASSIGNEE])) {
+    if (!!previewMode) {
+      store.dispatch(
+        setCreateTaskFields({ targetField: 'userIds', value: { internalUserId: null, ...previewClientCompany } }),
+      )
+    } else if (!checkEmptyAssignee(filterOptions[FilterOptions.ASSIGNEE])) {
       store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: filterOptions[FilterOptions.ASSIGNEE] }))
     } else if (filterOptions[FilterOptions.TYPE]) {
       if (!assigneeValue) return
