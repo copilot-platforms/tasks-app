@@ -109,7 +109,6 @@ export const FilterBar = ({ mode, updateViewModeSetting, isPreviewMode }: Filter
   // handles click on filter by type buttons
   const handleFilterTypeClick = ({
     emptyAssigneeFlag = true,
-    isPreviewMode = false,
     filterTypeValue,
   }: {
     emptyAssigneeFlag?: boolean
@@ -122,16 +121,6 @@ export const FilterBar = ({ mode, updateViewModeSetting, isPreviewMode }: Filter
     if (emptyAssigneeFlag) {
       setAssigneeValue(undefined)
       handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
-    }
-
-    // this block helps to set the assignee filter in preview mode which by default sets the assignee of the task (i.e the CU)
-    if (isPreviewMode) {
-      const clientUserIds = ClientTokenSchema.parse(tokenPayload)
-      handleFilterOptionsChange(FilterOptions.ASSIGNEE, {
-        clientId: clientUserIds.clientId,
-        companyId: clientUserIds?.companyId || null,
-        internalUserId: null,
-      })
     }
   }
 
@@ -176,18 +165,18 @@ export const FilterBar = ({ mode, updateViewModeSetting, isPreviewMode }: Filter
     {
       name: 'My tasks',
       onClick: () => {
-        handleFilterTypeClick({ filterTypeValue: IUTokenSchema.parse(tokenPayload).internalUserId, isPreviewMode: true })
+        handleFilterTypeClick({ filterTypeValue: IUTokenSchema.parse(tokenPayload).internalUserId })
       },
       id: 'MyTasks',
     },
     {
       name: 'Team tasks',
-      onClick: () => handleFilterTypeClick({ filterTypeValue: FilterOptionsKeywords.TEAM, isPreviewMode: true }),
+      onClick: () => handleFilterTypeClick({ filterTypeValue: FilterOptionsKeywords.TEAM }),
       id: 'TeamTasks',
     },
     {
       name: `${getWorkspaceLabels(workspace, true).individualTerm} tasks`,
-      onClick: () => handleFilterTypeClick({ filterTypeValue: FilterOptionsKeywords.CLIENTS, isPreviewMode: true }),
+      onClick: () => handleFilterTypeClick({ filterTypeValue: FilterOptionsKeywords.CLIENTS }),
       id: 'ClientTasks',
     },
   ]

@@ -51,7 +51,7 @@ export const NewTaskCard = ({
   handleClose: () => void
   handleSubTaskCreation: (payload: CreateTaskRequest) => void
 }) => {
-  const { workflowStates, assignee, token, activeTask, previewMode, filterOptions } = useSelector(selectTaskBoard)
+  const { workflowStates, assignee, token, activeTask, previewMode, previewClientCompany } = useSelector(selectTaskBoard)
   const { templates } = useSelector(selectCreateTemplate)
 
   const [isEditorReadonly, setIsEditorReadonly] = useState(false)
@@ -59,8 +59,7 @@ export const NewTaskCard = ({
   const assigneeIds = previewMode
     ? {
         [UserIds.INTERNAL_USER_ID]: null,
-        [UserIds.CLIENT_ID]: filterOptions[FilterOptions.ASSIGNEE][UserIds.CLIENT_ID],
-        [UserIds.COMPANY_ID]: filterOptions[FilterOptions.ASSIGNEE][UserIds.COMPANY_ID],
+        ...previewClientCompany,
       }
     : {
         [UserIds.INTERNAL_USER_ID]: null,
@@ -134,11 +133,7 @@ export const NewTaskCard = ({
 
   const [assigneeValue, setAssigneeValue] = useState<IAssigneeCombined | null>(
     previewMode
-      ? (getSelectorAssigneeFromFilterOptions(
-          assignee,
-          filterOptions[FilterOptions.ASSIGNEE],
-          filterOptions[FilterOptions.TYPE],
-        ) ?? null)
+      ? (getSelectorAssigneeFromFilterOptions(assignee, { internalUserId: null, ...previewClientCompany }) ?? null)
       : null,
   )
   const [taskViewerValue, setTaskViewerValue] = useState<IAssigneeCombined | null>(null)

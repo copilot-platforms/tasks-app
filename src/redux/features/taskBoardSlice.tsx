@@ -1,5 +1,5 @@
 import { RootState } from '@/redux/store'
-import { PreviewMode } from '@/types/common'
+import { PreviewClientCompanyType, PreviewMode } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { CreateViewSettingsDTO, FilterOptionsType } from '@/types/dto/viewSettings.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
@@ -29,6 +29,7 @@ interface IInitialState {
   confirmAssignModalId: string | undefined
   confirmViewershipModalId: string | undefined
   assigneeCache: Record<string, IAssigneeCombined>
+  previewClientCompany: PreviewClientCompanyType
 }
 
 const initialState: IInitialState = {
@@ -52,6 +53,10 @@ const initialState: IInitialState = {
   isTasksLoading: true,
   activeTask: undefined,
   previewMode: null,
+  previewClientCompany: {
+    clientId: null,
+    companyId: null,
+  },
   accesibleTaskIds: [],
   accessibleTasks: [],
   confirmAssignModalId: '',
@@ -155,6 +160,9 @@ const taskBoardSlice = createSlice({
     setPreviewMode: (state, action: { payload: PreviewMode }) => {
       state.previewMode = action.payload
     },
+    setPreviewClientCompany: (state, action: { payload: PreviewClientCompanyType }) => {
+      state.previewClientCompany = action.payload
+    },
     /**
      * @deprecated - Use `accessibleTasks` state instead
      */
@@ -198,6 +206,7 @@ export const {
   setConfirmAssigneeModalId,
   setConfirmViewershipModalId,
   setAssigneeCache,
+  setPreviewClientCompany,
 } = taskBoardSlice.actions
 
 export default taskBoardSlice.reducer

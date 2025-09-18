@@ -95,7 +95,7 @@ export const ClientSideStateUpdate = ({
       const previewMode = getPreviewMode(tokenPayload)
       store.dispatch(setPreviewMode(previewMode))
 
-      previewMode && handlePreviewMode(previewMode, tokenPayload)
+      previewMode && handlePreviewMode(tokenPayload)
     }
 
     if (templates) {
