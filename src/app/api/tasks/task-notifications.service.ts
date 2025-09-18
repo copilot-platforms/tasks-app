@@ -119,7 +119,6 @@ export class TaskNotificationsService extends BaseService {
 
     // If task is a subtask for a client/company and isn't visible on task board (is disjoint)
     if (await this.checkParentAccessible(task)) return
-    const notificationPromises: Promise<void>[] = []
 
     const viewers = ViewersSchema.parse(task.viewers)
     if (viewers?.length) {
@@ -127,7 +126,7 @@ export class TaskNotificationsService extends BaseService {
       const sendViewersNotifications = clientId
         ? this.sendUserTaskSharedNotification
         : this.sendCompanyTaskSharedNotification
-      notificationPromises.push(sendViewersNotifications(task, viewers))
+      await sendViewersNotifications(task, viewers)
     }
 
     // If task is assigned to the same person that created it, no need to notify yourself
@@ -136,8 +135,7 @@ export class TaskNotificationsService extends BaseService {
     // If new task is assigned to someone (IU / Client / Company), send proper notification + email to them
     const sendTaskNotifications =
       task.assigneeType === AssigneeType.company ? this.sendCompanyTaskNotifications : this.sendUserTaskNotification
-    notificationPromises.push(sendTaskNotifications(task, isReassigned))
-    await Promise.all(notificationPromises)
+    await sendTaskNotifications(task, isReassigned)
   }
 
   async sendTaskUpdateNotifications(prevTask: TaskWithWorkflowState, updatedTask: TaskWithWorkflowState) {
