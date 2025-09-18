@@ -17,7 +17,7 @@ import { AssigneeType, ClientNotification, Task } from '@prisma/client'
 import Bottleneck from 'bottleneck'
 import httpStatus from 'http-status'
 import { z } from 'zod'
-import { ViewersSchema } from '@/types/dto/tasks.dto'
+import { Viewers, ViewersSchema } from '@/types/dto/tasks.dto'
 
 export class NotificationService extends BaseService {
   async create(
@@ -76,9 +76,11 @@ export class NotificationService extends BaseService {
 
       console.info('NotificationService#create | Created single notification:', notification)
 
+      const taskViewers = ViewersSchema.parse(task.viewers)
+
       // 3. Save notification to ClientNotification or InternalUserNotification table
-      if (task.assigneeType === AssigneeType.client) {
-        await this.addToClientNotifications(task, NotificationCreatedResponseSchema.parse(notification))
+      if (task.assigneeType === AssigneeType.client || !!taskViewers?.length) {
+        await this.addToClientNotifications(task, NotificationCreatedResponseSchema.parse(notification), taskViewers)
       }
       // NOTE: There are cases where task.assigneeType does not account for IU notification!
       // E.g. When receiving notifications from others completing task that IU created.
@@ -149,7 +151,6 @@ export class NotificationService extends BaseService {
 
       // NOTE: The reason we are skipping using NotificationService#create and implementing notification dispatch + save manually is because
       // we can just do one `createMany` DB call instead of one per notification, saving a ton of DB calls
-
       for (let recipientId of recipientIds) {
         try {
           // 1.Check for existing notification. Skip if duplicate
@@ -201,11 +202,20 @@ export class NotificationService extends BaseService {
 
       // 4. Add client notifications and internalUserNotifications to DB
       console.info('NotificationService#bulkCreate | Adding client notifications to db')
+      clientNotifications.map((notification) => {
+        console.log(
+          'hereeee',
+          notification.recipientClientId,
+          task.companyId ?? Uuid.parse(notification.recipientCompanyId),
+          notification.id,
+          task.id,
+        )
+      })
       if (clientNotifications.length) {
         await this.db.clientNotification.createMany({
           data: clientNotifications.map((notification) => ({
             clientId: Uuid.parse(notification.recipientClientId),
-            companyId: Uuid.parse(task.companyId),
+            companyId: Uuid.parse(task.companyId ?? notification.recipientCompanyId),
             notificationId: notification.id,
             taskId: task.id,
           })),
@@ -236,11 +246,16 @@ export class NotificationService extends BaseService {
    * @param notification Associated notification
    * @returns New ClientNotification object
    */
-  async addToClientNotifications(task: Task, notification: NotificationCreatedResponse): Promise<ClientNotification> {
+  async addToClientNotifications(
+    task: Task,
+    notification: NotificationCreatedResponse,
+    taskViewers?: Viewers,
+  ): Promise<ClientNotification> {
+    const viewer = !!taskViewers?.length ? taskViewers[0] : undefined
     return await this.db.clientNotification.create({
       data: {
         clientId: Uuid.parse(notification.recipientClientId),
-        companyId: Uuid.parse(task.companyId),
+        companyId: Uuid.parse(task.companyId ?? viewer?.companyId),
         notificationId: notification.id,
         taskId: task.id,
       },
