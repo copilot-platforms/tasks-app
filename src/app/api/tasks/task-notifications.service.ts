@@ -1,6 +1,7 @@
 import { Uuid } from '@/types/common'
 import { TaskWithWorkflowState } from '@/types/db'
 import { Viewers, ViewersSchema } from '@/types/dto/tasks.dto'
+import { getTaskViewers } from '@/utils/assignee'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import User from '@api/core/models/User.model'
 import { BaseService } from '@api/core/services/base.service'
@@ -155,18 +156,35 @@ export class TaskNotificationsService extends BaseService {
     if (prevTask.isArchived !== updatedTask.isArchived) {
       await this.handleTaskArchiveToggle(prevTask, updatedTask)
     }
+    const updatedViewers = getTaskViewers(updatedTask)
+    const prevViewers = getTaskViewers(prevTask)
 
+    const isViewersUpdated =
+      !!updatedViewers &&
+      ((!!updatedViewers.clientId && prevViewers?.clientId !== updatedViewers?.clientId) ||
+        prevViewers?.companyId !== updatedViewers.companyId)
     // Return if not workflowState / assignee updated
+
     const isReassigned = prevTask.assigneeId !== updatedTask.assigneeId
-    if (prevTask.workflowStateId === updatedTask.workflowStateId && !isReassigned) return
+    if (prevTask.workflowStateId === updatedTask.workflowStateId && !isReassigned && !isViewersUpdated) return
 
     // Case 2
+    // -Handle viewers changed, or viewers updated in a task.
+    if (isViewersUpdated) {
+      const clientId = updatedViewers.clientId
+      const sendViewersNotifications = clientId
+        ? this.sendUserTaskSharedNotification
+        : this.sendCompanyTaskSharedNotification
+      await sendViewersNotifications(updatedTask, [updatedViewers])
+    }
+
+    // Case 3
     // -- Handle previous assignee notification "Mark as read" if it is updated
     if (prevTask.assigneeId !== updatedTask.assigneeId && updatedTask.workflowState.type !== StateType.completed) {
       await this.handleIncompleteTaskReassignment(prevTask, updatedTask)
     }
 
-    // Case 3
+    // Case 4
     // -- Check if prev assignee was IU. If so, delete any and all past in-product notifications related to this task
     if (
       prevTask.assigneeId !== updatedTask.assigneeId &&
@@ -176,7 +194,7 @@ export class TaskNotificationsService extends BaseService {
       await this.notificationService.deleteInternalUserNotificationsForTask(prevTask.id)
     }
 
-    // Case 4
+    // Case 5
     // -- If task was previously in another state, and is moved to a 'completed' type WorkflowState by IU
     if (
       prevTask?.workflowState?.type !== StateType.completed &&
@@ -186,7 +204,7 @@ export class TaskNotificationsService extends BaseService {
       await this.handleTaskCompletionNotifications(prevTask, updatedTask)
     }
 
-    // Case 5
+    // Case 6
     // -- Handle task moved from completed to incomplete IU logic
     const isSelfAssignedIU =
       updatedTask.assigneeType === AssigneeType.internalUser && updatedTask.assigneeId === this.user.internalUserId

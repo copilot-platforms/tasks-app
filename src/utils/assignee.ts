@@ -1,10 +1,10 @@
 import { Token } from '@/types/common'
 import { TruncateMaxNumber } from '@/types/constants'
-import { TaskResponse, Viewers } from '@/types/dto/tasks.dto'
+import { TaskResponse, Viewers, ViewersSchema } from '@/types/dto/tasks.dto'
 import { IAssigneeCombined, ISelectorOption, UserIds, UserType } from '@/types/interfaces'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { truncateText } from '@/utils/truncateText'
-import { AssigneeType } from '@prisma/client'
+import { AssigneeType, Task } from '@prisma/client'
 import deepEqual from 'deep-equal'
 import { z } from 'zod'
 import { NoAssignee } from '@/utils/noAssignee'
@@ -101,4 +101,10 @@ export const getAssigneeValueFromViewers = (viewer: IAssigneeCombined | null, as
       : assignee.id === viewer?.id,
   )
   return match ?? undefined
+}
+
+export const getTaskViewers = (task: TaskResponse | Task) => {
+  const taskViewers = ViewersSchema.parse(task.viewers)
+  const viewer = !!taskViewers?.length ? taskViewers[0] : undefined
+  return viewer
 }

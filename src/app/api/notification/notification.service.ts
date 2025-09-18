@@ -18,6 +18,7 @@ import Bottleneck from 'bottleneck'
 import httpStatus from 'http-status'
 import { z } from 'zod'
 import { Viewers, ViewersSchema } from '@/types/dto/tasks.dto'
+import { getTaskViewers } from '@/utils/assignee'
 
 export class NotificationService extends BaseService {
   async create(
@@ -32,6 +33,7 @@ export class NotificationService extends BaseService {
   ) {
     try {
       // 1.Check for existing notification. Skip if duplicate
+
       const existingNotification = task.clientId
         ? await this.db.clientNotification.findFirst({
             where: { taskId: task.id, clientId: task.clientId, companyId: task.companyId },
@@ -78,8 +80,8 @@ export class NotificationService extends BaseService {
 
       const taskViewers = ViewersSchema.parse(task.viewers)
 
-      // 3. Save notification to ClientNotification or InternalUserNotification table
-      if (task.assigneeType === AssigneeType.client || !!taskViewers?.length) {
+      // 3. Save notification to ClientNotification or InternalUserNotification table. Check for notification.recipientClientId too
+      if ((task.assigneeType === AssigneeType.client || !!taskViewers?.length) && !!notification.recipientClientId) {
         await this.addToClientNotifications(task, NotificationCreatedResponseSchema.parse(notification), taskViewers)
       }
       // NOTE: There are cases where task.assigneeType does not account for IU notification!
@@ -203,8 +205,7 @@ export class NotificationService extends BaseService {
       // 4. Add client notifications and internalUserNotifications to DB
       console.info('NotificationService#bulkCreate | Adding client notifications to db')
       if (clientNotifications.length) {
-        const taskViewers = ViewersSchema.parse(task.viewers)
-        const viewer = !!taskViewers?.length ? taskViewers[0] : undefined
+        const viewer = getTaskViewers(task)
 
         await this.db.clientNotification.createMany({
           data: clientNotifications.map((notification) => ({
@@ -292,12 +293,14 @@ export class NotificationService extends BaseService {
   markClientNotificationAsRead = async (task: Task) => {
     const copilot = new CopilotAPI(this.user.token)
     try {
+      const taskViewer = getTaskViewers(task)
+
       // Due to race conditions, we are forced to allow multiple client notifications for a single notification as well
       const relatedNotifications = await this.db.clientNotification.findMany({
         where: {
           // Accomodate company task lookups where clientId is null
-          clientId: Uuid.nullable().parse(task.clientId) || undefined,
-          companyId: Uuid.parse(task.companyId),
+          clientId: Uuid.nullable().parse(task.clientId) || taskViewer?.clientId || undefined,
+          companyId: Uuid.parse(task.companyId ?? taskViewer?.companyId),
           taskId: task.id,
         },
       })
