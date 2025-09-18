@@ -59,7 +59,7 @@ export const NewTaskCard = ({
   const assigneeIds = previewMode
     ? {
         [UserIds.INTERNAL_USER_ID]: null,
-        ...previewClientCompany,
+        ...previewClientCompany, // if preview mode, default select the respective client/company as assignee
       }
     : {
         [UserIds.INTERNAL_USER_ID]: null,
@@ -133,7 +133,7 @@ export const NewTaskCard = ({
 
   const [assigneeValue, setAssigneeValue] = useState<IAssigneeCombined | null>(
     previewMode
-      ? (getSelectorAssigneeFromFilterOptions(assignee, { internalUserId: null, ...previewClientCompany }) ?? null)
+      ? (getSelectorAssigneeFromFilterOptions(assignee, { internalUserId: null, ...previewClientCompany }) ?? null) // if preview mode, default select the respective client/company as assignee
       : null,
   )
   const [taskViewerValue, setTaskViewerValue] = useState<IAssigneeCombined | null>(null)
