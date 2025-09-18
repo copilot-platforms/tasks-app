@@ -214,7 +214,7 @@ export class CopilotAPI {
     await this.copilot.markNotificationRead({ id })
   }
 
-  async _bulkMarkNotificationsAsRead(notificationIds: string[]): Promise<void> {
+  async _bulkMarkNotificationsAsRead(notificationIds: string[], shouldThrowError: boolean = true): Promise<void> {
     console.info('CopilotAPI#_bulkMarkNotificationsAsRead', this.token)
     const markAsReadPromises = []
     const bottleneck = new Bottleneck({ minTime: 250, maxConcurrent: 2 })
@@ -224,7 +224,16 @@ export class CopilotAPI {
         bottleneck
           .schedule(() => {
             console.info('CopilotAPI#_bulkMarkNotificationsAsRead | Marking notification as read', this.token, notification)
-            return this.markNotificationAsRead(notification)
+            if (shouldThrowError) {
+              return this.markNotificationAsRead(notification)
+            } else {
+              try {
+                return this.markNotificationAsRead(notification)
+              } catch (error) {
+                console.warn('Mark as read notification failed for notification')
+                return new Promise(() => null)
+              }
+            }
           })
           .catch((err: unknown) => console.error(`Failed to delete notification with id ${notification}`, err)),
       )
