@@ -48,6 +48,8 @@ export const ActivityLog = ({ log }: Prop) => {
           return [getWorkflowStateName(oldValue), getWorkflowStateName(newValue)]
 
         case ActivityType.TASK_ASSIGNED:
+        case ActivityType.VIEWER_ADDED:
+        case ActivityType.VIEWER_REMOVED:
           const taskAssignees = TaskAssignedResponseSchema.parse(log.details)
           return getAssignedToName(taskAssignees)
 
@@ -135,6 +137,22 @@ export const ActivityLog = ({ log }: Prop) => {
       </>
     ),
     [ActivityType.COMMENT_ADDED]: () => null,
+    [ActivityType.VIEWER_ADDED]: (_from: string, to: string) => (
+      <>
+        <StyledTypography> added </StyledTypography>
+        <BoldTypography>{to}</BoldTypography>
+        <StyledTypography> as a viewer </StyledTypography>
+        <DotSeparator />
+      </>
+    ),
+    [ActivityType.VIEWER_REMOVED]: (from: string, _to: string) => (
+      <>
+        <StyledTypography> removed </StyledTypography>
+        <BoldTypography>{from}</BoldTypography>
+        <StyledTypography> as a viewer </StyledTypography>
+        <DotSeparator />
+      </>
+    ),
   }
 
   const activityUser = assignee.find((assignee) => assignee.id == log.userId)

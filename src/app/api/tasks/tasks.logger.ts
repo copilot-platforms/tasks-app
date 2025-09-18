@@ -10,6 +10,8 @@ import { ActivityLogger } from '@api/activity-logs/services/activity-logger.serv
 import User from '@api/core/models/User.model'
 import { BaseService } from '@api/core/services/base.service'
 import { ActivityType, AssigneeType, Task, WorkflowState } from '@prisma/client'
+import { ViewerAddedSchema, ViewerRemovedSchema } from '../activity-logs/schemas/ViewerSchema'
+import { Viewers } from '@/types/dto/tasks.dto'
 
 /**
  * Wrapper over ActivityLogger to implement a clean abstraction for task creation / update events
@@ -52,6 +54,28 @@ export class TasksActivityLogger extends BaseService {
         setUpdate()
       }
     }
+
+    if (Array.isArray(this.task.viewers) && Array.isArray(prevTask.viewers)) {
+      const currentViewers = (this.task.viewers as Viewers) || []
+      const prevViewers = (prevTask.viewers as Viewers) || []
+
+      if (
+        (!!currentViewers.length || !!prevViewers.length) &&
+        (currentViewers[0]?.clientId !== prevViewers[0]?.clientId ||
+          currentViewers[0]?.companyId !== prevViewers[0]?.companyId)
+      ) {
+        const currentViewerId = currentViewers[0]?.clientId || currentViewers[0]?.companyId || null
+        const previousViewerId = prevViewers[0]?.clientId || prevViewers[0]?.companyId || null
+        if (currentViewerId) {
+          await this.logTaskViewerUpdated(previousViewerId, currentViewerId)
+          setUpdate()
+        } else {
+          await this.logTaskViewerRemoved(previousViewerId)
+          setUpdate()
+        }
+      }
+    }
+
     if (this.task.workflowStateId !== prevTask?.workflowStateId) {
       await this.logWorkflowStateUpdated(prevTask)
       setUpdate()
@@ -141,6 +165,26 @@ export class TasksActivityLogger extends BaseService {
         taskId: this.task.id,
       }),
       createdBy,
+    )
+  }
+
+  private async logTaskViewerUpdated(previousViewerId: string | null, currentViewerId: string | null) {
+    await this.activityLogger.log(
+      ActivityType.VIEWER_ADDED,
+      ViewerAddedSchema.parse({
+        oldValue: previousViewerId,
+        newValue: currentViewerId,
+      }),
+    )
+  }
+
+  private async logTaskViewerRemoved(previousViewerId: string | null) {
+    await this.activityLogger.log(
+      ActivityType.VIEWER_REMOVED,
+      ViewerRemovedSchema.parse({
+        oldValue: previousViewerId,
+        newValue: null,
+      }),
     )
   }
 }
