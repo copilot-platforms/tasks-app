@@ -18,6 +18,7 @@ export const GhostBtn = ({
         display: 'flex',
         justifyContent: 'flex-start',
         alignItems: 'center',
+        cursor: 'pointer',
       }}
     >
       <Stack

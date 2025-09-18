@@ -18,6 +18,7 @@ import {
   selectCreateTask,
   setAppliedDescription,
   setAppliedTitle,
+  setAllCreateTaskFields,
   setCreateTaskFields,
   setErrors,
 } from '@/redux/features/createTaskSlice'
@@ -35,6 +36,9 @@ import { Box, Stack, Typography, styled } from '@mui/material'
 import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
+import { PublicTaskCreateDto } from '@/app/api/tasks/public/public.dto'
+import { HomeParamActions } from '@/types/constants'
+import { StyledHelperText } from '@/components/error/FormHelperText'
 
 interface NewTaskFormInputsProps {
   isEditorReadonly?: boolean
@@ -48,12 +52,16 @@ interface NewTaskFormProps {
 
 export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => {
   const { activeWorkflowStateId } = useSelector(selectCreateTask)
-  const { workflowStates, assignee, previewMode, filterOptions } = useSelector(selectTaskBoard)
+  const { workflowStates, assignee, previewMode, filterOptions, urlActionParams, token } = useSelector(selectTaskBoard)
+  const [actionParamPayload, setActionParamPayload] = useState<PublicTaskCreateDto | null>(null)
 
   const todoWorkflowState = workflowStates.find((el) => el.key === 'todo') || workflowStates[0]
+  const actionParamWorkflowState = actionParamPayload
+    ? workflowStates.find((el) => el.key === actionParamPayload.status)
+    : todoWorkflowState
   const defaultWorkflowState = activeWorkflowStateId
     ? workflowStates.find((state) => state.id === activeWorkflowStateId)
-    : todoWorkflowState
+    : actionParamWorkflowState
 
   const { renderingItem: _statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
     item: defaultWorkflowState,
@@ -63,6 +71,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
   const statusValue = _statusValue as WorkflowStateResponse //typecasting
 
   const [isEditorReadonly, setIsEditorReadonly] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const [assigneeValue, setAssigneeValue] = useState<IAssigneeCombined | null>(
     getSelectorAssigneeFromFilterOptions(
@@ -72,16 +81,25 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
     ) ?? null,
   )
   useEffect(() => {
-    if (!checkEmptyAssignee(filterOptions[FilterOptions.ASSIGNEE])) {
-      store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: filterOptions[FilterOptions.ASSIGNEE] }))
-    } else if (filterOptions[FilterOptions.TYPE]) {
-      if (!assigneeValue) return
-      const correctedObject = getAssigneeTypeCorrected(assigneeValue)
-      if (!correctedObject) return
-      const newUserIds = getSelectedUserIds([{ ...assigneeValue, object: correctedObject }])
-      store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: newUserIds }))
+    if (
+      Object.keys(urlActionParams).length > 0 &&
+      urlActionParams.action === HomeParamActions.CREATE_TASK &&
+      urlActionParams.oldPf !== urlActionParams.pf
+    ) {
+      // handle url action param for deep link
+      handleUrlActionParam()
     } else {
-      store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: emptyAssignee }))
+      if (!checkEmptyAssignee(filterOptions[FilterOptions.ASSIGNEE])) {
+        store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: filterOptions[FilterOptions.ASSIGNEE] }))
+      } else if (filterOptions[FilterOptions.TYPE]) {
+        if (!assigneeValue) return
+        const correctedObject = getAssigneeTypeCorrected(assigneeValue)
+        if (!correctedObject) return
+        const newUserIds = getSelectedUserIds([{ ...assigneeValue, object: correctedObject }])
+        store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: newUserIds }))
+      } else {
+        store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: emptyAssignee }))
+      }
     }
   }, []) //if assigneeValue has an intial value before selection (when my tasks, filter by assignee filter is applied), then update the task creation field for userIds.
 
@@ -100,6 +118,61 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
       document.removeEventListener('keydown', handleEscPress)
     }
   }, [handleClose])
+
+  // this function handles the action param passed in the url and fill the values in the form
+  const handleUrlActionParam = useCallback(async () => {
+    if (urlActionParams.pf && token) {
+      const payload = JSON.parse(atob(decodeURIComponent(urlActionParams.pf)))
+
+      if (!payload.companyId && payload.clientId) {
+        const assigneeVal = assignee.find((val) => val.id === payload.clientId)
+
+        if (!assigneeVal) {
+          setErrorMessage('Assignee not found')
+          delete payload.clientId
+        } else {
+          if (Array.isArray(assigneeVal.companyIds) && assigneeVal.companyIds.length === 1) {
+            payload.companyId = assigneeVal.companyIds[0]
+          } else if (
+            assigneeVal.companyId &&
+            (!assigneeVal.companyIds || (Array.isArray(assigneeVal.companyIds) && !assigneeVal.companyIds.length))
+          ) {
+            payload.companyId = assigneeVal.companyId
+          } else if (Array.isArray(assigneeVal?.companyIds)) {
+            // If client has multiple companies, set error
+            delete payload.clientId
+            setErrorMessage('companyId must be provided for clients with more than one company')
+          } else {
+            delete payload.clientId
+            setErrorMessage('companyId must be provided when clientId is provided')
+          }
+        }
+      } else if (!payload.companyId && !payload.clientId) {
+        setErrorMessage('clientId or companyId must be provided')
+      }
+
+      // respect the filter Ids first. This is needed for CRM deep link for respective clients
+      const assigneeFilter = {
+        [UserIds.INTERNAL_USER_ID]: filterOptions[FilterOptions.ASSIGNEE].internalUserId || payload?.internalUserId || null,
+        [UserIds.CLIENT_ID]: filterOptions[FilterOptions.ASSIGNEE].clientId || payload?.clientId || null,
+        [UserIds.COMPANY_ID]: filterOptions[FilterOptions.ASSIGNEE].companyId || payload?.companyId || null,
+      }
+
+      const taskPayload = {
+        title: payload?.name || '',
+        description: payload?.description || '',
+        workflowStateId: workflowStates.find((state) => state.key === payload?.status)?.id || '',
+        dueDate: payload?.dueDate || null,
+        templateId: payload?.templateId || null,
+        userIds: assigneeFilter,
+        parentId: payload?.parentTaskId || null,
+      }
+
+      setAssigneeValue(getSelectorAssigneeFromFilterOptions(assignee, assigneeFilter) || null)
+      setActionParamPayload(payload)
+      store.dispatch(setAllCreateTaskFields(taskPayload))
+    }
+  }, [urlActionParams])
 
   return (
     <NewTaskContainer>
@@ -141,6 +214,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
                 const newUserIds = getSelectedUserIds(inputValue)
                 const selectedAssignee = getSelectorAssignee(assignee, inputValue)
                 setAssigneeValue(selectedAssignee || null)
+                setErrorMessage(null)
                 store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: newUserIds }))
               }}
               buttonContent={
@@ -166,6 +240,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
                       {getAssigneeName(assigneeValue as IAssigneeCombined, 'Assignee')}
                     </Typography>
                   }
+                  error={!!errorMessage}
                 />
               }
             />
@@ -180,6 +255,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
               }}
             >
               <DatePickerComponent
+                dateValue={actionParamPayload?.dueDate}
                 padding="4px 16px"
                 getDate={(value) => store.dispatch(setCreateTaskFields({ targetField: 'dueDate', value: value as string }))}
                 variant="button"
@@ -187,6 +263,12 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
             </Box>
           </Stack>
         </Stack>
+        {errorMessage && (
+          <StyledHelperText sx={{ paddingTop: '6px', textAlign: 'left', marginLeft: '0px' }}>
+            {' '}
+            {errorMessage}{' '}
+          </StyledHelperText>
+        )}
       </AppMargin>
       <NewTaskFooter
         handleCreate={handleCreateWithAssignee}

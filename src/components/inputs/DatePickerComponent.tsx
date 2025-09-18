@@ -4,11 +4,12 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import dayjs, { Dayjs } from 'dayjs'
 import { CalenderIcon, CalenderIconSmall } from '@/icons'
-import { Box, Popper, Stack, Typography } from '@mui/material'
+import { Box, Popper, Stack, Theme, Typography } from '@mui/material'
 import { SecondaryBtn } from '../buttons/SecondaryBtn'
 import { useState } from 'react'
 import { Sizes } from '@/types/interfaces'
 import { DueDateLayout } from '@/components/layouts/DueDateLayout'
+import { CopilotTooltip, CopilotTooltipProps } from '@/components/atoms/CopilotTooltip'
 
 interface Prop {
   getDate: (value: string) => void
@@ -20,6 +21,9 @@ interface Prop {
   gap?: string
   variant?: 'button' | 'icon' | 'normal'
   isDone?: boolean
+  isShort?: boolean
+  hoverColor?: keyof Theme['color']['gray']
+  tooltipProps?: Omit<CopilotTooltipProps, 'content' | 'children'>
 }
 
 export const DatePickerComponent = ({
@@ -32,6 +36,9 @@ export const DatePickerComponent = ({
   gap,
   variant = 'normal',
   isDone,
+  isShort = false,
+  hoverColor,
+  tooltipProps,
 }: Prop) => {
   const [value, setValue] = useState(dateValue ? dayjs(dateValue) : null)
 
@@ -60,7 +67,11 @@ export const DatePickerComponent = ({
         direction="row"
         alignItems="center"
         columnGap="7px"
-        onClick={handleClick}
+        onClickCapture={(e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          handleClick(e)
+        }}
         aria-describedby={id}
         sx={{
           cursor: disabled ? 'auto' : 'pointer',
@@ -131,22 +142,28 @@ export const DatePickerComponent = ({
             </Typography>
           </>
         ) : (
-          <Box
-            sx={{
-              padding: padding,
-              borderRadius: '4px',
-              ':hover': {
-                cursor: 'pointer',
-                ...(!disabled && {
-                  background: (theme) => theme.color.gray[150],
-                }),
-              },
-              display: 'flex',
-              alignItems: 'center',
-            }}
-          >
-            <DueDateLayout dateString={value?.format('YYYY-MM-DD') ?? ''} isDone={isDone ?? false} />
-          </Box>
+          // Right now Tooltip support is applied to the icon variant only
+          <CopilotTooltip content={'Change due date'} disabled={tooltipProps?.disabled} position={tooltipProps?.position}>
+            <Box
+              sx={{
+                padding: padding,
+                borderRadius: '4px',
+                ':hover': {
+                  cursor: 'pointer',
+                  background: disabled ? undefined : (theme) => theme.color.gray[hoverColor ?? 150],
+                },
+                display: 'flex',
+                alignItems: 'center',
+              }}
+            >
+              <DueDateLayout
+                dateString={value?.format('YYYY-MM-DD') ?? ''}
+                isDone={isDone ?? false}
+                variant={isShort ? 'short' : 'long'}
+                isClient={disabled}
+              />
+            </Box>
+          </CopilotTooltip>
         )}
       </Stack>
       <Popper
@@ -157,6 +174,9 @@ export const DatePickerComponent = ({
         // This hides popper's tooltip that helps position the content. display: none would mess up the positioning
         sx={{
           opacity: 0,
+        }}
+        onClick={(e) => {
+          e.stopPropagation()
         }}
       >
         <DatePicker

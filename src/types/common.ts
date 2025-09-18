@@ -16,7 +16,10 @@ export type CopilotListArgs = {
 
 export const TokenSchema = z.object({
   clientId: z.string().optional(),
-  companyId: z.string().optional(),
+  companyId: z
+    .string()
+    .transform((val) => (val === 'default' ? undefined : val))
+    .optional(),
   internalUserId: z.string().optional(),
   workspaceId: z.string(),
 })
@@ -101,7 +104,7 @@ export const CompanyResponseSchema = z.object({
   name: z.string(),
   iconImageUrl: z.string().nullable(),
   fallbackColor: z.string().nullish(),
-  isPlaceholder: z.boolean(),
+  isPlaceholder: z.boolean().optional(),
   createdAt: z.string().datetime(),
 })
 export type CompanyResponse = z.infer<typeof CompanyResponseSchema>
@@ -267,3 +270,9 @@ export const RFC3339DateSchema = z.string().refine((val) => rfc3339Regex.test(va
 export type RFC3339Date = z.infer<typeof RFC3339DateSchema>
 
 export const StateTypeSchema = z.nativeEnum(StateType)
+
+export type UrlActionParamsType = {
+  action?: string
+  pf?: string
+  oldPf?: string
+}
