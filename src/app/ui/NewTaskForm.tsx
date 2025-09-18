@@ -78,7 +78,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
   const [assigneeValue, setAssigneeValue] = useState<IAssigneeCombined | null>(
     getSelectorAssigneeFromFilterOptions(
       assignee,
-      !previewMode ? filterOptions[FilterOptions.ASSIGNEE] : { internalUserId: null, ...previewClientCompany },
+      !previewMode ? filterOptions[FilterOptions.ASSIGNEE] : { internalUserId: null, ...previewClientCompany }, // if preview mode, default select the respective client/company as assignee
       filterOptions[FilterOptions.TYPE],
     ) ?? null,
   )
@@ -86,6 +86,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
 
   useEffect(() => {
     if (!!previewMode) {
+      // if preview mode, default select the respective client/company as assignee
       store.dispatch(
         setCreateTaskFields({ targetField: 'userIds', value: { internalUserId: null, ...previewClientCompany } }),
       )

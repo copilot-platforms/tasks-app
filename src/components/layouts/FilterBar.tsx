@@ -107,21 +107,13 @@ export const FilterBar = ({ mode, updateViewModeSetting, isPreviewMode }: Filter
   }
 
   // handles click on filter by type buttons
-  const handleFilterTypeClick = ({
-    emptyAssigneeFlag = true,
-    filterTypeValue,
-  }: {
-    emptyAssigneeFlag?: boolean
-    isPreviewMode?: boolean
-    filterTypeValue: string | null | UserIdsType
-  }) => {
+  const handleFilterTypeClick = ({ filterTypeValue }: { filterTypeValue: string | null | UserIdsType }) => {
     let filterValue = filterTypeValue
     handleFilterOptionsChange(FilterOptions.TYPE, filterValue)
 
-    if (emptyAssigneeFlag) {
-      setAssigneeValue(undefined)
-      handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
-    }
+    // empty assignee filter option
+    setAssigneeValue(undefined)
+    handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
   }
 
   const IuFilterButtons = [
@@ -150,13 +142,12 @@ export const FilterBar = ({ mode, updateViewModeSetting, isPreviewMode }: Filter
   const CuFilterButtons = [
     {
       name: 'All tasks',
-      onClick: () =>
-        handleFilterTypeClick({ filterTypeValue: FilterOptionsKeywords.CLIENT_WITH_VIEWERS, emptyAssigneeFlag: false }),
+      onClick: () => handleFilterTypeClick({ filterTypeValue: FilterOptionsKeywords.CLIENT_WITH_VIEWERS }),
       id: 'AllTasks',
     },
     {
       name: 'My tasks',
-      onClick: () => handleFilterTypeClick({ filterTypeValue: FilterOptionsKeywords.CLIENTS, emptyAssigneeFlag: false }),
+      onClick: () => handleFilterTypeClick({ filterTypeValue: FilterOptionsKeywords.CLIENTS }),
       id: 'MyTasks',
     },
   ]
