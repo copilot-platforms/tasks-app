@@ -202,20 +202,14 @@ export class NotificationService extends BaseService {
 
       // 4. Add client notifications and internalUserNotifications to DB
       console.info('NotificationService#bulkCreate | Adding client notifications to db')
-      clientNotifications.map((notification) => {
-        console.log(
-          'hereeee',
-          notification.recipientClientId,
-          task.companyId ?? Uuid.parse(notification.recipientCompanyId),
-          notification.id,
-          task.id,
-        )
-      })
       if (clientNotifications.length) {
+        const taskViewers = ViewersSchema.parse(task.viewers)
+        const viewer = !!taskViewers?.length ? taskViewers[0] : undefined
+
         await this.db.clientNotification.createMany({
           data: clientNotifications.map((notification) => ({
             clientId: Uuid.parse(notification.recipientClientId),
-            companyId: Uuid.parse(task.companyId ?? notification.recipientCompanyId),
+            companyId: Uuid.parse(task.companyId ?? viewer?.companyId),
             notificationId: notification.id,
             taskId: task.id,
           })),
@@ -468,7 +462,17 @@ export class NotificationService extends BaseService {
           console.info('fetched client Ids', clientIds)
           recipientIds = clientIds
         }
-
+        if (!!viewers?.length) {
+          const clientId = viewers[0].clientId
+          if (clientId) {
+            recipientIds = [clientId] //spread recipientIds if we allow viewers on client tasks.
+          } else {
+            const clientsInCompany = await copilot.getCompanyClients(viewers[0].companyId)
+            const clientIds = clientsInCompany.map((client) => client.id)
+            console.info('fetched client Ids', clientIds)
+            recipientIds = clientIds
+          }
+        } //viewers comment notifications
         // this break is needed otherwise we will fallthrough to the IU case.
         // This is honestly unhinged JS behavior, I would not expect the
         // next case to run if the switch did not match it
