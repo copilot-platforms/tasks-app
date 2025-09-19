@@ -7,5 +7,6 @@ export const ViewerAddedSchema = z.object({
 
 export const ViewerRemovedSchema = z.object({
   oldValue: z.string().uuid().nullable(),
-  newValue: z.null(),
 })
+
+export type ViewerRemovedResponse = z.infer<typeof ViewerRemovedSchema>
