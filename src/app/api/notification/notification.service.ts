@@ -17,6 +17,7 @@ import { AssigneeType, ClientNotification, Task } from '@prisma/client'
 import Bottleneck from 'bottleneck'
 import httpStatus from 'http-status'
 import { z } from 'zod'
+import { Viewers, ViewersSchema } from '@/types/dto/tasks.dto'
 
 export class NotificationService extends BaseService {
   async create(
@@ -75,9 +76,11 @@ export class NotificationService extends BaseService {
 
       console.info('NotificationService#create | Created single notification:', notification)
 
+      const taskViewers = ViewersSchema.parse(task.viewers)
+
       // 3. Save notification to ClientNotification or InternalUserNotification table
-      if (task.assigneeType === AssigneeType.client) {
-        await this.addToClientNotifications(task, NotificationCreatedResponseSchema.parse(notification))
+      if (task.assigneeType === AssigneeType.client || !!taskViewers?.length) {
+        await this.addToClientNotifications(task, NotificationCreatedResponseSchema.parse(notification), taskViewers)
       }
       // NOTE: There are cases where task.assigneeType does not account for IU notification!
       // E.g. When receiving notifications from others completing task that IU created.
@@ -148,7 +151,6 @@ export class NotificationService extends BaseService {
 
       // NOTE: The reason we are skipping using NotificationService#create and implementing notification dispatch + save manually is because
       // we can just do one `createMany` DB call instead of one per notification, saving a ton of DB calls
-
       for (let recipientId of recipientIds) {
         try {
           // 1.Check for existing notification. Skip if duplicate
@@ -201,10 +203,13 @@ export class NotificationService extends BaseService {
       // 4. Add client notifications and internalUserNotifications to DB
       console.info('NotificationService#bulkCreate | Adding client notifications to db')
       if (clientNotifications.length) {
+        const taskViewers = ViewersSchema.parse(task.viewers)
+        const viewer = !!taskViewers?.length ? taskViewers[0] : undefined
+
         await this.db.clientNotification.createMany({
           data: clientNotifications.map((notification) => ({
             clientId: Uuid.parse(notification.recipientClientId),
-            companyId: Uuid.parse(task.companyId),
+            companyId: Uuid.parse(task.companyId ?? viewer?.companyId),
             notificationId: notification.id,
             taskId: task.id,
           })),
@@ -235,11 +240,16 @@ export class NotificationService extends BaseService {
    * @param notification Associated notification
    * @returns New ClientNotification object
    */
-  async addToClientNotifications(task: Task, notification: NotificationCreatedResponse): Promise<ClientNotification> {
+  async addToClientNotifications(
+    task: Task,
+    notification: NotificationCreatedResponse,
+    taskViewers?: Viewers,
+  ): Promise<ClientNotification> {
+    const viewer = !!taskViewers?.length ? taskViewers[0] : undefined
     return await this.db.clientNotification.create({
       data: {
         clientId: Uuid.parse(notification.recipientClientId),
-        companyId: Uuid.parse(task.companyId),
+        companyId: Uuid.parse(task.companyId ?? viewer?.companyId),
         notificationId: notification.id,
         taskId: task.id,
       },
@@ -383,8 +393,21 @@ export class NotificationService extends BaseService {
           throw new APIError(httpStatus.NOT_FOUND, `Unknown assignee type: ${task.assigneeType}`)
       }
     }
+    const viewers = ViewersSchema.parse(task.viewers)
 
     switch (action) {
+      case NotificationTaskActions.Shared:
+        senderId = task.createdById
+        recipientId = !!viewers?.length ? z.string().parse(viewers[0].clientId) : ''
+        actionTrigger = await copilot.getInternalUser(senderId)
+        break
+      case NotificationTaskActions.SharedToCompany:
+        senderId = task.createdById
+        recipientIds = !!viewers?.length
+          ? (await copilot.getCompanyClients(z.string().parse(viewers[0].companyId))).map((client) => client.id)
+          : []
+        actionTrigger = await copilot.getInternalUser(senderId)
+        break
       case NotificationTaskActions.Assigned:
         senderId = task.createdById
         recipientId = z.string().parse(task.assigneeId)
@@ -439,7 +462,17 @@ export class NotificationService extends BaseService {
           console.info('fetched client Ids', clientIds)
           recipientIds = clientIds
         }
-
+        if (!!viewers?.length) {
+          const clientId = viewers[0].clientId
+          if (clientId) {
+            recipientIds = [clientId] //spread recipientIds if we allow viewers on client tasks.
+          } else {
+            const clientsInCompany = await copilot.getCompanyClients(viewers[0].companyId)
+            const clientIds = clientsInCompany.map((client) => client.id)
+            console.info('fetched client Ids', clientIds)
+            recipientIds = clientIds
+          }
+        } //viewers comment notifications
         // this break is needed otherwise we will fallthrough to the IU case.
         // This is honestly unhinged JS behavior, I would not expect the
         // next case to run if the switch did not match it
@@ -525,12 +558,14 @@ export class NotificationService extends BaseService {
     senderCompanyId?: string,
   ): NotificationRequestBody {
     // Assume client notification then change details body if IU
+    const viewers = ViewersSchema.parse(task.viewers)
+    const viewer = viewers ? viewers[0] : undefined
     const notificationDetails: NotificationRequestBody = {
       senderId,
       senderCompanyId,
       senderType: 'client',
       recipientClientId: recipientId ?? undefined,
-      recipientCompanyId: task.companyId ?? undefined,
+      recipientCompanyId: task.companyId ?? viewer?.companyId ?? undefined,
       // If any of the given action is not present in details obj, that type of notification is not sent
       deliveryTargets: deliveryTargets || {},
     }
