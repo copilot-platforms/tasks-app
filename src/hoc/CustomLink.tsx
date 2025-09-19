@@ -61,7 +61,11 @@ export const CustomLink = ({
   return (
     <Link
       href={`${pathname}?token=${token}`}
-      style={style}
+      style={{
+        ...style,
+        outline: 'none',
+        boxShadow: 'none',
+      }}
       prefetch={shouldPrefetch}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}

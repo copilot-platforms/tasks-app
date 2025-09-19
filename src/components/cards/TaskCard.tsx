@@ -1,20 +1,61 @@
 'use client'
 
-import { selectTaskBoard, setAssigneeCache } from '@/redux/features/taskBoardSlice'
-import { TaskResponse } from '@/types/dto/tasks.dto'
-import { IAssigneeCombined } from '@/types/interfaces'
-import { NoAssignee } from '@/utils/noAssignee'
-import { Box, Skeleton, Stack, Typography, styled } from '@mui/material'
-import { useSelector } from 'react-redux'
-import { DueDateLayout } from '@/components/layouts/DueDateLayout'
+import { UserRole } from '@/app/api/core/types/user'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
-import { UrlObject } from 'url'
-import { useEffect, useState } from 'react'
-import { getAssigneeName } from '@/utils/assignee'
-import { isTaskCompleted } from '@/utils/isTaskCompleted'
-import { TaskMetaItems } from '@/components/atoms/TaskMetaItems'
-import store from '@/redux/store'
+import { SelectorType } from '@/components/inputs/Selector'
+import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
+import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { useSubtaskCount } from '@/hooks/useSubtaskCount'
+import {
+  selectTaskBoard,
+  setAssigneeCache,
+  setConfirmAssigneeModalId,
+  setConfirmViewershipModalId,
+  updateWorkflowStateIdByTaskId,
+} from '@/redux/features/taskBoardSlice'
+import store from '@/redux/store'
+import { TaskResponse } from '@/types/dto/tasks.dto'
+import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
+import { IAssigneeCombined, InputValue, Sizes } from '@/types/interfaces'
+import {
+  getAssigneeId,
+  getAssigneeName,
+  getAssigneeValueFromViewers,
+  getUserIds,
+  isEmptyAssignee,
+  UserIdsType,
+} from '@/utils/assignee'
+import { isTaskCompleted } from '@/utils/isTaskCompleted'
+import { NoAssignee } from '@/utils/noAssignee'
+import { Box, Skeleton, Stack, styled } from '@mui/material'
+import React, { useEffect, useState } from 'react'
+import { useSelector } from 'react-redux'
+import { UrlObject } from 'url'
+
+import { updateTask } from '@/app/(home)/actions'
+import { clientUpdateTask, updateAssignee, updateTaskDetail } from '@/app/detail/[task_id]/[user_type]/actions'
+import { TaskCardList } from '@/app/detail/ui/TaskCardList'
+import { TaskMetaItems } from '@/components/atoms/TaskMetaItems'
+import TaskTitle from '@/components/atoms/TaskTitle'
+import { CopilotPopSelector } from '@/components/inputs/CopilotSelector'
+import { DatePickerComponent } from '@/components/inputs/DatePickerComponent'
+import { CustomLink } from '@/hoc/CustomLink'
+import { DateStringSchema } from '@/types/date'
+import { createDateFromFormattedDateString, formatDate } from '@/utils/dateHelper'
+import { getCardHref } from '@/utils/getCardHref'
+import {
+  getSelectedUserIds,
+  getSelectorAssignee,
+  getSelectorAssigneeFromTask,
+  getSelectorViewerFromTask,
+} from '@/utils/selector'
+import {
+  shouldConfirmBeforeReassignment,
+  shouldConfirmViewershipBeforeReassignment,
+} from '@/utils/shouldConfirmBeforeReassign'
+import z from 'zod'
+import { StyledModal } from '@/app/detail/ui/styledComponent'
+import { ConfirmUI } from '@/components/layouts/ConfirmUI'
 
 const TaskCardContainer = styled(Stack)(({ theme }) => ({
   border: `1px solid ${theme.color.borders.border}`,
@@ -26,80 +67,306 @@ const TaskCardContainer = styled(Stack)(({ theme }) => ({
   ':hover': {
     background: theme.color.gray[100],
   },
+  ':focus-visible': {
+    borderColor: theme.color.borders.focusBorder2,
+    borderRadius: theme.spacing(theme.shape.radius100),
+    outline: 'none',
+  },
   cursor: 'pointer',
-  width: '304px',
+  width: '336px',
 }))
 
 interface TaskCardProps {
   task: TaskResponse
   href: string | UrlObject
+  mode: UserRole
+  workflowState?: WorkflowStateResponse
+  subtasks?: TaskResponse[]
+  workflowDisabled?: boolean
 }
 
-export const TaskCard = ({ task, href }: TaskCardProps) => {
-  const { assignee, workflowStates, assigneeCache } = useSelector(selectTaskBoard)
+export const TaskCard = ({ task, href, workflowState, mode, subtasks, workflowDisabled = false }: TaskCardProps) => {
+  const {
+    assignee,
+    workflowStates,
+    assigneeCache,
+    previewMode,
+    token,
+    accessibleTasks,
+    showSubtasks,
+    confirmAssignModalId,
+    confirmViewershipModalId,
+  } = useSelector(selectTaskBoard)
 
   const subtaskCount = useSubtaskCount(task.id)
 
-  const [currentAssignee, setCurrentAssignee] = useState<IAssigneeCombined | undefined>(() => {
-    return assigneeCache[task.id]
+  const [currentDueDate, setCurrentDueDate] = useState<string | undefined>(task.dueDate)
+
+  const [selectedAssignee, setSelectedAssignee] = useState<UserIdsType | undefined>(undefined)
+
+  const { renderingItem: _statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
+    // item: selectedWorkflowState,
+    item: workflowState ?? task.workflowState,
+    type: SelectorType.STATUS_SELECTOR,
   })
+
+  const statusValue = _statusValue as WorkflowStateResponse
 
   useEffect(() => {
     if (assignee.length > 0) {
-      const currentAssignee = assignee.find((el) => el.id === task.assigneeId)
+      const currentAssignee = getSelectorAssigneeFromTask(assignee, task)
       const finalAssignee = currentAssignee ?? NoAssignee
       store.dispatch(setAssigneeCache({ key: task.id, value: finalAssignee }))
-      setCurrentAssignee(finalAssignee)
+      setAssigneeValue(finalAssignee)
     }
   }, [assignee, task.id, task.assigneeId])
 
-  return (
-    <TaskCardContainer>
-      <Stack rowGap={1}>
-        <Stack direction="row" justifyContent="space-between">
-          <Stack direction="column" rowGap={'4px'}>
-            {(task.isArchived || subtaskCount > 0) && (
-              <Stack direction="row" sx={{ display: 'flex', gap: '12px', flexShrink: 0, alignItems: 'center' }}>
-                <TaskMetaItems task={task} lineHeight="18px" />
-              </Stack>
-            )}
+  useEffect(() => {
+    setCurrentDueDate(task.dueDate)
+  }, [task.dueDate])
 
-            {currentAssignee ? (
-              <Stack direction="row" alignItems="center" columnGap={1}>
-                <CopilotAvatar currentAssignee={currentAssignee as IAssigneeCombined} />
-                <Typography
-                  variant="sm"
-                  fontSize="12px"
+  const handleConfirmAssigneeChange = (userIds: UserIdsType) => {
+    const { internalUserId, clientId, companyId } = userIds
+    const viewers = !internalUserId ? [] : undefined
+    store.dispatch(setConfirmAssigneeModalId(undefined))
+    store.dispatch(setConfirmViewershipModalId(undefined))
+    token && updateAssignee(token, task.id, internalUserId, clientId, companyId, viewers)
+  }
+
+  const handleAssigneeChange = (inputValue: InputValue[]) => {
+    const newUserIds = getSelectedUserIds(inputValue)
+    const previousAssignee = assignee.find((assignee) => assignee.id == getAssigneeId(getUserIds(task)))
+    const nextAssignee = getSelectorAssignee(assignee, inputValue)
+    const shouldShowConfirmModal = shouldConfirmBeforeReassignment(previousAssignee, nextAssignee)
+    const shouldShowConfirmViewershipModal = shouldConfirmViewershipBeforeReassignment(
+      getSelectorViewerFromTask(assignee, task) ?? null,
+      nextAssignee,
+    )
+    if (shouldShowConfirmModal) {
+      setSelectedAssignee(newUserIds)
+      store.dispatch(setConfirmAssigneeModalId(task.id))
+    } else if (shouldShowConfirmViewershipModal) {
+      setSelectedAssignee(newUserIds)
+      store.dispatch(setConfirmViewershipModalId(task.id))
+    } else {
+      const { internalUserId, clientId, companyId } = newUserIds
+      const viewers = !internalUserId ? [] : undefined
+      token && updateAssignee(token, task.id, internalUserId, clientId, companyId, viewers)
+      setAssigneeValue(nextAssignee ?? NoAssignee)
+    }
+  }
+  const getAssigneeValue = (userIds?: UserIdsType) => {
+    if (!userIds) {
+      return NoAssignee
+    }
+    const assigneeId = getAssigneeId(userIds)
+    const match = assignee.find((assignee) => assignee.id === assigneeId)
+    return match ?? NoAssignee
+  }
+
+  const [assigneeValue, setAssigneeValue] = useState<IAssigneeCombined | Omit<IAssigneeCombined, 'type'> | undefined>(() => {
+    return assigneeCache[task.id]
+  }) //Omitting type for NoAssignee
+
+  return (
+    <TaskCardContainer tabIndex={0}>
+      <Stack direction="column" rowGap={'12px'}>
+        <Stack direction={'row'} columnGap={'2px'}>
+          <Box sx={{ alignItems: 'top' }}>
+            <WorkflowStateSelector
+              option={workflowStates}
+              value={statusValue}
+              variant="icon"
+              getValue={(value) => {
+                updateStatusValue(value)
+                store.dispatch(updateWorkflowStateIdByTaskId({ taskId: task.id, targetWorkflowStateId: value.id }))
+                if (mode === UserRole.Client && !previewMode) {
+                  clientUpdateTask(z.string().parse(token), task.id, value.id)
+                } else {
+                  updateTask({
+                    token: z.string().parse(token),
+                    taskId: task.id,
+                    payload: { workflowStateId: value.id },
+                  })
+                }
+              }}
+              responsiveNoHide
+              size={Sizes.MEDIUM}
+              padding={'4px'}
+              disabled={workflowDisabled}
+            />
+          </Box>
+          <Stack direction="column" justifyContent="center" rowGap={'5px'} sx={{ width: '100%' }}>
+            <Stack direction={'row'} columnGap={'10px'} justifyContent={'space-between'}>
+              <TaskTitle title={task.title ?? ''} variant="board" />
+
+              {assigneeValue ? (
+                <CopilotPopSelector
+                  name="Set assignee"
+                  disabled={mode === UserRole.Client && !previewMode}
+                  initialValue={(() => {
+                    const value = assigneeValue as IAssigneeCombined
+                    if (!value || value === NoAssignee) return undefined
+                    return value
+                  })()}
+                  onChange={handleAssigneeChange}
+                  tooltipProps={{
+                    content: assigneeValue === NoAssignee ? 'Set assignee' : 'Change assignee',
+                    disabled: mode === UserRole.Client && !previewMode,
+                  }}
+                  variant="icon"
+                  buttonContent={
+                    <Box
+                      sx={{
+                        padding: '2px 2px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        borderRadius: '4px',
+                        ...(!(mode === UserRole.Client && !previewMode) && {
+                          ':hover': {
+                            cursor: 'pointer',
+                            background: (theme) => theme.color.gray[150],
+                          },
+                        }),
+                      }}
+                    >
+                      <CopilotAvatar currentAssignee={assigneeValue as IAssigneeCombined} />
+                    </Box>
+                  }
+                />
+              ) : (
+                <Box
                   sx={{
-                    color: (theme) => theme.color.gray[500],
-                    width: '146px',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
+                    padding: '2px 4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    borderRadius: '4px',
+                    ...(!(mode === UserRole.Client && !previewMode) && {
+                      ':hover': {
+                        cursor: 'pointer',
+                        background: (theme) => theme.color.gray[150],
+                      },
+                    }),
                   }}
                 >
-                  {getAssigneeName(currentAssignee)}
-                </Typography>
-              </Stack>
-            ) : (
-              <Box>
-                <Stack direction="row" justifyContent="space-between" alignItems="center" columnGap={'4px'}>
                   <Skeleton variant="circular" width={20} height={20} />
-                  <Skeleton variant="rectangular" width="146px" height="12px" />
-                </Stack>
+                </Box>
+              )}
+            </Stack>
+            <Stack direction={'row'} columnGap={'10px'} justifyContent={'space-between'}>
+              <Box sx={{ ml: '-4px' }}>
+                {task.dueDate && (
+                  <DatePickerComponent
+                    getDate={(date) => {
+                      const isoDate = DateStringSchema.parse(formatDate(date))
+                      token && updateTaskDetail({ token, taskId: task.id, payload: { dueDate: isoDate } })
+                      setCurrentDueDate(isoDate)
+                    }}
+                    variant="icon"
+                    padding="0px 4px"
+                    dateValue={
+                      currentDueDate ? createDateFromFormattedDateString(z.string().parse(currentDueDate)) : undefined
+                    }
+                    disabled={mode === UserRole.Client && !previewMode}
+                    isDone={isTaskCompleted(task, workflowStates)}
+                    isShort
+                    tooltipProps={{
+                      disabled: mode === UserRole.Client && !previewMode,
+                    }}
+                  />
+                )}
               </Box>
-            )}
-          </Stack>
 
-          <Typography variant="bodyXs" fontWeight={400} sx={{ color: (theme) => theme.color.gray[500] }}>
-            {task.label}
-          </Typography>
+              {(task.isArchived || subtaskCount > 0) && (
+                <Stack
+                  direction="row"
+                  sx={{
+                    display: 'flex',
+                    gap: '12px',
+                    flexShrink: 0,
+                    alignItems: 'center',
+                    justifyContent: 'flex-end',
+                    padding: '0px 5px',
+                  }}
+                >
+                  <TaskMetaItems task={task} lineHeight="18px" />
+                </Stack>
+              )}
+            </Stack>
+          </Stack>
         </Stack>
-        <Typography variant="sm" sx={{ color: (theme) => theme.color.gray[600] }}>
-          {task.title}
-        </Typography>
-        {task.dueDate && <DueDateLayout dateString={task.dueDate} isDone={isTaskCompleted(task, workflowStates)} />}
+        {showSubtasks && subtasks && subtasks.length > 0 && (
+          <Stack direction="column">
+            {subtasks.map((subtask) => {
+              return (
+                <CustomLink key={subtask.id} href={{ pathname: getCardHref(subtask, mode), query: { token } }}>
+                  <Box
+                    sx={{
+                      marginLeft: '-12px',
+                      marginRight: '-12px',
+                      paddingLeft: '32px',
+                      paddingRight: '12px',
+                      ':hover': {
+                        background: (theme) => theme.color.gray[150],
+                      },
+                    }}
+                  >
+                    <TaskCardList task={subtask} variant="subtask-board" mode={mode} />
+                  </Box>
+                </CustomLink>
+              )
+            })}
+          </Stack>
+        )}
       </Stack>
+      <StyledModal
+        open={confirmAssignModalId === task.id || confirmViewershipModalId === task.id}
+        onClose={(e: React.MouseEvent) => {
+          e.stopPropagation()
+          store.dispatch(setConfirmAssigneeModalId(undefined))
+          store.dispatch(setConfirmViewershipModalId(undefined))
+          console.log(confirmAssignModalId, confirmViewershipModalId)
+          console.log(confirmAssignModalId === task.id || confirmViewershipModalId === task.id)
+        }}
+        aria-labelledby="confirm-reassignment-modal"
+        aria-describedby="confirm-reassignment"
+      >
+        <ConfirmUI
+          handleCancel={() => {
+            setSelectedAssignee(undefined)
+            store.dispatch(setConfirmAssigneeModalId(undefined))
+            store.dispatch(setConfirmViewershipModalId(undefined))
+          }}
+          handleConfirm={() => {
+            if (selectedAssignee) {
+              handleConfirmAssigneeChange(selectedAssignee)
+            }
+          }}
+          buttonText={confirmViewershipModalId === task.id ? 'Remove' : 'Reassign'}
+          description={
+            confirmAssignModalId === task.id ? (
+              <>
+                You&apos;re about to reassign this task from{' '}
+                <strong>{getAssigneeName(getAssigneeValue(getUserIds(task)))}</strong> to{' '}
+                <strong>{getAssigneeName(getAssigneeValue(selectedAssignee))}</strong>. This will give{' '}
+                <strong>{getAssigneeName(getAssigneeValue(selectedAssignee))}</strong> access to all task comments and
+                history.
+              </>
+            ) : (
+              <>
+                <strong>
+                  {getAssigneeName(getAssigneeValueFromViewers(getSelectorViewerFromTask(assignee, task) ?? null, assignee))}
+                </strong>{' '}
+                will also lose visibility to the task.
+              </>
+            )
+          }
+          title={
+            confirmViewershipModalId === task.id && isEmptyAssignee(selectedAssignee) ? 'Remove assignee?' : 'Reassign task?'
+          }
+          variant={confirmViewershipModalId === task.id ? 'danger' : 'default'}
+        />
+      </StyledModal>
     </TaskCardContainer>
   )
 }

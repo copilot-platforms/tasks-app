@@ -17,10 +17,14 @@ import {
   setViewSettingsTemp,
 } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
-import { IUTokenSchema } from '@/types/common'
-import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
+import { ClientTokenSchema, IUTokenSchema } from '@/types/common'
+import { CreateViewSettingsDTO, DisplayOptions } from '@/types/dto/viewSettings.dto'
 import { FilterOptions, FilterOptionsKeywords, IFilterOptions, UserIds } from '@/types/interfaces'
-import { filterTypeToButtonIndexMap } from '@/types/objectMaps'
+import {
+  clientFilterTypeToButtonIndexMap,
+  filterTypeToButtonIndexMap,
+  previewFilterTypeToButtonIndexMap,
+} from '@/types/objectMaps'
 import { checkAssignee, emptyAssignee, getAssigneeId, UserIdsType } from '@/utils/assignee'
 import { getWorkspaceLabels } from '@/utils/getWorkspaceLabels'
 import { NoAssignee } from '@/utils/noAssignee'
@@ -32,15 +36,18 @@ import { useSelector } from 'react-redux'
 interface FilterBarProps {
   mode: UserRole
   updateViewModeSetting: (payload: CreateViewSettingsDTO) => void
+  isPreviewMode: boolean
 }
-export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
-  const { view, filterOptions, assignee, token, viewSettingsTemp, showArchived, showUnarchived } =
+
+export const FilterBar = ({ mode, updateViewModeSetting, isPreviewMode }: FilterBarProps) => {
+  const { view, filterOptions, assignee, viewSettingsTemp, showArchived, showUnarchived, showSubtasks } =
     useSelector(selectTaskBoard)
 
   const viewMode = viewSettingsTemp ? viewSettingsTemp.viewMode : view
-  const archivedOptions = {
+  const displayOptions = {
     showArchived: viewSettingsTemp ? viewSettingsTemp.showArchived : showArchived,
     showUnarchived: viewSettingsTemp ? viewSettingsTemp.showUnarchived : showUnarchived,
+    showSubtasks: viewSettingsTemp ? viewSettingsTemp.showSubtasks : showSubtasks,
   }
 
   const viewModeFilterOptions = viewSettingsTemp ? (viewSettingsTemp.filterOptions as IFilterOptions) : filterOptions //ViewSettingsTemp used to apply temp values of viewSettings in filterOptions and viewMode because clientSideUpdate applies outdated cached values to original view and filterOptions if navigated
@@ -58,6 +65,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
         filterOptions: { ...updatedFilterOptions, [optionType]: newValue },
         showArchived: showArchived,
         showUnarchived: showUnarchived,
+        showSubtasks: showSubtasks,
       }),
     )
     updateViewModeSetting({
@@ -68,12 +76,15 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
       },
       showArchived: showArchived,
       showUnarchived: showUnarchived,
+      showSubtasks: showSubtasks,
     })
   }
 
-  const ButtonIndex = filterTypeToButtonIndexMap[viewModeFilterOptions.type] ?? 0
-
-  const [noAssigneOptionFlag, setNoAssigneeOptionFlag] = useState<boolean>(true)
+  const ButtonIndex = isPreviewMode
+    ? (previewFilterTypeToButtonIndexMap[viewModeFilterOptions.type] ?? 0)
+    : mode === UserRole.IU
+      ? (filterTypeToButtonIndexMap[viewModeFilterOptions.type] ?? 0)
+      : (clientFilterTypeToButtonIndexMap[viewModeFilterOptions.type] ?? 0)
 
   const { tokenPayload, workspace } = useSelector(selectAuthDetails)
 
@@ -83,48 +94,85 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
       : getSelectorAssigneeFromFilterOptions(assignee, viewModeFilterOptions.assignee),
   )
 
-  const filterButtons = [
+  const handleDisplayOptionsChange = (displayOptions: DisplayOptions) => {
+    store.dispatch(setIsTasksLoading(true))
+    const newViewSettings = {
+      viewMode,
+      filterOptions,
+      ...displayOptions,
+    }
+    store.dispatch(setViewSettings(newViewSettings))
+    updateViewModeSetting(newViewSettings)
+    store.dispatch(setViewSettingsTemp(newViewSettings))
+  }
+
+  // handles click on filter by type buttons
+  const handleFilterTypeClick = ({ filterTypeValue }: { filterTypeValue: string | null | UserIdsType }) => {
+    let filterValue = filterTypeValue
+    handleFilterOptionsChange(FilterOptions.TYPE, filterValue)
+
+    // empty assignee filter option
+    setAssigneeValue(undefined)
+    handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
+  }
+
+  const IuFilterButtons = [
     {
       name: 'My tasks',
-      onClick: () => {
-        const selfAssigneeId = IUTokenSchema.parse(tokenPayload).internalUserId
-        handleFilterOptionsChange(FilterOptions.TYPE, selfAssigneeId)
-        setAssigneeValue(undefined)
-        handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
-      },
+      onClick: () => handleFilterTypeClick({ filterTypeValue: IUTokenSchema.parse(tokenPayload).internalUserId }),
       id: 'MyTasks',
     },
     {
-      name: "My team's tasks",
-      onClick: () => {
-        handleFilterOptionsChange(FilterOptions.TYPE, FilterOptionsKeywords.TEAM)
-        setAssigneeValue(undefined)
-        setNoAssigneeOptionFlag(false)
-        handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
-      },
+      name: 'Team tasks',
+      onClick: () => handleFilterTypeClick({ filterTypeValue: FilterOptionsKeywords.TEAM }),
       id: 'TeamTasks',
     },
     {
       name: `${getWorkspaceLabels(workspace, true).individualTerm} tasks`,
-      onClick: () => {
-        handleFilterOptionsChange(FilterOptions.TYPE, FilterOptionsKeywords.CLIENTS)
-        setAssigneeValue(undefined)
-        setNoAssigneeOptionFlag(false)
-        handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
-      },
+      onClick: () => handleFilterTypeClick({ filterTypeValue: FilterOptionsKeywords.CLIENTS }),
       id: 'ClientTasks',
     },
     {
       name: 'All tasks',
-      onClick: () => {
-        handleFilterOptionsChange(FilterOptions.TYPE, '')
-        setAssigneeValue(undefined)
-        setNoAssigneeOptionFlag(true)
-        handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
-      },
+      onClick: () => handleFilterTypeClick({ filterTypeValue: '' }),
       id: 'AllTasks',
     },
   ]
+
+  const CuFilterButtons = [
+    {
+      name: 'All tasks',
+      onClick: () => handleFilterTypeClick({ filterTypeValue: FilterOptionsKeywords.CLIENT_WITH_VIEWERS }),
+      id: 'AllTasks',
+    },
+    {
+      name: 'My tasks',
+      onClick: () => handleFilterTypeClick({ filterTypeValue: FilterOptionsKeywords.CLIENTS }),
+      id: 'MyTasks',
+    },
+  ]
+
+  const previewFilterButtons = [
+    {
+      name: 'My tasks',
+      onClick: () => {
+        handleFilterTypeClick({ filterTypeValue: IUTokenSchema.parse(tokenPayload).internalUserId })
+      },
+      id: 'MyTasks',
+    },
+    {
+      name: 'Team tasks',
+      onClick: () => handleFilterTypeClick({ filterTypeValue: FilterOptionsKeywords.TEAM }),
+      id: 'TeamTasks',
+    },
+    {
+      name: `${getWorkspaceLabels(workspace, true).individualTerm} tasks`,
+      onClick: () => handleFilterTypeClick({ filterTypeValue: FilterOptionsKeywords.CLIENTS }),
+      id: 'ClientTasks',
+    },
+  ]
+
+  const filterButtons = isPreviewMode ? previewFilterButtons : mode === UserRole.IU ? IuFilterButtons : CuFilterButtons
 
   return (
     <Box
@@ -141,9 +189,9 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
       >
         <Stack direction={'row'} justifyContent={'space-between'} sx={{ maxHeight: '32px' }}>
           <Stack direction={'row'} columnGap={3}>
+            <FilterButtonGroup filterButtons={filterButtons} activeButtonIndex={ButtonIndex} />
             {mode === UserRole.IU && (
               <>
-                <FilterButtonGroup filterButtons={filterButtons} activeButtonIndex={ButtonIndex} />
                 {filterOptions[FilterOptions.TYPE] !== tokenPayload?.internalUserId && (
                   <Box
                     sx={{
@@ -220,52 +268,31 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
                 store.dispatch(
                   setViewSettings({
                     viewMode: mode,
-                    filterOptions: filterOptions,
-                    showArchived: showArchived,
-                    showUnarchived: showUnarchived,
+                    filterOptions,
+                    showArchived,
+                    showUnarchived,
+                    showSubtasks,
                   }),
                 )
                 updateViewModeSetting({
                   viewMode: mode,
-                  filterOptions: filterOptions,
-                  showArchived: showArchived,
-                  showUnarchived: showUnarchived,
+                  filterOptions,
+                  showArchived,
+                  showUnarchived,
+                  showSubtasks,
                 })
                 store.dispatch(
                   setViewSettingsTemp({
                     viewMode: mode,
-                    filterOptions: viewModeFilterOptions,
-                    showArchived: showArchived,
-                    showUnarchived: showUnarchived,
+                    filterOptions,
+                    showArchived,
+                    showUnarchived,
+                    showSubtasks,
                   }),
                 )
               }}
-              archivedOptions={archivedOptions}
-              handleArchivedOptionsChange={(archivedOptions) => {
-                store.dispatch(setIsTasksLoading(true))
-                store.dispatch(
-                  setViewSettings({
-                    viewMode: viewMode,
-                    filterOptions: filterOptions,
-                    showArchived: archivedOptions.showArchived,
-                    showUnarchived: archivedOptions.showUnarchived,
-                  }),
-                )
-                updateViewModeSetting({
-                  viewMode: viewMode,
-                  filterOptions: filterOptions,
-                  showArchived: archivedOptions.showArchived,
-                  showUnarchived: archivedOptions.showUnarchived,
-                })
-                store.dispatch(
-                  setViewSettingsTemp({
-                    viewMode: viewMode,
-                    filterOptions: filterOptions,
-                    showArchived: archivedOptions.showArchived,
-                    showUnarchived: archivedOptions.showUnarchived,
-                  }),
-                )
-              }}
+              displayOptions={displayOptions}
+              handleDisplayOptionsChange={handleDisplayOptionsChange}
             />
           </Stack>
         </Stack>
@@ -360,6 +387,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
                       filterOptions: filterOptions,
                       showArchived: showArchived,
                       showUnarchived: showUnarchived,
+                      showSubtasks: showSubtasks,
                     }),
                   )
                   updateViewModeSetting({
@@ -367,6 +395,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
                     filterOptions: filterOptions,
                     showArchived: showArchived,
                     showUnarchived: showUnarchived,
+                    showSubtasks: showSubtasks,
                   })
                   store.dispatch(
                     setViewSettingsTemp({
@@ -374,35 +403,12 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
                       filterOptions: viewModeFilterOptions,
                       showArchived: showArchived,
                       showUnarchived: showUnarchived,
+                      showSubtasks: showSubtasks,
                     }),
                   )
                 }}
-                archivedOptions={archivedOptions}
-                handleArchivedOptionsChange={(archivedOptions) => {
-                  store.dispatch(setIsTasksLoading(true))
-                  store.dispatch(
-                    setViewSettings({
-                      viewMode: viewMode,
-                      filterOptions: filterOptions,
-                      showArchived: archivedOptions.showArchived,
-                      showUnarchived: archivedOptions.showUnarchived,
-                    }),
-                  )
-                  updateViewModeSetting({
-                    viewMode: viewMode,
-                    filterOptions: filterOptions,
-                    showArchived: archivedOptions.showArchived,
-                    showUnarchived: archivedOptions.showUnarchived,
-                  })
-                  store.dispatch(
-                    setViewSettingsTemp({
-                      viewMode: viewMode,
-                      filterOptions: filterOptions,
-                      showArchived: archivedOptions.showArchived,
-                      showUnarchived: archivedOptions.showUnarchived,
-                    }),
-                  )
-                }}
+                displayOptions={displayOptions}
+                handleDisplayOptionsChange={handleDisplayOptionsChange}
               />
             </Stack>
           </Stack>
