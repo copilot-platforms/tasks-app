@@ -7,7 +7,7 @@ import { TitleUpdatedSchema } from '@api/activity-logs/schemas/TitleUpdatedSchem
 import { WorkflowStateUpdatedSchema } from '@api/activity-logs/schemas/WorkflowStateUpdatedSchema'
 import { ActivityType, AssigneeType } from '@prisma/client'
 import { z } from 'zod'
-import { ViewerAddedSchema, ViewerRemovedSchema } from './schemas/ViewerSchema'
+import { ViewerAddedSchema, ViewerRemovedSchema } from '@api/activity-logs/schemas/ViewerSchema'
 
 export const SchemaByActivityType = {
   [ActivityType.TASK_CREATED]: TaskCreatedSchema,
