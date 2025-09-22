@@ -136,8 +136,8 @@ export class SubtaskService extends BaseService {
           (task.clientId === this.user.clientId && task.companyId === this.user.companyId) ||
           (task.clientId === null && task.companyId === this.user.companyId) ||
           (viewer &&
-            ((viewer?.clientId === this.user.clientId && viewer.companyId === this.user.companyId) ||
-              viewer.companyId === this.user.companyId))
+            (!viewer?.clientId || viewer?.clientId === this.user.clientId) &&
+            viewer.companyId === this.user.companyId)
         )
       })
     } else {
