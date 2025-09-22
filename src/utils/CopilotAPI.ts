@@ -1,3 +1,4 @@
+import APIError from '@/app/api/core/exceptions/api'
 import { withRetry } from '@/app/api/core/utils/withRetry'
 import { copilotAPIKey as apiKey, APP_ID } from '@/config'
 import { API_DOMAIN } from '@/constants/domains'
@@ -49,7 +50,7 @@ export class CopilotAPI {
     this.copilot = copilotApi({ apiKey: customApiKey ?? apiKey, token })
   }
 
-  private async manualFetch(route: string, query?: Record<string, string>, workspaceId?: string) {
+  private async _manualFetch(route: string, query?: Record<string, string>, workspaceId?: string) {
     const url = new URL(`${API_DOMAIN}/v1/${route}`)
     if (query) {
       for (const key of Object.keys(query)) {
@@ -63,11 +64,12 @@ export class CopilotAPI {
 
     console.info('CopilotAPI#manualFetch |', url, headers)
     const resp = await fetch(url, { headers })
+    const body = await resp.json()
     if (!resp.ok) {
-      console.error('CopilotAPI#manualFetch | Response is not ok', resp)
-      throw new Error('CopilotAPI#manualFetch | Response is not ok | Response' + JSON.stringify(resp))
+      console.error('CopilotAPI#manualFetch | Response is not ok', resp, body)
+      throw new APIError(resp.status, 'Failed to perform a Copilot API call: ' + JSON.stringify(body))
     }
-    return await resp.json()
+    return body
   }
 
   // NOTE: Any method prefixed with _ is a API method that doesn't implement retry & delay
@@ -344,4 +346,5 @@ export class CopilotAPI {
   bulkMarkNotificationsAsRead = this.wrapWithRetry(this._bulkMarkNotificationsAsRead)
   deleteNotification = this.wrapWithRetry(this._deleteNotification)
   bulkDeleteNotifications = this.wrapWithRetry(this._bulkDeleteNotifications)
+  manualFetch = this.wrapWithRetry(this._manualFetch)
 }
