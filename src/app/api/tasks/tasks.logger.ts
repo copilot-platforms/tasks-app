@@ -67,6 +67,7 @@ export class TasksActivityLogger extends BaseService {
         const currentViewerId = currentViewers[0]?.clientId || currentViewers[0]?.companyId || null
         const previousViewerId = prevViewers[0]?.clientId || prevViewers[0]?.companyId || null
         if (currentViewerId) {
+          if (previousViewerId) await this.logTaskViewerRemoved(previousViewerId) // if previous viewer exists, log removed event
           await this.logTaskViewerUpdated(previousViewerId, currentViewerId)
           setUpdate()
         } else {
