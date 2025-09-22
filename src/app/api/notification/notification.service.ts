@@ -250,7 +250,7 @@ export class NotificationService extends BaseService {
     return await this.db.clientNotification.create({
       data: {
         clientId: Uuid.parse(notification.recipientClientId),
-        companyId: Uuid.parse(task.companyId ?? viewer?.companyId),
+        companyId: Uuid.parse(viewer?.companyId ?? task.companyId),
         notificationId: notification.id,
         taskId: task.id,
       },
@@ -299,7 +299,7 @@ export class NotificationService extends BaseService {
       const relatedNotifications = await this.db.clientNotification.findMany({
         where: {
           // Accomodate company task lookups where clientId is null
-          clientId: Uuid.nullable().parse(task.clientId) || taskViewer?.clientId || undefined,
+          clientId: Uuid.nullable().parse(task.clientId) || taskViewer?.clientId,
           companyId: Uuid.parse(task.companyId ?? taskViewer?.companyId),
           taskId: task.id,
         },
@@ -469,7 +469,7 @@ export class NotificationService extends BaseService {
           console.info('fetched client Ids', clientIds)
           recipientIds = clientIds
         }
-        if (!!viewers?.length) {
+        if (viewers?.length) {
           const clientId = viewers[0].clientId
           if (clientId) {
             recipientIds = [clientId] //spread recipientIds if we allow viewers on client tasks.
@@ -566,7 +566,7 @@ export class NotificationService extends BaseService {
   ): NotificationRequestBody {
     // Assume client notification then change details body if IU
     const viewers = ViewersSchema.parse(task.viewers)
-    const viewer = viewers ? viewers[0] : undefined
+    const viewer = viewers?.[0]
     const notificationDetails: NotificationRequestBody = {
       senderId,
       senderCompanyId,
