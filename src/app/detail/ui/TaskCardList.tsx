@@ -212,7 +212,11 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate,
                 flexShrink: 1,
               }}
             >
-              <TaskTitle variant={variant == 'task' ? 'list' : 'subtasks'} title={task.title} />
+              <TaskTitle
+                variant={variant == 'task' ? 'list' : 'subtasks'}
+                title={task.title}
+                isClient={mode === UserRole.Client}
+              />
 
               {(task.subtaskCount > 0 || task.isArchived) && (
                 <Stack direction="row" sx={{ display: 'flex', gap: '12px', flexShrink: 0, alignItems: 'center' }}>
