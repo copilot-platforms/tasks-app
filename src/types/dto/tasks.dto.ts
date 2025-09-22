@@ -4,16 +4,13 @@ import { WorkflowStateResponseSchema } from './workflowStates.dto'
 import { DateStringSchema } from '@/types/date'
 import { ClientResponseSchema, CompanyResponseSchema, InternalUsersSchema } from '../common'
 
-export const ViewersSchema = z
-  .array(
-    z.object({
-      clientId: z.string().uuid().optional(),
-      companyId: z.string().uuid(),
-    }),
-  )
-  .max(1)
-  .optional()
+export const ViewerSchema = z.object({
+  clientId: z.string().uuid().optional(),
+  companyId: z.string().uuid(),
+})
+export type ViewerType = z.infer<typeof ViewerSchema>
 
+export const ViewersSchema = z.array(ViewerSchema).max(1).optional()
 export type Viewers = z.infer<typeof ViewersSchema>
 
 export const validateUserIds = (
@@ -112,7 +109,7 @@ export const SubTaskStatusSchema = z.object({
 
 export type SubTaskStatusResponse = z.infer<typeof SubTaskStatusSchema>
 
-export type AncestorTaskResponse = Pick<Task, 'id' | 'title' | 'label'> & {
+export type AncestorTaskResponse = Pick<Task, 'id' | 'title' | 'label' | 'viewers'> & {
   internalUserId: string | null
   clientId: string | null
   companyId: string | null
