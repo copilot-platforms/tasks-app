@@ -26,7 +26,15 @@ import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { selectCreateTemplate } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { CreateTaskErrors, FilterByOptions, FilterOptions, IAssigneeCombined, ITemplate, UserIds } from '@/types/interfaces'
+import {
+  CreateTaskErrors,
+  FilterByOptions,
+  FilterOptions,
+  FilterOptionsKeywords,
+  IAssigneeCombined,
+  ITemplate,
+  UserIds,
+} from '@/types/interfaces'
 import { checkEmptyAssignee, emptyAssignee, getAssigneeName } from '@/utils/assignee'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
@@ -63,8 +71,16 @@ type NewTaskFormHeaderProps = {
 
 export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => {
   const { activeWorkflowStateId } = useSelector(selectCreateTask)
-  const { workflowStates, assignee, previewMode, filterOptions, urlActionParams, token, previewClientCompany } =
-    useSelector(selectTaskBoard)
+  const {
+    workflowStates,
+    assignee,
+    previewMode,
+    filterOptions,
+    urlActionParams,
+    token,
+    previewClientCompany,
+    viewSettingsTemp,
+  } = useSelector(selectTaskBoard)
   const [actionParamPayload, setActionParamPayload] = useState<PublicTaskCreateDto | null>(null)
 
   const todoWorkflowState = workflowStates.find((el) => el.key === 'todo') || workflowStates[0]
@@ -85,14 +101,26 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
   const [isEditorReadonly, setIsEditorReadonly] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  const [assigneeValue, setAssigneeValue] = useState<IAssigneeCombined | null>(
-    getSelectorAssigneeFromFilterOptions(
-      assignee,
-      !previewMode ? filterOptions[FilterOptions.ASSIGNEE] : { internalUserId: null, ...previewClientCompany }, // if preview mode, default select the respective client/company as assignee
-      filterOptions[FilterOptions.TYPE],
-    ) ?? null,
+  const getDefaultAssigneeValue = () => {
+    let assigneeFilterOptions = emptyAssignee
+    if (!previewMode) {
+      assigneeFilterOptions = filterOptions[FilterOptions.ASSIGNEE]
+    } else if (viewSettingsTemp?.filterOptions.type === FilterOptionsKeywords.CLIENTS) {
+      assigneeFilterOptions = { internalUserId: null, ...previewClientCompany }
+    }
+
+    return getSelectorAssigneeFromFilterOptions(assignee, assigneeFilterOptions, filterOptions[FilterOptions.TYPE]) ?? null
+  }
+
+  const [assigneeValue, setAssigneeValue] = useState<IAssigneeCombined | null>(getDefaultAssigneeValue)
+  const [taskViewerValue, setTaskViewerValue] = useState<IAssigneeCombined | null>(
+    !!previewMode
+      ? (getSelectorAssigneeFromFilterOptions(
+          assignee,
+          { internalUserId: null, ...previewClientCompany }, // if preview mode, default select the respective client/company as viewer
+        ) ?? null)
+      : null,
   )
-  const [taskViewerValue, setTaskViewerValue] = useState<IAssigneeCombined | null>(null)
 
   useEffect(() => {
     if (
@@ -103,8 +131,8 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
       // handle url action param for deep link
       handleUrlActionParam()
     } else {
-      if (!!previewMode) {
-        // if preview mode, default select the respective client/company as assignee
+      if (!!previewMode && viewSettingsTemp?.filterOptions.type === FilterOptionsKeywords.CLIENTS) {
+        // if preview mode, select the respective client/company as assignee when "client task" filter is selected
         store.dispatch(
           setCreateTaskFields({ targetField: 'userIds', value: { internalUserId: null, ...previewClientCompany } }),
         )
@@ -116,6 +144,19 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
         if (!correctedObject) return
         const newUserIds = getSelectedUserIds([{ ...assigneeValue, object: correctedObject }])
         store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: newUserIds }))
+
+        // set default task viewers when filter by type "My tasks" is applied on preview mode
+        if (!!previewMode && taskViewerValue) {
+          const correctedViewerObject = getAssigneeTypeCorrected(taskViewerValue)
+          if (!correctedViewerObject) return
+
+          store.dispatch(
+            setCreateTaskFields({
+              targetField: 'viewers',
+              value: getSelectedViewerIds([{ ...taskViewerValue, object: correctedViewerObject }]),
+            }),
+          )
+        }
       } else {
         store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: emptyAssignee }))
       }
