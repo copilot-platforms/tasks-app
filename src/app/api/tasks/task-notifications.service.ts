@@ -294,8 +294,11 @@ export class TaskNotificationsService extends BaseService {
 
   private handleIncompleteTaskReassignment = async (prevTask: Task, updatedTask: TaskWithWorkflowState) => {
     // Handle case where parent task is reassigned to a client / company, so the disjoint tasks disappear in real time
+    const updatedTaskViewers = getTaskViewers(updatedTask)
     if (
-      (updatedTask.assigneeType === AssigneeType.client || updatedTask.assigneeType === AssigneeType.company) &&
+      (updatedTask.assigneeType === AssigneeType.client ||
+        updatedTask.assigneeType === AssigneeType.company ||
+        !!updatedTaskViewers) &&
       !updatedTask.parentId
     ) {
       // Remove all notifications for previously disjointed child tasks
@@ -313,9 +316,19 @@ export class TaskNotificationsService extends BaseService {
     // Step 1: Handle notifications removal from previous user
     if (prevTask.assigneeId && prevTask.assigneeType) {
       const assigneeType = prevTask.assigneeType
+      const viewer = getTaskViewers(prevTask)
+
       // -- If task is reassigned from client, delete past in-product notification
       if (assigneeType === AssigneeType.internalUser) {
         await this.notificationService.deleteInternalUserNotificationsForTask(prevTask.id)
+      }
+      // -- If task has a viewer, handle mark as read for the viewer.
+      if (viewer) {
+        if (viewer?.clientId) {
+          await this.notificationService.markClientNotificationAsRead(prevTask)
+        } else {
+          await this.notificationService.markAsReadForAllRecipients(prevTask, NotificationTaskActions.SharedToCompany)
+        }
       }
       // -- If task is reassigned from a client, mark prev client notification as read (not delete)
       if (assigneeType === AssigneeType.client) {
@@ -342,6 +355,7 @@ export class TaskNotificationsService extends BaseService {
 
   private handleTaskCompleted = async (updatedTask: Task) => {
     const copilot = new CopilotAPI(this.user.token)
+
     if (updatedTask.assigneeType === AssigneeType.company) {
       const { recipientIds, senderCompanyId } = await this.notificationService.getNotificationParties(
         copilot,
