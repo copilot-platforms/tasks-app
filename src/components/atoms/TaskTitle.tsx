@@ -31,6 +31,7 @@ const TaskTitle = ({ title, variant = 'board' }: TaskTitleProps) => {
           WebkitLineClamp: 2,
           overflow: 'hidden',
           textOverflow: 'ellipsis',
+          wordBreak: 'break-word',
         }}
       >
         {title}
@@ -54,9 +55,13 @@ const TaskTitle = ({ title, variant = 'board' }: TaskTitleProps) => {
       </Typography>
     )
 
+  const TaskTitleComponent = () => {
+    return <Box sx={{ overflow: 'hidden', wordBreak: 'break-word' }}>{title}</Box>
+  }
+
   return isOverflowing ? (
-    <Box sx={{ flexShrink: 1, minWidth: 0, overflow: 'hidden' }}>
-      <CopilotTooltip content={title} allowMaxWidth={true}>
+    <Box sx={{ flexShrink: 1, minWidth: 0 }}>
+      <CopilotTooltip content={<TaskTitleComponent />} allowMaxWidth={true}>
         {typographyComponent}
       </CopilotTooltip>
     </Box>
