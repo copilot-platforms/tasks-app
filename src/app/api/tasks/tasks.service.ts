@@ -854,6 +854,7 @@ export class TasksService extends BaseService {
             clientId: true,
             companyId: true,
             internalUserId: true,
+            viewers: true,
           },
         }),
       ) as Promise<AncestorTaskResponse>[],
