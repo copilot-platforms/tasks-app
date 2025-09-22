@@ -1,6 +1,6 @@
 import { Uuid } from '@/types/common'
 import { TaskWithWorkflowState } from '@/types/db'
-import { Viewers, ViewersSchema } from '@/types/dto/tasks.dto'
+import { TaskResponseSchema, Viewers, ViewersSchema, ViewerType } from '@/types/dto/tasks.dto'
 import { getTaskViewers } from '@/utils/assignee'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import User from '@api/core/models/User.model'
@@ -39,14 +39,15 @@ export class TaskNotificationsService extends BaseService {
     const checkParentViewers = (
       clientId: string | null,
       companyIds?: string[],
-      parentViewers?: Viewers,
+      parentViewer?: ViewerType,
       clientIds?: string[],
     ) => {
-      if (!!parentViewers?.length) {
+      if (parentViewer) {
+        const { clientId: parentViewerClientId, companyId: parentViewerCompanyId } = parentViewer
         if (
-          (parentViewers[0].clientId === clientId && companyIds?.includes(parentViewers[0].companyId)) ||
-          (parentViewers[0].clientId && clientIds?.includes(parentViewers[0].clientId)) ||
-          (parentViewers[0].clientId === null && companyIds?.includes(parentViewers[0].companyId))
+          (parentViewerClientId === clientId && companyIds?.includes(parentViewerCompanyId)) || //check if parent's client assignee is same as the viewer of child task.
+          (parentViewerClientId && clientIds?.includes(parentViewerClientId)) || //case when child is assigned or shared to a company and parent contains client list of the company.
+          (parentViewerClientId === null && companyIds?.includes(parentViewerCompanyId)) //case when child is assigned or shared to a company and parent contains companyId in viewers of the clients.
         ) {
           return true
         }
@@ -61,7 +62,7 @@ export class TaskNotificationsService extends BaseService {
       })
       if (!parentTask) return false
 
-      const parentViewers = ViewersSchema.parse(parentTask.viewers)
+      const parentViewer = getTaskViewers(TaskResponseSchema.parse(parentTask))
 
       const copilot = new CopilotAPI(this.user.token)
 
@@ -70,7 +71,7 @@ export class TaskNotificationsService extends BaseService {
         if (parentTask.assigneeId === client.id || parentTask.assigneeId === client.companyId) {
           return true
         }
-        if (checkParentViewers(client.id, client.companyIds, parentViewers)) {
+        if (checkParentViewers(client.id, client.companyIds, parentViewer)) {
           return true
         }
       } else {
@@ -80,7 +81,7 @@ export class TaskNotificationsService extends BaseService {
         if (companyClientIds.includes(parentTask.assigneeId || '__empty__')) {
           return true
         }
-        if (checkParentViewers(null, [task.assigneeId], parentViewers, companyClientIds)) {
+        if (checkParentViewers(null, [task.assigneeId], parentViewer, companyClientIds)) {
           return true
         }
       } //for assignment notifications
@@ -92,7 +93,7 @@ export class TaskNotificationsService extends BaseService {
           if (parentTask.assigneeId === client.id || parentTask.assigneeId === client.companyId) {
             return true
           }
-          if (checkParentViewers(client.id, client.companyIds, parentViewers)) {
+          if (checkParentViewers(client.id, client.companyIds, parentViewer)) {
             return true
           }
         } else {
@@ -102,7 +103,7 @@ export class TaskNotificationsService extends BaseService {
           if (companyClientIds.includes(parentTask.assigneeId || '__empty__')) {
             return true
           }
-          if (checkParentViewers(null, [viewers[0].companyId], parentViewers, companyClientIds)) {
+          if (checkParentViewers(null, [viewers[0].companyId], parentViewer, companyClientIds)) {
             return true
           }
         }
