@@ -3,7 +3,10 @@ import { HTML5Backend } from 'react-dnd-html5-backend'
 import { TouchBackend } from 'react-dnd-touch-backend'
 
 const shouldIgnoreTarget = (target: any) => {
-  return target.closest('.tiptap') !== null
+  if (target?.closest) {
+    return target?.closest('.tiptap') !== null
+  }
+  return false
 }
 
 const createModifiedBackend = (Backend: BackendFactory, manager?: any, context?: any) => {
@@ -25,12 +28,12 @@ const createModifiedBackend = (Backend: BackendFactory, manager?: any, context?:
   listeners.forEach((name) => {
     const original = (instance as any)[name]
     ;(instance as any)[name] = (e: DragEvent | TouchEvent, ...extraArgs: any[]) => {
-      if (!shouldIgnoreTarget(e.target)) {
-        original(e, ...extraArgs)
+      const isDragEndEvent = name.includes('DragEnd')
+      if (isDragEndEvent || !shouldIgnoreTarget(e.target)) {
+        original.call(instance, e, ...extraArgs)
       }
     }
   })
-
   return instance
 }
 

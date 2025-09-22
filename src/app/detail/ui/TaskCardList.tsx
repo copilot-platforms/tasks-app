@@ -166,7 +166,7 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate,
       sx={{
         height: variant == 'task' ? '44px' : '36px',
         display: 'flex',
-        padding: variant == 'task' ? { xs: '10px 12px 10px 12px', sm: '10px 20px 10px 20px' } : '6px 0px 6px 0px',
+        padding: variant == 'task' ? { xs: '10px 20px 10px 20px' } : '6px 0px 6px 0px',
         alignItems: 'center',
         alignSelf: 'stretch',
         gap: '20px',
@@ -244,7 +244,11 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate,
                 flexShrink: 1,
               }}
             >
-              <TaskTitle variant={variant == 'task' ? 'list' : 'subtasks'} title={task.title} />
+              <TaskTitle
+                variant={variant == 'task' ? 'list' : 'subtasks'}
+                title={task.title}
+                isClient={mode === UserRole.Client}
+              />
 
               {(task.subtaskCount > 0 || task.isArchived) && (
                 <Stack direction="row" sx={{ display: 'flex', gap: '12px', flexShrink: 0, alignItems: 'center' }}>

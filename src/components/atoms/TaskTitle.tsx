@@ -5,9 +5,10 @@ import { CopilotTooltip } from './CopilotTooltip'
 interface TaskTitleProps {
   title?: string
   variant?: 'board' | 'list' | 'subtasks'
+  isClient?: boolean
 }
 
-const TaskTitle = ({ title, variant = 'board' }: TaskTitleProps) => {
+const TaskTitle = ({ title, variant = 'board', isClient = false }: TaskTitleProps) => {
   const textRef = useRef<HTMLElement>(null)
   const [isOverflowing, setIsOverflowing] = useState(false)
 
@@ -48,6 +49,7 @@ const TaskTitle = ({ title, variant = 'board' }: TaskTitleProps) => {
           flexShrink: 1,
           flexGrow: 0,
           minWidth: 0,
+          maxWidth: isClient ? '105px' : 'none',
         }}
       >
         {title}

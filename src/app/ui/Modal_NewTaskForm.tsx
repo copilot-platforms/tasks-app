@@ -7,7 +7,7 @@ import {
   setActiveWorkflowStateId,
   setShowModal,
 } from '@/redux/features/createTaskSlice'
-import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { selectTaskBoard, SetUrlActionParams } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { CreateTaskRequestSchema } from '@/types/dto/tasks.dto'
@@ -17,14 +17,16 @@ import { useSelector } from 'react-redux'
 import { handleCreate } from '../(home)/actions'
 import { NewTaskForm } from './NewTaskForm'
 import { checkEmptyAssignee } from '@/utils/assignee'
+import { useEffect } from 'react'
+import { HomeParamActions } from '@/types/constants'
 
 export const ModalNewTaskForm = ({
   handleCreateMultipleAttachments,
 }: {
   handleCreateMultipleAttachments: (attachments: CreateAttachmentRequest[]) => Promise<void>
 }) => {
-  const { token, filterOptions } = useSelector(selectTaskBoard)
-  const { title, description, workflowStateId, userIds, attachments, dueDate, showModal, templateId, viewers } =
+  const { token, filterOptions, urlActionParams } = useSelector(selectTaskBoard)
+  const { title, description, workflowStateId, userIds, attachments, dueDate, showModal, templateId, parentId, viewers } =
     useSelector(selectCreateTask)
 
   const handleModalClose = async (isKeyboard: boolean = false) => {
@@ -34,9 +36,20 @@ export const ModalNewTaskForm = ({
     store.dispatch(setShowModal())
     store.dispatch(clearCreateTaskFields({ isFilterOn: !checkEmptyAssignee(filterOptions[FilterOptions.ASSIGNEE]) }))
     store.dispatch(setActiveWorkflowStateId(null))
+    store.dispatch(SetUrlActionParams({ oldPf: urlActionParams.pf }))
     // NOTE: Reimplement in M3
     // await bulkRemoveAttachments(attachments)
   }
+
+  useEffect(() => {
+    if (
+      Object.keys(urlActionParams).length > 0 &&
+      urlActionParams.action === HomeParamActions.CREATE_TASK &&
+      urlActionParams.pf !== urlActionParams.oldPf
+    ) {
+      store.dispatch(setShowModal())
+    }
+  }, [urlActionParams])
 
   return (
     <StyledModal
@@ -64,6 +77,7 @@ export const ModalNewTaskForm = ({
             dueDate: formattedDueDate,
             templateId,
             ...(viewers && viewers.length > 0 && { viewers }),
+            parentId,
           }
 
           store.dispatch(clearCreateTaskFields({ isFilterOn: !checkEmptyAssignee(filterOptions[FilterOptions.ASSIGNEE]) }))

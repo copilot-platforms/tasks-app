@@ -15,7 +15,7 @@ import { apiUrl } from '@/config'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import { DndWrapper } from '@/hoc/DndWrapper'
 import { RealTime } from '@/hoc/RealTime'
-import { Token, TokenSchema, WorkspaceResponse } from '@/types/common'
+import { Token, TokenSchema, UrlActionParamsType, WorkspaceResponse } from '@/types/common'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
@@ -53,7 +53,7 @@ async function getWorkspace(token: string): Promise<WorkspaceResponse> {
   return await copilot.getWorkspace()
 }
 
-export default async function ClientPage({ searchParams }: { searchParams: { token: string } }) {
+export default async function ClientPage({ searchParams }: { searchParams: { token: string } & UrlActionParamsType }) {
   const token = searchParams.token
   if (!z.string().safeParse(token).success) {
     return <SilentError message="Please provide a Valid Token" />
@@ -83,6 +83,8 @@ export default async function ClientPage({ searchParams }: { searchParams: { tok
         viewSettings={viewSettings}
         clearExpandedComments={true}
         workspace={workspace}
+        action={searchParams?.action}
+        pf={searchParams?.pf}
       >
         {/* Async fetchers */}
         <Suspense fallback={null}>

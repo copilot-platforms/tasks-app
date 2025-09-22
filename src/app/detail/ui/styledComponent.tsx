@@ -249,4 +249,7 @@ export const StyledUserCompanySelector = styled(UserCompanySelector)(({ theme })
     borderColor: `${theme.color.borders.borderDisabled}`,
     backgroundColor: `${theme.color.base.white}`,
   },
+  '& [class*="mui-no1ryp"]': {
+    maxHeight: '205px',
+  },
 }))

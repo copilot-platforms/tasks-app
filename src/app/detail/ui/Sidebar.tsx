@@ -1,5 +1,6 @@
 'use client'
 
+import { ClientDetailAppBridge } from '@/app/detail/ui/ClientDetailAppBridge'
 import { StyledBox, StyledModal } from '@/app/detail/ui/styledComponent'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { SelectorButton } from '@/components/buttons/SelectorButton'
@@ -11,7 +12,7 @@ import { ConfirmUI } from '@/components/layouts/ConfirmUI'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { useWindowWidth } from '@/hooks/useWindowWidth'
-import { AssigneePlaceholder } from '@/icons'
+import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { selectTaskDetails, setShowSidebar, toggleShowConfirmAssignModal } from '@/redux/features/taskDetailsSlice'
 import store from '@/redux/store'
@@ -29,6 +30,7 @@ import {
   UserIdsWithViewersType,
 } from '@/utils/assignee'
 import { createDateFromFormattedDateString, formatDate } from '@/utils/dateHelper'
+import { NoAssignee } from '@/utils/noAssignee'
 import {
   getSelectedUserIds,
   getSelectedViewerIds,
@@ -36,7 +38,6 @@ import {
   getSelectorAssigneeFromTask,
   getSelectorViewerFromTask,
 } from '@/utils/selector'
-import { NoAssignee } from '@/utils/noAssignee'
 import {
   shouldConfirmBeforeReassignment,
   shouldConfirmViewershipBeforeReassignment,
@@ -45,10 +46,6 @@ import { Box, Skeleton, Stack, styled, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { z } from 'zod'
-import { ClientDetailAppBridge } from '@/app/detail/ui/ClientDetailAppBridge'
-import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
-import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
-import { AssigneeType } from '@prisma/client'
 
 const StyledText = styled(Typography)(({ theme }) => ({
   color: theme.color.gray[500],

@@ -70,6 +70,7 @@ interface CopilotPopSelectorProps {
   hideIusList?: boolean
   tooltipProps?: Omit<CopilotTooltipProps, 'children'>
   variant?: 'icon' | 'normal'
+  captureClick?: boolean
 }
 
 export const CopilotPopSelector = ({
@@ -82,6 +83,7 @@ export const CopilotPopSelector = ({
   hideIusList,
   tooltipProps,
   variant = 'normal',
+  captureClick = true,
 }: CopilotPopSelectorProps) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
@@ -89,6 +91,8 @@ export const CopilotPopSelector = ({
 
   const handleClick = useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
+      event.preventDefault()
+      event.stopPropagation()
       if (!disabled) {
         setAnchorEl(anchorEl ? null : event.currentTarget)
       }
@@ -139,13 +143,7 @@ export const CopilotPopSelector = ({
       touchEvent="onTouchEnd"
     >
       <Stack direction="column">
-        <Box
-          onClickCapture={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            handleClick(e)
-          }}
-        >
+        <Box {...(captureClick ? { onClickCapture: handleClick } : { onClick: handleClick })}>
           <CopilotTooltip
             content={tooltipProps?.content ?? 'Change assignee'}
             disabled={tooltipProps?.disabled || variant == 'normal'}

@@ -63,6 +63,10 @@ export class CopilotAPI {
 
     console.info('CopilotAPI#manualFetch |', url, headers)
     const resp = await fetch(url, { headers })
+    if (!resp.ok) {
+      console.error('CopilotAPI#manualFetch | Response is not ok', resp)
+      throw new Error('CopilotAPI#manualFetch | Response is not ok | Response' + JSON.stringify(resp))
+    }
     return await resp.json()
   }
 
@@ -210,7 +214,7 @@ export class CopilotAPI {
     await this.copilot.markNotificationRead({ id })
   }
 
-  async _bulkMarkNotificationsAsRead(notificationIds: string[]): Promise<void> {
+  async _bulkMarkNotificationsAsRead(notificationIds: string[], shouldThrowError: boolean = true): Promise<void> {
     console.info('CopilotAPI#_bulkMarkNotificationsAsRead', this.token)
     const markAsReadPromises = []
     const bottleneck = new Bottleneck({ minTime: 250, maxConcurrent: 2 })
@@ -220,7 +224,16 @@ export class CopilotAPI {
         bottleneck
           .schedule(() => {
             console.info('CopilotAPI#_bulkMarkNotificationsAsRead | Marking notification as read', this.token, notification)
-            return this.markNotificationAsRead(notification)
+            if (shouldThrowError) {
+              return this.markNotificationAsRead(notification)
+            } else {
+              try {
+                return this.markNotificationAsRead(notification)
+              } catch (error) {
+                console.warn('Mark as read notification failed for notification')
+                return new Promise(() => null)
+              }
+            }
           })
           .catch((err: unknown) => console.error(`Failed to delete notification with id ${notification}`, err)),
       )
@@ -262,12 +275,16 @@ export class CopilotAPI {
     } = { limit: 100 },
   ) {
     console.info('CopilotAPI#_getClientNotifications', this.token)
-    const response = await this.manualFetch('notifications', {
-      recipientClientId,
-      recipientCompanyId,
-      limit: `${opts.limit}`,
+    const response = await this.manualFetch(
+      'notifications',
+      {
+        recipientClientId,
+        recipientCompanyId,
+        limit: `${opts.limit}`,
+        workspaceId,
+      },
       workspaceId,
-    })
+    )
     const notifications = z.array(NotificationCreatedResponseSchema).parse(response.data)
     // Return only all notifications triggered by tasks-app
     return notifications

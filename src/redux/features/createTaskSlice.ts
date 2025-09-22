@@ -24,6 +24,7 @@ interface IInitialState {
   templateId: string | null
   userIds: UserIdsType
   viewers: Viewers
+  parentId: string | null
 }
 
 const initialState: IInitialState = {
@@ -46,7 +47,13 @@ const initialState: IInitialState = {
     [UserIds.COMPANY_ID]: null,
   },
   viewers: [],
+  parentId: null,
 }
+
+type CreateTaskFieldType = Pick<
+  IInitialState,
+  'title' | 'description' | 'workflowStateId' | 'dueDate' | 'templateId' | 'userIds' | 'parentId'
+>
 
 const createTaskSlice = createSlice({
   name: 'createTask',
@@ -73,6 +80,17 @@ const createTaskSlice = createSlice({
       const { targetField, value } = action.payload
       //@ts-ignore
       state[targetField] = value
+    },
+
+    // sets all the fields of the create task form
+    setAllCreateTaskFields: (state, action: { payload: CreateTaskFieldType }) => {
+      state.title = action.payload.title
+      state.description = action.payload.description
+      state.workflowStateId = action.payload.workflowStateId
+      state.dueDate = action.payload.dueDate
+      state.templateId = action.payload.templateId
+      state.userIds = action.payload.userIds
+      state.parentId = action.payload.parentId
     },
 
     clearCreateTaskFields: (state, action: { payload: { isFilterOn: boolean } }) => {
@@ -125,6 +143,7 @@ export const {
   setErrors,
   setAppliedDescription,
   setAppliedTitle,
+  setAllCreateTaskFields,
 } = createTaskSlice.actions
 
 export default createTaskSlice.reducer

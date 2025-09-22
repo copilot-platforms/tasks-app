@@ -17,7 +17,10 @@ export type CopilotListArgs = {
 
 export const TokenSchema = z.object({
   clientId: z.string().optional(),
-  companyId: z.string().optional(),
+  companyId: z
+    .string()
+    .transform((val) => (val === 'default' ? undefined : val))
+    .optional(),
   internalUserId: z.string().optional(),
   workspaceId: z.string(),
 })
@@ -271,4 +274,10 @@ export const StateTypeSchema = z.nativeEnum(StateType)
 
 export type PreviewClientCompanyType = {
   [K in Exclude<UserIds, UserIds.INTERNAL_USER_ID>]: string | null
+}
+
+export type UrlActionParamsType = {
+  action?: string
+  pf?: string
+  oldPf?: string
 }

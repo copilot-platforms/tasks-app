@@ -118,7 +118,11 @@ export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
       <FilterBar
         mode={mode}
         updateViewModeSetting={async (payload: CreateViewSettingsDTO) => {
-          await updateViewModeSettings(z.string().parse(token), payload)
+          try {
+            await updateViewModeSettings(z.string().parse(token), payload)
+          } catch (error) {
+            console.error('view settings update error', error)
+          }
         }}
         isPreviewMode={!!previewMode}
       />
@@ -189,7 +193,6 @@ export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
                 key={list.id}
                 columnName={list.name}
                 taskCount={taskCountForWorkflowStateId(list.id)}
-                display={!!filterTaskWithWorkflowStateId(list.id).length}
                 showAddBtn={mode === UserRole.IU || !!previewMode}
               >
                 <TasksColumnVirtualizer

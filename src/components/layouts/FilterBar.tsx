@@ -246,6 +246,7 @@ export const FilterBar = ({ mode, updateViewModeSetting, isPreviewMode }: Filter
                           handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
                         }
                       }}
+                      captureClick={false}
                     />
                   </Box>
                 )}
@@ -364,6 +365,7 @@ export const FilterBar = ({ mode, updateViewModeSetting, isPreviewMode }: Filter
                       handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
                     }
                   }}
+                  captureClick={false}
                 />
               )}
             </Box>

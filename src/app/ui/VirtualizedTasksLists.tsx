@@ -193,7 +193,7 @@ export function TasksColumnVirtualizer({
                             key={subtask.id}
                             mode={mode}
                             sx={{
-                              padding: { xs: '10px 12px 10px 34px', sm: '10px 20px 10px 44px' },
+                              padding: { xs: '10px 20px 10px 44px' },
                               height: '44px',
                             }}
                           />
