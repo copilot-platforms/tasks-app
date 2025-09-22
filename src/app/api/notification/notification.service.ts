@@ -321,9 +321,13 @@ export class NotificationService extends BaseService {
     }
   }
 
-  markAsReadForAllRecipients = async (task: Task) => {
+  markAsReadForAllRecipients = async (task: Task, action?: NotificationTaskActions) => {
     const copilot = new CopilotAPI(this.user.token)
-    const { recipientIds } = await this.getNotificationParties(copilot, task, NotificationTaskActions.AssignedToCompany)
+    const { recipientIds } = await this.getNotificationParties(
+      copilot,
+      task,
+      action ?? NotificationTaskActions.AssignedToCompany,
+    )
 
     for (let recipientId of recipientIds) {
       await this.markClientNotificationAsRead({
