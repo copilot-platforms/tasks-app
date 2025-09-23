@@ -1,9 +1,11 @@
+import { PublicTaskCreateDto } from '@/app/api/tasks/public/public.dto'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import AttachmentLayout from '@/components/AttachmentLayout'
 import { ManageTemplatesEndOption } from '@/components/buttons/ManageTemplatesEndOptions'
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
 import { SelectorButton } from '@/components/buttons/SelectorButton'
+import { StyledHelperText } from '@/components/error/FormHelperText'
 import { CopilotPopSelector } from '@/components/inputs/CopilotSelector'
 import { DatePickerComponent } from '@/components/inputs/DatePickerComponent'
 import Selector, { SelectorType } from '@/components/inputs/Selector'
@@ -16,15 +18,16 @@ import { AssigneePlaceholderSmall, CloseIcon, TemplateIconSm } from '@/icons'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import {
   selectCreateTask,
+  setAllCreateTaskFields,
   setAppliedDescription,
   setAppliedTitle,
-  setAllCreateTaskFields,
   setCreateTaskFields,
   setErrors,
 } from '@/redux/features/createTaskSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { selectCreateTemplate } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
+import { HomeParamActions } from '@/types/constants'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { CreateTaskErrors, FilterOptions, IAssigneeCombined, ITemplate, UserIds } from '@/types/interfaces'
 import { checkEmptyAssignee, emptyAssignee, getAssigneeName } from '@/utils/assignee'
@@ -33,12 +36,10 @@ import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inli
 import { getSelectedUserIds, getSelectorAssignee, getSelectorAssigneeFromFilterOptions } from '@/utils/selector'
 import { trimAllTags } from '@/utils/trimTags'
 import { Box, Stack, Typography, styled } from '@mui/material'
+import { marked } from 'marked'
 import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
-import { PublicTaskCreateDto } from '@/app/api/tasks/public/public.dto'
-import { HomeParamActions } from '@/types/constants'
-import { StyledHelperText } from '@/components/error/FormHelperText'
 
 interface NewTaskFormInputsProps {
   isEditorReadonly?: boolean
@@ -122,7 +123,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
   // this function handles the action param passed in the url and fill the values in the form
   const handleUrlActionParam = useCallback(async () => {
     if (urlActionParams.pf && token) {
-      const payload = JSON.parse(atob(decodeURIComponent(urlActionParams.pf)))
+      const payload = JSON.parse(decodeURIComponent(urlActionParams.pf))
 
       if (!payload.companyId && payload.clientId) {
         const assigneeVal = assignee.find((val) => val.id === payload.clientId)
@@ -160,7 +161,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
 
       const taskPayload = {
         title: payload?.name || '',
-        description: payload?.description || '',
+        description: marked(payload?.description || '', { async: false }),
         workflowStateId: workflowStates.find((state) => state.key === payload?.status)?.id || '',
         dueDate: payload?.dueDate || null,
         templateId: payload?.templateId || null,
