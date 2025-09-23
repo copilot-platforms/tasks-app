@@ -41,7 +41,6 @@ export class ValidateCountService extends NotificationService {
   private async validateWithTasks(clientId: string, companyId: string, copilotNotificationIds: string[]): Promise<void> {
     const tasksService = new TasksService(this.user)
     const tasks = await tasksService.getAllTasks({
-      companyId,
       showArchived: false,
       showUnarchived: true,
       showIncompleteOnly: true,
