@@ -3,7 +3,14 @@ import { UrlActionParamsType, PreviewMode, PreviewClientCompanyType } from '@/ty
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { CreateViewSettingsDTO, FilterOptionsType } from '@/types/dto/viewSettings.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { FilterByOptions, FilterOptions, IAssigneeCombined, IFilterOptions, UserIds } from '@/types/interfaces'
+import {
+  FilterByOptions,
+  FilterOptions,
+  FilterOptionsKeywords,
+  IAssigneeCombined,
+  IFilterOptions,
+  UserIds,
+} from '@/types/interfaces'
 import { emptyAssignee, UserIdsType } from '@/utils/assignee'
 import { ViewMode } from '@prisma/client'
 import { createSlice } from '@reduxjs/toolkit'
@@ -154,6 +161,13 @@ const taskBoardSlice = createSlice({
             ...updatedFilterOptions,
             assignee: emptyAssignee,
           }
+        }
+      }
+      if (state.previewMode && !filterOptions.type) {
+        // Engineering note: CRM view and IU view uses same view setting config. In CRM view, we don't have "All tasks": filter by type. If the "All task" tab is selected, we are manually setting the type to "clients" to show all client tasks.
+        updatedFilterOptions = {
+          ...updatedFilterOptions,
+          type: FilterOptionsKeywords.CLIENTS,
         }
       }
       state.filterOptions = updatedFilterOptions

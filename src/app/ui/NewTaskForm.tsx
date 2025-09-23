@@ -32,6 +32,7 @@ import {
   FilterOptions,
   FilterOptionsKeywords,
   IAssigneeCombined,
+  InputValue,
   ITemplate,
   UserIds,
 } from '@/types/interfaces'
@@ -71,16 +72,8 @@ type NewTaskFormHeaderProps = {
 
 export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => {
   const { activeWorkflowStateId } = useSelector(selectCreateTask)
-  const {
-    workflowStates,
-    assignee,
-    previewMode,
-    filterOptions,
-    urlActionParams,
-    token,
-    previewClientCompany,
-    viewSettingsTemp,
-  } = useSelector(selectTaskBoard)
+  const { workflowStates, assignee, previewMode, filterOptions, urlActionParams, token, previewClientCompany } =
+    useSelector(selectTaskBoard)
   const [actionParamPayload, setActionParamPayload] = useState<PublicTaskCreateDto | null>(null)
 
   const todoWorkflowState = workflowStates.find((el) => el.key === 'todo') || workflowStates[0]
@@ -105,7 +98,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
     let assigneeFilterOptions = emptyAssignee
     if (!previewMode) {
       assigneeFilterOptions = filterOptions[FilterOptions.ASSIGNEE]
-    } else if (viewSettingsTemp?.filterOptions.type === FilterOptionsKeywords.CLIENTS) {
+    } else if (filterOptions.type === FilterOptionsKeywords.CLIENTS) {
       assigneeFilterOptions = { internalUserId: null, ...previewClientCompany }
     }
 
@@ -131,7 +124,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
       // handle url action param for deep link
       handleUrlActionParam()
     } else {
-      if (!!previewMode && viewSettingsTemp?.filterOptions.type === FilterOptionsKeywords.CLIENTS) {
+      if (!!previewMode && filterOptions.type === FilterOptionsKeywords.CLIENTS) {
         // if preview mode, select the respective client/company as assignee when "client task" filter is selected
         store.dispatch(
           setCreateTaskFields({ targetField: 'userIds', value: { internalUserId: null, ...previewClientCompany } }),
@@ -234,6 +227,41 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
     }
   }, [urlActionParams])
 
+  const handleAssigneeChange = (inputValue: InputValue[]) => {
+    // remove task viewers if assignee is cleared or changed to client or company
+    if (inputValue.length === 0 || inputValue[0].object !== UserRole.IU) {
+      setTaskViewerValue(null)
+      store.dispatch(setCreateTaskFields({ targetField: 'viewers', value: [] }))
+    }
+
+    // if preview mode, auto-select current CU as viewer
+    if (
+      !!previewMode &&
+      !taskViewerValue &&
+      inputValue.length &&
+      inputValue[0].object === UserRole.IU &&
+      previewClientCompany.companyId
+    ) {
+      store.dispatch(
+        setCreateTaskFields({
+          targetField: 'viewers',
+          value: [{ clientId: previewClientCompany.clientId || undefined, companyId: previewClientCompany.companyId }],
+        }),
+      )
+      setTaskViewerValue(
+        getSelectorAssigneeFromFilterOptions(
+          assignee,
+          { internalUserId: null, ...previewClientCompany }, // if preview mode, default select the respective client/company as viewer
+        ) ?? null,
+      )
+    }
+
+    const newUserIds = getSelectedUserIds(inputValue)
+    const selectedAssignee = getSelectorAssignee(assignee, inputValue)
+    setAssigneeValue(selectedAssignee || null)
+    store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: newUserIds }))
+  }
+
   return (
     <NewTaskContainer>
       <Stack
@@ -265,47 +293,6 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
               }}
             />
           </Box>
-
-          <Stack alignSelf="flex-start">
-            <CopilotPopSelector
-              disabled={!!previewMode}
-              name="Set assignee"
-              initialValue={assigneeValue || undefined}
-              onChange={(inputValue) => {
-                const newUserIds = getSelectedUserIds(inputValue)
-                const selectedAssignee = getSelectorAssignee(assignee, inputValue)
-                setAssigneeValue(selectedAssignee || null)
-                setErrorMessage(null)
-                store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: newUserIds }))
-              }}
-              buttonContent={
-                <SelectorButton
-                  disabled={!!previewMode}
-                  startIcon={
-                    assigneeValue ? <CopilotAvatar currentAssignee={assigneeValue} /> : <AssigneePlaceholderSmall />
-                  }
-                  height="30px"
-                  padding="4px 16px"
-                  buttonContent={
-                    <Typography
-                      variant="bodySm"
-                      sx={{
-                        color: (theme) => (assigneeValue ? theme.color.gray[600] : theme.color.text.textDisabled),
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        fontSize: '12px',
-                        maxWidth: { xs: '60px', sm: '100px' },
-                      }}
-                    >
-                      {getAssigneeName(assigneeValue as IAssigneeCombined, 'Assignee')}
-                    </Typography>
-                  }
-                  error={!!errorMessage}
-                />
-              }
-            />
-          </Stack>
           <Stack alignSelf="flex-start">
             <Box
               sx={{
@@ -327,24 +314,11 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
 
           <Stack alignSelf="flex-start">
             <CopilotPopSelector
-              disabled={!!previewMode}
               name="Set assignee"
               initialValue={assigneeValue || undefined}
-              onChange={(inputValue) => {
-                // remove task viewers if assignee is cleared or changed to client or company
-                if (inputValue.length === 0 || inputValue[0].object !== UserRole.IU) {
-                  setTaskViewerValue(null)
-                  store.dispatch(setCreateTaskFields({ targetField: 'viewers', value: [] }))
-                }
-
-                const newUserIds = getSelectedUserIds(inputValue)
-                const selectedAssignee = getSelectorAssignee(assignee, inputValue)
-                setAssigneeValue(selectedAssignee || null)
-                store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: newUserIds }))
-              }}
+              onChange={handleAssigneeChange}
               buttonContent={
                 <SelectorButton
-                  disabled={!!previewMode}
                   startIcon={assigneeValue ? <CopilotAvatar currentAssignee={assigneeValue} /> : <PersonIconSmall />}
                   height="30px"
                   padding="4px 8px"
