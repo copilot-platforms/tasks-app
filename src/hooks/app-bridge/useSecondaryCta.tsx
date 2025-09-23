@@ -2,6 +2,7 @@ import { Clickable, Configurable, SecondaryCtaPayload } from '@/hooks/app-bridge
 import { ensureHttps } from '@/utils/https'
 import { useEffect } from 'react'
 import { DASHBOARD_DOMAIN } from '@/constants/domains'
+import { postMessageParentDashboard } from './utils'
 
 export const useSecondaryCta = (secondaryCta: Clickable | null, config?: Configurable) => {
   useEffect(() => {
@@ -14,7 +15,7 @@ export const useSecondaryCta = (secondaryCta: Clickable | null, config?: Configu
           onClick: 'header.secondaryCta.onClick',
         }
 
-    window.parent.postMessage(payload, DASHBOARD_DOMAIN)
+    postMessageParentDashboard(payload)
     if (config?.portalUrl) {
       window.parent.postMessage(payload, ensureHttps(config.portalUrl))
     }
@@ -34,7 +35,7 @@ export const useSecondaryCta = (secondaryCta: Clickable | null, config?: Configu
 
   useEffect(() => {
     const handleUnload = () => {
-      window.parent.postMessage({ type: 'header.secondaryCta' }, DASHBOARD_DOMAIN)
+      postMessageParentDashboard({ type: 'header.secondaryCta' })
       if (config?.portalUrl) {
         window.parent.postMessage({ type: 'header.secondaryCta' }, ensureHttps(config.portalUrl))
       }
