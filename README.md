@@ -1,14 +1,16 @@
 # Task App
 
-### Task App is part of the Copilot internal App Store. Task App is a comprehensive task management app that allows SB (Service Business) to create and assign tasks to their clients
+Task App is a comprehensive task management custom app in the Assembly app store, that helps users create and manage tasks across Internal Users, Clients and Companies in the platform.
 
-Task App uses NextJS for both the frontend UI and API routes. Postgres, coupled with Prisma, powers the database operations. Deployment is seamlessly handled by Vercel.
+It focuses on snappy realtime functionality, notifications handling, respects user access scopes, and supports functionality across IU, Client & CRM App Preview.
 
-This project leverages MUI extensively for component design and design system setup. Additionally, Tailwind CSS is integrated, offering flexibility for component and UI design preferences.
+It also exposes a public API accessible through the Assembly core API, allowing users to build automations that suit their use cases. Ref: [Tasks Documentation](https://docs.copilot.app/reference/tasks)
 
-### How to setup the project?
+Task App uses full-stack NextJS - relying on Server + Client Components, Material UI, and `copilot-design-system` for UI, and Server Components + Actions + API Routes for server-side functionality. Supabase over Prisma powers the database operations & realtime functionality while deployment is seamlessly handled by Vercel. Trigger.dev is used as a platform for long running async tasks related to notifications.
 
-1. First, clone the repository.
+### Project Setup
+
+1. Clone the repository.
 
 2. Install the dependencies using yarn
 
@@ -23,3 +25,5 @@ This project leverages MUI extensively for component design and design system se
    ```
 
 4. Optionally, to build the project or for other scripts, please refer to the `package.json` file.
+
+> For detailed guides related to Supabase / Trigger setup, consult our wiki
