@@ -82,6 +82,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
     ) ?? null,
   )
   useEffect(() => {
+    if (!assignee.length) return
     if (
       Object.keys(urlActionParams).length > 0 &&
       urlActionParams.action === HomeParamActions.CREATE_TASK &&
@@ -102,7 +103,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
         store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: emptyAssignee }))
       }
     }
-  }, []) //if assigneeValue has an intial value before selection (when my tasks, filter by assignee filter is applied), then update the task creation field for userIds.
+  }, [assignee]) //if assigneeValue has an intial value before selection (when my tasks, filter by assignee filter is applied), then update the task creation field for userIds.
 
   const handleCreateWithAssignee = () => {
     handleCreate()
@@ -148,8 +149,6 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
             setErrorMessage('companyId must be provided when clientId is provided')
           }
         }
-      } else if (!payload.companyId && !payload.clientId) {
-        setErrorMessage('clientId or companyId must be provided')
       }
 
       // respect the filter Ids first. This is needed for CRM deep link for respective clients
@@ -173,7 +172,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
       setActionParamPayload(payload)
       store.dispatch(setAllCreateTaskFields(taskPayload))
     }
-  }, [urlActionParams])
+  }, [urlActionParams, assignee])
 
   return (
     <NewTaskContainer>
