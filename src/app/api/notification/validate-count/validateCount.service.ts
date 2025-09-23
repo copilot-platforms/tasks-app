@@ -69,17 +69,18 @@ export class ValidateCountService extends NotificationService {
     const newAppNotifications = await this.getAllForTasks(tasks)
     // Add robustness and legacy fixes by checking and fixing duplicate notifications for tasks
     if (tasks.length !== newAppNotifications.length || 1) {
-      await this.removeDuplicateNotifications(clientId)
+      await this.removeDuplicateNotifications(clientId, companyId)
     }
   }
 
-  private async removeDuplicateNotifications(clientId: string) {
+  private async removeDuplicateNotifications(clientId: string, companyId: string) {
     const queryResult = await this.db.$queryRaw`
         SELECT "taskId", count(*) as "rowCount", max("createdAt") AS "latestCreatedAt"
         FROM (
           SELECT "taskId", "clientId", "createdAt"
           FROM "ClientNotifications"
-          WHERE "clientId" = ${clientId}::uuid 
+          WHERE "clientId" = ${clientId}::uuid
+            AND "companyId" = ${companyId}::uuid
             AND "deletedAt" IS NULL
         ) c
         GROUP BY "taskId"
@@ -103,11 +104,10 @@ export class ValidateCountService extends NotificationService {
     console.info('ValidateCount :: Removing duplicate notifications', targetNotificationIds.length)
 
     // Remove those duplicate notifications from db
-    await this.db.clientNotification.deleteMany({
-      where: {
-        id: { in: duplicateNotificationIds.map(({ id }) => id) },
-      },
-    })
+    await this.db.$queryRaw`
+      delete from "ClientNotifications"
+      where id::text in (${duplicateNotificationIds.join(', ')})
+    `
   }
 
   /**
@@ -119,7 +119,10 @@ export class ValidateCountService extends NotificationService {
     const orphanNotifications = appNotificationIds.filter((id) => !copilotNotificationIds.includes(id))
     if (orphanNotifications.length) {
       console.info('ValidateCount :: Found orphanNotifications', orphanNotifications.length)
-      await this.db.clientNotification.deleteMany({ where: { notificationId: { in: orphanNotifications } } })
+      await this.db.$queryRaw`
+        delete from "ClientNotifications"
+        where "notificationId"::text in (${orphanNotifications.join(', ')})
+      `
     }
   }
 

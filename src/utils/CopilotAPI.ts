@@ -281,7 +281,6 @@ export class CopilotAPI {
         recipientClientId,
         recipientCompanyId,
         limit: `${opts.limit}`,
-        workspaceId,
       },
       workspaceId,
     )
