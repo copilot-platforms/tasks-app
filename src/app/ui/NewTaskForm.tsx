@@ -161,7 +161,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
 
       const taskPayload = {
         title: payload?.name || '',
-        description: marked(payload?.description || '', { async: false }),
+        description: marked(payload?.description.replaceAll('\n', '<br>')) || '',
         workflowStateId: workflowStates.find((state) => state.key === payload?.status)?.id || '',
         dueDate: payload?.dueDate || null,
         templateId: payload?.templateId || null,
