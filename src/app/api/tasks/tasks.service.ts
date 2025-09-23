@@ -750,6 +750,11 @@ export class TasksService extends BaseService {
         OR: [
           { assigneeId, assigneeType: AssigneeType.company },
           { companyId: assigneeId, clientId: null },
+          {
+            viewers: {
+              hasSome: [{ clientId: null, companyId: assigneeId }],
+            },
+          },
         ],
         workflowState: { type: { not: StateType.completed } },
         isArchived: false,
@@ -776,6 +781,31 @@ export class TasksService extends BaseService {
       where: { assigneeId, assigneeType, workspaceId: this.user.workspaceId },
     })
     await this.db.label.deleteMany({ where: { label: { in: labels } } })
+    return tasks
+  }
+
+  async resetAllSharedTasks(assigneeId: string) {
+    const tasks = await this.db.task.findMany({
+      where: {
+        viewers: { hasSome: [{ clientId: assigneeId }, { companyId: assigneeId }] },
+        workspaceId: this.user.workspaceId,
+      },
+    })
+    if (!tasks.length) {
+      // If viewers doesn't have an associated task at all, skip logic
+      return []
+    }
+    const taskIds = tasks.map((task) => task.id)
+    await this.db.task.updateMany({
+      where: {
+        id: {
+          in: taskIds,
+        },
+      },
+      data: {
+        viewers: [], //note : if we support multiple viewers in the future, make sure to only pop out the deleted viewer among other viewers.
+      },
+    })
     return tasks
   }
 
