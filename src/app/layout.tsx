@@ -18,7 +18,7 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'Task App',
-  description: 'A comprehensive task app',
+  description: 'A comprehensive tasks app for the Assembly marketplace',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

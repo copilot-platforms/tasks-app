@@ -27,7 +27,7 @@ export async function GET() {
   } catch {}
 
   return NextResponse.json({
-    message: 'Copilot Tasks App API is rolling 🔥',
+    message: 'Assembly Tasks App API is rolling 🔥',
     dbConnection,
     triggerConnection,
     triggerRunId,
