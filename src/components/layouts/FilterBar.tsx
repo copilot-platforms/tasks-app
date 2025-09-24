@@ -19,14 +19,14 @@ import {
 import store from '@/redux/store'
 import { IUTokenSchema } from '@/types/common'
 import { CreateViewSettingsDTO, DisplayOptions } from '@/types/dto/viewSettings.dto'
-import { FilterOptions, FilterOptionsKeywords, IFilterOptions, UserIds } from '@/types/interfaces'
+import { FilterOptions, FilterOptionsKeywords, IAssigneeCombined, IFilterOptions, UserIds } from '@/types/interfaces'
 import { filterTypeToButtonIndexMap } from '@/types/objectMaps'
 import { checkAssignee, emptyAssignee, getAssigneeId, UserIdsType } from '@/utils/assignee'
 import { getWorkspaceLabels } from '@/utils/getWorkspaceLabels'
 import { NoAssignee } from '@/utils/noAssignee'
 import { getSelectedUserIds, getSelectorAssignee, getSelectorAssigneeFromFilterOptions } from '@/utils/selector'
 import { Box, IconButton, Stack } from '@mui/material'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 
 interface FilterBarProps {
@@ -81,11 +81,21 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
 
   const { tokenPayload, workspace } = useSelector(selectAuthDetails)
 
-  const [assigneeValue, setAssigneeValue] = useState(
-    viewModeFilterOptions.assignee[UserIds.INTERNAL_USER_ID] == 'No assignee'
-      ? NoAssignee
-      : getSelectorAssigneeFromFilterOptions(assignee, viewModeFilterOptions.assignee),
-  )
+  const [assigneeValue, setAssigneeValue] = useState<IAssigneeCombined | undefined>()
+
+  useEffect(() => {
+    if (
+      !viewModeFilterOptions.assignee[UserIds.INTERNAL_USER_ID] &&
+      !viewModeFilterOptions.assignee[UserIds.CLIENT_ID] &&
+      !!viewModeFilterOptions.assignee[UserIds.COMPANY_ID]
+    )
+      return
+    setAssigneeValue(
+      viewModeFilterOptions.assignee[UserIds.INTERNAL_USER_ID] == 'No assignee'
+        ? NoAssignee
+        : getSelectorAssigneeFromFilterOptions(assignee, viewModeFilterOptions.assignee),
+    )
+  }, [viewModeFilterOptions.assignee])
 
   const handleDisplayOptionsChange = (displayOptions: DisplayOptions) => {
     store.dispatch(setIsTasksLoading(true))
