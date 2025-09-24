@@ -1,6 +1,7 @@
 import { MAX_NOTIFICATIONS_COUNT } from '@/constants/notifications'
 import { DuplicateNotificationsQuerySchema } from '@/types/client-notifications'
 import { getArrayDifference } from '@/utils/array'
+import { getTaskViewers } from '@/utils/assignee'
 import { copilotBottleneck } from '@/utils/bottleneck'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import User from '@api/core/models/User.model'
@@ -155,6 +156,7 @@ export class ValidateCountService extends NotificationService {
         // This is a duplicate notification, SKIP
         continue
       }
+      const taskViewers = getTaskViewers(task)
       createNotificationPromises.push(
         copilotBottleneck.schedule(() => {
           console.info(`ValidateCount :: Creating missing notification for task ${task.id} - ${task.title}`)
@@ -162,7 +164,7 @@ export class ValidateCountService extends NotificationService {
           return this.copilot.createNotification({
             senderId: task.createdById,
             recipientClientId: clientId,
-            recipientCompanyId: task.companyId || undefined,
+            recipientCompanyId: task.companyId || taskViewers?.companyId,
             deliveryTargets: {
               inProduct: {
                 // doesn't matter what you add here since notification details cannot be viewed
