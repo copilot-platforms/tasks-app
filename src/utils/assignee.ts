@@ -78,8 +78,8 @@ export const checkEmptyAssignee = (userIds: UserIdsType) => {
   return deepEqual(emptyAssignee, userIds)
 }
 
-export const getAssigneeCacheLookupKey = (userType: string, tokenPayload: Token): string => {
-  if (userType === UserType.INTERNAL_USER) {
+export const getAssigneeCacheLookupKey = (userType: string, tokenPayload: Token, isPreviewMode: boolean): string => {
+  if (userType === UserType.INTERNAL_USER || isPreviewMode) {
     return tokenPayload.internalUserId!
   }
   return `${tokenPayload.clientId}.${tokenPayload.companyId}`

@@ -74,7 +74,9 @@ export default async function ClientPage({ searchParams }: { searchParams: { tok
   return (
     <>
       <Suspense>{!previewMode && <ValidateNotificationCountFetcher token={token} />}</Suspense>
-      <AssigneeCacheGetter lookupKey={`${tokenPayload.clientId}.${tokenPayload.companyId}`} />
+      <AssigneeCacheGetter
+        lookupKey={`${!!previewMode ? tokenPayload.internalUserId : tokenPayload.clientId}.${tokenPayload.companyId}`}
+      />
       <ClientSideStateUpdate
         workflowStates={workflowStates}
         tasks={tasks}

@@ -200,7 +200,7 @@ export default async function TaskDetailPage({
             </CustomScrollBar>
           </ToggleController>
           <Box>
-            <AssigneeCacheGetter lookupKey={getAssigneeCacheLookupKey(user_type, tokenPayload)} />
+            <AssigneeCacheGetter lookupKey={getAssigneeCacheLookupKey(user_type, tokenPayload, isPreviewMode)} />
             <AssigneeFetcher
               token={token}
               userType={params.user_type}
