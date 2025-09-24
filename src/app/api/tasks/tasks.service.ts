@@ -547,6 +547,15 @@ export class TasksService extends BaseService {
         // Get only company tasks for the client's companyId
         { clientId: null, companyId },
       )
+      if (includeViewer)
+        filters.push(
+          // Get tasks that includes the company as a viewer
+          {
+            viewers: {
+              hasSome: [{ companyId }],
+            },
+          },
+        )
     }
     return filters.length > 0 ? { OR: filters } : {}
   }
