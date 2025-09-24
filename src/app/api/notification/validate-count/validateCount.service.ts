@@ -106,7 +106,7 @@ export class ValidateCountService extends NotificationService {
     // Remove those duplicate notifications from db
     await this.db.$queryRaw`
       delete from "ClientNotifications"
-      where "id" = ANY(${duplicateNotificationIds}::uuid[])
+      where "id" = ANY(${duplicateNotificationIds.map(({ id }) => id)}::uuid[])
     `
   }
 
