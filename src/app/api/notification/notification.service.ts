@@ -204,7 +204,7 @@ export class NotificationService extends BaseService {
 
       // 4. Add client notifications and internalUserNotifications to DB
       console.info('NotificationService#bulkCreate | Adding client notifications to db')
-      if (clientNotifications.length) {
+      if (clientNotifications.length && !opts?.disableInProduct) {
         const viewer = getTaskViewers(task)
 
         await this.db.clientNotification.createMany({
