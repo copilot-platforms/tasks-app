@@ -2,6 +2,7 @@ import { UserRole } from '@/app/api/core/types/user'
 import { validateNotificationRecipient } from '@/utils/notifications'
 import { CommentInitiator, StateType } from '@prisma/client'
 import { z } from 'zod'
+import { UserIds } from './interfaces'
 
 export const Uuid = z.string().uuid()
 
@@ -270,6 +271,10 @@ export const RFC3339DateSchema = z.string().refine((val) => rfc3339Regex.test(va
 export type RFC3339Date = z.infer<typeof RFC3339DateSchema>
 
 export const StateTypeSchema = z.nativeEnum(StateType)
+
+export type PreviewClientCompanyType = {
+  [K in Exclude<UserIds, UserIds.INTERNAL_USER_ID>]: string | null
+}
 
 export type UrlActionParamsType = {
   action?: string

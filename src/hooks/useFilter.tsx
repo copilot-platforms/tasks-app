@@ -84,18 +84,28 @@ function filterByKeyword(
 
 function filterByType(filteredTasks: TaskResponse[], filterValue: string): TaskResponse[] {
   const assigneeType = filterValue
-  filteredTasks = assigneeType.includes('all')
-    ? filteredTasks
-    : assigneeType == FilterOptionsKeywords.CLIENTS
-      ? filteredTasks.filter((task) => task?.assigneeType?.includes('client') || task?.assigneeType?.includes('company'))
-      : assigneeType == FilterOptionsKeywords.TEAM
-        ? filteredTasks.filter((task) => task?.assigneeType?.includes('internalUser'))
-        : filteredTasks.filter((task) => task.assigneeId == assigneeType)
 
-  return filteredTasks
+  switch (filterValue) {
+    case FilterOptionsKeywords.CLIENTS:
+      return filteredTasks.filter(
+        (task) => task?.assigneeType?.includes('client') || task?.assigneeType?.includes('company'),
+      )
+
+    case FilterOptionsKeywords.CLIENT_WITH_VIEWERS:
+      return filteredTasks.filter(
+        (task) =>
+          !!task?.viewers?.length || task?.assigneeType?.includes('client') || task?.assigneeType?.includes('company'),
+      )
+
+    case FilterOptionsKeywords.TEAM:
+      return filteredTasks.filter((task) => task?.assigneeType?.includes('internalUser'))
+
+    default:
+      return filteredTasks.filter((task) => task.assigneeId == assigneeType)
+  }
 }
 
-export const useFilter = (filterOptions: IFilterOptions) => {
+export const useFilter = (filterOptions: IFilterOptions, isPreviewMode: boolean) => {
   const { tasks, accessibleTasks, assignee } = useSelector(selectTaskBoard)
   const [isPending, startTransition] = useTransition()
 
@@ -103,7 +113,8 @@ export const useFilter = (filterOptions: IFilterOptions) => {
     let filteredTasks = [...tasks]
     for (const [filterType, filterValue] of Object.entries(filterOptions)) {
       if (!filterValue) continue
-      if (filterType === FilterOptions.ASSIGNEE) {
+      if (filterType === FilterOptions.ASSIGNEE && !isPreviewMode) {
+        // there is no filter by assignee in preview mode
         const assigneeFilterValue = UserIdsSchema.parse(filterValue)
         filteredTasks = FilterFunctions[FilterOptions.ASSIGNEE](filteredTasks, assigneeFilterValue)
       } else if (filterType === FilterOptions.KEYWORD) {

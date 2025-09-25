@@ -57,6 +57,19 @@ export class ViewSettingsService extends BaseService {
       UQ_ViewSettings_userId_workspaceId: {
         userId,
         workspaceId: this.user.workspaceId,
+        viewMode: this.DEFAULT_VIEW_MODE,
+        filterOptions: {
+          [FilterOptions.ASSIGNEE]: {
+            internalUserId: null,
+            clientId: null,
+            companyId: null,
+          },
+          [FilterOptions.KEYWORD]: '',
+          [FilterOptions.TYPE]: '',
+        },
+        showUnarchived: true,
+        showArchived: false,
+        showSubtasks: true, // If we DO need to default to false for IUs, we can add a condition here after confirmation
       },
     }
     const create = {
