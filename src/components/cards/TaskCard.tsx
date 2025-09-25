@@ -325,8 +325,6 @@ export const TaskCard = ({ task, href, workflowState, mode, subtasks, workflowDi
           e.stopPropagation()
           store.dispatch(setConfirmAssigneeModalId(undefined))
           store.dispatch(setConfirmViewershipModalId(undefined))
-          console.log(confirmAssignModalId, confirmViewershipModalId)
-          console.log(confirmAssignModalId === task.id || confirmViewershipModalId === task.id)
         }}
         aria-labelledby="confirm-reassignment-modal"
         aria-describedby="confirm-reassignment"
