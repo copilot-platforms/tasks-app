@@ -43,13 +43,19 @@ import { fetchWithErrorHandler } from '@/app/_fetchers/fetchWithErrorHandler'
 import { AssigneeCacheGetter } from '@/app/_cache/AssigneeCacheGetter'
 import { checkIfTaskViewer } from '@/utils/taskViewer'
 
-async function getOneTask(token: string, taskId: string): Promise<TaskResponse> {
-  const data = await fetchWithErrorHandler<{ task: TaskResponse }>(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
-    cache: 'no-store',
-    next: { tags: ['getOneTask'] },
-  })
-
-  return data.task
+async function getOneTask(token: string, taskId: string): Promise<TaskResponse | null> {
+  try {
+    const data = await fetchWithErrorHandler<{ task: TaskResponse }>(`${apiUrl}/api/tasks/${taskId}?token=${token}`, {
+      cache: 'no-store',
+    })
+    return data.task
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('(404)')) {
+      //the message surely includes 404 if the task is not found.
+      return null
+    }
+    throw error
+  }
 }
 
 async function getWorkspace(token: string): Promise<WorkspaceResponse> {

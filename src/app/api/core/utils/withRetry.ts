@@ -30,19 +30,18 @@ export const withRetry = async <T>(fn: (...args: any[]) => Promise<T>, args: any
     {
       retries: 3,
       minTimeout: 500,
-      maxTimeout: 2000,
+      maxTimeout: 5000,
       factor: 2, // Exponential factor for timeout delay. Tweak this if issues still persist
       onFailedAttempt: (error: FailedAttemptError) => {
         console.warn(
-          `CopilotAPI#withRetry | Attempt ${error.attemptNumber} failed. There are ${error.retriesLeft} retries left. Error:`,
-          error,
+          `CopilotAPI#withRetry | Attempt ${error.attemptNumber} failed. There are ${error.retriesLeft} retries left`,
         )
       },
       shouldRetry: (error: any) => {
         // Typecasting because Copilot doesn't export an error class
         const err = error as StatusableError
-        // Retry only if statusCode === 429
-        return err.status === 429
+        // Retry if statusCode is 429 (ratelimit), 408 (timeouts), or any server related (5xx) error
+        return [408, 429].includes(err.status) || (err.status >= 500 && err.status <= 511)
       },
     },
   )

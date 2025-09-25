@@ -14,7 +14,9 @@ export const AssigneeCacheGetter = ({ lookupKey }: ClientAssigneeCacheGetterProp
     const run = async () => {
       await migrateAssignees(lookupKey) //migrate from localStorage to localForage if required. Remember to remove this after a while.
       const assignee = await getAssignees(lookupKey)
-      store.dispatch(setAssigneeList(assignee))
+      if (assignee.length) {
+        store.dispatch(setAssigneeList(assignee))
+      }
     }
     run()
   }, [lookupKey])
