@@ -310,7 +310,7 @@ export const FilterBar = ({ mode, updateViewModeSetting, isPreviewMode }: Filter
       </Box>
       <Box sx={{ padding: '12px 20px', display: { sm: 'block', sd: 'none' } }}>
         <Stack direction="column" rowGap={'8px'}>
-          {mode === UserRole.IU && <FilterButtonGroup filterButtons={filterButtons} activeButtonIndex={ButtonIndex} />}
+          <FilterButtonGroup filterButtons={filterButtons} activeButtonIndex={ButtonIndex} />
 
           <Stack
             direction="row"
