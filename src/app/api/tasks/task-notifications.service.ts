@@ -123,7 +123,7 @@ export class TaskNotificationsService extends BaseService {
     if (await this.checkParentAccessible(task)) return
 
     const viewers = ViewersSchema.parse(task.viewers)
-    if (viewers?.length) {
+    if (viewers?.length && !isReassigned) {
       const clientId = viewers[0].clientId
       const sendViewersNotifications = clientId
         ? this.sendUserTaskSharedNotification
