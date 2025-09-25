@@ -81,7 +81,11 @@ export class NotificationService extends BaseService {
       const taskViewers = ViewersSchema.parse(task.viewers)
 
       // 3. Save notification to ClientNotification or InternalUserNotification table. Check for notification.recipientClientId too
-      if ((task.assigneeType === AssigneeType.client || !!taskViewers?.length) && !!notification.recipientClientId) {
+      if (
+        (task.assigneeType === AssigneeType.client || !!taskViewers?.length) &&
+        !!notification.recipientClientId &&
+        !opts.disableInProduct
+      ) {
         await this.addToClientNotifications(task, NotificationCreatedResponseSchema.parse(notification), taskViewers)
       }
       // NOTE: There are cases where task.assigneeType does not account for IU notification!
