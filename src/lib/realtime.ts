@@ -6,6 +6,7 @@ import store from '@/redux/store'
 import { InternalUsersSchema, Token } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { IAssigneeCombined } from '@/types/interfaces'
+import { getPreviewMode } from '@/utils/previewMode'
 import { extractImgSrcs, replaceImgSrcs } from '@/utils/signedUrlReplacer'
 import { AssigneeType } from '@prisma/client'
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
@@ -41,7 +42,7 @@ export class RealtimeHandler {
   }
 
   private isViewer(newTask: RealTimeTaskResponse): boolean {
-    return this.tokenPayload.clientId
+    return this.tokenPayload.clientId || !!getPreviewMode(this.tokenPayload)
       ? (newTask.viewers?.some(
           (viewer) =>
             (viewer.clientId === this.tokenPayload.clientId && viewer.companyId === this.tokenPayload.companyId) ||
