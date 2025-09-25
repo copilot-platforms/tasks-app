@@ -88,19 +88,21 @@ export const CopilotPopSelector = ({
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
   const shouldCallOnChangeWithEmpty = useRef(false)
+  const initialAssignee = initialValue && parseAssigneeToSelectorOptions(initialValue)
 
   const handleClick = useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
       event.preventDefault()
       event.stopPropagation()
       if (!disabled) {
+        setSelectedAssignee(initialAssignee && selectorOptionsToInputValue(initialAssignee))
         setAnchorEl(anchorEl ? null : event.currentTarget)
+        shouldCallOnChangeWithEmpty.current = false
       }
     },
-    [anchorEl, disabled],
+    [anchorEl, disabled, initialAssignee],
   )
 
-  const initialAssignee = initialValue && parseAssigneeToSelectorOptions(initialValue)
   const [selectedAssignee, setSelectedAssignee] = useState<InputValue[] | undefined>(
     initialAssignee && selectorOptionsToInputValue(initialAssignee),
   )
