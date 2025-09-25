@@ -235,24 +235,19 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
     }
 
     // if preview mode, auto-select current CU as viewer
-    if (
-      !!previewMode &&
-      !taskViewerValue &&
-      inputValue.length &&
-      inputValue[0].object === UserRole.IU &&
-      previewClientCompany.companyId
-    ) {
+    if (!!previewMode && inputValue.length && inputValue[0].object === UserRole.IU && previewClientCompany.companyId) {
+      if (!taskViewerValue)
+        setTaskViewerValue(
+          getSelectorAssigneeFromFilterOptions(
+            assignee,
+            { internalUserId: null, ...previewClientCompany }, // if preview mode, default select the respective client/company as viewer
+          ) ?? null,
+        )
       store.dispatch(
         setCreateTaskFields({
           targetField: 'viewers',
           value: [{ clientId: previewClientCompany.clientId || undefined, companyId: previewClientCompany.companyId }],
         }),
-      )
-      setTaskViewerValue(
-        getSelectorAssigneeFromFilterOptions(
-          assignee,
-          { internalUserId: null, ...previewClientCompany }, // if preview mode, default select the respective client/company as viewer
-        ) ?? null,
       )
     }
 
