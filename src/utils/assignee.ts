@@ -103,7 +103,7 @@ export const getAssigneeValueFromViewers = (viewer: IAssigneeCombined | null, as
   return match ?? undefined
 }
 
-export const getTaskViewers = (task: TaskResponse | Task) => {
+export const getTaskViewers = (task: TaskResponse | Task | Pick<TaskResponse, 'viewers'>) => {
   const taskViewers = ViewersSchema.parse(task.viewers)
   const viewer = !!taskViewers?.length ? taskViewers[0] : undefined
   return viewer

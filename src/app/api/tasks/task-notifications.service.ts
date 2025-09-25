@@ -62,7 +62,7 @@ export class TaskNotificationsService extends BaseService {
       })
       if (!parentTask) return false
 
-      const parentViewer = getTaskViewers(TaskResponseSchema.parse(parentTask))
+      const parentViewer = getTaskViewers(TaskResponseSchema.pick({ viewers: true }).parse(parentTask))
 
       const copilot = new CopilotAPI(this.user.token)
 
