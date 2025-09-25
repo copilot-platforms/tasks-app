@@ -163,13 +163,6 @@ const taskBoardSlice = createSlice({
           }
         }
       }
-      if (state.previewMode && !filterOptions.type) {
-        // Engineering note: CRM view and IU view uses same view setting config. In CRM view, we don't have "All tasks": filter by type. If the "All task" tab is selected, we are manually setting the type to "clients" to show all client tasks.
-        updatedFilterOptions = {
-          ...updatedFilterOptions,
-          type: FilterOptionsKeywords.CLIENTS,
-        }
-      }
       state.filterOptions = updatedFilterOptions
     }, //updates filters according to viewSettings
 
