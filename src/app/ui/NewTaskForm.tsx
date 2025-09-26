@@ -207,7 +207,6 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
 
           <Stack alignSelf="flex-start">
             <CopilotPopSelector
-              disabled={!!previewMode}
               name="Set assignee"
               initialValue={assigneeValue || undefined}
               onChange={(inputValue) => {
@@ -219,7 +218,6 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
               }}
               buttonContent={
                 <SelectorButton
-                  disabled={!!previewMode}
                   startIcon={
                     assigneeValue ? <CopilotAvatar currentAssignee={assigneeValue} /> : <AssigneePlaceholderSmall />
                   }
