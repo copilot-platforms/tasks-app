@@ -10,7 +10,6 @@ import { ValidateNotificationCountFetcher } from '@/app/_fetchers/ValidateNotifi
 import { ModalNewTaskForm } from '@/app/ui/Modal_NewTaskForm'
 import { TaskBoard } from '@/app/ui/TaskBoard'
 import { TaskBoardAppBridge } from '@/app/ui/TaskBoardAppBridge'
-import DashboardEmptyState from '@/components/layouts/EmptyState/DashboardEmptyState'
 import { SilentError } from '@/components/templates/SilentError'
 import { apiUrl } from '@/config'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
@@ -74,8 +73,6 @@ export default async function ClientPage({ searchParams }: { searchParams: { tok
   const previewMode = getPreviewMode(tokenPayload)
 
   console.info(`app/client/page.tsx | Serving user ${token} with payload`, tokenPayload)
-
-  if (!tasks.length && !previewMode) return <DashboardEmptyState userType={UserRole.Client} />
 
   return (
     <>
