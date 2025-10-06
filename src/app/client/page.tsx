@@ -75,6 +75,8 @@ export default async function ClientPage({ searchParams }: { searchParams: { tok
 
   console.info(`app/client/page.tsx | Serving user ${token} with payload`, tokenPayload)
 
+  if (!tasks.length && !previewMode) return <DashboardEmptyState userType={UserRole.Client} />
+
   return (
     <>
       <Suspense>{!previewMode && <ValidateNotificationCountFetcher token={token} />}</Suspense>
