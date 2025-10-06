@@ -17,6 +17,7 @@ import { AssigneeType, ClientNotification, Task } from '@prisma/client'
 import Bottleneck from 'bottleneck'
 import httpStatus from 'http-status'
 import { z } from 'zod'
+import User from '@api/core/models/User.model'
 
 export class NotificationService extends BaseService {
   async create(
@@ -173,6 +174,7 @@ export class NotificationService extends BaseService {
           console.info('NotificationService#bulkCreate | Creating single notification:', notificationDetails)
           let notification: NotificationCreatedResponse
           try {
+            console.log('creating notification', notificationDetails)
             notification = await copilot.createNotification(notificationDetails)
           } catch (e: unknown) {
             notification = await this.handleIfSenderCompanyIdError(e, copilot, notificationDetails)
@@ -494,9 +496,11 @@ export class NotificationService extends BaseService {
     return { senderId, senderCompanyId, recipientId, recipientIds, actionUser, companyName }
   }
 
-  async getAllForTasks(tasks: Task[]): Promise<ClientNotification[]> {
+  async getAllForTasks(tasks: Task[], user: User): Promise<ClientNotification[]> {
     const taskIds = tasks.map((task) => task.id)
-    return await this.db.clientNotification.findMany({ where: { taskId: { in: taskIds } } })
+    return await this.db.clientNotification.findMany({
+      where: { taskId: { in: taskIds }, clientId: user.clientId, companyId: user.companyId },
+    })
   }
 
   private async handleIfSenderCompanyIdError(e: unknown, copilot: CopilotAPI, notificationDetails: NotificationRequestBody) {
