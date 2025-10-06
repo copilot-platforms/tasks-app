@@ -49,7 +49,7 @@ export class ValidateCountService extends NotificationService {
     console.info('ValidateCount :: User tasks for company', companyId, ':', tasks.length)
 
     // Query all notifications triggered for a list of client/company tasks
-    const appNotifications = await this.getAllForTasks(tasks, this.user)
+    const appNotifications = await this.getAllForTasks(tasks)
     const appNotificationIds = appNotifications.map((n) => n.notificationId)
     console.info('ValidateCount :: App notifications', appNotifications.length)
 
@@ -66,7 +66,7 @@ export class ValidateCountService extends NotificationService {
       await this.removeOrphanNotificationsFromCopilot(appNotificationIds, copilotNotificationIds)
     }
 
-    const newAppNotifications = await this.getAllForTasks(tasks, this.user)
+    const newAppNotifications = await this.getAllForTasks(tasks)
     // Add robustness and legacy fixes by checking and fixing duplicate notifications for tasks
     if (tasks.length !== newAppNotifications.length || 1) {
       await this.removeDuplicateNotifications(clientId)
