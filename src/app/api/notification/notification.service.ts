@@ -495,10 +495,10 @@ export class NotificationService extends BaseService {
     return { senderId, senderCompanyId, recipientId, recipientIds, actionUser, companyName }
   }
 
-  async getAllForTasks(tasks: Task[], user: User): Promise<ClientNotification[]> {
+  async getAllForTasks(tasks: Task[]): Promise<ClientNotification[]> {
     const taskIds = tasks.map((task) => task.id)
     return await this.db.clientNotification.findMany({
-      where: { taskId: { in: taskIds }, clientId: user.clientId, companyId: user.companyId },
+      where: { taskId: { in: taskIds }, clientId: this.user.clientId, companyId: this.user.companyId },
     })
   }
 
