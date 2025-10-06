@@ -281,3 +281,19 @@ export type UrlActionParamsType = {
   pf?: string
   oldPf?: string
 }
+
+export const ViewSettingUserIds = z
+  .object({
+    internalUserId: z.string().nullish(),
+    clientId: z.string().nullish(),
+    companyId: z.string().nullish(),
+  })
+  .superRefine((val) => {
+    if (!val.clientId && !val.companyId && !val.internalUserId) {
+      throw new Error('At least one of clientId, companyId, or internalUserId must be provided')
+    }
+    if (val.clientId && !val.companyId) {
+      throw new Error('companyId must be provided when clientId is provided')
+    }
+  })
+export type ViewSettingUserIdsType = z.infer<typeof ViewSettingUserIds>

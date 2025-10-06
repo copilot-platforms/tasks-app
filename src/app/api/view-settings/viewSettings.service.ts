@@ -1,3 +1,4 @@
+import { ViewSettingUserIds, ViewSettingUserIdsType } from '@/types/common'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { FilterOptions } from '@/types/interfaces'
 import { BaseService } from '@api/core/services/base.service'
@@ -13,16 +14,21 @@ export class ViewSettingsService extends BaseService {
   async getViewSettingsForUser() {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Read, Resource.ViewSetting)
-
-    const userId = z.string().parse(this.user.internalUserId || this.user.clientId)
+    // strict null value if not defined
+    const userIds = {
+      internalUserId: this.user.internalUserId || null,
+      clientId: this.user.clientId || null,
+      companyId: this.user.companyId || null,
+    }
+    const parsedUserIds = ViewSettingUserIds.parse(userIds)
     let viewSettings = await this.db.viewSetting.findFirst({
-      where: { userId, workspaceId: this.user.workspaceId },
+      where: { ...parsedUserIds, workspaceId: this.user.workspaceId },
     })
     // If a viewSetting has not been set for this user, create a new one with default viewMode
     // This isn't required but will simplify frontend logic and ensure a view setting always exists for a given IU
     // We can modify default view settings much easier from the backend or using config vars in the future
     if (!viewSettings) {
-      viewSettings = await this.createInitialViewSettings(userId)
+      viewSettings = await this.createInitialViewSettings(parsedUserIds)
     }
 
     return viewSettings
@@ -31,19 +37,25 @@ export class ViewSettingsService extends BaseService {
   async createOrUpdateViewSettings(data: CreateViewSettingsDTO) {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Create, Resource.ViewSetting)
-    const userId = z.string().parse(this.user.internalUserId || this.user.clientId)
+    // strict null value if not defined
+    const userIds = {
+      internalUserId: this.user.internalUserId || null,
+      clientId: this.user.clientId || null,
+      companyId: this.user.companyId || null,
+    }
+    const parsedUserIds = ViewSettingUserIds.parse(userIds)
     const newViewSettingData = {
       ...data,
-      userId,
+      ...parsedUserIds,
       workspaceId: this.user.workspaceId,
     }
 
     // Verify that a view setting exists, or if it doesn't then create a new initial view setting with provided data
     let viewSettings = await this.db.viewSetting.findFirst({
-      where: { userId, workspaceId: this.user.workspaceId },
+      where: { ...parsedUserIds, workspaceId: this.user.workspaceId },
     })
     if (!viewSettings) {
-      return await this.createInitialViewSettings(userId)
+      return await this.createInitialViewSettings(parsedUserIds)
     }
 
     return await this.db.viewSetting.update({
@@ -52,28 +64,9 @@ export class ViewSettingsService extends BaseService {
     })
   }
 
-  private async createInitialViewSettings(userId: string) {
-    const where = {
-      UQ_ViewSettings_userId_workspaceId: {
-        userId,
-        workspaceId: this.user.workspaceId,
-        viewMode: this.DEFAULT_VIEW_MODE,
-        filterOptions: {
-          [FilterOptions.ASSIGNEE]: {
-            internalUserId: null,
-            clientId: null,
-            companyId: null,
-          },
-          [FilterOptions.KEYWORD]: '',
-          [FilterOptions.TYPE]: '',
-        },
-        showUnarchived: true,
-        showArchived: false,
-        showSubtasks: true, // If we DO need to default to false for IUs, we can add a condition here after confirmation
-      },
-    }
-    const create = {
-      userId,
+  private async createInitialViewSettings(userIds: ViewSettingUserIdsType) {
+    const data = {
+      ...userIds,
       workspaceId: this.user.workspaceId,
       viewMode: this.DEFAULT_VIEW_MODE,
       filterOptions: {
@@ -87,12 +80,11 @@ export class ViewSettingsService extends BaseService {
       },
       showUnarchived: true,
       showArchived: false,
-      showSubtasks: true,
+      showSubtasks: true, // If we DO need to default to false for IUs, we can add a condition here after confirmation
     }
-    return await this.db.viewSetting.upsert({
-      where,
-      update: {}, //DO NOT update anything if it already exists
-      create,
+
+    return await this.db.viewSetting.create({
+      data,
     })
   }
 }
