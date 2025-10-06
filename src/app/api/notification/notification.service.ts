@@ -174,7 +174,6 @@ export class NotificationService extends BaseService {
           console.info('NotificationService#bulkCreate | Creating single notification:', notificationDetails)
           let notification: NotificationCreatedResponse
           try {
-            console.log('creating notification', notificationDetails)
             notification = await copilot.createNotification(notificationDetails)
           } catch (e: unknown) {
             notification = await this.handleIfSenderCompanyIdError(e, copilot, notificationDetails)
