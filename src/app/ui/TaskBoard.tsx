@@ -9,6 +9,7 @@ import { CustomDragLayer } from '@/components/CustomDragLayer'
 import { CardDragLayer } from '@/components/cards/CardDragLayer'
 import { TaskColumn } from '@/components/cards/TaskColumn'
 import { TaskRow } from '@/components/cards/TaskRow'
+import DashboardEmptyState from '@/components/layouts/EmptyState/DashboardEmptyState'
 import { FilterBar } from '@/components/layouts/FilterBar'
 import { Header } from '@/components/layouts/Header'
 import { DragDropHandler } from '@/hoc/DragDropHandler'
@@ -109,6 +110,9 @@ export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
   } //fix this logic as soon as copilot API natively supports access scopes by creating an endpoint which shows the count of filteredTask and total tasks.
 
   const showHeader = !!previewMode
+
+  if ((!Array.isArray(tasks) || !tasks.length) && !previewMode && mode === UserRole.Client)
+    return <DashboardEmptyState userType={mode} />
 
   return (
     <>
