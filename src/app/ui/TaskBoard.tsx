@@ -9,6 +9,7 @@ import { CustomDragLayer } from '@/components/CustomDragLayer'
 import { CardDragLayer } from '@/components/cards/CardDragLayer'
 import { TaskColumn } from '@/components/cards/TaskColumn'
 import { TaskRow } from '@/components/cards/TaskRow'
+import { NoFilteredTasksState } from '@/components/layouts/EmptyState/NoFilteredTasksState'
 import { FilterBar } from '@/components/layouts/FilterBar'
 import { Header } from '@/components/layouts/Header'
 import { DragDropHandler } from '@/hoc/DragDropHandler'
@@ -19,6 +20,7 @@ import { WorkspaceResponse } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { View } from '@/types/interfaces'
+import { checkEmptyAssignee } from '@/utils/assignee'
 import { sortTaskByDescendingOrder } from '@/utils/sortTask'
 import { prioritizeStartedStates } from '@/utils/workflowStates'
 import { UserRole } from '@api/core/types/user'
@@ -44,6 +46,8 @@ export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
     previewMode,
     accessibleTasks,
     showSubtasks,
+    showArchived,
+    showUnarchived,
   } = useSelector(selectTaskBoard)
 
   const onDropItem = useCallback(
@@ -77,8 +81,21 @@ export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
   }
 
   const viewBoardSettings = viewSettingsTemp ? viewSettingsTemp.viewMode : view
+  const archivedOptions = {
+    showArchived: viewSettingsTemp ? viewSettingsTemp.showArchived : showArchived,
+    showUnarchived: viewSettingsTemp ? viewSettingsTemp.showUnarchived : showUnarchived,
+  }
 
   useFilter(viewSettingsTemp ? viewSettingsTemp.filterOptions : filterOptions)
+  const userHasNoFilter =
+    filterOptions &&
+    !filterOptions.type &&
+    !filterOptions.keyword &&
+    checkEmptyAssignee(filterOptions.assignee) &&
+    archivedOptions.showUnarchived &&
+    !archivedOptions.showArchived
+
+  const isNoTasksWithFilter = (!tasks.length || !userHasNoFilter) && !filteredTasks.length
 
   const [hasInitialized, setHasInitialized] = useState(false)
   useEffect(() => {
@@ -109,6 +126,8 @@ export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
   } //fix this logic as soon as copilot API natively supports access scopes by creating an endpoint which shows the count of filteredTask and total tasks.
 
   const showHeader = !!previewMode
+  const isClientView = mode === UserRole.Client && !previewMode
+  const showTaskBoard = (!!filteredTasks.length && !!tasks.length) || !isClientView
 
   return (
     <>
@@ -126,7 +145,9 @@ export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
         }}
       />
 
-      {viewBoardSettings === View.BOARD_VIEW && (
+      {isNoTasksWithFilter && isClientView && <NoFilteredTasksState />}
+
+      {showTaskBoard && viewBoardSettings === View.BOARD_VIEW && (
         <Box sx={{ padding: '12px 12px' }}>
           <Stack
             columnGap={2}
@@ -167,7 +188,7 @@ export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
           </Stack>
         </Box>
       )}
-      {viewBoardSettings === View.LIST_VIEW && (
+      {showTaskBoard && viewBoardSettings === View.LIST_VIEW && (
         <Stack
           sx={{
             flexDirection: 'column',
@@ -192,6 +213,7 @@ export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
                 key={list.id}
                 columnName={list.name}
                 taskCount={taskCountForWorkflowStateId(list.id)}
+                display={!isClientView || (isClientView && !!filterTaskWithWorkflowStateId(list.id).length)}
                 showAddBtn={mode === UserRole.IU || !!previewMode}
               >
                 <TasksColumnVirtualizer
