@@ -362,7 +362,7 @@ export class TasksService extends BaseService {
       : {}
 
     // Validate updated due date to not be in the past
-    if (data.dueDate && dayjs(new Date(data.dueDate)).isBefore(dayjs())) {
+    if (data.dueDate && isPastDateString(data.dueDate)) {
       throw new APIError(httpStatus.BAD_REQUEST, 'Due date cannot be in the past')
     }
 
