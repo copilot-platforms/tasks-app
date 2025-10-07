@@ -7,6 +7,7 @@ import { Token } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { AssigneeType } from '@prisma/client'
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
+import deepEqual from 'deep-equal'
 import { usePathname, useRouter } from 'next/navigation'
 import { ReactNode, useEffect } from 'react'
 import { useSelector } from 'react-redux'
@@ -57,7 +58,17 @@ export const RealTime = ({
     }
   }
 
+  function isPayloadEqual(payload: RealtimePostgresChangesPayload<RealTimeTaskResponse>): boolean {
+    const newPayload = payload.new
+    const oldPayload = payload.old
+    if (!newPayload || !oldPayload) return true
+    return deepEqual(newPayload, oldPayload)
+  }
+
   const handleRealtimeEvents = (payload: RealtimePostgresChangesPayload<RealTimeTaskResponse>) => {
+    if (isPayloadEqual(payload)) {
+      return //no changes for the same payload
+    }
     const user = assignee.find((el) => el.id === userId)
     if (!user || !userRole) return
 
