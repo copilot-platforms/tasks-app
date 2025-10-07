@@ -284,9 +284,9 @@ export type UrlActionParamsType = {
 
 export const ViewSettingUserIds = z
   .object({
-    internalUserId: z.string().nullish(),
-    clientId: z.string().nullish(),
-    companyId: z.string().nullish(),
+    internalUserId: z.string().nullable(),
+    clientId: z.string().nullable(),
+    companyId: z.string().nullable(),
   })
   .superRefine((val) => {
     if (!val.clientId && !val.companyId && !val.internalUserId) {
