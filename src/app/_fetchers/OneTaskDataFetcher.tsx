@@ -1,3 +1,5 @@
+'use client'
+
 import { setActiveTask } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
 import { PropsWithToken } from '@/types/interfaces'
@@ -10,6 +12,7 @@ interface OneTaskDataFetcherProps extends PropsWithToken {
 }
 
 export const OneTaskDataFetcher = ({ token, task_id }: OneTaskDataFetcherProps & PropsWithToken) => {
+  const hasDispatchedRef = useRef(false)
   const buildQueryString = (token: string) => {
     const queryParams = new URLSearchParams({ token })
 
@@ -24,8 +27,10 @@ export const OneTaskDataFetcher = ({ token, task_id }: OneTaskDataFetcherProps &
   })
 
   useEffect(() => {
-    if (data?.task) {
+    if (!hasDispatchedRef.current && data?.task) {
+      //only invalidate cache on mount.
       store.dispatch(setActiveTask(data.task))
+      hasDispatchedRef.current = true
     }
   }, [data])
 
