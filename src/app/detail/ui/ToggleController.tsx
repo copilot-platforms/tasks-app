@@ -7,7 +7,7 @@ import { ReactNode, useEffect } from 'react'
 import { useSelector } from 'react-redux'
 
 export const ToggleController = ({ children }: { children: ReactNode }) => {
-  const { showSidebar } = useSelector(selectTaskDetails)
+  const { showSidebar, fromNotificationCenter } = useSelector(selectTaskDetails)
   const matches = useMediaQuery('(max-width:600px)')
 
   const nonMobile = useMediaQuery('(min-width:600px)')
@@ -21,7 +21,7 @@ export const ToggleController = ({ children }: { children: ReactNode }) => {
   return (
     <Box
       sx={{
-        width: showSidebar ? 'calc(100% - 339px)' : '100%',
+        width: showSidebar && !fromNotificationCenter ? 'calc(100% - 339px)' : '100%',
         display: matches && showSidebar ? 'none' : 'flex',
         flex: 1,
         flexDirection: 'column',
