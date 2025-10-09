@@ -22,6 +22,7 @@ export const TokenSchema = z.object({
     .optional(),
   internalUserId: z.string().optional(),
   workspaceId: z.string(),
+  notificationId: z.string().optional(),
 })
 export type Token = z.infer<typeof TokenSchema>
 
@@ -276,3 +277,24 @@ export type UrlActionParamsType = {
   pf?: string
   oldPf?: string
 }
+
+export const NotificationInProductCtaParamsSchema = z.object({
+  taskId: z.string(),
+  commentId: z.string().optional(),
+})
+
+export const NotificationResponseSchema = z.object({
+  deliveryTargets: z
+    .object({
+      inProduct: z
+        .object({
+          title: z.string().optional(),
+          isRead: z.boolean().optional(),
+          ctaParams: NotificationInProductCtaParamsSchema.optional(),
+        })
+        .optional(),
+    })
+    .optional(),
+  id: z.string(),
+})
+export type NotificationResponseType = z.infer<typeof NotificationResponseSchema>
