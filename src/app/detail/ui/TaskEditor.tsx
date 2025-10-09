@@ -1,6 +1,5 @@
 'use client'
 
-import { OneTaskDataFetcher } from '@/app/_fetchers/OneTaskDataFetcher'
 import { ImagePreviewModal } from '@/app/detail/ui/ImagePreviewModal'
 import { StyledModal } from '@/app/detail/ui/styledComponent'
 import AttachmentLayout from '@/components/AttachmentLayout'
@@ -81,7 +80,7 @@ export const TaskEditor = ({
         setUpdateDetail(currentTask.body ?? '')
       }
     }
-  }, [activeTask, task_id, isUserTyping, activeUploads, task])
+  }, [activeTask?.title, activeTask?.body, task_id, isUserTyping, activeUploads, task])
 
   const _titleUpdateDebounced = async (title: string) => updateTaskTitle(title)
 
@@ -145,7 +144,6 @@ export const TaskEditor = ({
 
   return (
     <>
-      {token && <OneTaskDataFetcher token={token} task_id={task_id} />}
       <StyledTextField
         type="text"
         multiline
