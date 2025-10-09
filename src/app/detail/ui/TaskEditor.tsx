@@ -1,6 +1,5 @@
 'use client'
 
-import { OneTaskDataFetcher } from '@/app/_fetchers/OneTaskDataFetcher'
 import { ImagePreviewModal } from '@/app/detail/ui/ImagePreviewModal'
 import { StyledModal } from '@/app/detail/ui/styledComponent'
 import AttachmentLayout from '@/components/AttachmentLayout'
@@ -145,7 +144,6 @@ export const TaskEditor = ({
 
   return (
     <>
-      {token && <OneTaskDataFetcher token={token} task_id={task_id} />}
       <StyledTextField
         type="text"
         multiline
