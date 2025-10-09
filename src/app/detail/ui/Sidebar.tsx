@@ -24,15 +24,22 @@ import { createDateFromFormattedDateString, formatDate } from '@/utils/dateHelpe
 import { getSelectedUserIds, getSelectorAssignee, getSelectorAssigneeFromTask } from '@/utils/selector'
 import { NoAssignee } from '@/utils/noAssignee'
 import { shouldConfirmBeforeReassignment } from '@/utils/shouldConfirmBeforeReassign'
-import { Box, Skeleton, Stack, styled, Typography } from '@mui/material'
+import { Box, Skeleton, Stack, styled, SxProps, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { z } from 'zod'
 import { ClientDetailAppBridge } from '@/app/detail/ui/ClientDetailAppBridge'
 
-const StyledText = styled(Typography)(({ theme }) => ({
+type StyledTypographyProps = {
+  display?: string
+}
+
+const StyledText = styled(Typography, {
+  shouldForwardProp: (prop: string) => prop !== 'display', // don't pass to DOM
+})<StyledTypographyProps>(({ theme, display }) => ({
   color: theme.color.gray[500],
   width: '80px',
+  display,
 }))
 
 export const Sidebar = ({
@@ -57,7 +64,7 @@ export const Sidebar = ({
   portalUrl?: string
 }) => {
   const { activeTask, workflowStates, assignee, previewMode } = useSelector(selectTaskBoard)
-  const { showSidebar, showConfirmAssignModal } = useSelector(selectTaskDetails)
+  const { showSidebar, showConfirmAssignModal, fromNotificationCenter } = useSelector(selectTaskDetails)
 
   const [isHydrated, setIsHydrated] = useState(false)
 
@@ -262,26 +269,34 @@ export const Sidebar = ({
 
   return (
     <Box
-      sx={{
-        borderLeft: (theme) => `1px solid ${theme.color.borders.border2}`,
-        height: '100vh',
-        display: showSidebar ? 'block' : 'none',
-        width: isMobile && showSidebar ? '100vw' : '25vw',
-      }}
+      {...(!fromNotificationCenter && {
+        sx: {
+          borderLeft: (theme) => `1px solid ${theme.color.borders.border2}`,
+          height: '100vh',
+          display: showSidebar ? 'block' : 'none',
+          width: isMobile && showSidebar ? '100vw' : '25vw',
+        },
+      })}
     >
-      <StyledBox>
-        <AppMargin size={SizeofAppMargin.HEADER} py="17.5px">
-          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ height: '28px' }}>
-            <Typography variant="sm" lineHeight={'21px'} fontSize={'13px'}>
-              Properties
-            </Typography>
-          </Stack>
-        </AppMargin>
-      </StyledBox>
+      {!fromNotificationCenter && (
+        <StyledBox>
+          <AppMargin size={SizeofAppMargin.HEADER} py="17.5px">
+            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ height: '28px' }}>
+              <Typography variant="sm" lineHeight={'21px'} fontSize={'13px'}>
+                Properties
+              </Typography>
+            </Stack>
+          </AppMargin>
+        </StyledBox>
+      )}
 
-      <AppMargin size={SizeofAppMargin.HEADER} py={'4px'}>
+      <AppMargin
+        size={SizeofAppMargin.HEADER}
+        py={'4px'}
+        {...(fromNotificationCenter && { sx: { display: 'flex', gap: '10px', width: '654px' } })}
+      >
         <Stack direction="row" alignItems="center" m="4px 0px" columnGap="10px">
-          <StyledText variant="md" minWidth="80px">
+          <StyledText variant="md" minWidth="80px" display={fromNotificationCenter ? 'none' : 'block'}>
             Status
           </StyledText>
           {workflowStates.length > 0 && statusValue ? ( // show skelete if statusValue and workflow state list is empty
@@ -312,7 +327,7 @@ export const Sidebar = ({
           )}
         </Stack>
         <Stack direction="row" m="8px 0px" alignItems="center" columnGap="10px">
-          <StyledText variant="md" minWidth="80px">
+          <StyledText variant="md" minWidth="80px" display={fromNotificationCenter ? 'none' : 'block'}>
             Assignee
           </StyledText>
           {assignee.length > 0 ? ( // show skeleton if assignee list is empty
@@ -363,7 +378,7 @@ export const Sidebar = ({
           )}
         </Stack>
         <Stack direction="row" m="8px 0px" alignItems="center" columnGap="10px" minWidth="fit-content">
-          <StyledText variant="md" minWidth="80px">
+          <StyledText variant="md" minWidth="80px" display={fromNotificationCenter ? 'none' : 'block'}>
             Due date
           </StyledText>
           <Box
