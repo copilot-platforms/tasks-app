@@ -206,9 +206,9 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
 
       // respect the filter Ids first. This is needed for CRM deep link for respective clients
       const assigneeFilter = {
-        [UserIds.INTERNAL_USER_ID]: filterOptions[FilterOptions.ASSIGNEE].internalUserId || payload?.internalUserId || null,
-        [UserIds.CLIENT_ID]: filterOptions[FilterOptions.ASSIGNEE].clientId || payload?.clientId || null,
-        [UserIds.COMPANY_ID]: filterOptions[FilterOptions.ASSIGNEE].companyId || payload?.companyId || null,
+        [UserIds.INTERNAL_USER_ID]: payload?.internalUserId || null,
+        [UserIds.CLIENT_ID]: payload?.clientId || null,
+        [UserIds.COMPANY_ID]: payload?.companyId || null,
       }
 
       const taskPayload = {

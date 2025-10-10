@@ -265,6 +265,7 @@ export class RealtimeHandler {
    */
   handleRealtimeTaskUpdate() {
     const updatedTask = this.getFormattedTask(this.payload.new)
+    const prevTask = this.getFormattedTask(this.payload.old)
     const commonStore = store.getState()
     const { activeTask, accessibleTasks, showArchived, showUnarchived, tasks } = commonStore.taskBoard
 
@@ -322,6 +323,7 @@ export class RealtimeHandler {
     // CASE III: Reassignment into scope
     const isReassignedIntoClientScope =
       this.userRole === AssigneeType.client &&
+      updatedTask.assigneeId !== prevTask.assigneeId &&
       (this.isViewer(updatedTask) ||
         (!updatedTask.clientId
           ? updatedTask.companyId === this.tokenPayload.companyId

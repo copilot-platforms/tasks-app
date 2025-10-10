@@ -9,6 +9,7 @@ import { CustomDragLayer } from '@/components/CustomDragLayer'
 import { CardDragLayer } from '@/components/cards/CardDragLayer'
 import { TaskColumn } from '@/components/cards/TaskColumn'
 import { TaskRow } from '@/components/cards/TaskRow'
+import DashboardEmptyState from '@/components/layouts/EmptyState/DashboardEmptyState'
 import { FilterBar } from '@/components/layouts/FilterBar'
 import { Header } from '@/components/layouts/Header'
 import { DragDropHandler } from '@/hoc/DragDropHandler'
@@ -44,6 +45,8 @@ export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
     previewMode,
     accessibleTasks,
     showSubtasks,
+    showArchived,
+    showUnarchived,
   } = useSelector(selectTaskBoard)
 
   const onDropItem = useCallback(
@@ -77,8 +80,18 @@ export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
   }
 
   const viewBoardSettings = viewSettingsTemp ? viewSettingsTemp.viewMode : view
+  const archivedOptions = {
+    showArchived: viewSettingsTemp ? viewSettingsTemp.showArchived : showArchived,
+    showUnarchived: viewSettingsTemp ? viewSettingsTemp.showUnarchived : showUnarchived,
+  }
 
   useFilter(viewSettingsTemp ? viewSettingsTemp.filterOptions : filterOptions, !!previewMode)
+  const userHasNoFilter =
+    filterOptions &&
+    !filterOptions.type &&
+    !filterOptions.keyword &&
+    archivedOptions.showUnarchived &&
+    !archivedOptions.showArchived
 
   const [hasInitialized, setHasInitialized] = useState(false)
   useEffect(() => {
@@ -107,6 +120,15 @@ export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
   if (!hasInitialized) {
     return <TaskDataFetcher token={token} />
   } //fix this logic as soon as copilot API natively supports access scopes by creating an endpoint which shows the count of filteredTask and total tasks.
+
+  if (tasks && !tasks.length && userHasNoFilter && mode === UserRole.Client && !previewMode && !isTasksLoading) {
+    return (
+      <>
+        <TaskDataFetcher token={token ?? ''} />
+        <DashboardEmptyState userType={mode} />
+      </>
+    )
+  }
 
   const showHeader = !!previewMode
 

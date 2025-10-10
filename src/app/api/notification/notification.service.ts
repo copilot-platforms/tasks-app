@@ -540,7 +540,9 @@ export class NotificationService extends BaseService {
 
   async getAllForTasks(tasks: Task[]): Promise<ClientNotification[]> {
     const taskIds = tasks.map((task) => task.id)
-    return await this.db.clientNotification.findMany({ where: { taskId: { in: taskIds } } })
+    return await this.db.clientNotification.findMany({
+      where: { taskId: { in: taskIds }, clientId: this.user.clientId, companyId: this.user.companyId },
+    })
   }
 
   private async handleIfSenderCompanyIdError(e: unknown, copilot: CopilotAPI, notificationDetails: NotificationRequestBody) {

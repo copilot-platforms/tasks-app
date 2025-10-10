@@ -42,6 +42,7 @@ import { z } from 'zod'
 import { fetchWithErrorHandler } from '@/app/_fetchers/fetchWithErrorHandler'
 import { AssigneeCacheGetter } from '@/app/_cache/AssigneeCacheGetter'
 import { checkIfTaskViewer } from '@/utils/taskViewer'
+import { OneTaskDataFetcher } from '@/app/_fetchers/OneTaskDataFetcher'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse | null> {
   try {
@@ -126,6 +127,7 @@ export default async function TaskDetailPage({
       task={task}
       workspace={workspace}
     >
+      {token && <OneTaskDataFetcher token={token} task_id={task_id} initialTask={task} />}
       <RealTime tokenPayload={tokenPayload}>
         <EscapeHandler />
         <ResponsiveStack>

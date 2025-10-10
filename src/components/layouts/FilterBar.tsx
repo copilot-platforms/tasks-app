@@ -40,7 +40,7 @@ interface FilterBarProps {
 }
 
 export const FilterBar = ({ mode, updateViewModeSetting, isPreviewMode }: FilterBarProps) => {
-  const { view, filterOptions, assignee, viewSettingsTemp, showArchived, showUnarchived, showSubtasks } =
+  const { view, filterOptions, assignee, viewSettingsTemp, showArchived, showUnarchived, showSubtasks, previewMode } =
     useSelector(selectTaskBoard)
 
   const viewMode = viewSettingsTemp ? viewSettingsTemp.viewMode : view
@@ -186,10 +186,14 @@ export const FilterBar = ({ mode, updateViewModeSetting, isPreviewMode }: Filter
 
   return (
     <Box
-      sx={{
-        border: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
-        borderTop: 'none',
-      }}
+      sx={
+        previewMode
+          ? { borderBottom: (theme) => `1px solid ${theme.color.borders.borderDisabled}` }
+          : {
+              border: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
+              borderTop: 'none',
+            }
+      }
     >
       <Box
         sx={{
