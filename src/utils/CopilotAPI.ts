@@ -276,7 +276,7 @@ export class CopilotAPI {
       },
       workspaceId,
     )
-    return NotificationResponseSchema.parse(response.data)
+    return NotificationResponseSchema.parse(response)
   }
 
   async _getClientNotifications(

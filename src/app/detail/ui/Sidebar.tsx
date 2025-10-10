@@ -11,7 +11,6 @@ import { ConfirmUI } from '@/components/layouts/ConfirmUI'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { useWindowWidth } from '@/hooks/useWindowWidth'
-import { AssigneePlaceholder } from '@/icons'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { selectTaskDetails, setShowSidebar, toggleShowConfirmAssignModal } from '@/redux/features/taskDetailsSlice'
 import store from '@/redux/store'
@@ -149,14 +148,14 @@ export const Sidebar = ({
     }
   }
 
-  if (!showSidebar) {
+  if (!showSidebar || fromNotificationCenter) {
     return (
       <Stack
         direction="row"
         columnGap={'8px'}
         rowGap={'8px'}
         position="relative"
-        sx={{ flexWrap: 'wrap', padding: '12px 18px' }}
+        sx={{ flexWrap: 'wrap', padding: '12px 18px', width: fromNotificationCenter ? '654px' : 'auto' }}
       >
         <Box
           sx={{
@@ -269,34 +268,26 @@ export const Sidebar = ({
 
   return (
     <Box
-      {...(!fromNotificationCenter && {
-        sx: {
-          borderLeft: (theme) => `1px solid ${theme.color.borders.border2}`,
-          height: '100vh',
-          display: showSidebar ? 'block' : 'none',
-          width: isMobile && showSidebar ? '100vw' : '25vw',
-        },
-      })}
+      sx={{
+        borderLeft: (theme) => `1px solid ${theme.color.borders.border2}`,
+        height: '100vh',
+        display: showSidebar ? 'block' : 'none',
+        width: isMobile && showSidebar ? '100vw' : '25vw',
+      }}
     >
-      {!fromNotificationCenter && (
-        <StyledBox>
-          <AppMargin size={SizeofAppMargin.HEADER} py="17.5px">
-            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ height: '28px' }}>
-              <Typography variant="sm" lineHeight={'21px'} fontSize={'13px'}>
-                Properties
-              </Typography>
-            </Stack>
-          </AppMargin>
-        </StyledBox>
-      )}
+      <StyledBox>
+        <AppMargin size={SizeofAppMargin.HEADER} py="17.5px">
+          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ height: '28px' }}>
+            <Typography variant="sm" lineHeight={'21px'} fontSize={'13px'}>
+              Properties
+            </Typography>
+          </Stack>
+        </AppMargin>
+      </StyledBox>
 
-      <AppMargin
-        size={SizeofAppMargin.HEADER}
-        py={'4px'}
-        {...(fromNotificationCenter && { sx: { display: 'flex', gap: '10px', width: '654px' } })}
-      >
+      <AppMargin size={SizeofAppMargin.HEADER} py={'4px'}>
         <Stack direction="row" alignItems="center" m="4px 0px" columnGap="10px">
-          <StyledText variant="md" minWidth="80px" display={fromNotificationCenter ? 'none' : 'block'}>
+          <StyledText variant="md" minWidth="80px">
             Status
           </StyledText>
           {workflowStates.length > 0 && statusValue ? ( // show skelete if statusValue and workflow state list is empty
@@ -327,7 +318,7 @@ export const Sidebar = ({
           )}
         </Stack>
         <Stack direction="row" m="8px 0px" alignItems="center" columnGap="10px">
-          <StyledText variant="md" minWidth="80px" display={fromNotificationCenter ? 'none' : 'block'}>
+          <StyledText variant="md" minWidth="80px">
             Assignee
           </StyledText>
           {assignee.length > 0 ? ( // show skeleton if assignee list is empty
@@ -378,7 +369,7 @@ export const Sidebar = ({
           )}
         </Stack>
         <Stack direction="row" m="8px 0px" alignItems="center" columnGap="10px" minWidth="fit-content">
-          <StyledText variant="md" minWidth="80px" display={fromNotificationCenter ? 'none' : 'block'}>
+          <StyledText variant="md" minWidth="80px">
             Due date
           </StyledText>
           <Box
