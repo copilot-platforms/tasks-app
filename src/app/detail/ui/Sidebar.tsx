@@ -11,7 +11,6 @@ import { ConfirmUI } from '@/components/layouts/ConfirmUI'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { useWindowWidth } from '@/hooks/useWindowWidth'
-import { AssigneePlaceholder } from '@/icons'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { selectTaskDetails, setShowSidebar, toggleShowConfirmAssignModal } from '@/redux/features/taskDetailsSlice'
 import store from '@/redux/store'
@@ -24,15 +23,22 @@ import { createDateFromFormattedDateString, formatDate } from '@/utils/dateHelpe
 import { getSelectedUserIds, getSelectorAssignee, getSelectorAssigneeFromTask } from '@/utils/selector'
 import { NoAssignee } from '@/utils/noAssignee'
 import { shouldConfirmBeforeReassignment } from '@/utils/shouldConfirmBeforeReassign'
-import { Box, Skeleton, Stack, styled, Typography } from '@mui/material'
+import { Box, Skeleton, Stack, styled, SxProps, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { z } from 'zod'
 import { ClientDetailAppBridge } from '@/app/detail/ui/ClientDetailAppBridge'
 
-const StyledText = styled(Typography)(({ theme }) => ({
+type StyledTypographyProps = {
+  display?: string
+}
+
+const StyledText = styled(Typography, {
+  shouldForwardProp: (prop: string) => prop !== 'display', // don't pass to DOM
+})<StyledTypographyProps>(({ theme, display }) => ({
   color: theme.color.gray[500],
   width: '80px',
+  display,
 }))
 
 export const Sidebar = ({
@@ -57,7 +63,7 @@ export const Sidebar = ({
   portalUrl?: string
 }) => {
   const { activeTask, workflowStates, assignee, previewMode } = useSelector(selectTaskBoard)
-  const { showSidebar, showConfirmAssignModal } = useSelector(selectTaskDetails)
+  const { showSidebar, showConfirmAssignModal, fromNotificationCenter } = useSelector(selectTaskDetails)
 
   const [isHydrated, setIsHydrated] = useState(false)
 
@@ -142,14 +148,14 @@ export const Sidebar = ({
     }
   }
 
-  if (!showSidebar) {
+  if (!showSidebar || fromNotificationCenter) {
     return (
       <Stack
         direction="row"
         columnGap={'8px'}
         rowGap={'8px'}
         position="relative"
-        sx={{ flexWrap: 'wrap', padding: '12px 18px' }}
+        sx={{ flexWrap: 'wrap', padding: '12px 18px', width: fromNotificationCenter ? '654px' : 'auto' }}
       >
         <Box
           sx={{

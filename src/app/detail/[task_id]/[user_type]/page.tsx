@@ -80,7 +80,7 @@ export default async function TaskDetailPage({
   searchParams,
 }: {
   params: { task_id: string; task_name: string; user_type: UserType }
-  searchParams: { token: string; isRedirect?: string }
+  searchParams: { token: string; isRedirect?: string; fromNotificationCenter?: string }
 }) {
   const { token } = searchParams
   const { task_id, user_type } = params
@@ -115,6 +115,8 @@ export default async function TaskDetailPage({
     href: `/detail/${id}/${user_type}?token=${token}`,
   }))
 
+  const fromNotificationCenter = !!searchParams.fromNotificationCenter
+
   return (
     <DetailStateUpdate
       isRedirect={!!searchParams.isRedirect}
@@ -126,7 +128,7 @@ export default async function TaskDetailPage({
       {token && <OneTaskDataFetcher token={token} task_id={task_id} initialTask={task} />}
       <RealTime tokenPayload={tokenPayload}>
         <EscapeHandler />
-        <ResponsiveStack>
+        <ResponsiveStack fromNotificationCenter={fromNotificationCenter}>
           <ToggleController>
             {isPreviewMode ? (
               <StyledBox>
@@ -203,7 +205,18 @@ export default async function TaskDetailPage({
               </TaskDetailsContainer>
             </CustomScrollBar>
           </ToggleController>
-          <Box>
+          <Box
+            {...(fromNotificationCenter
+              ? {
+                  sx: {
+                    display: 'flex',
+                    overflow: 'hidden',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  },
+                }
+              : {})}
+          >
             <AssigneeCacheGetter lookupKey={getAssigneeCacheLookupKey(user_type, tokenPayload)} />
             <AssigneeFetcher
               token={token}
