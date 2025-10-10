@@ -31,9 +31,6 @@ const useScrollToElement = (paramName: string) => {
       setTimeout(() => {
         if (commentCard) {
           commentCard.classList.add('highlight-fade')
-          setTimeout(() => {
-            commentCard.classList.remove('highlight-fade')
-          }, 500)
         }
       }, 600)
       observer.disconnect()
