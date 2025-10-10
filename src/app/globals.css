@@ -89,14 +89,17 @@ a {
 }
 
 .highlight-fade {
-  animation: fadeHighlight 0.5s forwards;
+  animation: fadeHighlight 1s forwards;
 }
 
 @keyframes fadeHighlight {
-  from {
+  0% {
+    background-color: transparent;
+  }
+  50% {
     background-color: rgba(252, 243, 200, 0.5);
   }
-  to {
+  100% {
     background-color: transparent;
   }
 }
