@@ -40,6 +40,7 @@ export const Comments = ({ comment, createComment, deleteComment, task_id, stabl
         />
 
         <CommentCard
+          data-comment-card="true"
           comment={comment}
           createComment={createComment}
           deleteComment={deleteComment}

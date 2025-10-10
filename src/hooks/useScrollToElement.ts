@@ -18,15 +18,25 @@ const useScrollToElement = (paramName: string) => {
 
     const scrollToElement = () => {
       const targetElement = document.getElementById(elementId)
-      if (targetElement) {
-        setTimeout(() => {
-          targetElement.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center',
-          })
-        }, 100)
-        observer.disconnect()
-      }
+      if (!targetElement) return
+      const commentCard = targetElement.querySelector('[data-comment-card]') as HTMLElement | null
+
+      setTimeout(() => {
+        targetElement.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+        })
+      }, 100)
+
+      setTimeout(() => {
+        if (commentCard) {
+          commentCard.classList.add('highlight-fade')
+          setTimeout(() => {
+            commentCard.classList.remove('highlight-fade')
+          }, 500)
+        }
+      }, 600)
+      observer.disconnect()
     }
 
     scrollToElement()
