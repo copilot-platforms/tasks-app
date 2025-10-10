@@ -5,7 +5,9 @@ enum ViewMode {
 
 model ViewSetting {
   id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId         String    @db.Uuid
+  internalUserId String?   @db.Uuid
+  clientId       String?   @db.Uuid
+  companyId      String?   @db.Uuid
   viewMode       ViewMode  @default(board)
   workspaceId    String    @db.VarChar(32)
   createdAt      DateTime  @default(now())
@@ -13,9 +15,11 @@ model ViewSetting {
   filterOptions  Json      @db.JsonB
   showUnarchived Boolean   @default(true)
   showArchived   Boolean   @default(false)
-  showSubtasks   Boolean  @default(true)
+  showSubtasks   Boolean   @default(true)
 
-  @@unique([userId, workspaceId], name: "UQ_ViewSettings_userId_workspaceId")
-  @@index([userId, workspaceId], name: "IX_ViewSettings_userId_workspaceId")
+  @@unique([internalUserId, clientId, companyId, workspaceId], name: "UQ_ViewSettings_userIds_workspaceId")
+  @@index([internalUserId, workspaceId], name: "IX_ViewSettings_iuId_workspaceId")
+  @@index([clientId, companyId, workspaceId], name: "IX_ViewSettings_cuId_companyId_workspaceId")
+  @@index([internalUserId, clientId, companyId, workspaceId], name: "IX_ViewSettings_userIds_workspaceId")
   @@map("ViewSettings")
 }

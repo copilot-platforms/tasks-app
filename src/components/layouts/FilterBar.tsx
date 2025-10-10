@@ -17,10 +17,14 @@ import {
   setViewSettingsTemp,
 } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
-import { IUTokenSchema } from '@/types/common'
+import { ClientTokenSchema, IUTokenSchema } from '@/types/common'
 import { CreateViewSettingsDTO, DisplayOptions } from '@/types/dto/viewSettings.dto'
 import { FilterOptions, FilterOptionsKeywords, IAssigneeCombined, IFilterOptions, UserIds } from '@/types/interfaces'
-import { filterTypeToButtonIndexMap } from '@/types/objectMaps'
+import {
+  clientFilterTypeToButtonIndexMap,
+  filterTypeToButtonIndexMap,
+  previewFilterTypeToButtonIndexMap,
+} from '@/types/objectMaps'
 import { checkAssignee, emptyAssignee, getAssigneeId, UserIdsType } from '@/utils/assignee'
 import { getWorkspaceLabels } from '@/utils/getWorkspaceLabels'
 import { NoAssignee } from '@/utils/noAssignee'
@@ -32,9 +36,10 @@ import { useSelector } from 'react-redux'
 interface FilterBarProps {
   mode: UserRole
   updateViewModeSetting: (payload: CreateViewSettingsDTO) => void
+  isPreviewMode: boolean
 }
 
-export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
+export const FilterBar = ({ mode, updateViewModeSetting, isPreviewMode }: FilterBarProps) => {
   const { view, filterOptions, assignee, viewSettingsTemp, showArchived, showUnarchived, showSubtasks, previewMode } =
     useSelector(selectTaskBoard)
 
@@ -75,9 +80,11 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
     })
   }
 
-  const ButtonIndex = filterTypeToButtonIndexMap[viewModeFilterOptions.type] ?? 0
-
-  const [noAssigneOptionFlag, setNoAssigneeOptionFlag] = useState<boolean>(true)
+  const ButtonIndex = isPreviewMode
+    ? (previewFilterTypeToButtonIndexMap[viewModeFilterOptions.type] ?? 0)
+    : mode === UserRole.IU
+      ? (filterTypeToButtonIndexMap[viewModeFilterOptions.type] ?? 0)
+      : (clientFilterTypeToButtonIndexMap[viewModeFilterOptions.type] ?? 0)
 
   const { tokenPayload, workspace } = useSelector(selectAuthDetails)
 
@@ -109,48 +116,73 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
     store.dispatch(setViewSettingsTemp(newViewSettings))
   }
 
-  const filterButtons = [
+  // handles click on filter by type buttons
+  const handleFilterTypeClick = ({ filterTypeValue }: { filterTypeValue: string | null | UserIdsType }) => {
+    let filterValue = filterTypeValue
+    handleFilterOptionsChange(FilterOptions.TYPE, filterValue)
+
+    // empty assignee filter option
+    setAssigneeValue(undefined)
+    handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
+  }
+
+  const IuFilterButtons = [
     {
       name: 'My tasks',
-      onClick: () => {
-        const selfAssigneeId = IUTokenSchema.parse(tokenPayload).internalUserId
-        handleFilterOptionsChange(FilterOptions.TYPE, selfAssigneeId)
-        setAssigneeValue(undefined)
-        handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
-      },
+      onClick: () => handleFilterTypeClick({ filterTypeValue: IUTokenSchema.parse(tokenPayload).internalUserId }),
       id: 'MyTasks',
     },
     {
-      name: "My team's tasks",
-      onClick: () => {
-        handleFilterOptionsChange(FilterOptions.TYPE, FilterOptionsKeywords.TEAM)
-        setAssigneeValue(undefined)
-        setNoAssigneeOptionFlag(false)
-        handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
-      },
+      name: 'Team tasks',
+      onClick: () => handleFilterTypeClick({ filterTypeValue: FilterOptionsKeywords.TEAM }),
       id: 'TeamTasks',
     },
     {
       name: `${getWorkspaceLabels(workspace, true).individualTerm} tasks`,
-      onClick: () => {
-        handleFilterOptionsChange(FilterOptions.TYPE, FilterOptionsKeywords.CLIENTS)
-        setAssigneeValue(undefined)
-        setNoAssigneeOptionFlag(false)
-        handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
-      },
+      onClick: () => handleFilterTypeClick({ filterTypeValue: FilterOptionsKeywords.CLIENTS }),
       id: 'ClientTasks',
     },
     {
       name: 'All tasks',
-      onClick: () => {
-        handleFilterOptionsChange(FilterOptions.TYPE, '')
-        setAssigneeValue(undefined)
-        setNoAssigneeOptionFlag(true)
-        handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
-      },
+      onClick: () => handleFilterTypeClick({ filterTypeValue: '' }),
       id: 'AllTasks',
     },
   ]
+
+  const CuFilterButtons = [
+    {
+      name: 'All tasks',
+      onClick: () => handleFilterTypeClick({ filterTypeValue: FilterOptionsKeywords.CLIENT_WITH_VIEWERS }),
+      id: 'AllTasks',
+    },
+    {
+      name: 'My tasks',
+      onClick: () => handleFilterTypeClick({ filterTypeValue: FilterOptionsKeywords.CLIENTS }),
+      id: 'MyTasks',
+    },
+  ]
+
+  const previewFilterButtons = [
+    {
+      name: 'My tasks',
+      onClick: () => {
+        handleFilterTypeClick({ filterTypeValue: IUTokenSchema.parse(tokenPayload).internalUserId })
+      },
+      id: 'MyTasks',
+    },
+    {
+      name: 'Team tasks',
+      onClick: () => handleFilterTypeClick({ filterTypeValue: FilterOptionsKeywords.TEAM }),
+      id: 'TeamTasks',
+    },
+    {
+      name: `${getWorkspaceLabels(workspace, true).individualTerm} tasks`,
+      onClick: () => handleFilterTypeClick({ filterTypeValue: FilterOptionsKeywords.CLIENTS }),
+      id: 'ClientTasks',
+    },
+  ]
+
+  const filterButtons = isPreviewMode ? previewFilterButtons : mode === UserRole.IU ? IuFilterButtons : CuFilterButtons
 
   return (
     <Box
@@ -171,9 +203,9 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
       >
         <Stack direction={'row'} justifyContent={'space-between'} sx={{ maxHeight: '32px' }}>
           <Stack direction={'row'} columnGap={3}>
+            <FilterButtonGroup filterButtons={filterButtons} activeButtonIndex={ButtonIndex} />
             {mode === UserRole.IU && (
               <>
-                <FilterButtonGroup filterButtons={filterButtons} activeButtonIndex={ButtonIndex} />
                 {filterOptions[FilterOptions.TYPE] !== tokenPayload?.internalUserId && (
                   <Box
                     sx={{
@@ -282,7 +314,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
       </Box>
       <Box sx={{ padding: '12px 20px', display: { sm: 'block', sd: 'none' } }}>
         <Stack direction="column" rowGap={'8px'}>
-          {mode === UserRole.IU && <FilterButtonGroup filterButtons={filterButtons} activeButtonIndex={ButtonIndex} />}
+          <FilterButtonGroup filterButtons={filterButtons} activeButtonIndex={ButtonIndex} />
 
           <Stack
             direction="row"

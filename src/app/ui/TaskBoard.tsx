@@ -85,7 +85,7 @@ export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
     showUnarchived: viewSettingsTemp ? viewSettingsTemp.showUnarchived : showUnarchived,
   }
 
-  useFilter(viewSettingsTemp ? viewSettingsTemp.filterOptions : filterOptions)
+  useFilter(viewSettingsTemp ? viewSettingsTemp.filterOptions : filterOptions, !!previewMode)
   const userHasNoFilter =
     filterOptions &&
     !filterOptions.type &&
@@ -146,6 +146,7 @@ export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
             console.error('view settings update error', error)
           }
         }}
+        isPreviewMode={!!previewMode}
       />
 
       {viewBoardSettings === View.BOARD_VIEW && (

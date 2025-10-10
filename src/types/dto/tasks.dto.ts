@@ -4,6 +4,15 @@ import { WorkflowStateResponseSchema } from './workflowStates.dto'
 import { DateStringSchema } from '@/types/date'
 import { ClientResponseSchema, CompanyResponseSchema, InternalUsersSchema } from '../common'
 
+export const ViewerSchema = z.object({
+  clientId: z.string().uuid().optional(),
+  companyId: z.string().uuid(),
+})
+export type ViewerType = z.infer<typeof ViewerSchema>
+
+export const ViewersSchema = z.array(ViewerSchema).max(1).optional()
+export type Viewers = z.infer<typeof ViewersSchema>
+
 export const validateUserIds = (
   data: { internalUserId?: string | null; clientId?: string | null; companyId?: string | null },
   ctx: z.RefinementCtx,
@@ -42,6 +51,7 @@ export const CreateTaskRequestSchema = z
     internalUserId: z.string().uuid().nullish().default(null),
     clientId: z.string().uuid().nullish().default(null),
     companyId: z.string().uuid().nullish().default(null),
+    viewers: ViewersSchema, //right now, we only need the feature to have max of 1 viewer per task
   })
   .superRefine(validateUserIds)
 
@@ -57,6 +67,7 @@ export const UpdateTaskRequestSchema = z
     internalUserId: z.string().uuid().nullish(),
     clientId: z.string().uuid().nullish(),
     companyId: z.string().uuid().nullish(),
+    viewers: ViewersSchema, //right now, we only need the feature to have max of 1 viewer per task
   })
   .superRefine(validateUserIds)
 
@@ -86,6 +97,7 @@ export const TaskResponseSchema = z.object({
   internalUserId: z.string().uuid().nullish(),
   clientId: z.string().uuid().nullish(),
   companyId: z.string().uuid().nullish(),
+  viewers: ViewersSchema,
 })
 
 export type TaskResponse = z.infer<typeof TaskResponseSchema>
@@ -97,7 +109,7 @@ export const SubTaskStatusSchema = z.object({
 
 export type SubTaskStatusResponse = z.infer<typeof SubTaskStatusSchema>
 
-export type AncestorTaskResponse = Pick<Task, 'id' | 'title' | 'label'> & {
+export type AncestorTaskResponse = Pick<Task, 'id' | 'title' | 'label' | 'viewers'> & {
   internalUserId: string | null
   clientId: string | null
   companyId: string | null

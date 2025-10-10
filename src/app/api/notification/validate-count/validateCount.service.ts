@@ -1,6 +1,7 @@
 import { MAX_NOTIFICATIONS_COUNT } from '@/constants/notifications'
 import { DuplicateNotificationsQuerySchema } from '@/types/client-notifications'
 import { getArrayDifference } from '@/utils/array'
+import { getTaskViewers } from '@/utils/assignee'
 import { copilotBottleneck } from '@/utils/bottleneck'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import User from '@api/core/models/User.model'
@@ -41,7 +42,6 @@ export class ValidateCountService extends NotificationService {
   private async validateWithTasks(clientId: string, companyId: string, copilotNotificationIds: string[]): Promise<void> {
     const tasksService = new TasksService(this.user)
     const tasks = await tasksService.getAllTasks({
-      companyId,
       showArchived: false,
       showUnarchived: true,
       showIncompleteOnly: true,
@@ -106,7 +106,7 @@ export class ValidateCountService extends NotificationService {
     // Remove those duplicate notifications from db
     await this.db.$queryRaw`
       delete from "ClientNotifications"
-      where id::text in (${duplicateNotificationIds.join(', ')})
+      where "id" = ANY(${duplicateNotificationIds.map(({ id }) => id)}::uuid[])
     `
   }
 
@@ -121,7 +121,7 @@ export class ValidateCountService extends NotificationService {
       console.info('ValidateCount :: Found orphanNotifications', orphanNotifications.length)
       await this.db.$queryRaw`
         delete from "ClientNotifications"
-        where "notificationId"::text in (${orphanNotifications.join(', ')})
+          where "notificationId" = ANY(${orphanNotifications}::uuid[])
       `
     }
   }
@@ -156,6 +156,7 @@ export class ValidateCountService extends NotificationService {
         // This is a duplicate notification, SKIP
         continue
       }
+      const taskViewers = getTaskViewers(task)
       createNotificationPromises.push(
         copilotBottleneck.schedule(() => {
           console.info(`ValidateCount :: Creating missing notification for task ${task.id} - ${task.title}`)
@@ -163,7 +164,7 @@ export class ValidateCountService extends NotificationService {
           return this.copilot.createNotification({
             senderId: task.createdById,
             recipientClientId: clientId,
-            recipientCompanyId: task.companyId || undefined,
+            recipientCompanyId: task.companyId || taskViewers?.companyId,
             deliveryTargets: {
               inProduct: {
                 // doesn't matter what you add here since notification details cannot be viewed

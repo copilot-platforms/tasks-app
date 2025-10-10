@@ -1,6 +1,7 @@
 import { RootState } from '@/redux/store'
 import { DateString } from '@/types/date'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
+import { Viewers } from '@/types/dto/tasks.dto'
 import { CreateTaskErrors, UserIds } from '@/types/interfaces'
 import { UserIdsType } from '@/utils/assignee'
 import { createSlice } from '@reduxjs/toolkit'
@@ -22,6 +23,7 @@ interface IInitialState {
   appliedDescription: string | null
   templateId: string | null
   userIds: UserIdsType
+  viewers: Viewers
   parentId: string | null
 }
 
@@ -44,6 +46,7 @@ const initialState: IInitialState = {
     [UserIds.CLIENT_ID]: null,
     [UserIds.COMPANY_ID]: null,
   },
+  viewers: [],
   parentId: null,
 }
 
@@ -103,6 +106,7 @@ const createTaskSlice = createSlice({
           [UserIds.COMPANY_ID]: null,
         }
       }
+      state.viewers = []
       state.attachments = []
       state.dueDate = null
       state.errors = {

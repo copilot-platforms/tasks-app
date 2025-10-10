@@ -1,9 +1,16 @@
 import { RootState } from '@/redux/store'
-import { UrlActionParamsType, PreviewMode } from '@/types/common'
+import { UrlActionParamsType, PreviewMode, PreviewClientCompanyType } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { CreateViewSettingsDTO, FilterOptionsType } from '@/types/dto/viewSettings.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { FilterByOptions, FilterOptions, IAssigneeCombined, IFilterOptions, UserIds } from '@/types/interfaces'
+import {
+  FilterByOptions,
+  FilterOptions,
+  FilterOptionsKeywords,
+  IAssigneeCombined,
+  IFilterOptions,
+  UserIds,
+} from '@/types/interfaces'
 import { emptyAssignee, UserIdsType } from '@/utils/assignee'
 import { ViewMode } from '@prisma/client'
 import { createSlice } from '@reduxjs/toolkit'
@@ -27,7 +34,9 @@ interface IInitialState {
   accesibleTaskIds: string[]
   accessibleTasks: TaskResponse[]
   confirmAssignModalId: string | undefined
+  confirmViewershipModalId: string | undefined
   assigneeCache: Record<string, IAssigneeCombined>
+  previewClientCompany: PreviewClientCompanyType
   urlActionParams: UrlActionParamsType
 }
 
@@ -52,9 +61,14 @@ const initialState: IInitialState = {
   isTasksLoading: true,
   activeTask: undefined,
   previewMode: null,
+  previewClientCompany: {
+    clientId: null,
+    companyId: null,
+  },
   accesibleTaskIds: [],
   accessibleTasks: [],
   confirmAssignModalId: '',
+  confirmViewershipModalId: '',
   assigneeCache: {},
   urlActionParams: {
     action: '',
@@ -159,6 +173,9 @@ const taskBoardSlice = createSlice({
     setPreviewMode: (state, action: { payload: PreviewMode }) => {
       state.previewMode = action.payload
     },
+    setPreviewClientCompany: (state, action: { payload: PreviewClientCompanyType }) => {
+      state.previewClientCompany = action.payload
+    },
     /**
      * @deprecated - Use `accessibleTasks` state instead
      */
@@ -170,6 +187,9 @@ const taskBoardSlice = createSlice({
     },
     setConfirmAssigneeModalId: (state, action: { payload: string | undefined }) => {
       state.confirmAssignModalId = action.payload
+    },
+    setConfirmViewershipModalId: (state, action: { payload: string | undefined }) => {
+      state.confirmViewershipModalId = action.payload
     },
     setAssigneeCache: (state, action: { payload: { key: string; value: IAssigneeCombined } }) => {
       state.assigneeCache[action.payload.key] = action.payload.value
@@ -200,7 +220,9 @@ export const {
   setAccesibleTaskIds,
   setAccessibleTasks,
   setConfirmAssigneeModalId,
+  setConfirmViewershipModalId,
   setAssigneeCache,
+  setPreviewClientCompany,
   SetUrlActionParams,
 } = taskBoardSlice.actions
 
