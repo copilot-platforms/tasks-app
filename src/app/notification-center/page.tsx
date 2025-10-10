@@ -25,7 +25,7 @@ export default async function NotificationCenter({ searchParams }: { searchParam
 
   const params = NotificationInProductCtaParamsSchema.parse(notificationDetail.deliveryTargets?.inProduct?.ctaParams)
 
-  redirectIfTaskCta(params, UserType.INTERNAL_USER, true)
+  redirectIfTaskCta({ ...params, ...searchParams }, UserType.INTERNAL_USER, true)
 
   // Silent Error is shown if redirect fails. Only possible reason for redirect to not work can be of the taskId not found
   return <SilentError message="TaskId is not found" />
