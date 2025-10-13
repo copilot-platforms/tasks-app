@@ -297,3 +297,12 @@ export const ViewSettingUserIds = z
     }
   })
 export type ViewSettingUserIdsType = z.infer<typeof ViewSettingUserIds>
+
+/**
+ * FilterType enum for FilterBtn with value being the full form of that particular type
+ */
+export enum FilterType {
+  Assignee = 'Assignee',
+  Visibility = 'Client Visibility',
+  Creator = 'Creator',
+}
