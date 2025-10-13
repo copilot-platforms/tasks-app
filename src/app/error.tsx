@@ -15,11 +15,11 @@ const ClientErrorBoundary = ({ error, reset }: { error: Error & { digest?: strin
         height: '100vh',
         marginTop: '20vh',
         justifyContent: 'center',
-        fontSize: 'clamp(20px, 4vw, 42px)',
+        fontSize: '20px',
         fontFamily: 'monospace',
       }}
     >
-      <Stack direction="column" rowGap={3}>
+      <Stack direction="column" rowGap={6}>
         {errorMessage}
         <Box
           sx={{
