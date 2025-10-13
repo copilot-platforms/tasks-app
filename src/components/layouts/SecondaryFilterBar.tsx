@@ -43,6 +43,10 @@ export const SecondaryFilterBar = ({ mode }: SecondaryFilterBarProps) => {
             </Typography>
           </Stack>
         }
+        sx={(theme) => ({
+          background: theme.color.gray[100],
+          borderColor: theme.color.gray[150],
+        })}
       />
     )
   }
