@@ -12,6 +12,7 @@ import { TaskRow } from '@/components/cards/TaskRow'
 import DashboardEmptyState from '@/components/layouts/EmptyState/DashboardEmptyState'
 import { FilterBar } from '@/components/layouts/FilterBar'
 import { Header } from '@/components/layouts/Header'
+import { SecondaryFilterBar } from '@/components/layouts/SecondaryFilterBar'
 import { DragDropHandler } from '@/hoc/DragDropHandler'
 import { useFilter } from '@/hooks/useFilter'
 import { selectTaskBoard, updateWorkflowStateIdByTaskId } from '@/redux/features/taskBoardSlice'
@@ -33,6 +34,7 @@ interface TaskBoardProps {
   workspace?: WorkspaceResponse
   token: string
 }
+
 export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
   const {
     workflowStates,
@@ -135,20 +137,17 @@ export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
   return (
     <>
       <TaskDataFetcher token={token} />
-      {mode == UserRole.IU && <TaskBoardAppBridge token={token} role={UserRole.IU} portalUrl={workspace?.portalUrl} />}
-      {showHeader && <Header showCreateTaskButton={mode === UserRole.IU || !!previewMode} showMenuBox={!previewMode} />}
-      <FilterBar
-        mode={mode}
-        updateViewModeSetting={async (payload: CreateViewSettingsDTO) => {
-          try {
-            await updateViewModeSettings(z.string().parse(token), payload)
-          } catch (error) {
-            console.error('view settings update error', error)
-          }
-        }}
-        isPreviewMode={!!previewMode}
-      />
 
+      {mode == UserRole.IU && <TaskBoardAppBridge token={token} role={UserRole.IU} portalUrl={workspace?.portalUrl} />}
+
+      {/* Header (only show in preview mode since app bridge isn't supported yet) */}
+      {showHeader && <Header showCreateTaskButton={mode === UserRole.IU || !!previewMode} showMenuBox={!previewMode} />}
+
+      {/* Filterbars */}
+      <FilterBar mode={mode} />
+      <SecondaryFilterBar mode={mode} />
+
+      {/* Task board according to selected view */}
       {viewBoardSettings === View.BOARD_VIEW && (
         <Box sx={{ padding: '12px 12px' }}>
           <Stack
@@ -229,6 +228,8 @@ export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
           ))}
         </Stack>
       )}
+
+      {/* Drag layer layout */}
       <CustomDragLayer>
         <CardDragLayer mode={mode} />
       </CustomDragLayer>
