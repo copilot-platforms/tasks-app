@@ -17,6 +17,7 @@ const ClientErrorBoundary = ({ error, reset }: { error: Error & { digest?: strin
         justifyContent: 'center',
         fontSize: '20px',
         fontFamily: 'monospace',
+        padding: '48px',
       }}
     >
       <Stack direction="column" rowGap={6}>
