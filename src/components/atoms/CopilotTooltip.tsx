@@ -1,4 +1,4 @@
-import { Box, useMediaQuery } from '@mui/material'
+import { useMediaQuery } from '@mui/material'
 import { Tooltip } from 'copilot-design-system'
 import React, { useRef, useState } from 'react'
 
