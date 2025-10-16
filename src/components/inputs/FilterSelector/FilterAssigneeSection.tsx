@@ -3,10 +3,11 @@ import { useFilterBar } from '@/hooks/useFilterBar'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { FilterType } from '@/types/common'
-import { FilterOptions, InputValue } from '@/types/interfaces'
+import { FilterOptions, FilterOptionsKeywords, InputValue } from '@/types/interfaces'
 import { parseAssigneeToSelectorOption } from '@/utils/addTypeToAssignee'
 import { getWorkspaceLabels } from '@/utils/getWorkspaceLabels'
 import { getSelectedUserIds } from '@/utils/selector'
+import { Visibility } from '@mui/icons-material'
 import { Box } from '@mui/material'
 import { Dispatch, SetStateAction } from 'react'
 import { useSelector } from 'react-redux'
@@ -23,11 +24,19 @@ export const filterOptionsMap = {
 }
 
 export const FilterAssigneeSection = ({ filterMode, setAnchorEl }: FilterAssigneeSectionProps) => {
-  const { assignee: assignees } = useSelector(selectTaskBoard)
+  const {
+    assignee: assignees,
+    filterOptions: { type },
+  } = useSelector(selectTaskBoard)
   const { handleFilterOptionsChange } = useFilterBar()
   const { workspace } = useSelector(selectAuthDetails)
 
   const selectorAssignees = parseAssigneeToSelectorOption(assignees)
+
+  const hideClientsAndCompanies =
+    filterMode === FilterType.Creator || (type === FilterOptionsKeywords.TEAM && filterMode === FilterType.Assignee)
+  const hideIus =
+    filterMode === FilterType.Visibility || (type === FilterOptionsKeywords.CLIENTS && filterMode === FilterType.Assignee)
 
   const handleChange = (inputValue: InputValue[]) => {
     const newUserIds = getSelectedUserIds(inputValue)
@@ -43,16 +52,10 @@ export const FilterAssigneeSection = ({ filterMode, setAnchorEl }: FilterAssigne
         autoFocus
         placeholder={'Search'}
         // initialValue={initialAssignee}
-        clientUsers={
-          filterMode === FilterType.Assignee || filterMode === FilterType.Visibility ? selectorAssignees.clients : []
-        }
         name={'Search'}
-        internalUsers={
-          filterMode === FilterType.Assignee || filterMode === FilterType.Creator ? selectorAssignees.internalUsers : []
-        }
-        companies={
-          filterMode === FilterType.Assignee || filterMode === FilterType.Visibility ? selectorAssignees.companies : []
-        }
+        internalUsers={hideIus ? [] : selectorAssignees.internalUsers}
+        clientUsers={hideClientsAndCompanies ? [] : selectorAssignees.clients}
+        companies={hideClientsAndCompanies ? [] : selectorAssignees.companies}
         onChange={(inputValue: InputValue[]) => {
           handleChange(inputValue)
         }}
