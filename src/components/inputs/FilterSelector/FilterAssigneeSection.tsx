@@ -47,10 +47,16 @@ export const FilterAssigneeSection = ({ filterMode, setAnchorEl }: FilterAssigne
         autoFocus
         placeholder={'Search'}
         // initialValue={initialAssignee}
-        clientUsers={selectorAssignees.clients}
+        clientUsers={
+          filterMode === FilterType.Assignee || filterMode === FilterType.Visibility ? selectorAssignees.clients : []
+        }
         name={'Search'}
-        internalUsers={selectorAssignees.internalUsers}
-        companies={selectorAssignees.companies}
+        internalUsers={
+          filterMode === FilterType.Assignee || filterMode === FilterType.Creator ? selectorAssignees.internalUsers : []
+        }
+        companies={
+          filterMode === FilterType.Assignee || filterMode === FilterType.Visibility ? selectorAssignees.companies : []
+        }
         onChange={(inputValue: InputValue[]) => {
           handleChange(inputValue)
         }}
