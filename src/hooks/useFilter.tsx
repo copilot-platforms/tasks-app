@@ -63,7 +63,7 @@ function filterByClientVisibility(filteredTasks: TaskResponse[], filterValue: Us
       (task) => task.viewers?.[0]?.clientId === clientId && task.viewers?.[0]?.companyId === companyId,
     )
   } else if (companyId && !clientId) {
-    filteredTasks = filteredTasks.filter((task) => task.viewers?.[0].companyId === companyId && !task.viewers?.[0].clientId)
+    filteredTasks = filteredTasks.filter((task) => task.viewers?.[0]?.companyId === companyId && !task.viewers?.[0].clientId)
   }
 
   return filteredTasks

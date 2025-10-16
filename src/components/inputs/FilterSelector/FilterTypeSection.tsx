@@ -1,5 +1,10 @@
+import { CopilotTooltip } from '@/components/atoms/CopilotTooltip'
+import { InfoIcon } from '@/icons'
+import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { FilterType } from '@/types/common'
-import { Stack, Typography } from '@mui/material'
+import { FilterOptionsKeywords } from '@/types/interfaces'
+import { Box, Stack, Typography } from '@mui/material'
+import { useSelector } from 'react-redux'
 
 const FILTER_MODES = [FilterType.Assignee, FilterType.Visibility, FilterType.Creator]
 
@@ -8,6 +13,16 @@ interface FilterTypeSectionProps {
 }
 
 export const FilterTypeSection = ({ setFilterMode }: FilterTypeSectionProps) => {
+  const {
+    filterOptions: { type },
+  } = useSelector(selectTaskBoard)
+
+  const disabled = type === FilterOptionsKeywords.CLIENTS ? [FilterType.Visibility] : []
+  const removed = type.length > 20 ? [FilterType.Assignee] : []
+
+  // Only Client visibility can be disabled at the moment
+  const disabledText = 'Client visibility is only available for tasks assigned to internal users.'
+
   return (
     <Stack
       direction="column"
@@ -18,31 +33,46 @@ export const FilterTypeSection = ({ setFilterMode }: FilterTypeSectionProps) => 
       }}
       rowGap={'2px'}
     >
-      {FILTER_MODES.map((el, key) => {
+      {FILTER_MODES.map((filterMode) => {
+        const isDisabled = disabled.includes(filterMode)
+        const isRemoved = removed.includes(filterMode)
+        if (isRemoved) return null
+
         return (
           <Stack
             direction="row"
-            key={key}
+            key={filterMode}
             columnGap="12px"
-            sx={{
+            sx={(theme) => ({
               alignItems: 'center',
-              justifyContent: 'flex-start',
+              justifyContent: 'space-between',
               padding: '4px  16px 4px 12px',
               lineHeight: '22px',
               fontSize: '14px',
               width: '180px',
+              color: isDisabled ? theme.color.text.textDisabled : theme.color.text.textPrimary,
+              background: isDisabled ? theme.color.gray[100] : 'white',
               ':hover': {
                 cursor: 'pointer',
-                background: (theme) => theme.color.gray[100],
+                background: theme.color.gray[100],
               },
-            }}
+            })}
             onClick={() => {
-              setFilterMode(el)
+              !isDisabled && setFilterMode(filterMode)
             }}
           >
-            <Typography variant="bodySm" fontWeight={400} lineHeight={'21px'}>
-              {el}
-            </Typography>
+            <Box>
+              <Typography variant="bodySm" fontWeight={400} lineHeight={'21px'}>
+                {filterMode}
+              </Typography>
+            </Box>
+            {isDisabled && (
+              <Box>
+                <CopilotTooltip content={disabledText}>
+                  <InfoIcon />
+                </CopilotTooltip>
+              </Box>
+            )}
           </Stack>
         )
       })}
