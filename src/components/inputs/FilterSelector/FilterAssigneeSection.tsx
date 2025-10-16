@@ -47,11 +47,9 @@ export const FilterAssigneeSection = ({ filterMode, setAnchorEl }: FilterAssigne
   return (
     <Box>
       <StyledUserCompanySelector
-        openMenuOnFocus
+        menuShouldScrollIntoView={false}
         menuIsOpen={true}
-        autoFocus
         placeholder={'Search'}
-        // initialValue={initialAssignee}
         name={'Search'}
         internalUsers={hideIus ? [] : selectorAssignees.internalUsers}
         clientUsers={hideClientsAndCompanies ? [] : selectorAssignees.clients}
