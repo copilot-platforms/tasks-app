@@ -1,3 +1,4 @@
+import { applySx } from '@/utils/mui'
 import { Button, SxProps, Theme } from '@mui/material'
 import { Property } from 'csstype'
 import { ReactNode } from 'react'
@@ -69,7 +70,7 @@ export const SelectorButton = ({
           height: height ?? '32px',
           minWidth: 'auto',
         }),
-        ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
+        ...applySx(sx),
       ]}
       onClick={handleClick}
       disableRipple

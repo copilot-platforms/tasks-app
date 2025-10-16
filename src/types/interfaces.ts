@@ -53,6 +53,8 @@ export enum FileTypes {
 
 export enum FilterOptions {
   ASSIGNEE = 'assignee',
+  VISIBILITY = 'visibility',
+  CREATOR = 'creator',
   KEYWORD = 'keyword',
   TYPE = 'type',
 }
@@ -82,7 +84,13 @@ export enum UserIds {
 }
 
 export type IFilterOptions = {
-  [key in FilterOptions]: key extends FilterOptions.ASSIGNEE ? UserIdsType : string
+  [key in FilterOptions]: key extends FilterOptions.ASSIGNEE
+    ? UserIdsType
+    : key extends FilterOptions.VISIBILITY
+      ? UserIdsType
+      : key extends FilterOptions.CREATOR
+        ? UserIdsType
+        : string
 }
 
 export interface IAssignee {

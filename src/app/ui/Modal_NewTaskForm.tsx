@@ -7,18 +7,18 @@ import {
   setActiveWorkflowStateId,
   setShowModal,
 } from '@/redux/features/createTaskSlice'
-import { selectTaskBoard, SetUrlActionParams } from '@/redux/features/taskBoardSlice'
+import { selectTaskBoard, setUrlActionParams } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
+import { HomeParamActions } from '@/types/constants'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { CreateTaskRequestSchema } from '@/types/dto/tasks.dto'
 import { FilterOptions } from '@/types/interfaces'
+import { checkEmptyAssignee } from '@/utils/assignee'
 import dayjs from 'dayjs'
+import { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { handleCreate } from '../(home)/actions'
 import { NewTaskForm } from './NewTaskForm'
-import { checkEmptyAssignee } from '@/utils/assignee'
-import { useEffect } from 'react'
-import { HomeParamActions } from '@/types/constants'
 
 export const ModalNewTaskForm = ({
   handleCreateMultipleAttachments,
@@ -36,7 +36,7 @@ export const ModalNewTaskForm = ({
     store.dispatch(setShowModal())
     store.dispatch(clearCreateTaskFields({ isFilterOn: !checkEmptyAssignee(filterOptions[FilterOptions.ASSIGNEE]) }))
     store.dispatch(setActiveWorkflowStateId(null))
-    store.dispatch(SetUrlActionParams({ oldPf: urlActionParams.pf }))
+    store.dispatch(setUrlActionParams({ oldPf: urlActionParams.pf }))
     // NOTE: Reimplement in M3
     // await bulkRemoveAttachments(attachments)
   }
