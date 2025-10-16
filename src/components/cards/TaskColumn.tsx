@@ -16,7 +16,7 @@ const TaskColumnHeader = styled(Stack)({
 
 const TaskColumnContainer = styled(Stack)<{ showHeader?: boolean }>(({ showHeader }) => ({
   width: '348px',
-  height: `calc(100vh - ${showHeader ? '195px' : '145px'})`,
+  height: `calc(100vh - ${showHeader ? '240px' : '190px'})`,
   marginTop: '6px',
   justifyContent: 'space-between',
   alignItems: 'center',

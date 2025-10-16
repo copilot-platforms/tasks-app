@@ -9,6 +9,7 @@ export const PrimaryBtn = ({
   buttonBackground,
   disabled,
   padding,
+  variant = 'default',
 }: {
   startIcon?: ReactNode
   buttonText: string
@@ -16,6 +17,7 @@ export const PrimaryBtn = ({
   buttonBackground?: string
   disabled?: boolean
   padding?: string
+  variant?: 'default' | 'danger'
 }) => {
   return (
     <Button
@@ -24,9 +26,12 @@ export const PrimaryBtn = ({
       disabled={disabled}
       sx={(theme) => ({
         textTransform: 'none',
-        bgcolor: buttonBackground || theme.color.gray[600],
+        bgcolor: buttonBackground || (variant == 'danger' ? theme.color.red[200] : theme.color.gray[600]),
         boxShadow: 'none',
-        '&:hover': { backgroundColor: buttonBackground || theme.color.gray[600], boxShadow: 'none' },
+        '&:hover': {
+          backgroundColor: buttonBackground || (variant == 'danger' ? theme.color.red[200] : theme.color.gray[600]),
+          boxShadow: 'none',
+        },
         borderRadius: '4px',
         cursor: 'pointer',
         padding: padding ?? 'none',

@@ -10,17 +10,25 @@ import {
   selectTaskBoard,
   setAssigneeCache,
   setConfirmAssigneeModalId,
+  setConfirmViewershipModalId,
   updateWorkflowStateIdByTaskId,
 } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { IAssigneeCombined, InputValue, Sizes } from '@/types/interfaces'
-import { getAssigneeId, getUserIds, UserIdsType } from '@/utils/assignee'
+import {
+  getAssigneeId,
+  getAssigneeName,
+  getAssigneeValueFromViewers,
+  getUserIds,
+  isEmptyAssignee,
+  UserIdsType,
+} from '@/utils/assignee'
 import { isTaskCompleted } from '@/utils/isTaskCompleted'
 import { NoAssignee } from '@/utils/noAssignee'
 import { Box, Skeleton, Stack, styled } from '@mui/material'
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { UrlObject } from 'url'
 
@@ -35,9 +43,19 @@ import { CustomLink } from '@/hoc/CustomLink'
 import { DateStringSchema } from '@/types/date'
 import { createDateFromFormattedDateString, formatDate } from '@/utils/dateHelper'
 import { getCardHref } from '@/utils/getCardHref'
-import { getSelectedUserIds, getSelectorAssignee, getSelectorAssigneeFromTask } from '@/utils/selector'
-import { shouldConfirmBeforeReassignment } from '@/utils/shouldConfirmBeforeReassign'
+import {
+  getSelectedUserIds,
+  getSelectorAssignee,
+  getSelectorAssigneeFromTask,
+  getSelectorViewerFromTask,
+} from '@/utils/selector'
+import {
+  shouldConfirmBeforeReassignment,
+  shouldConfirmViewershipBeforeReassignment,
+} from '@/utils/shouldConfirmBeforeReassign'
 import z from 'zod'
+import { StyledModal } from '@/app/detail/ui/styledComponent'
+import { ConfirmUI } from '@/components/layouts/ConfirmUI'
 
 const TaskCardContainer = styled(Stack)(({ theme }) => ({
   border: `1px solid ${theme.color.borders.border}`,
@@ -64,11 +82,21 @@ interface TaskCardProps {
   mode: UserRole
   workflowState?: WorkflowStateResponse
   subtasks?: TaskResponse[]
+  workflowDisabled?: boolean
 }
 
-export const TaskCard = ({ task, href, workflowState, mode, subtasks }: TaskCardProps) => {
-  const { assignee, workflowStates, assigneeCache, previewMode, token, accessibleTasks, showSubtasks } =
-    useSelector(selectTaskBoard)
+export const TaskCard = ({ task, href, workflowState, mode, subtasks, workflowDisabled = false }: TaskCardProps) => {
+  const {
+    assignee,
+    workflowStates,
+    assigneeCache,
+    previewMode,
+    token,
+    accessibleTasks,
+    showSubtasks,
+    confirmAssignModalId,
+    confirmViewershipModalId,
+  } = useSelector(selectTaskBoard)
 
   const subtaskCount = useSubtaskCount(task.id)
 
@@ -99,10 +127,10 @@ export const TaskCard = ({ task, href, workflowState, mode, subtasks }: TaskCard
 
   const handleConfirmAssigneeChange = (userIds: UserIdsType) => {
     const { internalUserId, clientId, companyId } = userIds
-
-    token && updateAssignee(token, task.id, internalUserId, clientId, companyId)
-
+    const viewers = !internalUserId ? [] : undefined
     store.dispatch(setConfirmAssigneeModalId(undefined))
+    store.dispatch(setConfirmViewershipModalId(undefined))
+    token && updateAssignee(token, task.id, internalUserId, clientId, companyId, viewers)
   }
 
   const handleAssigneeChange = (inputValue: InputValue[]) => {
@@ -110,17 +138,32 @@ export const TaskCard = ({ task, href, workflowState, mode, subtasks }: TaskCard
     const previousAssignee = assignee.find((assignee) => assignee.id == getAssigneeId(getUserIds(task)))
     const nextAssignee = getSelectorAssignee(assignee, inputValue)
     const shouldShowConfirmModal = shouldConfirmBeforeReassignment(previousAssignee, nextAssignee)
+    const shouldShowConfirmViewershipModal = shouldConfirmViewershipBeforeReassignment(
+      getSelectorViewerFromTask(assignee, task) ?? null,
+      nextAssignee,
+    )
     if (shouldShowConfirmModal) {
       setSelectedAssignee(newUserIds)
       store.dispatch(setConfirmAssigneeModalId(task.id))
+    } else if (shouldShowConfirmViewershipModal) {
+      setSelectedAssignee(newUserIds)
+      store.dispatch(setConfirmViewershipModalId(task.id))
     } else {
       const { internalUserId, clientId, companyId } = newUserIds
-
-      token && updateAssignee(token, task.id, internalUserId, clientId, companyId)
-
+      const viewers = !internalUserId ? [] : undefined
+      token && updateAssignee(token, task.id, internalUserId, clientId, companyId, viewers)
       setAssigneeValue(nextAssignee ?? NoAssignee)
     }
   }
+  const getAssigneeValue = (userIds?: UserIdsType) => {
+    if (!userIds) {
+      return NoAssignee
+    }
+    const assigneeId = getAssigneeId(userIds)
+    const match = assignee.find((assignee) => assignee.id === assigneeId)
+    return match ?? NoAssignee
+  }
+
   const [assigneeValue, setAssigneeValue] = useState<IAssigneeCombined | Omit<IAssigneeCombined, 'type'> | undefined>(() => {
     return assigneeCache[task.id]
   }) //Omitting type for NoAssignee
@@ -150,6 +193,7 @@ export const TaskCard = ({ task, href, workflowState, mode, subtasks }: TaskCard
               responsiveNoHide
               size={Sizes.MEDIUM}
               padding={'4px'}
+              disabled={workflowDisabled}
             />
           </Box>
           <Stack direction="column" justifyContent="center" rowGap={'5px'} sx={{ width: '100%' }}>
@@ -275,6 +319,52 @@ export const TaskCard = ({ task, href, workflowState, mode, subtasks }: TaskCard
           </Stack>
         )}
       </Stack>
+      <StyledModal
+        open={confirmAssignModalId === task.id || confirmViewershipModalId === task.id}
+        onClose={(e: React.MouseEvent) => {
+          e.stopPropagation()
+          store.dispatch(setConfirmAssigneeModalId(undefined))
+          store.dispatch(setConfirmViewershipModalId(undefined))
+        }}
+        aria-labelledby="confirm-reassignment-modal"
+        aria-describedby="confirm-reassignment"
+      >
+        <ConfirmUI
+          handleCancel={() => {
+            setSelectedAssignee(undefined)
+            store.dispatch(setConfirmAssigneeModalId(undefined))
+            store.dispatch(setConfirmViewershipModalId(undefined))
+          }}
+          handleConfirm={() => {
+            if (selectedAssignee) {
+              handleConfirmAssigneeChange(selectedAssignee)
+            }
+          }}
+          buttonText={confirmViewershipModalId === task.id ? 'Remove' : 'Reassign'}
+          description={
+            confirmAssignModalId === task.id ? (
+              <>
+                You&apos;re about to reassign this task from{' '}
+                <strong>{getAssigneeName(getAssigneeValue(getUserIds(task)))}</strong> to{' '}
+                <strong>{getAssigneeName(getAssigneeValue(selectedAssignee))}</strong>. This will give{' '}
+                <strong>{getAssigneeName(getAssigneeValue(selectedAssignee))}</strong> access to all task comments and
+                history.
+              </>
+            ) : (
+              <>
+                <strong>
+                  {getAssigneeName(getAssigneeValueFromViewers(getSelectorViewerFromTask(assignee, task) ?? null, assignee))}
+                </strong>{' '}
+                will also lose visibility to the task.
+              </>
+            )
+          }
+          title={
+            confirmViewershipModalId === task.id && isEmptyAssignee(selectedAssignee) ? 'Remove assignee?' : 'Reassign task?'
+          }
+          variant={confirmViewershipModalId === task.id ? 'danger' : 'default'}
+        />
+      </StyledModal>
     </TaskCardContainer>
   )
 }
