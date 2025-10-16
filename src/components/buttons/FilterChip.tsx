@@ -1,13 +1,13 @@
+import { filterOptionsMap } from '@/components/inputs/FilterSelector/FilterAssigneeSection'
+import { useFilterBar } from '@/hooks/useFilterBar'
 import { CrossIconSmall, FilterByAsigneeIcon } from '@/icons'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { FilterType } from '@/types/common'
 import { emptyAssignee, getAssigneeName, UserIdsType } from '@/utils/assignee'
 import { Box, IconButton, Stack, Typography } from '@mui/material'
+import deepEqual from 'deep-equal'
 import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
-import deepEqual from 'deep-equal'
-import { useFilterBar } from '@/hooks/useFilterBar'
-import { filterOptionsMap } from '../inputs/FilterSelector/FilterAssigneeSection'
 
 interface FilterChipProps {
   type: FilterType
