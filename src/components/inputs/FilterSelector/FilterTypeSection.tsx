@@ -20,9 +20,6 @@ export const FilterTypeSection = ({ setFilterMode }: FilterTypeSectionProps) => 
   const disabled = type === FilterOptionsKeywords.CLIENTS ? [FilterType.Visibility] : []
   const removed = type.length > 20 ? [FilterType.Assignee] : []
 
-  // Only Client visibility can be disabled at the moment
-  const disabledText = 'Client visibility is only available for tasks assigned to internal users.'
-
   return (
     <Stack
       direction="column"
@@ -68,7 +65,14 @@ export const FilterTypeSection = ({ setFilterMode }: FilterTypeSectionProps) => 
             </Box>
             {isDisabled && (
               <Box>
-                <CopilotTooltip content={disabledText}>
+                <CopilotTooltip
+                  content={
+                    <div>
+                      <div>Client visibility is only available</div>
+                      <div>for tasks assigned to internal users.</div>
+                    </div>
+                  }
+                >
                   <InfoIcon />
                 </CopilotTooltip>
               </Box>
