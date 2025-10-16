@@ -87,7 +87,7 @@ export const FilterSelector = ({ disabled }: FilterSelectorProps) => {
           anchorEl={anchorEl}
           sx={{
             width: 'fit-content',
-            zIndex: '99999999',
+            zIndex: '999',
           }}
           placement="bottom-start"
           onClick={(e) => {
