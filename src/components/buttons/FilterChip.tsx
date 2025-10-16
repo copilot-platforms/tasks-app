@@ -1,17 +1,43 @@
-import { CrossIcon, FilterByAsigneeIcon } from '@/icons'
+import { CrossIconSmall, FilterByAsigneeIcon } from '@/icons'
+import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { FilterType } from '@/types/common'
-import { IAssigneeCombined } from '@/types/interfaces'
-import { getAssigneeName } from '@/utils/assignee'
+import { emptyAssignee, getAssigneeName, UserIdsType } from '@/utils/assignee'
 import { Box, IconButton, Stack, Typography } from '@mui/material'
 import { useMemo } from 'react'
+import { useSelector } from 'react-redux'
+import deepEqual from 'deep-equal'
+import { useFilterBar } from '@/hooks/useFilterBar'
+import { filterOptionsMap } from '../inputs/FilterSelector/FilterAssigneeSection'
 
 interface FilterChipProps {
   type: FilterType
-  assigneeValue?: IAssigneeCombined
+  assignee?: UserIdsType
 }
 
-export const FilterChip = ({ type, assigneeValue }: FilterChipProps) => {
+export const FilterChip = ({ type, assignee }: FilterChipProps) => {
+  const { assignee: assignees } = useSelector(selectTaskBoard)
+
+  const assigneeValue = useMemo(() => {
+    if (assignee?.internalUserId) {
+      return assignees.find((a) => a.id === assignee.internalUserId)
+    } else if (assignee?.clientId && assignee?.companyId) {
+      return assignees.find(
+        (a) =>
+          a.id === assignee.clientId &&
+          (a.companyIds?.includes(assignee.companyId || '-') || a.companyId === assignee.companyId),
+      )
+    } else if (assignee?.companyId && !assignee?.clientId) {
+      return assignees.find((a) => a.id === assignee.companyId)
+    }
+  }, [assignee, assignees])
+
   const name = useMemo(() => getAssigneeName(assigneeValue), [assigneeValue])
+
+  const { handleFilterOptionsChange } = useFilterBar()
+
+  if (!assignee || deepEqual(assignee, emptyAssignee)) {
+    return null
+  }
 
   return (
     <Stack
@@ -55,20 +81,21 @@ export const FilterChip = ({ type, assigneeValue }: FilterChipProps) => {
         onClick={(e) => {
           e.preventDefault()
           e.stopPropagation()
+          handleFilterOptionsChange(filterOptionsMap[type], emptyAssignee)
         }}
         sx={{
           cursor: 'default',
           borderRadius: 0,
-          padding: '6px 5px 6px 6px',
+          padding: '2px',
 
           '&:hover': {
-            bgcolor: (theme) => theme.color.text.textSecondary,
+            bgcolor: (theme) => theme.color.gray[150],
           },
         }}
         disableRipple
         disableTouchRipple
       >
-        <CrossIcon />
+        <CrossIconSmall />
       </IconButton>
     </Stack>
   )

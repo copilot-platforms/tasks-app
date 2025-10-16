@@ -1,38 +1,28 @@
 'use client'
 
-import { UserRole } from '@api/core/types/user'
-import { FilterByAssigneeBtn } from '@/components/buttons/FilterByAssigneeBtn'
-import { SelectorButton } from '@/components/buttons/SelectorButton'
 import FilterButtonGroup from '@/components/buttonsGroup/FilterButtonsGroup'
-import { CopilotPopSelector } from '@/components/inputs/CopilotSelector'
 import { DisplaySelector } from '@/components/inputs/DisplaySelector'
 import SearchBar from '@/components/searchBar'
-import { CrossIcon, FilterByAsigneeIcon } from '@/icons'
+import { useFilterBar } from '@/hooks/useFilterBar'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
-import {
-  selectTaskBoard,
-  setFilterOptions,
-  setIsTasksLoading,
-  setViewSettings,
-  setViewSettingsTemp,
-} from '@/redux/features/taskBoardSlice'
+import { selectTaskBoard, setIsTasksLoading, setViewSettings, setViewSettingsTemp } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
 import { IUTokenSchema } from '@/types/common'
-import { CreateViewSettingsDTO, DisplayOptions } from '@/types/dto/viewSettings.dto'
+import { DisplayOptions } from '@/types/dto/viewSettings.dto'
 import { FilterOptions, FilterOptionsKeywords, IAssigneeCombined, IFilterOptions, UserIds } from '@/types/interfaces'
 import {
   clientFilterTypeToButtonIndexMap,
   filterTypeToButtonIndexMap,
   previewFilterTypeToButtonIndexMap,
 } from '@/types/objectMaps'
-import { checkAssignee, emptyAssignee, getAssigneeId, UserIdsType } from '@/utils/assignee'
+import { emptyAssignee, UserIdsType } from '@/utils/assignee'
 import { getWorkspaceLabels } from '@/utils/getWorkspaceLabels'
 import { NoAssignee } from '@/utils/noAssignee'
-import { getSelectedUserIds, getSelectorAssignee, getSelectorAssigneeFromFilterOptions } from '@/utils/selector'
-import { Box, IconButton, Stack } from '@mui/material'
+import { getSelectorAssigneeFromFilterOptions } from '@/utils/selector'
+import { UserRole } from '@api/core/types/user'
+import { Box, Stack } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
-import { useFilterBar } from '@/hooks/useFilterBar'
 
 interface FilterBarProps {
   mode: UserRole

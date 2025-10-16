@@ -8,17 +8,17 @@ import {
   setActiveTask,
   setAssigneeList,
   setFilteredAssigneeList,
-  SetUrlActionParams,
   setPreviewMode,
   setTasks,
   setToken,
+  setUrlActionParams,
   setViewSettings,
   setWorkflowStates,
 } from '@/redux/features/taskBoardSlice'
 import { setAssigneeSuggestion, setExpandedComments } from '@/redux/features/taskDetailsSlice'
 import { setTemplates } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
-import { UrlActionParamsType, Token, WorkspaceResponse } from '@/types/common'
+import { Token, UrlActionParamsType, WorkspaceResponse } from '@/types/common'
 import { HomeParamActions } from '@/types/constants'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
@@ -88,7 +88,7 @@ export const ClientSideStateUpdate = ({
     }
 
     if (action && action === HomeParamActions.CREATE_TASK) {
-      store.dispatch(SetUrlActionParams({ action, pf }))
+      store.dispatch(setUrlActionParams({ action, pf }))
     }
 
     if (viewSettings) {

@@ -1,0 +1,63 @@
+import { StyledUserCompanySelector } from '@/app/detail/ui/styledComponent'
+import { useFilterBar } from '@/hooks/useFilterBar'
+import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
+import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { FilterType } from '@/types/common'
+import { FilterOptions, InputValue } from '@/types/interfaces'
+import { parseAssigneeToSelectorOption } from '@/utils/addTypeToAssignee'
+import { emptyAssignee } from '@/utils/assignee'
+import { getWorkspaceLabels } from '@/utils/getWorkspaceLabels'
+import { getSelectedUserIds, getSelectorAssignee } from '@/utils/selector'
+import { Box } from '@mui/material'
+import { Dispatch, SetStateAction } from 'react'
+import { useSelector } from 'react-redux'
+
+interface FilterAssigneeSectionProps {
+  filterMode: FilterType
+  setAnchorEl: Dispatch<SetStateAction<HTMLElement | null>>
+}
+
+export const filterOptionsMap = {
+  [FilterType.Assignee]: FilterOptions.ASSIGNEE,
+  [FilterType.Creator]: FilterOptions.CREATOR,
+  [FilterType.Visibility]: FilterOptions.VISIBILITY,
+}
+
+export const FilterAssigneeSection = ({ filterMode, setAnchorEl }: FilterAssigneeSectionProps) => {
+  const { assignee: assignees } = useSelector(selectTaskBoard)
+  const { handleFilterOptionsChange } = useFilterBar()
+  const { workspace } = useSelector(selectAuthDetails)
+
+  const selectorAssignees = parseAssigneeToSelectorOption(assignees)
+
+  const handleChange = (inputValue: InputValue[]) => {
+    if (!inputValue.length) {
+      // Handle removal
+    }
+    const newUserIds = getSelectedUserIds(inputValue)
+    handleFilterOptionsChange(filterOptionsMap[filterMode], newUserIds)
+    setAnchorEl(null)
+  }
+
+  return (
+    <Box>
+      <StyledUserCompanySelector
+        openMenuOnFocus
+        menuIsOpen={true}
+        autoFocus
+        placeholder={'Search'}
+        // initialValue={initialAssignee}
+        clientUsers={selectorAssignees.clients}
+        name={'Search'}
+        internalUsers={selectorAssignees.internalUsers}
+        companies={selectorAssignees.companies}
+        onChange={(inputValue: InputValue[]) => {
+          handleChange(inputValue)
+        }}
+        grouped={true}
+        limitSelectedOptions={1}
+        customLabels={getWorkspaceLabels(workspace, true)}
+      />
+    </Box>
+  )
+}
