@@ -1,10 +1,12 @@
 import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
 import { FilterByAsigneeIcon } from '@/icons'
+import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { FilterType } from '@/types/common'
-import { Box, ClickAwayListener, Popper, Stack, Typography } from '@mui/material'
+import { Box, ClickAwayListener, Popper, Stack, SvgIcon, Typography } from '@mui/material'
 import React, { useEffect, useState } from 'react'
-import { FilterTypeSection } from './FilterTypeSection'
+import { useSelector } from 'react-redux'
 import { FilterAssigneeSection } from './FilterAssigneeSection'
+import { FilterTypeSection } from './FilterTypeSection'
 
 type FilterSelectorProps = {
   disabled?: boolean
@@ -15,6 +17,15 @@ export const FilterSelector = ({ disabled }: FilterSelectorProps) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const open = Boolean(anchorEl)
   const id = open ? 'filter-selector-popper' : ''
+
+  const {
+    previewMode,
+    filterOptions: { type },
+  } = useSelector(selectTaskBoard)
+
+  if (previewMode && type.length > 20) {
+    disabled = true
+  }
 
   const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
     if (!disabled) {
@@ -66,10 +77,14 @@ export const FilterSelector = ({ disabled }: FilterSelectorProps) => {
             })}
             buttonContent={
               <Stack direction="row" alignItems={'center'} columnGap={'6px'}>
-                <FilterByAsigneeIcon className="text-gray-500" />
+                <SvgIcon
+                  component={FilterByAsigneeIcon}
+                  inheritViewBox
+                  sx={(theme) => ({ color: disabled ? theme.color.gray[300] : theme.color.gray[500] })}
+                />
                 <Typography
                   sx={(theme) => ({
-                    color: theme.color.text.textSecondary,
+                    color: disabled ? theme.color.gray[300] : theme.color.text.textSecondary,
                     fontSize: theme.typography.bodySm,
                     lineHeight: '21px',
                   })}

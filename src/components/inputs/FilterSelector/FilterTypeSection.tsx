@@ -15,10 +15,24 @@ interface FilterTypeSectionProps {
 export const FilterTypeSection = ({ setFilterMode }: FilterTypeSectionProps) => {
   const {
     filterOptions: { type },
+    previewMode,
   } = useSelector(selectTaskBoard)
 
   const disabled = type === FilterOptionsKeywords.CLIENTS ? [FilterType.Visibility] : []
   const removed = type.length > 20 ? [FilterType.Assignee] : []
+  let isDisabled = false
+
+  if (previewMode) {
+    if (type === FilterOptionsKeywords.TEAM) {
+      removed.push(FilterType.Visibility)
+    }
+    if (type.length > 20) {
+      isDisabled = true
+    }
+    if (type === FilterOptionsKeywords.CLIENT_WITH_VIEWERS) {
+      removed.push(FilterType.Assignee)
+    }
+  }
 
   return (
     <Stack
