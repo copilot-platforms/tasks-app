@@ -4,7 +4,9 @@ import FilterButtonGroup from '@/components/buttonsGroup/FilterButtonsGroup'
 import { DisplaySelector } from '@/components/inputs/DisplaySelector'
 import SearchBar from '@/components/searchBar'
 import { useFilterBar } from '@/hooks/useFilterBar'
+import { AddLargeIcon } from '@/icons'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
+import { setShowModal } from '@/redux/features/createTaskSlice'
 import { selectTaskBoard, setIsTasksLoading, setViewSettings, setViewSettingsTemp } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
 import { IUTokenSchema } from '@/types/common'
@@ -23,6 +25,7 @@ import { UserRole } from '@api/core/types/user'
 import { Box, Stack } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
+import { IconBtn } from '../buttons/IconBtn'
 
 interface FilterBarProps {
   mode: UserRole
@@ -210,6 +213,15 @@ export const FilterBar = ({ mode }: FilterBarProps) => {
               displayOptions={displayOptions}
               handleDisplayOptionsChange={handleDisplayOptionsChange}
             />
+            {previewMode && (
+              <IconBtn
+                handleClick={() => {
+                  store.dispatch(setShowModal())
+                }}
+                padding="8px"
+                icon={<AddLargeIcon />}
+              />
+            )}
           </Stack>
         </Stack>
       </Box>
