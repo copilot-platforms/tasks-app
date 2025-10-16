@@ -12,6 +12,7 @@ interface IInitialState {
   // URL of an image opened in preview modal for task description / comments
   openImage: string | null
   expandedComments: string[]
+  fromNotificationCenter: boolean
 }
 
 const initialState: IInitialState = {
@@ -22,6 +23,7 @@ const initialState: IInitialState = {
   showConfirmAssignModal: false,
   openImage: null,
   expandedComments: [],
+  fromNotificationCenter: false,
 }
 
 const taskDetailsSlice = createSlice({
@@ -49,6 +51,9 @@ const taskDetailsSlice = createSlice({
     setExpandedComments: (state, action: { payload: string[] }) => {
       state.expandedComments = action.payload
     },
+    setFromNotificationCenter: (state, action: { payload: boolean }) => {
+      state.fromNotificationCenter = action.payload
+    },
   },
 })
 
@@ -62,6 +67,7 @@ export const {
   toggleShowConfirmAssignModal,
   setOpenImage,
   setExpandedComments,
+  setFromNotificationCenter,
 } = taskDetailsSlice.actions
 
 export default taskDetailsSlice.reducer

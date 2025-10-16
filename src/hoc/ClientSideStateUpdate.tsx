@@ -8,22 +8,22 @@ import {
   setActiveTask,
   setAssigneeList,
   setFilteredAssigneeList,
-  SetUrlActionParams,
   setPreviewMode,
   setTasks,
   setToken,
+  setUrlActionParams,
   setViewSettings,
   setWorkflowStates,
 } from '@/redux/features/taskBoardSlice'
 import { setAssigneeSuggestion, setExpandedComments } from '@/redux/features/taskDetailsSlice'
 import { setTemplates } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
-import { UrlActionParamsType, Token, WorkspaceResponse } from '@/types/common'
+import { Token, UrlActionParamsType, WorkspaceResponse } from '@/types/common'
 import { HomeParamActions } from '@/types/constants'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { IAssigneeCombined, IAssigneeSuggestions, ITemplate } from '@/types/interfaces'
+import { FilterOptionsKeywords, IAssigneeCombined, IAssigneeSuggestions, ITemplate } from '@/types/interfaces'
 import { filterOptionsMap } from '@/types/objectMaps'
 import { getPreviewMode, handlePreviewMode } from '@/utils/previewMode'
 import { ReactNode, useEffect } from 'react'
@@ -88,14 +88,23 @@ export const ClientSideStateUpdate = ({
     }
 
     if (action && action === HomeParamActions.CREATE_TASK) {
-      store.dispatch(SetUrlActionParams({ action, pf }))
+      store.dispatch(setUrlActionParams({ action, pf }))
     }
 
     if (viewSettings) {
       const viewSettingsCopy = viewSettingsTemp ? structuredClone(viewSettingsTemp) : structuredClone(viewSettings) //deep cloning for immutability and prevent the reducer mutating the original object.
+      const previewMode = tokenPayload && !!getPreviewMode(tokenPayload)
+      if (previewMode && !viewSettingsCopy.filterOptions.type) {
+        viewSettingsCopy.filterOptions.type = FilterOptionsKeywords.CLIENTS
+      }
       store.dispatch(setViewSettings(viewSettingsCopy))
       const view = viewSettingsTemp ? viewSettingsTemp.filterOptions : viewSettingsCopy.filterOptions
-      store.dispatch(setFilteredAssigneeList({ filteredType: filterOptionsMap[view?.type] || filterOptionsMap.default }))
+      store.dispatch(
+        setFilteredAssigneeList({
+          filteredType:
+            filterOptionsMap[view?.type] || (previewMode ? FilterOptionsKeywords.CLIENTS : filterOptionsMap.default),
+        }),
+      )
     }
 
     if (tokenPayload) {
@@ -105,7 +114,7 @@ export const ClientSideStateUpdate = ({
       const previewMode = getPreviewMode(tokenPayload)
       store.dispatch(setPreviewMode(previewMode))
 
-      previewMode && handlePreviewMode(previewMode, tokenPayload)
+      previewMode && handlePreviewMode(tokenPayload)
     }
 
     if (templates) {

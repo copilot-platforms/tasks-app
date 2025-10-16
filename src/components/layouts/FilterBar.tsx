@@ -1,42 +1,41 @@
 'use client'
 
-import { UserRole } from '@/app/api/core/types/user'
-import { FilterByAssigneeBtn } from '@/components/buttons/FilterByAssigneeBtn'
-import { SelectorButton } from '@/components/buttons/SelectorButton'
+import { IconBtn } from '@/components/buttons/IconBtn'
 import FilterButtonGroup from '@/components/buttonsGroup/FilterButtonsGroup'
-import { CopilotPopSelector } from '@/components/inputs/CopilotSelector'
 import { DisplaySelector } from '@/components/inputs/DisplaySelector'
 import SearchBar from '@/components/searchBar'
-import { CrossIcon, FilterByAsigneeIcon } from '@/icons'
+import { useFilterBar } from '@/hooks/useFilterBar'
+import { AddLargeIcon } from '@/icons'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
-import {
-  selectTaskBoard,
-  setFilterOptions,
-  setIsTasksLoading,
-  setViewSettings,
-  setViewSettingsTemp,
-} from '@/redux/features/taskBoardSlice'
+import { setShowModal } from '@/redux/features/createTaskSlice'
+import { selectTaskBoard, setIsTasksLoading, setViewSettings, setViewSettingsTemp } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
 import { IUTokenSchema } from '@/types/common'
-import { CreateViewSettingsDTO, DisplayOptions } from '@/types/dto/viewSettings.dto'
+import { DisplayOptions } from '@/types/dto/viewSettings.dto'
 import { FilterOptions, FilterOptionsKeywords, IAssigneeCombined, IFilterOptions, UserIds } from '@/types/interfaces'
-import { filterTypeToButtonIndexMap } from '@/types/objectMaps'
-import { checkAssignee, emptyAssignee, getAssigneeId, UserIdsType } from '@/utils/assignee'
+import {
+  clientFilterTypeToButtonIndexMap,
+  filterTypeToButtonIndexMap,
+  previewFilterTypeToButtonIndexMap,
+} from '@/types/objectMaps'
+import { emptyAssignee, UserIdsType } from '@/utils/assignee'
 import { getWorkspaceLabels } from '@/utils/getWorkspaceLabels'
 import { NoAssignee } from '@/utils/noAssignee'
-import { getSelectedUserIds, getSelectorAssignee, getSelectorAssigneeFromFilterOptions } from '@/utils/selector'
-import { Box, IconButton, Stack } from '@mui/material'
+import { getSelectorAssigneeFromFilterOptions } from '@/utils/selector'
+import { UserRole } from '@api/core/types/user'
+import { Box, Stack } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 
 interface FilterBarProps {
   mode: UserRole
-  updateViewModeSetting: (payload: CreateViewSettingsDTO) => void
 }
 
-export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
+export const FilterBar = ({ mode }: FilterBarProps) => {
   const { view, filterOptions, assignee, viewSettingsTemp, showArchived, showUnarchived, showSubtasks, previewMode } =
     useSelector(selectTaskBoard)
+
+  const { updateViewModeSetting, handleFilterOptionsChange } = useFilterBar()
 
   const viewMode = viewSettingsTemp ? viewSettingsTemp.viewMode : view
   const displayOptions = {
@@ -47,37 +46,11 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
 
   const viewModeFilterOptions = viewSettingsTemp ? (viewSettingsTemp.filterOptions as IFilterOptions) : filterOptions //ViewSettingsTemp used to apply temp values of viewSettings in filterOptions and viewMode because clientSideUpdate applies outdated cached values to original view and filterOptions if navigated
 
-  const handleFilterOptionsChange = async (optionType: FilterOptions, newValue: string | null | UserIdsType) => {
-    store.dispatch(setFilterOptions({ optionType, newValue }))
-    //FilteredAssignee is also updated in the component's state and used in Selector's autocomplete to mitigate the time taken to update the store and fetch values to the Selector's autocomplete.
-    const updatedFilterOptions = viewSettingsTemp
-      ? (store.getState().taskBoard.viewSettingsTemp?.filterOptions as IFilterOptions)
-      : store.getState().taskBoard.filterOptions
-
-    store.dispatch(
-      setViewSettingsTemp({
-        viewMode: view,
-        filterOptions: { ...updatedFilterOptions, [optionType]: newValue },
-        showArchived: showArchived,
-        showUnarchived: showUnarchived,
-        showSubtasks: showSubtasks,
-      }),
-    )
-    updateViewModeSetting({
-      viewMode: view,
-      filterOptions: {
-        ...updatedFilterOptions,
-        [optionType]: newValue,
-      },
-      showArchived: showArchived,
-      showUnarchived: showUnarchived,
-      showSubtasks: showSubtasks,
-    })
-  }
-
-  const ButtonIndex = filterTypeToButtonIndexMap[viewModeFilterOptions.type] ?? 0
-
-  const [noAssigneOptionFlag, setNoAssigneeOptionFlag] = useState<boolean>(true)
+  const ButtonIndex = previewMode
+    ? (previewFilterTypeToButtonIndexMap[viewModeFilterOptions.type] ?? 0)
+    : mode === UserRole.IU
+      ? (filterTypeToButtonIndexMap[viewModeFilterOptions.type] ?? 0)
+      : (clientFilterTypeToButtonIndexMap[viewModeFilterOptions.type] ?? 0)
 
   const { tokenPayload, workspace } = useSelector(selectAuthDetails)
 
@@ -109,48 +82,73 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
     store.dispatch(setViewSettingsTemp(newViewSettings))
   }
 
-  const filterButtons = [
+  // handles click on filter by type buttons
+  const handleFilterTypeClick = ({ filterTypeValue }: { filterTypeValue: string | null | UserIdsType }) => {
+    let filterValue = filterTypeValue
+    handleFilterOptionsChange(FilterOptions.TYPE, filterValue)
+
+    // empty assignee filter option
+    setAssigneeValue(undefined)
+    handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
+  }
+
+  const IuFilterButtons = [
     {
       name: 'My tasks',
-      onClick: () => {
-        const selfAssigneeId = IUTokenSchema.parse(tokenPayload).internalUserId
-        handleFilterOptionsChange(FilterOptions.TYPE, selfAssigneeId)
-        setAssigneeValue(undefined)
-        handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
-      },
+      onClick: () => handleFilterTypeClick({ filterTypeValue: IUTokenSchema.parse(tokenPayload).internalUserId }),
       id: 'MyTasks',
     },
     {
-      name: "My team's tasks",
-      onClick: () => {
-        handleFilterOptionsChange(FilterOptions.TYPE, FilterOptionsKeywords.TEAM)
-        setAssigneeValue(undefined)
-        setNoAssigneeOptionFlag(false)
-        handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
-      },
+      name: 'Team tasks',
+      onClick: () => handleFilterTypeClick({ filterTypeValue: FilterOptionsKeywords.TEAM }),
       id: 'TeamTasks',
     },
     {
       name: `${getWorkspaceLabels(workspace, true).individualTerm} tasks`,
-      onClick: () => {
-        handleFilterOptionsChange(FilterOptions.TYPE, FilterOptionsKeywords.CLIENTS)
-        setAssigneeValue(undefined)
-        setNoAssigneeOptionFlag(false)
-        handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
-      },
+      onClick: () => handleFilterTypeClick({ filterTypeValue: FilterOptionsKeywords.CLIENTS }),
       id: 'ClientTasks',
     },
     {
       name: 'All tasks',
-      onClick: () => {
-        handleFilterOptionsChange(FilterOptions.TYPE, '')
-        setAssigneeValue(undefined)
-        setNoAssigneeOptionFlag(true)
-        handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
-      },
+      onClick: () => handleFilterTypeClick({ filterTypeValue: '' }),
       id: 'AllTasks',
     },
   ]
+
+  const CuFilterButtons = [
+    {
+      name: 'All tasks',
+      onClick: () => handleFilterTypeClick({ filterTypeValue: FilterOptionsKeywords.CLIENT_WITH_VIEWERS }),
+      id: 'AllTasks',
+    },
+    {
+      name: 'My tasks',
+      onClick: () => handleFilterTypeClick({ filterTypeValue: FilterOptionsKeywords.CLIENTS }),
+      id: 'MyTasks',
+    },
+  ]
+
+  const previewFilterButtons = [
+    {
+      name: 'My tasks',
+      onClick: () => {
+        handleFilterTypeClick({ filterTypeValue: IUTokenSchema.parse(tokenPayload).internalUserId })
+      },
+      id: 'MyTasks',
+    },
+    {
+      name: 'Team tasks',
+      onClick: () => handleFilterTypeClick({ filterTypeValue: FilterOptionsKeywords.TEAM }),
+      id: 'TeamTasks',
+    },
+    {
+      name: `${getWorkspaceLabels(workspace, true).individualTerm} tasks`,
+      onClick: () => handleFilterTypeClick({ filterTypeValue: FilterOptionsKeywords.CLIENTS }),
+      id: 'ClientTasks',
+    },
+  ]
+
+  const filterButtons = previewMode ? previewFilterButtons : mode === UserRole.IU ? IuFilterButtons : CuFilterButtons
 
   return (
     <Box
@@ -171,69 +169,7 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
       >
         <Stack direction={'row'} justifyContent={'space-between'} sx={{ maxHeight: '32px' }}>
           <Stack direction={'row'} columnGap={3}>
-            {mode === UserRole.IU && (
-              <>
-                <FilterButtonGroup filterButtons={filterButtons} activeButtonIndex={ButtonIndex} />
-                {filterOptions[FilterOptions.TYPE] !== tokenPayload?.internalUserId && (
-                  <Box
-                    sx={{
-                      display: { xs: 'none', sm: 'none', sd: 'block' },
-                    }}
-                  >
-                    <CopilotPopSelector
-                      hideClientsList={filterOptions[FilterOptions.TYPE] === FilterOptionsKeywords.TEAM}
-                      hideIusList={filterOptions[FilterOptions.TYPE] === FilterOptionsKeywords.CLIENTS}
-                      initialValue={assigneeValue}
-                      buttonContent={
-                        <SelectorButton
-                          startIcon={<FilterByAsigneeIcon />}
-                          endIcon={
-                            checkAssignee(assigneeValue) && (
-                              <IconButton
-                                aria-label="remove"
-                                onClick={(e) => {
-                                  e.preventDefault()
-                                  e.stopPropagation()
-                                  setAssigneeValue(undefined)
-                                  handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
-                                }}
-                                sx={{
-                                  cursor: 'default',
-                                  borderRadius: 0,
-                                  padding: '6px 5px 6px 6px',
-
-                                  '&:hover': {
-                                    bgcolor: (theme) => theme.color.gray[100],
-                                  },
-                                }}
-                                disableRipple
-                                disableTouchRipple
-                              >
-                                <CrossIcon />
-                              </IconButton>
-                            )
-                          }
-                          buttonContent={<FilterByAssigneeBtn assigneeValue={assigneeValue} />}
-                        />
-                      }
-                      name="Filter by assignee"
-                      onChange={(inputValue) => {
-                        const newUserIds = getSelectedUserIds(inputValue)
-                        const newAssignee = getAssigneeId(newUserIds)
-                        if (newAssignee) {
-                          setAssigneeValue(getSelectorAssignee(assignee, inputValue))
-                          handleFilterOptionsChange(FilterOptions.ASSIGNEE, newUserIds)
-                        } else {
-                          setAssigneeValue(undefined)
-                          handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
-                        }
-                      }}
-                      captureClick={false}
-                    />
-                  </Box>
-                )}
-              </>
-            )}
+            <FilterButtonGroup filterButtons={filterButtons} activeButtonIndex={ButtonIndex} />
           </Stack>
           <Stack direction="row" alignItems="center" columnGap={3}>
             <SearchBar
@@ -277,12 +213,21 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
               displayOptions={displayOptions}
               handleDisplayOptionsChange={handleDisplayOptionsChange}
             />
+            {previewMode && (
+              <IconBtn
+                handleClick={() => {
+                  store.dispatch(setShowModal())
+                }}
+                padding="8px"
+                icon={<AddLargeIcon />}
+              />
+            )}
           </Stack>
         </Stack>
       </Box>
       <Box sx={{ padding: '12px 20px', display: { sm: 'block', sd: 'none' } }}>
         <Stack direction="column" rowGap={'8px'}>
-          {mode === UserRole.IU && <FilterButtonGroup filterButtons={filterButtons} activeButtonIndex={ButtonIndex} />}
+          <FilterButtonGroup filterButtons={filterButtons} activeButtonIndex={ButtonIndex} />
 
           <Stack
             direction="row"
@@ -297,60 +242,6 @@ export const FilterBar = ({ mode, updateViewModeSetting }: FilterBarProps) => {
               columnGap: '8px',
             }}
           >
-            <Box>
-              {filterOptions[FilterOptions.TYPE] !== tokenPayload?.internalUserId && mode === UserRole.IU && (
-                <CopilotPopSelector
-                  hideClientsList={filterOptions[FilterOptions.TYPE] === FilterOptionsKeywords.TEAM}
-                  hideIusList={filterOptions[FilterOptions.TYPE] === FilterOptionsKeywords.CLIENTS}
-                  initialValue={assigneeValue}
-                  buttonContent={
-                    <SelectorButton
-                      startIcon={<FilterByAsigneeIcon />}
-                      endIcon={
-                        checkAssignee(assigneeValue) && (
-                          <IconButton
-                            aria-label="remove"
-                            onClick={(e) => {
-                              e.preventDefault()
-                              e.stopPropagation()
-                              setAssigneeValue(undefined)
-                              handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
-                            }}
-                            sx={{
-                              cursor: 'default',
-                              borderRadius: 0,
-                              padding: '6px 5px 6px 6px',
-
-                              '&:hover': {
-                                bgcolor: (theme) => theme.color.gray[100],
-                              },
-                            }}
-                            disableRipple
-                            disableTouchRipple
-                          >
-                            <CrossIcon />
-                          </IconButton>
-                        )
-                      }
-                      buttonContent={<FilterByAssigneeBtn assigneeValue={assigneeValue} />}
-                    />
-                  }
-                  name="Filter by assignee"
-                  onChange={(inputValue) => {
-                    const newUserIds = getSelectedUserIds(inputValue)
-                    const newAssignee = getAssigneeId(newUserIds)
-                    if (newAssignee) {
-                      setAssigneeValue(getSelectorAssignee(assignee, inputValue))
-                      handleFilterOptionsChange(FilterOptions.ASSIGNEE, newUserIds)
-                    } else {
-                      setAssigneeValue(undefined)
-                      handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
-                    }
-                  }}
-                  captureClick={false}
-                />
-              )}
-            </Box>
             <Stack direction={'row'} columnGap={2}>
               <SearchBar
                 value={viewModeFilterOptions.keyword}

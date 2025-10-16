@@ -1,15 +1,31 @@
 'use client'
 
-import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
+import { selectTaskDetails, setFromNotificationCenter } from '@/redux/features/taskDetailsSlice'
+import store from '@/redux/store'
 import { Stack } from '@mui/material'
-import { ReactNode } from 'react'
+import { ReactNode, useEffect } from 'react'
 import { useSelector } from 'react-redux'
 
-export const ResponsiveStack = ({ children }: { children: ReactNode }) => {
+export const ResponsiveStack = ({
+  children,
+  fromNotificationCenter,
+}: {
+  children: ReactNode
+  fromNotificationCenter: boolean
+}) => {
   const { showSidebar } = useSelector(selectTaskDetails)
 
+  useEffect(() => {
+    store.dispatch(setFromNotificationCenter(fromNotificationCenter))
+  }, [fromNotificationCenter])
+
   return (
-    <Stack direction={showSidebar ? 'row' : 'column-reverse'} sx={{ height: '100vh' }}>
+    <Stack
+      direction={!showSidebar || fromNotificationCenter ? 'column-reverse' : 'row'}
+      sx={{
+        height: '100vh',
+      }}
+    >
       {children}
     </Stack>
   )
