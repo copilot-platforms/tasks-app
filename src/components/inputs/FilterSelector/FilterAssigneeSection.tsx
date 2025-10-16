@@ -31,9 +31,6 @@ export const FilterAssigneeSection = ({ filterMode, setAnchorEl }: FilterAssigne
   const selectorAssignees = parseAssigneeToSelectorOption(assignees)
 
   const handleChange = (inputValue: InputValue[]) => {
-    if (!inputValue.length) {
-      // Handle removal
-    }
     const newUserIds = getSelectedUserIds(inputValue)
     handleFilterOptionsChange(filterOptionsMap[filterMode], newUserIds)
     setAnchorEl(null)
