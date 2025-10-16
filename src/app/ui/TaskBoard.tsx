@@ -149,7 +149,7 @@ export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
 
       {/* Task board according to selected view */}
       {viewBoardSettings === View.BOARD_VIEW && (
-        <Box sx={{ padding: '12px 12px' }}>
+        <Box sx={{ padding: '12px 12px', height: `calc(100vh - ${showHeader ? '135px' : '131px'})` }}>
           <Stack
             columnGap={2}
             sx={{
@@ -193,7 +193,7 @@ export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
         <Stack
           sx={{
             flexDirection: 'column',
-            height: `calc(100vh - ${showHeader ? '135px' : '75px'})`,
+            height: `calc(100vh - ${showHeader ? '190px' : '130px'})`,
             width: '99.92%',
             margin: '0 auto',
             overflowY: 'auto',
