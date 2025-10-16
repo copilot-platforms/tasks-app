@@ -1,6 +1,6 @@
 'use client'
 
-import { updateTask, updateViewModeSettings } from '@/app/(home)/actions'
+import { updateTask } from '@/app/(home)/actions'
 import { TaskDataFetcher } from '@/app/_fetchers/TaskDataFetcher'
 import { clientUpdateTask } from '@/app/detail/[task_id]/[user_type]/actions'
 import { TaskBoardAppBridge } from '@/app/ui/TaskBoardAppBridge'
@@ -11,7 +11,6 @@ import { TaskColumn } from '@/components/cards/TaskColumn'
 import { TaskRow } from '@/components/cards/TaskRow'
 import DashboardEmptyState from '@/components/layouts/EmptyState/DashboardEmptyState'
 import { FilterBar } from '@/components/layouts/FilterBar'
-import { Header } from '@/components/layouts/Header'
 import { SecondaryFilterBar } from '@/components/layouts/SecondaryFilterBar'
 import { DragDropHandler } from '@/hoc/DragDropHandler'
 import { useFilter } from '@/hooks/useFilter'
@@ -19,7 +18,6 @@ import { selectTaskBoard, updateWorkflowStateIdByTaskId } from '@/redux/features
 import store from '@/redux/store'
 import { WorkspaceResponse } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
-import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { View } from '@/types/interfaces'
 import { sortTaskByDescendingOrder } from '@/utils/sortTask'
 import { prioritizeStartedStates } from '@/utils/workflowStates'
@@ -132,16 +130,11 @@ export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
     )
   }
 
-  const showHeader = !!previewMode
-
   return (
     <>
       <TaskDataFetcher token={token} />
 
       {mode == UserRole.IU && <TaskBoardAppBridge token={token} role={UserRole.IU} portalUrl={workspace?.portalUrl} />}
-
-      {/* Header (only show in preview mode since app bridge isn't supported yet) */}
-      {showHeader && <Header showCreateTaskButton={mode === UserRole.IU || !!previewMode} showMenuBox={!previewMode} />}
 
       {/* Filterbars */}
       <FilterBar mode={mode} />
@@ -149,7 +142,7 @@ export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
 
       {/* Task board according to selected view */}
       {viewBoardSettings === View.BOARD_VIEW && (
-        <Box sx={{ padding: '12px 12px', height: `calc(100vh - ${showHeader ? '135px' : '131px'})` }}>
+        <Box sx={{ padding: '12px 12px', height: `calc(100vh - 130px)` }}>
           <Stack
             columnGap={2}
             sx={{
@@ -174,7 +167,6 @@ export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
                   columnName={list.name}
                   taskCount={taskCountForWorkflowStateId(list.id)}
                   showAddBtn={mode === UserRole.IU || !!previewMode}
-                  showHeader={showHeader}
                 >
                   <TasksRowVirtualizer
                     rows={sortTaskByDescendingOrder<TaskResponse>(filterTaskWithWorkflowStateId(list.id))}
@@ -193,7 +185,7 @@ export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
         <Stack
           sx={{
             flexDirection: 'column',
-            height: `calc(100vh - ${showHeader ? '190px' : '130px'})`,
+            height: `calc(100vh - 130px)`,
             width: '99.92%',
             margin: '0 auto',
             overflowY: 'auto',
