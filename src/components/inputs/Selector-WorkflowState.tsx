@@ -6,6 +6,21 @@ import React, { ReactNode, useState } from 'react'
 import { SecondaryBtn } from '../buttons/SecondaryBtn'
 import { CopilotTooltip, CopilotTooltipProps } from '@/components/atoms/CopilotTooltip'
 
+type WorkflowStateSelectorProps = {
+  value: WorkflowStateResponse
+  option: WorkflowStateResponse[]
+  disabled?: boolean
+  getValue: (value: WorkflowStateResponse) => void
+  variant?: 'outlined' | 'icon' | 'normal'
+  responsiveNoHide?: boolean
+  size?: Exclude<Sizes, Sizes.LARGE>
+  padding?: string
+  height?: string
+  gap?: string
+  hoverColor?: keyof Theme['color']['gray']
+  tooltipProps?: Omit<CopilotTooltipProps, 'content' | 'children'>
+}
+
 export const WorkflowStateSelector = ({
   value,
   option,
@@ -19,20 +34,7 @@ export const WorkflowStateSelector = ({
   gap,
   hoverColor,
   tooltipProps,
-}: {
-  value: WorkflowStateResponse
-  option: WorkflowStateResponse[]
-  disabled?: boolean
-  getValue: (value: WorkflowStateResponse) => void
-  variant?: 'outlined' | 'icon' | 'normal'
-  responsiveNoHide?: boolean
-  size?: Exclude<Sizes, Sizes.LARGE>
-  padding?: string
-  height?: string
-  gap?: string
-  hoverColor?: keyof Theme['color']['gray']
-  tooltipProps?: Omit<CopilotTooltipProps, 'content' | 'children'>
-}) => {
+}: WorkflowStateSelectorProps) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const open = Boolean(anchorEl)
   const id = open ? 'selector-workflowStateSelector-popper' : ''
@@ -77,10 +79,10 @@ export const WorkflowStateSelector = ({
             <Stack
               direction="row"
               alignItems="center"
-              columnGap="7px"
+              columnGap={gap ?? '7px'}
               justifyContent="flex-start"
               sx={{
-                padding: '4px 8px',
+                padding: padding || '4px 8px',
                 justifyContent: { xs: 'end', sm: 'flex-start' },
                 cursor: disabled ? 'auto' : 'pointer',
               }}
@@ -95,6 +97,7 @@ export const WorkflowStateSelector = ({
                   display: { xs: responsiveNoHide ? 'block' : 'none', sm: 'block' },
                   lineHeight: '22px',
                   userSelect: 'none',
+                  fontWeight: 400,
                 }}
               >
                 {value?.name as ReactNode}
@@ -108,7 +111,7 @@ export const WorkflowStateSelector = ({
                 <Stack direction="row" alignItems={'center'} columnGap={gap ?? '8px'}>
                   {statusIcons[size][value?.type]}
                   {size == Sizes.SMALL ? (
-                    <Typography variant="bodySm" sx={{ color: (theme) => theme.color.gray[600], fontSize: '12px' }}>
+                    <Typography variant="bodySm" sx={{ color: (theme) => theme.color.gray[600], fontSize: '14px' }}>
                       {value?.name as ReactNode}
                     </Typography>
                   ) : (
@@ -121,14 +124,18 @@ export const WorkflowStateSelector = ({
             />
           ) : (
             // Right now Tooltip support is applied to the icon variant only
-            <CopilotTooltip content={'Change status'} disabled={tooltipProps?.disabled} position={tooltipProps?.position}>
+            <CopilotTooltip
+              content={'Change status'}
+              disabled={tooltipProps?.disabled || disabled}
+              position={tooltipProps?.position}
+            >
               <Box
                 sx={{
                   padding: padding,
                   borderRadius: '4px',
                   ':hover': {
                     cursor: 'pointer',
-                    background: (theme) => theme.color.gray[hoverColor ?? 150],
+                    background: (theme) => (disabled ? '' : theme.color.gray[hoverColor ?? 150]),
                   },
                 }}
               >

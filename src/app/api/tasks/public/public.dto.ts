@@ -2,7 +2,7 @@ import { RFC3339DateSchema } from '@/types/common'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { AssigneeType } from '@prisma/client'
 import { z } from 'zod'
-import { validateUserIds } from '@/types/dto/tasks.dto'
+import { validateUserIds, ViewersSchema } from '@/types/dto/tasks.dto'
 
 export const TaskSourceSchema = z.enum(['web', 'api'])
 export type TaskSource = z.infer<typeof TaskSourceSchema>
@@ -40,96 +40,96 @@ export const PublicTaskDtoSchema = z.object({
   internalUserId: z.string().uuid().nullable(),
   clientId: z.string().uuid().nullable(),
   companyId: z.string().uuid().nullable(),
+  viewers: ViewersSchema,
 })
 export type PublicTaskDto = z.infer<typeof PublicTaskDtoSchema>
 
-export const publicTaskCreateDtoSchemaFactory = (token: string, skipValidation: boolean = false) => {
-  const schema = z.object({
-    name: z.string().max(255).optional(), // allow empty/whitespace, validated in superRefine
-    description: z.string().optional(),
-    parentTaskId: z.string().uuid().optional(),
-    status: StatusSchema.optional(),
-    dueDate: RFC3339DateSchema.optional(),
-    templateId: z.string().uuid().nullish(),
-    createdBy: z.string().uuid().optional(),
-    internalUserId: z.string().uuid().optional(),
-    clientId: z.string().uuid().optional(),
-    companyId: z.string().uuid().optional(),
-  })
+export const publicTaskCreateDtoSchemaFactory = (token: string) => {
+  return z
+    .object({
+      name: z.string().max(255).optional(), // allow empty/whitespace, validated in superRefine
+      description: z.string().optional(),
+      parentTaskId: z.string().uuid().optional(),
+      status: StatusSchema.optional(),
+      dueDate: RFC3339DateSchema.optional(),
+      templateId: z.string().uuid().nullish(),
+      createdBy: z.string().uuid().optional(),
+      internalUserId: z.string().uuid().optional(),
+      clientId: z.string().uuid().optional(),
+      companyId: z.string().uuid().optional(),
+      viewers: ViewersSchema, //right now, we only need the feature to have max of 1 viewer per task
+    })
+    .superRefine(async (data, ctx) => {
+      const { name, templateId, internalUserId, clientId, status } = data
+      let { companyId } = data
 
-  return skipValidation
-    ? schema
-    : schema.superRefine(async (data, ctx) => {
-        const { name, templateId, internalUserId, clientId, status } = data
-        let { companyId } = data
+      const nameIsValid = typeof name === 'string' && name.trim().length > 0
+      const hasTemplateId = typeof templateId === 'string' && templateId.length > 0
+      const statusIsValid = typeof status === 'string' && ['todo', 'inProgress', 'completed'].includes(status)
 
-        const nameIsValid = typeof name === 'string' && name.trim().length > 0
-        const hasTemplateId = typeof templateId === 'string' && templateId.length > 0
-        const statusIsValid = typeof status === 'string' && ['todo', 'inProgress', 'completed'].includes(status)
+      if (!hasTemplateId && !nameIsValid) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Name is required when templateId is not provided',
+          path: ['name'],
+        })
+      }
 
-        if (!hasTemplateId && !nameIsValid) {
+      if (!hasTemplateId && !statusIsValid) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Status is required and must be valid when templateId is not provided',
+          path: ['status'],
+        })
+      }
+
+      // If companyId is not provided, try to infer it from the clientId if client has only one company
+      if (clientId && !companyId) {
+        const copilot = new CopilotAPI(token)
+        const client = await copilot.getClient(clientId)
+        if (Array.isArray(client.companyIds) && client.companyIds.length === 1) {
+          companyId = client.companyIds[0]
+        }
+        // Backwards compatibility in case a client has companyId only and undefined / empty array in companyIds (you can never be too careful)
+        else if (
+          client.companyId &&
+          // This prevents us from picking companyId when there are already many companies in companyIds
+          (!client.companyIds || (Array.isArray(client.companyIds) && !client.companyIds.length))
+        ) {
+          companyId = client.companyId
+        }
+        // If client has multiple companies, throw error
+        else if (Array.isArray(client.companyIds)) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: 'Name is required when templateId is not provided',
-            path: ['name'],
+            message: 'companyId must be provided for clients with more than one company',
+            path: ['companyId'],
           })
-        }
-
-        if (!hasTemplateId && !statusIsValid) {
+        } else {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: 'Status is required and must be valid when templateId is not provided',
-            path: ['status'],
+            message: 'companyId must be provided when clientId is provided',
+            path: ['companyId'],
           })
         }
+      }
 
-        // If companyId is not provided, try to infer it from the clientId if client has only one company
-        if (clientId && !companyId) {
-          const copilot = new CopilotAPI(token)
-          const client = await copilot.getClient(clientId)
-          if (Array.isArray(client.companyIds) && client.companyIds.length === 1) {
-            companyId = client.companyIds[0]
-          }
-          // Backwards compatibility in case a client has companyId only and undefined / empty array in companyIds (you can never be too careful)
-          else if (
-            client.companyId &&
-            // This prevents us from picking companyId when there are already many companies in companyIds
-            (!client.companyIds || (Array.isArray(client.companyIds) && !client.companyIds.length))
-          ) {
-            companyId = client.companyId
-          }
-          // If client has multiple companies, throw error
-          else if (Array.isArray(client.companyIds)) {
-            ctx.addIssue({
-              code: z.ZodIssueCode.custom,
-              message: 'companyId must be provided for clients with more than one company',
-              path: ['companyId'],
-            })
-          } else {
-            ctx.addIssue({
-              code: z.ZodIssueCode.custom,
-              message: 'companyId must be provided when clientId is provided',
-              path: ['companyId'],
-            })
-          }
-        }
+      if (!internalUserId && !clientId && !companyId) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'At least one of internalUserId, clientId, or companyId is required',
+          path: ['internalUserId'],
+        })
+      }
 
-        if (!internalUserId && !clientId && !companyId) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: 'At least one of internalUserId, clientId, or companyId is required',
-            path: ['internalUserId'],
-          })
-        }
-
-        if (internalUserId && (clientId || companyId)) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: 'internalUserId cannot be combined with clientId or companyId',
-            path: ['internalUserId'],
-          })
-        }
-      })
+      if (internalUserId && (clientId || companyId)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'internalUserId cannot be combined with clientId or companyId',
+          path: ['internalUserId'],
+        })
+      }
+    })
 }
 
 export type PublicTaskCreateDto = z.infer<ReturnType<typeof publicTaskCreateDtoSchemaFactory>>
@@ -151,6 +151,7 @@ export const PublicTaskUpdateDtoSchema = z
     internalUserId: z.string().uuid().nullish(),
     clientId: z.string().uuid().nullish(),
     companyId: z.string().uuid().nullish(),
+    viewers: ViewersSchema,
   })
   .superRefine(validateUserIds)
 

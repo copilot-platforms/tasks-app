@@ -18,6 +18,8 @@ interface KeywordMatchable {
 
 const FilterFunctions = {
   [FilterOptions.ASSIGNEE]: filterByAssignee,
+  [FilterOptions.CREATOR]: filterByCreator,
+  [FilterOptions.VISIBILITY]: filterByClientVisibility,
   [FilterOptions.KEYWORD]: filterByKeyword,
   [FilterOptions.TYPE]: filterByType,
 }
@@ -45,6 +47,39 @@ function filterByAssignee(filteredTasks: TaskResponse[], filterValue: UserIdsTyp
     filteredTasks = filteredTasks.filter((task) => task.companyId === companyId)
   }
 
+  return filteredTasks
+}
+
+function filterByClientVisibility(filteredTasks: TaskResponse[], filterValue: UserIdsType): TaskResponse[] {
+  const assigneeUserIds = filterValue
+
+  if (checkEmptyAssignee(assigneeUserIds)) {
+    return filteredTasks
+  }
+  const { [UserIds.CLIENT_ID]: clientId, [UserIds.COMPANY_ID]: companyId } = assigneeUserIds
+
+  if (clientId) {
+    filteredTasks = filteredTasks.filter(
+      (task) => task.viewers?.[0]?.clientId === clientId && task.viewers?.[0]?.companyId === companyId,
+    )
+  } else if (companyId && !clientId) {
+    filteredTasks = filteredTasks.filter((task) => task.viewers?.[0]?.companyId === companyId && !task.viewers?.[0].clientId)
+  }
+
+  return filteredTasks
+}
+
+function filterByCreator(filteredTasks: TaskResponse[], filterValue: UserIdsType): TaskResponse[] {
+  const assigneeUserIds = filterValue
+
+  if (checkEmptyAssignee(assigneeUserIds)) {
+    return filteredTasks
+  }
+  const { [UserIds.INTERNAL_USER_ID]: internalUserId } = assigneeUserIds
+
+  if (internalUserId) {
+    filteredTasks = filteredTasks.filter((task) => task.createdById === internalUserId)
+  }
   return filteredTasks
 }
 
@@ -84,36 +119,53 @@ function filterByKeyword(
 
 function filterByType(filteredTasks: TaskResponse[], filterValue: string): TaskResponse[] {
   const assigneeType = filterValue
-  filteredTasks = assigneeType.includes('all')
-    ? filteredTasks
-    : assigneeType == FilterOptionsKeywords.CLIENTS
-      ? filteredTasks.filter((task) => task?.assigneeType?.includes('client') || task?.assigneeType?.includes('company'))
-      : assigneeType == FilterOptionsKeywords.TEAM
-        ? filteredTasks.filter((task) => task?.assigneeType?.includes('internalUser'))
-        : filteredTasks.filter((task) => task.assigneeId == assigneeType)
 
-  return filteredTasks
+  switch (filterValue) {
+    case FilterOptionsKeywords.CLIENTS:
+      return filteredTasks.filter(
+        (task) => task?.assigneeType?.includes('client') || task?.assigneeType?.includes('company'),
+      )
+
+    case FilterOptionsKeywords.CLIENT_WITH_VIEWERS:
+      return filteredTasks.filter(
+        (task) =>
+          !!task?.viewers?.length || task?.assigneeType?.includes('client') || task?.assigneeType?.includes('company'),
+      )
+
+    case FilterOptionsKeywords.TEAM:
+      return filteredTasks.filter((task) => task?.assigneeType?.includes('internalUser'))
+
+    default:
+      return filteredTasks.filter((task) => task.assigneeId == assigneeType)
+  }
 }
 
-export const useFilter = (filterOptions: IFilterOptions) => {
+export const useFilter = (filterOptions: IFilterOptions, isPreviewMode: boolean) => {
   const { tasks, accessibleTasks, assignee } = useSelector(selectTaskBoard)
-  const [isPending, startTransition] = useTransition()
+  const [_, startTransition] = useTransition()
 
   function applyFilter(tasks: TaskResponse[], filterOptions: IFilterOptions) {
     let filteredTasks = [...tasks]
     for (const [filterType, filterValue] of Object.entries(filterOptions)) {
       if (!filterValue) continue
-      if (filterType === FilterOptions.ASSIGNEE) {
+      if (filterType === FilterOptions.ASSIGNEE && !isPreviewMode) {
+        // there is no filter by assignee in preview mode
         const assigneeFilterValue = UserIdsSchema.parse(filterValue)
         filteredTasks = FilterFunctions[FilterOptions.ASSIGNEE](filteredTasks, assigneeFilterValue)
-      } else if (filterType === FilterOptions.KEYWORD) {
+      }
+      if (filterType === FilterOptions.CREATOR || filterType === FilterOptions.VISIBILITY) {
+        const assigneeFilterValue = UserIdsSchema.parse(filterValue)
+        filteredTasks = FilterFunctions[filterType](filteredTasks, assigneeFilterValue)
+      }
+      if (filterType === FilterOptions.KEYWORD) {
         filteredTasks = FilterFunctions[FilterOptions.KEYWORD](
           filteredTasks,
           filterValue as string,
           accessibleTasks,
           assignee,
         )
-      } else if (filterType === FilterOptions.TYPE) {
+      }
+      if (filterType === FilterOptions.TYPE) {
         filteredTasks = FilterFunctions[FilterOptions.TYPE](filteredTasks, filterValue as string)
       }
     }

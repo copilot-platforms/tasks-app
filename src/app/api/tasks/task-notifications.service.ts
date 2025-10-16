@@ -1,11 +1,14 @@
 import { Uuid } from '@/types/common'
 import { TaskWithWorkflowState } from '@/types/db'
+import { TaskResponseSchema, Viewers, ViewersSchema, ViewerType } from '@/types/dto/tasks.dto'
+import { getTaskViewers } from '@/utils/assignee'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import User from '@api/core/models/User.model'
 import { BaseService } from '@api/core/services/base.service'
 import { NotificationTaskActions } from '@api/core/types/tasks'
 import { NotificationService } from '@api/notification/notification.service'
 import { AssigneeType, StateType, Task, WorkflowState } from '@prisma/client'
+import { z } from 'zod'
 
 export class TaskNotificationsService extends BaseService {
   private notificationService: NotificationService
@@ -30,19 +33,45 @@ export class TaskNotificationsService extends BaseService {
   }
 
   private async checkParentAccessible(task: TaskWithWorkflowState): Promise<boolean> {
-    if ((task.assigneeType === AssigneeType.client || task.assigneeType === AssigneeType.company) && task.parentId) {
-      if (!task.assigneeId) return false
+    if (!task.assigneeId || !task.parentId) return false
 
+    const viewers = ViewersSchema.parse(task.viewers)
+    const checkParentViewers = (
+      clientId: string | null,
+      companyIds?: string[],
+      parentViewer?: ViewerType,
+      clientIds?: string[],
+    ) => {
+      if (parentViewer) {
+        const { clientId: parentViewerClientId, companyId: parentViewerCompanyId } = parentViewer
+        if (
+          (parentViewerClientId === clientId && companyIds?.includes(parentViewerCompanyId)) || //check if parent's client assignee is same as the viewer of child task.
+          (parentViewerClientId && clientIds?.includes(parentViewerClientId)) || //case when child is assigned or shared to a company and parent contains client list of the company.
+          (parentViewerClientId === null && companyIds?.includes(parentViewerCompanyId)) //case when child is assigned or shared to a company and parent contains companyId in viewers of the clients.
+        ) {
+          return true
+        }
+      }
+      return false
+    }
+
+    if (task.assigneeType === AssigneeType.client || task.assigneeType === AssigneeType.company || !!viewers?.length) {
       const parentTask = await this.db.task.findFirst({
         where: { id: task.parentId, workspaceId: this.user.workspaceId },
-        select: { assigneeId: true, assigneeType: true },
+        select: { assigneeId: true, assigneeType: true, viewers: true },
       })
       if (!parentTask) return false
 
+      const parentViewer = getTaskViewers(TaskResponseSchema.pick({ viewers: true }).parse(parentTask))
+
       const copilot = new CopilotAPI(this.user.token)
+
       if (task.assigneeType === AssigneeType.client) {
         const client = await copilot.getClient(task.assigneeId)
         if (parentTask.assigneeId === client.id || parentTask.assigneeId === client.companyId) {
+          return true
+        }
+        if (checkParentViewers(client.id, client.companyIds, parentViewer)) {
           return true
         }
       } else {
@@ -52,7 +81,33 @@ export class TaskNotificationsService extends BaseService {
         if (companyClientIds.includes(parentTask.assigneeId || '__empty__')) {
           return true
         }
-      }
+        if (checkParentViewers(null, [task.assigneeId], parentViewer, companyClientIds)) {
+          return true
+        }
+      } //for assignment notifications
+
+      if (!!viewers?.length) {
+        const copilot = new CopilotAPI(this.user.token)
+        if (viewers[0].clientId) {
+          const client = await copilot.getClient(viewers[0].clientId)
+          if (parentTask.assigneeId === client.id || parentTask.assigneeId === client.companyId) {
+            return true
+          }
+          if (checkParentViewers(client.id, client.companyIds, parentViewer)) {
+            return true
+          }
+        } else {
+          const clients = await copilot.getClients()
+          const companyClientIds =
+            clients.data?.filter((client) => client.companyId === viewers[0].companyId).map((client) => client.id) || []
+          if (companyClientIds.includes(parentTask.assigneeId || '__empty__')) {
+            return true
+          }
+          if (checkParentViewers(null, [viewers[0].companyId], parentViewer, companyClientIds)) {
+            return true
+          }
+        }
+      } //for viewers notifications
     }
     return false
   }
@@ -61,14 +116,23 @@ export class TaskNotificationsService extends BaseService {
     // If task is unassigned, there's nobody to send notifications to
     if (!task.assigneeId) return
 
-    // If task is assigned to the same person that created it, no need to notify yourself
-    if (task.assigneeId === task.createdById) return
-
     // If task is created as status completed for whatever reason, don't send a notification as well
     if (task.workflowState.type === NotificationTaskActions.Completed) return
 
     // If task is a subtask for a client/company and isn't visible on task board (is disjoint)
     if (await this.checkParentAccessible(task)) return
+
+    const viewers = ViewersSchema.parse(task.viewers)
+    if (viewers?.length && !isReassigned) {
+      const clientId = viewers[0].clientId
+      const sendViewersNotifications = clientId
+        ? this.sendUserTaskSharedNotification
+        : this.sendCompanyTaskSharedNotification
+      await sendViewersNotifications(task, viewers)
+    }
+
+    // If task is assigned to the same person that created it, no need to notify yourself
+    if (task.assigneeId === task.createdById) return
 
     // If new task is assigned to someone (IU / Client / Company), send proper notification + email to them
     const sendTaskNotifications =
@@ -93,18 +157,35 @@ export class TaskNotificationsService extends BaseService {
     if (prevTask.isArchived !== updatedTask.isArchived) {
       await this.handleTaskArchiveToggle(prevTask, updatedTask)
     }
+    const updatedViewers = getTaskViewers(updatedTask)
+    const prevViewers = getTaskViewers(prevTask)
 
+    const isViewersUpdated =
+      !!updatedViewers &&
+      ((!!updatedViewers.clientId && prevViewers?.clientId !== updatedViewers?.clientId) ||
+        prevViewers?.companyId !== updatedViewers.companyId)
     // Return if not workflowState / assignee updated
+
     const isReassigned = prevTask.assigneeId !== updatedTask.assigneeId
-    if (prevTask.workflowStateId === updatedTask.workflowStateId && !isReassigned) return
+    if (prevTask.workflowStateId === updatedTask.workflowStateId && !isReassigned && !isViewersUpdated) return
 
     // Case 2
+    // -Handle viewers changed, or viewers updated in a task.
+    if (isViewersUpdated) {
+      const clientId = updatedViewers.clientId
+      const sendViewersNotifications = clientId
+        ? this.sendUserTaskSharedNotification
+        : this.sendCompanyTaskSharedNotification
+      await sendViewersNotifications(updatedTask, [updatedViewers])
+    }
+
+    // Case 3
     // -- Handle previous assignee notification "Mark as read" if it is updated
     if (prevTask.assigneeId !== updatedTask.assigneeId && updatedTask.workflowState.type !== StateType.completed) {
       await this.handleIncompleteTaskReassignment(prevTask, updatedTask)
     }
 
-    // Case 3
+    // Case 4
     // -- Check if prev assignee was IU. If so, delete any and all past in-product notifications related to this task
     if (
       prevTask.assigneeId !== updatedTask.assigneeId &&
@@ -114,7 +195,7 @@ export class TaskNotificationsService extends BaseService {
       await this.notificationService.deleteInternalUserNotificationsForTask(prevTask.id)
     }
 
-    // Case 4
+    // Case 5
     // -- If task was previously in another state, and is moved to a 'completed' type WorkflowState by IU
     if (
       prevTask?.workflowState?.type !== StateType.completed &&
@@ -124,7 +205,7 @@ export class TaskNotificationsService extends BaseService {
       await this.handleTaskCompletionNotifications(prevTask, updatedTask)
     }
 
-    // Case 5
+    // Case 6
     // -- Handle task moved from completed to incomplete IU logic
     const isSelfAssignedIU =
       updatedTask.assigneeType === AssigneeType.internalUser && updatedTask.assigneeId === this.user.internalUserId
@@ -179,6 +260,19 @@ export class TaskNotificationsService extends BaseService {
     if (updatedTask.assigneeType === AssigneeType.internalUser) {
       shouldCreateNotification &&
         (await this.notificationService.create(NotificationTaskActions.CompletedByIU, updatedTask, { disableEmail: true }))
+
+      const viewer = getTaskViewers(updatedTask)
+      if (!viewer) return
+      if (viewer?.clientId) {
+        try {
+          await this.notificationService.markClientNotificationAsRead(updatedTask)
+          return
+        } catch (e: unknown) {
+          console.error(`Failed to find ClientNotification for task ${updatedTask.id}`, e)
+        }
+      } else {
+        await this.notificationService.markAsReadForAllRecipients(updatedTask, NotificationTaskActions.SharedToCompany)
+      }
       // TODO: Clean code and handle notification center notification deletions here instead
     } else if (updatedTask.assigneeType === AssigneeType.company) {
       // Don't do this in parallel since this can cause rate-limits, each of them has their own bottlenecks for avoiding ratelimits
@@ -201,8 +295,11 @@ export class TaskNotificationsService extends BaseService {
 
   private handleIncompleteTaskReassignment = async (prevTask: Task, updatedTask: TaskWithWorkflowState) => {
     // Handle case where parent task is reassigned to a client / company, so the disjoint tasks disappear in real time
+    const updatedTaskViewers = getTaskViewers(updatedTask)
     if (
-      (updatedTask.assigneeType === AssigneeType.client || updatedTask.assigneeType === AssigneeType.company) &&
+      (updatedTask.assigneeType === AssigneeType.client ||
+        updatedTask.assigneeType === AssigneeType.company ||
+        !!updatedTaskViewers) &&
       !updatedTask.parentId
     ) {
       // Remove all notifications for previously disjointed child tasks
@@ -220,9 +317,19 @@ export class TaskNotificationsService extends BaseService {
     // Step 1: Handle notifications removal from previous user
     if (prevTask.assigneeId && prevTask.assigneeType) {
       const assigneeType = prevTask.assigneeType
+      const viewer = getTaskViewers(prevTask)
+
       // -- If task is reassigned from client, delete past in-product notification
       if (assigneeType === AssigneeType.internalUser) {
         await this.notificationService.deleteInternalUserNotificationsForTask(prevTask.id)
+      }
+      // -- If task has a viewer, handle mark as read for the viewer.
+      if (viewer) {
+        if (viewer?.clientId) {
+          await this.notificationService.markClientNotificationAsRead(prevTask)
+        } else {
+          await this.notificationService.markAsReadForAllRecipients(prevTask, NotificationTaskActions.SharedToCompany)
+        }
       }
       // -- If task is reassigned from a client, mark prev client notification as read (not delete)
       if (assigneeType === AssigneeType.client) {
@@ -249,6 +356,7 @@ export class TaskNotificationsService extends BaseService {
 
   private handleTaskCompleted = async (updatedTask: Task) => {
     const copilot = new CopilotAPI(this.user.token)
+
     if (updatedTask.assigneeType === AssigneeType.company) {
       const { recipientIds, senderCompanyId } = await this.notificationService.getNotificationParties(
         copilot,
@@ -275,6 +383,42 @@ export class TaskNotificationsService extends BaseService {
       })
       await this.notificationService.markClientNotificationAsRead(updatedTask)
     }
+  }
+
+  private sendUserTaskSharedNotification = async (task: Task, viewers: Viewers) => {
+    if (!viewers?.length) return
+
+    const notificationType = NotificationTaskActions.Shared
+
+    const existingNotification = await this.getExistingClientNotificationForTask(
+      task.id,
+      Uuid.parse(viewers[0].clientId),
+      Uuid.parse(viewers[0].companyId),
+    )
+    if (existingNotification) {
+      console.error('Found an existing notification. Skipping creating a new one:', existingNotification)
+      return
+    }
+
+    const notification = await this.notificationService.create(notificationType, task)
+    // Create a new entry in ClientNotifications table so we can mark as read on
+    // behalf of client later
+
+    if (!notification) {
+      console.error('Notification failed to trigger for task:', task)
+    }
+  }
+
+  private sendCompanyTaskSharedNotification = async (task: Task) => {
+    const copilot = new CopilotAPI(this.user.token)
+    const { recipientIds } = await this.notificationService.getNotificationParties(
+      copilot,
+      task,
+      NotificationTaskActions.SharedToCompany,
+    )
+    await this.notificationService.createBulkNotification(NotificationTaskActions.SharedToCompany, task, recipientIds, {
+      email: true,
+    })
   }
 
   private sendUserTaskNotification = async (task: Task, isReassigned = false) => {

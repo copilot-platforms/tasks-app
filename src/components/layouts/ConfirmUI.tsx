@@ -13,6 +13,7 @@ interface ConfirmUIProps {
   buttonText: string
   title: string
   description: ReactNode | string
+  variant?: 'default' | 'danger'
 }
 
 export const ConfirmUI = ({
@@ -21,9 +22,10 @@ export const ConfirmUI = ({
   buttonText,
   title = 'Are you sure?',
   description = `This action can't be undone.`,
+  variant = 'default',
 }: ConfirmUIProps) => {
   return (
-    <UIContainer sx={{ width: { xs: '80%', sm: '540px' } }}>
+    <UIContainer sx={{ width: { xs: '80%', sm: '540px' } }} onClick={(e) => e.preventDefault()}>
       <StyledBox>
         <Stack direction="column" rowGap={4} sx={{ padding: '12px 12px 12px 20px' }}>
           <Typography variant="lg">{title}</Typography>
@@ -44,8 +46,9 @@ export const ConfirmUI = ({
                 Cancel
               </Typography>
             }
+            padding={'3px 8px'}
           />
-          <PrimaryBtn handleClick={() => handleConfirm()} buttonText={buttonText} />
+          <PrimaryBtn handleClick={() => handleConfirm()} buttonText={buttonText} variant={variant} padding={'3px 8px'} />
         </Stack>
       </Stack>
     </UIContainer>

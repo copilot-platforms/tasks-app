@@ -58,6 +58,8 @@ model Task {
 
   taskUpdateBacklogs TaskUpdateBacklog[]
 
+  viewers          Json[]      @db.JsonB @default([])
+
   @@index([path], type: Gist)
   @@map("Tasks")
 }

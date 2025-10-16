@@ -1,4 +1,4 @@
-import { Box, useMediaQuery } from '@mui/material'
+import { useMediaQuery } from '@mui/material'
 import { Tooltip } from 'copilot-design-system'
 import React, { useRef, useState } from 'react'
 
@@ -40,7 +40,7 @@ export const CopilotTooltip = ({
     <Tooltip
       content={content}
       position={position}
-      tooltipClassname={open ? `tooltip${allowMaxWidth ? ' tooltip-max' : ''}` : 'displayoff'}
+      tooltipClassname={open ? `tooltip${allowMaxWidth ? ' tooltip-max z-69420' : ''}` : 'displayoff'}
       offset={{ x: dynamicPlacement == 'right' ? 40 : dynamicPlacement == 'left' ? -55 : 7, y: -5 }}
       disabled={disabled || isMobileScreen}
     >

@@ -18,7 +18,7 @@ import { ArchiveWrapper } from '@/app/detail/ui/ArchiveWrapper'
 import { LastArchivedField } from '@/app/detail/ui/LastArchiveField'
 import { MenuBoxContainer } from '@/app/detail/ui/MenuBoxContainer'
 import { ResponsiveStack } from '@/app/detail/ui/ResponsiveStack'
-import { Sidebar, SidebarSkeleton } from '@/app/detail/ui/Sidebar'
+import { Sidebar } from '@/app/detail/ui/Sidebar'
 import { StyledBox, StyledTiptapDescriptionWrapper, TaskDetailsContainer } from '@/app/detail/ui/styledComponent'
 import { Subtasks } from '@/app/detail/ui/Subtasks'
 import { TaskEditor } from '@/app/detail/ui/TaskEditor'
@@ -33,7 +33,7 @@ import { RealTime } from '@/hoc/RealTime'
 import { WorkspaceResponse } from '@/types/common'
 import { AncestorTaskResponse, SubTaskStatusResponse, TaskResponse } from '@/types/dto/tasks.dto'
 import { UserType } from '@/types/interfaces'
-import { getAssigneeCacheLookupKey, UserIdsType } from '@/utils/assignee'
+import { getAssigneeCacheLookupKey, UserIdsWithViewersType } from '@/utils/assignee'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import EscapeHandler from '@/utils/escapeHandler'
 import { getPreviewMode } from '@/utils/previewMode'
@@ -41,6 +41,7 @@ import { Box, Stack } from '@mui/material'
 import { z } from 'zod'
 import { fetchWithErrorHandler } from '@/app/_fetchers/fetchWithErrorHandler'
 import { AssigneeCacheGetter } from '@/app/_cache/AssigneeCacheGetter'
+import { checkIfTaskViewer } from '@/utils/taskViewer'
 import { OneTaskDataFetcher } from '@/app/_fetchers/OneTaskDataFetcher'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse | null> {
@@ -116,6 +117,8 @@ export default async function TaskDetailPage({
   }))
 
   const fromNotificationCenter = !!searchParams.fromNotificationCenter
+  // flag that determines if the current user is the task viewer
+  const isViewer = checkIfTaskViewer(task.viewers, tokenPayload)
 
   return (
     <DetailStateUpdate
@@ -217,7 +220,7 @@ export default async function TaskDetailPage({
                 }
               : {})}
           >
-            <AssigneeCacheGetter lookupKey={getAssigneeCacheLookupKey(user_type, tokenPayload)} />
+            <AssigneeCacheGetter lookupKey={getAssigneeCacheLookupKey(user_type, tokenPayload, isPreviewMode)} />
             <AssigneeFetcher
               token={token}
               userType={params.user_type}
@@ -238,15 +241,16 @@ export default async function TaskDetailPage({
                   ? await clientUpdateTask(token, task_id, workflowState.id)
                   : await updateWorkflowStateIdOfTask(token, task_id, workflowState?.id)
               }}
-              updateAssignee={async ({ internalUserId, clientId, companyId }: UserIdsType) => {
+              updateAssignee={async ({ internalUserId, clientId, companyId, viewers }: UserIdsWithViewersType) => {
                 'use server'
-                await updateAssignee(token, task_id, internalUserId, clientId, companyId)
+                await updateAssignee(token, task_id, internalUserId, clientId, companyId, viewers)
               }}
               updateTask={async (payload) => {
                 'use server'
                 await updateTaskDetail({ token, taskId: task_id, payload })
               }}
               disabled={params.user_type === UserType.CLIENT_USER}
+              workflowDisabled={isViewer}
             />
           </Box>
         </ResponsiveStack>

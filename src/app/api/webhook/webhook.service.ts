@@ -107,9 +107,13 @@ class WebhookService extends BaseService {
       if (existingNotification) continue
 
       const actionUserName = `${actionUser.givenName} ${actionUser.familyName}`
-      const inProduct = getInProductNotificationDetails(workspace, actionUserName, task, { companyName: company.name })[
-        NotificationTaskActions.AssignedToCompany
-      ]
+      const inProduct = task.companyId
+        ? getInProductNotificationDetails(workspace, actionUserName, task, { companyName: company.name })[
+            NotificationTaskActions.AssignedToCompany
+          ]
+        : getInProductNotificationDetails(workspace, actionUserName, task, { companyName: company.name })[
+            NotificationTaskActions.SharedToCompany
+          ]
       const notificationDetails: NotificationRequestBody = {
         senderId: task.createdById,
         senderType: 'internalUser',
@@ -139,11 +143,12 @@ class WebhookService extends BaseService {
     // Delete corresponding tasks
     console.info(`WebhookService#handleUserDeleted :: Deleting all tasks for ${assigneeType} ${assigneeId}`)
     const tasks = await tasksService.deleteAllAssigneeTasks(assigneeId, assigneeType)
+    const resetTasks = await tasksService.resetAllSharedTasks(assigneeId)
 
     // Now delete any and all associated notifications triggered on behalf of company tasks for clients.
     // i.e. decrement client task count in CU portal
     if (assigneeType === AssigneeType.company) {
-      const deletedTaskIds = tasks.map((task) => task.id)
+      const deletedTaskIds = [...tasks.map((task) => task.id), ...resetTasks.map((task) => task.id)] //to delete from clientNotifications
       await this.handleDeletingTaskNotifications(deletedTaskIds)
     }
   }
@@ -217,9 +222,31 @@ class WebhookService extends BaseService {
         },
       },
     })
-    if (!prevCompanyTasks.length) return
 
-    const prevCompanyTaskIds = prevCompanyTasks.map((task) => task.id)
+    // Find and reset tasks shared to previous company+client
+    const prevSharedTasks = await this.db.task.findMany({
+      where: {
+        viewers: {
+          hasSome: [{ clientId, companyId: prevCompanyId }],
+        },
+        workspaceId: this.user.workspaceId,
+      },
+      select: { id: true },
+    })
+
+    await this.db.task.updateMany({
+      where: {
+        id: { in: prevSharedTasks.map((t) => t.id) },
+      },
+      data: {
+        viewers: [],
+      },
+    })
+
+    const tasksNotificationsToDelete = [...prevCompanyTasks, ...prevSharedTasks]
+    if (!tasksNotificationsToDelete.length) return
+
+    const prevCompanyTaskIds = tasksNotificationsToDelete.map((task) => task.id)
 
     // Find all triggered notifications for this client, on behalf of prev company
     const prevCompanyNotifications = await this.db.clientNotification.findMany({
