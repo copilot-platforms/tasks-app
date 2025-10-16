@@ -1,12 +1,13 @@
 import { Token } from '@/types/common'
 import { TruncateMaxNumber } from '@/types/constants'
-import { TaskResponse } from '@/types/dto/tasks.dto'
-import { IAssigneeCombined, ISelectorOption, UserType } from '@/types/interfaces'
+import { TaskResponse, Viewers, ViewersSchema } from '@/types/dto/tasks.dto'
+import { IAssigneeCombined, ISelectorOption, UserIds, UserType } from '@/types/interfaces'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { truncateText } from '@/utils/truncateText'
-import { AssigneeType } from '@prisma/client'
+import { AssigneeType, Task } from '@prisma/client'
 import deepEqual from 'deep-equal'
 import { z } from 'zod'
+import { NoAssignee } from '@/utils/noAssignee'
 
 export const UserIdsSchema = z.object({
   internalUserId: z.string().nullable(),
@@ -15,6 +16,8 @@ export const UserIdsSchema = z.object({
 })
 
 export type UserIdsType = z.infer<typeof UserIdsSchema>
+
+export type UserIdsWithViewersType = UserIdsType & { viewers?: Viewers }
 
 export const isAssigneeTextMatching = (newInputValue: string, assigneeValue: IAssigneeCombined): boolean => {
   const truncate = (newInputValue: string) => truncateText(newInputValue, TruncateMaxNumber.SELECTOR)
@@ -75,9 +78,33 @@ export const checkEmptyAssignee = (userIds: UserIdsType) => {
   return deepEqual(emptyAssignee, userIds)
 }
 
-export const getAssigneeCacheLookupKey = (userType: string, tokenPayload: Token): string => {
-  if (userType === UserType.INTERNAL_USER) {
+export const getAssigneeCacheLookupKey = (userType: string, tokenPayload: Token, isPreviewMode: boolean): string => {
+  if (userType === UserType.INTERNAL_USER || isPreviewMode) {
     return tokenPayload.internalUserId!
   }
   return `${tokenPayload.clientId}.${tokenPayload.companyId}`
+}
+
+export const isEmptyAssignee = (userIds?: UserIdsType) => {
+  if (!userIds) return true
+  return Object.values(userIds).every((value) => value === null)
+}
+
+export const getAssigneeValueFromViewers = (viewer: IAssigneeCombined | null, assignee: IAssigneeCombined[]) => {
+  if (!viewer) {
+    return NoAssignee
+  }
+  const viewerType = getAssigneeTypeCorrected(viewer)
+  const match = assignee.find((assignee) =>
+    viewerType === AssigneeType.client
+      ? assignee.id === viewer.id && assignee.companyId == viewer.companyId
+      : assignee.id === viewer?.id,
+  )
+  return match ?? undefined
+}
+
+export const getTaskViewers = (task: TaskResponse | Task | Pick<TaskResponse, 'viewers'>) => {
+  const taskViewers = ViewersSchema.parse(task.viewers)
+  const viewer = !!taskViewers?.length ? taskViewers[0] : undefined
+  return viewer
 }
