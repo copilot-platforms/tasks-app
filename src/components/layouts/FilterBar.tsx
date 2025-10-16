@@ -1,5 +1,6 @@
 'use client'
 
+import { IconBtn } from '@/components/buttons/IconBtn'
 import FilterButtonGroup from '@/components/buttonsGroup/FilterButtonsGroup'
 import { DisplaySelector } from '@/components/inputs/DisplaySelector'
 import SearchBar from '@/components/searchBar'
@@ -25,7 +26,6 @@ import { UserRole } from '@api/core/types/user'
 import { Box, Stack } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
-import { IconBtn } from '../buttons/IconBtn'
 
 interface FilterBarProps {
   mode: UserRole
