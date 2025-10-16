@@ -2,6 +2,8 @@ import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import { getAllTasks, getAllWorkflowStates, getViewSettings } from '@/app/(home)/page'
 import { Token, WorkspaceResponse } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
+import { AssigneeFetcher } from '@/app/_fetchers/AssigneeFetcher'
+import { UserType } from '@/types/interfaces'
 
 interface DetailStateUpdateProps {
   isRedirect?: boolean
@@ -45,6 +47,15 @@ export const DetailStateUpdate = async ({
       task={task}
       workspace={workspace}
     >
+      {/* Notification CTA redirects only happen for IUs through notification center, or clients from emails  */}
+      {tokenPayload && (
+        <AssigneeFetcher
+          token={token}
+          userType={tokenPayload.internalUserId ? UserType.INTERNAL_USER : UserType.CLIENT_USER}
+          tokenPayload={tokenPayload}
+        />
+      )}
+
       {children}
     </ClientSideStateUpdate>
   )
