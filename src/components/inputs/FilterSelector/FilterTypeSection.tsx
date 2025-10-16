@@ -2,7 +2,7 @@ import { CopilotTooltip } from '@/components/atoms/CopilotTooltip'
 import { InfoIcon } from '@/icons'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { FilterType } from '@/types/common'
-import { FilterOptionsKeywords } from '@/types/interfaces'
+import { FilterOptionsKeywords, IFilterOptions } from '@/types/interfaces'
 import { Box, Stack, Typography } from '@mui/material'
 import { useSelector } from 'react-redux'
 
