@@ -125,7 +125,7 @@ export const Sidebar = ({
   }, [assignee, activeTask])
 
   const windowWidth = useWindowWidth()
-  const isMobile = windowWidth < 600 && windowWidth !== 0
+  const isMobile = windowWidth < 800 && windowWidth !== 0
 
   const checkViewersCompatibility = (userIds: UserIdsType): UserIdsWithViewersType => {
     // remove task viewers if assignee is cleared or changed to client or company
@@ -145,6 +145,8 @@ export const Sidebar = ({
   useEffect(() => {
     if (isMobile) {
       store.dispatch(setShowSidebar(false))
+    } else {
+      store.dispatch(setShowSidebar(true))
     }
   }, [isMobile])
 
@@ -200,7 +202,16 @@ export const Sidebar = ({
         columnGap={'8px'}
         rowGap={'8px'}
         position="relative"
-        sx={{ flexWrap: 'wrap', padding: '12px 18px' }}
+        sx={{
+          flexWrap: 'wrap',
+          padding: '12px 18px',
+          maxWidth: '654px',
+          justifyContent: 'flex-start',
+          alignItems: 'center',
+          width: '100%',
+          margin: '0 auto',
+          display: 'flex',
+        }}
       >
         <Box
           sx={{
@@ -369,7 +380,7 @@ export const Sidebar = ({
         borderLeft: (theme) => `1px solid ${theme.color.borders.border2}`,
         height: '100vh',
         display: showSidebar ? 'block' : 'none',
-        width: isMobile && showSidebar ? '100vw' : '25vw',
+        width: isMobile && showSidebar ? '100vw' : '320px',
       }}
     >
       <StyledBox sx={{ borderBottom: '0px' }}>
@@ -612,7 +623,7 @@ export const Sidebar = ({
 export const SidebarSkeleton = () => {
   const { showSidebar } = useSelector(selectTaskDetails)
   const windowWidth = useWindowWidth()
-  const isMobile = windowWidth < 600 && windowWidth !== 0
+  const isMobile = windowWidth < 800 && windowWidth !== 0
 
   useEffect(() => {
     if (isMobile) {
@@ -650,7 +661,7 @@ export const SidebarSkeleton = () => {
         borderLeft: (theme) => `1px solid ${theme.color.borders.border2}`,
         height: '100vh',
         display: showSidebar ? 'block' : 'none',
-        width: isMobile && showSidebar ? '100vw' : '25vw',
+        width: isMobile && showSidebar ? '100vw' : '320px',
       }}
     >
       <StyledBox sx={{ borderBottom: '0px' }}>
@@ -693,7 +704,7 @@ export const SidebarSkeleton = () => {
 
 export const SidebarElementSkeleton = () => {
   const windowWidth = useWindowWidth()
-  const isMobile = windowWidth < 600 && windowWidth !== 0
+  const isMobile = windowWidth < 800 && windowWidth !== 0
 
   return (
     <Box
