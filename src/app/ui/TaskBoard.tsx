@@ -1,6 +1,6 @@
 'use client'
 
-import { updateTask, updateViewModeSettings } from '@/app/(home)/actions'
+import { updateTask } from '@/app/(home)/actions'
 import { TaskDataFetcher } from '@/app/_fetchers/TaskDataFetcher'
 import { clientUpdateTask } from '@/app/detail/[task_id]/[user_type]/actions'
 import { TaskBoardAppBridge } from '@/app/ui/TaskBoardAppBridge'
@@ -11,14 +11,13 @@ import { TaskColumn } from '@/components/cards/TaskColumn'
 import { TaskRow } from '@/components/cards/TaskRow'
 import DashboardEmptyState from '@/components/layouts/EmptyState/DashboardEmptyState'
 import { FilterBar } from '@/components/layouts/FilterBar'
-import { Header } from '@/components/layouts/Header'
+import { SecondaryFilterBar } from '@/components/layouts/SecondaryFilterBar'
 import { DragDropHandler } from '@/hoc/DragDropHandler'
 import { useFilter } from '@/hooks/useFilter'
 import { selectTaskBoard, updateWorkflowStateIdByTaskId } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
 import { WorkspaceResponse } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
-import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
 import { View } from '@/types/interfaces'
 import { sortTaskByDescendingOrder } from '@/utils/sortTask'
 import { prioritizeStartedStates } from '@/utils/workflowStates'
@@ -33,6 +32,7 @@ interface TaskBoardProps {
   workspace?: WorkspaceResponse
   token: string
 }
+
 export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
   const {
     workflowStates,
@@ -85,7 +85,7 @@ export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
     showUnarchived: viewSettingsTemp ? viewSettingsTemp.showUnarchived : showUnarchived,
   }
 
-  useFilter(viewSettingsTemp ? viewSettingsTemp.filterOptions : filterOptions)
+  useFilter(viewSettingsTemp ? viewSettingsTemp.filterOptions : filterOptions, !!previewMode)
   const userHasNoFilter =
     filterOptions &&
     !filterOptions.type &&
@@ -130,26 +130,19 @@ export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
     )
   }
 
-  const showHeader = !!previewMode
-
   return (
     <>
       <TaskDataFetcher token={token} />
-      {mode == UserRole.IU && <TaskBoardAppBridge token={token} role={UserRole.IU} portalUrl={workspace?.portalUrl} />}
-      {showHeader && <Header showCreateTaskButton={mode === UserRole.IU || !!previewMode} showMenuBox={!previewMode} />}
-      <FilterBar
-        mode={mode}
-        updateViewModeSetting={async (payload: CreateViewSettingsDTO) => {
-          try {
-            await updateViewModeSettings(z.string().parse(token), payload)
-          } catch (error) {
-            console.error('view settings update error', error)
-          }
-        }}
-      />
 
+      {mode == UserRole.IU && <TaskBoardAppBridge token={token} role={UserRole.IU} portalUrl={workspace?.portalUrl} />}
+
+      {/* Filterbars */}
+      <FilterBar mode={mode} />
+      <SecondaryFilterBar mode={mode} />
+
+      {/* Task board according to selected view */}
       {viewBoardSettings === View.BOARD_VIEW && (
-        <Box sx={{ padding: '12px 12px' }}>
+        <Box sx={{ padding: '12px 12px', height: `calc(100vh - 130px)` }}>
           <Stack
             columnGap={2}
             sx={{
@@ -174,7 +167,6 @@ export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
                   columnName={list.name}
                   taskCount={taskCountForWorkflowStateId(list.id)}
                   showAddBtn={mode === UserRole.IU || !!previewMode}
-                  showHeader={showHeader}
                 >
                   <TasksRowVirtualizer
                     rows={sortTaskByDescendingOrder<TaskResponse>(filterTaskWithWorkflowStateId(list.id))}
@@ -193,7 +185,7 @@ export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
         <Stack
           sx={{
             flexDirection: 'column',
-            height: `calc(100vh - ${showHeader ? '135px' : '75px'})`,
+            height: `calc(100vh - 130px)`,
             width: '99.92%',
             margin: '0 auto',
             overflowY: 'auto',
@@ -228,6 +220,8 @@ export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
           ))}
         </Stack>
       )}
+
+      {/* Drag layer layout */}
       <CustomDragLayer>
         <CardDragLayer mode={mode} />
       </CustomDragLayer>
