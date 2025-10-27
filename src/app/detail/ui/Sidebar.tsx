@@ -380,7 +380,7 @@ export const Sidebar = ({
         borderLeft: (theme) => `1px solid ${theme.color.borders.border2}`,
         height: '100vh',
         display: showSidebar ? 'block' : 'none',
-        width: isMobile && showSidebar ? '100vw' : '320px',
+        width: isMobile && showSidebar ? '100vw' : '305px',
       }}
     >
       <StyledBox sx={{ borderBottom: '0px' }}>
