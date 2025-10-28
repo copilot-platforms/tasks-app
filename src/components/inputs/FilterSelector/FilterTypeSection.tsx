@@ -6,13 +6,12 @@ import { FilterOptionsKeywords } from '@/types/interfaces'
 import { Box, Stack, Typography } from '@mui/material'
 import { useSelector } from 'react-redux'
 
-const FILTER_MODES = [FilterType.Assignee, FilterType.Visibility, FilterType.Creator]
-
 interface FilterTypeSectionProps {
   setFilterMode: React.Dispatch<React.SetStateAction<FilterType | null>>
+  filterModes: FilterType[]
 }
 
-export const FilterTypeSection = ({ setFilterMode }: FilterTypeSectionProps) => {
+export const FilterTypeSection = ({ setFilterMode, filterModes }: FilterTypeSectionProps) => {
   const {
     filterOptions: { type },
   } = useSelector(selectTaskBoard)
@@ -30,7 +29,7 @@ export const FilterTypeSection = ({ setFilterMode }: FilterTypeSectionProps) => 
       }}
       rowGap={'2px'}
     >
-      {FILTER_MODES.map((filterMode) => {
+      {filterModes.map((filterMode) => {
         const isDisabled = disabled.includes(filterMode)
         const isRemoved = removed.includes(filterMode)
         if (isRemoved) return null

@@ -5,16 +5,32 @@ import { Box, ClickAwayListener, Popper, Stack, Typography } from '@mui/material
 import React, { useEffect, useState } from 'react'
 import { FilterTypeSection } from './FilterTypeSection'
 import { FilterAssigneeSection } from './FilterAssigneeSection'
+import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { useSelector } from 'react-redux'
+import { isEmptyAssignee } from '@/utils/assignee'
 
 type FilterSelectorProps = {
   disabled?: boolean
 }
+
+const FILTER_MODES = [FilterType.Assignee, FilterType.Visibility, FilterType.Creator]
 
 export const FilterSelector = ({ disabled }: FilterSelectorProps) => {
   const [filterMode, setFilterMode] = useState<FilterType | null>(null)
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const open = Boolean(anchorEl)
   const id = open ? 'filter-selector-popper' : ''
+
+  const {
+    filterOptions: { assignee, creator, visibility },
+  } = useSelector(selectTaskBoard)
+
+  const filterModes = FILTER_MODES.filter((mode) => {
+    if (mode === FilterType.Assignee && !isEmptyAssignee(assignee)) return false
+    if (mode === FilterType.Creator && !isEmptyAssignee(creator)) return false
+    if (mode === FilterType.Visibility && !isEmptyAssignee(visibility)) return false
+    return true
+  })
 
   const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
     if (!disabled) {
@@ -34,6 +50,10 @@ export const FilterSelector = ({ disabled }: FilterSelectorProps) => {
       setFilterMode(null)
     }
   }, [open, filterMode])
+
+  if (!filterModes.length) {
+    return null
+  }
 
   return (
     <ClickAwayListener
@@ -103,7 +123,7 @@ export const FilterSelector = ({ disabled }: FilterSelectorProps) => {
           ]}
         >
           {!filterMode ? (
-            <FilterTypeSection setFilterMode={setFilterMode} />
+            <FilterTypeSection setFilterMode={setFilterMode} filterModes={filterModes} />
           ) : (
             <FilterAssigneeSection filterMode={filterMode} setAnchorEl={setAnchorEl} />
           )}
