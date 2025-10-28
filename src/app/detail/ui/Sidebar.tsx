@@ -278,7 +278,7 @@ export const Sidebar = ({
                       textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap',
                       overflow: 'hidden',
-                      maxWidth: '150px',
+                      maxWidth: '135px',
                     }}
                   >
                     {assigneeValue?.name == 'No assignee' ? 'Set assignee' : getAssigneeName(assigneeValue, 'Set assignee')}
@@ -320,7 +320,7 @@ export const Sidebar = ({
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
-                        maxWidth: '150px',
+                        maxWidth: '135px',
                       }}
                     >
                       {getAssigneeName(taskViewerValue || undefined, 'Set client visibility')}
@@ -495,7 +495,7 @@ export const Sidebar = ({
                           textOverflow: 'ellipsis',
                           whiteSpace: 'nowrap',
                           overflow: 'hidden',
-                          maxWidth: '150px',
+                          maxWidth: '135px',
                           fontWeight: 400,
                         }}
                       >
@@ -550,7 +550,7 @@ export const Sidebar = ({
                             textOverflow: 'ellipsis',
                             whiteSpace: 'nowrap',
                             overflow: 'hidden',
-                            maxWidth: '150px',
+                            maxWidth: '135px',
                             fontWeight: 400,
                           }}
                         >
