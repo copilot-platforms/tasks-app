@@ -583,19 +583,18 @@ const NewTaskFormInputs = ({ isEditorReadonly }: NewTaskFormInputsProps) => {
           multiline
           disabled={isEditorReadonly}
         />
-        <Box sx={{ height: '100%', width: '100%' }}>
+        <Box sx={{ height: '100%', width: '100%', overflow: 'auto' }}>
           <Tapwrite
             content={description}
             getContent={handleDetailChange}
             placeholder="Add description..."
-            editorClass="tapwrite-task-editor h-full"
+            editorClass="tapwrite-description-h-full"
             uploadFn={uploadFn}
             readonly={isEditorReadonly}
             deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', null, null)}
             attachmentLayout={AttachmentLayout}
             maxUploadLimit={MAX_UPLOAD_LIMIT}
-            parentContainerStyle={{ gap: '0px', height: '66px' }}
-            className="h-full"
+            parentContainerStyle={{ gap: '0px' }}
           />
         </Box>
       </Stack>
