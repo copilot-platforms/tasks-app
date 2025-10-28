@@ -132,7 +132,7 @@ export default async function TaskDetailPage({
       <RealTime tokenPayload={tokenPayload}>
         <EscapeHandler />
         <ResponsiveStack fromNotificationCenter={fromNotificationCenter}>
-          <Box sx={{ width: '100%', display: 'flex', flex: 1, flexDirection: 'column' }}>
+          <Box sx={{ width: '100%', display: 'flex', flex: 1, flexDirection: 'column', overflow: 'hidden' }}>
             {isPreviewMode ? (
               <StyledBox>
                 <AppMargin size={SizeofAppMargin.HEADER} py="17.5px">
