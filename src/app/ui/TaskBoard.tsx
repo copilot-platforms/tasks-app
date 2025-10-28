@@ -138,7 +138,7 @@ export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
 
       {/* Filterbars */}
       <FilterBar mode={mode} />
-      <SecondaryFilterBar mode={mode} />
+      {mode == UserRole.IU && <SecondaryFilterBar mode={mode} />}
 
       {/* Task board according to selected view */}
       {viewBoardSettings === View.BOARD_VIEW && (
