@@ -132,7 +132,7 @@ export default async function TaskDetailPage({
       <RealTime tokenPayload={tokenPayload}>
         <EscapeHandler />
         <ResponsiveStack fromNotificationCenter={fromNotificationCenter}>
-          <ToggleController>
+          <Box sx={{ width: '100%', display: 'flex', flex: 1, flexDirection: 'column' }}>
             {isPreviewMode ? (
               <StyledBox>
                 <AppMargin size={SizeofAppMargin.HEADER} py="17.5px">
@@ -162,7 +162,7 @@ export default async function TaskDetailPage({
             <CustomScrollBar>
               <TaskDetailsContainer
                 sx={{
-                  padding: { xs: '20px 33px 20px 20px', sm: '30px 33px 30px 20px' },
+                  padding: { xs: '20px 16px ', sm: '30px 20px' },
                 }}
               >
                 <StyledTiptapDescriptionWrapper>
@@ -207,7 +207,7 @@ export default async function TaskDetailPage({
                 <ActivityWrapper task_id={task_id} token={token} tokenPayload={tokenPayload} />
               </TaskDetailsContainer>
             </CustomScrollBar>
-          </ToggleController>
+          </Box>
           <Box
             {...(fromNotificationCenter
               ? {
