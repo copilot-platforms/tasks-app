@@ -257,24 +257,9 @@ export class TaskNotificationsService extends BaseService {
     if (updatedTask.createdById === this.user.internalUserId) {
       shouldCreateNotification = false
     }
-    if (updatedTask.assigneeType === AssigneeType.internalUser) {
-      shouldCreateNotification &&
-        (await this.notificationService.create(NotificationTaskActions.CompletedByIU, updatedTask, { disableEmail: true }))
 
-      const viewer = getTaskViewers(updatedTask)
-      if (!viewer) return
-      if (viewer?.clientId) {
-        try {
-          await this.notificationService.markClientNotificationAsRead(updatedTask)
-          return
-        } catch (e: unknown) {
-          console.error(`Failed to find ClientNotification for task ${updatedTask.id}`, e)
-        }
-      } else {
-        await this.notificationService.markAsReadForAllRecipients(updatedTask, NotificationTaskActions.SharedToCompany)
-      }
-      // TODO: Clean code and handle notification center notification deletions here instead
-    } else if (updatedTask.assigneeType === AssigneeType.company) {
+    // TODO: Clean code and handle notification center notification deletions here instead
+    else if (updatedTask.assigneeType === AssigneeType.company) {
       // Don't do this in parallel since this can cause rate-limits, each of them has their own bottlenecks for avoiding ratelimits
       shouldCreateNotification &&
         (await this.notificationService.create(NotificationTaskActions.CompletedForCompanyByIU, updatedTask, {
@@ -295,11 +280,8 @@ export class TaskNotificationsService extends BaseService {
 
   private handleIncompleteTaskReassignment = async (prevTask: Task, updatedTask: TaskWithWorkflowState) => {
     // Handle case where parent task is reassigned to a client / company, so the disjoint tasks disappear in real time
-    const updatedTaskViewers = getTaskViewers(updatedTask)
     if (
-      (updatedTask.assigneeType === AssigneeType.client ||
-        updatedTask.assigneeType === AssigneeType.company ||
-        !!updatedTaskViewers) &&
+      (updatedTask.assigneeType === AssigneeType.client || updatedTask.assigneeType === AssigneeType.company) &&
       !updatedTask.parentId
     ) {
       // Remove all notifications for previously disjointed child tasks
@@ -317,20 +299,12 @@ export class TaskNotificationsService extends BaseService {
     // Step 1: Handle notifications removal from previous user
     if (prevTask.assigneeId && prevTask.assigneeType) {
       const assigneeType = prevTask.assigneeType
-      const viewer = getTaskViewers(prevTask)
 
       // -- If task is reassigned from client, delete past in-product notification
       if (assigneeType === AssigneeType.internalUser) {
         await this.notificationService.deleteInternalUserNotificationsForTask(prevTask.id)
       }
-      // -- If task has a viewer, handle mark as read for the viewer.
-      if (viewer) {
-        if (viewer?.clientId) {
-          await this.notificationService.markClientNotificationAsRead(prevTask)
-        } else {
-          await this.notificationService.markAsReadForAllRecipients(prevTask, NotificationTaskActions.SharedToCompany)
-        }
-      }
+
       // -- If task is reassigned from a client, mark prev client notification as read (not delete)
       if (assigneeType === AssigneeType.client) {
         await this.notificationService.markClientNotificationAsRead(prevTask)
@@ -400,7 +374,10 @@ export class TaskNotificationsService extends BaseService {
       return
     }
 
-    const notification = await this.notificationService.create(notificationType, task)
+    const notification = await this.notificationService.create(notificationType, task, {
+      disableInProduct: true,
+      disableEmail: false,
+    })
     // Create a new entry in ClientNotifications table so we can mark as read on
     // behalf of client later
 
@@ -418,6 +395,7 @@ export class TaskNotificationsService extends BaseService {
     )
     await this.notificationService.createBulkNotification(NotificationTaskActions.SharedToCompany, task, recipientIds, {
       email: true,
+      disableInProduct: true,
     })
   }
 
