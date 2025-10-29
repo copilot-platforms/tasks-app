@@ -45,6 +45,7 @@ export class ValidateCountService extends NotificationService {
       showArchived: false,
       showUnarchived: true,
       showIncompleteOnly: true,
+      companyId: this.user.companyId, //notification counts only applied on assigned tasks, not shared tasks.
     })
     console.info('ValidateCount :: User tasks for company', companyId, ':', tasks.length)
 
@@ -156,7 +157,7 @@ export class ValidateCountService extends NotificationService {
         // This is a duplicate notification, SKIP
         continue
       }
-      const taskViewers = getTaskViewers(task)
+
       createNotificationPromises.push(
         copilotBottleneck.schedule(() => {
           console.info(`ValidateCount :: Creating missing notification for task ${task.id} - ${task.title}`)
@@ -164,7 +165,7 @@ export class ValidateCountService extends NotificationService {
           return this.copilot.createNotification({
             senderId: task.createdById,
             recipientClientId: clientId,
-            recipientCompanyId: task.companyId || taskViewers?.companyId,
+            recipientCompanyId: task.companyId || undefined,
             deliveryTargets: {
               inProduct: {
                 // doesn't matter what you add here since notification details cannot be viewed
