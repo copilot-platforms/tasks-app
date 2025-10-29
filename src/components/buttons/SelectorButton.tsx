@@ -69,6 +69,7 @@ export const SelectorButton = ({
           },
           height: height ?? '32px',
           minWidth: 'auto',
+          transition: 'none',
         }),
         ...applySx(sx),
       ]}
