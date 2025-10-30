@@ -87,3 +87,38 @@ a {
 .displayoff {
   display: none;
 }
+
+.filter-chip {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 21px;
+  height: 32px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid #eff1f4;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.filter-chip:hover {
+  background-color: #1976d20a;
+  border: 1px solid #dfe1e4;
+}
+
+.filter-chip:focus-visible,
+.filter-chip:focus,
+.filter-chip:active {
+  outline: none;
+  border-color: #eff1f4;
+  box-shadow: none;
+}
+
+.filter-chip > span > svg:last-of-type {
+  color: #6b6f76;
+}

@@ -26,6 +26,7 @@ export const FilterTypeSection = ({ setFilterMode, filterModes }: FilterTypeSect
         boxShadow: '0px 6px 20px 0px rgba(0, 0, 0, 0.12)',
         background: (theme) => theme.color.base.white,
         borderRadius: '4px',
+        overflow: 'hidden',
       }}
       rowGap={'2px'}
     >

@@ -86,7 +86,7 @@ export const FilterSelector = ({ disabled }: FilterSelectorProps) => {
             })}
             buttonContent={
               <Stack direction="row" alignItems={'center'} columnGap={'6px'}>
-                <FilterByAsigneeIcon className="text-gray-500" />
+                <FilterByAsigneeIcon />
                 <Typography
                   sx={(theme) => ({
                     color: theme.color.text.textSecondary,
