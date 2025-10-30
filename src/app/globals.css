@@ -100,6 +100,7 @@ a {
   height: 32px;
   padding: 2px 8px;
   border-radius: 4px;
+  line-height: 21px;
   border: 1px solid #eff1f4;
   transition:
     background-color 0.2s ease,
