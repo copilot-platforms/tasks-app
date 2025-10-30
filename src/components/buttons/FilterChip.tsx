@@ -106,7 +106,7 @@ export const FilterChip = ({ type, assignee }: FilterChipProps) => {
               }}
               sx={{
                 cursor: 'default',
-                borderRadius: 0,
+                borderRadius: '2px',
                 padding: '2px',
 
                 '&:hover': {
