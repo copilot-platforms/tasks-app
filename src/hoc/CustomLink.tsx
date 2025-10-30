@@ -1,7 +1,6 @@
 'use client'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { CSSProperties, ReactNode, useCallback, useState, useRef } from 'react'
+import { CSSProperties, ReactNode, useCallback, useRef, useState } from 'react'
 import { UrlObject } from 'url'
 import { z } from 'zod'
 
@@ -9,10 +8,12 @@ export const CustomLink = ({
   children,
   href,
   style,
+  draggable = true,
 }: {
   children: ReactNode
   href: string | UrlObject
   style?: CSSProperties
+  draggable?: boolean
 }) => {
   type UrlDetails = {
     pathname?: string
@@ -69,6 +70,12 @@ export const CustomLink = ({
       prefetch={shouldPrefetch}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
+      draggable={draggable}
+      onDragStart={(e) => {
+        if (!draggable) {
+          e.preventDefault()
+        }
+      }}
     >
       {children}
     </Link>

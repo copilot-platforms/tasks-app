@@ -86,6 +86,7 @@ export function TasksRowVirtualizer({ rows, mode, token, subtasksByTaskId, workf
                   query: { token },
                 }}
                 style={{ width: 'fit-content' }}
+                draggable={!checkIfTaskViewer(rows[virtualRow.index].viewers, tokenPayload)}
               >
                 <DragDropHandler
                   key={rows[virtualRow.index].id}
@@ -165,6 +166,12 @@ export function TasksColumnVirtualizer({
                 position: 'absolute',
                 transform: `translateY(${virtualRow.start}px)`,
                 width: '100%',
+              }}
+              draggable={!checkIfTaskViewer(rows[virtualRow.index].viewers, tokenPayload)}
+              onDragStart={(e) => {
+                if (checkIfTaskViewer(rows[virtualRow.index].viewers, tokenPayload)) {
+                  e.preventDefault()
+                }
               }}
             >
               <div style={{ padding: '3px 0', width: '100%' }}>
