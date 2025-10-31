@@ -10,6 +10,7 @@ import { useState } from 'react'
 import { Sizes } from '@/types/interfaces'
 import { DueDateLayout } from '@/components/layouts/DueDateLayout'
 import { CopilotTooltip, CopilotTooltipProps } from '@/components/atoms/CopilotTooltip'
+import useClickOutside from '@/hooks/useClickOutside'
 
 interface Prop {
   getDate: (value: string) => void
@@ -48,20 +49,23 @@ export const DatePickerComponent = ({
     return date ? date.format('MMMM D, YYYY') : '' // Format the date as "March 8, 2024"
   }
 
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+  const [open, setOpen] = useState(false)
+  const anchorRef = useRef<HTMLDivElement>(null)
+  const popperRef = useRef<HTMLDivElement>(null)
 
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+  const handleClick = () => {
     if (!disabled) {
-      setAnchorEl(anchorEl ? null : event.currentTarget)
+      setOpen((prev) => !prev)
     }
   }
 
-  const open = Boolean(anchorEl)
   const id = open ? 'calender-element' : undefined
 
   useEffect(() => {
     setValue(dateValue ? dayjs(dateValue) : null)
   }, [dateValue])
+
+  useClickOutside([anchorRef, popperRef], () => setOpen(false))
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -72,7 +76,7 @@ export const DatePickerComponent = ({
         onClickCapture={(e) => {
           e.preventDefault()
           e.stopPropagation()
-          handleClick(e)
+          handleClick()
         }}
         aria-describedby={id}
         sx={{
@@ -80,6 +84,7 @@ export const DatePickerComponent = ({
           padding: containerPadding ? containerPadding : variant == 'button' || variant == 'icon' ? '0px' : '4px 8px',
           borderRadius: '4px',
         }}
+        ref={anchorRef}
       >
         {variant == 'button' ? (
           <SecondaryBtn
@@ -172,7 +177,7 @@ export const DatePickerComponent = ({
       <Popper
         id={id}
         open={open}
-        anchorEl={anchorEl}
+        anchorEl={anchorRef.current}
         placement="bottom-start"
         // This hides popper's tooltip that helps position the content. display: none would mess up the positioning
         sx={{
@@ -186,7 +191,7 @@ export const DatePickerComponent = ({
           disablePast
           value={value}
           open={open}
-          onClose={() => setAnchorEl(null)}
+          onClose={() => setOpen(false)}
           onChange={(newValue) => {
             setValue(newValue)
             getDate(formatDate(newValue))

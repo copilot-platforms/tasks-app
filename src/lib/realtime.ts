@@ -142,6 +142,7 @@ export class RealtimeHandler {
       if (newTask.id === activeTask?.id) {
         return this.redirectToBoard(newTask)
       }
+      return //if sub task is deleted and is not an active task, no need to redirectToBoard but prevent further data manipulation on deleted subtask.
     }
 
     const isParentTaskAccessible = accessibleTasks.some((task) => task.id === newTask.parentId)

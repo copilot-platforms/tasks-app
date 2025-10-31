@@ -10,6 +10,7 @@ import { Box, ClickAwayListener, Popper, Stack } from '@mui/material'
 import { ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { CopilotTooltip, CopilotTooltipProps } from '@/components/atoms/CopilotTooltip'
+import useClickOutside from '@/hooks/useClickOutside'
 
 export const CopilotSelector = ({
   onChange,
@@ -85,7 +86,9 @@ export const CopilotPopSelector = ({
   variant = 'normal',
   captureClick = true,
 }: CopilotPopSelectorProps) => {
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+  const [open, setOpen] = useState(false)
+  const anchorRef = useRef<HTMLDivElement>(null)
+  const popperRef = useRef<HTMLDivElement>(null)
 
   const shouldCallOnChangeWithEmpty = useRef(false)
   const initialAssignee = initialValue && parseAssigneeToSelectorOptions(initialValue)
@@ -96,11 +99,11 @@ export const CopilotPopSelector = ({
       event.stopPropagation()
       if (!disabled) {
         setSelectedAssignee(initialAssignee && selectorOptionsToInputValue(initialAssignee))
-        setAnchorEl(anchorEl ? null : event.currentTarget)
+        setOpen((prev) => !prev)
         shouldCallOnChangeWithEmpty.current = false
       }
     },
-    [anchorEl, disabled, initialAssignee],
+    [disabled, initialAssignee],
   )
 
   const [selectedAssignee, setSelectedAssignee] = useState<InputValue[] | undefined>(
@@ -112,10 +115,9 @@ export const CopilotPopSelector = ({
       onChange(selectedAssignee)
       shouldCallOnChangeWithEmpty.current = false
     }
-    setAnchorEl(null)
+    setOpen(false)
   }, [onChange, selectedAssignee])
 
-  const open = Boolean(anchorEl)
   const id = open ? 'selector-popper' : ''
 
   useEffect(() => {
@@ -134,18 +136,20 @@ export const CopilotPopSelector = ({
     }
   }, [open])
 
+  // Close when clicked outside both the box and the popper
+  useClickOutside([anchorRef, popperRef], () => setOpen(false))
+
   return (
     <ClickAwayListener
       onClickAway={() => {
         if (open) {
           shouldCallOnChangeWithEmpty.current = true
-          handleClose()
         }
       }}
       touchEvent="onTouchEnd"
     >
       <Stack direction="column">
-        <Box {...(captureClick ? { onClickCapture: handleClick } : { onClick: handleClick })}>
+        <Box {...(captureClick ? { onClickCapture: handleClick } : { onClick: handleClick })} ref={anchorRef}>
           <CopilotTooltip
             content={tooltipProps?.content ?? 'Change assignee'}
             disabled={tooltipProps?.disabled || variant == 'normal'}
@@ -157,7 +161,7 @@ export const CopilotPopSelector = ({
         <Popper
           id={id}
           open={open}
-          anchorEl={anchorEl}
+          anchorEl={anchorRef.current}
           sx={{
             zIndex: '1600',
             width: 'fit-content',
@@ -167,21 +171,23 @@ export const CopilotPopSelector = ({
             e.stopPropagation()
           }}
         >
-          <CopilotSelector
-            hideClientsList={hideClientsList}
-            hideIusList={hideIusList}
-            initialAssignee={initialAssignee}
-            name={name}
-            onChange={(inputValue) => {
-              setSelectedAssignee(inputValue)
-              if (inputValue.length) {
-                onChange(inputValue)
-                setAnchorEl(null)
-              } else {
-                shouldCallOnChangeWithEmpty.current = true
-              }
-            }}
-          />
+          <div ref={popperRef}>
+            <CopilotSelector
+              hideClientsList={hideClientsList}
+              hideIusList={hideIusList}
+              initialAssignee={initialAssignee}
+              name={name}
+              onChange={(inputValue) => {
+                setSelectedAssignee(inputValue)
+                if (inputValue.length) {
+                  onChange(inputValue)
+                  setOpen(false)
+                } else {
+                  shouldCallOnChangeWithEmpty.current = true
+                }
+              }}
+            />
+          </div>
         </Popper>
       </Stack>
     </ClickAwayListener>
