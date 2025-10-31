@@ -107,7 +107,6 @@ export const CopilotPopSelector = ({
   const [selectedAssignee, setSelectedAssignee] = useState<InputValue[] | undefined>(
     initialAssignee && selectorOptionsToInputValue(initialAssignee),
   )
-
   const handleClose = useCallback(() => {
     if (shouldCallOnChangeWithEmpty.current && selectedAssignee && !selectedAssignee.length) {
       onChange(selectedAssignee)
@@ -135,7 +134,10 @@ export const CopilotPopSelector = ({
   }, [open])
 
   // Close when clicked outside both the box and the popper
-  useClickOutside([anchorRef, popperRef], () => setOpen(false))
+  useClickOutside([anchorRef, popperRef], () => {
+    setOpen(false)
+    handleClose()
+  })
 
   return (
     <ClickAwayListener
