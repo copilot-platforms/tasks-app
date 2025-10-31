@@ -49,6 +49,13 @@
   overflow: auto;
 }
 
+.tapwrite-description-h-full {
+  min-height: 10vh;
+  max-height: 60vh;
+  overflow: auto;
+  background-color: #ffffff;
+}
+
 .tapwrite-task-description:focus {
   border-color: #000000;
 }
