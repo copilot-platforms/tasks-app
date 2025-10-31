@@ -410,7 +410,6 @@ export const Sidebar = ({
                 ':hover': {
                   bgcolor: (theme) => (!!workflowDisabled ? '' : theme.color.background.bgCallout),
                 },
-                padding: '4px',
                 borderRadius: '4px',
                 width: 'fit-content',
               }}
