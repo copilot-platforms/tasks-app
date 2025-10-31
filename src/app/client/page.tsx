@@ -37,10 +37,7 @@ async function getAllWorkflowStates(token: string): Promise<WorkflowStateRespons
 }
 
 async function getAllTasks(token: string): Promise<TaskResponse[]> {
-  const res = await fetch(`${apiUrl}/api/tasks?token=${token}`, {
-    next: { tags: ['getAllTasks-client'] },
-  })
-
+  const res = await fetch(`${apiUrl}/api/tasks?token=${token}`)
   const data = await res.json()
   return data.tasks
 }
@@ -77,7 +74,9 @@ export default async function ClientPage({ searchParams }: { searchParams: { tok
   return (
     <>
       <Suspense>{!previewMode && <ValidateNotificationCountFetcher token={token} />}</Suspense>
-      <AssigneeCacheGetter lookupKey={`${tokenPayload.clientId}.${tokenPayload.companyId}`} />
+      <AssigneeCacheGetter
+        lookupKey={`${!!previewMode ? tokenPayload.internalUserId : tokenPayload.clientId}.${tokenPayload.companyId}`}
+      />
       <ClientSideStateUpdate
         workflowStates={workflowStates}
         tasks={tasks}

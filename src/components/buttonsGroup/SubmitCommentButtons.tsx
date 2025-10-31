@@ -26,6 +26,10 @@ export const SubmitCommentButtons = ({ handleSubmit, disabled }: { handleSubmit:
           '&:hover': { bgcolor: '#000' },
           height: '24px',
           width: '24px',
+          ...(disabled && {
+            opacity: 0.5,
+            cursor: 'not-allowed',
+          }),
         }}
       >
         <ArrowUpward sx={{ color: '#ffffff', fontSize: '18px' }} />

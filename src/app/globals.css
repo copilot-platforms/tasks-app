@@ -87,3 +87,19 @@ a {
 .displayoff {
   display: none;
 }
+
+.highlight-fade {
+  animation: fadeHighlight 1s forwards;
+}
+
+@keyframes fadeHighlight {
+  0% {
+    background-color: transparent;
+  }
+  50% {
+    background-color: rgba(252, 243, 200, 0.5);
+  }
+  100% {
+    background-color: transparent;
+  }
+}

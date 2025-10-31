@@ -18,6 +18,7 @@ interface Prop {
   disabled?: boolean
   size?: Sizes
   padding?: string
+  containerPadding?: string
   height?: string
   gap?: string
   variant?: 'button' | 'icon' | 'normal'
@@ -33,6 +34,7 @@ export const DatePickerComponent = ({
   disabled,
   size = Sizes.SMALL,
   padding,
+  containerPadding,
   height,
   gap,
   variant = 'normal',
@@ -70,7 +72,7 @@ export const DatePickerComponent = ({
       <Stack
         direction="row"
         alignItems="center"
-        columnGap="7px"
+        columnGap="6px"
         onClickCapture={(e) => {
           e.preventDefault()
           e.stopPropagation()
@@ -79,7 +81,7 @@ export const DatePickerComponent = ({
         aria-describedby={id}
         sx={{
           cursor: disabled ? 'auto' : 'pointer',
-          padding: variant == 'button' || variant == 'icon' ? '0px' : '4px 8px',
+          padding: containerPadding ? containerPadding : variant == 'button' || variant == 'icon' ? '0px' : '4px 8px',
           borderRadius: '4px',
         }}
         ref={anchorRef}
@@ -99,7 +101,7 @@ export const DatePickerComponent = ({
                       sx={{
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',
-                        fontSize: '12px',
+                        fontSize: '14px',
                         overflow: 'hidden',
                         maxWidth: { xs: '100px', sm: 'none' },
                         color: (theme) => theme.color.gray[600],
@@ -116,7 +118,7 @@ export const DatePickerComponent = ({
                   <Typography
                     variant={size === Sizes.SMALL ? 'bodySm' : 'md'}
                     sx={{
-                      fontSize: size === Sizes.SMALL ? '12px' : undefined,
+                      fontSize: size === Sizes.SMALL ? '14px' : undefined,
                       color: (theme) => theme.color.text.textDisabled,
                     }}
                   >
@@ -141,6 +143,7 @@ export const DatePickerComponent = ({
                 overflow: 'hidden',
                 maxWidth: '150px',
                 userSelect: 'none',
+                fontWeight: 400,
               }}
             >
               {value ? formatDate(value) : 'None'}

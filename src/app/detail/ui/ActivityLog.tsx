@@ -1,3 +1,4 @@
+import { ViewerRemovedResponse, ViewerRemovedSchema } from '@/app/api/activity-logs/schemas/ViewerSchema'
 import { DotSeparator } from '@/app/detail/ui/DotSeparator'
 import { BoldTypography, StyledTypography, TypographyContainer, VerticalLine } from '@/app/detail/ui/styledComponent'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
@@ -39,6 +40,14 @@ export const ActivityLog = ({ log }: Prop) => {
     [assignee],
   )
 
+  const getViewerName = useCallback(
+    (details: ViewerRemovedResponse) => {
+      const viewer = assignee.find((el) => el.id === details.oldValue)
+      return getAssigneeName(viewer, 'Deleted User')
+    },
+    [assignee],
+  )
+
   const getLogEntities = useCallback(
     (type: ActivityType) => {
       switch (type) {
@@ -48,8 +57,13 @@ export const ActivityLog = ({ log }: Prop) => {
           return [getWorkflowStateName(oldValue), getWorkflowStateName(newValue)]
 
         case ActivityType.TASK_ASSIGNED:
+        case ActivityType.VIEWER_ADDED:
           const taskAssignees = TaskAssignedResponseSchema.parse(log.details)
           return getAssignedToName(taskAssignees)
+
+        case ActivityType.VIEWER_REMOVED:
+          const taskViewer = ViewerRemovedSchema.parse(log.details)
+          return [getViewerName(taskViewer)]
 
         case ActivityType.TITLE_UPDATED:
           const titles = TitleUpdatedSchema.parse(log.details)
@@ -135,6 +149,22 @@ export const ActivityLog = ({ log }: Prop) => {
       </>
     ),
     [ActivityType.COMMENT_ADDED]: () => null,
+    [ActivityType.VIEWER_ADDED]: (_from: string, to: string) => (
+      <>
+        <StyledTypography> added </StyledTypography>
+        <BoldTypography>{to}</BoldTypography>
+        <StyledTypography> as a viewer </StyledTypography>
+        <DotSeparator />
+      </>
+    ),
+    [ActivityType.VIEWER_REMOVED]: (from: string) => (
+      <>
+        <StyledTypography> removed </StyledTypography>
+        <BoldTypography>{from}</BoldTypography>
+        <StyledTypography> as a viewer </StyledTypography>
+        <DotSeparator />
+      </>
+    ),
   }
 
   const activityUser = assignee.find((assignee) => assignee.id == log.userId)
