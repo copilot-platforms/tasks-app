@@ -159,13 +159,16 @@ export class TasksService extends BaseService {
   }
 
   async createTask(data: CreateTaskRequest, opts?: { isPublicApi: boolean }) {
+    console.time('#Timelog authentication')
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Create, Resource.Tasks)
+    console.timeEnd('#Timelog authentication')
 
     const { internalUserId, clientId, companyId } = data
 
     const copilot = new CopilotAPI(this.user.token)
 
+    console.time('#Timelog validating and retrieving Ids')
     const validatedIds = await this.validateUserIds(internalUserId, clientId, companyId)
 
     const { assigneeId, assigneeType } = this.getAssigneeFromUserIds({
@@ -173,6 +176,9 @@ export class TasksService extends BaseService {
       clientId: validatedIds.clientId,
       companyId: validatedIds.companyId,
     })
+    console.timeEnd('#Timelog validating and retrieving Ids')
+
+    console.time('#Timelog Labels and task creation')
 
     //generate the label
     const labelMappingService = new LabelMappingService(this.user)
@@ -221,6 +227,9 @@ export class TasksService extends BaseService {
       include: { workflowState: true },
     })
 
+    console.timeEnd('#Timelog Labels and task creation')
+    console.time('#Timelog activityLogs and attachments update')
+
     if (newTask) {
       // Add activity logs
       const activityLogger = new TasksActivityLogger(this.user, newTask)
@@ -263,6 +272,10 @@ export class TasksService extends BaseService {
       }
     }
 
+    console.timeEnd('#Timelog activityLogs and attachments update')
+
+    console.time('#Timelog notifications + webhook')
+
     // Send task created notifications to users + dispatch webhook
     await Promise.all([
       sendTaskCreateNotifications.trigger({ user: this.user, task: newTask }),
@@ -271,6 +284,7 @@ export class TasksService extends BaseService {
         workspaceId: this.user.workspaceId,
       }),
     ])
+    console.timeEnd('#Timelog notifications + webhook')
 
     return newTask
   }
