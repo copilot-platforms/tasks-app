@@ -161,12 +161,14 @@ export class TasksService extends BaseService {
   async createTask(data: CreateTaskRequest, opts?: { isPublicApi: boolean }) {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Create, Resource.Tasks)
+    console.info('TasksService#createTask | Creating task with data:', data)
 
     const { internalUserId, clientId, companyId } = data
 
     const copilot = new CopilotAPI(this.user.token)
 
     const validatedIds = await this.validateUserIds(internalUserId, clientId, companyId)
+    console.info('TasksService#createTask | Validated user IDs:', validatedIds)
 
     const { assigneeId, assigneeType } = this.getAssigneeFromUserIds({
       internalUserId: validatedIds.internalUserId,
@@ -177,6 +179,7 @@ export class TasksService extends BaseService {
     //generate the label
     const labelMappingService = new LabelMappingService(this.user)
     const label = z.string().parse(await labelMappingService.getLabel(validatedIds))
+    console.info('TasksService#createTask | Generated label for task:', label)
 
     if (data.parentId) {
       const canCreateSubTask = await this.canCreateSubTask(data.parentId)
@@ -184,12 +187,14 @@ export class TasksService extends BaseService {
         throw new APIError(httpStatus.BAD_REQUEST, 'Reached the maximum subtask depth for this task')
       }
     }
+    console.info('TasksService#createTask | Subtask depth validated for parentId:', data.parentId)
 
     if (data.dueDate && isPastDateString(data.dueDate)) {
       throw new APIError(httpStatus.BAD_REQUEST, 'Due date cannot be in the past')
     }
 
     const { completedBy, completedByUserType } = await this.getCompletionInfo(data?.workflowStateId)
+    console.info('TasksService#createTask | Completion info determined:', { completedBy, completedByUserType })
 
     // NOTE: This block strictly doesn't allow clients to create tasks
     let createdById = z.string().parse(this.user.internalUserId)
@@ -201,6 +206,7 @@ export class TasksService extends BaseService {
         throw new APIError(httpStatus.BAD_REQUEST, 'The requested user for createdBy was not found')
       }
       createdById = createdBy.id
+      console.info('TasksService#createTask | createdById overridden for public API:', createdById)
     }
 
     let viewers: Viewers = []
@@ -209,6 +215,7 @@ export class TasksService extends BaseService {
         throw new APIError(httpStatus.BAD_REQUEST, `Task cannot be created with viewers if its not assigned to an IU.`)
       }
       viewers = await this.validateViewers(data.viewers, copilot)
+      console.info('TasksService#createTask | Viewers validated for task:', viewers)
     }
 
     // Create a new task associated with current workspaceId. Also inject current request user as the creator.
@@ -229,6 +236,7 @@ export class TasksService extends BaseService {
       },
       include: { workflowState: true },
     })
+    console.info('TasksService#createTask | Task created with ID:', newTask.id)
 
     if (newTask) {
       // Add activity logs
@@ -237,6 +245,7 @@ export class TasksService extends BaseService {
         userId: createdById,
         role: AssigneeType.internalUser,
       }) //hardcoding internalUser as role since task can only be created by IUs.
+      console.info('TasksService#createTask | Activity log created for new task ID:', newTask.id)
 
       try {
         if (newTask.body) {
@@ -248,6 +257,7 @@ export class TasksService extends BaseService {
               body: newBody,
             },
           })
+          console.info('TasksService#createTask | Task body attachments updated for task ID:', newTask.id)
         }
 
         // Add ltree path for task
@@ -261,6 +271,7 @@ export class TasksService extends BaseService {
             this.setNewLastSubtaskUpdated(newTask.parentId),
           ])
         }
+        console.info('TasksService#createTask | Post-processing completed for task ID:', newTask.id)
       } catch (e: unknown) {
         // Manually rollback task creation
         await this.db.$transaction([
