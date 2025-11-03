@@ -61,11 +61,16 @@ export const getOneTaskPublic = async (req: NextRequest, { params: { id } }: IdP
 
 export const createTaskPublic = async (req: NextRequest) => {
   const user = await authenticate(req)
+  console.info('Authenticated public user:', user)
   const data = await publicTaskCreateDtoSchemaFactory(user.token).parseAsync(await req.json())
+  console.info('Parsed public task creation data:', data)
+
   const createPayload = await PublicTaskSerializer.deserializeCreatePayload(data, user.workspaceId)
+  console.info('Deserialized create payload:', createPayload)
 
   const tasksService = new TasksService(user)
   const newTask = await tasksService.createTask(createPayload, { isPublicApi: true })
+  console.info('Created new public task:', newTask)
 
   return NextResponse.json(PublicTaskSerializer.serialize(newTask))
 }
