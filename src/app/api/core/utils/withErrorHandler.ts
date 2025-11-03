@@ -5,7 +5,7 @@ import httpStatus from 'http-status'
 import { NextRequest, NextResponse } from 'next/server'
 import { ZodError, ZodFormattedError } from 'zod'
 
-type RequestHandler = (req: NextRequest, params: any) => Promise<NextResponse>
+export type RequestHandler = (req: NextRequest, params: any) => Promise<NextResponse>
 
 /**
  * Reusable utility that wraps a given request handler with a global error handler to standardize response structure
