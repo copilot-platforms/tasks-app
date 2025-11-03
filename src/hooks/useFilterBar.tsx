@@ -1,14 +1,18 @@
 import { updateViewModeSettings } from '@/app/(home)/actions'
-import { selectTaskBoard, setIsTasksLoading, setFilterOptions, setViewSettingsTemp } from '@/redux/features/taskBoardSlice'
+import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
+import { selectTaskBoard, setFilterOptions, setViewSettingsTemp } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
-import { CreateViewSettingsDTO, DisplayOptions } from '@/types/dto/viewSettings.dto'
-import { FilterOptions, IFilterOptions } from '@/types/interfaces'
-import { UserIdsType } from '@/utils/assignee'
+import { IUTokenSchema } from '@/types/common'
+import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
+import { FilterOptions, FilterOptionsKeywords, IFilterOptions } from '@/types/interfaces'
+import { emptyAssignee, UserIdsType } from '@/utils/assignee'
+import { getWorkspaceLabels } from '@/utils/getWorkspaceLabels'
 import { useSelector } from 'react-redux'
 import z from 'zod'
 
 export const useFilterBar = () => {
   const { token, view, viewSettingsTemp, showArchived, showUnarchived, showSubtasks } = useSelector(selectTaskBoard)
+  const { tokenPayload, workspace } = useSelector(selectAuthDetails)
 
   const updateViewModeSetting = async (payload: CreateViewSettingsDTO) => {
     try {
@@ -46,5 +50,66 @@ export const useFilterBar = () => {
     })
   }
 
-  return { updateViewModeSetting, handleFilterOptionsChange }
+  const handleFilterTypeClick = ({ filterTypeValue }: { filterTypeValue: string | null | UserIdsType }) => {
+    handleFilterOptionsChange(FilterOptions.TYPE, filterTypeValue)
+    handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
+  }
+
+  const iuFilterButtons = [
+    {
+      name: 'My tasks',
+      onClick: () => handleFilterTypeClick({ filterTypeValue: IUTokenSchema.parse(tokenPayload).internalUserId }),
+      id: 'MyTasks',
+    },
+    {
+      name: 'Team tasks',
+      onClick: () => handleFilterTypeClick({ filterTypeValue: FilterOptionsKeywords.TEAM }),
+      id: 'TeamTasks',
+    },
+    {
+      name: `${getWorkspaceLabels(workspace, true).individualTerm} tasks`,
+      onClick: () => handleFilterTypeClick({ filterTypeValue: FilterOptionsKeywords.CLIENTS }),
+      id: 'ClientTasks',
+    },
+    {
+      name: 'All tasks',
+      onClick: () => handleFilterTypeClick({ filterTypeValue: '' }),
+      id: 'AllTasks',
+    },
+  ]
+
+  const clientFilterButtons = [
+    {
+      name: 'All tasks',
+      onClick: () => handleFilterTypeClick({ filterTypeValue: FilterOptionsKeywords.CLIENT_WITH_VIEWERS }),
+      id: 'AllTasks',
+    },
+    {
+      name: 'My tasks',
+      onClick: () => handleFilterTypeClick({ filterTypeValue: FilterOptionsKeywords.CLIENTS }),
+      id: 'MyTasks',
+    },
+  ]
+
+  const previewFilterButtons = [
+    {
+      name: 'My tasks',
+      onClick: () => {
+        handleFilterTypeClick({ filterTypeValue: IUTokenSchema.parse(tokenPayload).internalUserId })
+      },
+      id: 'MyTasks',
+    },
+    {
+      name: 'Team tasks',
+      onClick: () => handleFilterTypeClick({ filterTypeValue: FilterOptionsKeywords.TEAM }),
+      id: 'TeamTasks',
+    },
+    {
+      name: `${getWorkspaceLabels(workspace, true).individualTerm} tasks`,
+      onClick: () => handleFilterTypeClick({ filterTypeValue: FilterOptionsKeywords.CLIENTS }),
+      id: 'ClientTasks',
+    },
+  ]
+
+  return { updateViewModeSetting, handleFilterOptionsChange, iuFilterButtons, clientFilterButtons, previewFilterButtons }
 }
