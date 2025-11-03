@@ -6,25 +6,19 @@ import { DisplaySelector } from '@/components/inputs/DisplaySelector'
 import SearchBar from '@/components/searchBar'
 import { useFilterBar } from '@/hooks/useFilterBar'
 import { AddLargeIcon } from '@/icons'
-import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { setShowModal } from '@/redux/features/createTaskSlice'
 import { selectTaskBoard, setIsTasksLoading, setViewSettings, setViewSettingsTemp } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
-import { IUTokenSchema } from '@/types/common'
 import { DisplayOptions } from '@/types/dto/viewSettings.dto'
-import { FilterOptions, FilterOptionsKeywords, IAssigneeCombined, IFilterOptions, UserIds } from '@/types/interfaces'
+import { FilterOptions, IFilterOptions } from '@/types/interfaces'
 import {
   clientFilterTypeToButtonIndexMap,
   filterTypeToButtonIndexMap,
   previewFilterTypeToButtonIndexMap,
 } from '@/types/objectMaps'
-import { emptyAssignee, UserIdsType } from '@/utils/assignee'
-import { getWorkspaceLabels } from '@/utils/getWorkspaceLabels'
-import { NoAssignee } from '@/utils/noAssignee'
-import { getSelectorAssigneeFromFilterOptions } from '@/utils/selector'
 import { UserRole } from '@api/core/types/user'
 import { Box, Stack } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
 
 interface FilterBarProps {
@@ -32,10 +26,11 @@ interface FilterBarProps {
 }
 
 export const FilterBar = ({ mode }: FilterBarProps) => {
-  const { view, filterOptions, assignee, viewSettingsTemp, showArchived, showUnarchived, showSubtasks, previewMode } =
+  const { view, filterOptions, viewSettingsTemp, showArchived, showUnarchived, showSubtasks, previewMode, tasks } =
     useSelector(selectTaskBoard)
 
-  const { updateViewModeSetting, handleFilterOptionsChange } = useFilterBar()
+  const { updateViewModeSetting, handleFilterOptionsChange, iuFilterButtons, clientFilterButtons, previewFilterButtons } =
+    useFilterBar()
 
   const viewMode = viewSettingsTemp ? viewSettingsTemp.viewMode : view
   const displayOptions = {
@@ -52,24 +47,6 @@ export const FilterBar = ({ mode }: FilterBarProps) => {
       ? (filterTypeToButtonIndexMap[viewModeFilterOptions.type] ?? 0)
       : (clientFilterTypeToButtonIndexMap[viewModeFilterOptions.type] ?? 0)
 
-  const { tokenPayload, workspace } = useSelector(selectAuthDetails)
-
-  const [assigneeValue, setAssigneeValue] = useState<IAssigneeCombined | undefined>()
-
-  useEffect(() => {
-    if (
-      !viewModeFilterOptions.assignee[UserIds.INTERNAL_USER_ID] &&
-      !viewModeFilterOptions.assignee[UserIds.CLIENT_ID] &&
-      !!viewModeFilterOptions.assignee[UserIds.COMPANY_ID]
-    )
-      return
-    setAssigneeValue(
-      viewModeFilterOptions.assignee[UserIds.INTERNAL_USER_ID] == 'No assignee'
-        ? NoAssignee
-        : getSelectorAssigneeFromFilterOptions(assignee, viewModeFilterOptions.assignee),
-    )
-  }, [viewModeFilterOptions.assignee])
-
   const handleDisplayOptionsChange = (displayOptions: DisplayOptions) => {
     store.dispatch(setIsTasksLoading(true))
     const newViewSettings = {
@@ -83,72 +60,20 @@ export const FilterBar = ({ mode }: FilterBarProps) => {
   }
 
   // handles click on filter by type buttons
-  const handleFilterTypeClick = ({ filterTypeValue }: { filterTypeValue: string | null | UserIdsType }) => {
-    let filterValue = filterTypeValue
-    handleFilterOptionsChange(FilterOptions.TYPE, filterValue)
 
-    // empty assignee filter option
-    setAssigneeValue(undefined)
-    handleFilterOptionsChange(FilterOptions.ASSIGNEE, emptyAssignee)
-  }
+  const filterButtons = useMemo(() => {
+    if (previewMode) return previewFilterButtons
 
-  const IuFilterButtons = [
-    {
-      name: 'My tasks',
-      onClick: () => handleFilterTypeClick({ filterTypeValue: IUTokenSchema.parse(tokenPayload).internalUserId }),
-      id: 'MyTasks',
-    },
-    {
-      name: 'Team tasks',
-      onClick: () => handleFilterTypeClick({ filterTypeValue: FilterOptionsKeywords.TEAM }),
-      id: 'TeamTasks',
-    },
-    {
-      name: `${getWorkspaceLabels(workspace, true).individualTerm} tasks`,
-      onClick: () => handleFilterTypeClick({ filterTypeValue: FilterOptionsKeywords.CLIENTS }),
-      id: 'ClientTasks',
-    },
-    {
-      name: 'All tasks',
-      onClick: () => handleFilterTypeClick({ filterTypeValue: '' }),
-      id: 'AllTasks',
-    },
-  ]
+    if (mode === UserRole.IU) return iuFilterButtons
 
-  const CuFilterButtons = [
-    {
-      name: 'All tasks',
-      onClick: () => handleFilterTypeClick({ filterTypeValue: FilterOptionsKeywords.CLIENT_WITH_VIEWERS }),
-      id: 'AllTasks',
-    },
-    {
-      name: 'My tasks',
-      onClick: () => handleFilterTypeClick({ filterTypeValue: FilterOptionsKeywords.CLIENTS }),
-      id: 'MyTasks',
-    },
-  ]
+    if (mode === UserRole.Client) {
+      // If there are IU tasks when the mode is Client, it's safe to assume that this is a visible task
+      const hasVisibleTasks = tasks.find((task) => task.internalUserId)
+      return hasVisibleTasks ? clientFilterButtons : []
+    }
 
-  const previewFilterButtons = [
-    {
-      name: 'My tasks',
-      onClick: () => {
-        handleFilterTypeClick({ filterTypeValue: IUTokenSchema.parse(tokenPayload).internalUserId })
-      },
-      id: 'MyTasks',
-    },
-    {
-      name: 'Team tasks',
-      onClick: () => handleFilterTypeClick({ filterTypeValue: FilterOptionsKeywords.TEAM }),
-      id: 'TeamTasks',
-    },
-    {
-      name: `${getWorkspaceLabels(workspace, true).individualTerm} tasks`,
-      onClick: () => handleFilterTypeClick({ filterTypeValue: FilterOptionsKeywords.CLIENTS }),
-      id: 'ClientTasks',
-    },
-  ]
-
-  const filterButtons = previewMode ? previewFilterButtons : mode === UserRole.IU ? IuFilterButtons : CuFilterButtons
+    return []
+  }, [tasks, mode, previewMode, clientFilterButtons, iuFilterButtons, previewFilterButtons])
 
   return (
     <Box
