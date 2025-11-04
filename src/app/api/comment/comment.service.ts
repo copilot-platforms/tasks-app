@@ -139,7 +139,6 @@ export class CommentService extends BaseService {
   }
 
   async getCommentById(id: string) {
-    const copilot = new CopilotAPI(this.user.token)
     const comment = await this.db.comment.findFirst({
       where: { id, deletedAt: undefined }, // Can also get soft deleted comments
     })
@@ -147,14 +146,14 @@ export class CommentService extends BaseService {
 
     let initiator
     if (comment?.initiatorType === CommentInitiator.internalUser) {
-      initiator = await copilot.getInternalUser(comment.initiatorId)
+      initiator = await this.copilot.getInternalUser(comment.initiatorId)
     } else if (comment?.initiatorType === CommentInitiator.client) {
-      initiator = await copilot.getClient(comment.initiatorId)
+      initiator = await this.copilot.getClient(comment.initiatorId)
     } else {
       try {
-        initiator = await copilot.getInternalUser(comment.initiatorId)
+        initiator = await this.copilot.getInternalUser(comment.initiatorId)
       } catch (e) {
-        initiator = await copilot.getClient(comment.initiatorId)
+        initiator = await this.copilot.getClient(comment.initiatorId)
       }
     }
 
@@ -252,8 +251,7 @@ export class CommentService extends BaseService {
       return comments
     }
 
-    const copilot = new CopilotAPI(this.user.token)
-    const [internalUsers, clients] = await Promise.all([copilot.getInternalUsers(), copilot.getClients()])
+    const [internalUsers, clients] = await Promise.all([this.copilot.getInternalUsers(), this.copilot.getClients()])
 
     return comments.map((comment) => {
       let initiator

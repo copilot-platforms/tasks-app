@@ -1,11 +1,9 @@
 import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 import { ClientResponse, CompanyResponse, FilterableUser, InternalUsers } from '@/types/common'
 import { FilterOptionsKeywords } from '@/types/interfaces'
-import { CopilotAPI } from '@/utils/CopilotAPI'
 import { orderByRecentlyCreatedAt } from '@/utils/ordering'
 import { filterUsersByKeyword } from '@/utils/users'
 import APIError from '@api/core/exceptions/api'
-import User from '@api/core/models/User.model'
 import { BaseService } from '@api/core/services/base.service'
 import { PoliciesService } from '@api/core/services/policies.service'
 import { Resource } from '@api/core/types/api'
@@ -13,13 +11,6 @@ import { UserAction, UserRole } from '@api/core/types/user'
 import httpStatus from 'http-status'
 
 class UsersService extends BaseService {
-  private copilot: CopilotAPI
-
-  constructor(user: User) {
-    super(user)
-    this.copilot = new CopilotAPI(this.user.token)
-  }
-
   private limitUsers<T>(users: T[], limit?: number): T[] {
     if (!limit) return users
 

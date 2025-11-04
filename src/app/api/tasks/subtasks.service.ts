@@ -94,14 +94,13 @@ export class SubtaskService extends BaseService {
     let latestAccessibleTaskIndex: number
 
     if (this.user.role === UserRole.IU) {
-      const copilot = new CopilotAPI(this.user.token)
-      const iu = await copilot.getInternalUser(z.string().parse(this.user.internalUserId))
+      const iu = await this.copilot.getInternalUser(z.string().parse(this.user.internalUserId))
       if (!iu.isClientAccessLimited) {
         return tasks
       }
 
       // If user is an internal user with client access limitations, they can only access tasks assigned to clients or company they have access to
-      const clients = await copilot.getClients({ limit: MAX_FETCH_ASSIGNEE_COUNT })
+      const clients = await this.copilot.getClients({ limit: MAX_FETCH_ASSIGNEE_COUNT })
       let companyIds: string[]
       latestAccessibleTaskIndex = tasks.findLastIndex((task) => {
         if (task.internalUserId) return false
