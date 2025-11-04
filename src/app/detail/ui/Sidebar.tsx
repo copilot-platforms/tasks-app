@@ -196,7 +196,6 @@ export const Sidebar = ({
         })
     }
   }
-
   if (!showSidebar) {
     return (
       <Stack
@@ -274,7 +273,7 @@ export const Sidebar = ({
                     variant="md"
                     lineHeight="22px"
                     sx={{
-                      color: (theme) => theme.color.gray[400],
+                      color: (theme) => (assigneeValue ? theme.color.gray[600] : theme.color.gray[400]),
                       textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap',
                       overflow: 'hidden',
@@ -314,7 +313,7 @@ export const Sidebar = ({
                       variant="md"
                       lineHeight="22px"
                       sx={{
-                        color: (theme) => theme.color.gray[400],
+                        color: (theme) => (taskViewerValue ? theme.color.gray[600] : theme.color.gray[400]),
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
