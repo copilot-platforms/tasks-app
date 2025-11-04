@@ -150,8 +150,7 @@ export class TasksService extends BaseService {
     }
 
     // Now we have the challenge of figuring out if a task is assigned to a client / company that falls in IU's access list
-    const copilot = new CopilotAPI(this.user.token)
-    const currentInternalUser = await copilot.getInternalUser(this.user.internalUserId)
+    const currentInternalUser = await this.copilot.getInternalUser(this.user.internalUserId)
     if (!currentInternalUser.isClientAccessLimited) return tasks
 
     const filteredTasks = await this.filterTasksByClientAccess(tasks, currentInternalUser)
@@ -164,8 +163,6 @@ export class TasksService extends BaseService {
     console.info('TasksService#createTask | Creating task with data:', data)
 
     const { internalUserId, clientId, companyId } = data
-
-    const copilot = new CopilotAPI(this.user.token)
 
     const validatedIds = await this.validateUserIds(internalUserId, clientId, companyId)
     console.info('TasksService#createTask | Validated user IDs:', validatedIds)
@@ -200,7 +197,7 @@ export class TasksService extends BaseService {
     let createdById = z.string().parse(this.user.internalUserId)
 
     if (data.createdById && opts?.isPublicApi) {
-      const internalUsers = await copilot.getInternalUsers({ limit: MAX_FETCH_ASSIGNEE_COUNT }) // there are 2 of these api running on this same serive. need to think about this later.
+      const internalUsers = await this.copilot.getInternalUsers({ limit: MAX_FETCH_ASSIGNEE_COUNT }) // there are 2 of these api running on this same serive. need to think about this later.
       const createdBy = internalUsers?.data?.find((iu) => iu.id === data.createdById)
       if (!createdBy) {
         throw new APIError(httpStatus.BAD_REQUEST, 'The requested user for createdBy was not found')
@@ -214,7 +211,7 @@ export class TasksService extends BaseService {
       if (!validatedIds.internalUserId) {
         throw new APIError(httpStatus.BAD_REQUEST, `Task cannot be created with viewers if its not assigned to an IU.`)
       }
-      viewers = await this.validateViewers(data.viewers, copilot)
+      viewers = await this.validateViewers(data.viewers)
       console.info('TasksService#createTask | Viewers validated for task:', viewers)
     }
 
@@ -286,7 +283,7 @@ export class TasksService extends BaseService {
     // Send task created notifications to users + dispatch webhook
     await Promise.all([
       sendTaskCreateNotifications.trigger({ user: this.user, task: newTask }),
-      copilot.dispatchWebhook(DISPATCHABLE_EVENT.TaskCreated, {
+      this.copilot.dispatchWebhook(DISPATCHABLE_EVENT.TaskCreated, {
         payload: PublicTaskSerializer.serialize(newTask),
         workspaceId: this.user.workspaceId,
       }),
@@ -328,14 +325,13 @@ export class TasksService extends BaseService {
     policyGate.authorize(UserAction.Read, Resource.Tasks)
     if (!task.assigneeId || !task.assigneeType) return undefined
 
-    const copilot = new CopilotAPI(this.user.token)
     switch (task.assigneeType) {
       case AssigneeType.internalUser:
-        return await copilot.getInternalUser(task.assigneeId)
+        return await this.copilot.getInternalUser(task.assigneeId)
       case AssigneeType.client:
-        return await copilot.getClient(task.assigneeId)
+        return await this.copilot.getClient(task.assigneeId)
       default:
-        return await copilot.getCompany(task.assigneeId)
+        return await this.copilot.getCompany(task.assigneeId)
     }
   }
 
@@ -503,10 +499,9 @@ export class TasksService extends BaseService {
       return deletedTask
     })
 
-    const copilot = new CopilotAPI(this.user.token)
     await Promise.all([
       deleteTaskNotifications.trigger({ user: this.user, task }),
-      copilot.dispatchWebhook(DISPATCHABLE_EVENT.TaskDeleted, {
+      this.copilot.dispatchWebhook(DISPATCHABLE_EVENT.TaskDeleted, {
         payload: PublicTaskSerializer.serialize(updatedTask),
         workspaceId: this.user.workspaceId,
       }),
@@ -578,8 +573,7 @@ export class TasksService extends BaseService {
     // For user 2, task B should show up as a parent task in the main task board
     const disjointTasksFilter: Promise<Prisma.TaskWhereInput> = (async () => {
       if (this.user.role === UserRole.IU && !this.user.clientId && !this.user.companyId) {
-        const copilot = new CopilotAPI(this.user.token)
-        const currentInternalUser = await copilot.getInternalUser(z.string().parse(this.user.internalUserId))
+        const currentInternalUser = await this.copilot.getInternalUser(z.string().parse(this.user.internalUserId))
         if (!currentInternalUser.isClientAccessLimited) return {}
 
         const accesibleCompanyIds = currentInternalUser.companyAccessList || []
@@ -655,9 +649,8 @@ export class TasksService extends BaseService {
     }
     // If user is IU, no need to flatten subtasks
     if (this.user.role === UserRole.IU && !this.user.clientId) {
-      const copilot = new CopilotAPI(this.user.token)
       if (this.user.internalUserId) {
-        const currentInternalUser = await copilot.getInternalUser(this.user.internalUserId)
+        const currentInternalUser = await this.copilot.getInternalUser(this.user.internalUserId)
         if (currentInternalUser.isClientAccessLimited) {
           return undefined
         }
@@ -915,8 +908,7 @@ export class TasksService extends BaseService {
   }
 
   private async checkClientAccessForTask(task: Task, internalUserId: string) {
-    const copilot = new CopilotAPI(this.user.token)
-    const currentInternalUser = await copilot.getInternalUser(internalUserId)
+    const currentInternalUser = await this.copilot.getInternalUser(internalUserId)
     if (!currentInternalUser.isClientAccessLimited) return
 
     const isLimitedTask = !(await this.filterTasksByClientAccess([task], currentInternalUser)).length
@@ -1003,10 +995,8 @@ export class TasksService extends BaseService {
     clientId: string | null
     companyId: string | null
   }> {
-    const copilot = new CopilotAPI(this.user.token)
-
     if (internalUserId) {
-      const internalUsers = (await copilot.getInternalUsers({ limit: MAX_FETCH_ASSIGNEE_COUNT })).data
+      const internalUsers = (await this.copilot.getInternalUsers({ limit: MAX_FETCH_ASSIGNEE_COUNT })).data
       const isValid = internalUsers?.some((user) => user.id === internalUserId)
 
       if (!isValid) {
@@ -1021,7 +1011,7 @@ export class TasksService extends BaseService {
     }
 
     if (clientId) {
-      const client = await copilot.getClient(clientId)
+      const client = await this.copilot.getClient(clientId)
 
       const isValidCompany = companyId ? client?.companyIds?.includes(companyId) : false
 
@@ -1041,7 +1031,7 @@ export class TasksService extends BaseService {
     }
 
     if (companyId) {
-      const companies = (await copilot.getCompanies({ limit: MAX_FETCH_ASSIGNEE_COUNT })).data
+      const companies = (await this.copilot.getCompanies({ limit: MAX_FETCH_ASSIGNEE_COUNT })).data
       const isValid = companies?.some((company) => company.id === companyId)
 
       if (!isValid) {
@@ -1111,18 +1101,17 @@ export class TasksService extends BaseService {
     }
   }
 
-  private async validateViewers(viewers: Viewers, Copilot?: CopilotAPI) {
+  private async validateViewers(viewers: Viewers) {
     if (!viewers?.length) return []
-    const copilot = Copilot ?? new CopilotAPI(this.user.token)
     const viewer = viewers[0]
     try {
       if (viewer.clientId) {
-        const client = await copilot.getClient(viewer.clientId) //support looping viewers and filtering from getClients instead of doing getClient if we do support many viewers in the future.
+        const client = await this.copilot.getClient(viewer.clientId) //support looping viewers and filtering from getClients instead of doing getClient if we do support many viewers in the future.
         if (!client.companyIds?.includes(viewers[0].companyId)) {
           throw new APIError(httpStatus.BAD_REQUEST, 'Invalid companyId for the provided viewer.')
         }
       } else {
-        await copilot.getCompany(viewer.companyId)
+        await this.copilot.getCompany(viewer.companyId)
       }
     } catch (err) {
       if (err instanceof APIError) {

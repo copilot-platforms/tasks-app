@@ -54,22 +54,17 @@ export class ActivityLogService extends BaseService {
           END;
     `
     const parsedActivityLogs = DBActivityLogArraySchema.parse(activityLogs)
-    const copilot = new CopilotAPI(this.user.token)
 
     let filteredActivityLogs = parsedActivityLogs
 
     if (this.user.role == AssigneeType.internalUser && this.user.internalUserId) {
-      const currentInternalUser = await copilot.getInternalUser(this.user.internalUserId)
+      const currentInternalUser = await this.copilot.getInternalUser(this.user.internalUserId)
       if (currentInternalUser?.isClientAccessLimited) {
-        filteredActivityLogs = await this.filterActivityLogsForLimitedAccess(
-          parsedActivityLogs,
-          copilot,
-          currentInternalUser,
-        )
+        filteredActivityLogs = await this.filterActivityLogsForLimitedAccess(parsedActivityLogs, currentInternalUser)
       }
     }
     if (this.user.clientId) {
-      filteredActivityLogs = await this.filterActivityLogsForClient(taskId, parsedActivityLogs, copilot)
+      filteredActivityLogs = await this.filterActivityLogsForClient(taskId, parsedActivityLogs)
     }
 
     const commentIds = filteredActivityLogs
@@ -148,7 +143,7 @@ export class ActivityLogService extends BaseService {
     }
   }
 
-  private async filterActivityLogsForClient(taskId: string, parsedActivityLogs: DBActivityLogArray, copilot: CopilotAPI) {
+  private async filterActivityLogsForClient(taskId: string, parsedActivityLogs: DBActivityLogArray) {
     const task = await this.db.task.findFirstOrThrow({
       where: { id: taskId, workspaceId: this.user.workspaceId },
     })
@@ -181,7 +176,7 @@ export class ActivityLogService extends BaseService {
     // If task is a company task, then we only show activity logs authored by IU, or other clients
     // within the same company
     if (!task.clientId && task.companyId) {
-      const companyClients = (await copilot.getClients({ companyId: task.companyId }))?.data || []
+      const companyClients = (await this.copilot.getClients({ companyId: task.companyId }))?.data || []
       return parsedActivityLogs.filter((log) => {
         return isIuLog(log) || isCurrentCompanysClientLog(log) || isCompanyMemberLog(companyClients, log)
       })
@@ -192,13 +187,12 @@ export class ActivityLogService extends BaseService {
 
   private async filterActivityLogsForLimitedAccess(
     parsedActivityLogs: DBActivityLogArray,
-    copilotService: CopilotAPI,
     currentInternalUser: InternalUsers,
   ): Promise<DBActivityLogArray> {
     const userOpts: CopilotListArgs = { limit: MAX_FETCH_ASSIGNEE_COUNT }
     const [clientUsers, companies] = await Promise.all([
-      copilotService.getClients(userOpts),
-      copilotService.getCompanies(userOpts),
+      this.copilot.getClients(userOpts),
+      this.copilot.getCompanies(userOpts),
     ])
 
     const previousAssigneeIds = parsedActivityLogs
