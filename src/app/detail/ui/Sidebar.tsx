@@ -252,8 +252,6 @@ export const Sidebar = ({
         </Box>
         <Box
           sx={{
-            border: (theme) => `1px solid ${theme.color.borders.border}`,
-            borderRadius: '4px',
             width: 'fit-content',
             height: '30px',
             display: 'flex',
@@ -270,7 +268,6 @@ export const Sidebar = ({
               <SelectorButton
                 disabled={disabled}
                 startIcon={<CopilotAvatar currentAssignee={assigneeValue} />}
-                outlined={true}
                 buttonContent={
                   <Typography
                     variant="md"
@@ -293,8 +290,6 @@ export const Sidebar = ({
         {assigneeValue && assigneeValue.type === FilterByOptions.IUS && (
           <Box
             sx={{
-              border: (theme) => `1px solid ${theme.color.borders.border}`,
-              borderRadius: '4px',
               width: 'fit-content',
               height: '30px',
               display: 'flex',
@@ -312,7 +307,6 @@ export const Sidebar = ({
                 <SelectorButton
                   disabled={disabled && !previewMode}
                   startIcon={<CopilotAvatar currentAssignee={taskViewerValue || undefined} />}
-                  outlined={true}
                   buttonContent={
                     <Typography
                       variant="md"
