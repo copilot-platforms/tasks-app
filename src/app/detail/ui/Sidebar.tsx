@@ -267,6 +267,7 @@ export const Sidebar = ({
             buttonContent={
               <SelectorButton
                 disabled={disabled}
+                height={'30px'}
                 startIcon={<CopilotAvatar currentAssignee={assigneeValue} />}
                 buttonContent={
                   <Typography
@@ -306,6 +307,7 @@ export const Sidebar = ({
               buttonContent={
                 <SelectorButton
                   disabled={disabled && !previewMode}
+                  height={'30px'}
                   startIcon={<CopilotAvatar currentAssignee={taskViewerValue || undefined} />}
                   buttonContent={
                     <Typography
