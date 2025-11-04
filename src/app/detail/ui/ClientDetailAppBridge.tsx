@@ -3,10 +3,7 @@
 import { Icons } from '@/hooks/app-bridge/types'
 import { usePrimaryCta } from '@/hooks/app-bridge/usePrimaryCta'
 import { useSecondaryCta } from '@/hooks/app-bridge/useSecondaryCta'
-import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
-import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { useCallback, useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
 
 interface DetailAppBridgeProps {
   handleTaskComplete: () => void

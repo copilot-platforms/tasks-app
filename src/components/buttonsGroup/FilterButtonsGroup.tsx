@@ -13,6 +13,10 @@ type FilterButtonGroupProps = {
 }
 
 const FilterButtonGroup = ({ filterButtons, activeButtonIndex }: FilterButtonGroupProps) => {
+  if (!filterButtons.length) {
+    return null
+  }
+
   return (
     <Stack
       sx={(theme) => ({

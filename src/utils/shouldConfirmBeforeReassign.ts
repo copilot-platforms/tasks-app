@@ -40,7 +40,7 @@ export const shouldConfirmViewershipBeforeReassignment = (
 ) => {
   if (viewer) {
     const assigneeType = currentAssignee && getAssigneeTypeCorrected(currentAssignee)
-    if (!assigneeType || assigneeType !== AssigneeType.internalUser) {
+    if (!assigneeType || (assigneeType !== AssigneeType.internalUser && currentAssignee.id !== viewer.id)) {
       //no assignee or assignee is a non-IU
       return true
     }

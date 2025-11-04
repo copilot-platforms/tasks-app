@@ -80,10 +80,10 @@ export const WorkflowStateSelector = ({
           <Stack
             direction="row"
             alignItems="center"
-            columnGap="7px"
+            columnGap={gap ?? '7px'}
             justifyContent="flex-start"
             sx={{
-              padding: '4px 8px',
+              padding: '4px',
               justifyContent: { xs: 'end', sm: 'flex-start' },
               cursor: disabled ? 'auto' : 'pointer',
             }}
