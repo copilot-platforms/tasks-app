@@ -2,21 +2,12 @@ import { MAX_NOTIFICATIONS_COUNT } from '@/constants/notifications'
 import { DuplicateNotificationsQuerySchema } from '@/types/client-notifications'
 import { getArrayDifference } from '@/utils/array'
 import { copilotBottleneck } from '@/utils/bottleneck'
-import { CopilotAPI } from '@/utils/CopilotAPI'
-import User from '@api/core/models/User.model'
 import { NotificationService } from '@api/notification/notification.service'
 import { TasksService } from '@api/tasks/tasks.service'
-import { ClientNotification, Task } from '@prisma/client'
+import type { ClientNotification, Task } from '@prisma/client'
 import { z } from 'zod'
 
 export class ValidateCountService extends NotificationService {
-  private readonly copilot: CopilotAPI
-
-  constructor(readonly user: User) {
-    super(user)
-    this.copilot = new CopilotAPI(user.token)
-  }
-
   /**
    * Queries for notifications from CopilotAPI and fixes it if not in sync with task count
    * @param {string} clientId - Copilot client id for which notification fix has to be done
@@ -41,10 +32,10 @@ export class ValidateCountService extends NotificationService {
   private async validateWithTasks(clientId: string, companyId: string, copilotNotificationIds: string[]): Promise<void> {
     const tasksService = new TasksService(this.user)
     const tasks = await tasksService.getAllTasks({
-      companyId,
       showArchived: false,
       showUnarchived: true,
       showIncompleteOnly: true,
+      companyId: this.user.companyId, //notification counts only applied on assigned tasks, not shared tasks.
     })
     console.info('ValidateCount :: User tasks for company', companyId, ':', tasks.length)
 
@@ -121,7 +112,7 @@ export class ValidateCountService extends NotificationService {
       console.info('ValidateCount :: Found orphanNotifications', orphanNotifications.length)
       await this.db.$queryRaw`
         delete from "ClientNotifications"
-        where "notificationId" = ANY(${orphanNotifications}::uuid[])
+          where "notificationId" = ANY(${orphanNotifications}::uuid[])
       `
     }
   }
@@ -156,6 +147,7 @@ export class ValidateCountService extends NotificationService {
         // This is a duplicate notification, SKIP
         continue
       }
+
       createNotificationPromises.push(
         copilotBottleneck.schedule(() => {
           console.info(`ValidateCount :: Creating missing notification for task ${task.id} - ${task.title}`)
@@ -186,6 +178,8 @@ export class ValidateCountService extends NotificationService {
         companyId: tasksWithoutNotifications[i].companyId,
       })
     }
-    await this.db.clientNotification.createMany({ data: newClientNotificationData })
+    await this.db.clientNotification.createMany({
+      data: newClientNotificationData,
+    })
   }
 }

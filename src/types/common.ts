@@ -2,6 +2,7 @@ import { UserRole } from '@/app/api/core/types/user'
 import { validateNotificationRecipient } from '@/utils/notifications'
 import { CommentInitiator, StateType } from '@prisma/client'
 import { z } from 'zod'
+import { UserIds } from './interfaces'
 
 export const Uuid = z.string().uuid()
 
@@ -271,8 +272,37 @@ export type RFC3339Date = z.infer<typeof RFC3339DateSchema>
 
 export const StateTypeSchema = z.nativeEnum(StateType)
 
+export type PreviewClientCompanyType = {
+  [K in Exclude<UserIds, UserIds.INTERNAL_USER_ID>]: string | null
+}
+
 export type UrlActionParamsType = {
   action?: string
   pf?: string
   oldPf?: string
+}
+
+export const ViewSettingUserIds = z
+  .object({
+    internalUserId: z.string().nullable(),
+    clientId: z.string().nullable(),
+    companyId: z.string().nullable(),
+  })
+  .superRefine((val) => {
+    if (!val.clientId && !val.companyId && !val.internalUserId) {
+      throw new Error('At least one of clientId, companyId, or internalUserId must be provided')
+    }
+    if (val.clientId && !val.companyId) {
+      throw new Error('companyId must be provided when clientId is provided')
+    }
+  })
+export type ViewSettingUserIdsType = z.infer<typeof ViewSettingUserIds>
+
+/**
+ * FilterType enum for FilterBtn with value being the full form of that particular type
+ */
+export enum FilterType {
+  Assignee = 'Assignee',
+  Visibility = 'Client Visibility',
+  Creator = 'Creator',
 }

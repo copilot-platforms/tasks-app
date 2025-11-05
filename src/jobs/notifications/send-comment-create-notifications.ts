@@ -1,5 +1,6 @@
 import User from '@/app/api/core/models/User.model'
 import { NotificationTaskActions } from '@/app/api/core/types/tasks'
+import { UserRole } from '@/app/api/core/types/user'
 import { NotificationService } from '@/app/api/notification/notification.service'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { Comment, Task } from '@prisma/client'
@@ -29,7 +30,6 @@ export const sendCommentCreateNotifications = task({
     const commentNotificationService = new NotificationService(user)
     const copilot = new CopilotAPI(user.token)
     const { recipientIds: clientRecipientIds } = await commentNotificationService.getNotificationParties(
-      copilot,
       task,
       NotificationTaskActions.CommentToCU,
     )
@@ -42,8 +42,7 @@ export const sendCommentCreateNotifications = task({
       commentId: comment.id,
     })
 
-    const { recipientIds: iuRecipientIds } = await commentNotificationService.getNotificationParties(
-      copilot,
+    const { recipientIds: iuRecipientIds, senderCompanyId } = await commentNotificationService.getNotificationParties(
       task,
       NotificationTaskActions.CommentToIU,
     )
@@ -54,6 +53,7 @@ export const sendCommentCreateNotifications = task({
       email: false,
       disableInProduct: false,
       commentId: comment.id,
+      senderCompanyId,
     })
   },
 })

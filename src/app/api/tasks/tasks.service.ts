@@ -4,7 +4,7 @@ import { deleteTaskNotifications, sendTaskCreateNotifications, sendTaskUpdateNot
 import { sendClientUpdateTaskNotifications } from '@/jobs/notifications/send-client-task-update-notifications'
 import { ClientResponse, CompanyResponse, InternalUsers, Uuid } from '@/types/common'
 import { TaskWithWorkflowState } from '@/types/db'
-import { AncestorTaskResponse, CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
+import { AncestorTaskResponse, CreateTaskRequest, UpdateTaskRequest, Viewers, ViewersSchema } from '@/types/dto/tasks.dto'
 import { DISPATCHABLE_EVENT } from '@/types/webhook'
 import { UserIdsType } from '@/utils/assignee'
 import { CopilotAPI } from '@/utils/CopilotAPI'
@@ -40,7 +40,7 @@ export class TasksService extends BaseService {
    * If user is a client, return filter for just the tasks assigned to this clientId.
    * If user is a client and has a companyId, return filter for just the tasks assigned to this clientId `OR` to this companyId
    */
-  private buildTaskPermissions(id?: string) {
+  private buildTaskPermissions(id?: string, includeViewer: boolean = true) {
     const user = this.user
 
     // Default filters
@@ -50,7 +50,7 @@ export class TasksService extends BaseService {
     }
 
     if (user.clientId || user.companyId) {
-      filters = { ...filters, ...this.getClientOrCompanyAssigneeFilter() }
+      filters = { ...filters, ...this.getClientOrCompanyAssigneeFilter(includeViewer) }
     }
 
     return filters
@@ -150,8 +150,7 @@ export class TasksService extends BaseService {
     }
 
     // Now we have the challenge of figuring out if a task is assigned to a client / company that falls in IU's access list
-    const copilot = new CopilotAPI(this.user.token)
-    const currentInternalUser = await copilot.getInternalUser(this.user.internalUserId)
+    const currentInternalUser = await this.copilot.getInternalUser(this.user.internalUserId)
     if (!currentInternalUser.isClientAccessLimited) return tasks
 
     const filteredTasks = await this.filterTasksByClientAccess(tasks, currentInternalUser)
@@ -161,12 +160,12 @@ export class TasksService extends BaseService {
   async createTask(data: CreateTaskRequest, opts?: { isPublicApi: boolean }) {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Create, Resource.Tasks)
+    console.info('TasksService#createTask | Creating task with data:', data)
 
     const { internalUserId, clientId, companyId } = data
 
-    const copilot = new CopilotAPI(this.user.token)
-
     const validatedIds = await this.validateUserIds(internalUserId, clientId, companyId)
+    console.info('TasksService#createTask | Validated user IDs:', validatedIds)
 
     const { assigneeId, assigneeType } = this.getAssigneeFromUserIds({
       internalUserId: validatedIds.internalUserId,
@@ -177,6 +176,7 @@ export class TasksService extends BaseService {
     //generate the label
     const labelMappingService = new LabelMappingService(this.user)
     const label = z.string().parse(await labelMappingService.getLabel(validatedIds))
+    console.info('TasksService#createTask | Generated label for task:', label)
 
     if (data.parentId) {
       const canCreateSubTask = await this.canCreateSubTask(data.parentId)
@@ -184,23 +184,35 @@ export class TasksService extends BaseService {
         throw new APIError(httpStatus.BAD_REQUEST, 'Reached the maximum subtask depth for this task')
       }
     }
+    console.info('TasksService#createTask | Subtask depth validated for parentId:', data.parentId)
 
     if (data.dueDate && isPastDateString(data.dueDate)) {
       throw new APIError(httpStatus.BAD_REQUEST, 'Due date cannot be in the past')
     }
 
     const { completedBy, completedByUserType } = await this.getCompletionInfo(data?.workflowStateId)
+    console.info('TasksService#createTask | Completion info determined:', { completedBy, completedByUserType })
 
     // NOTE: This block strictly doesn't allow clients to create tasks
     let createdById = z.string().parse(this.user.internalUserId)
 
     if (data.createdById && opts?.isPublicApi) {
-      const internalUsers = await copilot.getInternalUsers({ limit: MAX_FETCH_ASSIGNEE_COUNT }) // there are 2 of these api running on this same serive. need to think about this later.
+      const internalUsers = await this.copilot.getInternalUsers({ limit: MAX_FETCH_ASSIGNEE_COUNT }) // there are 2 of these api running on this same serive. need to think about this later.
       const createdBy = internalUsers?.data?.find((iu) => iu.id === data.createdById)
       if (!createdBy) {
         throw new APIError(httpStatus.BAD_REQUEST, 'The requested user for createdBy was not found')
       }
       createdById = createdBy.id
+      console.info('TasksService#createTask | createdById overridden for public API:', createdById)
+    }
+
+    let viewers: Viewers = []
+    if (data.viewers?.length) {
+      if (!validatedIds.internalUserId) {
+        throw new APIError(httpStatus.BAD_REQUEST, `Task cannot be created with viewers if its not assigned to an IU.`)
+      }
+      viewers = await this.validateViewers(data.viewers)
+      console.info('TasksService#createTask | Viewers validated for task:', viewers)
     }
 
     // Create a new task associated with current workspaceId. Also inject current request user as the creator.
@@ -215,11 +227,13 @@ export class TasksService extends BaseService {
         source: opts?.isPublicApi ? Source.api : Source.web,
         assigneeId,
         assigneeType,
+        viewers: viewers,
         ...validatedIds,
         ...(await getTaskTimestamps('create', this.user, data)),
       },
       include: { workflowState: true },
     })
+    console.info('TasksService#createTask | Task created with ID:', newTask.id)
 
     if (newTask) {
       // Add activity logs
@@ -228,6 +242,7 @@ export class TasksService extends BaseService {
         userId: createdById,
         role: AssigneeType.internalUser,
       }) //hardcoding internalUser as role since task can only be created by IUs.
+      console.info('TasksService#createTask | Activity log created for new task ID:', newTask.id)
 
       try {
         if (newTask.body) {
@@ -239,6 +254,7 @@ export class TasksService extends BaseService {
               body: newBody,
             },
           })
+          console.info('TasksService#createTask | Task body attachments updated for task ID:', newTask.id)
         }
 
         // Add ltree path for task
@@ -252,6 +268,7 @@ export class TasksService extends BaseService {
             this.setNewLastSubtaskUpdated(newTask.parentId),
           ])
         }
+        console.info('TasksService#createTask | Post-processing completed for task ID:', newTask.id)
       } catch (e: unknown) {
         // Manually rollback task creation
         await this.db.$transaction([
@@ -266,7 +283,7 @@ export class TasksService extends BaseService {
     // Send task created notifications to users + dispatch webhook
     await Promise.all([
       sendTaskCreateNotifications.trigger({ user: this.user, task: newTask }),
-      copilot.dispatchWebhook(DISPATCHABLE_EVENT.TaskCreated, {
+      this.copilot.dispatchWebhook(DISPATCHABLE_EVENT.TaskCreated, {
         payload: PublicTaskSerializer.serialize(newTask),
         workspaceId: this.user.workspaceId,
       }),
@@ -308,14 +325,13 @@ export class TasksService extends BaseService {
     policyGate.authorize(UserAction.Read, Resource.Tasks)
     if (!task.assigneeId || !task.assigneeType) return undefined
 
-    const copilot = new CopilotAPI(this.user.token)
     switch (task.assigneeType) {
       case AssigneeType.internalUser:
-        return await copilot.getInternalUser(task.assigneeId)
+        return await this.copilot.getInternalUser(task.assigneeId)
       case AssigneeType.client:
-        return await copilot.getClient(task.assigneeId)
+        return await this.copilot.getClient(task.assigneeId)
       default:
-        return await copilot.getCompany(task.assigneeId)
+        return await this.copilot.getCompany(task.assigneeId)
     }
   }
 
@@ -352,6 +368,17 @@ export class TasksService extends BaseService {
       clientId: validatedIds?.clientId ?? null,
       companyId: validatedIds?.companyId ?? null,
     })
+
+    let viewers: Viewers = ViewersSchema.parse(prevTask.viewers)
+    const viewersResetCondition = shouldUpdateUserIds ? !!clientId || !!companyId : !prevTask.internalUserId
+    if (data.viewers) {
+      // only update of viewers attribute is available. No viewers in payload attribute means the data remains as it is in DB.
+      if (viewersResetCondition || !data.viewers?.length) {
+        viewers = [] // reset viewers to [] if task is not reassigned to IU.
+      } else if (data.viewers?.length) {
+        viewers = await this.validateViewers(data.viewers)
+      }
+    }
 
     const userAssignmentFields = shouldUpdateUserIds
       ? {
@@ -399,6 +426,7 @@ export class TasksService extends BaseService {
           archivedBy,
           completedBy,
           completedByUserType,
+          viewers,
           ...userAssignmentFields,
           ...(await getTaskTimestamps('update', this.user, data, prevTask)),
         },
@@ -471,10 +499,9 @@ export class TasksService extends BaseService {
       return deletedTask
     })
 
-    const copilot = new CopilotAPI(this.user.token)
     await Promise.all([
       deleteTaskNotifications.trigger({ user: this.user, task }),
-      copilot.dispatchWebhook(DISPATCHABLE_EVENT.TaskDeleted, {
+      this.copilot.dispatchWebhook(DISPATCHABLE_EVENT.TaskDeleted, {
         payload: PublicTaskSerializer.serialize(updatedTask),
         workspaceId: this.user.workspaceId,
       }),
@@ -499,7 +526,7 @@ export class TasksService extends BaseService {
     )?.[0]?.path
   }
 
-  private getClientOrCompanyAssigneeFilter(): Prisma.TaskWhereInput {
+  private getClientOrCompanyAssigneeFilter(includeViewer: boolean = true): Prisma.TaskWhereInput {
     const clientId = z.string().uuid().safeParse(this.user.clientId).data
     const companyId = z.string().uuid().parse(this.user.companyId)
 
@@ -512,11 +539,29 @@ export class TasksService extends BaseService {
         // Get company tasks for the client's companyId
         { companyId, clientId: null },
       )
+      if (includeViewer)
+        filters.push(
+          // Get tasks that includes the client as a viewer
+          {
+            viewers: {
+              hasSome: [{ clientId, companyId }, { companyId }],
+            },
+          },
+        )
     } else if (companyId) {
       filters.push(
         // Get only company tasks for the client's companyId
         { clientId: null, companyId },
       )
+      if (includeViewer)
+        filters.push(
+          // Get tasks that includes the company as a viewer
+          {
+            viewers: {
+              hasSome: [{ companyId }],
+            },
+          },
+        )
     }
     return filters.length > 0 ? { OR: filters } : {}
   }
@@ -528,8 +573,7 @@ export class TasksService extends BaseService {
     // For user 2, task B should show up as a parent task in the main task board
     const disjointTasksFilter: Promise<Prisma.TaskWhereInput> = (async () => {
       if (this.user.role === UserRole.IU && !this.user.clientId && !this.user.companyId) {
-        const copilot = new CopilotAPI(this.user.token)
-        const currentInternalUser = await copilot.getInternalUser(z.string().parse(this.user.internalUserId))
+        const currentInternalUser = await this.copilot.getInternalUser(z.string().parse(this.user.internalUserId))
         if (!currentInternalUser.isClientAccessLimited) return {}
 
         const accesibleCompanyIds = currentInternalUser.companyAccessList || []
@@ -551,19 +595,33 @@ export class TasksService extends BaseService {
           {
             ...this.getClientOrCompanyAssigneeFilter(), // Prevent overwriting of OR statement
             parent: {
-              OR: [
-                // Disjoint task if parent has no assignee
-                { clientId: null, companyId: null },
+              AND: [
+                {
+                  OR: [
+                    // Disjoint task if parent has no assignee
+                    { clientId: null, companyId: null },
+                    {
+                      NOT: {
+                        // Do not disjoint task if parent task belongs to the same client / company
+                        OR: [
+                          // Disjoint task if parent is a client task for a different client under the same company
+                          { clientId: this.user.clientId, companyId: this.user.companyId },
+                          // Disjoint task if parent is not a company task for the same company that client belongs to
+                          { clientId: null, companyId: this.user.companyId },
+                        ],
+                      },
+                    },
+                  ],
+                },
                 {
                   NOT: {
-                    // Do not disjoint task if parent task belongs to the same client / company
-                    OR: [
-                      // Disjoint task if parent is a client task for a different client under the same company
-                      { clientId: this.user.clientId, companyId: this.user.companyId },
-                      // Disjoint task if parent is not a company task for the same company that client belongs to
-                      { clientId: null, companyId: this.user.companyId },
-                    ],
-                  },
+                    viewers: {
+                      hasSome: [
+                        { clientId: this.user.clientId, companyId: this.user.companyId },
+                        { companyId: this.user.companyId },
+                      ],
+                    },
+                  }, //AND do not disjoint if parent is accesible to the client through client visibility.
                 },
               ],
             },
@@ -576,6 +634,7 @@ export class TasksService extends BaseService {
         ],
       }
     })()
+
     return disjointTasksFilter
   }
 
@@ -590,9 +649,8 @@ export class TasksService extends BaseService {
     }
     // If user is IU, no need to flatten subtasks
     if (this.user.role === UserRole.IU && !this.user.clientId) {
-      const copilot = new CopilotAPI(this.user.token)
       if (this.user.internalUserId) {
-        const currentInternalUser = await copilot.getInternalUser(this.user.internalUserId)
+        const currentInternalUser = await this.copilot.getInternalUser(this.user.internalUserId)
         if (currentInternalUser.isClientAccessLimited) {
           return undefined
         }
@@ -705,6 +763,11 @@ export class TasksService extends BaseService {
         OR: [
           { assigneeId, assigneeType: AssigneeType.company },
           { companyId: assigneeId, clientId: null },
+          {
+            viewers: {
+              hasSome: [{ clientId: null, companyId: assigneeId }],
+            },
+          },
         ],
         workflowState: { type: { not: StateType.completed } },
         isArchived: false,
@@ -734,6 +797,31 @@ export class TasksService extends BaseService {
     return tasks
   }
 
+  async resetAllSharedTasks(assigneeId: string) {
+    const tasks = await this.db.task.findMany({
+      where: {
+        viewers: { hasSome: [{ clientId: assigneeId }, { companyId: assigneeId }] },
+        workspaceId: this.user.workspaceId,
+      },
+    })
+    if (!tasks.length) {
+      // If viewers doesn't have an associated task at all, skip logic
+      return []
+    }
+    const taskIds = tasks.map((task) => task.id)
+    await this.db.task.updateMany({
+      where: {
+        id: {
+          in: taskIds,
+        },
+      },
+      data: {
+        viewers: [], //note : if we support multiple viewers in the future, make sure to only pop out the deleted viewer among other viewers.
+      },
+    })
+    return tasks
+  }
+
   async clientUpdateTask(id: string, targetWorkflowStateId?: string | null) {
     //Apply custom authorization here. Policy service is not used because this api is for client's Mark done function only. Only clients can use this.
     if (this.user.role === UserRole.IU) {
@@ -743,7 +831,7 @@ export class TasksService extends BaseService {
     const { completedBy, completedByUserType } = await this.getCompletionInfo(targetWorkflowStateId)
 
     // Query previous task
-    const filters = this.buildTaskPermissions(id)
+    const filters = this.buildTaskPermissions(id, false) // condition 'false' to exclude viewers from the query to get prev task. This will prevent viewer to update the task workflow status
     const prevTask = await this.db.task.findFirst({
       where: filters,
       relationLoadStrategy: 'join',
@@ -809,6 +897,7 @@ export class TasksService extends BaseService {
             clientId: true,
             companyId: true,
             internalUserId: true,
+            viewers: true,
           },
         }),
       ) as Promise<AncestorTaskResponse>[],
@@ -819,8 +908,7 @@ export class TasksService extends BaseService {
   }
 
   private async checkClientAccessForTask(task: Task, internalUserId: string) {
-    const copilot = new CopilotAPI(this.user.token)
-    const currentInternalUser = await copilot.getInternalUser(internalUserId)
+    const currentInternalUser = await this.copilot.getInternalUser(internalUserId)
     if (!currentInternalUser.isClientAccessLimited) return
 
     const isLimitedTask = !(await this.filterTasksByClientAccess([task], currentInternalUser)).length
@@ -907,10 +995,8 @@ export class TasksService extends BaseService {
     clientId: string | null
     companyId: string | null
   }> {
-    const copilot = new CopilotAPI(this.user.token)
-
     if (internalUserId) {
-      const internalUsers = (await copilot.getInternalUsers({ limit: MAX_FETCH_ASSIGNEE_COUNT })).data
+      const internalUsers = (await this.copilot.getInternalUsers({ limit: MAX_FETCH_ASSIGNEE_COUNT })).data
       const isValid = internalUsers?.some((user) => user.id === internalUserId)
 
       if (!isValid) {
@@ -925,7 +1011,7 @@ export class TasksService extends BaseService {
     }
 
     if (clientId) {
-      const client = await copilot.getClient(clientId)
+      const client = await this.copilot.getClient(clientId)
 
       const isValidCompany = companyId ? client?.companyIds?.includes(companyId) : false
 
@@ -945,7 +1031,7 @@ export class TasksService extends BaseService {
     }
 
     if (companyId) {
-      const companies = (await copilot.getCompanies({ limit: MAX_FETCH_ASSIGNEE_COUNT })).data
+      const companies = (await this.copilot.getCompanies({ limit: MAX_FETCH_ASSIGNEE_COUNT })).data
       const isValid = companies?.some((company) => company.id === companyId)
 
       if (!isValid) {
@@ -1013,5 +1099,27 @@ export class TasksService extends BaseService {
     } catch (e) {
       console.error('TaskService#setNewLastSubtaskUpdated::', e)
     }
+  }
+
+  private async validateViewers(viewers: Viewers) {
+    if (!viewers?.length) return []
+    const viewer = viewers[0]
+    try {
+      if (viewer.clientId) {
+        const client = await this.copilot.getClient(viewer.clientId) //support looping viewers and filtering from getClients instead of doing getClient if we do support many viewers in the future.
+        if (!client.companyIds?.includes(viewers[0].companyId)) {
+          throw new APIError(httpStatus.BAD_REQUEST, 'Invalid companyId for the provided viewer.')
+        }
+      } else {
+        await this.copilot.getCompany(viewer.companyId)
+      }
+    } catch (err) {
+      if (err instanceof APIError) {
+        throw err
+      }
+      throw new APIError(httpStatus.BAD_REQUEST, `Viewer should be a CU.`)
+    }
+
+    return viewers
   }
 }

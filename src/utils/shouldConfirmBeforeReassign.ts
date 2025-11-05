@@ -34,6 +34,20 @@ export const shouldConfirmBeforeReassignment = (
   }
 }
 
+export const shouldConfirmViewershipBeforeReassignment = (
+  viewer: IAssigneeCombined | null,
+  currentAssignee?: IAssigneeCombined,
+) => {
+  if (viewer) {
+    const assigneeType = currentAssignee && getAssigneeTypeCorrected(currentAssignee)
+    if (!assigneeType || (assigneeType !== AssigneeType.internalUser && currentAssignee.id !== viewer.id)) {
+      //no assignee or assignee is a non-IU
+      return true
+    }
+  }
+  return false
+}
+
 const getPreviousCompanyList = (previousAssignee: IAssigneeCombined) => {
   const previousCompanyList: string[] = []
   const previousAssigneeType = getAssigneeTypeCorrected(previousAssignee)

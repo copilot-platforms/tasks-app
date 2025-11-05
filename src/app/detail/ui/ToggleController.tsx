@@ -8,9 +8,9 @@ import { useSelector } from 'react-redux'
 
 export const ToggleController = ({ children }: { children: ReactNode }) => {
   const { showSidebar } = useSelector(selectTaskDetails)
-  const matches = useMediaQuery('(max-width:600px)')
+  const matches = useMediaQuery('(max-width:800px)')
 
-  const nonMobile = useMediaQuery('(min-width:600px)')
+  const nonMobile = useMediaQuery('(min-width:800px)')
 
   useEffect(() => {
     if (nonMobile) {

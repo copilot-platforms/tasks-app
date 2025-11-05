@@ -32,15 +32,13 @@ export class LabelMappingService extends BaseService {
       return newLabel
     }
 
-    const copilotUtils = new CopilotAPI(this.user.token, this.customApiKey)
-
     if (internalUserId) {
-      const workspace = await copilotUtils.getWorkspace()
+      const workspace = await this.copilot.getWorkspace()
       return await this.generateLabel(z.string().parse(workspace.brandName))
     }
     if (clientId) {
-      const client = await copilotUtils.getClient(clientId)
-      const company = await copilotUtils.getCompany(companyId ?? client.companyId)
+      const client = await this.copilot.getClient(clientId)
+      const company = await this.copilot.getCompany(companyId ?? client.companyId)
       //client is not assigned in a company
       if (company.isPlaceholder) {
         return await this.generateLabel(client.givenName)
@@ -48,7 +46,7 @@ export class LabelMappingService extends BaseService {
       return await this.generateLabel(company.name)
     }
     if (companyId) {
-      const company = await copilotUtils.getCompany(companyId)
+      const company = await this.copilot.getCompany(companyId)
       return await this.generateLabel(company.name)
     }
   }

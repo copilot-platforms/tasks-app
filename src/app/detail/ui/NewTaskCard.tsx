@@ -1,3 +1,4 @@
+import { UserRole } from '@/app/api/core/types/user'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import AttachmentLayout from '@/components/AttachmentLayout'
 import { ManageTemplatesEndOption } from '@/components/buttons/ManageTemplatesEndOptions'
@@ -11,17 +12,22 @@ import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowStat
 import { StyledTextField } from '@/components/inputs/TextField'
 import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
-import { AssigneePlaceholderSmall, TempalteIconMd } from '@/icons'
+import { PersonIconSmall, TempalteIconMd } from '@/icons'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { selectCreateTemplate } from '@/redux/features/templateSlice'
 import { DateString } from '@/types/date'
-import { CreateTaskRequest } from '@/types/dto/tasks.dto'
+import { CreateTaskRequest, Viewers } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { FilterOptions, IAssigneeCombined, ITemplate, UserIds } from '@/types/interfaces'
+import { FilterByOptions, FilterOptions, IAssigneeCombined, ITemplate, UserIds } from '@/types/interfaces'
 import { getAssigneeName, UserIdsType } from '@/utils/assignee'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
-import { getSelectedUserIds, getSelectorAssignee, getSelectorAssigneeFromFilterOptions } from '@/utils/selector'
+import {
+  getSelectedUserIds,
+  getSelectedViewerIds,
+  getSelectorAssignee,
+  getSelectorAssigneeFromFilterOptions,
+} from '@/utils/selector'
 import { trimAllTags } from '@/utils/trimTags'
 import { Box, Stack, Typography } from '@mui/material'
 import dayjs from 'dayjs'
@@ -35,6 +41,7 @@ interface SubTaskFields {
   workflowStateId: string
   userIds: UserIdsType
   dueDate: DateString | null
+  viewers?: Viewers
 }
 
 export const NewTaskCard = ({
@@ -44,7 +51,7 @@ export const NewTaskCard = ({
   handleClose: () => void
   handleSubTaskCreation: (payload: CreateTaskRequest) => void
 }) => {
-  const { workflowStates, assignee, token, activeTask, previewMode, filterOptions } = useSelector(selectTaskBoard)
+  const { workflowStates, assignee, token, activeTask, previewMode, previewClientCompany } = useSelector(selectTaskBoard)
   const { templates } = useSelector(selectCreateTemplate)
 
   const [isEditorReadonly, setIsEditorReadonly] = useState(false)
@@ -52,8 +59,7 @@ export const NewTaskCard = ({
   const assigneeIds = previewMode
     ? {
         [UserIds.INTERNAL_USER_ID]: null,
-        [UserIds.CLIENT_ID]: filterOptions[FilterOptions.ASSIGNEE][UserIds.CLIENT_ID],
-        [UserIds.COMPANY_ID]: filterOptions[FilterOptions.ASSIGNEE][UserIds.COMPANY_ID],
+        ...previewClientCompany, // if preview mode, default select the respective client/company as assignee
       }
     : {
         [UserIds.INTERNAL_USER_ID]: null,
@@ -82,12 +88,13 @@ export const NewTaskCard = ({
       workflowStateId: todoWorkflowState.id,
       userIds: assigneeIds,
       dueDate: null,
+      viewers: [],
     }))
     updateStatusValue(todoWorkflowState)
     setAssigneeValue(null)
   }
 
-  const handleFieldChange = (field: keyof SubTaskFields, value: string | DateString | null | UserIdsType) => {
+  const handleFieldChange = (field: keyof SubTaskFields, value: string | DateString | null | UserIdsType | Viewers) => {
     setSubTaskFields((prev) => ({
       ...prev,
       [field]: value,
@@ -126,13 +133,10 @@ export const NewTaskCard = ({
 
   const [assigneeValue, setAssigneeValue] = useState<IAssigneeCombined | null>(
     previewMode
-      ? (getSelectorAssigneeFromFilterOptions(
-          assignee,
-          filterOptions[FilterOptions.ASSIGNEE],
-          filterOptions[FilterOptions.TYPE],
-        ) ?? null)
+      ? (getSelectorAssigneeFromFilterOptions(assignee, { internalUserId: null, ...previewClientCompany }) ?? null) // if preview mode, default select the respective client/company as assignee
       : null,
   )
+  const [taskViewerValue, setTaskViewerValue] = useState<IAssigneeCombined | null>(null)
 
   const applyTemplate = useCallback(
     (id: string, templateTitle: string) => {
@@ -210,6 +214,7 @@ export const NewTaskCard = ({
       companyId: subTaskFields.userIds[UserIds.COMPANY_ID],
       dueDate: formattedDueDate,
       parentId: activeTask?.id,
+      ...(subTaskFields?.viewers && subTaskFields.viewers.length > 0 && { viewers: subTaskFields.viewers }),
     }
 
     handleSubTaskCreation(payload)
@@ -345,10 +350,22 @@ export const NewTaskCard = ({
             height={'28px'}
             gap={'6px'}
           />
+          <DatePickerComponent
+            padding={'0px 4px'}
+            height={'28px'}
+            getDate={(value) => handleFieldChange('dueDate', value)}
+            variant="button"
+            dateValue={subTaskFields.dueDate ?? undefined}
+          />
           <CopilotPopSelector
             disabled={!!previewMode}
             name="Set assignee"
             onChange={(inputValue) => {
+              // remove task viewers if assignee is cleared or changed to client or company
+              if (inputValue.length === 0 || inputValue[0].object !== UserRole.IU) {
+                setTaskViewerValue(null)
+                handleFieldChange('viewers', [])
+              }
               const newUserIds = getSelectedUserIds(inputValue)
               const selectedAssignee = getSelectorAssignee(assignee, inputValue)
               setAssigneeValue(selectedAssignee || null)
@@ -362,7 +379,7 @@ export const NewTaskCard = ({
                 height="28px"
                 buttonContent={
                   <Stack direction="row" alignItems={'center'} columnGap={'6px'} height="26px">
-                    {assigneeValue ? <CopilotAvatar currentAssignee={assigneeValue} /> : <AssigneePlaceholderSmall />}
+                    {assigneeValue ? <CopilotAvatar currentAssignee={assigneeValue} /> : <PersonIconSmall />}
                     <Typography
                       variant="bodySm"
                       sx={{
@@ -371,7 +388,7 @@ export const NewTaskCard = ({
                         whiteSpace: 'nowrap',
                         lineHeight: '22px',
                         overflow: 'hidden',
-                        fontSize: '12px',
+                        fontSize: '14px',
                         maxWidth: '120px',
                       }}
                     >
@@ -382,13 +399,46 @@ export const NewTaskCard = ({
               />
             }
           />
-          <DatePickerComponent
-            padding={'0px 4px'}
-            height={'28px'}
-            getDate={(value) => handleFieldChange('dueDate', value)}
-            variant="button"
-            dateValue={subTaskFields.dueDate ?? undefined}
-          />
+          {assigneeValue && assigneeValue.type === FilterByOptions.IUS && (
+            <CopilotPopSelector
+              hideIusList
+              disabled={!!previewMode}
+              name="Set client visibility"
+              onChange={(inputValue) => {
+                const newUserIds = getSelectedViewerIds(inputValue)
+                const selectedAssignee = getSelectorAssignee(assignee, inputValue)
+                setTaskViewerValue(selectedAssignee || null)
+                handleFieldChange('viewers', newUserIds)
+              }}
+              initialValue={taskViewerValue || undefined}
+              buttonContent={
+                <SelectorButton
+                  disabled={!!previewMode}
+                  padding="0px 4px"
+                  height="28px"
+                  buttonContent={
+                    <Stack direction="row" alignItems={'center'} columnGap={'6px'} height="26px">
+                      {taskViewerValue ? <CopilotAvatar currentAssignee={taskViewerValue} /> : <PersonIconSmall />}
+                      <Typography
+                        variant="bodySm"
+                        sx={{
+                          color: (theme) => (taskViewerValue ? theme.color.gray[600] : theme.color.text.textDisabled),
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          lineHeight: '22px',
+                          overflow: 'hidden',
+                          fontSize: '14px',
+                          maxWidth: '120px',
+                        }}
+                      >
+                        {getAssigneeName(taskViewerValue as IAssigneeCombined, 'Client visibility')}
+                      </Typography>
+                    </Stack>
+                  }
+                />
+              }
+            />
+          )}
         </Stack>
         <Stack
           direction="row"

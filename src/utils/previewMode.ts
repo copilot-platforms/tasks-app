@@ -1,4 +1,4 @@
-import { setFilterOptions } from '@/redux/features/taskBoardSlice'
+import { setFilterOptions, setPreviewClientCompany } from '@/redux/features/taskBoardSlice'
 import store from '@/redux/store'
 import { PreviewMode, Token } from '@/types/common'
 import { FilterOptions } from '@/types/interfaces'
@@ -13,7 +13,7 @@ export const getPreviewMode = (tokenPayload: Token): PreviewMode => {
   return previewMode
 }
 
-export const handlePreviewMode = (previewMode: NonNullable<PreviewMode>, tokenPayload: Token) => {
+export const handlePreviewMode = (tokenPayload: Token) => {
   // If clientId is provided, ignore corresponding companyId. Else pick up the companyId
   const previewClientId = tokenPayload.clientId
   const previewCompanyId = tokenPayload.companyId
@@ -21,10 +21,5 @@ export const handlePreviewMode = (previewMode: NonNullable<PreviewMode>, tokenPa
     throw new Error('Could not find preview client / company id')
   }
 
-  store.dispatch(
-    setFilterOptions({
-      optionType: FilterOptions.ASSIGNEE,
-      newValue: { internalUserId: null, clientId: previewClientId ?? null, companyId: previewCompanyId ?? null },
-    }),
-  )
+  store.dispatch(setPreviewClientCompany({ clientId: previewClientId ?? null, companyId: previewCompanyId ?? null }))
 }

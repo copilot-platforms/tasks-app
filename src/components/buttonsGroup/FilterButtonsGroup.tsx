@@ -1,6 +1,4 @@
 import { Stack, Typography } from '@mui/material'
-import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
-import { ReactNode } from 'react'
 import { TertiaryBtn } from '../buttons/TertiaryBtn'
 
 export type FilterButtons = {
@@ -9,13 +7,16 @@ export type FilterButtons = {
   onClick: (index: number) => void
 }
 
-const FilterButtonGroup = ({
-  filterButtons,
-  activeButtonIndex,
-}: {
+type FilterButtonGroupProps = {
   filterButtons: FilterButtons[]
   activeButtonIndex: number | undefined
-}) => {
+}
+
+const FilterButtonGroup = ({ filterButtons, activeButtonIndex }: FilterButtonGroupProps) => {
+  if (!filterButtons.length) {
+    return null
+  }
+
   return (
     <Stack
       sx={(theme) => ({

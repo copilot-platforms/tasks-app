@@ -7,6 +7,7 @@ import { TitleUpdatedSchema } from '@api/activity-logs/schemas/TitleUpdatedSchem
 import { WorkflowStateUpdatedSchema } from '@api/activity-logs/schemas/WorkflowStateUpdatedSchema'
 import { ActivityType, AssigneeType } from '@prisma/client'
 import { z } from 'zod'
+import { ViewerAddedSchema, ViewerRemovedSchema } from '@api/activity-logs/schemas/ViewerSchema'
 
 export const SchemaByActivityType = {
   [ActivityType.TASK_CREATED]: TaskCreatedSchema,
@@ -17,6 +18,8 @@ export const SchemaByActivityType = {
   [ActivityType.COMMENT_ADDED]: CommentAddedSchema,
   [ActivityType.DUE_DATE_CHANGED]: DueDateChangedSchema,
   [ActivityType.ARCHIVE_STATE_UPDATED]: ArchivedStateUpdatedSchema,
+  [ActivityType.VIEWER_ADDED]: ViewerAddedSchema,
+  [ActivityType.VIEWER_REMOVED]: ViewerRemovedSchema,
 }
 
 export const DBActivityLogDetailsSchema = z.record(z.string(), z.unknown())

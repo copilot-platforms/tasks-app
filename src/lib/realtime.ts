@@ -6,6 +6,7 @@ import store from '@/redux/store'
 import { InternalUsersSchema, Token } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { IAssigneeCombined } from '@/types/interfaces'
+import { getPreviewMode } from '@/utils/previewMode'
 import { extractImgSrcs, replaceImgSrcs } from '@/utils/signedUrlReplacer'
 import { AssigneeType } from '@prisma/client'
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
@@ -40,6 +41,16 @@ export class RealtimeHandler {
     }
   }
 
+  private isViewer(newTask: RealTimeTaskResponse): boolean {
+    return this.tokenPayload.clientId || !!getPreviewMode(this.tokenPayload)
+      ? (newTask.viewers?.some(
+          (viewer) =>
+            (viewer.clientId === this.tokenPayload.clientId && viewer.companyId === this.tokenPayload.companyId) ||
+            (!viewer.clientId && viewer.companyId === this.tokenPayload.companyId),
+        ) ?? false)
+      : false
+  } //check if the task incoming from realtime includes the logged in client as a viewer.
+
   /**
    * Filters out tasks this user type does not have access to
    */
@@ -67,6 +78,7 @@ export class RealtimeHandler {
       // Ignore all tasks that don't belong to client
 
       if (
+        !this.isViewer(newTask) &&
         !(
           (newTask.clientId == this.tokenPayload.clientId && newTask.companyId == this.tokenPayload.companyId) ||
           (newTask.clientId == null && newTask.companyId == this.tokenPayload.companyId)
@@ -218,6 +230,7 @@ export class RealtimeHandler {
       }
     }
     // --- Client
+
     if (this.userRole === AssigneeType.client) {
       // Return if:
       // - task is unassigned
@@ -225,10 +238,11 @@ export class RealtimeHandler {
       // - task is a client task, assigned to another client
       // - task's companyId does not match current user's active companyId
       if (
-        !newTask.assigneeId ||
-        newTask.internalUserId ||
-        (newTask.clientId && newTask.clientId !== this.tokenPayload.clientId) ||
-        this.tokenPayload.companyId !== newTask.companyId
+        !this.isViewer(newTask) &&
+        (!newTask.assigneeId ||
+          !!newTask.internalUserId ||
+          (newTask.clientId && newTask.clientId !== this.tokenPayload.clientId) ||
+          this.tokenPayload.companyId !== newTask.companyId)
       ) {
         return
       }
@@ -273,6 +287,7 @@ export class RealtimeHandler {
     // --- Handle unassignment for clients (board + details page)
     const isReassignedOutOfClientScope =
       this.userRole === AssigneeType.client &&
+      !this.isViewer(updatedTask) &&
       (!updatedTask.clientId
         ? updatedTask.companyId !== this.tokenPayload.companyId
         : updatedTask.companyId !== this.tokenPayload.companyId || updatedTask.clientId !== this.tokenPayload.clientId)
@@ -310,9 +325,10 @@ export class RealtimeHandler {
     const isReassignedIntoClientScope =
       this.userRole === AssigneeType.client &&
       updatedTask.assigneeId !== prevTask.assigneeId &&
-      (!updatedTask.clientId
-        ? updatedTask.companyId === this.tokenPayload.companyId
-        : updatedTask.companyId === this.tokenPayload.companyId && updatedTask.clientId === this.tokenPayload.clientId)
+      (this.isViewer(updatedTask) ||
+        (!updatedTask.clientId
+          ? updatedTask.companyId === this.tokenPayload.companyId
+          : updatedTask.companyId === this.tokenPayload.companyId && updatedTask.clientId === this.tokenPayload.clientId))
 
     const isReassignedIntoLimitedIUScope = (() => {
       if (this.userRole !== AssigneeType.internalUser) return false
