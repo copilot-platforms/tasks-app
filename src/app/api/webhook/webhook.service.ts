@@ -17,12 +17,6 @@ import { NextRequest } from 'next/server'
 
 // TODO: This will be broken for a while until OUT-1985
 class WebhookService extends BaseService {
-  private copilot
-  constructor(user: User, customCopilotApiKey?: string) {
-    super(user, customCopilotApiKey)
-    this.copilot = new CopilotAPI(this.user.token)
-  }
-
   async parseWebhook(req: NextRequest): Promise<WebhookEvent> {
     const webhookEvent = WebhookSchema.safeParse(await req.json())
     if (!webhookEvent.success) {
