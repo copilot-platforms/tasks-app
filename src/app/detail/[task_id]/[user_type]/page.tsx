@@ -199,6 +199,7 @@ export default async function TaskDetailPage({
                       await deleteAttachment(token, id)
                     }}
                     userType={params.user_type}
+                    token={token}
                   />
                 </StyledTiptapDescriptionWrapper>
                 {subTaskStatus.canCreateSubtask && (
