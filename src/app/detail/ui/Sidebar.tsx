@@ -196,7 +196,6 @@ export const Sidebar = ({
         })
     }
   }
-
   if (!showSidebar) {
     return (
       <Stack
@@ -252,8 +251,6 @@ export const Sidebar = ({
         </Box>
         <Box
           sx={{
-            border: (theme) => `1px solid ${theme.color.borders.border}`,
-            borderRadius: '4px',
             width: 'fit-content',
             height: '30px',
             display: 'flex',
@@ -269,14 +266,14 @@ export const Sidebar = ({
             buttonContent={
               <SelectorButton
                 disabled={disabled}
+                height={'30px'}
                 startIcon={<CopilotAvatar currentAssignee={assigneeValue} />}
-                outlined={true}
                 buttonContent={
                   <Typography
                     variant="md"
                     lineHeight="22px"
                     sx={{
-                      color: (theme) => theme.color.gray[400],
+                      color: (theme) => (assigneeValue ? theme.color.gray[600] : theme.color.gray[400]),
                       textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap',
                       overflow: 'hidden',
@@ -293,8 +290,6 @@ export const Sidebar = ({
         {assigneeValue && assigneeValue.type === FilterByOptions.IUS && (
           <Box
             sx={{
-              border: (theme) => `1px solid ${theme.color.borders.border}`,
-              borderRadius: '4px',
               width: 'fit-content',
               height: '30px',
               display: 'flex',
@@ -311,14 +306,14 @@ export const Sidebar = ({
               buttonContent={
                 <SelectorButton
                   disabled={disabled && !previewMode}
+                  height={'30px'}
                   startIcon={<CopilotAvatar currentAssignee={taskViewerValue || undefined} />}
-                  outlined={true}
                   buttonContent={
                     <Typography
                       variant="md"
                       lineHeight="22px"
                       sx={{
-                        color: (theme) => theme.color.gray[400],
+                        color: (theme) => (taskViewerValue ? theme.color.gray[600] : theme.color.gray[400]),
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',

@@ -44,7 +44,7 @@ export const StyledTiptapDescriptionWrapper = styled(Box)(({ theme }) => ({
   borderBottom: `1px solid ${theme.color.borders.borderDisabled}`,
   width: '100%',
   '.tiptap *': {
-    color: theme.color.gray[500],
+    color: theme.color.gray[600],
   },
   '.tiptap p': {
     fontSize: '16px',
