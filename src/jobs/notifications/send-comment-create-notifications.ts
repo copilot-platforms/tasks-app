@@ -1,5 +1,6 @@
 import User from '@/app/api/core/models/User.model'
 import { NotificationTaskActions } from '@/app/api/core/types/tasks'
+import { UserRole } from '@/app/api/core/types/user'
 import { NotificationService } from '@/app/api/notification/notification.service'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { Comment, Task } from '@prisma/client'
@@ -23,6 +24,8 @@ export const sendCommentCreateNotifications = task({
 
     const { comment, task, user } = payload
 
+    const senderCompanyId = user.role === UserRole.Client ? user?.companyId : undefined
+
     // If task is unassigned, there's nobody to send notifications to
     if (!task.assigneeId || !task.assigneeType) return
 
@@ -40,6 +43,7 @@ export const sendCommentCreateNotifications = task({
       email: true,
       disableInProduct: true,
       commentId: comment.id,
+      senderCompanyId,
     })
 
     const { recipientIds: iuRecipientIds } = await commentNotificationService.getNotificationParties(
@@ -54,6 +58,7 @@ export const sendCommentCreateNotifications = task({
       email: false,
       disableInProduct: false,
       commentId: comment.id,
+      senderCompanyId,
     })
   },
 })
