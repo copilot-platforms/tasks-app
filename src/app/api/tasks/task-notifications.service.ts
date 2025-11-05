@@ -66,10 +66,8 @@ export class TaskNotificationsService extends BaseService {
 
       const parentViewer = getTaskViewers(TaskResponseSchema.pick({ viewers: true }).parse(parentTask))
 
-      const copilot = new CopilotAPI(this.user.token)
-
       if (task.assigneeType === AssigneeType.client) {
-        const client = await copilot.getClient(task.assigneeId)
+        const client = await this.copilot.getClient(task.assigneeId)
         if (parentTask.assigneeId === client.id || parentTask.assigneeId === client.companyId) {
           return true
         }
@@ -77,7 +75,7 @@ export class TaskNotificationsService extends BaseService {
           return true
         }
       } else {
-        const clients = await copilot.getClients()
+        const clients = await this.copilot.getClients()
         const companyClientIds =
           clients.data?.filter((client) => client.companyId === task.assigneeId).map((client) => client.id) || []
         if (companyClientIds.includes(parentTask.assigneeId || '__empty__')) {
@@ -89,9 +87,8 @@ export class TaskNotificationsService extends BaseService {
       } //for assignment notifications
 
       if (!!viewers?.length) {
-        const copilot = new CopilotAPI(this.user.token)
         if (viewers[0].clientId) {
-          const client = await copilot.getClient(viewers[0].clientId)
+          const client = await this.copilot.getClient(viewers[0].clientId)
           if (parentTask.assigneeId === client.id || parentTask.assigneeId === client.companyId) {
             return true
           }
@@ -99,7 +96,7 @@ export class TaskNotificationsService extends BaseService {
             return true
           }
         } else {
-          const clients = await copilot.getClients()
+          const clients = await this.copilot.getClients()
           const companyClientIds =
             clients.data?.filter((client) => client.companyId === viewers[0].companyId).map((client) => client.id) || []
           if (companyClientIds.includes(parentTask.assigneeId || '__empty__')) {
@@ -331,11 +328,8 @@ export class TaskNotificationsService extends BaseService {
   }
 
   private handleTaskCompleted = async (updatedTask: Task) => {
-    const copilot = new CopilotAPI(this.user.token)
-
     if (updatedTask.assigneeType === AssigneeType.company) {
       const { recipientIds, senderCompanyId } = await this.notificationService.getNotificationParties(
-        copilot,
         updatedTask,
         NotificationTaskActions.CompletedByCompanyMember,
       )
@@ -350,7 +344,6 @@ export class TaskNotificationsService extends BaseService {
     } else {
       // Get every IU with access to company first
       const { recipientIds, senderCompanyId } = await this.notificationService.getNotificationParties(
-        copilot,
         updatedTask,
         NotificationTaskActions.CompletedByCompanyMember,
       )
@@ -389,9 +382,7 @@ export class TaskNotificationsService extends BaseService {
   }
 
   private sendCompanyTaskSharedNotification = async (task: Task) => {
-    const copilot = new CopilotAPI(this.user.token)
     const { recipientIds } = await this.notificationService.getNotificationParties(
-      copilot,
       task,
       NotificationTaskActions.SharedToCompany,
     )
@@ -441,9 +432,7 @@ export class TaskNotificationsService extends BaseService {
   }
 
   private sendCompanyTaskNotifications = async (task: Task, isReassigned = false) => {
-    const copilot = new CopilotAPI(this.user.token)
     const { recipientIds } = await this.notificationService.getNotificationParties(
-      copilot,
       task,
       NotificationTaskActions.AssignedToCompany,
     )

@@ -3,9 +3,7 @@ import { NotificationRequestBody } from '@/types/common'
 import { ClientUpdatedEventData, HANDLEABLE_EVENT, WebhookEntitySchema, WebhookEvent, WebhookSchema } from '@/types/webhook'
 import { getArrayDifference } from '@/utils/array'
 import { copilotBottleneck, dbBottleneck } from '@/utils/bottleneck'
-import { CopilotAPI } from '@/utils/CopilotAPI'
 import APIError from '@api/core/exceptions/api'
-import User from '@api/core/models/User.model'
 import { BaseService } from '@api/core/services/base.service'
 import { NotificationTaskActions } from '@api/core/types/tasks'
 import { getInProductNotificationDetails } from '@api/notification/notification.helpers'
@@ -15,14 +13,7 @@ import { AssigneeType, StateType } from '@prisma/client'
 import httpStatus from 'http-status'
 import { NextRequest } from 'next/server'
 
-// TODO: This will be broken for a while until OUT-1985
 class WebhookService extends BaseService {
-  private copilot
-  constructor(user: User, customCopilotApiKey?: string) {
-    super(user, customCopilotApiKey)
-    this.copilot = new CopilotAPI(this.user.token)
-  }
-
   async parseWebhook(req: NextRequest): Promise<WebhookEvent> {
     const webhookEvent = WebhookSchema.safeParse(await req.json())
     if (!webhookEvent.success) {
