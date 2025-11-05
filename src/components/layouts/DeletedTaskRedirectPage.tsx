@@ -1,12 +1,15 @@
 import { UserRole } from '@/app/api/core/types/user'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { TasksListIcon } from '@/icons'
+import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 import { SxCenter } from '@/utils/mui'
 import { Box, Button, Stack, Typography } from '@mui/material'
 import Link from 'next/link'
+import { useSelector } from 'react-redux'
 import { z } from 'zod'
 
 export const DeletedTaskRedirectPage = ({ userType, token }: { userType: UserRole; token: string }) => {
+  const { fromNotificationCenter } = useSelector(selectTaskDetails)
   return (
     <>
       <AppMargin size={SizeofAppMargin.LARGE} py="20px">
@@ -39,24 +42,27 @@ export const DeletedTaskRedirectPage = ({ userType, token }: { userType: UserRol
                 This task has been deleted. You can view your other tasks on the Tasks homepage.
               </Typography>
             </Stack>
-            <Link href={`/${userType === UserRole.Client ? 'client' : ''}?token=${z.string().parse(token)}`}>
-              <Button
-                variant="contained"
-                startIcon={null}
-                sx={{
-                  textTransform: 'none',
-                  bgcolor: '#212B36',
-                  boxShadow: 'none',
-                  '&:hover': { backgroundColor: '#212B36', boxShadow: 'none' },
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                }}
-                disableRipple
-                disableTouchRipple
-              >
-                <Typography variant="sm">View tasks</Typography>
-              </Button>
-            </Link>
+            {/* disable board navigation on notification-center-view */}
+            {!fromNotificationCenter && (
+              <Link href={`/${userType === UserRole.Client ? 'client' : ''}?token=${z.string().parse(token)}`}>
+                <Button
+                  variant="contained"
+                  startIcon={null}
+                  sx={{
+                    textTransform: 'none',
+                    bgcolor: '#212B36',
+                    boxShadow: 'none',
+                    '&:hover': { backgroundColor: '#212B36', boxShadow: 'none' },
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                  }}
+                  disableRipple
+                  disableTouchRipple
+                >
+                  <Typography variant="sm">View tasks</Typography>
+                </Button>
+              </Link>
+            )}
           </Stack>
         </Box>
       </AppMargin>
