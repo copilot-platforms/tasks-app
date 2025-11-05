@@ -103,10 +103,17 @@ export default async function TaskDetailPage({
   if (!tokenPayload) {
     throw new Error('Please provide a Valid Token')
   }
+  const fromNotificationCenter = !!searchParams.fromNotificationCenter
 
   console.info(`app/detail/${task_id}/${user_type}/page.tsx | Serving user ${token} with payload`, tokenPayload)
   if (!task) {
-    return <DeletedTaskRedirectPage userType={tokenPayload.companyId ? UserRole.Client : UserRole.IU} token={token} />
+    return (
+      <DeletedTaskRedirectPage
+        userType={tokenPayload.companyId ? UserRole.Client : UserRole.IU}
+        token={token}
+        fromNotificationCenter={fromNotificationCenter}
+      />
+    )
   }
 
   const isPreviewMode = !!getPreviewMode(tokenPayload)
@@ -116,7 +123,6 @@ export default async function TaskDetailPage({
     href: `/detail/${id}/${user_type}?token=${token}`,
   }))
 
-  const fromNotificationCenter = !!searchParams.fromNotificationCenter
   // flag that determines if the current user is the task viewer
   const isViewer = checkIfTaskViewer(task.viewers, tokenPayload)
 
