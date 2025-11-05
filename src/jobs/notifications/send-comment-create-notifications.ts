@@ -24,8 +24,6 @@ export const sendCommentCreateNotifications = task({
 
     const { comment, task, user } = payload
 
-    const senderCompanyId = user.role === UserRole.Client ? user?.companyId : undefined
-
     // If task is unassigned, there's nobody to send notifications to
     if (!task.assigneeId || !task.assigneeType) return
 
@@ -43,10 +41,9 @@ export const sendCommentCreateNotifications = task({
       email: true,
       disableInProduct: true,
       commentId: comment.id,
-      senderCompanyId,
     })
 
-    const { recipientIds: iuRecipientIds } = await commentNotificationService.getNotificationParties(
+    const { recipientIds: iuRecipientIds, senderCompanyId } = await commentNotificationService.getNotificationParties(
       copilot,
       task,
       NotificationTaskActions.CommentToIU,

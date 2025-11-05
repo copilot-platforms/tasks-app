@@ -501,6 +501,7 @@ export class NotificationService extends BaseService {
                 : true,
             )
             .map((iu) => iu.id)
+          senderCompanyId = this.user?.companyId
         }
       default:
         const userInfo = await copilot.me()
@@ -564,7 +565,7 @@ export class NotificationService extends BaseService {
     const notificationDetails: NotificationRequestBody = {
       senderId,
       senderCompanyId,
-      senderType: 'client',
+      senderType: this.user.role,
       recipientClientId: recipientId ?? undefined,
       recipientCompanyId: task.companyId ?? viewer?.companyId ?? undefined,
       // If any of the given action is not present in details obj, that type of notification is not sent
@@ -577,7 +578,6 @@ export class NotificationService extends BaseService {
       delete notificationDetails.recipientCompanyId
       delete notificationDetails.recipientClientId
       notificationDetails.recipientInternalUserId = recipientId
-      notificationDetails.senderType = 'internalUser'
     }
     return notificationDetails
   }
