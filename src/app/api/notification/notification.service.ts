@@ -468,6 +468,8 @@ export class NotificationService extends BaseService {
       case NotificationTaskActions.CommentToIU:
         // all internal users are potential parties in notifications for comments
         const getIUResponse = await this.copilot.getInternalUsers()
+        senderCompanyId = this.user?.companyId
+
         if (task.assigneeType === AssigneeType.internalUser) {
           // when the assignee is an IU, we know that the all other IUs are involved
           // in notification
@@ -490,7 +492,6 @@ export class NotificationService extends BaseService {
                 : true,
             )
             .map((iu) => iu.id)
-          senderCompanyId = this.user?.companyId
         }
       default:
         const userInfo = await this.copilot.me()
