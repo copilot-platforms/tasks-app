@@ -12,7 +12,7 @@ declare global {
  * Base Service with access to db and current user
  */
 export class BaseService {
-  protected readonly db: PrismaClient = DBClient.getInstance()
+  protected db: PrismaClient = DBClient.getInstance()
   public readonly user: User
   public readonly customApiKey?: string
   protected readonly copilot: CopilotAPI
