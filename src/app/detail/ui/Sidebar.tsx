@@ -269,11 +269,11 @@ export const Sidebar = ({
           <CopilotPopSelector
             name="Set assignee"
             onChange={handleAssigneeChange}
-            disabled={disabled}
+            disabled={disabled || fromNotificationCenter}
             initialValue={assigneeValue}
             buttonContent={
               <SelectorButton
-                disabled={disabled}
+                disabled={disabled || fromNotificationCenter}
                 height={'30px'}
                 startIcon={<CopilotAvatar currentAssignee={assigneeValue} />}
                 buttonContent={
@@ -309,11 +309,11 @@ export const Sidebar = ({
               hideIusList
               name="Set client visibility"
               onChange={handleTaskViewerChange}
-              disabled={disabled && !previewMode}
+              disabled={(disabled && !previewMode) || fromNotificationCenter}
               initialValue={taskViewerValue || undefined}
               buttonContent={
                 <SelectorButton
-                  disabled={disabled && !previewMode}
+                  disabled={(disabled && !previewMode) || fromNotificationCenter}
                   height={'30px'}
                   startIcon={<CopilotAvatar currentAssignee={taskViewerValue || undefined} />}
                   buttonContent={
@@ -482,11 +482,11 @@ export const Sidebar = ({
               <CopilotPopSelector
                 name="Set assignee"
                 onChange={handleAssigneeChange}
-                disabled={disabled}
+                disabled={disabled || fromNotificationCenter}
                 initialValue={assigneeValue}
                 buttonContent={
                   <SelectorButton
-                    disabled={disabled}
+                    disabled={disabled || fromNotificationCenter}
                     padding="0px"
                     startIcon={<CopilotAvatar width="16px" height="16px" currentAssignee={assigneeValue} />}
                     outlined={true}
@@ -537,11 +537,11 @@ export const Sidebar = ({
                   hideIusList
                   name="Set client visibility"
                   onChange={handleTaskViewerChange}
-                  disabled={disabled && !previewMode} // allow visibility change in preview mode
+                  disabled={(disabled && !previewMode) || fromNotificationCenter} // allow visibility change in preview mode
                   initialValue={taskViewerValue || undefined}
                   buttonContent={
                     <SelectorButton
-                      disabled={disabled && !previewMode}
+                      disabled={(disabled && !previewMode) || fromNotificationCenter}
                       padding="0px"
                       startIcon={<CopilotAvatar width="16px" height="16px" currentAssignee={taskViewerValue || undefined} />}
                       outlined={true}
