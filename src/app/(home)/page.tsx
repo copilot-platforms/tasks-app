@@ -55,6 +55,7 @@ export async function getAllTasks(
 export async function getTokenPayload(token: string): Promise<Token> {
   const copilotClient = new CopilotAPI(token)
   const payload = TokenSchema.parse(await copilotClient.getTokenPayload())
+
   return payload as Token
 }
 
@@ -68,6 +69,7 @@ export async function getViewSettings(token: string): Promise<CreateViewSettings
     next: { tags: ['getViewSettings'] },
   })
   const resp = await res.json()
+
   return resp
 }
 
@@ -88,6 +90,7 @@ export default async function Main({
   if (!userRole) {
     return <SilentError message="Please provide a Valid Token" />
   }
+
   // Both clients and IUs can access this page so hardcoding a UserRole will not work
   redirectIfTaskCta(searchParams, userRole)
 
@@ -103,6 +106,7 @@ export default async function Main({
   }
 
   console.info(`app/page.tsx | Serving user ${token} with payload`, tokenPayload)
+
   return (
     <>
       <AssigneeCacheGetter lookupKey={tokenPayload.internalUserId!} />
