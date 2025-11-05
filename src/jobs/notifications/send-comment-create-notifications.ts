@@ -30,7 +30,6 @@ export const sendCommentCreateNotifications = task({
     const commentNotificationService = new NotificationService(user)
     const copilot = new CopilotAPI(user.token)
     const { recipientIds: clientRecipientIds } = await commentNotificationService.getNotificationParties(
-      copilot,
       task,
       NotificationTaskActions.CommentToCU,
     )
@@ -44,7 +43,6 @@ export const sendCommentCreateNotifications = task({
     })
 
     const { recipientIds: iuRecipientIds, senderCompanyId } = await commentNotificationService.getNotificationParties(
-      copilot,
       task,
       NotificationTaskActions.CommentToIU,
     )
