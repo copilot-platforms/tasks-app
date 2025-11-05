@@ -1,15 +1,24 @@
+'use client'
+
 import { UserRole } from '@/app/api/core/types/user'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { TasksListIcon } from '@/icons'
-import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
+
 import { SxCenter } from '@/utils/mui'
 import { Box, Button, Stack, Typography } from '@mui/material'
 import Link from 'next/link'
-import { useSelector } from 'react-redux'
+
 import { z } from 'zod'
 
-export const DeletedTaskRedirectPage = ({ userType, token }: { userType: UserRole; token: string }) => {
-  const { fromNotificationCenter } = useSelector(selectTaskDetails)
+export const DeletedTaskRedirectPage = ({
+  userType,
+  token,
+  fromNotificationCenter,
+}: {
+  userType: UserRole
+  token: string
+  fromNotificationCenter: boolean
+}) => {
   return (
     <>
       <AppMargin size={SizeofAppMargin.LARGE} py="20px">
