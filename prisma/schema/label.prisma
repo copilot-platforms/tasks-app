@@ -6,5 +6,7 @@ model Label {
   updatedAt      DateTime  @updatedAt @db.Timestamptz()
   deletedAt      DateTime? @db.Timestamptz()
 
+  @@index([labelledEntity, createdAt(sort: Desc)], name: "IX_Labels_labelledEntity_createdAt")
+  @@index([label, createdAt(sort: Desc)], name: "IX_Labels_label_createdAt")
   @@map("Labels")
 }
