@@ -190,7 +190,7 @@ export class TasksService extends BaseService {
       throw new APIError(httpStatus.BAD_REQUEST, 'Due date cannot be in the past')
     }
 
-    const { completedBy, completedByUserType } = await this.getCompletionInfo(data?.workflowStateId)
+    const { completedBy, completedByUserType, workflowStateStatus } = await this.getCompletionInfo(data?.workflowStateId)
     console.info('TasksService#createTask | Completion info determined:', { completedBy, completedByUserType })
 
     // NOTE: This block strictly doesn't allow clients to create tasks
@@ -229,7 +229,7 @@ export class TasksService extends BaseService {
         assigneeType,
         viewers: viewers,
         ...validatedIds,
-        ...(await getTaskTimestamps('create', this.user, data)),
+        ...(await getTaskTimestamps('create', this.user, data, undefined, workflowStateStatus)),
       },
       include: { workflowState: true },
     })
@@ -960,9 +960,10 @@ export class TasksService extends BaseService {
   private async getCompletionInfo(targetWorkflowStateId?: string | null): Promise<{
     completedBy: string | null
     completedByUserType: AssigneeType | null
+    workflowStateStatus: StateType
   }> {
     if (!targetWorkflowStateId) {
-      return { completedBy: null, completedByUserType: null }
+      return { completedBy: null, completedByUserType: null, workflowStateStatus: StateType.unstarted }
     }
 
     const role = this.user.role
@@ -980,10 +981,11 @@ export class TasksService extends BaseService {
       return {
         completedBy: z.string().parse(role === AssigneeType.internalUser ? this.user.internalUserId : this.user.clientId),
         completedByUserType: role,
+        workflowStateStatus: workflowState.type,
       }
     }
 
-    return { completedBy: null, completedByUserType: null }
+    return { completedBy: null, completedByUserType: null, workflowStateStatus: workflowState.type }
   }
 
   private async validateUserIds(
