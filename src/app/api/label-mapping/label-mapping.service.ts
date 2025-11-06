@@ -43,7 +43,7 @@ export class LabelMappingService extends BaseService {
         ;[client, company] = await Promise.all([this.copilot.getClient(clientId), this.copilot.getCompany(companyId)])
       } else {
         client = await this.copilot.getClient(clientId)
-        company = await this.copilot.getCompany(companyId ?? client.companyId)
+        company = await this.copilot.getCompany(client.companyId)
       }
       //client is not assigned in a company
       if (company.isPlaceholder) {
