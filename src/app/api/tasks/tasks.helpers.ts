@@ -47,13 +47,16 @@ export const getTaskTimestamps = async (
   user: User,
   data: CreateTaskRequest | UpdateTaskRequest,
   prevData?: Task & { workflowState: WorkflowState },
+  status?: StateType,
 ): Promise<TaskTimestamps> => {
-  const workflowStateService = new WorkflowStatesService(user)
-
-  // Handle situations where task workspaceId is not provided for create or PATCH update
   let workflowStateStatus: StateType | undefined
-  if (data.workflowStateId) {
-    workflowStateStatus = (await workflowStateService.getOneWorkflowState(data.workflowStateId))?.type
+  if (status) {
+    workflowStateStatus = status
+  } else {
+    const workflowStateService = new WorkflowStatesService(user)
+    if (data.workflowStateId) {
+      workflowStateStatus = (await workflowStateService.getOneWorkflowState(data.workflowStateId))?.type
+    }
   }
 
   const curDate = new Date()
