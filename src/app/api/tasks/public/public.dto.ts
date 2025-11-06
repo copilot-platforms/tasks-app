@@ -88,7 +88,7 @@ export const publicTaskCreateDtoSchemaFactory = (token: string) => {
         const copilot = new CopilotAPI(token)
         const client = await copilot.getClient(clientId)
         if (Array.isArray(client.companyIds) && client.companyIds.length === 1) {
-          companyId = client.companyIds[0]
+          data.companyId = client.companyIds[0]
         }
         // Backwards compatibility in case a client has companyId only and undefined / empty array in companyIds (you can never be too careful)
         else if (
@@ -96,7 +96,7 @@ export const publicTaskCreateDtoSchemaFactory = (token: string) => {
           // This prevents us from picking companyId when there are already many companies in companyIds
           (!client.companyIds || (Array.isArray(client.companyIds) && !client.companyIds.length))
         ) {
-          companyId = client.companyId
+          data.companyId = client.companyId
         }
         // If client has multiple companies, throw error
         else if (Array.isArray(client.companyIds)) {
