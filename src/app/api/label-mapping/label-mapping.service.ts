@@ -3,6 +3,7 @@ import { BaseService } from '@api/core/services/base.service'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import { z } from 'zod'
 import { Label as PrismaLabelMapping } from '@prisma/client'
+import { ClientResponse, CompanyResponse } from '@/types/common'
 
 export class LabelMappingService extends BaseService {
   /**
@@ -37,8 +38,13 @@ export class LabelMappingService extends BaseService {
       return await this.generateLabel(z.string().parse(workspace.brandName))
     }
     if (clientId) {
-      const client = await this.copilot.getClient(clientId)
-      const company = await this.copilot.getCompany(companyId ?? client.companyId)
+      let client: ClientResponse, company: CompanyResponse
+      if (companyId) {
+        ;[client, company] = await Promise.all([this.copilot.getClient(clientId), this.copilot.getCompany(companyId)])
+      } else {
+        client = await this.copilot.getClient(clientId)
+        company = await this.copilot.getCompany(companyId ?? client.companyId)
+      }
       //client is not assigned in a company
       if (company.isPlaceholder) {
         return await this.generateLabel(client.givenName)
