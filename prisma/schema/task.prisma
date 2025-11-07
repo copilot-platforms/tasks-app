@@ -60,6 +60,8 @@ model Task {
 
   viewers          Json[]      @db.JsonB @default([])
 
+  lastUpdatedToken       String?
+
   @@index([path], type: Gist)
   @@map("Tasks")
 }

@@ -69,6 +69,14 @@ export const RealTime = ({
     if (isPayloadEqual(payload)) {
       return //no changes for the same payload
     }
+
+    if (
+      Object.keys(payload.new).includes('lastUpdatedToken') &&
+      (payload.new as RealTimeTaskResponse).lastUpdatedToken === token?.slice(0, 25)
+    ) {
+      return //no changes for the user who initiates an update on task
+    }
+
     const user = assignee.find((el) => el.id === userId)
     if (!user || !userRole) return
 

@@ -98,6 +98,7 @@ export const TaskResponseSchema = z.object({
   clientId: z.string().uuid().nullish(),
   companyId: z.string().uuid().nullish(),
   viewers: ViewersSchema,
+  lastUpdatedToken: z.string().nullish(),
 })
 
 export type TaskResponse = z.infer<typeof TaskResponseSchema>
