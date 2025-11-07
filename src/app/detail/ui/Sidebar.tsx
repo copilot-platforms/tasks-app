@@ -31,6 +31,7 @@ import {
 } from '@/utils/assignee'
 import { createDateFromFormattedDateString, formatDate } from '@/utils/dateHelper'
 import { NoAssignee } from '@/utils/noAssignee'
+import { Box, Skeleton, Stack, styled, SxProps, Typography } from '@mui/material'
 import {
   getSelectedUserIds,
   getSelectedViewerIds,
@@ -42,14 +43,20 @@ import {
   shouldConfirmBeforeReassignment,
   shouldConfirmViewershipBeforeReassignment,
 } from '@/utils/shouldConfirmBeforeReassign'
-import { Box, Skeleton, Stack, styled, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { z } from 'zod'
 
-const StyledText = styled(Typography)(({ theme }) => ({
+type StyledTypographyProps = {
+  display?: string
+}
+
+const StyledText = styled(Typography, {
+  shouldForwardProp: (prop: string) => prop !== 'display', // don't pass to DOM
+})<StyledTypographyProps>(({ theme, display }) => ({
   color: theme.color.gray[500],
   width: '80px',
+  display,
 }))
 
 export const Sidebar = ({
@@ -74,7 +81,7 @@ export const Sidebar = ({
   portalUrl?: string
 }) => {
   const { activeTask, workflowStates, assignee, previewMode } = useSelector(selectTaskBoard)
-  const { showSidebar, showConfirmAssignModal } = useSelector(selectTaskDetails)
+  const { showSidebar, showConfirmAssignModal, fromNotificationCenter } = useSelector(selectTaskDetails)
   const { tokenPayload } = useSelector(selectAuthDetails)
 
   const [isHydrated, setIsHydrated] = useState(false)
@@ -196,7 +203,8 @@ export const Sidebar = ({
         })
     }
   }
-  if (!showSidebar) {
+
+  if (!showSidebar || fromNotificationCenter) {
     return (
       <Stack
         direction="row"
@@ -209,7 +217,7 @@ export const Sidebar = ({
           maxWidth: '654px',
           justifyContent: 'flex-start',
           alignItems: 'center',
-          width: '100%',
+          width: fromNotificationCenter ? '654px' : 'auto',
           margin: '0 auto',
           display: 'flex',
         }}
@@ -261,11 +269,11 @@ export const Sidebar = ({
           <CopilotPopSelector
             name="Set assignee"
             onChange={handleAssigneeChange}
-            disabled={disabled}
+            disabled={disabled || fromNotificationCenter}
             initialValue={assigneeValue}
             buttonContent={
               <SelectorButton
-                disabled={disabled}
+                disabled={disabled || fromNotificationCenter}
                 height={'30px'}
                 startIcon={<CopilotAvatar currentAssignee={assigneeValue} />}
                 buttonContent={
@@ -301,11 +309,11 @@ export const Sidebar = ({
               hideIusList
               name="Set client visibility"
               onChange={handleTaskViewerChange}
-              disabled={disabled && !previewMode}
+              disabled={(disabled && !previewMode) || fromNotificationCenter}
               initialValue={taskViewerValue || undefined}
               buttonContent={
                 <SelectorButton
-                  disabled={disabled && !previewMode}
+                  disabled={(disabled && !previewMode) || fromNotificationCenter}
                   height={'30px'}
                   startIcon={<CopilotAvatar currentAssignee={taskViewerValue || undefined} />}
                   buttonContent={
@@ -474,11 +482,11 @@ export const Sidebar = ({
               <CopilotPopSelector
                 name="Set assignee"
                 onChange={handleAssigneeChange}
-                disabled={disabled}
+                disabled={disabled || fromNotificationCenter}
                 initialValue={assigneeValue}
                 buttonContent={
                   <SelectorButton
-                    disabled={disabled}
+                    disabled={disabled || fromNotificationCenter}
                     padding="0px"
                     startIcon={<CopilotAvatar width="16px" height="16px" currentAssignee={assigneeValue} />}
                     outlined={true}
@@ -529,11 +537,11 @@ export const Sidebar = ({
                   hideIusList
                   name="Set client visibility"
                   onChange={handleTaskViewerChange}
-                  disabled={disabled && !previewMode} // allow visibility change in preview mode
+                  disabled={(disabled && !previewMode) || fromNotificationCenter} // allow visibility change in preview mode
                   initialValue={taskViewerValue || undefined}
                   buttonContent={
                     <SelectorButton
-                      disabled={disabled && !previewMode}
+                      disabled={(disabled && !previewMode) || fromNotificationCenter}
                       padding="0px"
                       startIcon={<CopilotAvatar width="16px" height="16px" currentAssignee={taskViewerValue || undefined} />}
                       outlined={true}

@@ -1,8 +1,8 @@
+import { type CommentInitiator, StateType } from '@prisma/client'
+import { z } from 'zod'
 import { UserRole } from '@/app/api/core/types/user'
 import { validateNotificationRecipient } from '@/utils/notifications'
-import { CommentInitiator, StateType } from '@prisma/client'
-import { z } from 'zod'
-import { UserIds } from './interfaces'
+import type { UserIds } from './interfaces'
 
 export const Uuid = z.string().uuid()
 
@@ -23,6 +23,7 @@ export const TokenSchema = z.object({
     .optional(),
   internalUserId: z.string().optional(),
   workspaceId: z.string(),
+  notificationId: z.string().optional(),
 })
 export type Token = z.infer<typeof TokenSchema>
 
@@ -263,7 +264,7 @@ export interface InitiatedEntity {
   initiatorType: CommentInitiator | null
 }
 
-const rfc3339Regex = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[\+\-]\d{2}:\d{2}))$/
+const rfc3339Regex = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2}))$/
 
 export const RFC3339DateSchema = z.string().refine((val) => rfc3339Regex.test(val), {
   message: 'Invalid RFC3339 datetime string',
@@ -281,6 +282,27 @@ export type UrlActionParamsType = {
   pf?: string
   oldPf?: string
 }
+
+export const NotificationInProductCtaParamsSchema = z.object({
+  taskId: z.string(),
+  commentId: z.string().optional(),
+})
+
+export const NotificationResponseSchema = z.object({
+  deliveryTargets: z
+    .object({
+      inProduct: z
+        .object({
+          title: z.string().optional(),
+          isRead: z.boolean().optional(),
+          ctaParams: NotificationInProductCtaParamsSchema.optional(),
+        })
+        .optional(),
+    })
+    .optional(),
+  id: z.string(),
+})
+export type NotificationResponseType = z.infer<typeof NotificationResponseSchema>
 
 export const ViewSettingUserIds = z
   .object({
