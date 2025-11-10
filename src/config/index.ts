@@ -1,3 +1,5 @@
+import z from 'zod'
+
 export const copilotAPIKey = process.env.COPILOT_API_KEY || ''
 export const tasksAppId = process.env.COPILOT_TASKS_APP_ID || ''
 
@@ -27,3 +29,5 @@ export const showQueries = (() => {
   if (process.env.PRISMA_SHOW_QUERIES === '0') return false
   return true
 })()
+
+export const assemblyApiDomain = z.string().url().parse(process.env.ASSEMBLY_API_DOMAIN)
