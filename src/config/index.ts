@@ -30,4 +30,4 @@ export const showQueries = (() => {
   return true
 })()
 
-export const assemblyApiDomain = z.string().url().parse(process.env.NEXT_PUBLIC_COPILOT_API_DOMAIN)
+export const copilotApiDomain = z.string().url().parse(process.env.NEXT_PUBLIC_COPILOT_API_DOMAIN)

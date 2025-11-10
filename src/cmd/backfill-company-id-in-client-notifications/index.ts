@@ -1,4 +1,4 @@
-import { assemblyApiDomain } from '@/config'
+import { copilotApiDomain } from '@/config'
 import DBClient from '@/lib/db'
 import { ClientNotification } from '@prisma/client'
 import Bottleneck from 'bottleneck'
@@ -10,7 +10,7 @@ interface Clientable {
 }
 
 const copilotAPIKey = process.env.COPILOT_API_KEY
-const COPILOT_CLIENTS_ENDPOINT = `${assemblyApiDomain}/v1/clients?limit=10000`
+const COPILOT_CLIENTS_ENDPOINT = `${copilotApiDomain}/v1/clients?limit=10000`
 
 const getCompanyMap = async (uniqueWorkspaceIds: Array<string>) => {
   const workspaceClientCompanyIdMap: Record<string, Record<string, string>> = {}
