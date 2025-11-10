@@ -81,7 +81,7 @@ export default async function TaskDetailPage({
   searchParams,
 }: {
   params: { task_id: string; task_name: string; user_type: UserType }
-  searchParams: { token: string; isRedirect?: string }
+  searchParams: { token: string; isRedirect?: string; fromNotificationCenter?: string }
 }) {
   const { token } = searchParams
   const { task_id, user_type } = params
@@ -103,10 +103,17 @@ export default async function TaskDetailPage({
   if (!tokenPayload) {
     throw new Error('Please provide a Valid Token')
   }
+  const fromNotificationCenter = !!searchParams.fromNotificationCenter
 
   console.info(`app/detail/${task_id}/${user_type}/page.tsx | Serving user ${token} with payload`, tokenPayload)
   if (!task) {
-    return <DeletedTaskRedirectPage userType={tokenPayload.companyId ? UserRole.Client : UserRole.IU} token={token} />
+    return (
+      <DeletedTaskRedirectPage
+        userType={tokenPayload.companyId ? UserRole.Client : UserRole.IU}
+        token={token}
+        fromNotificationCenter={fromNotificationCenter}
+      />
+    )
   }
 
   const isPreviewMode = !!getPreviewMode(tokenPayload)
@@ -130,7 +137,7 @@ export default async function TaskDetailPage({
       {token && <OneTaskDataFetcher token={token} task_id={task_id} initialTask={task} />}
       <RealTime tokenPayload={tokenPayload}>
         <EscapeHandler />
-        <ResponsiveStack>
+        <ResponsiveStack fromNotificationCenter={fromNotificationCenter}>
           <Box sx={{ width: '100%', display: 'flex', flex: 1, flexDirection: 'column', overflow: 'hidden' }}>
             {isPreviewMode ? (
               <StyledBox>
@@ -192,6 +199,7 @@ export default async function TaskDetailPage({
                       await deleteAttachment(token, id)
                     }}
                     userType={params.user_type}
+                    token={token}
                   />
                 </StyledTiptapDescriptionWrapper>
                 {subTaskStatus.canCreateSubtask && (
@@ -207,7 +215,18 @@ export default async function TaskDetailPage({
               </TaskDetailsContainer>
             </CustomScrollBar>
           </Box>
-          <Box>
+          <Box
+            {...(fromNotificationCenter
+              ? {
+                  sx: {
+                    display: 'flex',
+                    overflow: 'hidden',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  },
+                }
+              : {})}
+          >
             <AssigneeCacheGetter lookupKey={getAssigneeCacheLookupKey(user_type, tokenPayload, isPreviewMode)} />
             <AssigneeFetcher
               token={token}

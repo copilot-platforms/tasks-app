@@ -178,7 +178,7 @@ const AttachmentLayout: React.FC<AttachmentLayoutProps> = ({
         maxWidth: '100%',
         overflow: 'hidden',
         '&:hover': {
-          border: isXsScreen ? 'none' : (theme) => `1px solid ${theme.color.gray[selected ? 600 : 300]}`,
+          border: (theme) => `1px solid ${theme.color.gray[selected ? 600 : 300]}`,
           '& .download-btn': {
             opacity: 1,
           },
