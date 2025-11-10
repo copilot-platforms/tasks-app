@@ -1,6 +1,6 @@
 import APIError from '@/app/api/core/exceptions/api'
 import { withRetry } from '@/app/api/core/utils/withRetry'
-import { copilotAPIKey as apiKey, APP_ID, copilotApiDomain } from '@/config'
+import { copilotAPIKey as apiKey, APP_ID, assemblyApiDomain } from '@/config'
 import { MAX_LIMIT_CLIENT_COUNT } from '@/constants/users'
 import {
   ClientRequest,
@@ -50,7 +50,7 @@ export class CopilotAPI {
   }
 
   private async _manualFetch(route: string, query?: Record<string, string>, workspaceId?: string) {
-    const url = new URL(`${copilotApiDomain}/v1/${route}`)
+    const url = new URL(`${assemblyApiDomain}/v1/${route}`)
     if (query) {
       for (const key of Object.keys(query)) {
         url.searchParams.set(key, query[key])
@@ -299,7 +299,7 @@ export class CopilotAPI {
 
   async dispatchWebhook(eventName: DISPATCHABLE_EVENT, { workspaceId, payload }: { workspaceId: string; payload?: object }) {
     console.info('CopilotAPI#dispatchWebhook', this.token)
-    const url = `${copilotApiDomain}/v1/webhooks/${eventName}`
+    const url = `${assemblyApiDomain}/v1/webhooks/${eventName}`
     console.info('CopilotAPI#dispatchWebhook | Dispatching webhook to ', url, 'with payload', payload ?? null)
 
     try {
