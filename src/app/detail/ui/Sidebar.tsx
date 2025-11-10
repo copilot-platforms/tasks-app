@@ -43,7 +43,7 @@ import {
   shouldConfirmViewershipBeforeReassignment,
 } from '@/utils/shouldConfirmBeforeReassign'
 import { Box, Skeleton, Stack, styled, Typography } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { z } from 'zod'
 
@@ -108,23 +108,33 @@ export const Sidebar = ({
 
   const isTaskCompleted = activeTask?.workflowStateId === completedWorkflowState?.id
 
+  const currentWorkflowState = useMemo(() => {
+    if (!workflowStates || !activeTask?.workflowStateId) return null
+    return workflowStates.find((el) => el?.id === activeTask.workflowStateId)
+  }, [workflowStates, activeTask?.workflowStateId])
+
   useEffect(() => {
-    if (activeTask && workflowStates && updateStatusValue) {
-      const currentTask = activeTask
-      const currentWorkflowState = workflowStates.find((el) => el?.id === currentTask?.workflowStateId)
+    if (activeTask && currentWorkflowState && updateStatusValue) {
       updateStatusValue(currentWorkflowState)
-      setDueDate(currentTask?.dueDate)
+      setDueDate(activeTask.dueDate)
     }
-  }, [activeTask, workflowStates, updateStatusValue])
+  }, [currentWorkflowState, activeTask?.dueDate])
 
   // effect depended on activeTask and assignee to update assigneeValue
+  const currentAssignee = useMemo(() => {
+    if (!activeTask || assignee.length === 0) return null
+    return getSelectorAssigneeFromTask(assignee, activeTask)
+  }, [assignee, activeTask?.assigneeId])
+
+  const currentViewer = useMemo(() => {
+    if (!activeTask || assignee.length === 0) return null
+    return getSelectorViewerFromTask(assignee, activeTask)
+  }, [assignee, activeTask?.viewers])
+
   useEffect(() => {
-    if (activeTask && assignee.length > 0) {
-      const currentAssignee = getSelectorAssigneeFromTask(assignee, activeTask)
-      setAssigneeValue(currentAssignee)
-      setTaskViewerValue(getSelectorViewerFromTask(assignee, activeTask) || null)
-    }
-  }, [assignee, activeTask])
+    if (currentAssignee) setAssigneeValue(currentAssignee)
+    setTaskViewerValue(currentViewer || null)
+  }, [currentAssignee, currentViewer])
 
   const windowWidth = useWindowWidth()
   const isMobile = windowWidth < 800 && windowWidth !== 0
@@ -238,6 +248,7 @@ export const Sidebar = ({
             height={'30px'}
             getDate={(date) => {
               const isoDate = DateStringSchema.parse(formatDate(date))
+              setDueDate(isoDate)
               updateTask({
                 dueDate: isoDate,
               })
@@ -447,6 +458,7 @@ export const Sidebar = ({
               containerPadding="0px"
               getDate={(date) => {
                 const isoDate = DateStringSchema.parse(formatDate(date))
+                setDueDate(isoDate)
                 updateTask({
                   dueDate: isoDate,
                 })

@@ -69,6 +69,7 @@ export const RealTime = ({
     if (isPayloadEqual(payload)) {
       return //no changes for the same payload
     }
+
     const user = assignee.find((el) => el.id === userId)
     if (!user || !userRole) return
 

@@ -416,6 +416,8 @@ export class TasksService extends BaseService {
         archivedBy = data.isArchived === true ? this.user.internalUserId : data.isArchived === false ? null : undefined
       }
 
+      const lastUpdatedToken = this.user.token.slice(0, 25)
+
       // Get the updated task
       const updatedTask = await tx.task.update({
         where: { id },
@@ -427,6 +429,7 @@ export class TasksService extends BaseService {
           completedBy,
           completedByUserType,
           viewers,
+          lastUpdatedToken,
           ...userAssignmentFields,
           ...(await getTaskTimestamps('update', this.user, data, prevTask)),
         },
@@ -849,12 +852,15 @@ export class TasksService extends BaseService {
     })
     const data = { workflowStateId: updatedWorkflowState?.id }
     // Get the updated task
+    const lastUpdatedToken = this.user.token.slice(0, 25)
+
     const updatedTask = await this.db.task.update({
       where: { id },
       data: {
         ...data,
         completedBy,
         completedByUserType,
+        lastUpdatedToken,
         ...(await getTaskTimestamps('update', this.user, data, prevTask)),
       },
       include: { workflowState: true },
