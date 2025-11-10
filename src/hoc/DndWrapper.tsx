@@ -5,9 +5,11 @@ import { DndProvider } from 'react-dnd'
 
 import { useMediaQuery } from '@mui/material'
 import { ModifiedHTML5Backend, ModifiedTouchBackend } from './ModifiedBackend'
+import { useIsTouchDevice } from '@/hooks/useIsTouchDevice'
 
 export const DndWrapper = ({ children }: { children: ReactNode }) => {
   const [screenType, setScreenType] = useState<'mobile' | 'nonMobile' | undefined>(undefined)
+  const isTouch = useIsTouchDevice()
 
   const isMobileScreen = useMediaQuery('(max-width:600px)')
   useEffect(() => {
@@ -22,7 +24,7 @@ export const DndWrapper = ({ children }: { children: ReactNode }) => {
 
   return (
     <DndProvider
-      backend={screenType === 'mobile' ? ModifiedTouchBackend : ModifiedHTML5Backend}
+      backend={screenType === 'mobile' || isTouch ? ModifiedTouchBackend : ModifiedHTML5Backend}
       options={{
         delayTouchStart: 100,
       }}

@@ -66,9 +66,19 @@ interface TaskCardListProps {
   handleUpdate?: (taskId: string, changes: Partial<TaskResponse>, updater: () => Promise<void>) => Promise<void>
   isTemp?: boolean
   sx?: SxProps<Theme> | undefined
+  disableNavigation?: boolean
 }
 
-export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate, isTemp, sx }: TaskCardListProps) => {
+export const TaskCardList = ({
+  task,
+  variant,
+  workflowState,
+  mode,
+  handleUpdate,
+  isTemp,
+  sx,
+  disableNavigation = false,
+}: TaskCardListProps) => {
   const { assignee, workflowStates, previewMode, token, confirmAssignModalId, assigneeCache, confirmViewershipModalId } =
     useSelector(selectTaskBoard)
   const { tokenPayload } = useSelector(selectAuthDetails)
@@ -173,8 +183,13 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate,
         justifyContent: 'flex-end',
         minWidth: 0,
         ':hover': {
-          cursor: 'pointer',
-          background: (theme) => (variant == 'subtask-board' ? theme.color.gray[150] : theme.color.gray[100]),
+          cursor: disableNavigation ? 'auto' : 'pointer',
+          background: (theme) =>
+            disableNavigation
+              ? theme.color.base.white
+              : variant == 'subtask-board'
+                ? theme.color.gray[150]
+                : theme.color.gray[100],
         },
         ':focus-visible': {
           outline: (theme) => `1px solid ${theme.color.borders.focusBorder2}`,
@@ -220,7 +235,7 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate,
           disabled={checkIfTaskViewer(task.viewers, tokenPayload)}
         />
 
-        {isTemp || variant === 'subtask-board' ? (
+        {isTemp || variant === 'subtask-board' || disableNavigation ? (
           <div
             key={task.id}
             style={{
@@ -279,7 +294,7 @@ export const TaskCardList = ({ task, variant, workflowState, mode, handleUpdate,
                 flexShrink: 1,
               }}
             >
-              <TaskTitle variant="list" title={task.title} />
+              <TaskTitle variant={variant == 'task' ? 'list' : 'subtasks'} title={task.title} />
               {(task.subtaskCount > 0 || task.isArchived) && (
                 <Stack direction="row" sx={{ display: 'flex', gap: '12px', flexShrink: 0, alignItems: 'center' }}>
                   <TaskMetaItems task={task} lineHeight="21px" />

@@ -31,6 +31,7 @@ interface Prop {
   postAttachment: (postAttachmentPayload: CreateAttachmentRequest) => void
   deleteAttachment: (id: string) => void
   userType: UserType
+  token: string
 }
 
 export const TaskEditor = ({
@@ -44,11 +45,12 @@ export const TaskEditor = ({
   postAttachment,
   deleteAttachment,
   userType,
+  token,
 }: Prop) => {
   const [updateTitle, setUpdateTitle] = useState('')
   const [updateDetail, setUpdateDetail] = useState('')
   const { showConfirmDeleteModal, openImage } = useSelector(selectTaskDetails)
-  const { token, activeTask } = useSelector(selectTaskBoard)
+  const { activeTask } = useSelector(selectTaskBoard)
   const [isUserTyping, setIsUserTyping] = useState(false)
   const [activeUploads, setActiveUploads] = useState(0)
 

@@ -28,6 +28,8 @@ import {
   NotificationCreatedResponse,
   NotificationCreatedResponseSchema,
   NotificationRequestBody,
+  NotificationResponseSchema,
+  NotificationResponseType,
   Token,
   TokenSchema,
   WorkspaceResponse,
@@ -264,6 +266,18 @@ export class CopilotAPI {
     await Promise.all(deletePromises)
   }
 
+  async _getIUNotification(id: string, workspaceId: string): Promise<NotificationResponseType> {
+    console.info('CopilotAPI#_deleteNotification', this.token)
+    const response = await this.manualFetch(
+      `notifications/${id}`,
+      {
+        includeRead: 'true',
+      },
+      workspaceId,
+    )
+    return NotificationResponseSchema.parse(response)
+  }
+
   async _getClientNotifications(
     recipientClientId: string,
     recipientCompanyId: string,
@@ -345,4 +359,5 @@ export class CopilotAPI {
   deleteNotification = this.wrapWithRetry(this._deleteNotification)
   bulkDeleteNotifications = this.wrapWithRetry(this._bulkDeleteNotifications)
   manualFetch = this.wrapWithRetry(this._manualFetch)
+  getIUNotification = this.wrapWithRetry(this._getIUNotification)
 }

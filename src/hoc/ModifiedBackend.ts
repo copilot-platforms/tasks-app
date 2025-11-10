@@ -9,8 +9,8 @@ const shouldIgnoreTarget = (target: any) => {
   return false
 }
 
-const createModifiedBackend = (Backend: BackendFactory, manager?: any, context?: any) => {
-  const instance = Backend(manager, context)
+const createModifiedBackend = (Backend: BackendFactory, manager?: any, context?: any, options?: any) => {
+  const instance = Backend(manager, context, options)
 
   const listeners = [
     'handleTopDragStart',
@@ -39,4 +39,5 @@ const createModifiedBackend = (Backend: BackendFactory, manager?: any, context?:
 
 export const ModifiedHTML5Backend = (manager: any, context: any) => createModifiedBackend(HTML5Backend, manager, context)
 
-export const ModifiedTouchBackend = (manager: any, context: any) => createModifiedBackend(TouchBackend, manager, context)
+export const ModifiedTouchBackend = (manager: any, context: any, options: any) =>
+  createModifiedBackend(TouchBackend, manager, context, options)
