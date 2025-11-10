@@ -7,15 +7,6 @@ export const useIsTouchDevice = () => {
     if (typeof window !== 'undefined') {
       const mediaQuery = window.matchMedia('(pointer: coarse) and (hover: none)')
       setIsTouchDevice(mediaQuery.matches)
-
-      const handleChange = (e: MediaQueryListEvent) => {
-        setIsTouchDevice(e.matches)
-      }
-
-      mediaQuery.addEventListener('change', handleChange)
-      return () => {
-        mediaQuery.removeEventListener('change', handleChange)
-      }
     }
   }, [])
 
