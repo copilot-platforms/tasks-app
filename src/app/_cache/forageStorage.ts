@@ -42,8 +42,6 @@ export async function setAssignees(lookupKey: string, value: any) {
   if (typeof window === 'undefined') return
 
   const hasStorageAccess = await document.hasStorageAccess()
-  console.log({ hasStorageAccess })
-
   if (!hasStorageAccess) {
     console.error('Storage access not granted')
     throw new Error(
