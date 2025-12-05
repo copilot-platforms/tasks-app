@@ -3,6 +3,7 @@
 import { RealtimeHandler } from '@/lib/realtime'
 import { supabase } from '@/lib/supabase'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 import { Token } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { AssigneeType } from '@prisma/client'
@@ -29,7 +30,7 @@ export const RealTime = ({
   tokenPayload: Token
 }) => {
   const { tasks, accessibleTasks, token, activeTask, assignee, accesibleTaskIds } = useSelector(selectTaskBoard)
-  const { showUnarchived, showArchived } = useSelector(selectTaskBoard)
+  const { fromNotificationCenter } = useSelector(selectTaskDetails)
   const pathname = usePathname()
   const router = useRouter()
 
@@ -46,7 +47,8 @@ export const RealTime = ({
   }
 
   const redirectToBoard = (updatedTask: RealTimeTaskResponse) => {
-    if (!pathname.includes('detail')) return
+    //disable board navigation if not in details page or from notification-center-view
+    if (!pathname.includes('detail') || fromNotificationCenter) return
 
     const isClientUser = pathname.includes('cu')
     const isAccessibleSubtask = updatedTask.parentId && accessibleTasks.some((task) => task.id === updatedTask.parentId)

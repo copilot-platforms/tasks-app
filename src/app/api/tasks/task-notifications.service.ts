@@ -26,8 +26,10 @@ export class TaskNotificationsService extends BaseService {
       const handleNotificationRead = {
         [AssigneeType.client]: this.notificationService.markClientNotificationAsRead,
         [AssigneeType.company]: this.notificationService.markAsReadForAllRecipients,
+        [AssigneeType.internalUser]: (task: Task) =>
+          this.notificationService.deleteInternalUserNotificationsForTask(task.id),
       }
-      // @ts-expect-error This is completely safe
+
       await handleNotificationRead[task?.assigneeType]?.(task)
     }
   }
