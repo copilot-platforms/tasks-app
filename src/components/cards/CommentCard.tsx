@@ -50,6 +50,7 @@ export const CommentCard = ({
   task_id,
   optimisticUpdates,
   commentInitiator,
+  'data-comment-card': dataCommentCard, //for selection of the element while highlighting the container in notification
 }: {
   comment: LogResponse
   createComment: (postCommentPayload: CreateComment) => void
@@ -57,6 +58,7 @@ export const CommentCard = ({
   task_id: string
   optimisticUpdates: OptimisticUpdate[]
   commentInitiator: IAssigneeCombined | undefined
+  'data-comment-card'?: string
 }) => {
   const [showReply, setShowReply] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
@@ -193,6 +195,7 @@ export const CommentCard = ({
   }, [comment])
   return (
     <CommentCardContainer
+      {...(dataCommentCard ? { 'data-comment-card': dataCommentCard } : {})}
       sx={{
         backgroundColor: (theme) => (isReadOnly ? `${theme.color.gray[100]}` : `${theme.color.base.white}`),
         overflow: 'hidden',

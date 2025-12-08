@@ -10,6 +10,7 @@ import { useDebounce } from '@/hooks/useDebounce'
 import { GrayAddMediumIcon } from '@/icons'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 import { CreateTaskRequest, TaskResponse } from '@/types/dto/tasks.dto'
 import { fetcher } from '@/utils/fetcher'
 import { generateRandomString } from '@/utils/generateRandomString'
@@ -40,6 +41,7 @@ export const Subtasks = ({
   const [openTaskForm, setOpenTaskForm] = useState(false)
   const { workflowStates, assignee, activeTask } = useSelector(selectTaskBoard)
   const { tokenPayload } = useSelector(selectAuthDetails)
+  const { fromNotificationCenter } = useSelector(selectTaskDetails)
   const [optimisticUpdates, setOptimisticUpdates] = useState<OptimisticUpdate[]>([]) //might need this server-temp id maps in the future.
   const [lastUpdated, setLastUpdated] = useState<string | null>()
   const handleFormCancel = () => setOpenTaskForm(false)
@@ -200,6 +202,7 @@ export const Subtasks = ({
               variant="subtask"
               mode={mode}
               handleUpdate={handleSubTaskUpdate}
+              disableNavigation={fromNotificationCenter}
             />
           )
         })}
