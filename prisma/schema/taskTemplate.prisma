@@ -6,6 +6,11 @@ model TaskTemplate {
   workflowState   WorkflowState @relation(fields: [workflowStateId], references: [id], onDelete: Cascade)
   workflowStateId String        @db.Uuid
 
+  //subTaskTemplates
+  parentId          String?         @db.Uuid
+  parent            TaskTemplate?   @relation("TaskTemplateHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  subTaskTemplates  TaskTemplate[]  @relation("TaskTemplateHierarchy")
+
   createdById String    @db.Uuid
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
