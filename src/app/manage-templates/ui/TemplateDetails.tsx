@@ -1,0 +1,170 @@
+'use client'
+
+import AttachmentLayout from '@/components/AttachmentLayout'
+import { StyledTextField } from '@/components/inputs/TextField'
+import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
+import { useDebounce, useDebounceWithCancel } from '@/hooks/useDebounce'
+import { setOpenImage } from '@/redux/features/taskDetailsSlice'
+import { selectCreateTemplate } from '@/redux/features/templateSlice'
+import store from '@/redux/store'
+import { CreateTemplateRequest } from '@/types/dto/templates.dto'
+import { ITemplate } from '@/types/interfaces'
+import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
+import { Box } from '@mui/material'
+import { MouseEvent, useCallback, useEffect, useRef, useState } from 'react'
+import { useSelector } from 'react-redux'
+import { Tapwrite } from 'tapwrite'
+
+interface TemplateDetailsProps {
+  template: ITemplate
+  template_id: string
+  handleDeleteTemplate: (templateId: string) => void
+  handleEditTemplate: (payload: CreateTemplateRequest, templateId: string) => void
+  updateTemplateDetail: (detail: string) => void
+  updateTemplateTitle: (title: string) => void
+  token: string
+}
+
+export default function TemplateDetails({
+  template,
+  template_id,
+  handleDeleteTemplate,
+  handleEditTemplate,
+  updateTemplateDetail,
+  updateTemplateTitle,
+  token,
+}: TemplateDetailsProps) {
+  const [updateTitle, setUpdateTitle] = useState('')
+  const [updateDetail, setUpdateDetail] = useState('')
+  const { activeTemplate, templates } = useSelector(selectCreateTemplate)
+  const [isUserTyping, setIsUserTyping] = useState(false)
+  const [activeUploads, setActiveUploads] = useState(0)
+
+  const handleImagePreview = (e: MouseEvent<unknown>) => {
+    store.dispatch(setOpenImage((e.target as HTMLImageElement).src))
+  }
+  const didMount = useRef(false)
+
+  useEffect(() => {
+    if (!isUserTyping && activeUploads === 0) {
+      const currentTemplate = activeTemplate?.id === template_id ? activeTemplate : template
+      if (currentTemplate) {
+        setUpdateTitle(currentTemplate.title || '')
+        setUpdateDetail(currentTemplate.body ?? '')
+      }
+    }
+  }, [activeTemplate?.title, activeTemplate?.body, template_id, activeUploads, template])
+
+  const _titleUpdateDebounced = async (title: string) => updateTemplateTitle(title)
+  const [titleUpdateDebounced, cancelTitleUpdateDebounced] = useDebounceWithCancel(_titleUpdateDebounced, 1500)
+
+  const _detailsUpdateDebounced = async (details: string) => updateTemplateDetail(details)
+  const detailsUpdateDebounced = useDebounce(_detailsUpdateDebounced)
+
+  const resetTypingFlag = useCallback(() => {
+    setIsUserTyping(false)
+  }, [])
+
+  const [debouncedResetTypingFlag, _cancelDebouncedResetTypingFlag] = useDebounceWithCancel(resetTypingFlag, 1500)
+  const [debouncedResetTypingFlagTitle, cancelDebouncedResetTypingFlagTitle] = useDebounceWithCancel(resetTypingFlag, 2500)
+
+  const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newTitle = e.target.value
+    setUpdateTitle(newTitle)
+    if (newTitle.trim() == '') {
+      cancelTitleUpdateDebounced()
+      cancelDebouncedResetTypingFlagTitle()
+      return
+    }
+    setIsUserTyping(true)
+    titleUpdateDebounced(newTitle)
+    debouncedResetTypingFlagTitle()
+  }
+
+  const handleTitleBlur = () => {
+    if (updateTitle.trim() == '') {
+      setTimeout(() => {
+        const currentTask = activeTemplate
+        setUpdateTitle(currentTask?.title ?? '')
+      }, 300)
+    }
+  }
+
+  const handleDetailChange = (content: string) => {
+    if (!didMount.current) {
+      didMount.current = true
+      return //skip the update on first mount.
+    }
+    if (content === updateDetail) {
+      return
+    }
+
+    setUpdateDetail(content)
+    setIsUserTyping(true)
+    detailsUpdateDebounced(content)
+    debouncedResetTypingFlag()
+  }
+
+  const uploadFn = token
+    ? async (file: File) => {
+        setActiveUploads((prev) => prev + 1)
+        const fileUrl = await uploadImageHandler(file, token ?? '', template.workspaceId, template_id)
+        setActiveUploads((prev) => prev - 1)
+        return fileUrl
+      }
+    : undefined
+
+  return (
+    <>
+      <StyledTextField
+        type="text"
+        multiline
+        borderLess
+        sx={{
+          width: '100%',
+          '& .MuiInputBase-input': {
+            fontSize: '20px',
+            lineHeight: '28px',
+            color: (theme) => theme.color.gray[600],
+            fontWeight: 500,
+          },
+          '& .MuiInputBase-input.Mui-disabled': {
+            WebkitTextFillColor: (theme) => theme.color.gray[600],
+          },
+          '& .MuiInputBase-root': {
+            padding: '0px 0px',
+          },
+        }}
+        value={updateTitle}
+        onChange={handleTitleChange}
+        inputProps={{ maxLength: 255 }}
+        padding="0px"
+        onBlur={handleTitleBlur}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault() //prevent users from breaking line
+          }
+        }}
+      />
+
+      <Box mt="12px" sx={{ height: '100%', width: '100%' }}>
+        <Tapwrite
+          content={updateDetail}
+          getContent={(content: string) => {
+            if (updateDetail !== '') {
+              handleDetailChange(content)
+            }
+          }}
+          editorClass="tapwrite-task-editor"
+          placeholder="Add description..."
+          uploadFn={uploadFn}
+          handleImageDoubleClick={handleImagePreview}
+          deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', template_id, null)}
+          attachmentLayout={AttachmentLayout}
+          addAttachmentButton
+          maxUploadLimit={MAX_UPLOAD_LIMIT}
+        />
+      </Box>
+    </>
+  )
+}

@@ -1,14 +1,11 @@
 'use client'
 
 import { supabase } from '@/lib/supabase'
-import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
-import { selectCreateTemplate, setTemplates } from '@/redux/features/templateSlice'
+import { selectCreateTemplate, setActiveTemplate, setTemplates } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
 import { Token } from '@/types/common'
 import { ITemplate } from '@/types/interfaces'
 import { extractImgSrcs, replaceImgSrcs } from '@/utils/signedUrlReplacer'
-import { validateTimeStamp } from '@/utils/validateTimeStamp'
-import { AssigneeType, TaskTemplate } from '@prisma/client'
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
 import { ReactNode, useEffect } from 'react'
 import { useSelector } from 'react-redux'
@@ -26,22 +23,22 @@ export const RealTimeTemplates = ({
   task?: ITemplate
   tokenPayload: Token
 }) => {
-  const { templates } = useSelector(selectCreateTemplate)
+  const { templates, activeTemplate } = useSelector(selectCreateTemplate)
 
   const handleTemplatesRealTimeUpdates = (payload: RealtimePostgresChangesPayload<RealTimeTemplateResponse>) => {
     if (payload.eventType === 'INSERT') {
       let canUserAccessTask = payload.new.workspaceId === tokenPayload.workspaceId
       if (canUserAccessTask) {
         templates
-          ? store.dispatch(
-              setTemplates([{ ...payload.new, updatedAt: validateTimeStamp(payload.new.updatedAt) }, ...templates]),
-            )
-          : store.dispatch(setTemplates([{ ...payload.new, updatedAt: validateTimeStamp(payload.new.updatedAt) }]))
+          ? store.dispatch(setTemplates([{ ...payload.new }, ...templates]))
+          : store.dispatch(setTemplates([{ ...payload.new }]))
       }
     }
     if (payload.eventType === 'UPDATE') {
       const updatedTemplate = payload.new
-      updatedTemplate.updatedAt = validateTimeStamp(updatedTemplate.updatedAt)
+
+      updatedTemplate.updatedAt = updatedTemplate.updatedAt
+
       const oldTemplate = templates && templates.find((template) => template.id == updatedTemplate.id)
       if (payload.new.workspaceId === tokenPayload.workspaceId) {
         if (updatedTemplate.deletedAt) {
@@ -69,6 +66,14 @@ export const RealTimeTemplates = ({
             ...(templates?.filter((template) => template.id !== updatedTemplate.id) || []),
           ]
           store.dispatch(setTemplates(newTemplateArr))
+          if (activeTemplate?.id == updatedTemplate.id) {
+            store.dispatch(
+              setActiveTemplate({
+                ...updatedTemplate,
+                subTaskTemplates: activeTemplate.subTaskTemplates,
+              }),
+            )
+          }
         }
       }
     }
