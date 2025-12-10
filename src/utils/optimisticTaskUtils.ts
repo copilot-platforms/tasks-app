@@ -1,5 +1,6 @@
 import { ClientResponseSchema, CompanyResponseSchema, InternalUsersSchema } from '@/types/common'
 import { CreateTaskRequest } from '@/types/dto/tasks.dto'
+import { CreateTemplateRequest } from '@/types/dto/templates.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { IAssigneeCombined } from '@/types/interfaces'
 import { z } from 'zod'
@@ -36,5 +37,26 @@ export const getTempTask = (
     parentId: parentId,
     dueDate: payload.dueDate ?? undefined,
     subtaskCount: 0,
+  }
+}
+
+export const getTempTaskTemplate = (
+  tempId: string,
+  payload: CreateTemplateRequest,
+  workspaceId: string,
+  userId: string,
+  parentId: string,
+) => {
+  return {
+    id: tempId,
+    workspaceId: workspaceId,
+    title: payload.title,
+    body: payload.body ?? '',
+    workflowStateId: payload.workflowStateId,
+    createdBy: userId,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    parentId: parentId,
+    subTaskTemplates: [],
   }
 }

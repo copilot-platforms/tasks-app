@@ -1,0 +1,92 @@
+import { getAllWorkflowStates, getTokenPayload, getWorkspace } from '@/app/(home)/page'
+import { ResponsiveStack } from '@/app/detail/ui/ResponsiveStack'
+import { apiUrl } from '@/config'
+import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
+import { RealTimeTemplates } from '@/hoc/RealtimeTemplates'
+import { ITemplate } from '@/types/interfaces'
+import EscapeHandler from '@/utils/escapeHandler'
+import { Box } from '@mui/material'
+import TemplateDetails from '@/app/manage-templates/ui/TemplateDetails'
+import { deleteTemplate, editTemplate } from '@/app/manage-templates/actions'
+import { UpdateTemplateRequest } from '@/types/dto/templates.dto'
+import { StyledTiptapDescriptionWrapper, TaskDetailsContainer } from '@/app/detail/ui/styledComponent'
+import { TemplateSidebar } from '@/app/manage-templates/ui/TemplateSidebar'
+import { Subtemplates } from '@/app/manage-templates/ui/Subtemplates'
+
+async function getTemplate(id: string, token: string): Promise<ITemplate> {
+  const res = await fetch(`${apiUrl}/api/tasks/templates/${id}?token=${token}`, {
+    cache: 'no-store',
+  })
+
+  const templates = await res.json()
+  return templates.data
+}
+
+export default async function TaskDetailPage({
+  params,
+  searchParams,
+}: {
+  params: { template_id: string }
+  searchParams: { token: string }
+}) {
+  const { token } = searchParams
+  const { template_id } = params
+
+  const [workflowStates, template, tokenPayload, workspace] = await Promise.all([
+    getAllWorkflowStates(token),
+    getTemplate(template_id, token),
+    getTokenPayload(token),
+    getWorkspace(token),
+  ])
+
+  return (
+    <ClientSideStateUpdate workflowStates={workflowStates} token={token} template={template} tokenPayload={tokenPayload}>
+      <RealTimeTemplates tokenPayload={tokenPayload}>
+        <EscapeHandler />
+        <ResponsiveStack fromNotificationCenter={false}>
+          <Box sx={{ width: '100%', display: 'flex', flex: 1, flexDirection: 'column', overflow: 'auto' }}>
+            <TaskDetailsContainer
+              sx={{
+                padding: { xs: '20px 16px ', sm: '30px 20px' },
+              }}
+            >
+              <StyledTiptapDescriptionWrapper>
+                <TemplateDetails
+                  template={template}
+                  template_id={template_id}
+                  handleDeleteTemplate={async (templateId: string) => {
+                    'use server'
+                    await deleteTemplate(token, templateId)
+                  }}
+                  handleEditTemplate={async (payload: UpdateTemplateRequest, templateId: string) => {
+                    'use server'
+                    await editTemplate(token, templateId, payload)
+                  }}
+                  updateTemplateDetail={async (detail: string) => {
+                    'use server'
+                    await editTemplate(token, template_id, { body: detail })
+                  }}
+                  updateTemplateTitle={async (title: string) => {
+                    'use server'
+                    title.trim() != '' && (await editTemplate(token, template_id, { title }))
+                  }}
+                  token={token}
+                />
+              </StyledTiptapDescriptionWrapper>
+              {!template?.parentId && <Subtemplates template_id={template_id} token={token} />}
+            </TaskDetailsContainer>
+          </Box>
+
+          <TemplateSidebar
+            template_id={template_id}
+            // selectedWorkflowState={task?.workflowState}
+            updateWorkflowState={async (workflowState) => {
+              'use server'
+              await editTemplate(token, template_id, { workflowStateId: workflowState?.id })
+            }}
+          />
+        </ResponsiveStack>
+      </RealTimeTemplates>
+    </ClientSideStateUpdate>
+  )
+}
