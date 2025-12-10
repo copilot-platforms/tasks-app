@@ -178,12 +178,12 @@ export interface ITemplate {
   workspaceId: string
   title: string
   body: string
-  assigneeId: string
-  assigneeType: string
   workflowStateId: string
   createdBy: string
   createdAt: Date
   updatedAt: Date
+  parentId: string | null
+  subTaskTemplates: ITemplate[]
 }
 
 export interface ISignedUrlUpload {

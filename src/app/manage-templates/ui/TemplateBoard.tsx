@@ -20,6 +20,8 @@ import { TemplateForm } from './TemplateForm'
 import { ManageTemplateHeader } from '@/app/manage-templates/ui/Header'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { StyledModal } from '@/app/detail/ui/styledComponent'
+import { CustomLink } from '@/hoc/CustomLink'
+import { getCardHrefTemplate } from '@/utils/getCardHref'
 
 export const TemplateBoard = ({
   handleCreateTemplate,
@@ -70,23 +72,16 @@ export const TemplateBoard = ({
           >
             {templates.map((template) => {
               return (
-                <TemplateCard
-                  title={template.title}
+                <CustomLink
                   key={template.id}
-                  handleDelete={() => {
-                    store.dispatch(setShowConfirmDeleteModal())
-                    store.dispatch(setTargetTemplateId(template.id))
-                    store.dispatch(setCreateTemplateFields({ targetField: 'taskName', value: template.title }))
+                  href={{
+                    pathname: getCardHrefTemplate(template),
+                    query: { token },
                   }}
-                  handleEdit={() => {
-                    store.dispatch(setShowTemplateModal({ targetMethod: TargetMethod.EDIT, targetTemplateId: template.id }))
-                    store.dispatch(setCreateTemplateFields({ targetField: 'taskName', value: template.title }))
-                    store.dispatch(setCreateTemplateFields({ targetField: 'description', value: template.body }))
-                    store.dispatch(
-                      setCreateTemplateFields({ targetField: 'activeWorkflowStateId', value: template.workflowStateId }),
-                    )
-                  }}
-                />
+                  style={{ width: 'auto' }}
+                >
+                  <TemplateCard title={template.title} key={template.id} />
+                </CustomLink>
               )
             })}
           </Stack>
