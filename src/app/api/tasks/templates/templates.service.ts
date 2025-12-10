@@ -22,7 +22,7 @@ export class TemplatesService extends BaseService {
     policyGate.authorize(UserAction.Read, Resource.TaskTemplates)
 
     const findOptions: Prisma.TaskTemplateFindManyArgs = {
-      where: { workspaceId: this.user.workspaceId },
+      where: { workspaceId: this.user.workspaceId, parentId: null },
       relationLoadStrategy: 'join',
       include: {
         workflowState: true,
@@ -100,6 +100,25 @@ export class TemplatesService extends BaseService {
     if (!template) {
       throw new APIError(httpStatus.NOT_FOUND, 'Could not find template')
     }
+    return template
+  }
+
+  async getSubtemplates(id: string) {
+    const policyGate = new PoliciesService(this.user)
+    policyGate.authorize(UserAction.Read, Resource.TaskTemplates)
+    const template = await this.db.taskTemplate.findMany({
+      where: { workspaceId: this.user.workspaceId, parentId: id },
+      include: {
+        subTaskTemplates: {
+          orderBy: {
+            createdAt: 'desc',
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    })
     return template
   }
 
