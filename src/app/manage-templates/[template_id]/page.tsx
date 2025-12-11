@@ -13,6 +13,7 @@ import { StyledTiptapDescriptionWrapper, TaskDetailsContainer } from '@/app/deta
 import { TemplateSidebar } from '@/app/manage-templates/ui/TemplateSidebar'
 import { Subtemplates } from '@/app/manage-templates/ui/Subtemplates'
 import { HeaderBreadcrumbs } from '@/components/layouts/HeaderBreadcrumbs'
+import { ManageTemplateDetailsAppBridge } from '../ui/ManageTemplatesDetailsAppBridge'
 
 async function getTemplate(id: string, token: string): Promise<ITemplate> {
   const res = await fetch(`${apiUrl}/api/tasks/templates/${id}?token=${token}`, {
@@ -61,7 +62,11 @@ export default async function TaskDetailPage({
         <EscapeHandler />
         <ResponsiveStack fromNotificationCenter={false}>
           <Box sx={{ width: '100%', display: 'flex', flex: 1, flexDirection: 'column', overflow: 'auto' }}>
-            <HeaderBreadcrumbs token={token} items={breadcrumbItems} userType={UserType.INTERNAL_USER} />
+            <ManageTemplateDetailsAppBridge
+              portalUrl={workspace.portalUrl}
+              breadcrumbItems={breadcrumbItems}
+              template={template}
+            />
             <TaskDetailsContainer
               sx={{
                 padding: { xs: '20px 16px ', sm: '30px 20px' },
