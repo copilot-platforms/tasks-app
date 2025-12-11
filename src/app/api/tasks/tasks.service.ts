@@ -4,10 +4,16 @@ import { deleteTaskNotifications, sendTaskCreateNotifications, sendTaskUpdateNot
 import { sendClientUpdateTaskNotifications } from '@/jobs/notifications/send-client-task-update-notifications'
 import { ClientResponse, CompanyResponse, InternalUsers, Uuid } from '@/types/common'
 import { TaskWithWorkflowState } from '@/types/db'
-import { AncestorTaskResponse, CreateTaskRequest, UpdateTaskRequest, Viewers, ViewersSchema } from '@/types/dto/tasks.dto'
+import {
+  AncestorTaskResponse,
+  CreateTaskRequest,
+  CreateTaskRequestSchema,
+  UpdateTaskRequest,
+  Viewers,
+  ViewersSchema,
+} from '@/types/dto/tasks.dto'
 import { DISPATCHABLE_EVENT } from '@/types/webhook'
 import { UserIdsType } from '@/utils/assignee'
-import { CopilotAPI } from '@/utils/CopilotAPI'
 import { isPastDateString } from '@/utils/dateHelper'
 import { buildLtree, buildLtreeNodeString, getIdsFromLtreePath } from '@/utils/ltree'
 import { getFilePathFromUrl, replaceImageSrc } from '@/utils/signedUrlReplacer'
@@ -28,10 +34,10 @@ import {
   queueBodyUpdatedWebhook,
 } from '@api/tasks/tasks.helpers'
 import { TasksActivityLogger } from '@api/tasks/tasks.logger'
-import { AssigneeType, Prisma, PrismaClient, Source, StateType, Task, WorkflowState } from '@prisma/client'
-import dayjs from 'dayjs'
+import { AssigneeType, Prisma, PrismaClient, Source, StateType, Task, TaskTemplate, WorkflowState } from '@prisma/client'
 import httpStatus from 'http-status'
 import { z } from 'zod'
+import { TemplatesService } from './templates/templates.service'
 
 export class TasksService extends BaseService {
   /**
@@ -157,7 +163,7 @@ export class TasksService extends BaseService {
     return filteredTasks
   }
 
-  async createTask(data: CreateTaskRequest, opts?: { isPublicApi: boolean }) {
+  async createTask(data: CreateTaskRequest, opts?: { isPublicApi?: boolean; disableSubtaskTemplates?: boolean }) {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Create, Resource.Tasks)
     console.info('TasksService#createTask | Creating task with data:', data)
@@ -288,6 +294,21 @@ export class TasksService extends BaseService {
         workspaceId: this.user.workspaceId,
       }),
     ])
+
+    if (data.templateId && !opts?.disableSubtaskTemplates) {
+      const templateService = new TemplatesService(this.user)
+      const template = await templateService.getOneTemplate(data.templateId)
+
+      if (!template) {
+        throw new APIError(httpStatus.NOT_FOUND, 'The requested template was not found')
+      }
+
+      if (template?.subTaskTemplates.length) {
+        for (const sub of template.subTaskTemplates) {
+          await this.createSubtasksFromTemplate(sub, newTask.id)
+        }
+      }
+    }
 
     return newTask
   }
@@ -1123,5 +1144,31 @@ export class TasksService extends BaseService {
     }
 
     return viewers
+  }
+
+  private async createSubtasksFromTemplate(data: TaskTemplate, parentId: string) {
+    const { workspaceId, title, body, workflowStateId } = data
+    try {
+      const createTaskPayload = CreateTaskRequestSchema.parse({
+        title,
+        body,
+        workspaceId,
+        workflowStateId,
+        parentId,
+
+        templateId: undefined, //just to be safe from circular recursion
+      })
+      await this.createTask(createTaskPayload, { disableSubtaskTemplates: true })
+    } catch (e) {
+      await this.db.$transaction([
+        this.db.task.delete({ where: { id: parentId } }),
+        this.db.activityLog.deleteMany({ where: { taskId: parentId } }),
+      ])
+      console.error('TasksService#createTask | Rolling back task creation', e)
+      throw new APIError(
+        httpStatus.INTERNAL_SERVER_ERROR,
+        'Failed to create subtask from template, new task was not created.',
+      )
+    }
   }
 }
