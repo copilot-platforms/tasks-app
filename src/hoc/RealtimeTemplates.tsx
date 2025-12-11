@@ -7,6 +7,7 @@ import { Token } from '@/types/common'
 import { ITemplate } from '@/types/interfaces'
 import { extractImgSrcs, replaceImgSrcs } from '@/utils/signedUrlReplacer'
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
+import { usePathname, useRouter } from 'next/navigation'
 import { ReactNode, useEffect } from 'react'
 import { useSelector } from 'react-redux'
 
@@ -25,6 +26,9 @@ export const RealTimeTemplates = ({
 }) => {
   const { templates = [], activeTemplate } = useSelector(selectCreateTemplate)
 
+  const pathname = usePathname()
+  const router = useRouter()
+
   const applySubtemplateToActiveTemplate = (newTemplate: RealTimeTemplateResponse) => {
     if (!newTemplate?.parentId) return
 
@@ -37,6 +41,18 @@ export const RealTimeTemplates = ({
       )
     }
   }
+
+  const redirectBack = (updatedTemplate: RealTimeTemplateResponse) => {
+    //disable board navigation if not in template details page
+    if (!pathname.includes(`manage-templates/${updatedTemplate.id}`)) return
+
+    router.push(
+      updatedTemplate?.parentId
+        ? `/manage-templates/${updatedTemplate.parentId}?token=${token}`
+        : `/manage-templates?token=${token}`,
+    )
+  }
+
   const handleTemplatesRealTimeUpdates = (payload: RealtimePostgresChangesPayload<RealTimeTemplateResponse>) => {
     if (payload.eventType === 'INSERT') {
       const newTemplate = payload.new
@@ -60,6 +76,7 @@ export const RealTimeTemplates = ({
         if (updatedTemplate.deletedAt) {
           const newTemplateArr = templates && templates.filter((el) => el.id !== updatedTemplate.id)
           store.dispatch(setTemplates(newTemplateArr))
+          redirectBack(updatedTemplate)
         } else {
           // Address Postgres' 8kb pagesize limitation (See TOAST https://www.postgresql.org/docs/current/storage-toast.html)
           // If `body` field (which can be larger than pagesize) is not changed, Supabase Realtime won't send large fields like this in `payload.new`
