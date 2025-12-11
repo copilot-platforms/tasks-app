@@ -8,13 +8,9 @@ const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN || process.env.SENTRY_DSN
 const vercelEnv = process.env.NEXT_PUBLIC_VERCEL_ENV
 const isProd = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production'
 
-Sentry.setTag('app_env', isProd ? 'production' : 'preview')
-
 if (dsn) {
   Sentry.init({
     dsn,
-
-    environment: vercelEnv || 'unknown',
 
     // Adjust this value in production, or use tracesSampler for greater control
     tracesSampleRate: isProd ? 0.1 : 1,
@@ -34,9 +30,6 @@ if (dsn) {
     //     blockAllMedia: true,
     //   }),
     // ],
-
-    // Track release using commit SHA
-    release: process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA,
 
     // ignoreErrors: [/fetch failed/i],
     ignoreErrors: [/fetch failed/i],
