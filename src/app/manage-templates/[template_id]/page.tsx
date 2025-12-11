@@ -47,10 +47,13 @@ export default async function TaskDetailPage({
     parentTemplate && breadcrumbTemplates.unshift(parentTemplate)
   }
 
-  const breadcrumbItems: { label: string; href: string }[] = breadcrumbTemplates.map(({ title, id }) => ({
-    label: title,
-    href: `/manage-templates/${id}?token=${token}`,
-  }))
+  const breadcrumbItems: { label: string; href: string }[] = [
+    { label: 'Manage templates', href: '/manage-templates' },
+    ...breadcrumbTemplates.map(({ title, id }) => ({
+      label: title,
+      href: `/manage-templates/${id}?token=${token}`,
+    })),
+  ]
 
   return (
     <ClientSideStateUpdate workflowStates={workflowStates} token={token} template={template} tokenPayload={tokenPayload}>
