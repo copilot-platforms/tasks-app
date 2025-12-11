@@ -13,7 +13,8 @@ if (dsn) {
     dsn,
 
     // Adjust this value in production, or use tracesSampler for greater control
-    tracesSampleRate: isProd ? 0.1 : 1,
+    tracesSampleRate: isProd ? 0.2 : 1,
+    profilesSampleRate: 0.1,
     // NOTE: reducing sample only 10% of transactions in prod to get general trends instead of detailed and overfitted data
 
     // Setting this option to true will print useful information to the console while you're setting up Sentry.
@@ -23,13 +24,14 @@ if (dsn) {
     // NOTE: Since session replay barely helps us anyways, getting rid of it to reduce some bundle size at least
     // replaysOnErrorSampleRate: 1.0,
     // replaysSessionSampleRate: 0,
-    // integrations: [
-    //   Sentry.replayIntegration({
-    // Additional Replay configuration goes in here, for example:
-    //     maskAllText: true,
-    //     blockAllMedia: true,
-    //   }),
-    // ],
+    integrations: [
+      Sentry.browserTracingIntegration(),
+      //   Sentry.replayIntegration({
+      // Additional Replay configuration goes in here, for example:
+      //     maskAllText: true,
+      //     blockAllMedia: true,
+      //   }),
+    ],
 
     // ignoreErrors: [/fetch failed/i],
     ignoreErrors: [/fetch failed/i],
