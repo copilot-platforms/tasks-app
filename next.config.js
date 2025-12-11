@@ -35,7 +35,7 @@ module.exports = withSentryConfig(nextConfig, {
 
   // Route browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers.
   // This can increase server load as well as your hosting bill but prevent ad-blockers from blocking error repotrs
-  tunnelRoute: '/monitoring',
+  tunnelRoute: '/tel',
 
   // Hides source maps from generated client bundles
   hideSourceMaps: true,
