@@ -23,16 +23,32 @@ export const RealTimeTemplates = ({
   task?: ITemplate
   tokenPayload: Token
 }) => {
-  const { templates, activeTemplate } = useSelector(selectCreateTemplate)
+  const { templates = [], activeTemplate } = useSelector(selectCreateTemplate)
 
+  const applySubtemplateToActiveTemplate = (newTemplate: RealTimeTemplateResponse) => {
+    if (!newTemplate?.parentId) return
+
+    if (activeTemplate?.id === newTemplate.parentId) {
+      store.dispatch(
+        setActiveTemplate({
+          ...activeTemplate,
+          subTaskTemplates: [...(activeTemplate.subTaskTemplates || []), newTemplate],
+        }),
+      )
+    }
+  }
   const handleTemplatesRealTimeUpdates = (payload: RealtimePostgresChangesPayload<RealTimeTemplateResponse>) => {
     if (payload.eventType === 'INSERT') {
-      let canUserAccessTask = payload.new.workspaceId === tokenPayload.workspaceId
-      if (canUserAccessTask) {
-        templates
-          ? store.dispatch(setTemplates([{ ...payload.new }, ...templates]))
-          : store.dispatch(setTemplates([{ ...payload.new }]))
+      const newTemplate = payload.new
+      let canUserAccessTask = newTemplate.workspaceId === tokenPayload.workspaceId
+      if (!canUserAccessTask) return
+      if (newTemplate?.parentId) {
+        applySubtemplateToActiveTemplate(newTemplate)
+        return
       }
+      templates
+        ? store.dispatch(setTemplates([{ ...newTemplate }, ...templates]))
+        : store.dispatch(setTemplates([{ ...newTemplate }]))
     }
     if (payload.eventType === 'UPDATE') {
       const updatedTemplate = payload.new
@@ -61,11 +77,6 @@ export const RealTimeTemplates = ({
               updatedTemplate.body = replaceImgSrcs(updatedTemplate.body, newImgSrcs, oldImgSrcs)
             }
           }
-          const newTemplateArr = [
-            updatedTemplate,
-            ...(templates?.filter((template) => template.id !== updatedTemplate.id) || []),
-          ]
-          store.dispatch(setTemplates(newTemplateArr))
           if (activeTemplate?.id == updatedTemplate.id) {
             store.dispatch(
               setActiveTemplate({
@@ -74,6 +85,15 @@ export const RealTimeTemplates = ({
               }),
             )
           }
+          if (updatedTemplate?.parentId) {
+            applySubtemplateToActiveTemplate(updatedTemplate)
+            return
+          }
+          const newTemplateArr = [
+            updatedTemplate,
+            ...(templates?.filter((template) => template.id !== updatedTemplate.id) || []),
+          ]
+          store.dispatch(setTemplates(newTemplateArr))
         }
       }
     }
