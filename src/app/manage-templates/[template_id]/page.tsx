@@ -3,7 +3,7 @@ import { ResponsiveStack } from '@/app/detail/ui/ResponsiveStack'
 import { apiUrl } from '@/config'
 import { ClientSideStateUpdate } from '@/hoc/ClientSideStateUpdate'
 import { RealTimeTemplates } from '@/hoc/RealtimeTemplates'
-import { ITemplate } from '@/types/interfaces'
+import { ITemplate, UserType } from '@/types/interfaces'
 import EscapeHandler from '@/utils/escapeHandler'
 import { Box } from '@mui/material'
 import TemplateDetails from '@/app/manage-templates/ui/TemplateDetails'
@@ -12,6 +12,7 @@ import { UpdateTemplateRequest } from '@/types/dto/templates.dto'
 import { StyledTiptapDescriptionWrapper, TaskDetailsContainer } from '@/app/detail/ui/styledComponent'
 import { TemplateSidebar } from '@/app/manage-templates/ui/TemplateSidebar'
 import { Subtemplates } from '@/app/manage-templates/ui/Subtemplates'
+import { HeaderBreadcrumbs } from '@/components/layouts/HeaderBreadcrumbs'
 
 async function getTemplate(id: string, token: string): Promise<ITemplate> {
   const res = await fetch(`${apiUrl}/api/tasks/templates/${id}?token=${token}`, {
@@ -39,12 +40,25 @@ export default async function TaskDetailPage({
     getWorkspace(token),
   ])
 
+  const breadcrumbTemplates = [template]
+
+  if (template.parentId) {
+    const parentTemplate = await getTemplate(template.parentId, token)
+    parentTemplate && breadcrumbTemplates.unshift(parentTemplate)
+  }
+
+  const breadcrumbItems: { label: string; href: string }[] = breadcrumbTemplates.map(({ title, id }) => ({
+    label: title,
+    href: `/manage-templates/${id}?token=${token}`,
+  }))
+
   return (
     <ClientSideStateUpdate workflowStates={workflowStates} token={token} template={template} tokenPayload={tokenPayload}>
       <RealTimeTemplates tokenPayload={tokenPayload}>
         <EscapeHandler />
         <ResponsiveStack fromNotificationCenter={false}>
           <Box sx={{ width: '100%', display: 'flex', flex: 1, flexDirection: 'column', overflow: 'auto' }}>
+            <HeaderBreadcrumbs token={token} items={breadcrumbItems} userType={UserType.INTERNAL_USER} />
             <TaskDetailsContainer
               sx={{
                 padding: { xs: '20px 16px ', sm: '30px 20px' },
