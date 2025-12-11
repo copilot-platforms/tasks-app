@@ -7,7 +7,7 @@ import { CreateTemplateRequest } from '@/types/dto/templates.dto'
 import { ITemplate } from '@/types/interfaces'
 import { generateRandomString } from '@/utils/generateRandomString'
 import { getTempTaskTemplate } from '@/utils/optimisticTaskUtils'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 
 import { AddBtn } from '@/components/buttons/AddBtn'
@@ -21,6 +21,7 @@ import useSWR, { useSWRConfig } from 'swr'
 import { createSubTemplate } from '@/app/manage-templates/actions'
 import { NewTemplateCard } from '@/app/manage-templates/ui/NewTemplateCard'
 import { SubtemplatesList } from '@/app/manage-templates/ui/SubtemplatesList'
+import { useDebounce } from '@/hooks/useDebounce'
 
 interface OptimisticUpdate {
   tempId: string
@@ -34,7 +35,6 @@ export const Subtemplates = ({ template_id, token }: { template_id: string; toke
   const { activeTemplate } = useSelector(selectCreateTemplate)
   const { tokenPayload } = useSelector(selectAuthDetails)
   const [optimisticUpdates, setOptimisticUpdates] = useState<OptimisticUpdate[]>([])
-  const [lastUpdated, setLastUpdated] = useState<string | null>()
 
   const handleFormCancel = () => setOpenTaskForm(false)
   const handleFormOpen = () => setOpenTaskForm(!openTaskForm)
@@ -48,7 +48,25 @@ export const Subtemplates = ({ template_id, token }: { template_id: string; toke
     revalidateOnFocus: false,
   })
 
+  const didMount = useRef(false)
+  const shouldRefetchRef = useRef(true)
+
   const { mutate } = useSWRConfig()
+
+  const _debounceMutate = async (cacheKey: string) => await mutate(cacheKey)
+  const debounceMutate = useDebounce(_debounceMutate, 200)
+
+  useEffect(() => {
+    if (!activeTemplate) return
+    if (!didMount.current || !shouldRefetchRef.current) {
+      didMount.current = true
+      shouldRefetchRef.current = true
+
+      return //skip the refetch on first mount and shouldRefetch is false.
+    }
+
+    debounceMutate(cacheKey)
+  }, [activeTemplate?.subTaskTemplates])
 
   const handleSubtemplateCreation = (payload: CreateTemplateRequest) => {
     const tempId = generateRandomString('temp-template')
@@ -84,7 +102,7 @@ export const Subtemplates = ({ template_id, token }: { template_id: string; toke
         {
           optimisticData: { data: optimisticData },
           rollbackOnError: true,
-          revalidate: true,
+          revalidate: false,
         },
       )
     } catch (error) {
