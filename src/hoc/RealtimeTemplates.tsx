@@ -19,10 +19,12 @@ export const RealTimeTemplates = ({
   children,
   task,
   tokenPayload,
+  token,
 }: {
   children: ReactNode
   task?: ITemplate
   tokenPayload: Token
+  token: string
 }) => {
   const { templates = [], activeTemplate } = useSelector(selectCreateTemplate)
 

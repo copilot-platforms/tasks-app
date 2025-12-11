@@ -43,22 +43,22 @@ export default async function TaskDetailPage({
 
   const breadcrumbTemplates = [template]
 
-  if (template.parentId) {
+  if (template?.parentId) {
     const parentTemplate = await getTemplate(template.parentId, token)
     parentTemplate && breadcrumbTemplates.unshift(parentTemplate)
   }
 
   const breadcrumbItems: { label: string; href: string }[] = [
     { label: 'Manage templates', href: `/manage-templates?token=${token}` },
-    ...breadcrumbTemplates.map(({ title, id }) => ({
-      label: title,
-      href: `/manage-templates/${id}?token=${token}`,
+    ...breadcrumbTemplates.map((template) => ({
+      label: template?.title,
+      href: `/manage-templates/${template?.id}?token=${token}`,
     })),
   ]
 
   return (
     <ClientSideStateUpdate workflowStates={workflowStates} token={token} template={template} tokenPayload={tokenPayload}>
-      <RealTimeTemplates tokenPayload={tokenPayload}>
+      <RealTimeTemplates tokenPayload={tokenPayload} token={token}>
         <EscapeHandler />
         <ResponsiveStack fromNotificationCenter={false}>
           <Box sx={{ width: '100%', display: 'flex', flex: 1, flexDirection: 'column', overflow: 'auto' }}>
