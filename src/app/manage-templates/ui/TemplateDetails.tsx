@@ -1,11 +1,13 @@
 'use client'
 
+import { StyledModal } from '@/app/detail/ui/styledComponent'
 import AttachmentLayout from '@/components/AttachmentLayout'
 import { StyledTextField } from '@/components/inputs/TextField'
+import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
 import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
 import { useDebounce, useDebounceWithCancel } from '@/hooks/useDebounce'
-import { setOpenImage } from '@/redux/features/taskDetailsSlice'
-import { selectCreateTemplate } from '@/redux/features/templateSlice'
+import { selectTaskDetails, setOpenImage, setShowConfirmDeleteModal } from '@/redux/features/taskDetailsSlice'
+import { clearTemplateFields, selectCreateTemplate } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
 import { CreateTemplateRequest } from '@/types/dto/templates.dto'
 import { ITemplate } from '@/types/interfaces'
@@ -36,9 +38,11 @@ export default function TemplateDetails({
 }: TemplateDetailsProps) {
   const [updateTitle, setUpdateTitle] = useState('')
   const [updateDetail, setUpdateDetail] = useState('')
-  const { activeTemplate, templates } = useSelector(selectCreateTemplate)
+  const { activeTemplate, targetTemplateId, taskName } = useSelector(selectCreateTemplate)
   const [isUserTyping, setIsUserTyping] = useState(false)
   const [activeUploads, setActiveUploads] = useState(0)
+
+  const { showConfirmDeleteModal } = useSelector(selectTaskDetails)
 
   const handleImagePreview = (e: MouseEvent<unknown>) => {
     store.dispatch(setOpenImage((e.target as HTMLImageElement).src))
@@ -165,6 +169,23 @@ export default function TemplateDetails({
           maxUploadLimit={MAX_UPLOAD_LIMIT}
         />
       </Box>
+      <StyledModal
+        open={showConfirmDeleteModal}
+        onClose={() => store.dispatch(setShowConfirmDeleteModal())}
+        aria-labelledby="delete-task-modal"
+        aria-describedby="delete-task"
+      >
+        <ConfirmDeleteUI
+          handleCancel={() => store.dispatch(setShowConfirmDeleteModal())}
+          handleDelete={() => {
+            store.dispatch(setShowConfirmDeleteModal())
+            handleDeleteTemplate(targetTemplateId)
+            store.dispatch(clearTemplateFields())
+          }}
+          description={`“${taskName}” will be permanently deleted.`}
+          customBody={'Delete template?'}
+        />
+      </StyledModal>
     </>
   )
 }
