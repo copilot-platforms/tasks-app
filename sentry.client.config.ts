@@ -5,32 +5,35 @@
 import * as Sentry from '@sentry/nextjs'
 
 const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN || process.env.SENTRY_DSN
+const isProd = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production'
+
+Sentry.setTag('app_env', isProd ? 'production' : 'preview')
 
 if (dsn) {
   Sentry.init({
     dsn,
 
     // Adjust this value in production, or use tracesSampler for greater control
-    tracesSampleRate: 1,
+    tracesSampleRate: isProd ? 0.1 : 1,
+    // NOTE: reducing sample only 10% of transactions in prod to get general trends instead of detailed and overfitted data
 
     // Setting this option to true will print useful information to the console while you're setting up Sentry.
     debug: false,
 
     replaysOnErrorSampleRate: 1.0,
 
-    // This sets the sample rate to be 10%. You may want this to be 100% while
-    // in development and sample at a lower rate in production
-    replaysSessionSampleRate: 0.1,
-
     // You can remove this option if you're not planning to use the Sentry Session Replay feature:
-    integrations: [
-      Sentry.replayIntegration({
-        // Additional Replay configuration goes in here, for example:
-        maskAllText: true,
-        blockAllMedia: true,
-      }),
-    ],
+    // NOTE: Since session replay barely helps us anyways, getting rid of it to reduce some bundle size at least
+    replaysSessionSampleRate: 0,
+    // integrations: [
+    //   Sentry.replayIntegration({
+    // Additional Replay configuration goes in here, for example:
+    //     maskAllText: true,
+    //     blockAllMedia: true,
+    //   }),
+    // ],
 
+    // ignoreErrors: [/fetch failed/i],
     ignoreErrors: [/fetch failed/i],
   })
 }
