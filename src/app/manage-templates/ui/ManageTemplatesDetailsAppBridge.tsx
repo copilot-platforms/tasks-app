@@ -13,17 +13,9 @@ import { useCallback, useEffect, useState } from 'react'
 interface ManageTemplateDetailsAppBridgeProps {
   portalUrl?: string
   template: ITemplate
-  breadcrumbItems: {
-    label: string
-    href: string
-  }[]
 }
 
-export const ManageTemplateDetailsAppBridge = ({
-  portalUrl,
-  template,
-  breadcrumbItems,
-}: ManageTemplateDetailsAppBridgeProps) => {
+export const ManageTemplateDetailsAppBridge = ({ portalUrl, template }: ManageTemplateDetailsAppBridgeProps) => {
   const [awake, setAwake] = useState(false)
 
   useEffect(() => {
@@ -49,7 +41,6 @@ export const ManageTemplateDetailsAppBridge = ({
   ]
   usePrimaryCta(null, { portalUrl })
   useActionsMenu(items, { portalUrl })
-  useBreadcrumbs(breadcrumbItems, { portalUrl })
 
   return <></>
 }
