@@ -184,7 +184,7 @@ export interface ITemplate {
   updatedAt: Date
   parentId: string | null
   subTaskTemplates: ITemplate[]
-  parent: ITemplate | null
+  parent?: ITemplate | null
 }
 
 export interface ISignedUrlUpload {
