@@ -10,15 +10,18 @@ import Link from 'next/link'
 
 import { z } from 'zod'
 
-export const DeletedTaskRedirectPage = ({
+export const DeletedRedirectPage = ({
   userType,
   token,
   fromNotificationCenter,
+  entity = 'Task',
 }: {
-  userType: UserRole
+  userType?: UserRole
   token: string
-  fromNotificationCenter: boolean
+  fromNotificationCenter?: boolean
+  entity?: 'Task' | 'Template'
 }) => {
+  const tokenstring = z.string().parse(token)
   return (
     <>
       <AppMargin size={SizeofAppMargin.LARGE} py="20px">
@@ -45,15 +48,21 @@ export const DeletedTaskRedirectPage = ({
               </Box>
 
               <Typography variant="2xl" lineHeight={'32px'}>
-                No task to show
+                No {entity.toLowerCase()} to show
               </Typography>
               <Typography variant="bodyLg" sx={{ color: '#6B6F76' }}>
-                This task has been deleted. You can view your other tasks on the Tasks homepage.
+                This {entity.toLowerCase()} has been deleted. You can view your other {entity}s on the {entity} homepage.
               </Typography>
             </Stack>
             {/* disable board navigation on notification-center-view */}
             {!fromNotificationCenter && (
-              <Link href={`/${userType === UserRole.Client ? 'client' : ''}?token=${z.string().parse(token)}`}>
+              <Link
+                href={
+                  entity == 'Template'
+                    ? `/manage-templates?token=${tokenstring}`
+                    : `/${userType === UserRole.Client ? 'client' : ''}?token=${tokenstring}`
+                }
+              >
                 <Button
                   variant="contained"
                   startIcon={null}
@@ -68,7 +77,7 @@ export const DeletedTaskRedirectPage = ({
                   disableRipple
                   disableTouchRipple
                 >
-                  <Typography variant="sm">View tasks</Typography>
+                  <Typography variant="sm">View {entity}s</Typography>
                 </Button>
               </Link>
             )}
