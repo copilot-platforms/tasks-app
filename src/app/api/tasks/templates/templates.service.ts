@@ -92,6 +92,7 @@ export class TemplatesService extends BaseService {
             createdAt: 'desc',
           },
         },
+        parent: true, //remove this for public api
       },
       orderBy: {
         createdAt: 'desc',

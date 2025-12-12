@@ -19,5 +19,6 @@ model TaskTemplate {
   scrapMedias ScrapMedia[]
 
   @@unique([title, workspaceId, deletedAt], name: "UQ_TaskTemplates_title_workspaceId_deletedAt")
+  @@index([workspaceId, parentId, createdAt(sort: Desc)])
   @@map("TaskTemplates")
 }
