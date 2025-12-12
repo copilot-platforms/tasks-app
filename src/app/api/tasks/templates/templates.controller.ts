@@ -58,3 +58,19 @@ export const applyTemplate = async (req: NextRequest, { params: { id } }: IdPara
 
   return NextResponse.json({ data })
 }
+
+export const getOneTemplate = async (req: NextRequest, { params: { id } }: IdParams) => {
+  const user = await authenticate(req)
+  const templatesService = new TemplatesService(user)
+  const data = await templatesService.getOneTemplate(id)
+
+  return NextResponse.json({ data })
+}
+
+export const getSubtemplates = async (req: NextRequest, { params: { id } }: IdParams) => {
+  const user = await authenticate(req)
+  const templatesService = new TemplatesService(user)
+  const data = await templatesService.getSubtemplates(id)
+
+  return NextResponse.json({ data })
+}

@@ -1,6 +1,7 @@
 'use client'
 
 import { Icons } from '@/hooks/app-bridge/types'
+import { useAwake } from '@/hooks/app-bridge/useAwake'
 import { usePrimaryCta } from '@/hooks/app-bridge/usePrimaryCta'
 import { useSecondaryCta } from '@/hooks/app-bridge/useSecondaryCta'
 import { useCallback, useEffect, useState } from 'react'
@@ -12,13 +13,7 @@ interface DetailAppBridgeProps {
 }
 
 export const ClientDetailAppBridge = ({ handleTaskComplete, isTaskCompleted, portalUrl }: DetailAppBridgeProps) => {
-  const [awake, setAwake] = useState(false)
-
-  useEffect(() => {
-    setTimeout(() => {
-      setAwake(true)
-    }, 0)
-  }, [])
+  const awake = useAwake()
 
   const handleMarkAsDone = useCallback(() => {
     handleTaskComplete()
