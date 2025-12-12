@@ -303,10 +303,8 @@ export class TasksService extends BaseService {
         throw new APIError(httpStatus.NOT_FOUND, 'The requested template was not found')
       }
 
-      if (template?.subTaskTemplates.length) {
-        for (const sub of template.subTaskTemplates) {
-          await this.createSubtasksFromTemplate(sub, newTask.id)
-        }
+      if (template.subTaskTemplates.length) {
+        await Promise.all(template.subTaskTemplates.map((sub) => this.createSubtasksFromTemplate(sub, newTask.id)))
       }
     }
 
@@ -1160,10 +1158,16 @@ export class TasksService extends BaseService {
       })
       await this.createTask(createTaskPayload, { disableSubtaskTemplates: true })
     } catch (e) {
-      await this.db.$transaction([
-        this.db.task.delete({ where: { id: parentId } }),
-        this.db.activityLog.deleteMany({ where: { taskId: parentId } }),
-      ])
+      const deleteTask = this.db.task.delete({ where: { id: parentId } })
+      const deleteActivityLogs = this.db.activityLog.deleteMany({ where: { taskId: parentId } })
+
+      await this.db.$transaction(async (tx) => {
+        this.setTransaction(tx as PrismaClient)
+        await deleteTask
+        await deleteActivityLogs
+        this.unsetTransaction()
+      })
+
       console.error('TasksService#createTask | Rolling back task creation', e)
       throw new APIError(
         httpStatus.INTERNAL_SERVER_ERROR,
