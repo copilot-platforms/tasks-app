@@ -13,7 +13,8 @@ import { StyledTiptapDescriptionWrapper, TaskDetailsContainer } from '@/app/deta
 import { TemplateSidebar } from '@/app/manage-templates/ui/TemplateSidebar'
 import { Subtemplates } from '@/app/manage-templates/ui/Subtemplates'
 import { HeaderBreadcrumbs } from '@/components/layouts/HeaderBreadcrumbs'
-import { ManageTemplateDetailsAppBridge } from '../ui/ManageTemplatesDetailsAppBridge'
+import { ManageTemplateDetailsAppBridge } from '@/app/manage-templates/ui/ManageTemplatesDetailsAppBridge'
+import { DeletedRedirectPage } from '@/components/layouts/DeletedRedirectPage'
 
 async function getTemplate(id: string, token: string): Promise<ITemplate> {
   const res = await fetch(`${apiUrl}/api/tasks/templates/${id}?token=${token}`, {
@@ -41,18 +42,21 @@ export default async function TaskDetailPage({
     getWorkspace(token),
   ])
 
+  if (!template) {
+    return <DeletedRedirectPage token={token} />
+  }
+
   const breadcrumbTemplates = [template]
 
-  if (template?.parentId) {
-    const parentTemplate = await getTemplate(template.parentId, token)
-    parentTemplate && breadcrumbTemplates.unshift(parentTemplate)
+  if (template.parentId) {
+    template.parent && breadcrumbTemplates.unshift(template.parent)
   }
 
   const breadcrumbItems: { label: string; href: string }[] = [
     { label: 'Manage templates', href: `/manage-templates?token=${token}` },
     ...breadcrumbTemplates.map((template) => ({
-      label: template?.title,
-      href: `/manage-templates/${template?.id}?token=${token}`,
+      label: template.title,
+      href: `/manage-templates/${template.id}?token=${token}`,
     })),
   ]
 
@@ -92,7 +96,7 @@ export default async function TaskDetailPage({
                   token={token}
                 />
               </StyledTiptapDescriptionWrapper>
-              {!template?.parentId && <Subtemplates template_id={template_id} token={token} />}
+              {!template.parentId && <Subtemplates template_id={template_id} token={token} />}
             </TaskDetailsContainer>
           </Box>
 
