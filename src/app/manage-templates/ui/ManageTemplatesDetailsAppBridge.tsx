@@ -2,6 +2,7 @@
 
 import { Clickable, Icons } from '@/hooks/app-bridge/types'
 import { useActionsMenu } from '@/hooks/app-bridge/useActionsMenu'
+import { useAwake } from '@/hooks/app-bridge/useAwake'
 import { useBreadcrumbs } from '@/hooks/app-bridge/useBreadcrumbs'
 import { usePrimaryCta } from '@/hooks/app-bridge/usePrimaryCta'
 import { setShowConfirmDeleteModal } from '@/redux/features/taskDetailsSlice'
@@ -16,13 +17,7 @@ interface ManageTemplateDetailsAppBridgeProps {
 }
 
 export const ManageTemplateDetailsAppBridge = ({ portalUrl, template }: ManageTemplateDetailsAppBridgeProps) => {
-  const [awake, setAwake] = useState(false)
-
-  useEffect(() => {
-    setTimeout(() => {
-      setAwake(true)
-    }, 0)
-  }, [])
+  const awake = useAwake()
 
   const handleDeleteTemplate = useCallback(() => {
     store.dispatch(setShowConfirmDeleteModal())

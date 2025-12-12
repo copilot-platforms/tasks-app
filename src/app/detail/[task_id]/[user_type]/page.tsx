@@ -1,6 +1,9 @@
 export const fetchCache = 'force-no-store'
 
+import { AssigneeCacheGetter } from '@/app/_cache/AssigneeCacheGetter'
 import { AssigneeFetcher } from '@/app/_fetchers/AssigneeFetcher'
+import { fetchWithErrorHandler } from '@/app/_fetchers/fetchWithErrorHandler'
+import { OneTaskDataFetcher } from '@/app/_fetchers/OneTaskDataFetcher'
 import { WorkflowStateFetcher } from '@/app/_fetchers/WorkflowStateFetcher'
 import { UserRole } from '@/app/api/core/types/user'
 import {
@@ -22,8 +25,7 @@ import { Sidebar } from '@/app/detail/ui/Sidebar'
 import { StyledBox, StyledTiptapDescriptionWrapper, TaskDetailsContainer } from '@/app/detail/ui/styledComponent'
 import { Subtasks } from '@/app/detail/ui/Subtasks'
 import { TaskEditor } from '@/app/detail/ui/TaskEditor'
-import { ToggleController } from '@/app/detail/ui/ToggleController'
-import { DeletedTaskRedirectPage } from '@/components/layouts/DeletedTaskRedirectPage'
+import { DeletedRedirectPage } from '@/components/layouts/DeletedRedirectPage'
 import { HeaderBreadcrumbs } from '@/components/layouts/HeaderBreadcrumbs'
 import { SilentError } from '@/components/templates/SilentError'
 import { apiUrl } from '@/config'
@@ -37,12 +39,9 @@ import { getAssigneeCacheLookupKey, UserIdsWithViewersType } from '@/utils/assig
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import EscapeHandler from '@/utils/escapeHandler'
 import { getPreviewMode } from '@/utils/previewMode'
+import { checkIfTaskViewer } from '@/utils/taskViewer'
 import { Box, Stack } from '@mui/material'
 import { z } from 'zod'
-import { fetchWithErrorHandler } from '@/app/_fetchers/fetchWithErrorHandler'
-import { AssigneeCacheGetter } from '@/app/_cache/AssigneeCacheGetter'
-import { checkIfTaskViewer } from '@/utils/taskViewer'
-import { OneTaskDataFetcher } from '@/app/_fetchers/OneTaskDataFetcher'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse | null> {
   try {
@@ -108,7 +107,7 @@ export default async function TaskDetailPage({
   console.info(`app/detail/${task_id}/${user_type}/page.tsx | Serving user ${token} with payload`, tokenPayload)
   if (!task) {
     return (
-      <DeletedTaskRedirectPage
+      <DeletedRedirectPage
         userType={tokenPayload.companyId ? UserRole.Client : UserRole.IU}
         token={token}
         fromNotificationCenter={fromNotificationCenter}
