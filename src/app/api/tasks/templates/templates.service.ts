@@ -83,7 +83,20 @@ export class TemplatesService extends BaseService {
 
     const template = await this.db.taskTemplate.findFirst({
       where: { workspaceId: this.user.workspaceId, id },
+    })
+
+    if (!template) {
+      throw new APIError(httpStatus.NOT_FOUND, 'Could not find template')
+    }
+    const updatedTemplate = await this.db.taskTemplate.update({
+      where: { id: template.id },
+      data: {
+        body: template.body && (await replaceImageSrc(template.body, getSignedUrl)),
+      },
+      relationLoadStrategy: 'join',
       include: {
+        workflowState: true,
+
         subTaskTemplates: {
           where: {
             deletedAt: null,
@@ -94,14 +107,9 @@ export class TemplatesService extends BaseService {
         },
         parent: true, //remove this for public api
       },
-      orderBy: {
-        createdAt: 'desc',
-      },
     })
-    if (!template) {
-      throw new APIError(httpStatus.NOT_FOUND, 'Could not find template')
-    }
-    return template
+
+    return updatedTemplate
   }
 
   async getSubtemplates(id: string) {
