@@ -25,7 +25,7 @@ interface IInitialState {
   userIds: UserIdsType
   viewers: Viewers
   parentId: string | null
-  disableSubtaskTemplate: boolean
+  disableSubtaskTemplates: boolean
 }
 
 const initialState: IInitialState = {
@@ -49,7 +49,7 @@ const initialState: IInitialState = {
   },
   viewers: [],
   parentId: null,
-  disableSubtaskTemplate: false,
+  disableSubtaskTemplates: false,
 }
 
 type CreateTaskFieldType = Pick<
@@ -116,7 +116,7 @@ const createTaskSlice = createSlice({
       }
       state.appliedDescription = null
       state.appliedTitle = null
-      state.disableSubtaskTemplate = false
+      state.disableSubtaskTemplates = false
     },
 
     setErrors: (state, action: { payload: { key: CreateTaskErrors; value: boolean } }) => {
