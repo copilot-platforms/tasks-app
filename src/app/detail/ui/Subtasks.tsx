@@ -100,7 +100,7 @@ export const Subtasks = ({
       mutate(
         cacheKey,
         async () => {
-          const subTask = await handleCreate(token, payload)
+          const subTask = await handleCreate(token, payload, { disableSubtaskTemplates: true })
           setOptimisticUpdates((prev) =>
             prev.map((update) => (update.tempId === tempId ? { ...update, serverId: subTask.id } : update)),
           )
