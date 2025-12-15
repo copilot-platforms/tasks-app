@@ -112,7 +112,7 @@ export default function TemplateDetails({
   const uploadFn = token
     ? async (file: File) => {
         setActiveUploads((prev) => prev + 1)
-        const fileUrl = await uploadImageHandler(file, token ?? '', template.workspaceId, template_id)
+        const fileUrl = await uploadImageHandler(file, token ?? '', template.workspaceId, template_id, 'templates')
         setActiveUploads((prev) => prev - 1)
         return fileUrl
       }

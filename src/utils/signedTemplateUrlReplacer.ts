@@ -33,10 +33,10 @@ export const copyTemplateMediaToTask = async (workspaceId: string, body: string)
 
   // Extract all image / attachments src belonging to template folder
   const rawSrcArray = [
-    ...Array.from(images).map((el) => el.src),
+    ...Array.from(images).map((el) => el.getAttribute('src')),
     ...Array.from(attachments).map((el) => el.getAttribute('data-src')),
     // Here we can safely exclude attachment-view
-  ]
+  ].filter(Boolean)
   const srcArray = rawSrcArray
     .filter((url): url is string => !!url)
     .filter((url) => templateUrlRegex.test(url))
