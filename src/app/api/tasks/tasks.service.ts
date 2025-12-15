@@ -304,7 +304,12 @@ export class TasksService extends BaseService {
       }
 
       if (template.subTaskTemplates.length) {
-        await Promise.all(template.subTaskTemplates.map((sub) => this.createSubtasksFromTemplate(sub, newTask.id)))
+        await Promise.all(
+          template.subTaskTemplates.map(async (sub) => {
+            const updatedSubTemplate = await templateService.getAppliedTemplateDescription(sub.id)
+            await this.createSubtasksFromTemplate(updatedSubTemplate, newTask.id)
+          }),
+        )
       }
     }
 

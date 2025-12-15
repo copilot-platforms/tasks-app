@@ -98,7 +98,7 @@ export const TemplateBoard = ({
               body: description,
             }
             if (targetMethod === TargetMethod.POST) {
-              const resp = await handleCreateTemplate(temp)
+              await handleCreateTemplate(temp)
             } else {
               handleEditTemplate(temp, targetTemplateId)
             }
