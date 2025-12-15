@@ -62,7 +62,7 @@ export const NewTemplateCard = ({
   }
   const uploadFn =
     token && tokenPayload?.workspaceId
-      ? (file: File) => uploadImageHandler(file, token, tokenPayload.workspaceId, null)
+      ? (file: File) => uploadImageHandler(file, token, tokenPayload.workspaceId, null, 'templates')
       : undefined
 
   const todoWorkflowState = workflowStates.find((el) => el.key === 'todo') || workflowStates[0]
