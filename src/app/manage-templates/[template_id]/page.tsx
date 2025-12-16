@@ -15,6 +15,7 @@ import { Subtemplates } from '@/app/manage-templates/ui/Subtemplates'
 import { HeaderBreadcrumbs } from '@/components/layouts/HeaderBreadcrumbs'
 import { ManageTemplateDetailsAppBridge } from '@/app/manage-templates/ui/ManageTemplatesDetailsAppBridge'
 import { DeletedRedirectPage } from '@/components/layouts/DeletedRedirectPage'
+import { OneTemplateDataFetcher } from '@/app/_fetchers/OneTemplateDataFetcher'
 
 async function getTemplate(id: string, token: string): Promise<ITemplate> {
   const res = await fetch(`${apiUrl}/api/tasks/templates/${id}?token=${token}`, {
@@ -62,6 +63,7 @@ export default async function TaskDetailPage({
 
   return (
     <ClientSideStateUpdate workflowStates={workflowStates} token={token} template={template} tokenPayload={tokenPayload}>
+      {token && <OneTemplateDataFetcher token={token} template_id={template_id} initialTemplate={template} />}
       <RealTimeTemplates tokenPayload={tokenPayload} token={token}>
         <EscapeHandler />
         <ResponsiveStack fromNotificationCenter={false}>
