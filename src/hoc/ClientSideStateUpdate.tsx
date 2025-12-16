@@ -16,7 +16,7 @@ import {
   setWorkflowStates,
 } from '@/redux/features/taskBoardSlice'
 import { setAssigneeSuggestion, setExpandedComments } from '@/redux/features/taskDetailsSlice'
-import { setActiveTemplate, setTemplates } from '@/redux/features/templateSlice'
+import { selectCreateTemplate, setActiveTemplate, setTemplates } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
 import { Token, UrlActionParamsType, WorkspaceResponse } from '@/types/common'
 import { HomeParamActions } from '@/types/constants'
@@ -72,6 +72,8 @@ export const ClientSideStateUpdate = ({
   template,
 }: ClientSideStateUpdateProps) => {
   const { tasks: tasksInStore, viewSettingsTemp, accessibleTasks: accessibleTaskInStore } = useSelector(selectTaskBoard)
+  const { templates: templatesInStore } = useSelector(selectCreateTemplate)
+
   useEffect(() => {
     if (workflowStates) {
       store.dispatch(setWorkflowStates(workflowStates))
@@ -119,7 +121,7 @@ export const ClientSideStateUpdate = ({
       previewMode && handlePreviewMode(tokenPayload)
     }
 
-    if (templates) {
+    if (templates && templatesInStore.length === 0) {
       store.dispatch(setTemplates(templates))
     }
 
