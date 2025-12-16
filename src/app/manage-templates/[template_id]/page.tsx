@@ -9,13 +9,14 @@ import { Box } from '@mui/material'
 import TemplateDetails from '@/app/manage-templates/ui/TemplateDetails'
 import { deleteTemplate, editTemplate } from '@/app/manage-templates/actions'
 import { UpdateTemplateRequest } from '@/types/dto/templates.dto'
-import { StyledTiptapDescriptionWrapper, TaskDetailsContainer } from '@/app/detail/ui/styledComponent'
+import { StyledBox, StyledTiptapDescriptionWrapper, TaskDetailsContainer } from '@/app/detail/ui/styledComponent'
 import { TemplateSidebar } from '@/app/manage-templates/ui/TemplateSidebar'
 import { Subtemplates } from '@/app/manage-templates/ui/Subtemplates'
 import { HeaderBreadcrumbs } from '@/components/layouts/HeaderBreadcrumbs'
 import { ManageTemplateDetailsAppBridge } from '@/app/manage-templates/ui/ManageTemplatesDetailsAppBridge'
 import { DeletedRedirectPage } from '@/components/layouts/DeletedRedirectPage'
 import { OneTemplateDataFetcher } from '@/app/_fetchers/OneTemplateDataFetcher'
+import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 
 async function getTemplate(id: string, token: string): Promise<ITemplate> {
   const res = await fetch(`${apiUrl}/api/tasks/templates/${id}?token=${token}`, {
@@ -68,7 +69,11 @@ export default async function TaskDetailPage({
         <EscapeHandler />
         <ResponsiveStack fromNotificationCenter={false}>
           <Box sx={{ width: '100%', display: 'flex', flex: 1, flexDirection: 'column', overflow: 'auto' }}>
-            <HeaderBreadcrumbs token={token} items={breadcrumbItems} userType={UserType.INTERNAL_USER} />
+            <StyledBox>
+              <AppMargin size={SizeofAppMargin.HEADER} py="17.5px">
+                <HeaderBreadcrumbs token={token} items={breadcrumbItems} userType={UserType.INTERNAL_USER} />
+              </AppMargin>
+            </StyledBox>
             <ManageTemplateDetailsAppBridge portalUrl={workspace.portalUrl} template={template} />
             <TaskDetailsContainer
               sx={{
