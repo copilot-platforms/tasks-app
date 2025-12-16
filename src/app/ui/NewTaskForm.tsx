@@ -619,7 +619,7 @@ const NewTaskFormInputs = ({ isEditorReadonly }: NewTaskFormInputsProps) => {
             deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', null, null)}
             attachmentLayout={AttachmentLayout}
             maxUploadLimit={MAX_UPLOAD_LIMIT}
-            parentContainerStyle={{ gap: '0px' }}
+            parentContainerStyle={{ gap: '0px', height: '66px' }}
           />
         </Box>
       </Stack>

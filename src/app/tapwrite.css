@@ -51,7 +51,7 @@
 
 .tapwrite-description-h-full {
   min-height: 10vh;
-  max-height: 60vh;
+  max-height: 40vh;
   overflow: auto;
   background-color: #ffffff;
 }
