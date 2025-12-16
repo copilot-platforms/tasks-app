@@ -12,7 +12,7 @@ interface IInitialState {
   taskName: string
   description: string
   workflowStateId: string
-  templates?: ITemplate[]
+  templates: ITemplate[]
   targetMethod: TargetMethod.EDIT | TargetMethod.POST //the target method for which modal is evoked
   targetTemplateId: string
   errors: IErrors
@@ -25,7 +25,7 @@ const initialState: IInitialState = {
   taskName: '',
   description: '',
   workflowStateId: '',
-  templates: undefined,
+  templates: [],
   targetMethod: TargetMethod.POST,
   targetTemplateId: '',
   errors: {
@@ -59,7 +59,7 @@ const createTemplateSlice = createSlice({
       state.activeWorkflowStateId = action.payload
     },
 
-    setTemplates: (state, action: { payload: ITemplate[] | undefined }) => {
+    setTemplates: (state, action: { payload: ITemplate[] }) => {
       state.templates = action.payload
     },
     clearTemplateFields: (state) => {
