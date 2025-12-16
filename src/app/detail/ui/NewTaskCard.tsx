@@ -15,6 +15,7 @@ import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { PersonIconSmall, TempalteIconMd } from '@/icons'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 import { selectCreateTemplate } from '@/redux/features/templateSlice'
 import { DateString } from '@/types/date'
 import { CreateTaskRequest, Viewers } from '@/types/dto/tasks.dto'
@@ -53,6 +54,7 @@ export const NewTaskCard = ({
 }) => {
   const { workflowStates, assignee, token, activeTask, previewMode, previewClientCompany } = useSelector(selectTaskBoard)
   const { templates } = useSelector(selectCreateTemplate)
+  const { fromNotificationCenter } = useSelector(selectTaskDetails)
 
   const [isEditorReadonly, setIsEditorReadonly] = useState(false)
 
@@ -289,7 +291,7 @@ export const NewTaskCard = ({
             placeholder="Search..."
             value={templateValue}
             selectorType={SelectorType.TEMPLATE_SELECTOR}
-            endOption={<ManageTemplatesEndOption hasTemplates={!!templates?.length} />}
+            endOption={!fromNotificationCenter && <ManageTemplatesEndOption hasTemplates={!!templates?.length} />}
             endOptionHref={`/manage-templates?token=${token}`}
             listAutoHeightMax="147px"
             variant="normal"
