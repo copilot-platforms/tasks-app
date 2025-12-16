@@ -5,13 +5,14 @@ import { selectCreateTemplate, setActiveTemplate, setTemplates } from '@/redux/f
 import store from '@/redux/store'
 import { Token } from '@/types/common'
 import { ITemplate } from '@/types/interfaces'
+import { isPayloadEqual } from '@/utils/isRealtimePayloadEqual'
 import { extractImgSrcs, replaceImgSrcs } from '@/utils/signedUrlReplacer'
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
 import { usePathname, useRouter } from 'next/navigation'
 import { ReactNode, useEffect } from 'react'
 import { useSelector } from 'react-redux'
 
-interface RealTimeTemplateResponse extends ITemplate {
+export interface RealTimeTemplateResponse extends ITemplate {
   deletedAt: string
 }
 
@@ -56,6 +57,10 @@ export const RealTimeTemplates = ({
   }
 
   const handleTemplatesRealTimeUpdates = (payload: RealtimePostgresChangesPayload<RealTimeTemplateResponse>) => {
+    console.log(payload, 'here')
+    if (isPayloadEqual(payload)) {
+      return //no changes for the same payload
+    }
     if (payload.eventType === 'INSERT') {
       const newTemplate = payload.new
       let canUserAccessTask = newTemplate.workspaceId === tokenPayload.workspaceId
