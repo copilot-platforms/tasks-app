@@ -4,6 +4,7 @@ import { AssigneeCacheGetter } from '@/app/_cache/AssigneeCacheGetter'
 import { AssigneeFetcher } from '@/app/_fetchers/AssigneeFetcher'
 import { fetchWithErrorHandler } from '@/app/_fetchers/fetchWithErrorHandler'
 import { OneTaskDataFetcher } from '@/app/_fetchers/OneTaskDataFetcher'
+import { TemplatesFetcher } from '@/app/_fetchers/TemplatesFetcher'
 import { WorkflowStateFetcher } from '@/app/_fetchers/WorkflowStateFetcher'
 import { UserRole } from '@/app/api/core/types/user'
 import {
@@ -42,6 +43,7 @@ import EscapeHandler from '@/utils/escapeHandler'
 import { getPreviewMode } from '@/utils/previewMode'
 import { checkIfTaskViewer } from '@/utils/taskViewer'
 import { Box, Stack } from '@mui/material'
+import { Suspense } from 'react'
 import { z } from 'zod'
 
 async function getOneTask(token: string, taskId: string): Promise<TaskResponse | null> {
@@ -135,6 +137,9 @@ export default async function TaskDetailPage({
       workspace={workspace}
     >
       {token && <OneTaskDataFetcher token={token} task_id={task_id} initialTask={task} />}
+      <Suspense fallback={null}>
+        <TemplatesFetcher token={token} />
+      </Suspense>
       <RealTime tokenPayload={tokenPayload}>
         <RealTimeTemplates tokenPayload={tokenPayload} token={token}>
           <EscapeHandler />
