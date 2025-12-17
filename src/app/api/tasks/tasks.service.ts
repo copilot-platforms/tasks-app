@@ -163,7 +163,10 @@ export class TasksService extends BaseService {
     return filteredTasks
   }
 
-  async createTask(data: CreateTaskRequest, opts?: { isPublicApi?: boolean; disableSubtaskTemplates?: boolean }) {
+  async createTask(
+    data: CreateTaskRequest,
+    opts?: { isPublicApi?: boolean; disableSubtaskTemplates?: boolean; manualTimestamp?: Date },
+  ) {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Create, Resource.Tasks)
     console.info('TasksService#createTask | Creating task with data:', data)
@@ -235,6 +238,7 @@ export class TasksService extends BaseService {
         assigneeType,
         viewers: viewers,
         ...validatedIds,
+        ...(opts?.manualTimestamp && { createdAt: opts.manualTimestamp }),
         ...(await getTaskTimestamps('create', this.user, data, undefined, workflowStateStatus)),
       },
       include: { workflowState: true },
@@ -305,9 +309,10 @@ export class TasksService extends BaseService {
 
       if (template.subTaskTemplates.length) {
         await Promise.all(
-          template.subTaskTemplates.map(async (sub) => {
+          template.subTaskTemplates.map(async (sub, index) => {
             const updatedSubTemplate = await templateService.getAppliedTemplateDescription(sub.id)
-            await this.createSubtasksFromTemplate(updatedSubTemplate, newTask.id)
+            const manualTimeStamp = new Date(template.createdAt.getTime() + (template.subTaskTemplates.length - index) * 10) //maintain the order of subtasks in tasks with respect to subtasks in templates
+            await this.createSubtasksFromTemplate(updatedSubTemplate, newTask.id, manualTimeStamp)
           }),
         )
       }
@@ -1149,7 +1154,7 @@ export class TasksService extends BaseService {
     return viewers
   }
 
-  private async createSubtasksFromTemplate(data: TaskTemplate, parentId: string) {
+  private async createSubtasksFromTemplate(data: TaskTemplate, parentId: string, manualTimestamp: Date) {
     const { workspaceId, title, body, workflowStateId } = data
     try {
       const createTaskPayload = CreateTaskRequestSchema.parse({
@@ -1158,10 +1163,9 @@ export class TasksService extends BaseService {
         workspaceId,
         workflowStateId,
         parentId,
-
         templateId: undefined, //just to be safe from circular recursion
       })
-      await this.createTask(createTaskPayload, { disableSubtaskTemplates: true })
+      await this.createTask(createTaskPayload, { disableSubtaskTemplates: true, manualTimestamp: manualTimestamp })
     } catch (e) {
       const deleteTask = this.db.task.delete({ where: { id: parentId } })
       const deleteActivityLogs = this.db.activityLog.deleteMany({ where: { taskId: parentId } })
