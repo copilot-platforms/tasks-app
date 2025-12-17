@@ -23,3 +23,15 @@ export const sortTaskByDescendingOrder = <T extends Sortable>(tasks: T[]): T[] =
     return createdAtDiff !== 0 ? createdAtDiff : a.id.localeCompare(b.id)
   })
 }
+
+interface TemplateSortable {
+  createdAt: Date
+  id: string
+}
+
+export const sortTemplatesByDescendingOrder = <T extends TemplateSortable>(templates: readonly T[]): T[] => {
+  return [...templates].sort((a, b) => {
+    const createdAtDiff = getTimestamp(b.createdAt) - getTimestamp(a.createdAt)
+    return createdAtDiff !== 0 ? createdAtDiff : a.id.localeCompare(b.id)
+  })
+}

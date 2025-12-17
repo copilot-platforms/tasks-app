@@ -88,8 +88,6 @@ export const RealTimeTemplates = ({
     if (payload.eventType === 'UPDATE') {
       const updatedTemplate = payload.new
 
-      updatedTemplate.updatedAt = updatedTemplate.updatedAt
-
       const oldTemplate = templates && templates.find((template) => template.id == updatedTemplate.id)
       if (payload.new.workspaceId === tokenPayload.workspaceId) {
         if (updatedTemplate.deletedAt) {
