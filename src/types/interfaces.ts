@@ -180,8 +180,8 @@ export interface ITemplate {
   body: string
   workflowStateId: string
   createdBy: string
-  createdAt: Date
-  updatedAt: Date
+  createdAt: string
+  updatedAt: string
   parentId: string | null
   subTaskTemplates: ITemplate[]
   parent?: ITemplate | null
