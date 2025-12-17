@@ -13,6 +13,7 @@ import { Box, Stack, Typography } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { NoTemplateLayout } from './NoTemplateLayout'
 import { TemplateForm } from './TemplateForm'
+import { sortTemplatesByDescendingOrder } from '@/utils/sortByDescending'
 
 export const TemplateBoard = ({
   handleCreateTemplate,
@@ -59,7 +60,7 @@ export const TemplateBoard = ({
             }}
             rowGap={4}
           >
-            {templates.map((template) => {
+            {sortTemplatesByDescendingOrder(templates).map((template) => {
               return (
                 <CustomLink
                   key={template.id}
