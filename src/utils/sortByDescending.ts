@@ -25,7 +25,7 @@ export const sortTaskByDescendingOrder = <T extends Sortable>(tasks: T[]): T[] =
 }
 
 interface TemplateSortable {
-  createdAt: Date
+  createdAt: string
   id: string
 }
 
