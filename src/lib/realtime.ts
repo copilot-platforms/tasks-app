@@ -193,7 +193,9 @@ export class RealtimeHandler {
       return this.handleRealtimeSubtaskInsert(newTask)
     }
     if (this.payload.eventType === 'UPDATE') {
-      return this.handleRealtimeSubtaskUpdate(newTask)
+      return setTimeout(() => {
+        this.handleRealtimeSubtaskUpdate(newTask)
+      }, 0) //avoid race condition causing duplicate data when update is triggered before create.
     }
     console.error('Unknown event type for realtime subtask handler')
   }
