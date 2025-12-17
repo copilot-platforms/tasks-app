@@ -58,6 +58,18 @@ export const RealTimeTemplates = ({
     ) //also append the subTaskTemplates to parent template on the templates store.
   }
 
+  function getFormattedTemplate(template: unknown): RealTimeTemplateResponse {
+    const newTemplate = template as RealTimeTemplateResponse
+    // NOTE: we append a Z here to make JS understand this raw timestamp (in format YYYY-MM-DD:HH:MM:SS.MS) is in UTC timezone
+    // New payloads listened on the 'INSERT' action in realtime doesn't contain this tz info so the order can mess up,
+    // causing tasks to bounce around on hover
+    return {
+      ...newTemplate,
+      createdAt: newTemplate.createdAt && new Date(newTemplate.createdAt + 'Z').toISOString(),
+      updatedAt: newTemplate.updatedAt && new Date(newTemplate.updatedAt + 'Z').toISOString(),
+    }
+  }
+
   const redirectBack = (updatedTemplate: RealTimeTemplateResponse) => {
     //disable board navigation if not in template details page
     if (!pathname.includes(`manage-templates/${updatedTemplate.id}`)) return
@@ -74,7 +86,7 @@ export const RealTimeTemplates = ({
       return //no changes for the same payload
     }
     if (payload.eventType === 'INSERT') {
-      const newTemplate = payload.new
+      const newTemplate = getFormattedTemplate(payload.new)
       let canUserAccessTask = newTemplate.workspaceId === tokenPayload.workspaceId
       if (!canUserAccessTask) return
       if (newTemplate?.parentId) {
@@ -86,7 +98,7 @@ export const RealTimeTemplates = ({
         : store.dispatch(setTemplates([{ ...newTemplate }]))
     }
     if (payload.eventType === 'UPDATE') {
-      const updatedTemplate = payload.new
+      const updatedTemplate = getFormattedTemplate(payload.new)
 
       const oldTemplate = templates && templates.find((template) => template.id == updatedTemplate.id)
       if (payload.new.workspaceId === tokenPayload.workspaceId) {

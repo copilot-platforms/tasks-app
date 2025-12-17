@@ -54,8 +54,8 @@ export const getTempTaskTemplate = (
     body: payload.body ?? '',
     workflowStateId: payload.workflowStateId,
     createdBy: userId,
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
     parentId: parentId,
     subTaskTemplates: [],
   }
