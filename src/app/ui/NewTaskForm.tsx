@@ -410,6 +410,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
         handleCreate={handleCreateWithAssignee}
         handleClose={handleClose}
         updateWorkflowStatusValue={updateStatusValue}
+        creationDisabled={isEditorReadonly}
       />
     </NewTaskContainer>
   )
@@ -630,7 +631,8 @@ const NewTaskFormInputs = ({ isEditorReadonly }: NewTaskFormInputsProps) => {
 const NewTaskFooter = ({
   handleCreate,
   handleClose,
-}: NewTaskFormProps & { updateWorkflowStatusValue: (value: unknown) => void }) => {
+  creationDisabled,
+}: NewTaskFormProps & { updateWorkflowStatusValue: (value: unknown) => void; creationDisabled: boolean }) => {
   const { title } = useSelector(selectCreateTask)
 
   return (
@@ -654,7 +656,12 @@ const NewTaskFooter = ({
                 </Typography>
               }
             />
-            <PrimaryBtn padding="3px 8px" disabled={!title.trim()} handleClick={handleCreate} buttonText="Create" />
+            <PrimaryBtn
+              padding="3px 8px"
+              disabled={!title.trim() || creationDisabled}
+              handleClick={handleCreate}
+              buttonText="Create"
+            />
           </Stack>
         </Stack>
       </AppMargin>
