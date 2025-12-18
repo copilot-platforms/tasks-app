@@ -31,9 +31,6 @@ export const TemplateBoard = ({
   const { token, previewMode } = useSelector(selectTaskBoard)
   const sortedTemplates = useMemo(() => sortTemplatesByDescendingOrder(templates), [templates])
 
-  if (templates === undefined) {
-    return null
-  }
   const showHeader = token && !!previewMode
 
   return (
