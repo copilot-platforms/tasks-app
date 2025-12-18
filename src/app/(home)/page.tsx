@@ -24,6 +24,7 @@ import { UserRole } from '@api/core/types/user'
 import { Suspense } from 'react'
 import { z } from 'zod'
 import { fetchWithErrorHandler } from '@/app/_fetchers/fetchWithErrorHandler'
+import { RealTimeTemplates } from '@/hoc/RealtimeTemplates'
 
 export async function getAllWorkflowStates(token: string): Promise<WorkflowStateResponse[]> {
   const res = await fetch(`${apiUrl}/api/workflow-states?token=${token}`, {
@@ -133,15 +134,17 @@ export default async function Main({
         </Suspense>
 
         <RealTime tokenPayload={tokenPayload}>
-          <DndWrapper>
-            <TaskBoard mode={UserRole.IU} workspace={workspace} token={token} />
-          </DndWrapper>
-          <ModalNewTaskForm
-            handleCreateMultipleAttachments={async (attachments: CreateAttachmentRequest[]) => {
-              'use server'
-              await createMultipleAttachments(token, attachments)
-            }}
-          />
+          <RealTimeTemplates tokenPayload={tokenPayload} token={token}>
+            <DndWrapper>
+              <TaskBoard mode={UserRole.IU} workspace={workspace} token={token} />
+            </DndWrapper>
+            <ModalNewTaskForm
+              handleCreateMultipleAttachments={async (attachments: CreateAttachmentRequest[]) => {
+                'use server'
+                await createMultipleAttachments(token, attachments)
+              }}
+            />
+          </RealTimeTemplates>
         </RealTime>
       </ClientSideStateUpdate>
     </>
