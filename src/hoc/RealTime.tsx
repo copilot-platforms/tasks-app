@@ -6,7 +6,7 @@ import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 import { Token } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
-import { isPayloadEqual } from '@/utils/isRealtimePayloadEqual'
+import { isTaskPayloadEqual } from '@/utils/isRealtimePayloadEqual'
 import { AssigneeType } from '@prisma/client'
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
 import { usePathname, useRouter } from 'next/navigation'
@@ -61,7 +61,7 @@ export const RealTime = ({
   }
 
   const handleRealtimeEvents = (payload: RealtimePostgresChangesPayload<RealTimeTaskResponse>) => {
-    if (isPayloadEqual(payload)) {
+    if (isTaskPayloadEqual(payload)) {
       return //no changes for the same payload
     }
     const user = assignee.find((el) => el.id === userId)
