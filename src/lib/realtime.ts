@@ -6,6 +6,7 @@ import store from '@/redux/store'
 import { InternalUsersSchema, Token } from '@/types/common'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { IAssigneeCombined } from '@/types/interfaces'
+import { getFormattedTask } from '@/utils/getFormattedRealTimeData'
 import { getPreviewMode } from '@/utils/previewMode'
 import { extractImgSrcs, replaceImgSrcs } from '@/utils/signedUrlReplacer'
 import { AssigneeType } from '@prisma/client'
@@ -20,24 +21,10 @@ export class RealtimeHandler {
     private readonly redirectToBoard: (newTask: RealTimeTaskResponse) => void,
     private readonly tokenPayload: Token,
   ) {
-    const newTask = this.getFormattedTask(this.payload.new)
+    const newTask = getFormattedTask(this.payload.new)
     if (newTask.workspaceId !== tokenPayload.workspaceId) {
       console.error('Realtime event ignored for task with different workspaceId')
       return
-    }
-  }
-
-  private getFormattedTask(task: unknown): RealTimeTaskResponse {
-    const newTask = task as RealTimeTaskResponse
-    // NOTE: we append a Z here to make JS understand this raw timestamp (in format YYYY-MM-DD:HH:MM:SS.MS) is in UTC timezone
-    // New payloads listened on the 'INSERT' action in realtime doesn't contain this tz info so the order can mess up,
-    // causing tasks to bounce around on hover
-    return {
-      ...newTask,
-      createdAt: newTask.createdAt && new Date(newTask.createdAt + 'Z').toISOString(),
-      updatedAt: newTask.updatedAt && new Date(newTask.updatedAt + 'Z').toISOString(),
-      lastActivityLogUpdated: newTask.lastActivityLogUpdated && new Date(newTask.lastActivityLogUpdated + 'Z').toISOString(),
-      lastSubtaskUpdated: newTask.lastSubtaskUpdated && new Date(newTask.lastSubtaskUpdated + 'Z').toISOString(),
     }
   }
 
@@ -188,7 +175,7 @@ export class RealtimeHandler {
     const currentState = store.getState()
     const { tasks, accessibleTasks } = selectTaskBoard(currentState)
 
-    const newTask = this.getFormattedTask(this.payload.new)
+    const newTask = getFormattedTask(this.payload.new)
 
     // Being a subtask, this surely has a valid non-null parentId
     newTask.parentId = z.string().parse(newTask.parentId)
@@ -215,7 +202,7 @@ export class RealtimeHandler {
    * Handler for realtime task inserts
    */
   handleRealtimeTaskInsert() {
-    const newTask = this.getFormattedTask(this.payload.new)
+    const newTask = getFormattedTask(this.payload.new)
 
     const commonStore = store.getState()
     const { accessibleTasks, showUnarchived, tasks } = commonStore.taskBoard
@@ -265,8 +252,9 @@ export class RealtimeHandler {
    * Handler for realtime task update events
    */
   handleRealtimeTaskUpdate() {
-    const updatedTask = this.getFormattedTask(this.payload.new)
-    const prevTask = this.getFormattedTask(this.payload.old)
+    const updatedTask = getFormattedTask(this.payload.new)
+    const prevTask = getFormattedTask(this.payload.old)
+
     const commonStore = store.getState()
     const { activeTask, accessibleTasks, showArchived, showUnarchived, tasks } = commonStore.taskBoard
 
