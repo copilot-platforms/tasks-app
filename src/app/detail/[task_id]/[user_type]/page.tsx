@@ -32,6 +32,7 @@ import { apiUrl } from '@/config'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import CustomScrollBar from '@/hoc/CustomScrollBar'
 import { RealTime } from '@/hoc/RealTime'
+import { RealTimeTemplates } from '@/hoc/RealtimeTemplates'
 import { WorkspaceResponse } from '@/types/common'
 import { AncestorTaskResponse, SubTaskStatusResponse, TaskResponse } from '@/types/dto/tasks.dto'
 import { UserType } from '@/types/interfaces'
@@ -135,131 +136,133 @@ export default async function TaskDetailPage({
     >
       {token && <OneTaskDataFetcher token={token} task_id={task_id} initialTask={task} />}
       <RealTime tokenPayload={tokenPayload}>
-        <EscapeHandler />
-        <ResponsiveStack fromNotificationCenter={fromNotificationCenter}>
-          <Box sx={{ width: '100%', display: 'flex', flex: 1, flexDirection: 'column', overflow: 'hidden' }}>
-            {isPreviewMode ? (
-              <StyledBox>
-                <AppMargin size={SizeofAppMargin.HEADER} py="17.5px">
-                  <Stack direction="row" justifyContent="space-between">
-                    <HeaderBreadcrumbs token={token} items={breadcrumbItems} userType={params.user_type} />
-                    <Stack direction="row" alignItems="center" columnGap="8px">
-                      <MenuBoxContainer role={tokenPayload.internalUserId ? UserRole.IU : UserRole.Client} />
+        <RealTimeTemplates tokenPayload={tokenPayload} token={token}>
+          <EscapeHandler />
+          <ResponsiveStack fromNotificationCenter={fromNotificationCenter}>
+            <Box sx={{ width: '100%', display: 'flex', flex: 1, flexDirection: 'column', overflow: 'hidden' }}>
+              {isPreviewMode ? (
+                <StyledBox>
+                  <AppMargin size={SizeofAppMargin.HEADER} py="17.5px">
+                    <Stack direction="row" justifyContent="space-between">
+                      <HeaderBreadcrumbs token={token} items={breadcrumbItems} userType={params.user_type} />
                       <Stack direction="row" alignItems="center" columnGap="8px">
-                        <ArchiveWrapper taskId={task_id} userType={user_type} />
+                        <MenuBoxContainer role={tokenPayload.internalUserId ? UserRole.IU : UserRole.Client} />
+                        <Stack direction="row" alignItems="center" columnGap="8px">
+                          <ArchiveWrapper taskId={task_id} userType={user_type} />
+                        </Stack>
                       </Stack>
                     </Stack>
-                  </Stack>
-                </AppMargin>
-              </StyledBox>
-            ) : (
-              <>
-                <HeaderBreadcrumbs
-                  token={token}
-                  items={breadcrumbItems}
-                  userType={params.user_type}
-                  portalUrl={workspace.portalUrl}
-                />
-                <ArchiveWrapper taskId={task_id} userType={user_type} />
-              </>
-            )}
-
-            <CustomScrollBar>
-              <TaskDetailsContainer
-                sx={{
-                  padding: { xs: '20px 16px ', sm: '30px 20px' },
-                }}
-              >
-                <StyledTiptapDescriptionWrapper>
-                  <LastArchivedField />
-                  <TaskEditor
-                    // attachment={attachments}
-                    task_id={task_id}
-                    task={task}
-                    isEditable={params.user_type === UserType.INTERNAL_USER || !!getPreviewMode(tokenPayload)}
-                    updateTaskDetail={async (detail) => {
-                      'use server'
-                      await updateTaskDetail({ token, taskId: task_id, payload: { body: detail } })
-                    }}
-                    updateTaskTitle={async (title) => {
-                      'use server'
-                      title.trim() != '' && (await updateTaskDetail({ token, taskId: task_id, payload: { title } }))
-                    }}
-                    deleteTask={async () => {
-                      'use server'
-                      await deleteTask(token, task_id)
-                    }}
-                    postAttachment={async (postAttachmentPayload) => {
-                      'use server'
-                      await postAttachment(token, postAttachmentPayload)
-                    }}
-                    deleteAttachment={async (id: string) => {
-                      'use server'
-                      await deleteAttachment(token, id)
-                    }}
+                  </AppMargin>
+                </StyledBox>
+              ) : (
+                <>
+                  <HeaderBreadcrumbs
+                    token={token}
+                    items={breadcrumbItems}
                     userType={params.user_type}
-                    token={token}
+                    portalUrl={workspace.portalUrl}
                   />
-                </StyledTiptapDescriptionWrapper>
-                {subTaskStatus.canCreateSubtask && (
-                  <Subtasks
-                    task_id={task_id}
-                    token={token}
-                    userType={tokenPayload.internalUserId ? UserRole.IU : UserRole.Client}
-                    canCreateSubtasks={params.user_type === UserType.INTERNAL_USER || !!getPreviewMode(tokenPayload)}
-                  />
-                )}
+                  <ArchiveWrapper taskId={task_id} userType={user_type} />
+                </>
+              )}
 
-                <ActivityWrapper task_id={task_id} token={token} tokenPayload={tokenPayload} />
-              </TaskDetailsContainer>
-            </CustomScrollBar>
-          </Box>
-          <Box
-            {...(fromNotificationCenter
-              ? {
-                  sx: {
-                    display: 'flex',
-                    overflow: 'hidden',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  },
-                }
-              : {})}
-          >
-            <AssigneeCacheGetter lookupKey={getAssigneeCacheLookupKey(user_type, tokenPayload, isPreviewMode)} />
-            <AssigneeFetcher
-              token={token}
-              userType={params.user_type}
-              isPreview={!!getPreviewMode(tokenPayload)}
-              task={task}
-              tokenPayload={tokenPayload}
-            />
-            <WorkflowStateFetcher token={token} task={task} />
-            <Sidebar
-              task_id={task_id}
-              selectedAssigneeId={task?.assigneeId}
-              userType={user_type}
-              portalUrl={workspace.portalUrl}
-              selectedWorkflowState={task?.workflowState}
-              updateWorkflowState={async (workflowState) => {
-                'use server'
-                params.user_type === UserType.CLIENT_USER && !getPreviewMode(tokenPayload)
-                  ? await clientUpdateTask(token, task_id, workflowState.id)
-                  : await updateWorkflowStateIdOfTask(token, task_id, workflowState?.id)
-              }}
-              updateAssignee={async ({ internalUserId, clientId, companyId, viewers }: UserIdsWithViewersType) => {
-                'use server'
-                await updateAssignee(token, task_id, internalUserId, clientId, companyId, viewers)
-              }}
-              updateTask={async (payload) => {
-                'use server'
-                await updateTaskDetail({ token, taskId: task_id, payload })
-              }}
-              disabled={params.user_type === UserType.CLIENT_USER}
-              workflowDisabled={isViewer}
-            />
-          </Box>
-        </ResponsiveStack>
+              <CustomScrollBar>
+                <TaskDetailsContainer
+                  sx={{
+                    padding: { xs: '20px 16px ', sm: '30px 20px' },
+                  }}
+                >
+                  <StyledTiptapDescriptionWrapper>
+                    <LastArchivedField />
+                    <TaskEditor
+                      // attachment={attachments}
+                      task_id={task_id}
+                      task={task}
+                      isEditable={params.user_type === UserType.INTERNAL_USER || !!getPreviewMode(tokenPayload)}
+                      updateTaskDetail={async (detail) => {
+                        'use server'
+                        await updateTaskDetail({ token, taskId: task_id, payload: { body: detail } })
+                      }}
+                      updateTaskTitle={async (title) => {
+                        'use server'
+                        title.trim() != '' && (await updateTaskDetail({ token, taskId: task_id, payload: { title } }))
+                      }}
+                      deleteTask={async () => {
+                        'use server'
+                        await deleteTask(token, task_id)
+                      }}
+                      postAttachment={async (postAttachmentPayload) => {
+                        'use server'
+                        await postAttachment(token, postAttachmentPayload)
+                      }}
+                      deleteAttachment={async (id: string) => {
+                        'use server'
+                        await deleteAttachment(token, id)
+                      }}
+                      userType={params.user_type}
+                      token={token}
+                    />
+                  </StyledTiptapDescriptionWrapper>
+                  {subTaskStatus.canCreateSubtask && (
+                    <Subtasks
+                      task_id={task_id}
+                      token={token}
+                      userType={tokenPayload.internalUserId ? UserRole.IU : UserRole.Client}
+                      canCreateSubtasks={params.user_type === UserType.INTERNAL_USER || !!getPreviewMode(tokenPayload)}
+                    />
+                  )}
+
+                  <ActivityWrapper task_id={task_id} token={token} tokenPayload={tokenPayload} />
+                </TaskDetailsContainer>
+              </CustomScrollBar>
+            </Box>
+            <Box
+              {...(fromNotificationCenter
+                ? {
+                    sx: {
+                      display: 'flex',
+                      overflow: 'hidden',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    },
+                  }
+                : {})}
+            >
+              <AssigneeCacheGetter lookupKey={getAssigneeCacheLookupKey(user_type, tokenPayload, isPreviewMode)} />
+              <AssigneeFetcher
+                token={token}
+                userType={params.user_type}
+                isPreview={!!getPreviewMode(tokenPayload)}
+                task={task}
+                tokenPayload={tokenPayload}
+              />
+              <WorkflowStateFetcher token={token} task={task} />
+              <Sidebar
+                task_id={task_id}
+                selectedAssigneeId={task?.assigneeId}
+                userType={user_type}
+                portalUrl={workspace.portalUrl}
+                selectedWorkflowState={task?.workflowState}
+                updateWorkflowState={async (workflowState) => {
+                  'use server'
+                  params.user_type === UserType.CLIENT_USER && !getPreviewMode(tokenPayload)
+                    ? await clientUpdateTask(token, task_id, workflowState.id)
+                    : await updateWorkflowStateIdOfTask(token, task_id, workflowState?.id)
+                }}
+                updateAssignee={async ({ internalUserId, clientId, companyId, viewers }: UserIdsWithViewersType) => {
+                  'use server'
+                  await updateAssignee(token, task_id, internalUserId, clientId, companyId, viewers)
+                }}
+                updateTask={async (payload) => {
+                  'use server'
+                  await updateTaskDetail({ token, taskId: task_id, payload })
+                }}
+                disabled={params.user_type === UserType.CLIENT_USER}
+                workflowDisabled={isViewer}
+              />
+            </Box>
+          </ResponsiveStack>
+        </RealTimeTemplates>
       </RealTime>
     </DetailStateUpdate>
   )

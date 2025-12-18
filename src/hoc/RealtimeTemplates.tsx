@@ -5,7 +5,7 @@ import { selectCreateTemplate, setActiveTemplate, setTemplates } from '@/redux/f
 import store from '@/redux/store'
 import { Token } from '@/types/common'
 import { ITemplate } from '@/types/interfaces'
-import { isPayloadEqual } from '@/utils/isRealtimePayloadEqual'
+import { isTemplatePayloadEqual } from '@/utils/isRealtimePayloadEqual'
 import { extractImgSrcs, replaceImgSrcs } from '@/utils/signedUrlReplacer'
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js'
 import { usePathname, useRouter } from 'next/navigation'
@@ -32,7 +32,7 @@ export const RealTimeTemplates = ({
   const pathname = usePathname()
   const router = useRouter()
 
-  const applySubtemplateToActiveTemplate = (newTemplate: RealTimeTemplateResponse) => {
+  const applySubtemplateToParentTemplate = (newTemplate: RealTimeTemplateResponse) => {
     if (!newTemplate?.parentId) return
 
     if (activeTemplate?.id === newTemplate.parentId) {
@@ -43,6 +43,19 @@ export const RealTimeTemplates = ({
         }),
       )
     }
+
+    store.dispatch(
+      setTemplates(
+        templates.map((template) =>
+          template.id === newTemplate.parentId
+            ? {
+                ...template,
+                subTaskTemplates: [...(template.subTaskTemplates || []), newTemplate],
+              }
+            : template,
+        ),
+      ),
+    ) //also append the subTaskTemplates to parent template on the templates store.
   }
 
   const redirectBack = (updatedTemplate: RealTimeTemplateResponse) => {
@@ -57,8 +70,7 @@ export const RealTimeTemplates = ({
   }
 
   const handleTemplatesRealTimeUpdates = (payload: RealtimePostgresChangesPayload<RealTimeTemplateResponse>) => {
-    console.log(payload, 'here')
-    if (isPayloadEqual(payload)) {
+    if (isTemplatePayloadEqual(payload)) {
       return //no changes for the same payload
     }
     if (payload.eventType === 'INSERT') {
@@ -66,7 +78,7 @@ export const RealTimeTemplates = ({
       let canUserAccessTask = newTemplate.workspaceId === tokenPayload.workspaceId
       if (!canUserAccessTask) return
       if (newTemplate?.parentId) {
-        applySubtemplateToActiveTemplate(newTemplate)
+        applySubtemplateToParentTemplate(newTemplate)
         return
       }
       templates
@@ -110,7 +122,7 @@ export const RealTimeTemplates = ({
             )
           }
           if (updatedTemplate?.parentId) {
-            applySubtemplateToActiveTemplate(updatedTemplate)
+            applySubtemplateToParentTemplate(updatedTemplate)
             return
           }
           const newTemplateArr = [
