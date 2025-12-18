@@ -1,37 +1,35 @@
-interface Sortable {
-  dueDate?: string
+interface BaseSortable {
   createdAt: string
   id: string
+}
+
+interface WithDueDate extends BaseSortable {
+  dueDate?: string
 }
 
 const getTimestamp = (date: string | Date) => new Date(date).getTime()
 
-export const sortTaskByDescendingOrder = <T extends Sortable>(tasks: T[]): T[] => {
-  return tasks.sort((a, b) => {
-    // Prioritize tasks with due dates over tasks without due dates
-    if (a.dueDate && !b.dueDate) {
-      return -1
-    } else if (b.dueDate && !a.dueDate) {
-      return 1
-    } else if (a.dueDate && b.dueDate) {
-      // Sort by duedate in asc order.
-      if (a.dueDate !== b.dueDate) {
-        return getTimestamp(a.dueDate) - getTimestamp(b.dueDate)
+export const sortByDescendingOrder = <T extends BaseSortable, K extends keyof T = never>(
+  items: T[],
+  priorityKey?: K,
+): T[] => {
+  return [...items].sort((a, b) => {
+    if (priorityKey) {
+      const aVal = a[priorityKey] as unknown as string | undefined
+      const bVal = b[priorityKey] as unknown as string | undefined
+
+      if (aVal && !bVal) return -1
+      if (bVal && !aVal) return 1
+      if (aVal && bVal && aVal !== bVal) {
+        return getTimestamp(aVal) - getTimestamp(bVal)
       }
     }
+
     const createdAtDiff = getTimestamp(b.createdAt) - getTimestamp(a.createdAt)
     return createdAtDiff !== 0 ? createdAtDiff : a.id.localeCompare(b.id)
   })
 }
 
-interface TemplateSortable {
-  createdAt: string
-  id: string
-}
+export const sortTaskByDescendingOrder = <T extends WithDueDate>(tasks: T[]) => sortByDescendingOrder(tasks, 'dueDate')
 
-export const sortTemplatesByDescendingOrder = <T extends TemplateSortable>(templates: readonly T[]): T[] => {
-  return [...templates].sort((a, b) => {
-    const createdAtDiff = getTimestamp(b.createdAt) - getTimestamp(a.createdAt)
-    return createdAtDiff !== 0 ? createdAtDiff : a.id.localeCompare(b.id)
-  })
-}
+export const sortTemplatesByDescendingOrder = <T extends BaseSortable>(templates: T[]) => sortByDescendingOrder(templates)
