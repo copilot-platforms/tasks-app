@@ -14,6 +14,7 @@ import { useSelector } from 'react-redux'
 import { NoTemplateLayout } from './NoTemplateLayout'
 import { TemplateForm } from './TemplateForm'
 import { sortTemplatesByDescendingOrder } from '@/utils/sortByDescending'
+import { useMemo } from 'react'
 
 export const TemplateBoard = ({
   handleCreateTemplate,
@@ -28,6 +29,7 @@ export const TemplateBoard = ({
     useSelector(selectCreateTemplate)
 
   const { token, previewMode } = useSelector(selectTaskBoard)
+  const sortedTemplates = useMemo(() => sortTemplatesByDescendingOrder(templates), [templates])
 
   if (templates === undefined) {
     return null
@@ -38,7 +40,7 @@ export const TemplateBoard = ({
     <>
       {showHeader && <ManageTemplateHeader token={token} />}
 
-      {templates.length ? (
+      {sortedTemplates.length ? (
         <Box id="templates-box" sx={{ maxWidth: '384px', marginTop: '32px', marginLeft: 'auto', marginRight: 'auto' }}>
           <Box
             sx={{
@@ -60,7 +62,7 @@ export const TemplateBoard = ({
             }}
             rowGap={4}
           >
-            {sortTemplatesByDescendingOrder(templates).map((template) => {
+            {sortedTemplates.map((template) => {
               return (
                 <CustomLink
                   key={template.id}
