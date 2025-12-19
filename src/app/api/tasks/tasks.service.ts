@@ -1175,7 +1175,6 @@ export class TasksService extends BaseService {
         }), //On CRM view, we set assignee and viewers for subtasks same as the parent task.
       })
 
-      console.log(createTaskPayload, 'here')
       await this.createTask(createTaskPayload, { disableSubtaskTemplates: true, manualTimestamp: manualTimestamp })
     } catch (e) {
       const deleteTask = this.db.task.delete({ where: { id: parentId } })
