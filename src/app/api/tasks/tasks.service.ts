@@ -1159,7 +1159,6 @@ export class TasksService extends BaseService {
     const previewMode = Boolean(this.user.clientId || this.user.companyId)
     const { id: parentId, internalUserId, clientId, companyId, viewers } = parentTask
 
-    console.log(previewMode, 'previewmode logged here')
     try {
       const createTaskPayload = CreateTaskRequestSchema.parse({
         title,
