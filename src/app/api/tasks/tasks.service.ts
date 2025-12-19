@@ -312,7 +312,7 @@ export class TasksService extends BaseService {
           template.subTaskTemplates.map(async (sub, index) => {
             const updatedSubTemplate = await templateService.getAppliedTemplateDescription(sub.id)
             const manualTimeStamp = new Date(template.createdAt.getTime() + (template.subTaskTemplates.length - index) * 10) //maintain the order of subtasks in tasks with respect to subtasks in templates
-            await this.createSubtasksFromTemplate(updatedSubTemplate, newTask.id, manualTimeStamp)
+            await this.createSubtasksFromTemplate(updatedSubTemplate, newTask, manualTimeStamp)
           }),
         )
       }
@@ -1154,8 +1154,12 @@ export class TasksService extends BaseService {
     return viewers
   }
 
-  private async createSubtasksFromTemplate(data: TaskTemplate, parentId: string, manualTimestamp: Date) {
+  private async createSubtasksFromTemplate(data: TaskTemplate, parentTask: Task, manualTimestamp: Date) {
     const { workspaceId, title, body, workflowStateId } = data
+    const previewMode = Boolean(this.user.clientId || this.user.companyId)
+    const { id: parentId, internalUserId, clientId, companyId, viewers } = parentTask
+
+    console.log(previewMode, 'previewmode logged here')
     try {
       const createTaskPayload = CreateTaskRequestSchema.parse({
         title,
@@ -1164,7 +1168,15 @@ export class TasksService extends BaseService {
         workflowStateId,
         parentId,
         templateId: undefined, //just to be safe from circular recursion
+        ...(previewMode && {
+          internalUserId,
+          clientId,
+          companyId,
+          viewers,
+        }), //On CRM view, we set assignee and viewers for subtasks same as the parent task.
       })
+
+      console.log(createTaskPayload, 'here')
       await this.createTask(createTaskPayload, { disableSubtaskTemplates: true, manualTimestamp: manualTimestamp })
     } catch (e) {
       const deleteTask = this.db.task.delete({ where: { id: parentId } })
