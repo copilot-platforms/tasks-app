@@ -11,3 +11,5 @@ alter default privileges in schema public grant all on sequences to postgres, an
 alter table
   "Tasks" replica identity full;
 
+alter table
+  "TaskTemplates" replica identity full;

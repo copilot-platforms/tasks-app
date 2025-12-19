@@ -1,9 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "regions": [
-    "iad1",
-    "pdx1"
-  ],
+  "regions": ["iad1", "pdx1"],
   "buildCommand": "./scripts/build.sh",
   "crons": [
     {

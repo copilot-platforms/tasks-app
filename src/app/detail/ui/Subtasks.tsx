@@ -16,7 +16,7 @@ import { fetcher } from '@/utils/fetcher'
 import { generateRandomString } from '@/utils/generateRandomString'
 import { checkOptimisticStableId } from '@/utils/optimisticCommentUtils'
 import { getTempTask } from '@/utils/optimisticTaskUtils'
-import { sortTaskByDescendingOrder } from '@/utils/sortTask'
+import { sortTaskByDescendingOrder } from '@/utils/sortByDescending'
 import { Box, Stack, Typography } from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
@@ -100,7 +100,7 @@ export const Subtasks = ({
       mutate(
         cacheKey,
         async () => {
-          const subTask = await handleCreate(token, payload)
+          const subTask = await handleCreate(token, payload, { disableSubtaskTemplates: true })
           setOptimisticUpdates((prev) =>
             prev.map((update) => (update.tempId === tempId ? { ...update, serverId: subTask.id } : update)),
           )

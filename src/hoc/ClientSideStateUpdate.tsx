@@ -16,7 +16,7 @@ import {
   setWorkflowStates,
 } from '@/redux/features/taskBoardSlice'
 import { setAssigneeSuggestion, setExpandedComments } from '@/redux/features/taskDetailsSlice'
-import { setTemplates } from '@/redux/features/templateSlice'
+import { selectCreateTemplate, setActiveTemplate, setTemplates } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
 import { Token, UrlActionParamsType, WorkspaceResponse } from '@/types/common'
 import { HomeParamActions } from '@/types/constants'
@@ -44,6 +44,7 @@ type ClientSideStateUpdateProps = {
   accesibleTaskIds?: string[]
   accessibleTasks?: TaskResponse[]
   workspace?: WorkspaceResponse
+  template?: ITemplate
 } & UrlActionParamsType
 
 /**
@@ -68,8 +69,11 @@ export const ClientSideStateUpdate = ({
   workspace,
   action,
   pf,
+  template,
 }: ClientSideStateUpdateProps) => {
   const { tasks: tasksInStore, viewSettingsTemp, accessibleTasks: accessibleTaskInStore } = useSelector(selectTaskBoard)
+  const { templates: templatesInStore } = useSelector(selectCreateTemplate)
+
   useEffect(() => {
     if (workflowStates) {
       store.dispatch(setWorkflowStates(workflowStates))
@@ -117,7 +121,7 @@ export const ClientSideStateUpdate = ({
       previewMode && handlePreviewMode(tokenPayload)
     }
 
-    if (templates) {
+    if (templates && templatesInStore.length === 0) {
       store.dispatch(setTemplates(templates))
     }
 
@@ -149,9 +153,12 @@ export const ClientSideStateUpdate = ({
     if (workspace) {
       store.dispatch(setWorkspace(workspace))
     }
-
+    if (template) {
+      store.dispatch(setActiveTemplate(template))
+    }
     return () => {
       store.dispatch(setActiveTask(undefined))
+      store.dispatch(setActiveTemplate(null))
     } //when component is unmounted, we need to clear the active task.
   }, [
     workflowStates,

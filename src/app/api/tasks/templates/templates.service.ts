@@ -22,9 +22,19 @@ export class TemplatesService extends BaseService {
     policyGate.authorize(UserAction.Read, Resource.TaskTemplates)
 
     const findOptions: Prisma.TaskTemplateFindManyArgs = {
-      where: { workspaceId: this.user.workspaceId },
+      where: { workspaceId: this.user.workspaceId, parentId: null },
       relationLoadStrategy: 'join',
-      include: { workflowState: true },
+      include: {
+        workflowState: true,
+        subTaskTemplates: {
+          where: {
+            deletedAt: null,
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+        },
+      },
       orderBy: queryFilters?.fromPublicApi ? { createdAt: 'desc' } : { updatedAt: 'desc' },
     }
 
@@ -74,13 +84,54 @@ export class TemplatesService extends BaseService {
     const template = await this.db.taskTemplate.findFirst({
       where: { workspaceId: this.user.workspaceId, id },
     })
+
     if (!template) {
       throw new APIError(httpStatus.NOT_FOUND, 'Could not find template')
     }
+    const updatedTemplate = await this.db.taskTemplate.update({
+      where: { id: template.id },
+      data: {
+        body: template.body && (await replaceImageSrc(template.body, getSignedUrl)),
+      },
+      relationLoadStrategy: 'join',
+      include: {
+        workflowState: true,
+
+        subTaskTemplates: {
+          where: {
+            deletedAt: null,
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+        },
+        parent: true, //remove this for public api
+      },
+    })
+
+    return updatedTemplate
+  }
+
+  async getSubtemplates(id: string) {
+    const policyGate = new PoliciesService(this.user)
+    policyGate.authorize(UserAction.Read, Resource.TaskTemplates)
+    const template = await this.db.taskTemplate.findMany({
+      where: { workspaceId: this.user.workspaceId, parentId: id },
+      include: {
+        subTaskTemplates: {
+          orderBy: {
+            createdAt: 'desc',
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    })
     return template
   }
 
-  async createTaskTemplate(payload: CreateTemplateRequest) {
+  async createTaskTemplate(payload: CreateTemplateRequest, parentId?: string) {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Create, Resource.TaskTemplates)
 
@@ -98,9 +149,12 @@ export class TemplatesService extends BaseService {
     const result = await this.db.$queryRaw<{ count: bigint }[]>`${query}`
 
     const count = result[0]?.count
-    for (let i = 0; i < count; i++) {
-      title += ' copy'
-    }
+
+    if (!parentId) {
+      for (let i = 0; i < count; i++) {
+        title += ' copy'
+      }
+    } //ignore adding "copy" on sub task templates
 
     let templates = await this.db.taskTemplate.create({
       data: {
@@ -108,6 +162,7 @@ export class TemplatesService extends BaseService {
         title,
         workspaceId: this.user.workspaceId,
         createdById: z.string().parse(this.user.internalUserId),
+        parentId: parentId,
       },
     })
     if (templates.body) {
@@ -126,11 +181,30 @@ export class TemplatesService extends BaseService {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Update, Resource.TaskTemplates)
 
-    let template = await this.db.taskTemplate.update({
+    const template = await this.db.taskTemplate.update({
       where: { id, workspaceId: this.user.workspaceId },
       data: payload,
     })
     return template
+  }
+
+  async createSubTaskTemplate(id: string, payload: CreateTemplateRequest) {
+    const policyGate = new PoliciesService(this.user)
+    policyGate.authorize(UserAction.Update, Resource.TaskTemplates)
+
+    const existingTemplate = await this.db.taskTemplate.findUnique({
+      where: { id, workspaceId: this.user.workspaceId },
+    })
+
+    if (!existingTemplate) {
+      throw new APIError(httpStatus.NOT_FOUND, 'Could not find template')
+    }
+
+    if (existingTemplate.parentId) {
+      throw new APIError(httpStatus.BAD_REQUEST, 'Child templates cannot have sub task templates')
+    }
+    const subTaskTemplate = await this.createTaskTemplate(payload, id)
+    return subTaskTemplate
   }
 
   async deleteTaskTemplate(id: string) {

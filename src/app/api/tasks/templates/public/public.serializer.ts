@@ -3,8 +3,13 @@ import { toRFC3339 } from '@/utils/dateHelper'
 import { TaskTemplate } from '@prisma/client'
 import { z } from 'zod'
 
+type TaskTemplateWithSubtasks = TaskTemplate & {
+  subTaskTemplates?: TaskTemplateWithSubtasks[]
+}
 export class PublicTemplateSerializer {
-  static serialize(template: TaskTemplate | TaskTemplate[]): TemplateResponsePublic | TemplateResponsePublic[] {
+  static serialize(
+    template: TaskTemplateWithSubtasks | TaskTemplateWithSubtasks[],
+  ): TemplateResponsePublic | TemplateResponsePublic[] {
     if (Array.isArray(template)) {
       return z.array(TemplateResponsePublicSchema).parse(
         template.map((template) => ({
@@ -13,6 +18,7 @@ export class PublicTemplateSerializer {
           name: template.title,
           description: template.body,
           createdDate: toRFC3339(template.createdAt),
+          subTaskTemplates: template.subTaskTemplates?.map((sub) => this.serialize(sub)) ?? [],
         })),
       )
     }
@@ -23,6 +29,7 @@ export class PublicTemplateSerializer {
       name: template.title,
       description: template.body,
       createdDate: toRFC3339(template.createdAt),
+      subTaskTemplates: template.subTaskTemplates?.map((sub) => this.serialize(sub)) ?? [],
     })
   }
 }
