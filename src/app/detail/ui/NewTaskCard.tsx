@@ -20,7 +20,7 @@ import { selectCreateTemplate } from '@/redux/features/templateSlice'
 import { DateString } from '@/types/date'
 import { CreateTaskRequest, Viewers } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { FilterByOptions, FilterOptions, IAssigneeCombined, ITemplate, UserIds } from '@/types/interfaces'
+import { FilterByOptions, IAssigneeCombined, InputValue, ITemplate, UserIds } from '@/types/interfaces'
 import { getAssigneeName, UserIdsType } from '@/utils/assignee'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
 import {
@@ -138,7 +138,14 @@ export const NewTaskCard = ({
       ? (getSelectorAssigneeFromFilterOptions(assignee, { internalUserId: null, ...previewClientCompany }) ?? null) // if preview mode, default select the respective client/company as assignee
       : null,
   )
-  const [taskViewerValue, setTaskViewerValue] = useState<IAssigneeCombined | null>(null)
+  const [taskViewerValue, setTaskViewerValue] = useState<IAssigneeCombined | null>(
+    !!previewMode
+      ? (getSelectorAssigneeFromFilterOptions(
+          assignee,
+          { internalUserId: null, ...previewClientCompany }, // if preview mode, default select the respective client/company as viewer
+        ) ?? null)
+      : null,
+  )
 
   const applyTemplate = useCallback(
     (id: string, templateTitle: string) => {
@@ -222,6 +229,29 @@ export const NewTaskCard = ({
     handleSubTaskCreation(payload)
     clearSubTaskFields()
     handleClose()
+  }
+
+  const handleAssigneeChange = (inputValue: InputValue[]) => {
+    if (inputValue.length === 0 || inputValue[0].object !== UserRole.IU) {
+      setTaskViewerValue(null)
+      handleFieldChange('viewers', [])
+    }
+    if (!!previewMode && inputValue.length && inputValue[0].object === UserRole.IU && previewClientCompany.companyId) {
+      if (!taskViewerValue)
+        setTaskViewerValue(
+          getSelectorAssigneeFromFilterOptions(
+            assignee,
+            { internalUserId: null, ...previewClientCompany }, // if preview mode, default select the respective client/company as viewer
+          ) ?? null,
+        )
+      handleFieldChange('viewers', [
+        { clientId: previewClientCompany.clientId || undefined, companyId: previewClientCompany.companyId },
+      ])
+    }
+    const newUserIds = getSelectedUserIds(inputValue)
+    const selectedAssignee = getSelectorAssignee(assignee, inputValue)
+    setAssigneeValue(selectedAssignee || null)
+    handleFieldChange('userIds', newUserIds)
   }
 
   return (
@@ -360,23 +390,11 @@ export const NewTaskCard = ({
             dateValue={subTaskFields.dueDate ?? undefined}
           />
           <CopilotPopSelector
-            disabled={!!previewMode}
             name="Set assignee"
-            onChange={(inputValue) => {
-              // remove task viewers if assignee is cleared or changed to client or company
-              if (inputValue.length === 0 || inputValue[0].object !== UserRole.IU) {
-                setTaskViewerValue(null)
-                handleFieldChange('viewers', [])
-              }
-              const newUserIds = getSelectedUserIds(inputValue)
-              const selectedAssignee = getSelectorAssignee(assignee, inputValue)
-              setAssigneeValue(selectedAssignee || null)
-              handleFieldChange('userIds', newUserIds)
-            }}
+            onChange={handleAssigneeChange}
             initialValue={assigneeValue || undefined}
             buttonContent={
               <SelectorButton
-                disabled={!!previewMode}
                 padding="0px 4px"
                 height="28px"
                 buttonContent={
