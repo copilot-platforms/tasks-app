@@ -96,7 +96,7 @@ export const FilterBar = ({ mode }: FilterBarProps) => {
           },
         }}
       >
-        <Stack direction={'row'} justifyContent={'space-between'} sx={{ maxHeight: '32px' }}>
+        <Stack direction={'row'} justifyContent={'space-between'} sx={{ maxHeight: '48px' }}>
           <Stack direction={'row'} columnGap={3}>
             <FilterButtonGroup filterButtons={filterButtons} activeButtonIndex={ButtonIndex} />
           </Stack>
