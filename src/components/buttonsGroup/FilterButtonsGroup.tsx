@@ -43,7 +43,7 @@ const FilterButtonGroup = ({ filterButtons, activeButtonIndex, mobileView = fals
       sx={(theme) => ({
         columnGap: '8px',
         padding: '4px 20px',
-        height: '32px',
+        height: '48px',
         justifyContent: 'space-between',
         '@media (max-width: 330px)': {
           flexWrap: 'wrap',
