@@ -5,15 +5,18 @@ import { Typography, Box, Stack } from '@mui/material'
 import { AddBtn } from '@/components/buttons/AddBtn'
 import { handleAddBtnClicked } from '@/app/ui/TaskBoard.helpers'
 import { TaskWorkflowStateProps } from '@/types/taskBoard'
-import { UserRole } from '@/app/api/core/types/user'
+import { StateType } from '@prisma/client'
+import { WorkflowStateColorMaps } from '@/types/objectMaps'
 
 interface TaskRowProps extends TaskWorkflowStateProps {
+  workflowStateType: StateType
   display?: boolean
   showAddBtn?: boolean
 }
 
 export const TaskRow = ({
   workflowStateId,
+  workflowStateType,
   mode,
   children,
   columnName,
@@ -25,7 +28,7 @@ export const TaskRow = ({
     <Box>
       <Box
         sx={{
-          background: (theme) => theme.color.gray[100],
+          background: WorkflowStateColorMaps[workflowStateType],
           borderBottom: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
         }}
       >
