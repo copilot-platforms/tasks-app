@@ -204,6 +204,7 @@ export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
                 mode={mode}
                 workflowStateId={list.id}
                 key={list.id}
+                workflowStateType={list.type}
                 columnName={list.name}
                 taskCount={taskCountForWorkflowStateId(list.id)}
                 showAddBtn={mode === UserRole.IU || !!previewMode}
