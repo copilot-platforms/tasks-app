@@ -88,15 +88,27 @@ export const FilterBar = ({ mode }: FilterBarProps) => {
     >
       <Box
         sx={{
-          padding: '12px 20px',
-          display: { xs: 'none', sm: 'none', sd: 'block' },
+          display: {
+            xs: 'none',
+            sm: 'none',
+            sd: 'block',
+            height: '48px',
+          },
         }}
       >
         <Stack direction={'row'} justifyContent={'space-between'} sx={{ maxHeight: '32px' }}>
           <Stack direction={'row'} columnGap={3}>
             <FilterButtonGroup filterButtons={filterButtons} activeButtonIndex={ButtonIndex} />
           </Stack>
-          <Stack direction="row" alignItems="center" columnGap={3}>
+          <Stack
+            direction="row"
+            alignItems="center"
+            sx={{
+              padding: '0px 20px',
+              height: '48px',
+            }}
+            columnGap={3}
+          >
             <SearchBar
               value={viewModeFilterOptions.keyword}
               getSearchKeyword={(keyword) => {
@@ -150,13 +162,11 @@ export const FilterBar = ({ mode }: FilterBarProps) => {
           </Stack>
         </Stack>
       </Box>
-      <Box sx={{ padding: '12px 20px', display: { sm: 'block', sd: 'none' } }}>
-        <Stack direction="column" rowGap={'8px'}>
-          <FilterButtonGroup filterButtons={filterButtons} activeButtonIndex={ButtonIndex} />
-
+      <Box sx={{ display: { sm: 'block', sd: 'none' }, height: '48px' }}>
+        <Stack direction={'row'} justifyContent={'space-between'} sx={{ maxHeight: '32px' }}>
+          <FilterButtonGroup filterButtons={filterButtons} activeButtonIndex={ButtonIndex} mobileView={true} />
           <Stack
             direction="row"
-            justifyContent="space-between"
             alignItems="center"
             sx={{
               '@media (max-width: 368px)': {
@@ -165,6 +175,8 @@ export const FilterBar = ({ mode }: FilterBarProps) => {
               },
               rowGap: '8px',
               columnGap: '8px',
+              height: '48px',
+              padding: '0px 20px',
             }}
           >
             <Stack direction={'row'} columnGap={2}>
