@@ -58,13 +58,14 @@ const FilterButtonGroup = ({ filterButtons, activeButtonIndex, mobileView = fals
         TabIndicatorProps={{
           sx: {
             backgroundColor: '#1F2937',
+            height: '1.5px',
           },
         }}
         sx={{
           alignItems: 'center',
           justifyContent: 'center',
           minHeight: 'unset',
-          height: '45px',
+          height: '44px',
           '& .MuiTabs-flexContainer': {
             gap: '12px',
           },
@@ -85,7 +86,8 @@ const FilterButtonGroup = ({ filterButtons, activeButtonIndex, mobileView = fals
                 minHeight: 'unset',
                 paddingY: 0,
                 paddingX: '4px',
-                height: '45px',
+                paddingBottom: '4px',
+                height: '44px',
                 minWidth: '60px',
 
                 fontColor: (theme) => theme.color.text,
