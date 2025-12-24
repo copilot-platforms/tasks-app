@@ -171,7 +171,7 @@ export const FilterBar = ({ mode }: FilterBarProps) => {
             sx={{
               '@media (max-width: 368px)': {
                 flexWrap: 'wrap',
-                height: 'auto',
+                height: '48px',
               },
               rowGap: '8px',
               columnGap: '8px',
