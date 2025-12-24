@@ -38,6 +38,11 @@ export declare module '@mui/material/styles' {
       '6xl': string
     }
     color: {
+      workflowState: {
+        todo: string
+        inProgress: string
+        done: string
+      }
       base: {
         black: string
         white: string
@@ -130,6 +135,11 @@ export declare module '@mui/material/styles' {
       '6xl': string
     }
     color: {
+      workflowState: {
+        todo: React.CSSProperties['color']
+        inProgress: React.CSSProperties['color']
+        done: React.CSSProperties['color']
+      }
       base: {
         black: React.CSSProperties['color']
         white: React.CSSProperties['color']

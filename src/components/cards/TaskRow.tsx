@@ -6,7 +6,7 @@ import { AddBtn } from '@/components/buttons/AddBtn'
 import { handleAddBtnClicked } from '@/app/ui/TaskBoard.helpers'
 import { TaskWorkflowStateProps } from '@/types/taskBoard'
 import { StateType } from '@prisma/client'
-import { WorkflowStateColorMaps } from '@/types/objectMaps'
+import { WorkflowStateThemeMap } from '@/types/objectMaps'
 
 interface TaskRowProps extends TaskWorkflowStateProps {
   workflowStateType: StateType
@@ -28,7 +28,7 @@ export const TaskRow = ({
     <Box>
       <Box
         sx={{
-          background: WorkflowStateColorMaps[workflowStateType],
+          background: (theme) => theme.color.workflowState[WorkflowStateThemeMap[workflowStateType]],
           borderBottom: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
         }}
       >
