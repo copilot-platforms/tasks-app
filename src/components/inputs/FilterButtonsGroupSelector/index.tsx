@@ -22,7 +22,7 @@ export const FilterButtonsGroupSelector = ({
   }
 
   const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
-    setAnchorEl(anchorEl ? null : event.currentTarget)
+    setAnchorEl((prev) => (prev ? null : event.currentTarget))
   }
 
   return (
@@ -47,8 +47,6 @@ export const FilterButtonsGroupSelector = ({
           cursor: 'pointer',
         }}
         onClick={(e) => {
-          e.preventDefault()
-          e.stopPropagation()
           handleClick(e)
         }}
       >
