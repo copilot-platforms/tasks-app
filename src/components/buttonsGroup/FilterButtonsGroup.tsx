@@ -57,7 +57,7 @@ const FilterButtonGroup = ({ filterButtons, activeButtonIndex, mobileView = fals
         aria-label="wrapped label tabs example"
         TabIndicatorProps={{
           sx: {
-            backgroundColor: '#1F2937',
+            backgroundColor: (theme) => theme.color.gray[600],
             height: '1.5px',
           },
         }}
