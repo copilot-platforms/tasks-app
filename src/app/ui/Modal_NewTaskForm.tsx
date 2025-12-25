@@ -26,8 +26,19 @@ export const ModalNewTaskForm = ({
   handleCreateMultipleAttachments: (attachments: CreateAttachmentRequest[]) => Promise<void>
 }) => {
   const { token, filterOptions, urlActionParams } = useSelector(selectTaskBoard)
-  const { title, description, workflowStateId, userIds, attachments, dueDate, showModal, templateId, parentId, viewers } =
-    useSelector(selectCreateTask)
+  const {
+    title,
+    description,
+    workflowStateId,
+    userIds,
+    attachments,
+    dueDate,
+    showModal,
+    templateId,
+    parentId,
+    viewers,
+    disableSubtaskTemplates,
+  } = useSelector(selectCreateTask)
 
   const handleModalClose = async (isKeyboard: boolean = false) => {
     if (isKeyboard && document.querySelector('.tippy-box')) {
@@ -80,8 +91,11 @@ export const ModalNewTaskForm = ({
             parentId,
           }
 
+          const isSubTaskDisabled = disableSubtaskTemplates
           store.dispatch(clearCreateTaskFields({ isFilterOn: !checkEmptyAssignee(filterOptions[FilterOptions.ASSIGNEE]) }))
-          const createdTask = await handleCreate(token as string, CreateTaskRequestSchema.parse(payload))
+          const createdTask = await handleCreate(token as string, CreateTaskRequestSchema.parse(payload), {
+            disableSubtaskTemplates: isSubTaskDisabled,
+          })
           const toUploadAttachments: CreateAttachmentRequest[] = attachments.map((el) => {
             return {
               ...el,

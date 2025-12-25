@@ -34,6 +34,14 @@ export const updateTaskTemplate = async (req: NextRequest, { params: { id } }: I
   return NextResponse.json({ data })
 }
 
+export const createSubTaskTemplate = async (req: NextRequest, { params: { id } }: IdParams) => {
+  const user = await authenticate(req)
+  const payload = CreateTemplateRequestSchema.parse(await req.json())
+  const templatesService = new TemplatesService(user)
+  const data = await templatesService.createSubTaskTemplate(id, payload)
+  return NextResponse.json({ data })
+}
+
 export const deleteTaskTemplate = async (req: NextRequest, { params: { id } }: IdParams) => {
   const user = await authenticate(req)
 
@@ -47,6 +55,22 @@ export const applyTemplate = async (req: NextRequest, { params: { id } }: IdPara
   const user = await authenticate(req)
   const templatesService = new TemplatesService(user)
   const data = await templatesService.getAppliedTemplateDescription(id)
+
+  return NextResponse.json({ data })
+}
+
+export const getOneTemplate = async (req: NextRequest, { params: { id } }: IdParams) => {
+  const user = await authenticate(req)
+  const templatesService = new TemplatesService(user)
+  const data = await templatesService.getOneTemplate(id)
+
+  return NextResponse.json({ data })
+}
+
+export const getSubtemplates = async (req: NextRequest, { params: { id } }: IdParams) => {
+  const user = await authenticate(req)
+  const templatesService = new TemplatesService(user)
+  const data = await templatesService.getSubtemplates(id)
 
   return NextResponse.json({ data })
 }

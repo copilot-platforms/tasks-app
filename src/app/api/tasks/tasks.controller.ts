@@ -40,10 +40,12 @@ export const getTasks = async (req: NextRequest) => {
 
 export const createTask = async (req: NextRequest) => {
   const user = await authenticate(req)
-
   const data = CreateTaskRequestSchema.parse(await req.json())
+  const disableSubtaskTemplates = req.nextUrl.searchParams.get('disableSubtaskTemplates') === 'true'
   const tasksService = new TasksService(user)
-  const newTask = await tasksService.createTask(data)
+  const newTask = await tasksService.createTask(data, {
+    disableSubtaskTemplates,
+  })
   return NextResponse.json(newTask, { status: httpStatus.CREATED })
 }
 

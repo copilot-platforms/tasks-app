@@ -355,7 +355,7 @@ export const TaskCardList = ({
             onChange={handleAssigneeChange}
             variant="icon"
             tooltipProps={{
-              content: assigneeValue === NoAssignee ? 'Set assignee' : 'Change assignee',
+              content: assigneeValue === NoAssignee ? 'Set assignee' : getAssigneeName(assigneeValue),
 
               disabled: mode === UserRole.Client && !previewMode,
             }}
