@@ -3,7 +3,7 @@ import { ReactElement } from 'react'
 
 interface TooltipProps {
   title: string
-  children: ReactElement
+  children: ReactElement<any>
 }
 
 const TooltipComponent = ({ title, children }: TooltipProps) => {

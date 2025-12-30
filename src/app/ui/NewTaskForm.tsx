@@ -120,6 +120,59 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
       : null,
   )
 
+  // this function handles the action param passed in the url and fill the values in the form
+  const handleUrlActionParam = useCallback(async () => {
+    if (urlActionParams.pf && token) {
+      const payload = JSON.parse(decodeURIComponent(urlActionParams.pf))
+
+      if (!payload.companyId && payload.clientId) {
+        const assigneeVal = assignee.find((val) => val.id === payload.clientId)
+
+        if (!assigneeVal) {
+          setErrorMessage('Assignee not found')
+          delete payload.clientId
+        } else {
+          if (Array.isArray(assigneeVal.companyIds) && assigneeVal.companyIds.length === 1) {
+            payload.companyId = assigneeVal.companyIds[0]
+          } else if (
+            assigneeVal.companyId &&
+            (!assigneeVal.companyIds || (Array.isArray(assigneeVal.companyIds) && !assigneeVal.companyIds.length))
+          ) {
+            payload.companyId = assigneeVal.companyId
+          } else if (Array.isArray(assigneeVal?.companyIds)) {
+            // If client has multiple companies, set error
+            delete payload.clientId
+            setErrorMessage('companyId must be provided for clients with more than one company')
+          } else {
+            delete payload.clientId
+            setErrorMessage('companyId must be provided when clientId is provided')
+          }
+        }
+      }
+
+      // respect the filter Ids first. This is needed for CRM deep link for respective clients
+      const assigneeFilter = {
+        [UserIds.INTERNAL_USER_ID]: payload?.internalUserId || null,
+        [UserIds.CLIENT_ID]: payload?.clientId || null,
+        [UserIds.COMPANY_ID]: payload?.companyId || null,
+      }
+
+      const taskPayload = {
+        title: payload?.name || '',
+        description: marked(payload?.description?.replaceAll('\n', '<br>') || '', { async: false }),
+        workflowStateId: workflowStates.find((state) => state.key === payload?.status)?.id || '',
+        dueDate: payload?.dueDate || null,
+        templateId: payload?.templateId || null,
+        userIds: assigneeFilter,
+        parentId: payload?.parentTaskId || null,
+      }
+
+      setAssigneeValue(getSelectorAssigneeFromFilterOptions(assignee, assigneeFilter) || null)
+      setActionParamPayload(payload)
+      store.dispatch(setAllCreateTaskFields(taskPayload))
+    }
+  }, [urlActionParams, assignee])
+
   useEffect(() => {
     if (!assignee.length) return
     if (
@@ -182,59 +235,6 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
       document.removeEventListener('keydown', handleEscPress)
     }
   }, [handleClose])
-
-  // this function handles the action param passed in the url and fill the values in the form
-  const handleUrlActionParam = useCallback(async () => {
-    if (urlActionParams.pf && token) {
-      const payload = JSON.parse(decodeURIComponent(urlActionParams.pf))
-
-      if (!payload.companyId && payload.clientId) {
-        const assigneeVal = assignee.find((val) => val.id === payload.clientId)
-
-        if (!assigneeVal) {
-          setErrorMessage('Assignee not found')
-          delete payload.clientId
-        } else {
-          if (Array.isArray(assigneeVal.companyIds) && assigneeVal.companyIds.length === 1) {
-            payload.companyId = assigneeVal.companyIds[0]
-          } else if (
-            assigneeVal.companyId &&
-            (!assigneeVal.companyIds || (Array.isArray(assigneeVal.companyIds) && !assigneeVal.companyIds.length))
-          ) {
-            payload.companyId = assigneeVal.companyId
-          } else if (Array.isArray(assigneeVal?.companyIds)) {
-            // If client has multiple companies, set error
-            delete payload.clientId
-            setErrorMessage('companyId must be provided for clients with more than one company')
-          } else {
-            delete payload.clientId
-            setErrorMessage('companyId must be provided when clientId is provided')
-          }
-        }
-      }
-
-      // respect the filter Ids first. This is needed for CRM deep link for respective clients
-      const assigneeFilter = {
-        [UserIds.INTERNAL_USER_ID]: payload?.internalUserId || null,
-        [UserIds.CLIENT_ID]: payload?.clientId || null,
-        [UserIds.COMPANY_ID]: payload?.companyId || null,
-      }
-
-      const taskPayload = {
-        title: payload?.name || '',
-        description: marked(payload?.description?.replaceAll('\n', '<br>') || '', { async: false }),
-        workflowStateId: workflowStates.find((state) => state.key === payload?.status)?.id || '',
-        dueDate: payload?.dueDate || null,
-        templateId: payload?.templateId || null,
-        userIds: assigneeFilter,
-        parentId: payload?.parentTaskId || null,
-      }
-
-      setAssigneeValue(getSelectorAssigneeFromFilterOptions(assignee, assigneeFilter) || null)
-      setActionParamPayload(payload)
-      store.dispatch(setAllCreateTaskFields(taskPayload))
-    }
-  }, [urlActionParams, assignee])
 
   const handleAssigneeChange = (inputValue: InputValue[]) => {
     // remove task viewers if assignee is cleared or changed to client or company

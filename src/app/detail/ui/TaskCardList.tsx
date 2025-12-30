@@ -88,6 +88,10 @@ export const TaskCardList = ({
 
   const subtaskCount = useSubtaskCount(task.id)
 
+  const [assigneeValue, setAssigneeValue] = useState<IAssigneeCombined | Omit<IAssigneeCombined, 'type'> | undefined>(() => {
+    return assigneeCache[task.id]
+  }) //Omitting type for NoAssignee
+
   useEffect(() => {
     if (!task) return
 
@@ -164,10 +168,6 @@ export const TaskCardList = ({
     const match = assignee.find((assignee) => assignee.id === assigneeId)
     return match ?? NoAssignee
   }
-
-  const [assigneeValue, setAssigneeValue] = useState<IAssigneeCombined | Omit<IAssigneeCombined, 'type'> | undefined>(() => {
-    return assigneeCache[task.id]
-  }) //Omitting type for NoAssignee
 
   return (
     <Stack
