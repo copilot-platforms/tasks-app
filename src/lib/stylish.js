@@ -5,7 +5,7 @@
 'use strict'
 
 const chalk = require('chalk')
-const table = require('text-table')()
+const table = require('text-table')
 
 // --- Custom implementation of stripAnsi ---
 // (The way that the default stripAnsi.js package is used requires a dynamic import
