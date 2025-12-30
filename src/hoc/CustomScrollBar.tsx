@@ -25,8 +25,8 @@ export const CustomScrollBar: React.FC<CustomScrollBarProps> = ({ children, clas
   const [isScrollable, setIsScrollable] = useState<boolean>(false)
   const [dragStartY, setDragStartY] = useState<number>(0)
   const [startScrollTop, setStartScrollTop] = useState<number>(0)
-  const scrollTimeoutRef = useRef<NodeJS.Timeout>()
-  const resizeObserverRef = useRef<ResizeObserver>()
+  const scrollTimeoutRef = useRef<NodeJS.Timeout>(undefined)
+  const resizeObserverRef = useRef<ResizeObserver>(undefined)
 
   const scrollHostRef = useRef<ScrollHostElement>(null)
 

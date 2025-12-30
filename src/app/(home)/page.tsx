@@ -74,11 +74,10 @@ export async function getViewSettings(token: string): Promise<CreateViewSettings
   return resp
 }
 
-export default async function Main({
-  searchParams,
-}: {
-  searchParams: { token: string; taskId?: string } & UrlActionParamsType
+export default async function Main(props: {
+  searchParams: Promise<{ token: string; taskId?: string } & UrlActionParamsType>
 }) {
+  const searchParams = await props.searchParams
   const token = searchParams.token
 
   const parsedToken = z.string().safeParse(searchParams.token)

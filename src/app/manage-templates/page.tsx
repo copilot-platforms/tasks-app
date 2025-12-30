@@ -58,12 +58,13 @@ async function getWorkspace(token: string): Promise<WorkspaceResponse> {
 }
 
 interface ManageTemplatesPageProps {
-  searchParams: {
+  searchParams: Promise<{
     token: string
-  }
+  }>
 }
 
-export default async function ManageTemplatesPage({ searchParams }: ManageTemplatesPageProps) {
+export default async function ManageTemplatesPage(props: ManageTemplatesPageProps) {
+  const searchParams = await props.searchParams
   const { token } = searchParams
   const [workflowStates, assignee, templates, tokenPayload, workspace] = await Promise.all([
     getAllWorkflowStates(token),
