@@ -4,6 +4,7 @@ const { withSentryConfig } = require('@sentry/nextjs')
 const nextConfig = {
   cacheMaxMemorySize: 0,
   experimental: {
+    reactCompiler: false,
     staleTimes: {
       dynamic: 0,
       static: 0,
@@ -17,6 +18,14 @@ const nextConfig = {
     })
 
     return config
+  },
+  turbopack: {
+    rules: {
+      '*.svg': {
+        loaders: ['@svgr/webpack'],
+        as: '*.jsx',
+      },
+    },
   },
 }
 

@@ -78,13 +78,12 @@ async function getTaskPath(token: string, taskId: string): Promise<AncestorTaskR
   return path
 }
 
-export default async function TaskDetailPage({
-  params,
-  searchParams,
-}: {
-  params: { task_id: string; task_name: string; user_type: UserType }
-  searchParams: { token: string; isRedirect?: string; fromNotificationCenter?: string }
+export default async function TaskDetailPage(props: {
+  params: Promise<{ task_id: string; task_name: string; user_type: UserType }>
+  searchParams: Promise<{ token: string; isRedirect?: string; fromNotificationCenter?: string }>
 }) {
+  const searchParams = await props.searchParams
+  const params = await props.params
   const { token } = searchParams
   const { task_id, user_type } = params
 
