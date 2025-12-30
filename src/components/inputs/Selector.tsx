@@ -199,18 +199,6 @@ export default function Selector<T extends keyof SelectorOptionsType>({
     }
   }
 
-  const ListWithEndOption = React.forwardRef<HTMLDivElement, JSX.IntrinsicElements['div'] & {}>((props, ref) => {
-    const { ...other } = props
-
-    return (
-      <ListboxComponent {...other} ref={ref} role="listbox" endOption={endOption} endOptionHref={endOptionHref}>
-        {props.children}
-      </ListboxComponent>
-    )
-  })
-
-  ListWithEndOption.displayName = 'ListWithEndOption'
-
   return (
     <Stack direction="column">
       <Box onMouseDown={handleClick} aria-describedby={id}>
@@ -552,3 +540,18 @@ const AssigneeSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTM
     </Box>
   )
 }
+
+const ListWithEndOption = React.forwardRef<
+  HTMLDivElement,
+  JSX.IntrinsicElements['div'] & { endOption?: React.ReactNode; endOptionHref?: string }
+>((props, ref) => {
+  const { endOption, endOptionHref, ...other } = props
+
+  return (
+    <ListboxComponent {...other} ref={ref} role="listbox" endOption={endOption} endOptionHref={endOptionHref}>
+      {props.children}
+    </ListboxComponent>
+  )
+})
+
+ListWithEndOption.displayName = 'ListWithEndOption'

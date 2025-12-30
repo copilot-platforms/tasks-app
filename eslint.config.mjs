@@ -14,7 +14,6 @@ export default defineConfig([
       'react-hooks/refs': 'off',
       'react-hooks/preserve-manual-memoization': 'off',
       'react-compiler/react-compiler': 'off',
-      'react-hooks/static-components': 'off',
     },
   },
 ])
