@@ -54,7 +54,8 @@ async function getWorkspace(token: string): Promise<WorkspaceResponse> {
   return await copilot.getWorkspace()
 }
 
-export default async function ClientPage({ searchParams }: { searchParams: { token: string } & UrlActionParamsType }) {
+export default async function ClientPage(props: { searchParams: Promise<{ token: string } & UrlActionParamsType> }) {
+  const searchParams = await props.searchParams
   const token = searchParams.token
   if (!z.string().safeParse(token).success) {
     return <SilentError message="Please provide a Valid Token" />

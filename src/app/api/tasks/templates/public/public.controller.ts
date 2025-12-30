@@ -22,7 +22,8 @@ export const getTaskTemplatesPublic = async (req: NextRequest) => {
   return NextResponse.json({ data: PublicTemplateSerializer.serialize(templates), nextToken: base64NextToken })
 }
 
-export const getTaskTemplatePublic = async (req: NextRequest, { params: { id } }: IdParams) => {
+export const getTaskTemplatePublic = async (req: NextRequest, { params }: IdParams) => {
+  const { id } = await params
   const user = await authenticate(req)
   const templatesService = new TemplatesService(user)
   const template = await templatesService.getOneTemplate(id)
