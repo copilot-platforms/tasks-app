@@ -90,7 +90,7 @@ export const FilterSelector = ({ disabled }: FilterSelectorProps) => {
                 <Typography
                   sx={(theme) => ({
                     color: theme.color.text.textSecondary,
-                    fontSize: theme.typography.bodySm,
+                    fontSize: '13px',
                     lineHeight: '21px',
                   })}
                 >
