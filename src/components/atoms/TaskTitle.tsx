@@ -57,19 +57,19 @@ const TaskTitle = ({ title, variant = 'board', isClient = false }: TaskTitleProp
       </Typography>
     )
 
-  const TaskTitleComponent = () => {
-    return <Box sx={{ overflow: 'hidden', wordBreak: 'break-word' }}>{title}</Box>
-  }
-
   return isOverflowing ? (
     <Box sx={{ flexShrink: 1, minWidth: 0 }}>
-      <CopilotTooltip content={<TaskTitleComponent />} allowMaxWidth={true}>
+      <CopilotTooltip content={<TaskTitleComponent title={title} />} allowMaxWidth={true}>
         {typographyComponent}
       </CopilotTooltip>
     </Box>
   ) : (
     typographyComponent
   )
+}
+
+const TaskTitleComponent = ({ title }: { title?: string }) => {
+  return <Box sx={{ overflow: 'hidden', wordBreak: 'break-word' }}>{title}</Box>
 }
 
 export default TaskTitle
