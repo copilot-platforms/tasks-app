@@ -49,7 +49,8 @@ export const createTask = async (req: NextRequest) => {
   return NextResponse.json(newTask, { status: httpStatus.CREATED })
 }
 
-export const getTask = async (req: NextRequest, { params: { id } }: IdParams) => {
+export const getTask = async (req: NextRequest, { params }: IdParams) => {
+  const { id } = await params
   const user = await authenticate(req)
   const tasksService = new TasksService(user)
   const task = await tasksService.getOneTask(id)
@@ -57,7 +58,8 @@ export const getTask = async (req: NextRequest, { params: { id } }: IdParams) =>
   return NextResponse.json({ task: { ...task, assignee } })
 }
 
-export const updateTask = async (req: NextRequest, { params: { id } }: IdParams) => {
+export const updateTask = async (req: NextRequest, { params }: IdParams) => {
+  const { id } = await params
   const user = await authenticate(req)
 
   const data = UpdateTaskRequestSchema.parse(await req.json())
@@ -67,7 +69,8 @@ export const updateTask = async (req: NextRequest, { params: { id } }: IdParams)
   return NextResponse.json({ updatedTask })
 }
 
-export const deleteTask = async (req: NextRequest, { params: { id } }: IdParams) => {
+export const deleteTask = async (req: NextRequest, { params }: IdParams) => {
+  const { id } = await params
   const user = await authenticate(req)
 
   const tasksService = new TasksService(user)
@@ -75,7 +78,8 @@ export const deleteTask = async (req: NextRequest, { params: { id } }: IdParams)
   return new NextResponse(null, { status: httpStatus.NO_CONTENT })
 }
 
-export const clientUpdateTask = async (req: NextRequest, { params: { id } }: IdParams) => {
+export const clientUpdateTask = async (req: NextRequest, { params }: IdParams) => {
+  const { id } = await params
   const user = await authenticate(req)
   const workflowStateId = req.nextUrl.searchParams.get('workflowStateId')
   const tasksService = new TasksService(user)
@@ -83,7 +87,8 @@ export const clientUpdateTask = async (req: NextRequest, { params: { id } }: IdP
   return NextResponse.json({ updatedTask })
 }
 
-export const getTaskPath = async (req: NextRequest, { params: { id } }: IdParams) => {
+export const getTaskPath = async (req: NextRequest, { params }: IdParams) => {
+  const { id } = await params
   const user = await authenticate(req)
   const tasksService = new TasksService(user)
   const path = await tasksService.getTraversalPath(id)

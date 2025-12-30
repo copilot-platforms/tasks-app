@@ -70,7 +70,9 @@ export function TasksRowVirtualizer({ rows, mode, token, subtasksByTaskId, workf
           <div
             key={virtualRow.key}
             data-index={virtualRow.index}
-            ref={(node) => rowVirtualizer.measureElement(node)}
+            ref={(node) => {
+              rowVirtualizer.measureElement(node)
+            }}
             style={{
               display: 'flex',
               position: 'absolute',
@@ -160,7 +162,9 @@ export function TasksColumnVirtualizer({
             <div
               key={virtualRow.key}
               data-index={virtualRow.index}
-              ref={(node) => columnVirtualizer.measureElement(node)}
+              ref={(node) => {
+                columnVirtualizer.measureElement(node)
+              }}
               style={{
                 display: 'flex',
                 position: 'absolute',
