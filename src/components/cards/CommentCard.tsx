@@ -65,7 +65,7 @@ export const CommentCard = ({
   const [replies, setReplies] = useState(comment.details.replies as ReplyResponse[])
   const [timeAgo, setTimeAgo] = useState(getTimeDifference(comment.createdAt))
   const [isReadOnly, setIsReadOnly] = useState<boolean>(true)
-  const editRef = useRef<HTMLDivElement>(null)
+  const editRef = useRef<HTMLDivElement>(document.createElement('div'))
   const [focusReplyInput, setFocusedReplyInput] = useState(false)
 
   const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState(false)

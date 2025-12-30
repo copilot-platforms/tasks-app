@@ -55,7 +55,7 @@ export const ReplyCard = ({
   const [editedContent, setEditedContent] = useState(content)
   const [isListOrMenuActive, setIsListOrMenuActive] = useState(false)
   const [isFocused, setIsFocused] = useState(false)
-  const editRef = useRef<HTMLDivElement>(null)
+  const editRef = useRef<HTMLDivElement>(document.createElement('div'))
 
   const canEdit = tokenPayload?.internalUserId == item?.initiatorId || tokenPayload?.clientId == item?.initiatorId
 
