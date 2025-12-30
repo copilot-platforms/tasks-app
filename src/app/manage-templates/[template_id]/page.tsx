@@ -28,13 +28,12 @@ async function getTemplate(id: string, token: string): Promise<ITemplate> {
   return templates.data
 }
 
-export default async function TaskDetailPage({
-  params,
-  searchParams,
-}: {
-  params: { template_id: string }
-  searchParams: { token: string }
+export default async function TaskDetailPage(props: {
+  params: Promise<{ template_id: string }>
+  searchParams: Promise<{ token: string }>
 }) {
+  const searchParams = await props.searchParams
+  const params = await props.params
   const { token } = searchParams
   const { template_id } = params
 

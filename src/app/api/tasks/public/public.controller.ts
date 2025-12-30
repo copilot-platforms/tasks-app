@@ -52,7 +52,8 @@ export const getAllTasksPublic = async (req: NextRequest) => {
   })
 }
 
-export const getOneTaskPublic = async (req: NextRequest, { params: { id } }: IdParams) => {
+export const getOneTaskPublic = async (req: NextRequest, { params }: IdParams) => {
+  const { id } = await params
   const user = await authenticate(req)
   const tasksService = new TasksService(user)
   const task = await tasksService.getOneTask(id, true) //from public API is true
@@ -75,7 +76,8 @@ export const createTaskPublic = async (req: NextRequest) => {
   return NextResponse.json(PublicTaskSerializer.serialize(newTask))
 }
 
-export const updateTaskPublic = async (req: NextRequest, { params: { id } }: IdParams) => {
+export const updateTaskPublic = async (req: NextRequest, { params }: IdParams) => {
+  const { id } = await params
   const user = await authenticate(req)
   const data = PublicTaskUpdateDtoSchema.parse(await req.json())
 
@@ -86,7 +88,8 @@ export const updateTaskPublic = async (req: NextRequest, { params: { id } }: IdP
   return NextResponse.json(PublicTaskSerializer.serialize(updatedTask))
 }
 
-export const deleteOneTaskPublic = async (req: NextRequest, { params: { id } }: IdParams) => {
+export const deleteOneTaskPublic = async (req: NextRequest, { params }: IdParams) => {
+  const { id } = await params
   const recursive = req.nextUrl.searchParams.get('recursive')
   const user = await authenticate(req)
   const tasksService = new TasksService(user)
