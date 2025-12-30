@@ -40,7 +40,8 @@ export const getAttachments = async (req: NextRequest) => {
   return NextResponse.json({ attachments })
 }
 
-export const deleteAttachment = async (req: NextRequest, { params: { id } }: IdParams) => {
+export const deleteAttachment = async (req: NextRequest, { params }: IdParams) => {
+  const { id } = await params
   const user = await authenticate(req)
   const attachmentsService = new AttachmentsService(user)
   await attachmentsService.deleteAttachment(id)

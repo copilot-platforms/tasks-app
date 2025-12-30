@@ -17,7 +17,8 @@ export const createComment = async (req: NextRequest) => {
   return NextResponse.json({ comment }, { status: httpStatus.CREATED })
 }
 
-export const deleteComment = async (req: NextRequest, { params: { id } }: IdParams) => {
+export const deleteComment = async (req: NextRequest, { params }: IdParams) => {
+  const { id } = await params
   const user = await authenticate(req)
 
   const commentService = new CommentService(user)
@@ -27,7 +28,8 @@ export const deleteComment = async (req: NextRequest, { params: { id } }: IdPara
   return NextResponse.json({ message: 'Comment deleted!' })
 }
 
-export const updateComment = async (req: NextRequest, { params: { id } }: IdParams) => {
+export const updateComment = async (req: NextRequest, { params }: IdParams) => {
+  const { id } = await params
   const user = await authenticate(req)
 
   const data = UpdateCommentSchema.parse(await req.json())
