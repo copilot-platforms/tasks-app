@@ -98,7 +98,7 @@ export const ReplyInput = ({
     setIsUploading(uploading)
   }
 
-  const editorRef = useRef<HTMLDivElement | null>(null)
+  const editorRef = useRef<HTMLDivElement>(document.createElement('div'))
   const [isMultiline, setIsMultiline] = useState(false)
 
   useEffect(() => {
