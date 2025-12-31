@@ -104,6 +104,10 @@ export const TaskCard = ({ task, href, workflowState, mode, subtasks, workflowDi
 
   const [selectedAssignee, setSelectedAssignee] = useState<UserIdsType | undefined>(undefined)
 
+  const [assigneeValue, setAssigneeValue] = useState<IAssigneeCombined | Omit<IAssigneeCombined, 'type'> | undefined>(() => {
+    return assigneeCache[task.id]
+  }) //Omitting type for NoAssignee
+
   const { renderingItem: _statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
     // item: selectedWorkflowState,
     item: workflowState ?? task.workflowState,
@@ -163,10 +167,6 @@ export const TaskCard = ({ task, href, workflowState, mode, subtasks, workflowDi
     const match = assignee.find((assignee) => assignee.id === assigneeId)
     return match ?? NoAssignee
   }
-
-  const [assigneeValue, setAssigneeValue] = useState<IAssigneeCombined | Omit<IAssigneeCombined, 'type'> | undefined>(() => {
-    return assigneeCache[task.id]
-  }) //Omitting type for NoAssignee
 
   return (
     <TaskCardContainer tabIndex={0}>

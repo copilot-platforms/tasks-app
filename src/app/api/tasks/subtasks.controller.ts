@@ -3,7 +3,8 @@ import authenticate from '@api/core/utils/authenticate'
 import { SubtaskService } from '@api/tasks/subtasks.service'
 import { NextRequest, NextResponse } from 'next/server'
 
-export const getSubtaskCount = async (req: NextRequest, { params: { id } }: IdParams) => {
+export const getSubtaskCount = async (req: NextRequest, { params }: IdParams) => {
+  const { id } = await params
   const user = await authenticate(req)
   const subtaskService = new SubtaskService(user)
   const count = await subtaskService.getSubtaskCounts(id)

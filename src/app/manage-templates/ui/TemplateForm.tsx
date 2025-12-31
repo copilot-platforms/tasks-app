@@ -166,7 +166,7 @@ const NewTemplateFormInputs = () => {
                 targetMethod == TargetMethod.POST ? null : targetTemplateId,
               )
             }
-            attachmentLayout={AttachmentLayout}
+            attachmentLayout={(props) => <AttachmentLayout {...props} />}
             maxUploadLimit={MAX_UPLOAD_LIMIT}
             parentContainerStyle={{ gap: '0px', minHeight: '60px' }}
           />
