@@ -1,25 +1,20 @@
 'use client'
+import { StyledModal } from '@/app/detail/ui/styledComponent'
+import { ManageTemplateHeader } from '@/app/manage-templates/ui/Header'
 import { TemplateCard } from '@/components/cards/TemplateCard'
-import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
-import { selectTaskDetails, setShowConfirmDeleteModal } from '@/redux/features/taskDetailsSlice'
-import {
-  clearTemplateFields,
-  selectCreateTemplate,
-  setCreateTemplateFields,
-  setShowTemplateModal,
-  setTargetTemplateId,
-  setTemplates,
-} from '@/redux/features/templateSlice'
+import { CustomLink } from '@/hoc/CustomLink'
+import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { clearTemplateFields, selectCreateTemplate, setShowTemplateModal } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
 import { CreateTemplateRequest } from '@/types/dto/templates.dto'
-import { ITemplate, TargetMethod } from '@/types/interfaces'
+import { TargetMethod } from '@/types/interfaces'
+import { getCardHrefTemplate } from '@/utils/getCardHref'
 import { Box, Stack, Typography } from '@mui/material'
 import { useSelector } from 'react-redux'
 import { NoTemplateLayout } from './NoTemplateLayout'
 import { TemplateForm } from './TemplateForm'
-import { ManageTemplateHeader } from '@/app/manage-templates/ui/Header'
-import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
-import { StyledModal } from '@/app/detail/ui/styledComponent'
+import { sortTemplatesByDescendingOrder } from '@/utils/sortByDescending'
+import { useMemo } from 'react'
 
 export const TemplateBoard = ({
   handleCreateTemplate,
@@ -34,19 +29,15 @@ export const TemplateBoard = ({
     useSelector(selectCreateTemplate)
 
   const { token, previewMode } = useSelector(selectTaskBoard)
+  const sortedTemplates = useMemo(() => sortTemplatesByDescendingOrder(templates), [templates])
 
-  const { showConfirmDeleteModal } = useSelector(selectTaskDetails)
-
-  if (templates === undefined) {
-    return null
-  }
   const showHeader = token && !!previewMode
 
   return (
     <>
       {showHeader && <ManageTemplateHeader token={token} />}
 
-      {templates.length ? (
+      {sortedTemplates.length ? (
         <Box id="templates-box" sx={{ maxWidth: '384px', marginTop: '32px', marginLeft: 'auto', marginRight: 'auto' }}>
           <Box
             sx={{
@@ -68,25 +59,18 @@ export const TemplateBoard = ({
             }}
             rowGap={4}
           >
-            {templates.map((template) => {
+            {sortedTemplates.map((template) => {
               return (
-                <TemplateCard
-                  title={template.title}
+                <CustomLink
                   key={template.id}
-                  handleDelete={() => {
-                    store.dispatch(setShowConfirmDeleteModal())
-                    store.dispatch(setTargetTemplateId(template.id))
-                    store.dispatch(setCreateTemplateFields({ targetField: 'taskName', value: template.title }))
+                  href={{
+                    pathname: getCardHrefTemplate(template),
+                    query: { token },
                   }}
-                  handleEdit={() => {
-                    store.dispatch(setShowTemplateModal({ targetMethod: TargetMethod.EDIT, targetTemplateId: template.id }))
-                    store.dispatch(setCreateTemplateFields({ targetField: 'taskName', value: template.title }))
-                    store.dispatch(setCreateTemplateFields({ targetField: 'description', value: template.body }))
-                    store.dispatch(
-                      setCreateTemplateFields({ targetField: 'activeWorkflowStateId', value: template.workflowStateId }),
-                    )
-                  }}
-                />
+                  style={{ width: 'auto' }}
+                >
+                  <TemplateCard title={template.title} key={template.id} />
+                </CustomLink>
               )
             })}
           </Stack>
@@ -114,29 +98,11 @@ export const TemplateBoard = ({
               body: description,
             }
             if (targetMethod === TargetMethod.POST) {
-              const resp = await handleCreateTemplate(temp)
+              await handleCreateTemplate(temp)
             } else {
               handleEditTemplate(temp, targetTemplateId)
             }
           }}
-        />
-      </StyledModal>
-
-      <StyledModal
-        open={showConfirmDeleteModal}
-        onClose={() => store.dispatch(setShowConfirmDeleteModal())}
-        aria-labelledby="delete-task-modal"
-        aria-describedby="delete-task"
-      >
-        <ConfirmDeleteUI
-          handleCancel={() => store.dispatch(setShowConfirmDeleteModal())}
-          handleDelete={() => {
-            store.dispatch(setShowConfirmDeleteModal())
-            handleDeleteTemplate(targetTemplateId)
-            store.dispatch(clearTemplateFields())
-          }}
-          description={`“${taskName}” will be permanently deleted.`}
-          customBody={'Delete template?'}
         />
       </StyledModal>
     </>

@@ -68,7 +68,7 @@ export const TemplateForm = ({ handleCreate }: { handleCreate: () => void }) => 
         </Stack>
 
         <AppMargin size={SizeofAppMargin.MEDIUM} py="20px">
-          <NewTaskFormInputs />
+          <NewTemplateFormInputs />
         </AppMargin>
         <NewTaskFooter handleCreate={handleCreate} targetMethod={targetMethod} />
       </NewTaskContainer>
@@ -76,7 +76,7 @@ export const TemplateForm = ({ handleCreate }: { handleCreate: () => void }) => 
   )
 }
 
-const NewTaskFormInputs = () => {
+const NewTemplateFormInputs = () => {
   const { taskName, description, errors, activeWorkflowStateId, targetTemplateId, targetMethod } =
     useSelector(selectCreateTemplate)
   const { workflowStates, token } = useSelector(selectTaskBoard)
@@ -151,12 +151,12 @@ const NewTaskFormInputs = () => {
           placeholder="Template name"
           multiline
         />
-        <Box sx={{ height: '100%', width: '100%' }}>
+        <Box sx={{ height: '100%', width: '100%', overflow: 'auto' }}>
           <Tapwrite
             content={description}
             getContent={handleDescriptionChange}
-            placeholder="Add description..."
-            editorClass="tapwrite-task-editor h-full"
+            placeholder="Add description.."
+            editorClass="tapwrite-description-h-full"
             uploadFn={uploadFn}
             deleteEditorAttachments={(url) =>
               deleteEditorAttachmentsHandler(
@@ -168,8 +168,7 @@ const NewTaskFormInputs = () => {
             }
             attachmentLayout={AttachmentLayout}
             maxUploadLimit={MAX_UPLOAD_LIMIT}
-            parentContainerStyle={{ gap: '0px', height: '66px' }}
-            className="h-full"
+            parentContainerStyle={{ gap: '0px', minHeight: '60px' }}
           />
         </Box>
       </Stack>
