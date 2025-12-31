@@ -4,7 +4,6 @@ const { withSentryConfig } = require('@sentry/nextjs')
 const nextConfig = {
   cacheMaxMemorySize: 0,
   experimental: {
-    reactCompiler: false,
     staleTimes: {
       dynamic: 0,
       static: 0,
