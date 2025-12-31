@@ -1,16 +1,19 @@
 'use client'
 
-import { Box, Stack, Typography } from '@mui/material'
+import { Box, Stack, Typography, TypographyVariants } from '@mui/material'
 import { ReactNode } from 'react'
+import { TypographyProps, TypographyPropsVariantOverrides } from '@mui/material/Typography'
 
 export const GhostBtn = ({
   buttonText,
   handleClick,
   startIcon,
+  typographyVariant = 'md',
 }: {
   buttonText: string
   handleClick: () => void
   startIcon?: ReactNode
+  typographyVariant?: TypographyProps['variant']
 }) => {
   return (
     <Box
@@ -41,7 +44,7 @@ export const GhostBtn = ({
             color: (theme) => theme.color.text.textSecondary,
           }}
           lineHeight="22px"
-          variant="md"
+          variant={typographyVariant}
         >
           {buttonText}
         </Typography>

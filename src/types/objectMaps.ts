@@ -1,4 +1,6 @@
 import { FilterByOptions, FilterOptionsKeywords, IAssigneeCombined, UserIds } from '@/types/interfaces'
+import { Theme } from '@mui/material'
+import { StateType } from '@prisma/client'
 
 export const filterTypeToButtonIndexMap: Record<string, number> = {
   [FilterOptionsKeywords.CLIENTS]: 2,
@@ -34,3 +36,11 @@ export const userIdFieldMap = {
   client: UserIds.CLIENT_ID,
   company: UserIds.COMPANY_ID,
 } as const
+
+export const WorkflowStateThemeMap: Record<StateType, keyof Theme['color']['workflowState']> = {
+  backlog: 'todo',
+  unstarted: 'todo',
+  started: 'inProgress',
+  completed: 'done',
+  cancelled: 'todo',
+}

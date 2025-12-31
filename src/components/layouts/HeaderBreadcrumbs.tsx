@@ -47,7 +47,6 @@ export const HeaderBreadcrumbs = ({
   if (!previewMode) {
     return null
   }
-
   return (
     <Stack direction="row" alignItems="center" columnGap={3}>
       <CustomLink href={{ pathname: getTasksLink(userType), query: { token } }}>
@@ -60,19 +59,34 @@ export const HeaderBreadcrumbs = ({
           variant="breadcrumb"
         />
       </CustomLink>
-      {items.map((item) => (
-        <Fragment key={item.label}>
-          <StyledKeyboardIcon />
-          <Typography
-            variant="sm"
-            sx={{
-              fontSize: '13px',
-            }}
-          >
-            {item.label}
-          </Typography>
-        </Fragment>
-      ))}
+      {items.map((item, index) => {
+        const isLast = index === items.length - 1
+
+        return (
+          <Fragment key={item.label}>
+            {isLast ? (
+              <>
+                <StyledKeyboardIcon />
+                <Typography variant="sm" sx={{ fontSize: '13px' }}>
+                  {item.label}
+                </Typography>
+              </>
+            ) : (
+              <CustomLink href={item.href ?? ''}>
+                <StyledKeyboardIcon />
+                <SecondaryBtn
+                  buttonContent={
+                    <StyledTypography variant="sm" lineHeight={'21px'} sx={{ fontSize: '13px' }}>
+                      {item.label}
+                    </StyledTypography>
+                  }
+                  variant="breadcrumb"
+                />
+              </CustomLink>
+            )}
+          </Fragment>
+        )
+      })}
     </Stack>
   )
 }

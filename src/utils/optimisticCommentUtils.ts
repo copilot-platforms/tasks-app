@@ -3,7 +3,7 @@ import { LogResponse } from '@/app/api/activity-logs/schemas/LogResponseSchema'
 import { ClientResponseSchema, ClientsResponse, InternalUsers, InternalUsersSchema } from '@/types/common'
 import { CreateComment } from '@/types/dto/comment.dto'
 import { TaskResponse } from '@/types/dto/tasks.dto'
-import { IAssigneeCombined } from '@/types/interfaces'
+import { IAssigneeCombined, ITemplate } from '@/types/interfaces'
 import { ActivityType } from '@prisma/client'
 import { z } from 'zod'
 
@@ -16,7 +16,7 @@ export interface OptimisticUpdate {
 //util to maintain same key for collapse animation on optimistic updates. The optimistic updates are data reflected on the ui which are yet to be uploaded on the server.
 //Once the optimistic data gets updated on the server, we need to replace the tempId with the actual id from server. But if key changes unexpectedly or frequently on the Collapse or other animation components, the animation may break or cause flicker. By maintaining consistent key through tempId or serverId, the component remains stable and ensures animations work correctly.
 export const checkOptimisticStableId = (
-  log: LogResponse | ReplyResponse | TaskResponse,
+  log: LogResponse | ReplyResponse | TaskResponse | ITemplate,
   optimisticUpdates: OptimisticUpdate[],
 ) => {
   const referenceId = 'details' in log ? (log.details.id ?? log.id) : log.id

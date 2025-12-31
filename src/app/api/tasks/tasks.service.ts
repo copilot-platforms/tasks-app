@@ -4,10 +4,16 @@ import { deleteTaskNotifications, sendTaskCreateNotifications, sendTaskUpdateNot
 import { sendClientUpdateTaskNotifications } from '@/jobs/notifications/send-client-task-update-notifications'
 import { ClientResponse, CompanyResponse, InternalUsers, Uuid } from '@/types/common'
 import { TaskWithWorkflowState } from '@/types/db'
-import { AncestorTaskResponse, CreateTaskRequest, UpdateTaskRequest, Viewers, ViewersSchema } from '@/types/dto/tasks.dto'
+import {
+  AncestorTaskResponse,
+  CreateTaskRequest,
+  CreateTaskRequestSchema,
+  UpdateTaskRequest,
+  Viewers,
+  ViewersSchema,
+} from '@/types/dto/tasks.dto'
 import { DISPATCHABLE_EVENT } from '@/types/webhook'
 import { UserIdsType } from '@/utils/assignee'
-import { CopilotAPI } from '@/utils/CopilotAPI'
 import { isPastDateString } from '@/utils/dateHelper'
 import { buildLtree, buildLtreeNodeString, getIdsFromLtreePath } from '@/utils/ltree'
 import { getFilePathFromUrl, replaceImageSrc } from '@/utils/signedUrlReplacer'
@@ -28,10 +34,10 @@ import {
   queueBodyUpdatedWebhook,
 } from '@api/tasks/tasks.helpers'
 import { TasksActivityLogger } from '@api/tasks/tasks.logger'
-import { AssigneeType, Prisma, PrismaClient, Source, StateType, Task, WorkflowState } from '@prisma/client'
-import dayjs from 'dayjs'
+import { AssigneeType, Prisma, PrismaClient, Source, StateType, Task, TaskTemplate, WorkflowState } from '@prisma/client'
 import httpStatus from 'http-status'
 import { z } from 'zod'
+import { TemplatesService } from './templates/templates.service'
 
 export class TasksService extends BaseService {
   /**
@@ -157,7 +163,10 @@ export class TasksService extends BaseService {
     return filteredTasks
   }
 
-  async createTask(data: CreateTaskRequest, opts?: { isPublicApi: boolean }) {
+  async createTask(
+    data: CreateTaskRequest,
+    opts?: { isPublicApi?: boolean; disableSubtaskTemplates?: boolean; manualTimestamp?: Date },
+  ) {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Create, Resource.Tasks)
     console.info('TasksService#createTask | Creating task with data:', data)
@@ -229,6 +238,7 @@ export class TasksService extends BaseService {
         assigneeType,
         viewers: viewers,
         ...validatedIds,
+        ...(opts?.manualTimestamp && { createdAt: opts.manualTimestamp }),
         ...(await getTaskTimestamps('create', this.user, data, undefined, workflowStateStatus)),
       },
       include: { workflowState: true },
@@ -288,6 +298,25 @@ export class TasksService extends BaseService {
         workspaceId: this.user.workspaceId,
       }),
     ])
+
+    if (data.templateId && !opts?.disableSubtaskTemplates) {
+      const templateService = new TemplatesService(this.user)
+      const template = await templateService.getOneTemplate(data.templateId)
+
+      if (!template) {
+        throw new APIError(httpStatus.NOT_FOUND, 'The requested template was not found')
+      }
+
+      if (template.subTaskTemplates.length) {
+        await Promise.all(
+          template.subTaskTemplates.map(async (sub, index) => {
+            const updatedSubTemplate = await templateService.getAppliedTemplateDescription(sub.id)
+            const manualTimeStamp = new Date(template.createdAt.getTime() + (template.subTaskTemplates.length - index) * 10) //maintain the order of subtasks in tasks with respect to subtasks in templates
+            await this.createSubtasksFromTemplate(updatedSubTemplate, newTask, manualTimeStamp)
+          }),
+        )
+      }
+    }
 
     return newTask
   }
@@ -1123,5 +1152,46 @@ export class TasksService extends BaseService {
     }
 
     return viewers
+  }
+
+  private async createSubtasksFromTemplate(data: TaskTemplate, parentTask: Task, manualTimestamp: Date) {
+    const { workspaceId, title, body, workflowStateId } = data
+    const previewMode = Boolean(this.user.clientId || this.user.companyId)
+    const { id: parentId, internalUserId, clientId, companyId, viewers } = parentTask
+
+    try {
+      const createTaskPayload = CreateTaskRequestSchema.parse({
+        title,
+        body,
+        workspaceId,
+        workflowStateId,
+        parentId,
+        templateId: undefined, //just to be safe from circular recursion
+        ...(previewMode && {
+          internalUserId,
+          clientId,
+          companyId,
+          viewers,
+        }), //On CRM view, we set assignee and viewers for subtasks same as the parent task.
+      })
+
+      await this.createTask(createTaskPayload, { disableSubtaskTemplates: true, manualTimestamp: manualTimestamp })
+    } catch (e) {
+      const deleteTask = this.db.task.delete({ where: { id: parentId } })
+      const deleteActivityLogs = this.db.activityLog.deleteMany({ where: { taskId: parentId } })
+
+      await this.db.$transaction(async (tx) => {
+        this.setTransaction(tx as PrismaClient)
+        await deleteTask
+        await deleteActivityLogs
+        this.unsetTransaction()
+      })
+
+      console.error('TasksService#createTask | Rolling back task creation', e)
+      throw new APIError(
+        httpStatus.INTERNAL_SERVER_ERROR,
+        'Failed to create subtask from template, new task was not created.',
+      )
+    }
   }
 }
