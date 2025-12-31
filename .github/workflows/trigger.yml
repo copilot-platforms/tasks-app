@@ -41,7 +41,7 @@ jobs:
           echo "TRIGGER_PROJECT=proj_gaxcpkutbhhxzjvnevvi" >> $GITHUB_ENV
 
       - name: Install build dependencies
-        run: yarn add "@trigger.dev/build@3.3.13" "@trigger.dev/sdk@3.3.13"
+        run: yarn add "@trigger.dev/build@4.3.1" "@trigger.dev/sdk@4.3.1"
 
       - name: Run deploy command
-        run: npx trigger.dev@3.3.13 deploy -e ${{ github.event.inputs.environment }}
+        run: npx trigger.dev@4.3.1 deploy -e ${{ github.event.inputs.environment }}

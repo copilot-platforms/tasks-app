@@ -1,51 +1,4 @@
 {
-  "name": "task-app",
-  "description": "A comprehensive task management app",
-  "version": "0.1.0",
-  "engines": {
-    "node": ">=20.0.0"
-  },
-  "keywords": [
-    "nextjs",
-    "nodejs"
-  ],
-  "repository": {
-    "url": "https://github.com/copilot-platforms/tasks-app"
-  },
-  "scripts": {
-    "dev": "next dev",
-    "dev:embedded": "tsx ./src/cmd/serve-embedded",
-    "dev:debug": "nodemon --exec \"node --inspect-brk node_modules/.bin/next dev\"",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "db:grant-supabase-privileges": "node src/lib/supabase-privilege",
-    "vercel-build": "prisma generate && next build",
-    "prepare": "husky install",
-    "eslint": "eslint './src/**/*.{ts,tsx}'",
-    "lint:check": "eslint \"{src,test}/**/*.{ts,tsx}\"",
-    "lint:fix-stylish": "cp ./src/lib/stylish.js ./node_modules/eslint/lib/cli-engine/formatters/",
-    "lint:fix": "npm run lint:check -- --fix",
-    "prettier:check": "prettier --check \"{src,test}/**/*.{ts,tsx}\"",
-    "prettier:fix": "prettier --write .",
-    "lint-staged": "npx lint-staged",
-    "postinstall": "prisma generate",
-    "test": "jest",
-    "trigger": "npx trigger.dev@latest",
-    "predeploy": "node src/lib/patch-jsdom-xhr.cjs",
-    "deploy": "npx trigger.dev@latest deploy",
-    "trigger:deploy-staging": "yarn trigger deploy -e staging",
-    "loadtest": "tsx ./src/cmd/load-testing",
-    "loadtest:delete-clients": "tsx ./src/cmd/load-testing/deleteClients.ts",
-    "seed:activity-logs": "tsx ./src/cmd/fill-activity-logs",
-    "cmd:delete-duplicate-notifications": "tsx ./src/cmd/delete-duplicate-notifications",
-    "cmd:backfill-archived-by": "tsx ./src/cmd/backfill-archived-by",
-    "cmd:backfill-completed-tasks": "tsx ./src/cmd/backfill-completed-tasks",
-    "cmd:backfill-new-user-ids": "tsx ./src/cmd/backfill-new-user-ids",
-    "cmd:normalize-filterOptions-assignee": "tsx ./src/cmd/normalize-filterOptions-assignee",
-    "cmd:backfill-company-id-in-client-notifications": "tsx ./src/cmd/backfill-company-id-in-client-notifications",
-    "cmd:post-deploy-m15": "tsx ./src/cmd/post-deploy-m15"
-  },
   "dependencies": {
     "@cyntler/react-doc-viewer": "^1.17.0",
     "@emotion/react": "^11.11.3",
@@ -58,7 +11,7 @@
     "@sentry/nextjs": "^8",
     "@supabase/supabase-js": "^2.47.5",
     "@tanstack/react-virtual": "^3.13.12",
-    "@trigger.dev/sdk": "3.3.17",
+    "@trigger.dev/sdk": "4.3.1",
     "@types/date-fns": "^2.6.0",
     "@types/deep-equal": "^1.0.4",
     "@vercel/blob": "^0.23.2",
@@ -94,11 +47,12 @@
     "uuid": "^11.1.0",
     "zod": "^3.23.8"
   },
+  "description": "A comprehensive task management app",
   "devDependencies": {
     "@faker-js/faker": "^8.4.1",
     "@ngrok/ngrok": "^1.4.1",
     "@svgr/webpack": "^8.1.0",
-    "@trigger.dev/build": "3.3.17",
+    "@trigger.dev/build": "4.3.1",
     "@types/file-saver": "^2.0.7",
     "@types/jest": "^29.5.12",
     "@types/jsdom": "^21.1.7",
@@ -118,16 +72,62 @@
     "tsx": "^4.16.5",
     "typescript": "^5"
   },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "keywords": [
+    "nextjs",
+    "nodejs"
+  ],
   "lint-staged": {
     "src/**/*.{ts,tsx}": [
       "yarn lint:fix",
       "yarn prettier:fix"
     ]
   },
+  "name": "task-app",
   "overrides": {
     "@supabase/supabase-js": {
       "@supabase/auth-js": "2.61.0"
     }
   },
-  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e",
+  "repository": {
+    "url": "https://github.com/copilot-platforms/tasks-app"
+  },
+  "scripts": {
+    "build": "next build",
+    "cmd:backfill-archived-by": "tsx ./src/cmd/backfill-archived-by",
+    "cmd:backfill-company-id-in-client-notifications": "tsx ./src/cmd/backfill-company-id-in-client-notifications",
+    "cmd:backfill-completed-tasks": "tsx ./src/cmd/backfill-completed-tasks",
+    "cmd:backfill-new-user-ids": "tsx ./src/cmd/backfill-new-user-ids",
+    "cmd:delete-duplicate-notifications": "tsx ./src/cmd/delete-duplicate-notifications",
+    "cmd:normalize-filterOptions-assignee": "tsx ./src/cmd/normalize-filterOptions-assignee",
+    "cmd:post-deploy-m15": "tsx ./src/cmd/post-deploy-m15",
+    "db:grant-supabase-privileges": "node src/lib/supabase-privilege",
+    "deploy": "npx trigger.dev@latest deploy",
+    "dev": "next dev",
+    "dev:debug": "nodemon --exec \"node --inspect-brk node_modules/.bin/next dev\"",
+    "dev:embedded": "tsx ./src/cmd/serve-embedded",
+    "eslint": "eslint './src/**/*.{ts,tsx}'",
+    "lint": "next lint",
+    "lint-staged": "npx lint-staged",
+    "lint:check": "eslint \"{src,test}/**/*.{ts,tsx}\"",
+    "lint:fix": "npm run lint:check -- --fix",
+    "lint:fix-stylish": "cp ./src/lib/stylish.js ./node_modules/eslint/lib/cli-engine/formatters/",
+    "loadtest": "tsx ./src/cmd/load-testing",
+    "loadtest:delete-clients": "tsx ./src/cmd/load-testing/deleteClients.ts",
+    "postinstall": "prisma generate",
+    "predeploy": "node src/lib/patch-jsdom-xhr.cjs",
+    "prepare": "husky install",
+    "prettier:check": "prettier --check \"{src,test}/**/*.{ts,tsx}\"",
+    "prettier:fix": "prettier --write .",
+    "seed:activity-logs": "tsx ./src/cmd/fill-activity-logs",
+    "start": "next start",
+    "test": "jest",
+    "trigger": "npx trigger.dev@latest",
+    "trigger:deploy-staging": "yarn trigger deploy -e staging",
+    "vercel-build": "prisma generate && next build"
+  },
+  "version": "0.1.0"
 }
