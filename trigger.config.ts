@@ -30,7 +30,7 @@ export default defineConfig({
     extensions: [
       prismaExtension({
         schema: 'prisma/schema/main.prisma',
-        mode: 'legacy',
+        mode: 'legacy', //ref:https://trigger.dev/docs/config/extensions/prismaExtension
       }),
 
       // Untested, but can automatically sync Vercel env and trigger env using VERCEL_ACCESS_TOKEN, VERCEL_PROJECT_ID and VERCEL_TEAM_ID
