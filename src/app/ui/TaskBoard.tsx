@@ -23,7 +23,7 @@ import { sortTaskByDescendingOrder } from '@/utils/sortByDescending'
 import { prioritizeStartedStates } from '@/utils/workflowStates'
 import { UserRole } from '@api/core/types/user'
 import { Box, Stack } from '@mui/material'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { z } from 'zod'
 
@@ -48,6 +48,7 @@ export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
     showArchived,
     showUnarchived,
   } = useSelector(selectTaskBoard)
+  const boardRef = useRef<HTMLDivElement>(null)
 
   const onDropItem = useCallback(
     (payload: { taskId: string; targetWorkflowStateId: string }) => {
@@ -183,6 +184,7 @@ export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
       )}
       {viewBoardSettings === View.LIST_VIEW && (
         <Stack
+          ref={boardRef}
           sx={{
             flexDirection: 'column',
             height: `calc(100vh - 130px)`,
@@ -215,6 +217,7 @@ export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
                   mode={mode}
                   token={token}
                   subtasksByTaskId={subtasksByTaskId}
+                  scrollElement={boardRef}
                 />
               </TaskRow>
             </DragDropHandler>

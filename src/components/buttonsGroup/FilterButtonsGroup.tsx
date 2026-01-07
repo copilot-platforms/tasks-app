@@ -54,18 +54,18 @@ const FilterButtonGroup = ({ filterButtons, activeButtonIndex, mobileView = fals
     >
       <Tabs
         value={activeButtonIndex}
-        aria-label="wrapped label tabs example"
+        aria-label="Filter Tab Buttons"
         TabIndicatorProps={{
           sx: {
             backgroundColor: (theme) => theme.color.gray[600],
-            height: '1.5px',
+            height: '1px',
           },
         }}
         sx={{
           alignItems: 'center',
           justifyContent: 'center',
           minHeight: 'unset',
-          height: '44px',
+          height: '46px',
           '& .MuiTabs-flexContainer': {
             gap: '12px',
           },
