@@ -28,7 +28,16 @@ export const TaskRow = ({
     <Box>
       <Box
         sx={{
-          background: (theme) => theme.color.workflowState[WorkflowStateThemeMap[workflowStateType]],
+          position: 'sticky',
+          top: 0,
+          zIndex: 100,
+          background: (theme) => `
+      linear-gradient(
+        ${theme.color.workflowState[WorkflowStateThemeMap[workflowStateType]]},
+        ${theme.color.workflowState[WorkflowStateThemeMap[workflowStateType]]}
+      ),
+      ${theme.palette.background.paper}
+    `,
           borderBottom: (theme) => `1px solid ${theme.color.borders.borderDisabled}`,
         }}
       >
