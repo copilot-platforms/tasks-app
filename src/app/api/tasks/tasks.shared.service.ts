@@ -1,13 +1,13 @@
 import { maxSubTaskDepth } from '@/constants/tasks'
 import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 import { InternalUsers, Uuid } from '@/types/common'
-import { Viewers } from '@/types/dto/tasks.dto'
+import { CreateTaskRequest, CreateTaskRequestSchema, Viewers } from '@/types/dto/tasks.dto'
 import { buildLtree, buildLtreeNodeString } from '@/utils/ltree'
 import { getFilePathFromUrl } from '@/utils/signedUrlReplacer'
 import { getSignedUrl } from '@/utils/signUrl'
 import { SupabaseActions } from '@/utils/SupabaseActions'
 import { BaseService } from '@api/core/services/base.service'
-import { AssigneeType, Prisma, StateType, Task } from '@prisma/client'
+import { AssigneeType, Prisma, PrismaClient, StateType, Task, TaskTemplate } from '@prisma/client'
 import httpStatus from 'http-status'
 import z from 'zod'
 import APIError from '@api/core/exceptions/api'
@@ -15,6 +15,11 @@ import { UserRole } from '@api/core/types/user'
 
 //Base class with shared permission logic and methods that both tasks.service.ts and public.service.ts could use
 export abstract class TasksSharedService extends BaseService {
+  protected abstract createTask(
+    data: CreateTaskRequest,
+    opts?: { disableSubtaskTemplates?: boolean; manualTimestamp?: Date },
+  ): Promise<unknown>
+
   /**
    * Builds filter for "get" service methods.
    * If user is an IU, return filter for all tasks associated with this workspace
@@ -465,6 +470,47 @@ export abstract class TasksSharedService extends BaseService {
       })
     } catch (e) {
       console.error('TaskService#setNewLastSubtaskUpdated::', e)
+    }
+  }
+
+  protected async createSubtasksFromTemplate(data: TaskTemplate, parentTask: Task, manualTimestamp: Date) {
+    const { workspaceId, title, body, workflowStateId } = data
+    const previewMode = Boolean(this.user.clientId || this.user.companyId)
+    const { id: parentId, internalUserId, clientId, companyId, viewers } = parentTask
+
+    try {
+      const createTaskPayload = CreateTaskRequestSchema.parse({
+        title,
+        body,
+        workspaceId,
+        workflowStateId,
+        parentId,
+        templateId: undefined, //just to be safe from circular recursion
+        ...(previewMode && {
+          internalUserId,
+          clientId,
+          companyId,
+          viewers,
+        }), //On CRM view, we set assignee and viewers for subtasks same as the parent task.
+      })
+
+      await this.createTask(createTaskPayload, { disableSubtaskTemplates: true, manualTimestamp: manualTimestamp })
+    } catch (e) {
+      const deleteTask = this.db.task.delete({ where: { id: parentId } })
+      const deleteActivityLogs = this.db.activityLog.deleteMany({ where: { taskId: parentId } })
+
+      await this.db.$transaction(async (tx) => {
+        this.setTransaction(tx as PrismaClient)
+        await deleteTask
+        await deleteActivityLogs
+        this.unsetTransaction()
+      })
+
+      console.error('TasksService#createTask | Rolling back task creation', e)
+      throw new APIError(
+        httpStatus.INTERNAL_SERVER_ERROR,
+        'Failed to create subtask from template, new task was not created.',
+      )
     }
   }
 }

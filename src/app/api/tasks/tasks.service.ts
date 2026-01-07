@@ -651,45 +651,4 @@ export class TasksService extends TasksSharedService {
     const subtaskService = new SubtaskService(this.user)
     return await subtaskService.getAccessiblePathTasks(parentTasks)
   }
-
-  private async createSubtasksFromTemplate(data: TaskTemplate, parentTask: Task, manualTimestamp: Date) {
-    const { workspaceId, title, body, workflowStateId } = data
-    const previewMode = Boolean(this.user.clientId || this.user.companyId)
-    const { id: parentId, internalUserId, clientId, companyId, viewers } = parentTask
-
-    try {
-      const createTaskPayload = CreateTaskRequestSchema.parse({
-        title,
-        body,
-        workspaceId,
-        workflowStateId,
-        parentId,
-        templateId: undefined, //just to be safe from circular recursion
-        ...(previewMode && {
-          internalUserId,
-          clientId,
-          companyId,
-          viewers,
-        }), //On CRM view, we set assignee and viewers for subtasks same as the parent task.
-      })
-
-      await this.createTask(createTaskPayload, { disableSubtaskTemplates: true, manualTimestamp: manualTimestamp })
-    } catch (e) {
-      const deleteTask = this.db.task.delete({ where: { id: parentId } })
-      const deleteActivityLogs = this.db.activityLog.deleteMany({ where: { taskId: parentId } })
-
-      await this.db.$transaction(async (tx) => {
-        this.setTransaction(tx as PrismaClient)
-        await deleteTask
-        await deleteActivityLogs
-        this.unsetTransaction()
-      })
-
-      console.error('TasksService#createTask | Rolling back task creation', e)
-      throw new APIError(
-        httpStatus.INTERNAL_SERVER_ERROR,
-        'Failed to create subtask from template, new task was not created.',
-      )
-    }
-  }
 }
