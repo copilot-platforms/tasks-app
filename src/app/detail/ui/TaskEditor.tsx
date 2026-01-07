@@ -193,7 +193,7 @@ export const TaskEditor = ({
           uploadFn={uploadFn}
           handleImageDoubleClick={handleImagePreview}
           deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', task_id, null)}
-          attachmentLayout={AttachmentLayout}
+          attachmentLayout={(props) => <AttachmentLayout {...props} />}
           addAttachmentButton
           maxUploadLimit={MAX_UPLOAD_LIMIT}
         />

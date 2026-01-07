@@ -4,7 +4,7 @@ import React, { useRef, useState } from 'react'
 
 export interface CopilotTooltipProps {
   content: React.ReactNode
-  children: React.ReactElement
+  children: React.ReactElement<any>
   position?: 'top' | 'bottom' | 'left' | 'right'
   disabled?: boolean
   allowMaxWidth?: boolean

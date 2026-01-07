@@ -5,7 +5,8 @@ import authenticate from '@api/core/utils/authenticate'
 import httpStatus from 'http-status'
 import { NextRequest, NextResponse } from 'next/server'
 
-export const get = async (req: NextRequest, { params: { id } }: IdParams) => {
+export const get = async (req: NextRequest, { params }: IdParams) => {
+  const { id } = await params
   const user = await authenticate(req)
 
   const { expandComments } = getSearchParams(req.nextUrl.searchParams, ['expandComments'])

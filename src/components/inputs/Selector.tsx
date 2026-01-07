@@ -2,7 +2,7 @@ import { Box, Button, Popper, Stack, Typography } from '@mui/material'
 import { StyledAutocomplete } from '@/components/inputs/Autocomplete'
 import { statusIcons } from '@/utils/iconMatcher'
 import { useFocusableInput } from '@/hooks/useFocusableInput'
-import { HTMLAttributes, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { HTMLAttributes, ReactNode, useCallback, useEffect, useMemo, useRef, useState, type JSX } from 'react'
 import { StyledTextField } from './TextField'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { IAssigneeCombined, Sizes, IExtraOption, ITemplate, UserTypesName } from '@/types/interfaces'
@@ -142,7 +142,7 @@ export default function Selector<T extends keyof SelectorOptionsType>({
   }
 
   const [placement, setPlacement] = useState<Placement>('bottom')
-  const timeoutRef = useRef<NodeJS.Timeout>()
+  const timeoutRef = useRef<NodeJS.Timeout>(undefined)
 
   const handlePlacementChange = useCallback((data: ModifierArguments<any>) => {
     if (data.state?.placement && data.state.placement !== placement) {
@@ -198,18 +198,6 @@ export default function Selector<T extends keyof SelectorOptionsType>({
       setAnchorEl(null)
     }
   }
-
-  const ListWithEndOption = React.forwardRef<HTMLDivElement, JSX.IntrinsicElements['div'] & {}>((props, ref) => {
-    const { ...other } = props
-
-    return (
-      <ListboxComponent {...other} ref={ref} role="listbox" endOption={endOption} endOptionHref={endOptionHref}>
-        {props.children}
-      </ListboxComponent>
-    )
-  })
-
-  ListWithEndOption.displayName = 'ListWithEndOption'
 
   return (
     <Stack direction="column">
@@ -552,3 +540,18 @@ const AssigneeSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTM
     </Box>
   )
 }
+
+const ListWithEndOption = React.forwardRef<
+  HTMLDivElement,
+  JSX.IntrinsicElements['div'] & { endOption?: React.ReactNode; endOptionHref?: string }
+>((props, ref) => {
+  const { endOption, endOptionHref, ...other } = props
+
+  return (
+    <ListboxComponent {...other} ref={ref} role="listbox" endOption={endOption} endOptionHref={endOptionHref}>
+      {props.children}
+    </ListboxComponent>
+  )
+})
+
+ListWithEndOption.displayName = 'ListWithEndOption'
