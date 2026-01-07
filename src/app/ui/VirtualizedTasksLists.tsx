@@ -13,7 +13,7 @@ import { checkIfTaskViewer } from '@/utils/taskViewer'
 import { UserRole } from '@api/core/types/user'
 import { Box } from '@mui/material'
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { useCallback, useRef } from 'react'
+import { RefObject, useCallback, useRef } from 'react'
 import { useSelector } from 'react-redux'
 
 interface TasksVirtualizerProps {
@@ -124,95 +124,84 @@ export function TasksColumnVirtualizer({
   mode,
   list,
   subtasksByTaskId,
-}: TasksVirtualizerProps & { list: WorkflowStateResponse }) {
+  scrollElement,
+}: TasksVirtualizerProps & { list: WorkflowStateResponse; scrollElement: RefObject<HTMLDivElement> }) {
   const { showSubtasks } = useSelector(selectTaskBoard)
   const { tokenPayload } = useSelector(selectAuthDetails)
 
-  const parentRef = useRef<HTMLDivElement>(null)
   const columnVirtualizer = useVirtualizer({
     count: rows.length,
-    getScrollElement: () => parentRef.current,
+    getScrollElement: () => scrollElement.current,
     estimateSize: () => 44,
     measureElement: (element) => element.getBoundingClientRect().height,
     overscan: 100,
   })
   return (
     <div
-      ref={parentRef}
-      className="List"
       style={{
-        maxHeight: `100vh`,
+        height: `${columnVirtualizer.getTotalSize()}px`,
         width: '100%',
-        overflow: 'auto',
-        columnGap: '6px',
+        position: 'relative',
       }}
     >
-      <div
-        style={{
-          height: `${columnVirtualizer.getTotalSize()}px`,
-          width: '100%',
-          position: 'relative',
-        }}
-      >
-        {columnVirtualizer.getVirtualItems().map((virtualRow) => {
-          const subtasks = showSubtasks ? (subtasksByTaskId[rows[virtualRow.index].id] ?? []) : []
-          return (
-            <div
-              key={virtualRow.key}
-              data-index={virtualRow.index}
-              ref={(node) => columnVirtualizer.measureElement(node)}
-              style={{
-                display: 'flex',
-                position: 'absolute',
-                transform: `translateY(${virtualRow.start}px)`,
-                width: '100%',
-              }}
-              draggable={!checkIfTaskViewer(rows[virtualRow.index].viewers, tokenPayload)}
-              onDragStart={(e) => {
-                if (checkIfTaskViewer(rows[virtualRow.index].viewers, tokenPayload)) {
-                  e.preventDefault()
-                }
-              }}
-            >
-              <div style={{ padding: '3px 0', width: '100%' }}>
-                <>
-                  <DragDropHandler
-                    key={rows[virtualRow.index].id}
-                    accept={'taskCard'}
-                    index={virtualRow.index}
+      {columnVirtualizer.getVirtualItems().map((virtualRow) => {
+        const subtasks = showSubtasks ? (subtasksByTaskId[rows[virtualRow.index].id] ?? []) : []
+        return (
+          <div
+            key={virtualRow.key}
+            data-index={virtualRow.index}
+            ref={(node) => columnVirtualizer.measureElement(node)}
+            style={{
+              display: 'flex',
+              position: 'absolute',
+              transform: `translateY(${virtualRow.start}px)`,
+              width: '100%',
+            }}
+            draggable={!checkIfTaskViewer(rows[virtualRow.index].viewers, tokenPayload)}
+            onDragStart={(e) => {
+              if (checkIfTaskViewer(rows[virtualRow.index].viewers, tokenPayload)) {
+                e.preventDefault()
+              }
+            }}
+          >
+            <div style={{ padding: '3px 0', width: '100%' }}>
+              <>
+                <DragDropHandler
+                  key={rows[virtualRow.index].id}
+                  accept={'taskCard'}
+                  index={virtualRow.index}
+                  task={rows[virtualRow.index]}
+                  draggable={!checkIfTaskViewer(rows[virtualRow.index].viewers, tokenPayload)}
+                >
+                  <TaskCardList
                     task={rows[virtualRow.index]}
-                    draggable={!checkIfTaskViewer(rows[virtualRow.index].viewers, tokenPayload)}
-                  >
-                    <TaskCardList
-                      task={rows[virtualRow.index]}
-                      variant="task"
-                      key={rows[virtualRow.index].id}
-                      workflowState={list}
-                      mode={mode}
-                    />
-                    {showSubtasks &&
-                      subtasks?.length > 0 &&
-                      subtasks.map((subtask) => {
-                        return (
-                          <TaskCardList
-                            task={subtask}
-                            variant="subtask"
-                            key={subtask.id}
-                            mode={mode}
-                            sx={{
-                              padding: { xs: '10px 20px 10px 44px' },
-                              height: '44px',
-                            }}
-                          />
-                        )
-                      })}
-                  </DragDropHandler>
-                </>
-              </div>
+                    variant="task"
+                    key={rows[virtualRow.index].id}
+                    workflowState={list}
+                    mode={mode}
+                  />
+                  {showSubtasks &&
+                    subtasks?.length > 0 &&
+                    subtasks.map((subtask) => {
+                      return (
+                        <TaskCardList
+                          task={subtask}
+                          variant="subtask"
+                          key={subtask.id}
+                          mode={mode}
+                          sx={{
+                            padding: { xs: '10px 20px 10px 44px' },
+                            height: '44px',
+                          }}
+                        />
+                      )
+                    })}
+                </DragDropHandler>
+              </>
             </div>
-          )
-        })}
-      </div>
+          </div>
+        )
+      })}
     </div>
   )
 }
