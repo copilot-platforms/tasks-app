@@ -236,12 +236,7 @@ export function TasksListVirtualizer({
             accept={'taskCard'}
             index={sectionIndex}
             id={section.workflowState.id}
-            onDropItem={(droppedItem: any) => {
-              onDropItem({
-                taskId: droppedItem.task.id,
-                targetWorkflowStateId: section.workflowState.id,
-              })
-            }}
+            onDropItem={onDropItem}
             droppable
           >
             <TaskRow
