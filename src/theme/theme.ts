@@ -40,6 +40,11 @@ export const theme = createTheme({
     '6xl': '120rem',
   },
   color: {
+    workflowState: {
+      todo: '#90959d0a',
+      inProgress: '#8638050a',
+      done: '#115b3b0a',
+    },
     base: {
       black: '#000000',
       white: '#ffffff',

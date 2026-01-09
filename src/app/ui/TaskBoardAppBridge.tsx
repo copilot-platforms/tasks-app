@@ -2,6 +2,7 @@
 
 import { Icons } from '@/hooks/app-bridge/types'
 import { useActionsMenu } from '@/hooks/app-bridge/useActionsMenu'
+import { useAwake } from '@/hooks/app-bridge/useAwake'
 import { useBreadcrumbs } from '@/hooks/app-bridge/useBreadcrumbs'
 import { usePrimaryCta } from '@/hooks/app-bridge/usePrimaryCta'
 import { useSecondaryCta } from '@/hooks/app-bridge/useSecondaryCta'
@@ -20,13 +21,7 @@ interface TaskBoardAppBridgeProps {
 
 export const TaskBoardAppBridge = ({ token, role, portalUrl, isTaskBoardEmpty = false }: TaskBoardAppBridgeProps) => {
   const router = useRouter()
-  const [awake, setAwake] = useState(false)
-
-  useEffect(() => {
-    setTimeout(() => {
-      setAwake(true)
-    }, 0)
-  }, [])
+  const awake = useAwake()
 
   const handleTaskCreate = useCallback(() => {
     store.dispatch(setShowModal())
