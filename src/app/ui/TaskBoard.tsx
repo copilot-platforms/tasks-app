@@ -4,11 +4,10 @@ import { updateTask } from '@/app/(home)/actions'
 import { TaskDataFetcher } from '@/app/_fetchers/TaskDataFetcher'
 import { clientUpdateTask } from '@/app/detail/[task_id]/[user_type]/actions'
 import { TaskBoardAppBridge } from '@/app/ui/TaskBoardAppBridge'
-import { TasksColumnVirtualizer, TasksRowVirtualizer } from '@/app/ui/VirtualizedTasksLists'
+import { TasksRowVirtualizer, TasksListVirtualizer } from '@/app/ui/VirtualizedTasksLists'
 import { CustomDragLayer } from '@/components/CustomDragLayer'
 import { CardDragLayer } from '@/components/cards/CardDragLayer'
 import { TaskColumn } from '@/components/cards/TaskColumn'
-import { TaskRow } from '@/components/cards/TaskRow'
 import DashboardEmptyState from '@/components/layouts/EmptyState/DashboardEmptyState'
 import { FilterBar } from '@/components/layouts/FilterBar'
 import { SecondaryFilterBar } from '@/components/layouts/SecondaryFilterBar'
@@ -184,44 +183,22 @@ export const TaskBoard = ({ mode, workspace, token }: TaskBoardProps) => {
       )}
       {viewBoardSettings === View.LIST_VIEW && (
         <Stack
-          ref={boardRef}
           sx={{
             flexDirection: 'column',
             height: `calc(100vh - 130px)`,
             width: '99.92%',
             margin: '0 auto',
-            overflowY: 'auto',
           }}
         >
-          {prioritizeStartedStates(workflowStates).map((list, index) => (
-            <DragDropHandler
-              key={list.id}
-              accept={'taskCard'}
-              index={index}
-              id={list.id}
-              onDropItem={onDropItem}
-              droppable // Make TaskRow droppable
-            >
-              <TaskRow
-                mode={mode}
-                workflowStateId={list.id}
-                key={list.id}
-                workflowStateType={list.type}
-                columnName={list.name}
-                taskCount={taskCountForWorkflowStateId(list.id)}
-                showAddBtn={mode === UserRole.IU || !!previewMode}
-              >
-                <TasksColumnVirtualizer
-                  rows={sortTaskByDescendingOrder<TaskResponse>(filterTaskWithWorkflowStateId(list.id))}
-                  list={list}
-                  mode={mode}
-                  token={token}
-                  subtasksByTaskId={subtasksByTaskId}
-                  scrollElement={boardRef}
-                />
-              </TaskRow>
-            </DragDropHandler>
-          ))}
+          <TasksListVirtualizer
+            workflowStates={prioritizeStartedStates(workflowStates)}
+            mode={mode}
+            subtasksByTaskId={subtasksByTaskId}
+            filterTaskWithWorkflowStateId={filterTaskWithWorkflowStateId}
+            taskCountForWorkflowStateId={taskCountForWorkflowStateId}
+            previewMode={previewMode}
+            onDropItem={onDropItem}
+          />
         </Stack>
       )}
 
