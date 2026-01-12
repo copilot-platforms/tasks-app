@@ -143,7 +143,7 @@ export default async function TaskDetailPage(props: {
         <RealTimeTemplates tokenPayload={tokenPayload} token={token}>
           <EscapeHandler />
           <ResponsiveStack fromNotificationCenter={fromNotificationCenter}>
-            <Box sx={{ width: '100%', display: 'flex', flex: 1, flexDirection: 'column', overflow: 'hidden' }}>
+            <Box sx={{ width: '100%', display: 'flex', flex: 1, flexDirection: 'column', overflow: 'auto' }}>
               {isPreviewMode ? (
                 <StyledBox>
                   <AppMargin size={SizeofAppMargin.HEADER} py="17.5px">
@@ -170,55 +170,53 @@ export default async function TaskDetailPage(props: {
                 </>
               )}
 
-              <CustomScrollBar>
-                <TaskDetailsContainer
-                  sx={{
-                    padding: { xs: '20px 16px ', sm: '30px 20px' },
-                  }}
-                >
-                  <StyledTiptapDescriptionWrapper>
-                    <LastArchivedField />
-                    <TaskEditor
-                      // attachment={attachments}
-                      task_id={task_id}
-                      task={task}
-                      isEditable={params.user_type === UserType.INTERNAL_USER || !!getPreviewMode(tokenPayload)}
-                      updateTaskDetail={async (detail) => {
-                        'use server'
-                        await updateTaskDetail({ token, taskId: task_id, payload: { body: detail } })
-                      }}
-                      updateTaskTitle={async (title) => {
-                        'use server'
-                        title.trim() != '' && (await updateTaskDetail({ token, taskId: task_id, payload: { title } }))
-                      }}
-                      deleteTask={async () => {
-                        'use server'
-                        await deleteTask(token, task_id)
-                      }}
-                      postAttachment={async (postAttachmentPayload) => {
-                        'use server'
-                        await postAttachment(token, postAttachmentPayload)
-                      }}
-                      deleteAttachment={async (id: string) => {
-                        'use server'
-                        await deleteAttachment(token, id)
-                      }}
-                      userType={params.user_type}
-                      token={token}
-                    />
-                  </StyledTiptapDescriptionWrapper>
-                  {subTaskStatus.canCreateSubtask && (
-                    <Subtasks
-                      task_id={task_id}
-                      token={token}
-                      userType={tokenPayload.internalUserId ? UserRole.IU : UserRole.Client}
-                      canCreateSubtasks={params.user_type === UserType.INTERNAL_USER || !!getPreviewMode(tokenPayload)}
-                    />
-                  )}
+              <TaskDetailsContainer
+                sx={{
+                  padding: { xs: '20px 16px ', sm: '30px 20px' },
+                }}
+              >
+                <StyledTiptapDescriptionWrapper>
+                  <LastArchivedField />
+                  <TaskEditor
+                    // attachment={attachments}
+                    task_id={task_id}
+                    task={task}
+                    isEditable={params.user_type === UserType.INTERNAL_USER || !!getPreviewMode(tokenPayload)}
+                    updateTaskDetail={async (detail) => {
+                      'use server'
+                      await updateTaskDetail({ token, taskId: task_id, payload: { body: detail } })
+                    }}
+                    updateTaskTitle={async (title) => {
+                      'use server'
+                      title.trim() != '' && (await updateTaskDetail({ token, taskId: task_id, payload: { title } }))
+                    }}
+                    deleteTask={async () => {
+                      'use server'
+                      await deleteTask(token, task_id)
+                    }}
+                    postAttachment={async (postAttachmentPayload) => {
+                      'use server'
+                      await postAttachment(token, postAttachmentPayload)
+                    }}
+                    deleteAttachment={async (id: string) => {
+                      'use server'
+                      await deleteAttachment(token, id)
+                    }}
+                    userType={params.user_type}
+                    token={token}
+                  />
+                </StyledTiptapDescriptionWrapper>
+                {subTaskStatus.canCreateSubtask && (
+                  <Subtasks
+                    task_id={task_id}
+                    token={token}
+                    userType={tokenPayload.internalUserId ? UserRole.IU : UserRole.Client}
+                    canCreateSubtasks={params.user_type === UserType.INTERNAL_USER || !!getPreviewMode(tokenPayload)}
+                  />
+                )}
 
-                  <ActivityWrapper task_id={task_id} token={token} tokenPayload={tokenPayload} />
-                </TaskDetailsContainer>
-              </CustomScrollBar>
+                <ActivityWrapper task_id={task_id} token={token} tokenPayload={tokenPayload} />
+              </TaskDetailsContainer>
             </Box>
             <Box
               {...(fromNotificationCenter

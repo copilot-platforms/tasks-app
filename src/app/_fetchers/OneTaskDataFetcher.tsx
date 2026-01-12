@@ -15,7 +15,6 @@ interface OneTaskDataFetcherProps extends PropsWithToken {
 }
 
 export const OneTaskDataFetcher = ({ token, task_id, initialTask }: OneTaskDataFetcherProps & PropsWithToken) => {
-  const hasDispatchedRef = useRef(false)
   const buildQueryString = (token: string) => {
     const queryParams = new URLSearchParams({ token })
 
@@ -30,7 +29,7 @@ export const OneTaskDataFetcher = ({ token, task_id, initialTask }: OneTaskDataF
   })
 
   useEffect(() => {
-    if (!hasDispatchedRef.current && data?.task) {
+    if (data?.task) {
       //only invalidate cache on mount.
       const newTask = structuredClone(data.task)
       if (initialTask?.body && newTask.body === undefined) {
@@ -44,7 +43,6 @@ export const OneTaskDataFetcher = ({ token, task_id, initialTask }: OneTaskDataF
         }
       }
       store.dispatch(setActiveTask(newTask))
-      hasDispatchedRef.current = true
     }
   }, [data])
 
