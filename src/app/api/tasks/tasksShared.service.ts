@@ -302,7 +302,7 @@ export abstract class TasksSharedService extends BaseService {
     }
   }
 
-  async canCreateSubTask(taskId: string): Promise<boolean> {
+  protected async canCreateSubTask(taskId: string): Promise<boolean> {
     const parentPath = await this.getPathOfTask(taskId)
     if (!parentPath) {
       throw new APIError(httpStatus.NOT_FOUND, 'The requested parent task was not found')
@@ -312,7 +312,7 @@ export abstract class TasksSharedService extends BaseService {
     return uuidLength <= maxSubTaskDepth
   }
 
-  async getPathOfTask(id: string) {
+  private async getPathOfTask(id: string) {
     return (
       await this.db.$queryRaw<{ path: string }[] | null>`
           SELECT "path"
