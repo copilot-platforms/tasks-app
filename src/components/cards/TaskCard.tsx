@@ -56,6 +56,7 @@ import {
 import z from 'zod'
 import { StyledModal } from '@/app/detail/ui/styledComponent'
 import { ConfirmUI } from '@/components/layouts/ConfirmUI'
+import { useRouter } from 'next/navigation'
 
 const TaskCardContainer = styled(Stack)(({ theme }) => ({
   border: `1px solid ${theme.color.borders.border}`,
@@ -103,6 +104,7 @@ export const TaskCard = ({ task, href, workflowState, mode, subtasks, workflowDi
   const [currentDueDate, setCurrentDueDate] = useState<string | undefined>(task.dueDate)
 
   const [selectedAssignee, setSelectedAssignee] = useState<UserIdsType | undefined>(undefined)
+  const router = useRouter()
 
   const [assigneeValue, setAssigneeValue] = useState<IAssigneeCombined | Omit<IAssigneeCombined, 'type'> | undefined>(() => {
     return assigneeCache[task.id]
@@ -298,22 +300,30 @@ export const TaskCard = ({ task, href, workflowState, mode, subtasks, workflowDi
         {showSubtasks && subtasks && subtasks.length > 0 && (
           <Stack direction="column">
             {subtasks.map((subtask) => {
+              const href = `${getCardHref(subtask, mode)}/?token=${token}`
               return (
-                <CustomLink key={subtask.id} href={{ pathname: getCardHref(subtask, mode), query: { token } }}>
-                  <Box
-                    sx={{
-                      marginLeft: '-12px',
-                      marginRight: '-12px',
-                      paddingLeft: '32px',
-                      paddingRight: '12px',
-                      ':hover': {
-                        background: (theme) => theme.color.gray[150],
-                      },
-                    }}
-                  >
-                    <TaskCardList task={subtask} variant="subtask-board" mode={mode} />
-                  </Box>
-                </CustomLink>
+                <Box
+                  key={subtask.id}
+                  sx={{
+                    marginLeft: '-12px',
+                    marginRight: '-12px',
+                    paddingLeft: '32px',
+                    paddingRight: '12px',
+                    ':hover': {
+                      background: (theme) => theme.color.gray[150],
+                    },
+                  }}
+                  onMouseEnter={(e) => {
+                    e.preventDefault()
+                    router.prefetch(href)
+                  }}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    router.push(href)
+                  }} //removed customLink and applied manual prefetch for now. todo: prevent nested Links in TaskCard.
+                >
+                  <TaskCardList task={subtask} variant="subtask-board" mode={mode} />
+                </Box>
               )
             })}
           </Stack>
