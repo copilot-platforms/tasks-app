@@ -14,7 +14,7 @@ import {
   getTaskTimestamps,
   queueBodyUpdatedWebhook,
 } from '@api/tasks/tasks.helpers'
-import { TasksSharedService } from '@api/tasks/tasks.shared.service'
+import { TasksSharedService } from '@/app/api/tasks/tasksShared.service'
 import { AssigneeType, Prisma, PrismaClient, Source, StateType, Task, TaskTemplate, WorkflowState } from '@prisma/client'
 import httpStatus from 'http-status'
 import z from 'zod'
