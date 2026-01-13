@@ -10,13 +10,23 @@ export interface TemplateResponsePublicType {
   subTaskTemplates: TemplateResponsePublicType[]
 } //forward declaring the interface
 
-export const TemplateResponsePublicSchema: z.ZodType<TemplateResponsePublicType> = z.object({
+export const SubTemplateResponsePublicSchema = z.object({
   id: z.string().uuid(),
   object: z.literal('taskTemplate'),
   name: z.string(),
   description: z.string().nullable(),
   createdDate: RFC3339DateSchema,
-  subTaskTemplates: z.array(z.lazy(() => TemplateResponsePublicSchema)),
 })
+
+export const TemplateResponsePublicSchema = z.object({
+  id: z.string().uuid(),
+  object: z.literal('taskTemplate'),
+  name: z.string(),
+  description: z.string().nullable(),
+  createdDate: RFC3339DateSchema,
+  subTaskTemplates: z.array(SubTemplateResponsePublicSchema),
+})
+
+export type SubTemplateResponsePublic = z.infer<typeof SubTemplateResponsePublicSchema>
 
 export type TemplateResponsePublic = z.infer<typeof TemplateResponsePublicSchema>
