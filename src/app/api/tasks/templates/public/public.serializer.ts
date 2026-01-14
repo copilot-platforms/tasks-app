@@ -12,12 +12,19 @@ type TaskTemplateWithSubtasks = TaskTemplate & {
   subTaskTemplates?: TaskTemplateWithSubtasks[]
 }
 export class PublicTemplateSerializer {
+  private static MAX_DEPTH = 2
+
   static serialize(
     template: TaskTemplateWithSubtasks | TaskTemplateWithSubtasks[],
     isSubTaskTemplate: boolean = false,
+    depth: number = 0,
   ): TemplateResponsePublic | TemplateResponsePublic[] | SubTemplateResponsePublic | SubTemplateResponsePublic[] {
+    if (depth > this.MAX_DEPTH) {
+      throw new Error(`Max recursion depth of ${this.MAX_DEPTH} exceeded for sub-templates.`)
+    }
+    const templateSchema = isSubTaskTemplate ? SubTemplateResponsePublicSchema : TemplateResponsePublicSchema
     if (Array.isArray(template)) {
-      return z.array(isSubTaskTemplate ? SubTemplateResponsePublicSchema : TemplateResponsePublicSchema).parse(
+      return z.array(templateSchema).parse(
         template.map((template) => ({
           id: template.id,
           object: 'taskTemplate',
@@ -25,20 +32,20 @@ export class PublicTemplateSerializer {
           description: template.body,
           createdDate: toRFC3339(template.createdAt),
           ...(!isSubTaskTemplate && {
-            subTaskTemplates: template.subTaskTemplates?.map((sub) => this.serialize(sub, true)) ?? [],
+            subTaskTemplates: this.serialize(template.subTaskTemplates ?? [], true, depth + 1),
           }),
         })),
       )
     }
 
-    return (isSubTaskTemplate ? SubTemplateResponsePublicSchema : TemplateResponsePublicSchema).parse({
+    return templateSchema.parse({
       id: template.id,
       object: 'taskTemplate',
       name: template.title,
       description: template.body,
       createdDate: toRFC3339(template.createdAt),
       ...(!isSubTaskTemplate && {
-        subTaskTemplates: template.subTaskTemplates?.map((sub) => this.serialize(sub, true)) ?? [],
+        subTaskTemplates: this.serialize(template.subTaskTemplates ?? [], true, depth + 1),
       }),
     })
   }
