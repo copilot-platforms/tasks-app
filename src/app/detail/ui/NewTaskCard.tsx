@@ -328,6 +328,7 @@ export const NewTaskCard = ({
             responsiveNoHide
             buttonWidth="auto"
             useClickHandler
+            customDropdownWidth={400}
           />
         </Stack>
 
