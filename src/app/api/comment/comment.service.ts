@@ -2,7 +2,7 @@ import { sendCommentCreateNotifications } from '@/jobs/notifications'
 import { sendReplyCreateNotifications } from '@/jobs/notifications/send-reply-create-notifications'
 import { InitiatedEntity } from '@/types/common'
 import { CreateAttachmentRequestSchema } from '@/types/dto/attachments.dto'
-import { CreateComment, UpdateComment } from '@/types/dto/comment.dto'
+import { CommentsPublicFilterType, CommentWithAttachments, CreateComment, UpdateComment } from '@/types/dto/comment.dto'
 import { getArrayDifference, getArrayIntersection } from '@/utils/array'
 import { getFileNameFromPath } from '@/utils/attachmentUtils'
 import { getFilePathFromUrl } from '@/utils/signedUrlReplacer'
@@ -16,7 +16,7 @@ import { PoliciesService } from '@api/core/services/policies.service'
 import { Resource } from '@api/core/types/api'
 import { UserAction } from '@api/core/types/user'
 import { TasksService } from '@api/tasks/tasks.service'
-import { ActivityType, Comment, CommentInitiator } from '@prisma/client'
+import { ActivityType, Comment, CommentInitiator, Prisma } from '@prisma/client'
 import httpStatus from 'http-status'
 import { z } from 'zod'
 import { AttachmentsService } from '@api/attachments/attachments.service'
@@ -368,4 +368,40 @@ export class CommentService extends BaseService {
     // }) //todo: add support for commentId in scrapMedias.
     return htmlString
   } //todo: make this resuable since this is highly similar to what we are doing on tasks.
+
+  async getAllComments(queryFilters: CommentsPublicFilterType): Promise<CommentWithAttachments[]> {
+    const { parentId, taskId, limit, lastIdCursor, initiatorId } = queryFilters
+    const where = {
+      parentId,
+      taskId,
+      initiatorId,
+      workspaceId: this.user.workspaceId,
+    }
+
+    const pagination: Prisma.CommentFindManyArgs = {
+      take: limit,
+      cursor: lastIdCursor ? { id: lastIdCursor } : undefined,
+      skip: lastIdCursor ? 1 : undefined,
+    }
+
+    return await this.db.comment.findMany({
+      where,
+      ...pagination,
+      include: { attachments: true },
+      orderBy: { createdAt: 'desc' },
+    })
+  }
+
+  async hasMoreCommentsAfterCursor(
+    id: string,
+    publicFilters: Partial<Parameters<CommentService['getAllComments']>[0]>,
+  ): Promise<boolean> {
+    const newComment = await this.db.comment.findFirst({
+      where: { ...publicFilters, workspaceId: this.user.workspaceId },
+      cursor: { id },
+      skip: 1,
+      orderBy: { createdAt: 'desc' },
+    })
+    return !!newComment
+  }
 }
