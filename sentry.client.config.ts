@@ -37,7 +37,7 @@ if (dsn) {
     ignoreErrors: [/fetch failed/i],
 
     beforeSend(event) {
-      if (!isProd) {
+      if (!isProd && event.type !== 'transaction') {
         return null
       }
       event.tags = {
