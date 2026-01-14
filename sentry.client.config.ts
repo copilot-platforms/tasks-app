@@ -27,7 +27,7 @@ if (dsn) {
 		integrations: [
 			Sentry.browserTracingIntegration({
 				beforeStartSpan: (e) => {
-					console.info("meowmeowmeow", e.name);
+					console.info("SentryBrowserTracingSpan", e.name);
 					return e;
 				},
 			}),
