@@ -537,6 +537,7 @@ const NewTaskHeader = ({
             buttonWidth="auto"
             useClickHandler
             padding="5px"
+            customDropdownWidth={400}
           />
         </Stack>
         <CloseIcon style={{ cursor: 'pointer' }} onClick={() => handleClose()} />
