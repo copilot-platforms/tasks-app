@@ -5,25 +5,21 @@ import { getSearchParams } from '@/utils/request'
 import { NextRequest, NextResponse } from 'next/server'
 import { decode, encode } from 'js-base64'
 import { PublicCommentSerializer } from '@/app/api/comment/public/comment-public.serializer'
-import APIError from '@/app/api/core/exceptions/api'
-import httpStatus from 'http-status'
 import { CommentsPublicFilterType } from '@/types/dto/comment.dto'
+import { IdParams } from '@/app/api/core/types/api'
 
-export const getAllCommentsPublic = async (req: NextRequest) => {
+export const getAllCommentsPublicForTask = async (req: NextRequest, { params: { id } }: IdParams) => {
   const user = await authenticate(req)
 
-  const { parentCommentId, taskId, createdBy, limit, nextToken } = getSearchParams(req.nextUrl.searchParams, [
+  const { parentCommentId, createdBy, limit, nextToken } = getSearchParams(req.nextUrl.searchParams, [
     'parentCommentId',
-    'taskId',
     'createdBy',
     'limit',
     'nextToken',
   ])
 
-  if (!taskId) throw new APIError(httpStatus.BAD_REQUEST, 'taskId is required')
-
   const publicFilters: CommentsPublicFilterType = {
-    taskId,
+    taskId: id,
     parentId: (parentCommentId === 'null' ? null : parentCommentId) || undefined,
     initiatorId: createdBy || undefined,
   }
