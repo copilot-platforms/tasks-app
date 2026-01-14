@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { AttachmentResponseSchema } from './attachments.dto'
+import { Attachment, Comment } from '@prisma/client'
 
 export const CreateCommentSchema = z.object({
   content: z.string(),
@@ -37,3 +38,13 @@ export const CommentResponseSchema: z.ZodType = z.lazy(() =>
 )
 
 export type CommentResponse = z.infer<typeof CommentResponseSchema>
+
+export type CommentWithAttachments = Comment & { attachments: Attachment[] }
+
+export type CommentsPublicFilterType = {
+  taskId: string
+  parentId?: string
+  initiatorId?: string
+  limit?: number
+  lastIdCursor?: string
+}
