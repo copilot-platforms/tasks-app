@@ -498,7 +498,7 @@ const TemplateSelectorRenderer = ({
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
-            maxWidth: width ? `${width - 30}px` : '160px',
+            maxWidth: width ? `${width - 30}px` : '160px', //-30px used as a safe boundary so that the text does not overflow.
           }}
         >
           {(option as ITemplate).title as string}
