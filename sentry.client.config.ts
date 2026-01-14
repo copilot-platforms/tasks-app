@@ -7,7 +7,6 @@ import * as Sentry from '@sentry/nextjs'
 const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN || process.env.SENTRY_DSN
 const vercelEnv = process.env.NEXT_PUBLIC_VERCEL_ENV
 const isProd = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production'
-const isPreview = process.env.NEXT_PUBLIC_VERCEL_ENV === 'preview'
 
 if (dsn) {
   Sentry.init({
@@ -38,7 +37,7 @@ if (dsn) {
     ignoreErrors: [/fetch failed/i],
 
     beforeSend(event) {
-      if (isPreview) {
+      if (!isProd) {
         return null
       }
       event.tags = {
