@@ -66,6 +66,7 @@ interface Prop<T extends keyof SelectorOptionsType> {
   cursor?: Property.Cursor
   currentOption?: SelectorOptionsType[T] //option which shall be at the top of the selector without any grouping
   errorPlaceholder?: string
+  customDropdownWidth?: number
 }
 
 export default function Selector<T extends keyof SelectorOptionsType>({
@@ -98,6 +99,7 @@ export default function Selector<T extends keyof SelectorOptionsType>({
   cursor,
   currentOption,
   errorPlaceholder = 'Required',
+  customDropdownWidth,
 }: Prop<T>) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
@@ -271,7 +273,7 @@ export default function Selector<T extends keyof SelectorOptionsType>({
         open={open}
         anchorEl={anchorEl}
         sx={{
-          width: 'fit-content',
+          width: customDropdownWidth ? `${customDropdownWidth}px` : 'fit-content',
           zIndex: '9999',
         }}
         placement="bottom-start"
@@ -385,7 +387,7 @@ export default function Selector<T extends keyof SelectorOptionsType>({
                 padding="4px 12px 8px 12px"
                 basePadding="8px 12px 8px 12px"
                 sx={{
-                  width: '200px',
+                  width: customDropdownWidth ? `${customDropdownWidth}px` : '200px',
                   visibility: { xs: 'none', sm: 'visible' },
                   borderRadius: '4px',
                 }}
@@ -437,6 +439,7 @@ export default function Selector<T extends keyof SelectorOptionsType>({
                 props={props}
                 option={option}
                 onClickHandler={useClickHandler ? onClickHandler : undefined}
+                width={customDropdownWidth}
               />
             ) : (
               <></>
@@ -453,10 +456,12 @@ const TemplateSelectorRenderer = ({
   props,
   option,
   onClickHandler,
+  width,
 }: {
   props: HTMLAttributes<HTMLLIElement>
   option: unknown
   onClickHandler?: () => void
+  width?: number
 }) => {
   return (
     <Box
@@ -489,7 +494,12 @@ const TemplateSelectorRenderer = ({
         <Typography
           variant="sm"
           fontWeight={400}
-          sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '160px' }}
+          sx={{
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            maxWidth: width ? `${width - 30}px` : '160px',
+          }}
         >
           {(option as ITemplate).title as string}
         </Typography>
