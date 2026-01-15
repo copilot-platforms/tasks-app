@@ -44,3 +44,14 @@ export const getAllCommentsPublicForTask = async (req: NextRequest, { params }: 
     nextToken: base64NextToken,
   })
 }
+
+export const getOneCommentPublicForTask = async (req: NextRequest, { params: { id } }: IdParams) => {
+  const user = await authenticate(req)
+
+  const commentService = new CommentService(user)
+  const comment = await commentService.getCommentById(id, true)
+
+  if (!comment) return NextResponse.json({ data: null })
+
+  return NextResponse.json({ data: await PublicCommentSerializer.serialize(comment) })
+}
