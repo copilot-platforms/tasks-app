@@ -50,7 +50,7 @@ export const getOneCommentPublicForTask = async (req: NextRequest, { params }: I
   const user = await authenticate(req)
 
   const commentService = new CommentService(user)
-  const comment = await commentService.getCommentById(id, true)
+  const comment = await commentService.getCommentById({ id, includeAttachments: true })
 
   if (!comment) return NextResponse.json({ data: null })
 
