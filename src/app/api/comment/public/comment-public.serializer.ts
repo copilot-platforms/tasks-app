@@ -2,7 +2,7 @@ import { PublicAttachmentDto, PublicCommentDto, PublicCommentDtoSchema } from '@
 import { RFC3339DateSchema } from '@/types/common'
 import { CommentWithAttachments } from '@/types/dto/comment.dto'
 import { toRFC3339 } from '@/utils/dateHelper'
-import { getSignedUrl } from '@/utils/signUrl'
+import { createSignedUrls } from '@/utils/signUrl'
 import { Attachment, CommentInitiator } from '@prisma/client'
 import { z } from 'zod'
 
@@ -42,20 +42,25 @@ export class PublicCommentSerializer {
     uploadedByUserType: CommentInitiator | null
     uploadedBy: string
   }): Promise<PublicAttachmentDto[]> {
-    const promises = attachments.map(async (attachment) => ({
-      id: attachment.id,
-      fileName: attachment.fileName,
-      fileSize: attachment.fileSize,
-      mimeType: attachment.fileType,
-      downloadUrl: z
-        .string({
-          message: `Invalid downloadUrl for attachment with id ${attachment.id}`,
-        })
-        .parse(await getSignedUrl(attachment.filePath)),
-      uploadedBy,
-      uploadedByUserType,
-      uploadedDate: RFC3339DateSchema.parse(toRFC3339(attachment.createdAt)),
-    }))
+    const attachmentPaths = attachments.map((attachment) => attachment.filePath)
+    const signedUrls = await PublicCommentSerializer.getFormattedSignedUrls(attachmentPaths)
+
+    const promises = attachments.map(async (attachment) => {
+      const url = signedUrls.find((item) => item.path === attachment.filePath)?.url
+      return {
+        id: attachment.id,
+        fileName: attachment.fileName,
+        fileSize: attachment.fileSize,
+        mimeType: attachment.fileType,
+        downloadUrl: z
+          .string()
+          .url({ message: `Invalid downloadUrl for attachment with id ${attachment.id}` })
+          .parse(url),
+        uploadedBy,
+        uploadedByUserType,
+        uploadedDate: RFC3339DateSchema.parse(toRFC3339(attachment.createdAt)),
+      }
+    })
     return await Promise.all(promises)
   }
 
@@ -66,5 +71,11 @@ export class PublicCommentSerializer {
   static async serializeMany(comments: CommentWithAttachments[]): Promise<PublicCommentDto[]> {
     const serializedComments = await Promise.all(comments.map(async (comment) => PublicCommentSerializer.serialize(comment)))
     return z.array(PublicCommentDtoSchema).parse(serializedComments)
+  }
+
+  static async getFormattedSignedUrls(attachmentPaths: string[]) {
+    if (!attachmentPaths.length) return []
+    const signedUrls = await createSignedUrls(attachmentPaths)
+    return signedUrls.map((item) => ({ path: item.path, url: item.signedUrl }))
   }
 }
