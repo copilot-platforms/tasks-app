@@ -30,7 +30,7 @@ import { IAssigneeCombined } from '@/types/interfaces'
 import { getAssigneeName } from '@/utils/assignee'
 import { fetcher } from '@/utils/fetcher'
 import { getTimeDifference } from '@/utils/getTimeDifference'
-import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
+import { deleteEditorAttachmentsHandler, getAttachmentPayload, uploadAttachmentHandler } from '@/utils/attachmentUtils'
 import { isTapwriteContentEmpty } from '@/utils/isTapwriteContentEmpty'
 import { checkOptimisticStableId, OptimisticUpdate } from '@/utils/optimisticCommentUtils'
 import { ReplyResponse } from '@api/activity-logs/schemas/CommentAddedSchema'
@@ -42,6 +42,7 @@ import { TransitionGroup } from 'react-transition-group'
 import useSWRMutation from 'swr/mutation'
 import { Tapwrite } from 'tapwrite'
 import { z } from 'zod'
+import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 
 export const CommentCard = ({
   comment,
@@ -51,6 +52,7 @@ export const CommentCard = ({
   optimisticUpdates,
   commentInitiator,
   'data-comment-card': dataCommentCard, //for selection of the element while highlighting the container in notification
+  postAttachment,
 }: {
   comment: LogResponse
   createComment: (postCommentPayload: CreateComment) => void
@@ -59,6 +61,7 @@ export const CommentCard = ({
   optimisticUpdates: OptimisticUpdate[]
   commentInitiator: IAssigneeCombined | undefined
   'data-comment-card'?: string
+  postAttachment: (postAttachmentPayload: CreateAttachmentRequest) => void
 }) => {
   const [showReply, setShowReply] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
@@ -107,8 +110,10 @@ export const CommentCard = ({
 
   const uploadFn = token
     ? async (file: File) => {
+        const commentId = z.string().parse(comment.details.id)
         if (activeTask) {
-          const fileUrl = await uploadImageHandler(file, token, activeTask.workspaceId, task_id)
+          const fileUrl = await uploadAttachmentHandler(file, token, activeTask.workspaceId, commentId, 'comments', task_id)
+          fileUrl && postAttachment(getAttachmentPayload(fileUrl, file, commentId, 'comments'))
           return fileUrl
         }
       }

@@ -25,7 +25,7 @@ import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { SelectorType } from '@/components/inputs/Selector'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
-import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
+import { deleteEditorAttachmentsHandler, uploadAttachmentHandler } from '@/utils/attachmentUtils'
 import AttachmentLayout from '@/components/AttachmentLayout'
 import { StyledModal } from '@/app/detail/ui/styledComponent'
 
@@ -84,7 +84,7 @@ const NewTemplateFormInputs = () => {
 
   const uploadFn =
     token && tokenPayload?.workspaceId
-      ? async (file: File) => uploadImageHandler(file, token, tokenPayload.workspaceId, null, 'templates')
+      ? async (file: File) => uploadAttachmentHandler(file, token, tokenPayload.workspaceId, null, 'templates')
       : undefined
 
   const todoWorkflowState = workflowStates.find((el) => el.key === 'todo') || workflowStates[0]

@@ -93,16 +93,9 @@ export const ModalNewTaskForm = ({
 
           const isSubTaskDisabled = disableSubtaskTemplates
           store.dispatch(clearCreateTaskFields({ isFilterOn: !checkEmptyAssignee(filterOptions[FilterOptions.ASSIGNEE]) }))
-          const createdTask = await handleCreate(token as string, CreateTaskRequestSchema.parse(payload), {
+          await handleCreate(token as string, CreateTaskRequestSchema.parse(payload), {
             disableSubtaskTemplates: isSubTaskDisabled,
           })
-          const toUploadAttachments: CreateAttachmentRequest[] = attachments.map((el) => {
-            return {
-              ...el,
-              taskId: createdTask.id,
-            }
-          })
-          await handleCreateMultipleAttachments(toUploadAttachments)
         }}
         handleClose={handleModalClose}
       />

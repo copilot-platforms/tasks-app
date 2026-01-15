@@ -10,6 +10,7 @@ import useScrollToElement from '@/hooks/useScrollToElement'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 import { Token } from '@/types/common'
+import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { CreateComment } from '@/types/dto/comment.dto'
 import { fetcher } from '@/utils/fetcher'
 import { generateRandomString } from '@/utils/generateRandomString'
@@ -33,10 +34,12 @@ export const ActivityWrapper = ({
   token,
   task_id,
   tokenPayload,
+  postAttachment,
 }: {
   token: string
   task_id: string
   tokenPayload: Token
+  postAttachment: (postAttachmentPayload: CreateAttachmentRequest) => void
 }) => {
   const { activeTask, assignee } = useSelector(selectTaskBoard)
   const { expandedComments } = useSelector(selectTaskDetails)
@@ -234,6 +237,7 @@ export const ActivityWrapper = ({
                         task_id={task_id}
                         stableId={z.string().parse(item.details.id) ?? item.id}
                         optimisticUpdates={optimisticUpdates}
+                        postAttachment={postAttachment}
                       />
                     ) : Object.keys(item).length === 0 ? null : (
                       <ActivityLog log={item} />
@@ -242,7 +246,7 @@ export const ActivityWrapper = ({
                 </Collapse>
               ))}
             </TransitionGroup>
-            <CommentInput createComment={handleCreateComment} task_id={task_id} />
+            <CommentInput createComment={handleCreateComment} task_id={task_id} postAttachment={postAttachment} />
           </Stack>
         )}
       </Stack>
