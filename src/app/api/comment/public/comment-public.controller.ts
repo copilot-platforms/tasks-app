@@ -7,6 +7,7 @@ import { decode, encode } from 'js-base64'
 import { PublicCommentSerializer } from '@/app/api/comment/public/comment-public.serializer'
 import { CommentsPublicFilterType } from '@/types/dto/comment.dto'
 import { IdParams } from '@/app/api/core/types/api'
+import { getPaginationLimit } from '@/utils/pagination'
 
 export const getAllCommentsPublicForTask = async (req: NextRequest, { params }: IdParams) => {
   const { id } = await params
@@ -21,13 +22,13 @@ export const getAllCommentsPublicForTask = async (req: NextRequest, { params }: 
 
   const publicFilters: CommentsPublicFilterType = {
     taskId: id,
-    parentId: (parentCommentId === 'null' ? null : parentCommentId) || undefined,
+    parentId: parentCommentId || undefined,
     initiatorId: createdBy || undefined,
   }
 
   const commentService = new CommentService(user)
   const comments = await commentService.getAllComments({
-    limit: limit ? +limit : defaultLimit,
+    limit: getPaginationLimit(limit),
     lastIdCursor: nextToken ? decode(nextToken) : undefined,
     ...publicFilters,
   })
