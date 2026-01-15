@@ -8,9 +8,10 @@ import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
 import { useWindowWidth } from '@/hooks/useWindowWidth'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { CreateComment } from '@/types/dto/comment.dto'
+import { deleteEditorAttachmentsHandler, uploadAttachmentHandler } from '@/utils/attachmentUtils'
 import { getMentionsList } from '@/utils/getMentionList'
-import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
 import { isTapwriteContentEmpty } from '@/utils/isTapwriteContentEmpty'
 import { Stack } from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
@@ -20,9 +21,10 @@ import { Tapwrite } from 'tapwrite'
 interface Prop {
   createComment: (postCommentPayload: CreateComment) => void
   task_id: string
+  postAttachment: (postAttachmentPayload: CreateAttachmentRequest) => void
 }
 
-export const CommentInput = ({ createComment, task_id }: Prop) => {
+export const CommentInput = ({ createComment, task_id, postAttachment }: Prop) => {
   const [detail, setDetail] = useState('')
   const [isListOrMenuActive, setIsListOrMenuActive] = useState(false)
   const { tokenPayload } = useSelector(selectAuthDetails)
@@ -87,7 +89,7 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
   const uploadFn = token
     ? async (file: File) => {
         if (activeTask) {
-          const fileUrl = await uploadImageHandler(file, token ?? '', activeTask.workspaceId, task_id)
+          const fileUrl = await uploadAttachmentHandler(file, token ?? '', activeTask.workspaceId, task_id)
           return fileUrl
         }
       }

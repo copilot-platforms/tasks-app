@@ -14,6 +14,11 @@ export class SupabaseActions extends SupabaseService {
     return data
   }
 
+  async getMetaData(filePath: string) {
+    const { data, error } = await this.supabase.storage.from(supabaseBucket).info(filePath)
+    return data
+  }
+
   async uploadAttachment(file: File, signedUrl: ISignedUrlUpload, task_id: string | null) {
     let filePayload
     const { data, error } = await this.supabase.storage

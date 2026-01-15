@@ -75,6 +75,10 @@ const createTaskSlice = createSlice({
       state.attachments = state.attachments.filter((el) => el.filePath !== attachment.filePath)
     },
 
+    addAttachment: (state, action: { payload: CreateAttachmentRequest }) => {
+      state.attachments.push(action.payload)
+    },
+
     setCreateTaskFields: (
       state,
       action: { payload: { targetField: keyof IInitialState; value: IInitialState[keyof IInitialState] } },
@@ -147,6 +151,7 @@ export const {
   setAppliedDescription,
   setAppliedTitle,
   setAllCreateTaskFields,
+  addAttachment,
 } = createTaskSlice.actions
 
 export default createTaskSlice.reducer
