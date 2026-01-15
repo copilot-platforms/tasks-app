@@ -45,7 +45,8 @@ export const getAllCommentsPublicForTask = async (req: NextRequest, { params }: 
   })
 }
 
-export const getOneCommentPublicForTask = async (req: NextRequest, { params: { id } }: IdParams) => {
+export const getOneCommentPublicForTask = async (req: NextRequest, { params }: IdParams) => {
+  const { id } = await params
   const user = await authenticate(req)
 
   const commentService = new CommentService(user)
