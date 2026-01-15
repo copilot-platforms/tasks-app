@@ -45,7 +45,7 @@ export class PublicCommentSerializer {
     const attachmentPaths = attachments.map((attachment) => attachment.filePath)
     const signedUrls = await PublicCommentSerializer.getFormattedSignedUrls(attachmentPaths)
 
-    const promises = attachments.map(async (attachment) => {
+    return attachments.map((attachment) => {
       const url = signedUrls.find((item) => item.path === attachment.filePath)?.url
       return {
         id: attachment.id,
@@ -61,7 +61,6 @@ export class PublicCommentSerializer {
         uploadedDate: RFC3339DateSchema.parse(toRFC3339(attachment.createdAt)),
       }
     })
-    return await Promise.all(promises)
   }
 
   static async serialize(comment: CommentWithAttachments): Promise<PublicCommentDto> {
