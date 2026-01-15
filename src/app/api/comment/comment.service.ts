@@ -1,3 +1,4 @@
+import { AttachmentsService } from '@/app/api/attachments/attachments.service'
 import { sendCommentCreateNotifications } from '@/jobs/notifications'
 import { sendReplyCreateNotifications } from '@/jobs/notifications/send-reply-create-notifications'
 import { InitiatedEntity } from '@/types/common'
@@ -17,7 +18,7 @@ import { PoliciesService } from '@api/core/services/policies.service'
 import { Resource } from '@api/core/types/api'
 import { UserAction } from '@api/core/types/user'
 import { TasksService } from '@api/tasks/tasks.service'
-import { ActivityType, Comment, CommentInitiator, Prisma } from '@prisma/client'
+import { ActivityType, Comment, CommentInitiator, Prisma, PrismaClient } from '@prisma/client'
 import httpStatus from 'http-status'
 import { z } from 'zod'
 import { AttachmentsService } from '@api/attachments/attachments.service'
@@ -103,27 +104,54 @@ export class CommentService extends BaseService {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Delete, Resource.Comment)
 
-    const replyCounts = await this.getReplyCounts([id])
-    const comment = await this.db.comment.delete({ where: { id } })
+    const commentExists = await this.db.comment.findFirst({ where: { id } })
+    if (!commentExists) throw new APIError(httpStatus.NOT_FOUND, 'The comment to delete was not found')
 
-    // Delete corresponding activity log as well, so as to remove comment from UI
-    // If activity log exists but comment has a `deletedAt`, show "Comment was deleted" card instead
-    if (!replyCounts[id]) {
-      // If there are 0 replies, key won't be in object
-      await this.deleteRelatedActivityLogs(id)
-    }
+    // transaction that deletes the comment and its attachments
+    const { comment, attachments } = await this.db.$transaction(async (tx) => {
+      this.setTransaction(tx as PrismaClient)
+      const comment = await this.db.comment.delete({ where: { id } })
 
-    // If parent comment now has no replies and is also deleted, delete parent as well
-    if (comment.parentId) {
-      const parent = await this.db.comment.findFirst({ where: { id: comment.parentId, deletedAt: undefined } })
-      if (parent?.deletedAt) {
-        await this.deleteEmptyParentActivityLog(parent)
+      // delete the related attachments as well
+      const attachmentService = new AttachmentsService(this.user)
+      attachmentService.setTransaction(tx as PrismaClient)
+
+      const attachments = await attachmentService.deleteAttachmentsOfComment(comment.id)
+      attachmentService.unsetTransaction()
+
+      this.unsetTransaction()
+      return { comment, attachments }
+    })
+
+    // transaction that deletes the activity logs
+    return await this.db.$transaction(async (tx) => {
+      this.setTransaction(tx as PrismaClient)
+      const replyCounts = await this.getReplyCounts([id])
+
+      // Delete corresponding activity log as well, so as to remove comment from UI
+      // If activity log exists but comment has a `deletedAt`, show "Comment was deleted" card instead
+      if (!replyCounts[id]) {
+        // If there are 0 replies, key won't be in object
+        await this.deleteRelatedActivityLogs(id)
       }
-    }
 
-    const tasksService = new TasksService(this.user)
-    await tasksService.setNewLastActivityLogUpdated(comment.taskId)
-    return comment
+      // If parent comment now has no replies and is also deleted, delete parent as well
+      if (comment.parentId) {
+        const parent = await this.db.comment.findFirst({ where: { id: comment.parentId, deletedAt: undefined } })
+        if (parent?.deletedAt) {
+          await this.deleteEmptyParentActivityLog(parent)
+        }
+      }
+
+      const tasksService = new TasksService(this.user)
+      tasksService.setTransaction(tx as PrismaClient)
+
+      await tasksService.setNewLastActivityLogUpdated(comment.taskId)
+      tasksService.unsetTransaction()
+
+      this.unsetTransaction()
+      return { ...comment, attachments }
+    })
   }
 
   private async deleteEmptyParentActivityLog(parent: Comment) {

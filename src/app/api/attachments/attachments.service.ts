@@ -86,4 +86,18 @@ export class AttachmentsService extends BaseService {
     const { data } = await supabase.supabase.storage.from(supabaseBucket).createSignedUrl(filePath, signedUrlTtl)
     return data?.signedUrl
   }
+
+  async deleteAttachmentsOfComment(commentId: string) {
+    const policyGate = new PoliciesService(this.user)
+    policyGate.authorize(UserAction.Delete, Resource.Attachments)
+
+    const commentAttachment = await this.db.attachment.findMany({
+      where: { commentId: commentId, workspaceId: this.user.workspaceId },
+    })
+    await this.db.attachment.deleteMany({
+      where: { commentId: commentId, workspaceId: this.user.workspaceId },
+    })
+
+    return commentAttachment
+  }
 }
