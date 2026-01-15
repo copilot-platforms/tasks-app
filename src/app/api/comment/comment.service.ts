@@ -161,9 +161,10 @@ export class CommentService extends BaseService {
     return comment
   }
 
-  async getCommentById(id: string) {
+  async getCommentById(id: string, includeAttachments?: boolean) {
     const comment = await this.db.comment.findFirst({
       where: { id, deletedAt: undefined }, // Can also get soft deleted comments
+      include: { attachments: includeAttachments },
     })
     if (!comment) return null
 
