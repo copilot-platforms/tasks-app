@@ -8,7 +8,8 @@ import { PublicCommentSerializer } from '@/app/api/comment/public/comment-public
 import { CommentsPublicFilterType } from '@/types/dto/comment.dto'
 import { IdParams } from '@/app/api/core/types/api'
 
-export const getAllCommentsPublicForTask = async (req: NextRequest, { params: { id } }: IdParams) => {
+export const getAllCommentsPublicForTask = async (req: NextRequest, { params }: IdParams) => {
+  const { id } = await params
   const user = await authenticate(req)
 
   const { parentCommentId, createdBy, limit, nextToken } = getSearchParams(req.nextUrl.searchParams, [
