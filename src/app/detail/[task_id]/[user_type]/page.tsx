@@ -214,7 +214,15 @@ export default async function TaskDetailPage(props: {
                   />
                 )}
 
-                <ActivityWrapper task_id={task_id} token={token} tokenPayload={tokenPayload} />
+                <ActivityWrapper
+                  task_id={task_id}
+                  token={token}
+                  tokenPayload={tokenPayload}
+                  postAttachment={async (postAttachmentPayload) => {
+                    'use server'
+                    await postAttachment(token, postAttachmentPayload)
+                  }}
+                />
               </TaskDetailsContainer>
             </Box>
             <Box

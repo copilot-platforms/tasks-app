@@ -1,17 +1,20 @@
 import { maxSubTaskDepth } from '@/constants/tasks'
 import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 import { InternalUsers, Uuid } from '@/types/common'
+import { CreateAttachmentRequestSchema } from '@/types/dto/attachments.dto'
 import { CreateTaskRequest, CreateTaskRequestSchema, Viewers } from '@/types/dto/tasks.dto'
+import { getFileNameFromPath } from '@/utils/attachmentUtils'
 import { buildLtree, buildLtreeNodeString } from '@/utils/ltree'
 import { getFilePathFromUrl } from '@/utils/signedUrlReplacer'
 import { getSignedUrl } from '@/utils/signUrl'
 import { SupabaseActions } from '@/utils/SupabaseActions'
+import APIError from '@api/core/exceptions/api'
 import { BaseService } from '@api/core/services/base.service'
+import { UserRole } from '@api/core/types/user'
 import { AssigneeType, Prisma, PrismaClient, StateType, Task, TaskTemplate } from '@prisma/client'
 import httpStatus from 'http-status'
 import z from 'zod'
-import APIError from '@api/core/exceptions/api'
-import { UserRole } from '@api/core/types/user'
+import { AttachmentsService } from '@api/attachments/attachments.service'
 
 //Base class with shared permission logic and methods that both tasks.service.ts and public.service.ts could use
 export abstract class TasksSharedService extends BaseService {
@@ -384,6 +387,7 @@ export abstract class TasksSharedService extends BaseService {
 
     const newFilePaths: { originalSrc: string; newFilePath: string }[] = []
     const copyAttachmentPromises: Promise<void>[] = []
+    const createAttachmentPayloads = []
     const matches: { originalSrc: string; filePath: string; fileName: string }[] = []
 
     while ((match = imgTagRegex.exec(htmlString)) !== null) {
@@ -407,11 +411,26 @@ export abstract class TasksSharedService extends BaseService {
     for (const { originalSrc, filePath, fileName } of matches) {
       const newFilePath = `${this.user.workspaceId}/${task_id}/${fileName}`
       const supabaseActions = new SupabaseActions()
+
+      const fileMetaData = await supabaseActions.getMetaData(filePath)
+      createAttachmentPayloads.push(
+        CreateAttachmentRequestSchema.parse({
+          taskId: task_id,
+          filePath: newFilePath,
+          fileSize: fileMetaData?.size,
+          fileType: fileMetaData?.contentType,
+          fileName: getFileNameFromPath(newFilePath),
+        }),
+      )
       copyAttachmentPromises.push(supabaseActions.moveAttachment(filePath, newFilePath))
       newFilePaths.push({ originalSrc, newFilePath })
     }
 
     await Promise.all(copyAttachmentPromises)
+    const attachmentService = new AttachmentsService(this.user)
+    if (createAttachmentPayloads.length) {
+      await attachmentService.createMultipleAttachments(createAttachmentPayloads)
+    }
 
     const signedUrlPromises = newFilePaths.map(async ({ originalSrc, newFilePath }) => {
       const newUrl = await getSignedUrl(newFilePath)

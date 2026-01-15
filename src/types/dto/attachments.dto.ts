@@ -1,13 +1,19 @@
 import { boolean, z } from 'zod'
 import { FileTypes } from '@/types/interfaces'
 
-export const CreateAttachmentRequestSchema = z.object({
-  taskId: z.string(),
-  filePath: z.string(),
-  fileSize: z.number(),
-  fileType: z.string(),
-  fileName: z.string(),
-})
+export const CreateAttachmentRequestSchema = z
+  .object({
+    taskId: z.string().uuid().optional(),
+    commentId: z.string().uuid().optional(),
+    filePath: z.string(),
+    fileSize: z.number(),
+    fileType: z.string(),
+    fileName: z.string(),
+  })
+  .refine((data) => !!data.taskId !== !!data.commentId, {
+    message: 'Provide either taskId or commentId, but not both',
+    path: ['taskId', 'commentId'],
+  }) //XOR LOGIC for taskId and commentId.
 
 export type CreateAttachmentRequest = z.infer<typeof CreateAttachmentRequestSchema>
 

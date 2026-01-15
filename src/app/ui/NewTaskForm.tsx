@@ -17,6 +17,7 @@ import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { PersonIconSmall, CloseIcon, TempalteIconMd, AssigneePlaceholderSmall } from '@/icons'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import {
+  addAttachment,
   selectCreateTask,
   setAllCreateTaskFields,
   setAppliedDescription,
@@ -41,7 +42,7 @@ import {
 } from '@/types/interfaces'
 import { checkEmptyAssignee, emptyAssignee, getAssigneeName } from '@/utils/assignee'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
-import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
+import { deleteEditorAttachmentsHandler, getAttachmentPayload, uploadAttachmentHandler } from '@/utils/attachmentUtils'
 import {
   getSelectedUserIds,
   getSelectedViewerIds,
@@ -56,6 +57,7 @@ import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
 import { UserRole } from '@/app/api/core/types/user'
 import { GhostBtn } from '@/components/buttons/GhostBtn'
+import { v4 as uuidv4 } from 'uuid'
 
 interface NewTaskFormInputsProps {
   isEditorReadonly?: boolean
@@ -558,7 +560,11 @@ const NewTaskFormInputs = ({ isEditorReadonly }: NewTaskFormInputsProps) => {
 
   const uploadFn =
     token && tokenPayload?.workspaceId
-      ? (file: File) => uploadImageHandler(file, token, tokenPayload.workspaceId, null)
+      ? async (file: File) => {
+          const fileUrl = await uploadAttachmentHandler(file, token, tokenPayload.workspaceId, null)
+          fileUrl && store.dispatch(addAttachment(getAttachmentPayload(fileUrl, file, uuidv4())))
+          return fileUrl
+        }
       : undefined
 
   return (
