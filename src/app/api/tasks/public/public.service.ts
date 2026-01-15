@@ -24,6 +24,7 @@ import { SubtaskService } from '@api/tasks/subtasks.service'
 import { TasksActivityLogger } from '@api/tasks/tasks.logger'
 import { TemplatesService } from '@api/tasks/templates/templates.service'
 import { PublicTaskSerializer } from '@api/tasks/public/public.serializer'
+import { getBasicPaginationAttributes } from '@/utils/pagination'
 
 export class PublicTasksService extends TasksSharedService {
   async getAllTasks(queryFilters: {
@@ -80,11 +81,7 @@ export class PublicTasksService extends TasksSharedService {
     }
 
     const orderBy: Prisma.TaskOrderByWithRelationInput[] = [{ createdAt: 'desc' }]
-    const pagination: Prisma.TaskFindManyArgs = {
-      take: queryFilters.limit,
-      cursor: queryFilters.lastIdCursor ? { id: queryFilters.lastIdCursor } : undefined,
-      skip: queryFilters.lastIdCursor ? 1 : undefined,
-    }
+    const pagination = getBasicPaginationAttributes(queryFilters.limit, queryFilters.lastIdCursor)
 
     const tasks = await this.db.task.findMany({
       where,

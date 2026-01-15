@@ -7,6 +7,7 @@ import { getArrayDifference, getArrayIntersection } from '@/utils/array'
 import { getFileNameFromPath } from '@/utils/attachmentUtils'
 import { getFilePathFromUrl } from '@/utils/signedUrlReplacer'
 import { SupabaseActions } from '@/utils/SupabaseActions'
+import { getBasicPaginationAttributes } from '@/utils/pagination'
 import { CommentAddedSchema } from '@api/activity-logs/schemas/CommentAddedSchema'
 import { ActivityLogger } from '@api/activity-logs/services/activity-logger.service'
 import { CommentRepository } from '@api/comment/comment.repository'
@@ -378,11 +379,7 @@ export class CommentService extends BaseService {
       workspaceId: this.user.workspaceId,
     }
 
-    const pagination: Prisma.CommentFindManyArgs = {
-      take: limit,
-      cursor: lastIdCursor ? { id: lastIdCursor } : undefined,
-      skip: lastIdCursor ? 1 : undefined,
-    }
+    const pagination = getBasicPaginationAttributes(limit, lastIdCursor)
 
     return await this.db.comment.findMany({
       where,
@@ -392,10 +389,7 @@ export class CommentService extends BaseService {
     })
   }
 
-  async hasMoreCommentsAfterCursor(
-    id: string,
-    publicFilters: Partial<Parameters<CommentService['getAllComments']>[0]>,
-  ): Promise<boolean> {
+  async hasMoreCommentsAfterCursor(id: string, publicFilters: Partial<CommentsPublicFilterType>): Promise<boolean> {
     const newComment = await this.db.comment.findFirst({
       where: { ...publicFilters, workspaceId: this.user.workspaceId },
       cursor: { id },

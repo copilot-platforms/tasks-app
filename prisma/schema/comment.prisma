@@ -22,4 +22,5 @@ model Comment {
   deletedAt     DateTime?     @db.Timestamptz()
 
   @@map("Comments")
+  @@index([taskId, workspaceId, createdAt(sort: Desc)], name: "IX_Comments_taskId_workspaceId_createdAt")
 }
