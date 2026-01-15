@@ -9,6 +9,7 @@ import { OptimisticUpdate } from '@/utils/optimisticCommentUtils'
 import { TrashIcon2 } from '@/icons'
 import { useSelector } from 'react-redux'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 
 interface Prop {
   comment: LogResponse
@@ -17,9 +18,18 @@ interface Prop {
   task_id: string
   stableId: string
   optimisticUpdates: OptimisticUpdate[]
+  postAttachment: (postAttachmentPayload: CreateAttachmentRequest) => void
 }
 
-export const Comments = ({ comment, createComment, deleteComment, task_id, stableId, optimisticUpdates }: Prop) => {
+export const Comments = ({
+  comment,
+  createComment,
+  deleteComment,
+  task_id,
+  stableId,
+  optimisticUpdates,
+  postAttachment,
+}: Prop) => {
   const { assignee } = useSelector(selectTaskBoard)
   const commentInitiator = assignee.find((assignee) => assignee.id == comment.userId)
   return (
@@ -47,6 +57,7 @@ export const Comments = ({ comment, createComment, deleteComment, task_id, stabl
           task_id={task_id}
           optimisticUpdates={optimisticUpdates}
           commentInitiator={commentInitiator}
+          postAttachment={postAttachment}
         />
       </Stack>
     </Stack>

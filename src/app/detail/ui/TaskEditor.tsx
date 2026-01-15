@@ -14,7 +14,7 @@ import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { UserType } from '@/types/interfaces'
 import { getDeleteMessage } from '@/utils/dialogMessages'
-import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
+import { deleteEditorAttachmentsHandler, getAttachmentPayload, uploadAttachmentHandler } from '@/utils/attachmentUtils'
 import { Box } from '@mui/material'
 import { MouseEvent, useCallback, useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
@@ -138,7 +138,8 @@ export const TaskEditor = ({
   const uploadFn = token
     ? async (file: File) => {
         setActiveUploads((prev) => prev + 1)
-        const fileUrl = await uploadImageHandler(file, token ?? '', task.workspaceId, task_id)
+        const fileUrl = await uploadAttachmentHandler(file, token ?? '', task.workspaceId, task_id)
+        fileUrl && postAttachment(getAttachmentPayload(fileUrl, file, task_id))
         setActiveUploads((prev) => prev - 1)
         return fileUrl
       }
