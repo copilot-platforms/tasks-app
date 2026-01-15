@@ -56,3 +56,12 @@ export const getOneCommentPublicForTask = async (req: NextRequest, { params }: I
 
   return NextResponse.json({ data: await PublicCommentSerializer.serialize(comment) })
 }
+
+export const deleteOneCommentPublic = async (req: NextRequest, { params }: IdParams) => {
+  const { id } = await params
+  const user = await authenticate(req)
+
+  const commentService = new CommentService(user)
+  const deletedComment = await commentService.delete(id)
+  return NextResponse.json({ ...(await PublicCommentSerializer.serialize(deletedComment)) })
+}
