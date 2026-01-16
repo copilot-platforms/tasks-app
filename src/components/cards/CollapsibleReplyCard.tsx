@@ -27,7 +27,7 @@ export const CollapsibleReplyCard = ({
         direction="row"
         columnGap={'8px'}
       >
-        <OverlappingAvatars assignees={lastAssignees} width="20px" height="20px" fontSize="10px" />
+        <OverlappingAvatars assignees={lastAssignees} />
 
         <Stack direction={'row'} columnGap={'4px'} sx={{ marginTop: '0px' }}>
           <Typography variant="md" lineHeight="22px">

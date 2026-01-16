@@ -81,7 +81,7 @@ export default async function Main({
 }) {
   const token = searchParams.token
 
-  const parsedToken = z.string().safeParse(searchParams.token)
+  const parsedToken = z.string().safeParse(token)
   if (!parsedToken.success) {
     return <SilentError message="Please provide a Valid Token" />
   }

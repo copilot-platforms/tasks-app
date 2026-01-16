@@ -31,7 +31,6 @@ import {
 } from '@/utils/assignee'
 import { createDateFromFormattedDateString, formatDate } from '@/utils/dateHelper'
 import { NoAssignee } from '@/utils/noAssignee'
-import { Box, Skeleton, Stack, styled, SxProps, Typography } from '@mui/material'
 import {
   getSelectedUserIds,
   getSelectedViewerIds,
@@ -43,6 +42,7 @@ import {
   shouldConfirmBeforeReassignment,
   shouldConfirmViewershipBeforeReassignment,
 } from '@/utils/shouldConfirmBeforeReassign'
+import { Box, Skeleton, Stack, styled, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { z } from 'zod'
@@ -488,7 +488,7 @@ export const Sidebar = ({
                   <SelectorButton
                     disabled={disabled || fromNotificationCenter}
                     padding="0px"
-                    startIcon={<CopilotAvatar width="16px" height="16px" currentAssignee={assigneeValue} />}
+                    startIcon={<CopilotAvatar currentAssignee={assigneeValue} />}
                     outlined={true}
                     buttonContent={
                       <Typography
@@ -543,7 +543,7 @@ export const Sidebar = ({
                     <SelectorButton
                       disabled={(disabled && !previewMode) || fromNotificationCenter}
                       padding="0px"
-                      startIcon={<CopilotAvatar width="16px" height="16px" currentAssignee={taskViewerValue || undefined} />}
+                      startIcon={<CopilotAvatar currentAssignee={taskViewerValue || undefined} />}
                       outlined={true}
                       buttonContent={
                         <Typography
