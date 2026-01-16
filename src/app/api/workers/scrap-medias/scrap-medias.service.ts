@@ -83,6 +83,7 @@ export class ScrapMediaService {
         console.error(error)
         throw new APIError(404, 'unable to delete some date from supabase')
       }
+      await db.attachment.deleteMany({ where: { filePath: { in: scrapMediasToDeleteFromBucket } } })
     }
     if (scrapMediasToDelete.length !== 0) {
       const idsToDelete = scrapMediasToDelete.map((id) => `'${id}'`).join(', ')
