@@ -127,12 +127,8 @@ export const ReplyCard = ({
         id={item.id}
       >
         <CopilotAvatar
-          width="20px"
-          height="20px"
-          fontSize="10px"
           currentAssignee={replyInitiator}
-          sx={{
-            border: (theme) => `1.1px solid ${theme.color.gray[200]}`,
+          style={{
             marginTop: '1px',
           }}
         />

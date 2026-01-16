@@ -92,6 +92,12 @@ a {
   animation: fadeHighlight 1s forwards;
 }
 
+.overlapping-avatar {
+  > *:not(:last-child) {
+    margin-right: -8px;
+  }
+}
+
 @keyframes fadeHighlight {
   0% {
     background-color: transparent;

@@ -4,7 +4,6 @@ import { BoldTypography, StyledTypography, TypographyContainer, VerticalLine } f
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { TruncateMaxNumber } from '@/types/constants'
-import { IAssigneeCombined } from '@/types/interfaces'
 import { getAssigneeName } from '@/utils/assignee'
 import { DueDateFormatter } from '@/utils/dueDateFormatter'
 import { getTimeDifference } from '@/utils/getTimeDifference'
@@ -12,11 +11,7 @@ import { truncateText } from '@/utils/truncateText'
 import { ArchivedStateUpdatedSchema } from '@api/activity-logs/schemas/ArchiveStateUpdatedSchema'
 import { DueDateChangedSchema } from '@api/activity-logs/schemas/DueDateChangedSchema'
 import { LogResponse } from '@api/activity-logs/schemas/LogResponseSchema'
-import {
-  TaskAssignedResponse,
-  TaskAssignedResponseSchema,
-  TaskUnassignedSchema,
-} from '@api/activity-logs/schemas/TaskAssignedSchema'
+import { TaskAssignedResponse, TaskAssignedResponseSchema } from '@api/activity-logs/schemas/TaskAssignedSchema'
 import { TitleUpdatedSchema } from '@api/activity-logs/schemas/TitleUpdatedSchema'
 import { WorkflowStateUpdatedSchema } from '@api/activity-logs/schemas/WorkflowStateUpdatedSchema'
 import { Stack, Typography } from '@mui/material'
@@ -174,16 +169,7 @@ export const ActivityLog = ({ log }: Prop) => {
       <VerticalLine />
 
       <Stack direction="row" columnGap={4} padding={'11px 0px 11px 0px'} width={'100%'} sx={{ alignItems: 'center' }}>
-        <CopilotAvatar
-          width="22px"
-          height="22px"
-          fontSize="12px"
-          currentAssignee={activityUser}
-          sx={{
-            border: (theme) => `1.1px solid ${theme.color.gray[200]}`,
-          }}
-          size="large"
-        />
+        <CopilotAvatar currentAssignee={activityUser} />
         <TypographyContainer direction="row" columnGap={1}>
           {activityUser ? (
             <BoldTypography>{getAssigneeName(activityUser, '')}</BoldTypography>
