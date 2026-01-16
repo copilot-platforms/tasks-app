@@ -8,7 +8,7 @@ import { AttachmentIcon } from '@/icons'
 import store from '@/redux/store'
 import { Close } from '@mui/icons-material'
 import { Box, Stack, Typography, styled } from '@mui/material'
-import { createTemplateErrors, TargetMethod } from '@/types/interfaces'
+import { AttachmentTypes, createTemplateErrors, TargetMethod } from '@/types/interfaces'
 import { useSelector } from 'react-redux'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import {
@@ -84,7 +84,7 @@ const NewTemplateFormInputs = () => {
 
   const uploadFn =
     token && tokenPayload?.workspaceId
-      ? async (file: File) => uploadAttachmentHandler(file, token, tokenPayload.workspaceId, null, 'templates')
+      ? async (file: File) => uploadAttachmentHandler(file, token, tokenPayload.workspaceId, null, AttachmentTypes.TEMPLATE)
       : undefined
 
   const todoWorkflowState = workflowStates.find((el) => el.key === 'todo') || workflowStates[0]

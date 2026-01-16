@@ -1,6 +1,8 @@
+import { UserRole } from '@/app/api/core/types/user'
 import { PublicTaskCreateDto } from '@/app/api/tasks/public/public.dto'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import AttachmentLayout from '@/components/AttachmentLayout'
+import { GhostBtn } from '@/components/buttons/GhostBtn'
 import { ManageTemplatesEndOption } from '@/components/buttons/ManageTemplatesEndOptions'
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
@@ -14,10 +16,9 @@ import { StyledTextField } from '@/components/inputs/TextField'
 import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
-import { PersonIconSmall, CloseIcon, TempalteIconMd, AssigneePlaceholderSmall } from '@/icons'
+import { CloseIcon, PersonIconSmall, TempalteIconMd } from '@/icons'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import {
-  addAttachment,
   selectCreateTask,
   setAllCreateTaskFields,
   setAppliedDescription,
@@ -41,8 +42,8 @@ import {
   UserIds,
 } from '@/types/interfaces'
 import { checkEmptyAssignee, emptyAssignee, getAssigneeName } from '@/utils/assignee'
+import { deleteEditorAttachmentsHandler, uploadAttachmentHandler } from '@/utils/attachmentUtils'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
-import { deleteEditorAttachmentsHandler, getAttachmentPayload, uploadAttachmentHandler } from '@/utils/attachmentUtils'
 import {
   getSelectedUserIds,
   getSelectedViewerIds,
@@ -50,14 +51,11 @@ import {
   getSelectorAssigneeFromFilterOptions,
 } from '@/utils/selector'
 import { trimAllTags } from '@/utils/trimTags'
-import { Box, Stack, Typography, styled } from '@mui/material'
+import { Box, Stack, styled, Typography } from '@mui/material'
 import { marked } from 'marked'
 import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
-import { UserRole } from '@/app/api/core/types/user'
-import { GhostBtn } from '@/components/buttons/GhostBtn'
-import { v4 as uuidv4 } from 'uuid'
 
 interface NewTaskFormInputsProps {
   isEditorReadonly?: boolean
@@ -562,7 +560,6 @@ const NewTaskFormInputs = ({ isEditorReadonly }: NewTaskFormInputsProps) => {
     token && tokenPayload?.workspaceId
       ? async (file: File) => {
           const fileUrl = await uploadAttachmentHandler(file, token, tokenPayload.workspaceId, null)
-          fileUrl && store.dispatch(addAttachment(getAttachmentPayload(fileUrl, file, uuidv4())))
           return fileUrl
         }
       : undefined

@@ -1,8 +1,12 @@
 import { sendCommentCreateNotifications } from '@/jobs/notifications'
 import { sendReplyCreateNotifications } from '@/jobs/notifications/send-reply-create-notifications'
 import { InitiatedEntity } from '@/types/common'
+import { CreateAttachmentRequestSchema } from '@/types/dto/attachments.dto'
 import { CreateComment, UpdateComment } from '@/types/dto/comment.dto'
 import { getArrayDifference, getArrayIntersection } from '@/utils/array'
+import { getFileNameFromPath } from '@/utils/attachmentUtils'
+import { getFilePathFromUrl } from '@/utils/signedUrlReplacer'
+import { SupabaseActions } from '@/utils/SupabaseActions'
 import { CommentAddedSchema } from '@api/activity-logs/schemas/CommentAddedSchema'
 import { ActivityLogger } from '@api/activity-logs/services/activity-logger.service'
 import { CommentRepository } from '@api/comment/comment.repository'
@@ -15,6 +19,8 @@ import { TasksService } from '@api/tasks/tasks.service'
 import { ActivityType, Comment, CommentInitiator } from '@prisma/client'
 import httpStatus from 'http-status'
 import { z } from 'zod'
+import { AttachmentsService } from '../attachments/attachments.service'
+import { getSignedUrl } from '@/utils/signUrl'
 
 export class CommentService extends BaseService {
   async create(data: CreateComment) {
@@ -57,6 +63,21 @@ export class CommentService extends BaseService {
         }),
       )
       await sendCommentCreateNotifications.trigger({ user: this.user, task, comment })
+      try {
+        if (comment.content) {
+          const newContent = await this.updateCommentIdOfAttachmentsAfterCreation(comment.content, data.taskId, comment.id)
+          await this.db.comment.update({
+            where: { id: comment.id },
+            data: {
+              content: newContent,
+            },
+          })
+          console.info('CommentService#createComment | Comment content attachments updated for comment ID:', comment.id)
+        }
+      } catch (e: unknown) {
+        await this.db.comment.delete({ where: { id: comment.id } })
+        console.error('CommentService#createComment | Rolling back comment creation', e)
+      }
     } else {
       const tasksService = new TasksService(this.user)
       await Promise.all([
@@ -265,5 +286,84 @@ export class CommentService extends BaseService {
       }
       return { ...comment, initiator }
     })
+  }
+
+  private async updateCommentIdOfAttachmentsAfterCreation(htmlString: string, task_id: string, commentId: string) {
+    const imgTagRegex = /<img\s+[^>]*src="([^"]+)"[^>]*>/g //expression used to match all img srcs in provided HTML string.
+    const attachmentTagRegex = /<\s*[a-zA-Z]+\s+[^>]*data-type="attachment"[^>]*src="([^"]+)"[^>]*>/g //expression used to match all attachment srcs in provided HTML string.
+    let match
+    const replacements: { originalSrc: string; newUrl: string }[] = []
+
+    const newFilePaths: { originalSrc: string; newFilePath: string }[] = []
+    const copyAttachmentPromises: Promise<void>[] = []
+    const createAttachmentPayloads = []
+    const matches: { originalSrc: string; filePath: string; fileName: string }[] = []
+
+    while ((match = imgTagRegex.exec(htmlString)) !== null) {
+      const originalSrc = match[1]
+      const filePath = getFilePathFromUrl(originalSrc)
+      const fileName = filePath?.split('/').pop()
+      if (filePath && fileName) {
+        matches.push({ originalSrc, filePath, fileName })
+      }
+    }
+
+    while ((match = attachmentTagRegex.exec(htmlString)) !== null) {
+      const originalSrc = match[1]
+      const filePath = getFilePathFromUrl(originalSrc)
+      const fileName = filePath?.split('/').pop()
+      if (filePath && fileName) {
+        matches.push({ originalSrc, filePath, fileName })
+      }
+    }
+
+    for (const { originalSrc, filePath, fileName } of matches) {
+      const newFilePath = `${this.user.workspaceId}/${task_id}/comments/${commentId}/${fileName}`
+      const supabaseActions = new SupabaseActions()
+
+      const fileMetaData = await supabaseActions.getMetaData(filePath)
+      createAttachmentPayloads.push(
+        CreateAttachmentRequestSchema.parse({
+          commentId: commentId,
+          filePath: newFilePath,
+          fileSize: fileMetaData?.size,
+          fileType: fileMetaData?.contentType,
+          fileName: getFileNameFromPath(newFilePath),
+        }),
+      )
+      copyAttachmentPromises.push(supabaseActions.moveAttachment(filePath, newFilePath))
+      newFilePaths.push({ originalSrc, newFilePath })
+    }
+
+    await Promise.all(copyAttachmentPromises)
+    const attachmentService = new AttachmentsService(this.user)
+    if (createAttachmentPayloads.length) {
+      await attachmentService.createMultipleAttachments(createAttachmentPayloads)
+    }
+
+    const signedUrlPromises = newFilePaths.map(async ({ originalSrc, newFilePath }) => {
+      const newUrl = await getSignedUrl(newFilePath)
+      if (newUrl) {
+        replacements.push({ originalSrc, newUrl })
+      }
+    })
+
+    await Promise.all(signedUrlPromises)
+
+    for (const { originalSrc, newUrl } of replacements) {
+      htmlString = htmlString.replace(originalSrc, newUrl)
+    }
+    // const filePaths = newFilePaths.map(({ newFilePath }) => newFilePath)
+    // await this.db.scrapMedia.updateMany({
+    //   where: {
+    //     filePath: {
+    //       in: filePaths,
+    //     },
+    //   },
+    //   data: {
+    //     taskId: task_id,
+    //   },
+    // }) //todo: add support for commentId in scrapMedias.
+    return htmlString
   }
 }
