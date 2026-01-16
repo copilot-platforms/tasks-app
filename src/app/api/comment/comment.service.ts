@@ -108,21 +108,12 @@ export class CommentService extends BaseService {
     const commentExists = await this.db.comment.findFirst({ where: { id } })
     if (!commentExists) throw new APIError(httpStatus.NOT_FOUND, 'The comment to delete was not found')
 
-    // transaction that deletes the comment and its attachments
-    const { comment, attachments } = await this.db.$transaction(async (tx) => {
-      this.setTransaction(tx as PrismaClient)
-      const comment = await this.db.comment.delete({ where: { id } })
+    // delete the comment
+    const comment = await this.db.comment.delete({ where: { id } })
 
-      // delete the related attachments as well
-      const attachmentService = new AttachmentsService(this.user)
-      attachmentService.setTransaction(tx as PrismaClient)
-
-      const attachments = await attachmentService.deleteAttachmentsOfComment(comment.id)
-      attachmentService.unsetTransaction()
-
-      this.unsetTransaction()
-      return { comment, attachments }
-    })
+    // delete the related attachments as well
+    const attachmentService = new AttachmentsService(this.user)
+    await attachmentService.deleteAttachmentsOfComment(comment.id)
 
     // transaction that deletes the activity logs
     return await this.db.$transaction(async (tx) => {
@@ -151,7 +142,7 @@ export class CommentService extends BaseService {
       tasksService.unsetTransaction()
 
       this.unsetTransaction()
-      return { ...comment, attachments }
+      return { ...comment, attachments: [] } // send empty attachments array
     })
   }
 
