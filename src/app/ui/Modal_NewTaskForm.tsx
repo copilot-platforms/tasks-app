@@ -31,7 +31,6 @@ export const ModalNewTaskForm = ({
     description,
     workflowStateId,
     userIds,
-    attachments,
     dueDate,
     showModal,
     templateId,

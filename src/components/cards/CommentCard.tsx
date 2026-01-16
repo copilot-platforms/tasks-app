@@ -26,7 +26,7 @@ import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { selectTaskDetails, setExpandedComments, setOpenImage } from '@/redux/features/taskDetailsSlice'
 import store from '@/redux/store'
 import { CommentResponse, CreateComment, UpdateComment } from '@/types/dto/comment.dto'
-import { IAssigneeCombined } from '@/types/interfaces'
+import { AttachmentTypes, IAssigneeCombined } from '@/types/interfaces'
 import { getAssigneeName } from '@/utils/assignee'
 import { fetcher } from '@/utils/fetcher'
 import { getTimeDifference } from '@/utils/getTimeDifference'
@@ -108,12 +108,26 @@ export const CommentCard = ({
     return () => clearInterval(intervalId)
   }, [comment.createdAt])
 
+  const commentIdRef = useRef(comment.details.id)
+
+  useEffect(() => {
+    commentIdRef.current = comment.details.id
+  }, [comment.details.id]) //done because tapwrite only takes uploadFn once on mount where commentId will be temp from optimistic update. So we need an actual commentId for uploadFn to work.
+
   const uploadFn = token
     ? async (file: File) => {
-        const commentId = z.string().parse(comment.details.id)
+        const commentIdFromRef = commentIdRef.current
+        const commentId = z.string().parse(commentIdFromRef)
         if (activeTask) {
-          const fileUrl = await uploadAttachmentHandler(file, token, activeTask.workspaceId, commentId, 'comments', task_id)
-          fileUrl && postAttachment(getAttachmentPayload(fileUrl, file, commentId, 'comments'))
+          const fileUrl = await uploadAttachmentHandler(
+            file,
+            token,
+            activeTask.workspaceId,
+            commentId,
+            AttachmentTypes.COMMENT,
+            task_id,
+          )
+          fileUrl && postAttachment(getAttachmentPayload(fileUrl, file, commentId, AttachmentTypes.COMMENT))
           return fileUrl
         }
       }
