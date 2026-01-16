@@ -77,14 +77,13 @@ export class ScrapMediaService {
         console.error('Error processing scrap image', e)
       }
     }
-    if (scrapMediasToDeleteFromBucket.length !== 0) {
-      const { error } = await supabase.supabase.storage.from(supabaseBucket).remove(scrapMediasToDeleteFromBucket)
-      if (error) {
-        console.error(error)
-        throw new APIError(404, 'unable to delete some date from supabase')
-      }
+
+    if (!!scrapMediasToDeleteFromBucket.length)
       await db.attachment.deleteMany({ where: { filePath: { in: scrapMediasToDeleteFromBucket } } })
-    }
+
+    // remove attachments from bucket
+    await supabase.removeAttachmentsFromBucket(scrapMediasToDeleteFromBucket)
+
     if (scrapMediasToDelete.length !== 0) {
       const idsToDelete = scrapMediasToDelete.map((id) => `'${id}'`).join(', ')
       await db.$executeRawUnsafe(`
