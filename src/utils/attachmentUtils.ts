@@ -1,4 +1,4 @@
-import { ISignedUrlUpload } from '@/types/interfaces'
+import { AttachmentTypes, ISignedUrlUpload } from '@/types/interfaces'
 import { generateRandomString } from '@/utils/generateRandomString'
 import { SupabaseActions } from '@/utils/SupabaseActions'
 import { postScrapMedia } from '@/app/detail/[task_id]/[user_type]/actions'
@@ -10,13 +10,13 @@ import { CreateAttachmentRequestSchema } from '@/types/dto/attachments.dto'
 
 const buildFilePath = (
   workspaceId: string,
-  type: 'tasks' | 'templates' | 'comments',
+  type: AttachmentTypes[keyof AttachmentTypes],
   entityId: string | null,
   parentTaskId?: string,
 ) => {
-  if (type === 'tasks') {
+  if (type === AttachmentTypes.TASK) {
     return entityId ? `/${workspaceId}/${entityId}` : `/${workspaceId}`
-  } else if (type === 'comments') {
+  } else if (AttachmentTypes.COMMENT) {
     return `/${workspaceId}/${parentTaskId}/comments${entityId ? `/${entityId}` : ''}`
   }
   return `/${workspaceId}/templates${entityId ? `/${entityId}` : ''}`
@@ -27,7 +27,7 @@ export const uploadAttachmentHandler = async (
   token: string,
   workspaceId: string,
   entityId: string | null,
-  type: 'tasks' | 'templates' | 'comments' = 'tasks',
+  type: AttachmentTypes[keyof AttachmentTypes] = AttachmentTypes.TASK,
   parentTaskId?: string,
 ): Promise<string | undefined> => {
   const supabaseActions = new SupabaseActions()
@@ -69,10 +69,15 @@ export const deleteEditorAttachmentsHandler = async (
   }
 }
 
-export const getAttachmentPayload = (fileUrl: string, file: File, id: string, entity: 'tasks' | 'comments' = 'tasks') => {
+export const getAttachmentPayload = (
+  fileUrl: string,
+  file: File,
+  id: string,
+  entity: AttachmentTypes[keyof AttachmentTypes] = AttachmentTypes.TASK,
+) => {
   const filePath = getFilePathFromUrl(fileUrl)
 
-  const payload = entity === 'comments' ? { commentId: id } : { taskId: id }
+  const payload = entity === AttachmentTypes.COMMENT ? { commentId: id } : { taskId: id }
 
   return CreateAttachmentRequestSchema.parse({
     ...payload,

@@ -83,6 +83,12 @@ export enum UserIds {
   COMPANY_ID = 'companyId',
 }
 
+export enum AttachmentTypes {
+  TASK = 'tasks',
+  TEMPLATE = 'templates',
+  COMMENT = 'comments',
+}
+
 export type IFilterOptions = {
   [key in FilterOptions]: key extends FilterOptions.ASSIGNEE
     ? UserIdsType
