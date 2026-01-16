@@ -1,4 +1,4 @@
-import { Box, Button, Popper, Stack, Typography } from '@mui/material'
+import { Box, Button, Popper, Stack, SxProps, Theme, Typography } from '@mui/material'
 import { StyledAutocomplete } from '@/components/inputs/Autocomplete'
 import { statusIcons } from '@/utils/iconMatcher'
 import { useFocusableInput } from '@/hooks/useFocusableInput'
@@ -276,24 +276,28 @@ export default function Selector<T extends keyof SelectorOptionsType>({
           openOnFocus
           onKeyDown={handleKeyDown}
           autoSelect={false}
-          ListboxProps={{
-            sx: {
-              maxHeight: {
-                xs: '175px',
-                sm: '291px',
+          ListboxProps={
+            {
+              endOption: endOption,
+              endOptionHref: endOptionHref,
+              sx: {
+                maxHeight: {
+                  xs: '175px',
+                  sm: '291px',
+                },
+                '& .MuiAutocomplete-option[aria-selected="true"].Mui-focused': {
+                  backgroundColor: (theme) => theme.color.background.bgHover,
+                },
+                '& .MuiAutocomplete-option[aria-selected="true"]': {
+                  backgroundColor: (theme) => theme.color.base.white,
+                },
+                '& .MuiAutocomplete-option.Mui-focused': {
+                  backgroundColor: (theme) => theme.color.background.bgHover,
+                },
+                padding: '0px',
               },
-              '& .MuiAutocomplete-option[aria-selected="true"].Mui-focused': {
-                backgroundColor: (theme) => theme.color.background.bgHover,
-              },
-              '& .MuiAutocomplete-option[aria-selected="true"]': {
-                backgroundColor: (theme) => theme.color.base.white,
-              },
-              '& .MuiAutocomplete-option.Mui-focused': {
-                backgroundColor: (theme) => theme.color.background.bgHover,
-              },
-              padding: '0px',
-            },
-          }}
+            } as ExtendedListboxProps
+          }
           options={extraOption ? [extraOption, ...processedOptions] : processedOptions}
           value={value}
           onChange={(_, newValue: unknown) => {
@@ -339,11 +343,11 @@ export default function Selector<T extends keyof SelectorOptionsType>({
               return params.children
             }
             return (
-              <>
+              <Box key={params.key}>
                 {hasNoAssignee ? (
-                  <Box key={params.key}>{params.children}</Box>
+                  <Box>{params.children}</Box>
                 ) : (
-                  <Box key={params.key} component="li">
+                  <Box>
                     <Stack direction="row" alignItems="center" columnGap={2}>
                       <Typography
                         variant={'sm'}
@@ -360,7 +364,7 @@ export default function Selector<T extends keyof SelectorOptionsType>({
                     {params.children}
                   </Box>
                 )}
-              </>
+              </Box>
             )
           }}
           inputValue={inputStatusValue}
@@ -396,9 +400,11 @@ export default function Selector<T extends keyof SelectorOptionsType>({
               setAnchorEl(null)
               setInputStatusValue('')
             }
+            const { key, ...otherProps } = props
             if ((option as IExtraOption).id === 'not_found') {
               return (
                 <Box
+                  key={key}
                   sx={{
                     color: 'gray',
                     textAlign: 'left',
@@ -416,22 +422,31 @@ export default function Selector<T extends keyof SelectorOptionsType>({
               )
             }
 
-            return extraOption && extraOptionRenderer && (option as IExtraOption)?.extraOptionFlag ? (
-              extraOptionRenderer(setAnchorEl, anchorEl, props)
-            ) : selectorType === SelectorType.ASSIGNEE_SELECTOR ? (
-              <AssigneeSelectorRenderer props={props} option={option} />
-            ) : selectorType === SelectorType.STATUS_SELECTOR ? (
-              <StatusSelectorRenderer props={props} option={option} />
-            ) : selectorType === SelectorType.TEMPLATE_SELECTOR ? (
-              <TemplateSelectorRenderer
-                props={props}
-                option={option}
-                onClickHandler={useClickHandler ? onClickHandler : undefined}
-                width={customDropdownWidth}
-              />
-            ) : (
-              <></>
-            )
+            if (extraOption && extraOptionRenderer && (option as IExtraOption)?.extraOptionFlag) {
+              return <div key={key}>{extraOptionRenderer(setAnchorEl, anchorEl, otherProps)}</div>
+            }
+
+            if (selectorType === SelectorType.ASSIGNEE_SELECTOR) {
+              return <AssigneeSelectorRenderer key={key} props={otherProps} option={option} />
+            }
+
+            if (selectorType === SelectorType.STATUS_SELECTOR) {
+              return <StatusSelectorRenderer key={key} props={otherProps} option={option} />
+            }
+
+            if (selectorType === SelectorType.TEMPLATE_SELECTOR) {
+              return (
+                <TemplateSelectorRenderer
+                  key={key}
+                  props={otherProps}
+                  option={option}
+                  onClickHandler={useClickHandler ? onClickHandler : undefined}
+                  width={customDropdownWidth}
+                />
+              )
+            }
+
+            return <></>
           }}
           noOptionsText={endOption && <ListWithEndOption />}
         />
@@ -453,7 +468,6 @@ const TemplateSelectorRenderer = ({
 }) => {
   return (
     <Box
-      key={(option as ITemplate).id}
       component="li"
       {...props}
       sx={{
@@ -565,3 +579,9 @@ const ListWithEndOption = React.forwardRef<
 })
 
 ListWithEndOption.displayName = 'ListWithEndOption'
+
+type ExtendedListboxProps = React.HTMLAttributes<HTMLUListElement> & {
+  sx?: SxProps<Theme>
+  endOption?: React.ReactNode
+  endOptionHref?: string
+}
