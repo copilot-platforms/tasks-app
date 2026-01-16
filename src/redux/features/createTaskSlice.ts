@@ -16,7 +16,6 @@ interface IInitialState {
   title: string
   description: string
   workflowStateId: string
-  attachments: CreateAttachmentRequest[]
   dueDate: DateString | null
   errors: IErrors
   appliedTitle: string | null
@@ -34,7 +33,6 @@ const initialState: IInitialState = {
   title: '',
   workflowStateId: '',
   description: '',
-  attachments: [],
   dueDate: null,
   errors: {
     [CreateTaskErrors.TITLE]: false,
@@ -68,15 +66,6 @@ const createTaskSlice = createSlice({
     // Sets the default workflowStateId to be selected when opening task create modal
     setActiveWorkflowStateId: (state, action: { payload: string | null }) => {
       state.activeWorkflowStateId = action.payload
-    },
-
-    removeOneAttachment: (state, action: { payload: { attachment: CreateAttachmentRequest } }) => {
-      const { attachment } = action.payload
-      state.attachments = state.attachments.filter((el) => el.filePath !== attachment.filePath)
-    },
-
-    addAttachment: (state, action: { payload: CreateAttachmentRequest }) => {
-      state.attachments.push(action.payload)
     },
 
     setCreateTaskFields: (
@@ -113,7 +102,6 @@ const createTaskSlice = createSlice({
         }
       }
       state.viewers = []
-      state.attachments = []
       state.dueDate = null
       state.errors = {
         [CreateTaskErrors.TITLE]: false,
@@ -146,12 +134,10 @@ export const {
   setActiveWorkflowStateId,
   setCreateTaskFields,
   clearCreateTaskFields,
-  removeOneAttachment,
   setErrors,
   setAppliedDescription,
   setAppliedTitle,
   setAllCreateTaskFields,
-  addAttachment,
 } = createTaskSlice.actions
 
 export default createTaskSlice.reducer
