@@ -9,6 +9,7 @@ import APIError from '@api/core/exceptions/api'
 import httpStatus from 'http-status'
 import { SupabaseService } from '@api/core/services/supabase.service'
 import { signedUrlTtl } from '@/constants/attachments'
+import { PrismaClient } from '@prisma/client'
 
 export class AttachmentsService extends BaseService {
   async getAttachments(taskId: string) {
@@ -91,13 +92,25 @@ export class AttachmentsService extends BaseService {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Delete, Resource.Attachments)
 
-    const commentAttachment = await this.db.attachment.findMany({
-      where: { commentId: commentId, workspaceId: this.user.workspaceId },
-    })
-    await this.db.attachment.deleteMany({
-      where: { commentId: commentId, workspaceId: this.user.workspaceId },
+    const commentAttachment = await this.db.$transaction(async (tx) => {
+      this.setTransaction(tx as PrismaClient)
+
+      const commentAttachment = await this.db.attachment.findMany({
+        where: { commentId: commentId, workspaceId: this.user.workspaceId },
+      })
+
+      await this.db.attachment.deleteMany({
+        where: { commentId: commentId, workspaceId: this.user.workspaceId },
+      })
+
+      this.unsetTransaction()
+      return commentAttachment
     })
 
-    return commentAttachment
+    // directly delete attachments from bucket when deleting comments.
+    // Postgres transaction is not valid for supabase object so placing it after record deletion from db
+    const filePathArray = commentAttachment.map((el) => el.filePath)
+    const supabase = new SupabaseService()
+    await supabase.removeAttachmentsFromBucket(filePathArray)
   }
 }
