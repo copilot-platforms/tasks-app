@@ -107,7 +107,7 @@ export const FilterBar = ({ mode }: FilterBarProps) => {
               padding: '0px 20px',
               height: '48px',
             }}
-            gap={3}
+            columnGap={3}
           >
             <SearchBar
               value={viewModeFilterOptions.keyword}
