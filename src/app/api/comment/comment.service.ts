@@ -53,6 +53,7 @@ export class CommentService extends BaseService {
         // This is safe to do, since if user doesn't have both iu ID / client ID, they will be filtered out way before
         initiatorType,
       },
+      include: { attachments: true },
     })
 
     try {
@@ -95,9 +96,8 @@ export class CommentService extends BaseService {
     }
 
     // dispatch a webhook event when comment is created
-    const attachments = await new AttachmentsService(this.user).getAttachmentsForComment(comment.id)
     await this.copilot.dispatchWebhook(DISPATCHABLE_EVENT.CommentCreated, {
-      payload: await PublicCommentSerializer.serialize({ ...comment, attachments }),
+      payload: await PublicCommentSerializer.serialize(comment),
       workspaceId: this.user.workspaceId,
     })
 
