@@ -118,8 +118,6 @@ export class PublicTasksService extends TasksSharedService {
       },
     })
 
-    console.info({ task, attachment: task?.attachments })
-
     if (!task) throw new APIError(httpStatus.NOT_FOUND, 'The requested task was not found')
     if (this.user.internalUserId) {
       await this.checkClientAccessForTask(task, this.user.internalUserId)
