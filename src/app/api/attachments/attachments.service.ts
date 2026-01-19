@@ -25,19 +25,6 @@ export class AttachmentsService extends BaseService {
     return attachments
   }
 
-  async getAttachmentsForComment(commentId: string) {
-    const policyGate = new PoliciesService(this.user)
-    policyGate.authorize(UserAction.Read, Resource.Attachments)
-    const attachments = await this.db.attachment.findMany({
-      where: {
-        commentId,
-        workspaceId: this.user.workspaceId,
-      },
-    })
-
-    return attachments
-  }
-
   async createAttachments(data: CreateAttachmentRequest) {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Create, Resource.Attachments)
