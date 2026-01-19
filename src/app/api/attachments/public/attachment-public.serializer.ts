@@ -32,13 +32,16 @@ export class PublicAttachmentSerializer {
         fileName: attachment.fileName,
         fileSize: attachment.fileSize,
         mimeType: attachment.fileType,
-        downloadUrl: z
-          .string()
-          .url({ message: `Invalid downloadUrl for attachment with id ${attachment.id}` })
-          .parse(url),
+        downloadUrl: attachment.deletedAt
+          ? null
+          : z
+              .string()
+              .url({ message: `Invalid downloadUrl for attachment with id ${attachment.id}` })
+              .parse(url),
         uploadedBy: uploadedBy || attachment.createdById,
         uploadedByUserType: uploadedByUserType || 'internalUser', // todo: 'internalUser' literal needs to be changed later once uploadedByUserType column is introduced in attachments table
         uploadedDate: RFC3339DateSchema.parse(toRFC3339(attachment.createdAt)),
+        deletedAt: attachment.deletedAt ? RFC3339DateSchema.parse(toRFC3339(attachment.deletedAt)) : null,
       }
     })
   }

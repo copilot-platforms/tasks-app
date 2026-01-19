@@ -26,7 +26,7 @@ export const queueTaskUpdatedBacklogWebhook = task({
       include: {
         workflowState: true,
         attachments: {
-          where: { commentId: null, deletedAt: null },
+          where: { commentId: null },
         },
       },
     })
