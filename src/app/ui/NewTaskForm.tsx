@@ -288,7 +288,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
         <Stack direction={'column'} rowGap={'12px'}>
           <Stack
             direction="row"
-            columnGap={2}
+            gap={2}
             position="relative"
             sx={{
               flexWrap: 'wrap',
