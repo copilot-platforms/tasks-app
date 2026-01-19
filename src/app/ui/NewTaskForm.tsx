@@ -43,6 +43,7 @@ import {
 } from '@/types/interfaces'
 import { checkEmptyAssignee, emptyAssignee, getAssigneeName } from '@/utils/assignee'
 import { deleteEditorAttachmentsHandler, uploadAttachmentHandler } from '@/utils/attachmentUtils'
+import { createUploadFn } from '@/utils/createUploadFn'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import {
   getSelectedUserIds,
@@ -558,10 +559,10 @@ const NewTaskFormInputs = ({ isEditorReadonly }: NewTaskFormInputsProps) => {
 
   const uploadFn =
     token && tokenPayload?.workspaceId
-      ? async (file: File) => {
-          const fileUrl = await uploadAttachmentHandler(file, token, tokenPayload.workspaceId, null)
-          return fileUrl
-        }
+      ? createUploadFn({
+          token,
+          workspaceId: tokenPayload.workspaceId,
+        })
       : undefined
 
   return (

@@ -19,7 +19,7 @@ import { TasksService } from '@api/tasks/tasks.service'
 import { ActivityType, Comment, CommentInitiator } from '@prisma/client'
 import httpStatus from 'http-status'
 import { z } from 'zod'
-import { AttachmentsService } from '../attachments/attachments.service'
+import { AttachmentsService } from '@api/attachments/attachments.service'
 import { getSignedUrl } from '@/utils/signUrl'
 
 export class CommentService extends BaseService {
@@ -50,6 +50,23 @@ export class CommentService extends BaseService {
       },
     })
 
+    try {
+      if (comment.content) {
+        const newContent = await this.updateCommentIdOfAttachmentsAfterCreation(comment.content, data.taskId, comment.id)
+        await this.db.comment.update({
+          where: { id: comment.id },
+          data: {
+            content: newContent,
+            updatedAt: comment.createdAt, //dont updated the updatedAt, because it will show (edited) for recently created comments.
+          },
+        })
+        console.info('CommentService#createComment | Comment content attachments updated for comment ID:', comment.id)
+      }
+    } catch (e: unknown) {
+      await this.db.comment.delete({ where: { id: comment.id } })
+      console.error('CommentService#createComment | Rolling back comment creation', e)
+    }
+
     if (!comment.parentId) {
       const activityLogger = new ActivityLogger({ taskId: data.taskId, user: this.user })
       await activityLogger.log(
@@ -63,21 +80,6 @@ export class CommentService extends BaseService {
         }),
       )
       await sendCommentCreateNotifications.trigger({ user: this.user, task, comment })
-      try {
-        if (comment.content) {
-          const newContent = await this.updateCommentIdOfAttachmentsAfterCreation(comment.content, data.taskId, comment.id)
-          await this.db.comment.update({
-            where: { id: comment.id },
-            data: {
-              content: newContent,
-            },
-          })
-          console.info('CommentService#createComment | Comment content attachments updated for comment ID:', comment.id)
-        }
-      } catch (e: unknown) {
-        await this.db.comment.delete({ where: { id: comment.id } })
-        console.error('CommentService#createComment | Rolling back comment creation', e)
-      }
     } else {
       const tasksService = new TasksService(this.user)
       await Promise.all([
