@@ -6,7 +6,7 @@ import { DISPATCHABLE_EVENT } from '@/types/webhook'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import User from '@api/core/models/User.model'
 import { TaskTimestamps } from '@api/core/types/tasks'
-import { PublicTaskSerializer } from '@api/tasks/public/public.serializer'
+import { PublicTaskSerializer, TaskWithWorkflowStateAndAttachments } from '@api/tasks/public/public.serializer'
 import WorkflowStatesService from '@api/workflow-states/workflowStates.service'
 import { LogStatus, StateType, Task, WorkflowState } from '@prisma/client'
 
@@ -89,7 +89,7 @@ export const getTaskTimestamps = async (
 export const dispatchUpdatedWebhookEvent = async (
   user: User,
   prevTask: Task,
-  updatedTask: TaskWithWorkflowState,
+  updatedTask: TaskWithWorkflowStateAndAttachments,
   isPublicApi: boolean,
 ): Promise<void> => {
   let event: DISPATCHABLE_EVENT | undefined
@@ -119,7 +119,7 @@ export const dispatchUpdatedWebhookEvent = async (
   if (event) {
     await copilot.dispatchWebhook(event, {
       workspaceId: user.workspaceId,
-      payload: PublicTaskSerializer.serialize(updatedTask),
+      payload: await PublicTaskSerializer.serialize(updatedTask),
     })
   }
 }
