@@ -23,7 +23,7 @@ import { LabelMappingService } from '@api/label-mapping/label-mapping.service'
 import { SubtaskService } from '@api/tasks/subtasks.service'
 import { TasksActivityLogger } from '@api/tasks/tasks.logger'
 import { TemplatesService } from '@api/tasks/templates/templates.service'
-import { PublicTaskSerializer } from '@api/tasks/public/public.serializer'
+import { PublicTaskSerializer, TaskWithWorkflowStateAndAttachments } from '@api/tasks/public/public.serializer'
 import { getBasicPaginationAttributes } from '@/utils/pagination'
 
 export class PublicTasksService extends TasksSharedService {
@@ -40,7 +40,7 @@ export class PublicTasksService extends TasksSharedService {
     workflowState?: { type: StateType | { not: StateType } }
     limit?: number
     lastIdCursor?: string
-  }): Promise<TaskWithWorkflowState[]> {
+  }): Promise<TaskWithWorkflowStateAndAttachments[]> {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Read, Resource.Tasks)
 
@@ -88,13 +88,18 @@ export class PublicTasksService extends TasksSharedService {
       orderBy,
       ...pagination,
       relationLoadStrategy: 'join',
-      include: { workflowState: true },
+      include: {
+        workflowState: true,
+        attachments: {
+          where: { commentId: null, deletedAt: null },
+        },
+      },
     })
 
     return tasks
   }
 
-  async getOneTask(id: string): Promise<Task & { workflowState: WorkflowState }> {
+  async getOneTask(id: string): Promise<TaskWithWorkflowStateAndAttachments> {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Read, Resource.Tasks)
 
@@ -102,7 +107,19 @@ export class PublicTasksService extends TasksSharedService {
     // while clients can only view the tasks assigned to them or their company
     const filters = this.buildTaskPermissions(id)
     const where = { ...filters, deletedAt: { not: undefined } }
-    const task = await this.db.task.findFirst({ where, relationLoadStrategy: 'join', include: { workflowState: true } })
+    const task = await this.db.task.findFirst({
+      where,
+      relationLoadStrategy: 'join',
+      include: {
+        workflowState: true,
+        attachments: {
+          where: { commentId: null, deletedAt: null },
+        },
+      },
+    })
+
+    console.info({ task, attachment: task?.attachments })
+
     if (!task) throw new APIError(httpStatus.NOT_FOUND, 'The requested task was not found')
     if (this.user.internalUserId) {
       await this.checkClientAccessForTask(task, this.user.internalUserId)
@@ -184,7 +201,12 @@ export class PublicTasksService extends TasksSharedService {
         ...(opts?.manualTimestamp && { createdAt: opts.manualTimestamp }),
         ...(await getTaskTimestamps('create', this.user, data, undefined, workflowStateStatus)),
       },
-      include: { workflowState: true },
+      include: {
+        workflowState: true,
+        attachments: {
+          where: { commentId: null, deletedAt: null },
+        },
+      },
     })
     console.info('PublicTasksService#createTask | Task created with ID:', newTask.id)
 
@@ -237,7 +259,7 @@ export class PublicTasksService extends TasksSharedService {
     await Promise.all([
       sendTaskCreateNotifications.trigger({ user: this.user, task: newTask }),
       this.copilot.dispatchWebhook(DISPATCHABLE_EVENT.TaskCreated, {
-        payload: PublicTaskSerializer.serialize(newTask),
+        payload: await PublicTaskSerializer.serialize(newTask),
         workspaceId: this.user.workspaceId,
       }),
     ])
@@ -360,7 +382,12 @@ export class PublicTasksService extends TasksSharedService {
           ...userAssignmentFields,
           ...(await getTaskTimestamps('update', this.user, data, prevTask)),
         },
-        include: { workflowState: true },
+        include: {
+          workflowState: true,
+          attachments: {
+            where: { commentId: null, deletedAt: null },
+          },
+        },
       })
       subtaskService.setTransaction(tx as PrismaClient)
       // Archive / unarchive all subtasks if parent task is archived / unarchived
@@ -429,15 +456,18 @@ export class PublicTasksService extends TasksSharedService {
       return deletedTask
     })
 
+    // Todo: delete attachments from bucket when task is deleted
+    const taskWithAttachment = { ...updatedTask, attachments: [] } // empty attachments array for deleted tasks
+
     await Promise.all([
       deleteTaskNotifications.trigger({ user: this.user, task }),
       this.copilot.dispatchWebhook(DISPATCHABLE_EVENT.TaskDeleted, {
-        payload: PublicTaskSerializer.serialize(updatedTask),
+        payload: await PublicTaskSerializer.serialize(taskWithAttachment),
         workspaceId: this.user.workspaceId,
       }),
     ])
 
-    return updatedTask
+    return taskWithAttachment
 
     // Logic to remove internal user notifications when a task is deleted / assignee is deleted
     // ...In case requirements change later again

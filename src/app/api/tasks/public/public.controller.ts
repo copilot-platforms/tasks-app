@@ -47,7 +47,7 @@ export const getAllTasksPublic = async (req: NextRequest) => {
   const base64NextToken = hasMoreTasks ? encode(lastTaskId) : undefined
 
   return NextResponse.json({
-    data: PublicTaskSerializer.serializeMany(tasks),
+    data: await PublicTaskSerializer.serializeMany(tasks),
     nextToken: base64NextToken,
   })
 }
@@ -57,7 +57,7 @@ export const getOneTaskPublic = async (req: NextRequest, { params }: IdParams) =
   const user = await authenticate(req)
   const tasksService = new PublicTasksService(user)
   const task = await tasksService.getOneTask(id)
-  return NextResponse.json(PublicTaskSerializer.serialize(task))
+  return NextResponse.json(await PublicTaskSerializer.serialize(task))
 }
 
 export const createTaskPublic = async (req: NextRequest) => {
@@ -73,7 +73,7 @@ export const createTaskPublic = async (req: NextRequest) => {
   const newTask = await tasksService.createTask(createPayload)
   console.info('Created new public task:', newTask)
 
-  return NextResponse.json(PublicTaskSerializer.serialize(newTask))
+  return NextResponse.json(await PublicTaskSerializer.serialize(newTask))
 }
 
 export const updateTaskPublic = async (req: NextRequest, { params }: IdParams) => {
@@ -85,7 +85,7 @@ export const updateTaskPublic = async (req: NextRequest, { params }: IdParams) =
   const updatePayload = await PublicTaskSerializer.deserializeUpdatePayload(data, user.workspaceId)
   const updatedTask = await tasksService.updateTask(id, updatePayload)
 
-  return NextResponse.json(PublicTaskSerializer.serialize(updatedTask))
+  return NextResponse.json(await PublicTaskSerializer.serialize(updatedTask))
 }
 
 export const deleteOneTaskPublic = async (req: NextRequest, { params }: IdParams) => {
@@ -94,5 +94,5 @@ export const deleteOneTaskPublic = async (req: NextRequest, { params }: IdParams
   const user = await authenticate(req)
   const tasksService = new PublicTasksService(user)
   const task = await tasksService.deleteTask(id, z.coerce.boolean().parse(recursive))
-  return NextResponse.json({ ...PublicTaskSerializer.serialize(task) })
+  return NextResponse.json({ ...(await PublicTaskSerializer.serialize(task)) })
 }
