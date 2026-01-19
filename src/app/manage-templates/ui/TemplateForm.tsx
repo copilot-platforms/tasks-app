@@ -28,6 +28,7 @@ import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { deleteEditorAttachmentsHandler, uploadAttachmentHandler } from '@/utils/attachmentUtils'
 import AttachmentLayout from '@/components/AttachmentLayout'
 import { StyledModal } from '@/app/detail/ui/styledComponent'
+import { createUploadFn } from '@/utils/createUploadFn'
 
 export const TemplateForm = ({ handleCreate }: { handleCreate: () => void }) => {
   const { workflowStates, assignee } = useSelector(selectTaskBoard)
@@ -84,7 +85,11 @@ const NewTemplateFormInputs = () => {
 
   const uploadFn =
     token && tokenPayload?.workspaceId
-      ? async (file: File) => uploadAttachmentHandler(file, token, tokenPayload.workspaceId, null, AttachmentTypes.TEMPLATE)
+      ? createUploadFn({
+          token,
+          workspaceId: tokenPayload.workspaceId,
+          attachmentType: AttachmentTypes.TEMPLATE,
+        })
       : undefined
 
   const todoWorkflowState = workflowStates.find((el) => el.key === 'todo') || workflowStates[0]

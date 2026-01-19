@@ -16,7 +16,7 @@ const buildFilePath = (
 ) => {
   if (type === AttachmentTypes.TASK) {
     return entityId ? `/${workspaceId}/${entityId}` : `/${workspaceId}`
-  } else if (AttachmentTypes.COMMENT) {
+  } else if (type === AttachmentTypes.COMMENT) {
     return `/${workspaceId}/${parentTaskId}/comments${entityId ? `/${entityId}` : ''}`
   }
   return `/${workspaceId}/templates${entityId ? `/${entityId}` : ''}`

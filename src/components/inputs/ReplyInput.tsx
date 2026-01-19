@@ -16,26 +16,27 @@ import { Avatar, Box, InputAdornment, Stack } from '@mui/material'
 import { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
+import { createUploadFn } from '@/utils/createUploadFn'
 
 interface ReplyInputProps {
+  token: string
   task_id: string
   comment: any
   createComment: (postCommentPayload: CreateComment) => void
-  uploadFn: ((file: File) => Promise<string | undefined>) | undefined
   focusReplyInput: boolean
   setFocusReplyInput: Dispatch<SetStateAction<boolean>>
 }
 
 export const ReplyInput = ({
+  token,
   task_id,
   comment,
   createComment,
-  uploadFn,
   focusReplyInput,
   setFocusReplyInput,
 }: ReplyInputProps) => {
   const [detail, setDetail] = useState('')
-  const { token, assignee } = useSelector(selectTaskBoard)
+  const { assignee, activeTask } = useSelector(selectTaskBoard)
   const windowWidth = useWindowWidth()
   const isMobile = () => {
     return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || windowWidth < 600
@@ -145,6 +146,15 @@ export const ReplyInput = ({
     setIsDragging(false)
     dragCounter.current = 0
   }
+
+  const uploadFn =
+    token && activeTask
+      ? createUploadFn({
+          token,
+          workspaceId: activeTask.workspaceId,
+          getEntityId: () => task_id,
+        })
+      : undefined
 
   return (
     <>
