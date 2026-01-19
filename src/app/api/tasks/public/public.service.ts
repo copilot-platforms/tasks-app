@@ -91,7 +91,7 @@ export class PublicTasksService extends TasksSharedService {
       include: {
         workflowState: true,
         attachments: {
-          where: { commentId: null, deletedAt: null },
+          where: { commentId: null },
         },
       },
     })
@@ -113,7 +113,7 @@ export class PublicTasksService extends TasksSharedService {
       include: {
         workflowState: true,
         attachments: {
-          where: { commentId: null, deletedAt: null },
+          where: { commentId: null },
         },
       },
     })
@@ -204,7 +204,7 @@ export class PublicTasksService extends TasksSharedService {
       include: {
         workflowState: true,
         attachments: {
-          where: { commentId: null, deletedAt: null },
+          where: { commentId: null },
         },
       },
     })
@@ -385,7 +385,7 @@ export class PublicTasksService extends TasksSharedService {
         include: {
           workflowState: true,
           attachments: {
-            where: { commentId: null, deletedAt: null },
+            where: { commentId: null },
           },
         },
       })
