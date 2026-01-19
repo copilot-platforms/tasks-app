@@ -167,6 +167,7 @@ export const FilterBar = ({ mode }: FilterBarProps) => {
           <FilterButtonGroup filterButtons={filterButtons} activeButtonIndex={ButtonIndex} mobileView={true} />
           <Stack
             direction="row"
+            justifyContent="end"
             alignItems="center"
             sx={{
               '@media (max-width: 368px)': {
