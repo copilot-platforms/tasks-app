@@ -11,6 +11,7 @@ import { VerticalLine } from './styledComponent'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 
 interface Prop {
+  token: string
   comment: LogResponse
   createComment: (postCommentPayload: CreateComment) => void
   deleteComment: (id: string, replyId?: string, softDelete?: boolean) => void
@@ -21,6 +22,7 @@ interface Prop {
 }
 
 export const Comments = ({
+  token,
   comment,
   createComment,
   deleteComment,
@@ -45,6 +47,7 @@ export const Comments = ({
         />
 
         <CommentCard
+          token={token}
           data-comment-card="true"
           comment={comment}
           createComment={createComment}

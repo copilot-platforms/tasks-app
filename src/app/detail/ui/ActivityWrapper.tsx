@@ -229,6 +229,7 @@ export const ActivityWrapper = ({
                   >
                     {item.type === ActivityType.COMMENT_ADDED ? (
                       <Comments
+                        token={token}
                         comment={item}
                         createComment={handleCreateComment}
                         deleteComment={(commentId, replyId, softDelete) =>
@@ -246,7 +247,12 @@ export const ActivityWrapper = ({
                 </Collapse>
               ))}
             </TransitionGroup>
-            <CommentInput createComment={handleCreateComment} task_id={task_id} postAttachment={postAttachment} />
+            <CommentInput
+              createComment={handleCreateComment}
+              task_id={task_id}
+              postAttachment={postAttachment}
+              token={token}
+            />
           </Stack>
         )}
       </Stack>

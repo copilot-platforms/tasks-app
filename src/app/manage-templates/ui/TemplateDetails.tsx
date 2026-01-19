@@ -12,6 +12,7 @@ import store from '@/redux/store'
 import { CreateTemplateRequest } from '@/types/dto/templates.dto'
 import { AttachmentTypes, ITemplate } from '@/types/interfaces'
 import { deleteEditorAttachmentsHandler, uploadAttachmentHandler } from '@/utils/attachmentUtils'
+import { createUploadFn } from '@/utils/createUploadFn'
 import { Box } from '@mui/material'
 import { MouseEvent, useCallback, useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
@@ -110,18 +111,14 @@ export default function TemplateDetails({
   }
 
   const uploadFn = token
-    ? async (file: File) => {
-        setActiveUploads((prev) => prev + 1)
-        const fileUrl = await uploadAttachmentHandler(
-          file,
-          token ?? '',
-          template.workspaceId,
-          template_id,
-          AttachmentTypes.TEMPLATE,
-        )
-        setActiveUploads((prev) => prev - 1)
-        return fileUrl
-      }
+    ? createUploadFn({
+        token,
+        workspaceId: template.workspaceId,
+        getEntityId: () => template_id,
+        attachmentType: AttachmentTypes.TEMPLATE,
+        onUploadStart: () => setActiveUploads((prev) => prev + 1),
+        onUploadEnd: () => setActiveUploads((prev) => prev - 1),
+      })
     : undefined
 
   return (

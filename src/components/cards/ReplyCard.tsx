@@ -16,38 +16,42 @@ import { PencilIcon, TrashIcon } from '@/icons'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { UpdateComment } from '@/types/dto/comment.dto'
-import { IAssigneeCombined } from '@/types/interfaces'
+import { AttachmentTypes, IAssigneeCombined } from '@/types/interfaces'
 import { getAssigneeName } from '@/utils/assignee'
 import { getTimeDifference } from '@/utils/getTimeDifference'
-import { deleteEditorAttachmentsHandler } from '@/utils/attachmentUtils'
+import { deleteEditorAttachmentsHandler, getAttachmentPayload } from '@/utils/attachmentUtils'
 import { isTapwriteContentEmpty } from '@/utils/isTapwriteContentEmpty'
 import { Box, Stack } from '@mui/material'
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
 import { z } from 'zod'
+import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
+import { createUploadFn } from '@/utils/createUploadFn'
 
 export const ReplyCard = ({
+  token,
   item,
-  uploadFn,
   task_id,
   handleImagePreview,
   deleteReply,
   setDeletedReplies,
   replyInitiator,
+  postAttachment,
 }: {
+  token: string
   item: ReplyResponse
-  uploadFn: ((file: File) => Promise<string | undefined>) | undefined
   task_id: string
   handleImagePreview: (e: React.MouseEvent<unknown>) => void
   deleteReply: (id: string, replyId: string) => void
   setDeletedReplies: Dispatch<SetStateAction<string[]>>
   replyInitiator: IAssigneeCombined | undefined
+  postAttachment: (postAttachmentPayload: CreateAttachmentRequest) => void
 }) => {
   const [isReadOnly, setIsReadOnly] = useState<boolean>(true)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
-  const { token } = useSelector(selectTaskBoard)
+  const { activeTask } = useSelector(selectTaskBoard)
   const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState(false)
   const { tokenPayload } = useSelector(selectAuthDetails)
   const windowWidth = useWindowWidth()
@@ -56,6 +60,12 @@ export const ReplyCard = ({
   const [isListOrMenuActive, setIsListOrMenuActive] = useState(false)
   const [isFocused, setIsFocused] = useState(false)
   const editRef = useRef<HTMLDivElement>(document.createElement('div'))
+
+  const commentIdRef = useRef(item.id)
+
+  useEffect(() => {
+    commentIdRef.current = item.id
+  }, [item.id])
 
   const canEdit = tokenPayload?.internalUserId == item?.initiatorId || tokenPayload?.clientId == item?.initiatorId
 
@@ -112,6 +122,20 @@ export const ReplyCard = ({
       window.removeEventListener('keydown', handleKeyDown)
     }
   }, [editedContent, isListOrMenuActive, isFocused, isMobile])
+
+  const uploadFn = token
+    ? createUploadFn({
+        token,
+        workspaceId: activeTask?.workspaceId,
+        getEntityId: () => z.string().parse(commentIdRef.current),
+        attachmentType: AttachmentTypes.COMMENT,
+        parentTaskId: task_id,
+        onSuccess: (fileUrl, file) => {
+          const commentId = z.string().parse(commentIdRef.current)
+          postAttachment(getAttachmentPayload(fileUrl, file, commentId, AttachmentTypes.COMMENT))
+        },
+      })
+    : undefined
 
   return (
     <>

@@ -43,8 +43,10 @@ import useSWRMutation from 'swr/mutation'
 import { Tapwrite } from 'tapwrite'
 import { z } from 'zod'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
+import { createUploadFn } from '@/utils/createUploadFn'
 
 export const CommentCard = ({
+  token,
   comment,
   createComment,
   deleteComment,
@@ -54,6 +56,7 @@ export const CommentCard = ({
   'data-comment-card': dataCommentCard, //for selection of the element while highlighting the container in notification
   postAttachment,
 }: {
+  token: string
   comment: LogResponse
   createComment: (postCommentPayload: CreateComment) => void
   deleteComment: (id: string, replyId?: string, softDelete?: boolean) => void
@@ -75,7 +78,7 @@ export const CommentCard = ({
   const { tokenPayload } = useSelector(selectAuthDetails)
   const canEdit = tokenPayload?.internalUserId == comment?.userId || tokenPayload?.clientId == comment?.userId
   const canDelete = tokenPayload?.internalUserId == comment?.userId
-  const { assignee, activeTask, token } = useSelector(selectTaskBoard)
+  const { assignee, activeTask } = useSelector(selectTaskBoard)
   const { expandedComments } = useSelector(selectTaskDetails)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
@@ -115,22 +118,17 @@ export const CommentCard = ({
   }, [comment.details.id]) //done because tapwrite only takes uploadFn once on mount where commentId will be temp from optimistic update. So we need an actual commentId for uploadFn to work.
 
   const uploadFn = token
-    ? async (file: File) => {
-        const commentIdFromRef = commentIdRef.current
-        const commentId = z.string().parse(commentIdFromRef)
-        if (activeTask) {
-          const fileUrl = await uploadAttachmentHandler(
-            file,
-            token,
-            activeTask.workspaceId,
-            commentId,
-            AttachmentTypes.COMMENT,
-            task_id,
-          )
-          fileUrl && postAttachment(getAttachmentPayload(fileUrl, file, commentId, AttachmentTypes.COMMENT))
-          return fileUrl
-        }
-      }
+    ? createUploadFn({
+        token,
+        workspaceId: activeTask?.workspaceId,
+        getEntityId: () => z.string().parse(commentIdRef.current),
+        attachmentType: AttachmentTypes.COMMENT,
+        parentTaskId: task_id,
+        onSuccess: (fileUrl, file) => {
+          const commentId = z.string().parse(commentIdRef.current)
+          postAttachment(getAttachmentPayload(fileUrl, file, commentId, AttachmentTypes.COMMENT))
+        },
+      })
     : undefined
 
   const cancelEdit = () => {
@@ -371,13 +369,14 @@ export const CommentCard = ({
               return (
                 <Collapse key={checkOptimisticStableId(item, optimisticUpdates)}>
                   <ReplyCard
+                    token={token}
                     item={item}
-                    uploadFn={uploadFn}
                     task_id={task_id}
                     handleImagePreview={handleImagePreview}
                     deleteReply={deleteComment}
                     setDeletedReplies={setDeletedReplies}
                     replyInitiator={replyInitiator}
+                    postAttachment={postAttachment}
                   />
                 </Collapse>
               )
@@ -387,10 +386,10 @@ export const CommentCard = ({
           ((comment as LogResponse).details.replies as LogResponse[]).length > 0) ||
         showReply ? (
           <ReplyInput
+            token={token}
             comment={comment}
             task_id={task_id}
             createComment={createComment}
-            uploadFn={uploadFn}
             focusReplyInput={focusReplyInput}
             setFocusReplyInput={setFocusedReplyInput}
           />
