@@ -11,6 +11,7 @@ import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { CreateComment } from '@/types/dto/comment.dto'
 import { deleteEditorAttachmentsHandler, uploadAttachmentHandler } from '@/utils/attachmentUtils'
+import { createUploadFn } from '@/utils/createUploadFn'
 import { getMentionsList } from '@/utils/getMentionList'
 import { isTapwriteContentEmpty } from '@/utils/isTapwriteContentEmpty'
 import { Stack } from '@mui/material'
@@ -19,16 +20,17 @@ import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
 
 interface Prop {
+  token: string
   createComment: (postCommentPayload: CreateComment) => void
   task_id: string
   postAttachment: (postAttachmentPayload: CreateAttachmentRequest) => void
 }
 
-export const CommentInput = ({ createComment, task_id, postAttachment }: Prop) => {
+export const CommentInput = ({ createComment, task_id, postAttachment, token }: Prop) => {
   const [detail, setDetail] = useState('')
   const [isListOrMenuActive, setIsListOrMenuActive] = useState(false)
   const { tokenPayload } = useSelector(selectAuthDetails)
-  const { assignee, token, activeTask } = useSelector(selectTaskBoard)
+  const { assignee, activeTask } = useSelector(selectTaskBoard)
   const currentUserId = tokenPayload?.internalUserId ?? tokenPayload?.clientId
   const currentUserDetails = assignee.find((el) => el.id === currentUserId)
   const [isUploading, setIsUploading] = useState(false)
@@ -86,13 +88,13 @@ export const CommentInput = ({ createComment, task_id, postAttachment }: Prop) =
   }, [detail, isListOrMenuActive, isFocused, isMobile]) // Depend on detail to ensure the latest state is captured
 
   const uploadFn = token
-    ? async (file: File) => {
-        if (activeTask) {
-          const fileUrl = await uploadAttachmentHandler(file, token ?? '', activeTask.workspaceId, task_id)
-          return fileUrl
-        }
-      }
+    ? createUploadFn({
+        token,
+        workspaceId: activeTask?.workspaceId,
+        getEntityId: () => task_id,
+      })
     : undefined
+
   const [isDragging, setIsDragging] = useState(false)
   const dragCounter = useRef(0)
 

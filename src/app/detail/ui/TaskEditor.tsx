@@ -19,6 +19,7 @@ import { Box } from '@mui/material'
 import { MouseEvent, useCallback, useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
+import { createUploadFn } from '@/utils/createUploadFn'
 
 interface Prop {
   task_id: string
@@ -136,13 +137,16 @@ export const TaskEditor = ({
   }
 
   const uploadFn = token
-    ? async (file: File) => {
-        setActiveUploads((prev) => prev + 1)
-        const fileUrl = await uploadAttachmentHandler(file, token ?? '', task.workspaceId, task_id)
-        fileUrl && postAttachment(getAttachmentPayload(fileUrl, file, task_id))
-        setActiveUploads((prev) => prev - 1)
-        return fileUrl
-      }
+    ? createUploadFn({
+        token,
+        workspaceId: task.workspaceId,
+        getEntityId: () => task_id,
+        onUploadStart: () => setActiveUploads((prev) => prev + 1),
+        onUploadEnd: () => setActiveUploads((prev) => prev - 1),
+        onSuccess: (fileUrl, file) => {
+          postAttachment(getAttachmentPayload(fileUrl, file, task_id))
+        },
+      })
     : undefined
 
   return (
