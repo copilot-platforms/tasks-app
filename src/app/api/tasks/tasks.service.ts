@@ -185,7 +185,12 @@ export class TasksService extends TasksSharedService {
         ...(opts?.manualTimestamp && { createdAt: opts.manualTimestamp }),
         ...(await getTaskTimestamps('create', this.user, data, undefined, workflowStateStatus)),
       },
-      include: { workflowState: true },
+      include: {
+        workflowState: true,
+        attachments: {
+          where: { commentId: null, deletedAt: null },
+        },
+      },
     })
     console.info('TasksService#createTask | Task created with ID:', newTask.id)
 
@@ -238,7 +243,7 @@ export class TasksService extends TasksSharedService {
     await Promise.all([
       sendTaskCreateNotifications.trigger({ user: this.user, task: newTask }),
       this.copilot.dispatchWebhook(DISPATCHABLE_EVENT.TaskCreated, {
-        payload: PublicTaskSerializer.serialize(newTask),
+        payload: await PublicTaskSerializer.serialize(newTask),
         workspaceId: this.user.workspaceId,
       }),
     ])
@@ -402,7 +407,12 @@ export class TasksService extends TasksSharedService {
           ...userAssignmentFields,
           ...(await getTaskTimestamps('update', this.user, data, prevTask)),
         },
-        include: { workflowState: true },
+        include: {
+          workflowState: true,
+          attachments: {
+            where: { commentId: null, deletedAt: null },
+          },
+        },
       })
       subtaskService.setTransaction(tx as PrismaClient)
       // Archive / unarchive all subtasks if parent task is archived / unarchived
@@ -457,7 +467,12 @@ export class TasksService extends TasksSharedService {
       const deletedTask = await tx.task.update({
         where: { id, workspaceId: this.user.workspaceId },
         relationLoadStrategy: 'join',
-        include: { workflowState: true },
+        include: {
+          workflowState: true,
+          attachments: {
+            where: { commentId: null, deletedAt: null },
+          },
+        },
         data: { deletedAt: new Date(), deletedBy: deletedBy },
       })
       await this.setNewLastSubtaskUpdated(task.parentId) //updates lastSubtaskUpdated timestamp of parent task if there is task.parentId
@@ -473,7 +488,7 @@ export class TasksService extends TasksSharedService {
     await Promise.all([
       deleteTaskNotifications.trigger({ user: this.user, task }),
       this.copilot.dispatchWebhook(DISPATCHABLE_EVENT.TaskDeleted, {
-        payload: PublicTaskSerializer.serialize(updatedTask),
+        payload: await PublicTaskSerializer.serialize(updatedTask),
         workspaceId: this.user.workspaceId,
       }),
     ])
@@ -602,7 +617,12 @@ export class TasksService extends TasksSharedService {
         completedByUserType,
         ...(await getTaskTimestamps('update', this.user, data, prevTask)),
       },
-      include: { workflowState: true },
+      include: {
+        workflowState: true,
+        attachments: {
+          where: { commentId: null, deletedAt: null },
+        },
+      },
     })
 
     if (updatedTask) {
