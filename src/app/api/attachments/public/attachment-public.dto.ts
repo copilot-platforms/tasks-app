@@ -7,10 +7,11 @@ export const PublicAttachmentDtoSchema = z.object({
   fileName: z.string(),
   fileSize: z.number(),
   mimeType: z.string(),
-  downloadUrl: z.string().url(),
+  downloadUrl: z.string().url().nullable(),
   uploadedBy: z.string().uuid(),
   uploadedByUserType: z.nativeEnum(AssigneeType).nullable(),
   uploadedDate: RFC3339DateSchema,
+  deletedAt: RFC3339DateSchema.nullable(),
 })
 
 export type PublicAttachmentDto = z.infer<typeof PublicAttachmentDtoSchema>
