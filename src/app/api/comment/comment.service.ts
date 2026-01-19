@@ -1,8 +1,11 @@
+import { AttachmentsService } from '@/app/api/attachments/attachments.service'
+import { PublicCommentSerializer } from '@/app/api/comment/public/comment-public.serializer'
 import { sendCommentCreateNotifications } from '@/jobs/notifications'
 import { sendReplyCreateNotifications } from '@/jobs/notifications/send-reply-create-notifications'
 import { InitiatedEntity } from '@/types/common'
 import { CreateAttachmentRequestSchema } from '@/types/dto/attachments.dto'
 import { CommentsPublicFilterType, CommentWithAttachments, CreateComment, UpdateComment } from '@/types/dto/comment.dto'
+import { DISPATCHABLE_EVENT } from '@/types/webhook'
 import { getArrayDifference, getArrayIntersection } from '@/utils/array'
 import { getFileNameFromPath } from '@/utils/attachmentUtils'
 import { getFilePathFromUrl } from '@/utils/signedUrlReplacer'
@@ -90,6 +93,13 @@ export class CommentService extends BaseService {
         sendReplyCreateNotifications.trigger({ user: this.user, task, comment }),
       ])
     }
+
+    // dispatch a webhook event when comment is created
+    const attachments = await new AttachmentsService(this.user).getAttachmentsForComment(comment.id)
+    await this.copilot.dispatchWebhook(DISPATCHABLE_EVENT.CommentCreated, {
+      payload: await PublicCommentSerializer.serialize({ ...comment, attachments }),
+      workspaceId: this.user.workspaceId,
+    })
 
     return comment
 
