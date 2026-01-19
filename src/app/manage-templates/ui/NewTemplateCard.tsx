@@ -15,6 +15,7 @@ import { CreateTemplateRequest } from '@/types/dto/templates.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { AttachmentTypes } from '@/types/interfaces'
 import { deleteEditorAttachmentsHandler, uploadAttachmentHandler } from '@/utils/attachmentUtils'
+import { createUploadFn } from '@/utils/createUploadFn'
 import { Box, Stack, Typography } from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
@@ -63,7 +64,11 @@ export const NewTemplateCard = ({
   }
   const uploadFn =
     token && tokenPayload?.workspaceId
-      ? (file: File) => uploadAttachmentHandler(file, token, tokenPayload.workspaceId, null, AttachmentTypes.TEMPLATE)
+      ? createUploadFn({
+          token,
+          workspaceId: tokenPayload.workspaceId,
+          attachmentType: AttachmentTypes.TEMPLATE,
+        })
       : undefined
 
   const todoWorkflowState = workflowStates.find((el) => el.key === 'todo') || workflowStates[0]

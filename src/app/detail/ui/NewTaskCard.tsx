@@ -23,6 +23,7 @@ import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { FilterByOptions, IAssigneeCombined, InputValue, ITemplate, UserIds } from '@/types/interfaces'
 import { getAssigneeName, UserIdsType } from '@/utils/assignee'
 import { deleteEditorAttachmentsHandler, uploadAttachmentHandler } from '@/utils/attachmentUtils'
+import { createUploadFn } from '@/utils/createUploadFn'
 import {
   getSelectedUserIds,
   getSelectedViewerIds,
@@ -105,7 +106,10 @@ export const NewTaskCard = ({
 
   const uploadFn =
     token && tokenPayload?.workspaceId
-      ? (file: File) => uploadAttachmentHandler(file, token, tokenPayload.workspaceId, null)
+      ? createUploadFn({
+          token,
+          workspaceId: tokenPayload.workspaceId,
+        })
       : undefined
 
   const todoWorkflowState = workflowStates.find((el) => el.key === 'todo') || workflowStates[0]
