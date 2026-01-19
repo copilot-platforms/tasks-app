@@ -3,6 +3,7 @@ import { CopilotAPI } from '@/utils/CopilotAPI'
 import { AssigneeType } from '@prisma/client'
 import { z } from 'zod'
 import { validateUserIds, ViewersSchema } from '@/types/dto/tasks.dto'
+import { PublicAttachmentDtoSchema } from '@/app/api/attachments/public/attachment-public.dto'
 
 export const TaskSourceSchema = z.enum(['web', 'api'])
 export type TaskSource = z.infer<typeof TaskSourceSchema>
@@ -41,6 +42,7 @@ export const PublicTaskDtoSchema = z.object({
   clientId: z.string().uuid().nullable(),
   companyId: z.string().uuid().nullable(),
   viewers: ViewersSchema,
+  attachments: z.array(PublicAttachmentDtoSchema),
 })
 export type PublicTaskDto = z.infer<typeof PublicTaskDtoSchema>
 
