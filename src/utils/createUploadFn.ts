@@ -16,7 +16,7 @@ export const createUploadFn = (config: UploadConfig) => {
   return async (file: File) => {
     config.onUploadStart?.()
     const entityId = config.getEntityId?.() ?? null //lazily loading the entityId because some of the ids are optimistic id and we want the real ids of comments/replies
-    if (!config.token) {
+    if (!config.token || !config.workspaceId) {
       return undefined
     }
     try {
