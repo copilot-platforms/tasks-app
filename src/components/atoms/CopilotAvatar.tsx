@@ -2,6 +2,7 @@ import { NoAssigneeAvatarLarge, PersonIcon, PersonIconSmall } from '@/icons'
 import { IAssigneeCombined } from '@/types/interfaces'
 import { getAssigneeInitials } from '@/utils/assignee'
 import { Avatar, Box, SxProps, Theme } from '@mui/material'
+import { clsx } from 'clsx'
 import { Avatar as AssemblyAvatar } from 'copilot-design-system'
 import { ComponentProps, ReactNode, useMemo } from 'react'
 
@@ -54,9 +55,9 @@ export const CopilotAvatar = ({ currentAssignee, alt, size = 'sm', icon, classNa
 
   return (
     <AssemblyAvatar
-      className={className}
+      className={clsx(className, 'avatar')}
       alt={alt || fullName}
-      src={currentAssignee.iconImageUrl || currentAssignee.avatarImageUrl || ''}
+      src={currentAssignee.iconImageUrl || currentAssignee.avatarImageUrl || undefined}
       size={size}
       fallbackColor={currentAssignee?.fallbackColor || ''}
       text={initials}

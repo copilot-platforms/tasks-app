@@ -1,4 +1,6 @@
 import { StyledUserCompanySelector } from '@/app/detail/ui/styledComponent'
+import { CopilotTooltip, CopilotTooltipProps } from '@/components/atoms/CopilotTooltip'
+import useClickOutside from '@/hooks/useClickOutside'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { IAssigneeCombined, InputValue, ISelectorOption } from '@/types/interfaces'
@@ -9,8 +11,6 @@ import { selectorOptionsToInputValue } from '@/utils/selector'
 import { Box, ClickAwayListener, Popper, Stack } from '@mui/material'
 import { ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
-import { CopilotTooltip, CopilotTooltipProps } from '@/components/atoms/CopilotTooltip'
-import useClickOutside from '@/hooks/useClickOutside'
 
 export const CopilotSelector = ({
   onChange,

@@ -275,7 +275,7 @@ export const Sidebar = ({
               <SelectorButton
                 disabled={disabled || fromNotificationCenter}
                 height={'30px'}
-                startIcon={<CopilotAvatar currentAssignee={assigneeValue} />}
+                startIcon={<CopilotAvatar size="xs" currentAssignee={assigneeValue} />}
                 buttonContent={
                   <Typography
                     variant="md"
@@ -315,7 +315,7 @@ export const Sidebar = ({
                 <SelectorButton
                   disabled={(disabled && !previewMode) || fromNotificationCenter}
                   height={'30px'}
-                  startIcon={<CopilotAvatar currentAssignee={taskViewerValue || undefined} />}
+                  startIcon={<CopilotAvatar size="xs" currentAssignee={taskViewerValue || undefined} />}
                   buttonContent={
                     <Typography
                       variant="md"
@@ -488,7 +488,7 @@ export const Sidebar = ({
                   <SelectorButton
                     disabled={disabled || fromNotificationCenter}
                     padding="0px"
-                    startIcon={<CopilotAvatar currentAssignee={assigneeValue} />}
+                    startIcon={<CopilotAvatar size="xs" currentAssignee={assigneeValue} />}
                     outlined={true}
                     buttonContent={
                       <Typography
@@ -543,7 +543,7 @@ export const Sidebar = ({
                     <SelectorButton
                       disabled={(disabled && !previewMode) || fromNotificationCenter}
                       padding="0px"
-                      startIcon={<CopilotAvatar currentAssignee={taskViewerValue || undefined} />}
+                      startIcon={<CopilotAvatar size="xs" currentAssignee={taskViewerValue || undefined} />}
                       outlined={true}
                       buttonContent={
                         <Typography
