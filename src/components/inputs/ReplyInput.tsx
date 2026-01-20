@@ -147,14 +147,11 @@ export const ReplyInput = ({
     dragCounter.current = 0
   }
 
-  const uploadFn =
-    token && activeTask
-      ? createUploadFn({
-          token,
-          workspaceId: activeTask.workspaceId,
-          getEntityId: () => task_id,
-        })
-      : undefined
+  const uploadFn = createUploadFn({
+    token,
+    workspaceId: activeTask?.workspaceId,
+    getEntityId: () => task_id,
+  })
 
   return (
     <>

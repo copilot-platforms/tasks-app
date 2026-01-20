@@ -427,8 +427,8 @@ export abstract class TasksSharedService extends BaseService {
     }
 
     await Promise.all(copyAttachmentPromises)
-    const attachmentService = new AttachmentsService(this.user)
     if (createAttachmentPayloads.length) {
+      const attachmentService = new AttachmentsService(this.user)
       await attachmentService.createMultipleAttachments(createAttachmentPayloads)
     }
 
