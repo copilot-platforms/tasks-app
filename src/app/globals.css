@@ -98,7 +98,8 @@ a {
   }
 }
 
-.avatar-xs, .user-company-selector [class*=" mui-"][class*="-control"] {
+.avatar-xs,
+.user-company-selector [class*=' mui-'][class*='-control'] {
   h1.cop-text-xs {
     font-size: 9px;
     line-height: 18px;
@@ -117,4 +118,3 @@ a {
     background-color: transparent;
   }
 }
-
