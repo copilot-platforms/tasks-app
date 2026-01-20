@@ -62,14 +62,11 @@ export const NewTemplateCard = ({
       [field]: value,
     }))
   }
-  const uploadFn =
-    token && tokenPayload?.workspaceId
-      ? createUploadFn({
-          token,
-          workspaceId: tokenPayload.workspaceId,
-          attachmentType: AttachmentTypes.TEMPLATE,
-        })
-      : undefined
+  const uploadFn = createUploadFn({
+    token,
+    workspaceId: tokenPayload?.workspaceId,
+    attachmentType: AttachmentTypes.TEMPLATE,
+  })
 
   const todoWorkflowState = workflowStates.find((el) => el.key === 'todo') || workflowStates[0]
 

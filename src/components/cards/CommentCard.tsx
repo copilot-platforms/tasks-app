@@ -19,6 +19,7 @@ import { MenuBox } from '@/components/inputs/MenuBox'
 import { ReplyInput } from '@/components/inputs/ReplyInput'
 import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
 import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
+import { usePostAttachment } from '@/hoc/PostAttachmentProvider'
 import { useWindowWidth } from '@/hooks/useWindowWidth'
 import { PencilIcon, ReplyIcon, TrashIcon } from '@/icons'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
@@ -28,9 +29,10 @@ import store from '@/redux/store'
 import { CommentResponse, CreateComment, UpdateComment } from '@/types/dto/comment.dto'
 import { AttachmentTypes, IAssigneeCombined } from '@/types/interfaces'
 import { getAssigneeName } from '@/utils/assignee'
+import { deleteEditorAttachmentsHandler, getAttachmentPayload } from '@/utils/attachmentUtils'
+import { createUploadFn } from '@/utils/createUploadFn'
 import { fetcher } from '@/utils/fetcher'
 import { getTimeDifference } from '@/utils/getTimeDifference'
-import { deleteEditorAttachmentsHandler, getAttachmentPayload, uploadAttachmentHandler } from '@/utils/attachmentUtils'
 import { isTapwriteContentEmpty } from '@/utils/isTapwriteContentEmpty'
 import { checkOptimisticStableId, OptimisticUpdate } from '@/utils/optimisticCommentUtils'
 import { ReplyResponse } from '@api/activity-logs/schemas/CommentAddedSchema'
@@ -42,8 +44,6 @@ import { TransitionGroup } from 'react-transition-group'
 import useSWRMutation from 'swr/mutation'
 import { Tapwrite } from 'tapwrite'
 import { z } from 'zod'
-import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
-import { createUploadFn } from '@/utils/createUploadFn'
 
 export const CommentCard = ({
   token,
@@ -54,7 +54,6 @@ export const CommentCard = ({
   optimisticUpdates,
   commentInitiator,
   'data-comment-card': dataCommentCard, //for selection of the element while highlighting the container in notification
-  postAttachment,
 }: {
   token: string
   comment: LogResponse
@@ -64,7 +63,6 @@ export const CommentCard = ({
   optimisticUpdates: OptimisticUpdate[]
   commentInitiator: IAssigneeCombined | undefined
   'data-comment-card'?: string
-  postAttachment: (postAttachmentPayload: CreateAttachmentRequest) => void
 }) => {
   const [showReply, setShowReply] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
@@ -85,6 +83,8 @@ export const CommentCard = ({
   const [isFocused, setIsFocused] = useState(false)
 
   const [deletedReplies, setDeletedReplies] = useState<string[]>([])
+
+  const { postAttachment } = usePostAttachment()
 
   const windowWidth = useWindowWidth()
   const isMobile = () => {
@@ -117,19 +117,17 @@ export const CommentCard = ({
     commentIdRef.current = comment.details.id
   }, [comment.details.id]) //done because tapwrite only takes uploadFn once on mount where commentId will be temp from optimistic update. So we need an actual commentId for uploadFn to work.
 
-  const uploadFn = token
-    ? createUploadFn({
-        token,
-        workspaceId: activeTask?.workspaceId,
-        getEntityId: () => z.string().parse(commentIdRef.current),
-        attachmentType: AttachmentTypes.COMMENT,
-        parentTaskId: task_id,
-        onSuccess: (fileUrl, file) => {
-          const commentId = z.string().parse(commentIdRef.current)
-          postAttachment(getAttachmentPayload(fileUrl, file, commentId, AttachmentTypes.COMMENT))
-        },
-      })
-    : undefined
+  const uploadFn = createUploadFn({
+    token,
+    workspaceId: activeTask?.workspaceId,
+    getEntityId: () => z.string().parse(commentIdRef.current),
+    attachmentType: AttachmentTypes.COMMENT,
+    parentTaskId: task_id,
+    onSuccess: (fileUrl, file) => {
+      const commentId = z.string().parse(commentIdRef.current)
+      postAttachment(getAttachmentPayload(fileUrl, file, commentId, AttachmentTypes.COMMENT))
+    },
+  })
 
   const cancelEdit = () => {
     setIsReadOnly(true)
@@ -376,7 +374,6 @@ export const CommentCard = ({
                     deleteReply={deleteComment}
                     setDeletedReplies={setDeletedReplies}
                     replyInitiator={replyInitiator}
-                    postAttachment={postAttachment}
                   />
                 </Collapse>
               )

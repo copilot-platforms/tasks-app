@@ -1,7 +1,6 @@
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { CommentCard } from '@/components/cards/CommentCard'
 import { CreateComment } from '@/types/dto/comment.dto'
-import { IAssigneeCombined } from '@/types/interfaces'
 import { LogResponse } from '@api/activity-logs/schemas/LogResponseSchema'
 import { Stack } from '@mui/material'
 import { VerticalLine } from './styledComponent'
@@ -9,7 +8,6 @@ import { OptimisticUpdate } from '@/utils/optimisticCommentUtils'
 import { TrashIcon2 } from '@/icons'
 import { useSelector } from 'react-redux'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
-import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 
 interface Prop {
   token: string
@@ -19,19 +17,9 @@ interface Prop {
   task_id: string
   stableId: string
   optimisticUpdates: OptimisticUpdate[]
-  postAttachment: (postAttachmentPayload: CreateAttachmentRequest) => void
 }
 
-export const Comments = ({
-  token,
-  comment,
-  createComment,
-  deleteComment,
-  task_id,
-  stableId,
-  optimisticUpdates,
-  postAttachment,
-}: Prop) => {
+export const Comments = ({ token, comment, createComment, deleteComment, task_id, stableId, optimisticUpdates }: Prop) => {
   const { assignee } = useSelector(selectTaskBoard)
   const commentInitiator = assignee.find((assignee) => assignee.id == comment.userId)
   return (
@@ -60,7 +48,6 @@ export const Comments = ({
           task_id={task_id}
           optimisticUpdates={optimisticUpdates}
           commentInitiator={commentInitiator}
-          postAttachment={postAttachment}
         />
       </Stack>
     </Stack>

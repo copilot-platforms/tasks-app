@@ -23,10 +23,9 @@ interface Prop {
   token: string
   createComment: (postCommentPayload: CreateComment) => void
   task_id: string
-  postAttachment: (postAttachmentPayload: CreateAttachmentRequest) => void
 }
 
-export const CommentInput = ({ createComment, task_id, postAttachment, token }: Prop) => {
+export const CommentInput = ({ createComment, task_id, token }: Prop) => {
   const [detail, setDetail] = useState('')
   const [isListOrMenuActive, setIsListOrMenuActive] = useState(false)
   const { tokenPayload } = useSelector(selectAuthDetails)
@@ -87,13 +86,11 @@ export const CommentInput = ({ createComment, task_id, postAttachment, token }: 
     }
   }, [detail, isListOrMenuActive, isFocused, isMobile]) // Depend on detail to ensure the latest state is captured
 
-  const uploadFn = token
-    ? createUploadFn({
-        token,
-        workspaceId: activeTask?.workspaceId,
-        getEntityId: () => task_id,
-      })
-    : undefined
+  const uploadFn = createUploadFn({
+    token,
+    workspaceId: activeTask?.workspaceId,
+    getEntityId: () => task_id,
+  })
 
   const [isDragging, setIsDragging] = useState(false)
   const dragCounter = useRef(0)

@@ -136,18 +136,16 @@ export const TaskEditor = ({
     debouncedResetTypingFlag()
   }
 
-  const uploadFn = token
-    ? createUploadFn({
-        token,
-        workspaceId: task.workspaceId,
-        getEntityId: () => task_id,
-        onUploadStart: () => setActiveUploads((prev) => prev + 1),
-        onUploadEnd: () => setActiveUploads((prev) => prev - 1),
-        onSuccess: (fileUrl, file) => {
-          postAttachment(getAttachmentPayload(fileUrl, file, task_id))
-        },
-      })
-    : undefined
+  const uploadFn = createUploadFn({
+    token,
+    workspaceId: task.workspaceId,
+    getEntityId: () => task_id,
+    onUploadStart: () => setActiveUploads((prev) => prev + 1),
+    onUploadEnd: () => setActiveUploads((prev) => prev - 1),
+    onSuccess: (fileUrl, file) => {
+      postAttachment(getAttachmentPayload(fileUrl, file, task_id))
+    },
+  })
 
   return (
     <>
