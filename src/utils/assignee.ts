@@ -1,13 +1,13 @@
 import { Token } from '@/types/common'
 import { TruncateMaxNumber } from '@/types/constants'
 import { TaskResponse, Viewers, ViewersSchema } from '@/types/dto/tasks.dto'
-import { IAssigneeCombined, ISelectorOption, UserIds, UserType } from '@/types/interfaces'
+import { IAssigneeCombined, ISelectorOption, UserType } from '@/types/interfaces'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
+import { NoAssignee } from '@/utils/noAssignee'
 import { truncateText } from '@/utils/truncateText'
 import { AssigneeType, Task } from '@prisma/client'
 import deepEqual from 'deep-equal'
 import { z } from 'zod'
-import { NoAssignee } from '@/utils/noAssignee'
 
 export const UserIdsSchema = z.object({
   internalUserId: z.string().nullable(),
@@ -62,6 +62,22 @@ export const getAssigneeName = (assigneeValue: Assignable | undefined, noAssigne
   return assigneeValue
     ? assigneeValue?.name || `${assigneeValue?.givenName ?? ''} ${assigneeValue?.familyName ?? ''}`.trim()
     : noAssigneetext
+}
+
+export const getAssigneeInitials = (assignee: Assignable): { fullName: string; initials: string } => {
+  const fullName = assignee.name || `${assignee.givenName ?? ''} ${assignee.familyName ?? ''}`.trim()
+
+  const words = fullName.split(' ').flatMap((word) => {
+    const trimmedWord = word.trim()
+    return trimmedWord.length > 0 ? [trimmedWord.toUpperCase().substring(0, 1)] : []
+  })
+
+  const initials = words.length > 2 ? [words.at(0), words.at(-1)].join('') : words.join('')
+
+  return {
+    fullName,
+    initials,
+  }
 }
 
 export const checkAssignee = (assigneeValue: IAssigneeCombined | undefined): boolean => {
