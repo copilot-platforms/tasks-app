@@ -37,26 +37,25 @@ export const CopilotSelector = ({
   const selectorAssignee = parseAssigneeToSelectorOption(assignee)
 
   return (
-    <>
-      <StyledUserCompanySelector
-        openMenuOnFocus
-        menuIsOpen={true}
-        autoFocus
-        placeholder={name}
-        initialValue={initialAssignee}
-        clientUsers={hideClientsList ? [] : selectorAssignee.clients}
-        name={name}
-        internalUsers={hideIusList ? [] : selectorAssignee.internalUsers}
-        companies={hideClientsList ? [] : selectorAssignee.companies}
-        onChange={(inputValue: InputValue[]) => {
-          setCurrentlySelected(inputValue)
-          onChange(inputValue)
-        }}
-        grouped={true}
-        limitSelectedOptions={1}
-        customLabels={getWorkspaceLabels(workspace, true)}
-      />
-    </>
+    <StyledUserCompanySelector
+      className="user-company-selector"
+      openMenuOnFocus
+      menuIsOpen={true}
+      autoFocus
+      placeholder={name}
+      initialValue={initialAssignee}
+      clientUsers={hideClientsList ? [] : selectorAssignee.clients}
+      name={name}
+      internalUsers={hideIusList ? [] : selectorAssignee.internalUsers}
+      companies={hideClientsList ? [] : selectorAssignee.companies}
+      onChange={(inputValue: InputValue[]) => {
+        setCurrentlySelected(inputValue)
+        onChange(inputValue)
+      }}
+      grouped={true}
+      limitSelectedOptions={1}
+      customLabels={getWorkspaceLabels(workspace, true)}
+    />
   )
 }
 

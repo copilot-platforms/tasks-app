@@ -252,10 +252,4 @@ export const StyledUserCompanySelector = styled(UserCompanySelector)(({ theme })
   '& [class*="mui-no1ryp"]': {
     maxHeight: '205px',
   },
-  'h1.cop-text-xs': {
-    fontSize: '9px',
-    lineHeight: '18px',
-    letterSpacing: '0',
-    fontWeight: 'medium',
-  },
 }))

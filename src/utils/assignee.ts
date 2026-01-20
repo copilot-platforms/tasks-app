@@ -68,11 +68,11 @@ export const getAssigneeInitials = (assignee: Assignable): { fullName: string; i
   const fullName = assignee.name || `${assignee.givenName ?? ''} ${assignee.familyName ?? ''}`.trim()
 
   const words = fullName.split(' ').flatMap((word) => {
-    const trimmedWord = word.trim()
+    const trimmedWord = word.trim().replace(/[^a-zA-Z]/g, '')
     return trimmedWord.length > 0 ? [trimmedWord.charAt(0).toLocaleUpperCase()] : []
   })
 
-  const initials = words.length > 2 ? [words.at(0), words.at(-1)].join('') : words.join('')
+  const initials = words.join('').substring(0, 2)
 
   return {
     fullName,

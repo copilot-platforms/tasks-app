@@ -55,7 +55,7 @@ export const CopilotAvatar = ({ currentAssignee, alt, size = 'sm', icon, classNa
 
   return (
     <AssemblyAvatar
-      className={clsx(className, 'avatar')}
+      className={clsx(className, size === 'xs' ? 'avatar-xs' : '')}
       alt={alt || fullName}
       src={currentAssignee.iconImageUrl || currentAssignee.avatarImageUrl || undefined}
       size={size}
