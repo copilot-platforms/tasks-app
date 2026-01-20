@@ -26,6 +26,7 @@ export const Comments = ({ comment, createComment, deleteComment, task_id, stabl
       <VerticalLine />
       <Stack direction="row" columnGap={2} padding={'0px 0px 12px 0px'} width={'100%'}>
         <CopilotAvatar
+          size="xs"
           currentAssignee={commentInitiator}
           style={{
             marginTop: '8px',

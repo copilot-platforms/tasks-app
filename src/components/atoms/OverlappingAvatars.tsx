@@ -9,6 +9,7 @@ export const OverlappingAvatars: React.FC<OverlappingAvatarsProps> = ({ assignee
   const renderAvatar = (assignee: IAssigneeCombined | undefined, index: number) => {
     return (
       <CopilotAvatar
+        size="xs"
         key={index}
         currentAssignee={assignee}
         style={{

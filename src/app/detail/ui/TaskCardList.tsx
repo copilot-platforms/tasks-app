@@ -374,7 +374,7 @@ export const TaskCardList = ({
                   }),
                 }}
               >
-                <CopilotAvatar currentAssignee={assigneeValue as IAssigneeCombined} />
+                <CopilotAvatar size="xs" currentAssignee={assigneeValue as IAssigneeCombined} />
               </Box>
             }
           />

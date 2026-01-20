@@ -94,7 +94,7 @@ a {
 
 .overlapping-avatar {
   > *:not(:last-child) {
-    margin-right: -8px;
+    margin-right: -6px;
   }
 }
 

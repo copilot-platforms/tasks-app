@@ -42,13 +42,7 @@ export const CopilotAvatar = ({ currentAssignee, alt, size = 'sm', icon, classNa
   if (!currentAssignee || (currentAssignee?.name || currentAssignee?.givenName) === 'No assignee') {
     return (
       <Box>
-        {size === 'xs' || size === '2xs' || size === '3xs' ? (
-          <PersonIconSmall />
-        ) : size === 'lg' ? (
-          <NoAssigneeAvatarLarge />
-        ) : (
-          <PersonIcon />
-        )}
+        {size === '2xs' || size === '3xs' ? <PersonIconSmall /> : size === 'lg' ? <NoAssigneeAvatarLarge /> : <PersonIcon />}
       </Box>
     )
   }

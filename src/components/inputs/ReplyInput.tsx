@@ -160,8 +160,8 @@ export const ReplyInput = ({
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       >
-        <CopilotAvatar currentAssignee={currentUserDetails} />
-        <Box sx={{}} onBlur={() => setFocusReplyInput(false)} onFocus={() => setFocusReplyInput(true)} width={'100%'}>
+        <CopilotAvatar size="xs" style={{ marginTop: '6px' }} currentAssignee={currentUserDetails} />
+        <Box onBlur={() => setFocusReplyInput(false)} onFocus={() => setFocusReplyInput(true)} width={'100%'}>
           <Tapwrite
             editorRef={editorRef}
             content={detail}
