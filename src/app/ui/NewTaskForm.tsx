@@ -557,13 +557,10 @@ const NewTaskFormInputs = ({ isEditorReadonly }: NewTaskFormInputsProps) => {
     store.dispatch(setCreateTaskFields({ targetField: 'description', value: content }))
   }
 
-  const uploadFn =
-    token && tokenPayload?.workspaceId
-      ? createUploadFn({
-          token,
-          workspaceId: tokenPayload.workspaceId,
-        })
-      : undefined
+  const uploadFn = createUploadFn({
+    token,
+    workspaceId: tokenPayload?.workspaceId,
+  })
 
   return (
     <>

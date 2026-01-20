@@ -11,6 +11,7 @@ import { EditCommentButtons } from '@/components/buttonsGroup/EditCommentButtons
 import { MenuBox } from '@/components/inputs/MenuBox'
 import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
 import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
+import { usePostAttachment } from '@/hoc/PostAttachmentProvider'
 import { useWindowWidth } from '@/hooks/useWindowWidth'
 import { PencilIcon, TrashIcon } from '@/icons'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
@@ -18,16 +19,15 @@ import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { UpdateComment } from '@/types/dto/comment.dto'
 import { AttachmentTypes, IAssigneeCombined } from '@/types/interfaces'
 import { getAssigneeName } from '@/utils/assignee'
-import { getTimeDifference } from '@/utils/getTimeDifference'
 import { deleteEditorAttachmentsHandler, getAttachmentPayload } from '@/utils/attachmentUtils'
+import { createUploadFn } from '@/utils/createUploadFn'
+import { getTimeDifference } from '@/utils/getTimeDifference'
 import { isTapwriteContentEmpty } from '@/utils/isTapwriteContentEmpty'
 import { Box, Stack } from '@mui/material'
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
 import { z } from 'zod'
-import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
-import { createUploadFn } from '@/utils/createUploadFn'
 
 export const ReplyCard = ({
   token,
@@ -37,7 +37,6 @@ export const ReplyCard = ({
   deleteReply,
   setDeletedReplies,
   replyInitiator,
-  postAttachment,
 }: {
   token: string
   item: ReplyResponse
@@ -46,7 +45,6 @@ export const ReplyCard = ({
   deleteReply: (id: string, replyId: string) => void
   setDeletedReplies: Dispatch<SetStateAction<string[]>>
   replyInitiator: IAssigneeCombined | undefined
-  postAttachment: (postAttachmentPayload: CreateAttachmentRequest) => void
 }) => {
   const [isReadOnly, setIsReadOnly] = useState<boolean>(true)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -84,6 +82,8 @@ export const ReplyCard = ({
   }
 
   const canDelete = tokenPayload?.internalUserId == item?.initiatorId
+
+  const { postAttachment } = usePostAttachment()
 
   const handleEdit = async () => {
     if (isTapwriteContentEmpty(editedContent)) {
@@ -123,19 +123,17 @@ export const ReplyCard = ({
     }
   }, [editedContent, isListOrMenuActive, isFocused, isMobile])
 
-  const uploadFn = token
-    ? createUploadFn({
-        token,
-        workspaceId: activeTask?.workspaceId,
-        getEntityId: () => z.string().parse(commentIdRef.current),
-        attachmentType: AttachmentTypes.COMMENT,
-        parentTaskId: task_id,
-        onSuccess: (fileUrl, file) => {
-          const commentId = z.string().parse(commentIdRef.current)
-          postAttachment(getAttachmentPayload(fileUrl, file, commentId, AttachmentTypes.COMMENT))
-        },
-      })
-    : undefined
+  const uploadFn = createUploadFn({
+    token,
+    workspaceId: activeTask?.workspaceId,
+    getEntityId: () => z.string().parse(commentIdRef.current),
+    attachmentType: AttachmentTypes.COMMENT,
+    parentTaskId: task_id,
+    onSuccess: (fileUrl, file) => {
+      const commentId = z.string().parse(commentIdRef.current)
+      postAttachment(getAttachmentPayload(fileUrl, file, commentId, AttachmentTypes.COMMENT))
+    },
+  })
 
   return (
     <>
