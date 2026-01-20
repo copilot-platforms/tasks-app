@@ -104,13 +104,10 @@ export const NewTaskCard = ({
     }))
   }
 
-  const uploadFn =
-    token && tokenPayload?.workspaceId
-      ? createUploadFn({
-          token,
-          workspaceId: tokenPayload.workspaceId,
-        })
-      : undefined
+  const uploadFn = createUploadFn({
+    token,
+    workspaceId: tokenPayload?.workspaceId,
+  })
 
   const todoWorkflowState = workflowStates.find((el) => el.key === 'todo') || workflowStates[0]
 

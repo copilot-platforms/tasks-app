@@ -110,16 +110,14 @@ export default function TemplateDetails({
     debouncedResetTypingFlag()
   }
 
-  const uploadFn = token
-    ? createUploadFn({
-        token,
-        workspaceId: template.workspaceId,
-        getEntityId: () => template_id,
-        attachmentType: AttachmentTypes.TEMPLATE,
-        onUploadStart: () => setActiveUploads((prev) => prev + 1),
-        onUploadEnd: () => setActiveUploads((prev) => prev - 1),
-      })
-    : undefined
+  const uploadFn = createUploadFn({
+    token,
+    workspaceId: template.workspaceId,
+    getEntityId: () => template_id,
+    attachmentType: AttachmentTypes.TEMPLATE,
+    onUploadStart: () => setActiveUploads((prev) => prev + 1),
+    onUploadEnd: () => setActiveUploads((prev) => prev - 1),
+  })
 
   return (
     <>
