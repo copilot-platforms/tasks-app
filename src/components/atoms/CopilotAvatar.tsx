@@ -1,5 +1,6 @@
 import { NoAssigneeAvatarLarge, PersonIcon, PersonIconSmall } from '@/icons'
 import { IAssigneeCombined } from '@/types/interfaces'
+import { getAssigneeInitials } from '@/utils/assignee'
 import { Avatar, Box, SxProps, Theme } from '@mui/material'
 import { Avatar as AssemblyAvatar } from 'copilot-design-system'
 import { ComponentProps, ReactNode, useMemo } from 'react'
@@ -27,15 +28,7 @@ export const CopilotAvatar = ({ currentAssignee, alt, size = 'sm', icon, classNa
   const avatarVariant: 'circular' | 'rounded' = currentAssignee?.type === 'companies' ? 'rounded' : 'circular'
 
   const { fullName, initials } = useMemo(() => {
-    const name = currentAssignee?.name || [currentAssignee?.givenName || '', currentAssignee?.familyName || ''].join(' ')
-
-    return {
-      fullName: name,
-      initials: name
-        .split(' ')
-        .map((name) => name.substring(0, 1))
-        .join(''),
-    }
+    return currentAssignee ? getAssigneeInitials(currentAssignee) : { fullName: '', initials: '' }
   }, [currentAssignee?.name, currentAssignee?.familyName, currentAssignee?.givenName])
 
   if (icon) {
