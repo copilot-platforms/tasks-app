@@ -6,6 +6,7 @@ import { PrismaClient } from '@prisma/client'
 declare global {
   var copilot: CopilotAPI | undefined
   var token: string | undefined
+  var copilotApiKey: string | undefined
 }
 
 /**
@@ -21,15 +22,18 @@ export class BaseService {
     this.user = user
     this.customApiKey = customCopilotApiKey
 
-    // Set a global token if not present. We use token as an identifier to issue a new SDK instance
-    if (!globalThis.token) {
-      globalThis.token = user.token
-    }
+    // We keep a *single* SDK instance per warm runtime to reduce init overhead.
+    // Important: This MUST be keyed by auth inputs; otherwise Vercel "fluid compute"
+    // can accidentally reuse a client configured for a different portal/user.
+    const shouldRecreateClient =
+      globalThis.token !== user.token ||
+      globalThis.copilotApiKey !== customCopilotApiKey ||
+      !globalThis.copilot
 
-    // If token mismatches, or global copilot instance is not present, create a new one.
-    // INFO: The token mismatch check is to make sure that fluid compute sharing serverless functions doesn't reuse the same SDK instance
-    if (globalThis.token !== user.token || !globalThis.copilot) {
-      globalThis.copilot = new CopilotAPI(user.token)
+    if (shouldRecreateClient) {
+      globalThis.token = user.token
+      globalThis.copilotApiKey = customCopilotApiKey
+      globalThis.copilot = new CopilotAPI(user.token, customCopilotApiKey)
     }
 
     this.copilot = globalThis.copilot
