@@ -22,6 +22,7 @@ import httpStatus from 'http-status'
 import { z } from 'zod'
 import { AttachmentsService } from '@api/attachments/attachments.service'
 import { getSignedUrl } from '@/utils/signUrl'
+import { PublicTasksService } from '@/app/api/tasks/public/public.service'
 
 export class CommentService extends BaseService {
   async create(data: CreateComment) {
@@ -425,5 +426,27 @@ export class CommentService extends BaseService {
       orderBy: { createdAt: 'desc' },
     })
     return !!newComment
+  }
+
+  /**
+   * If the user has permission to access the task, it means the user has access to the task's comments
+   * Therefore checking the task permission
+   */
+  async checkCommentTaskPermissionForUser(taskId: string) {
+    try {
+      const publicTask = new PublicTasksService(this.user)
+      await publicTask.getOneTask(taskId)
+    } catch (err: unknown) {
+      if (err instanceof APIError) {
+        let status: number = httpStatus.UNAUTHORIZED,
+          message = 'You are not authorized to perform this action'
+        if (err.status === httpStatus.NOT_FOUND) {
+          status = httpStatus.NOT_FOUND
+          message = 'A task for the requested comment was not found'
+        }
+        throw new APIError(status, message)
+      }
+      throw err
+    }
   }
 }
