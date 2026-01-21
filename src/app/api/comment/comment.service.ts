@@ -1,4 +1,3 @@
-import { AttachmentsService } from '@/app/api/attachments/attachments.service'
 import { sendCommentCreateNotifications } from '@/jobs/notifications'
 import { sendReplyCreateNotifications } from '@/jobs/notifications/send-reply-create-notifications'
 import { InitiatedEntity } from '@/types/common'
