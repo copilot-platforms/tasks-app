@@ -7,10 +7,11 @@ export const PublicAttachmentDtoSchema = z.object({
   fileName: z.string(),
   fileSize: z.number(),
   mimeType: z.string(),
-  downloadUrl: z.string().url(),
+  downloadUrl: z.string().url().nullable(),
   uploadedBy: z.string().uuid(),
   uploadedByUserType: z.nativeEnum(AssigneeType).nullable(),
   uploadedDate: RFC3339DateSchema,
+  deletedDate: RFC3339DateSchema.nullable(),
 })
 export type PublicAttachmentDto = z.infer<typeof PublicAttachmentDtoSchema>
 
@@ -24,6 +25,7 @@ export const PublicCommentDtoSchema = z.object({
   createdByUserType: z.nativeEnum(AssigneeType).nullable(),
   createdDate: RFC3339DateSchema,
   updatedDate: RFC3339DateSchema,
+  deletedDate: RFC3339DateSchema.nullable(),
   attachments: z.array(PublicAttachmentDtoSchema).nullable(),
 })
 export type PublicCommentDto = z.infer<typeof PublicCommentDtoSchema>
