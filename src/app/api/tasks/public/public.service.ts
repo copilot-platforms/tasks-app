@@ -25,6 +25,7 @@ import { TasksActivityLogger } from '@api/tasks/tasks.logger'
 import { TemplatesService } from '@api/tasks/templates/templates.service'
 import { PublicTaskSerializer, TaskWithWorkflowStateAndAttachments } from '@api/tasks/public/public.serializer'
 import { getBasicPaginationAttributes } from '@/utils/pagination'
+import { AttachmentsService } from '@/app/api/attachments/attachments.service'
 
 export class PublicTasksService extends TasksSharedService {
   async getAllTasks(queryFilters: {
@@ -434,6 +435,7 @@ export class PublicTasksService extends TasksSharedService {
     //delete the associated label
     const labelMappingService = new LabelMappingService(this.user)
 
+    // Note: this transaction is timing out in local machine
     const updatedTask = await this.db.$transaction(async (tx) => {
       labelMappingService.setTransaction(tx as PrismaClient)
       await labelMappingService.deleteLabel(task?.label)
@@ -451,21 +453,19 @@ export class PublicTasksService extends TasksSharedService {
         await subtaskService.decreaseSubtaskCount(task.parentId)
       }
       await subtaskService.softDeleteAllSubtasks(task.id)
-      return deletedTask
+      return { ...deletedTask, attachments: [] } // empty attachments array for deleted tasks
     })
 
-    // Todo: delete attachments from bucket when task is deleted
-    const taskWithAttachment = { ...updatedTask, attachments: [] } // empty attachments array for deleted tasks
-
     await Promise.all([
+      new AttachmentsService(this.user).deleteAttachmentsOfTask([task.id]), // delete attachments of the task and its subtasks
       deleteTaskNotifications.trigger({ user: this.user, task }),
       this.copilot.dispatchWebhook(DISPATCHABLE_EVENT.TaskDeleted, {
-        payload: await PublicTaskSerializer.serialize(taskWithAttachment),
+        payload: await PublicTaskSerializer.serialize(updatedTask),
         workspaceId: this.user.workspaceId,
       }),
     ])
 
-    return taskWithAttachment
+    return updatedTask
 
     // Logic to remove internal user notifications when a task is deleted / assignee is deleted
     // ...In case requirements change later again
