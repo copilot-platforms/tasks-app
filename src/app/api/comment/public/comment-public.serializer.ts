@@ -18,6 +18,7 @@ export class PublicCommentSerializer {
       createdByUserType: comment.initiatorType,
       createdDate: RFC3339DateSchema.parse(toRFC3339(comment.createdAt)),
       updatedDate: RFC3339DateSchema.parse(toRFC3339(comment.updatedAt)),
+      deletedDate: toRFC3339(comment.deletedAt),
       attachments: await PublicCommentSerializer.serializeAttachments({
         attachments: comment.attachments,
         uploadedByUserType: comment.initiatorType,
@@ -52,13 +53,16 @@ export class PublicCommentSerializer {
         fileName: attachment.fileName,
         fileSize: attachment.fileSize,
         mimeType: attachment.fileType,
-        downloadUrl: z
-          .string()
-          .url({ message: `Invalid downloadUrl for attachment with id ${attachment.id}` })
-          .parse(url),
+        downloadUrl: attachment.deletedAt
+          ? null
+          : z
+              .string()
+              .url({ message: `Invalid downloadUrl for attachment with id ${attachment.id}` })
+              .parse(url),
         uploadedBy,
         uploadedByUserType,
         uploadedDate: RFC3339DateSchema.parse(toRFC3339(attachment.createdAt)),
+        deletedDate: toRFC3339(attachment.deletedAt),
       }
     })
   }
