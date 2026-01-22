@@ -113,4 +113,16 @@ export class AttachmentsService extends BaseService {
     const supabase = new SupabaseService()
     await supabase.removeAttachmentsFromBucket(filePathArray)
   }
+
+  async deleteAttachmentsOfTask(taskIds: string[]) {
+    // Todo: delete attachments from bucket when task is deleted
+    await this.db.attachment.deleteMany({
+      where: {
+        taskId: {
+          in: taskIds,
+        },
+        workspaceId: this.user.workspaceId,
+      },
+    })
+  }
 }
