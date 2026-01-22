@@ -11,7 +11,7 @@ export const PublicAttachmentDtoSchema = z.object({
   uploadedBy: z.string().uuid(),
   uploadedByUserType: z.nativeEnum(AssigneeType).nullable(),
   uploadedDate: RFC3339DateSchema,
-  deletedAt: RFC3339DateSchema.nullable(),
+  deletedDate: RFC3339DateSchema.nullable(),
 })
 
 export type PublicAttachmentDto = z.infer<typeof PublicAttachmentDtoSchema>
