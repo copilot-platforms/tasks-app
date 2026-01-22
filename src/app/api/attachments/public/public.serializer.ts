@@ -16,34 +16,45 @@ export class PublicAttachmentSerializer {
   static async serializeAttachments({
     attachments,
     uploadedByUserType,
+    content,
     uploadedBy,
   }: {
     attachments: Attachment[]
     uploadedByUserType: CommentInitiator | null
+    content: string | null
     uploadedBy?: string
   }): Promise<PublicAttachmentDto[]> {
-    const attachmentPaths = attachments.map((attachment) => attachment.filePath)
+    // check if attachments are in the content. If yes
+    const attachmentPaths = attachments
+      .map((attachment) => {
+        return attachment.filePath
+      })
+      .filter((path) => content?.includes(path))
+
     const signedUrls = await PublicAttachmentSerializer.getFormattedSignedUrls(attachmentPaths)
 
-    return attachments.map((attachment) => {
-      const url = signedUrls.find((item) => item.path === attachment.filePath)?.url
-      return {
-        id: attachment.id,
-        fileName: attachment.fileName,
-        fileSize: attachment.fileSize,
-        mimeType: attachment.fileType,
-        downloadUrl: attachment.deletedAt
-          ? null
-          : z
-              .string()
-              .url({ message: `Invalid downloadUrl for attachment with id ${attachment.id}` })
-              .parse(url),
-        uploadedBy: uploadedBy || attachment.createdById,
-        uploadedByUserType: uploadedByUserType,
-        uploadedDate: RFC3339DateSchema.parse(toRFC3339(attachment.createdAt)),
-        deletedDate: toRFC3339(attachment.deletedAt),
-      }
-    })
+    return attachments
+      .map((attachment) => {
+        const url = signedUrls.find((item) => item.path === attachment.filePath)?.url
+        if (!url) return null
+        return {
+          id: attachment.id,
+          fileName: attachment.fileName,
+          fileSize: attachment.fileSize,
+          mimeType: attachment.fileType,
+          downloadUrl: attachment.deletedAt
+            ? null
+            : z
+                .string()
+                .url({ message: `Invalid downloadUrl for attachment with id ${attachment.id}` })
+                .parse(url),
+          uploadedBy: uploadedBy || attachment.createdById,
+          uploadedByUserType: uploadedByUserType,
+          uploadedDate: RFC3339DateSchema.parse(toRFC3339(attachment.createdAt)),
+          deletedDate: toRFC3339(attachment.deletedAt),
+        }
+      })
+      .filter((attachment) => attachment !== null)
   }
 
   static async getFormattedSignedUrls(attachmentPaths: string[]) {
