@@ -66,6 +66,7 @@ export class PublicTaskSerializer {
       attachments: await PublicAttachmentSerializer.serializeAttachments({
         attachments: task.attachments,
         uploadedByUserType: 'internalUser', // task creator is always IU
+        content: task.body,
       }),
     }
   }
