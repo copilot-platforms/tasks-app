@@ -1,4 +1,4 @@
-import { PublicAttachmentDto } from '@/app/api/attachments/public/attachment-public.dto'
+import { PublicAttachmentDto } from '@/app/api/attachments/public/public.dto'
 import { RFC3339DateSchema } from '@/types/common'
 import { toRFC3339 } from '@/utils/dateHelper'
 import { createSignedUrls } from '@/utils/signUrl'
@@ -19,7 +19,7 @@ export class PublicAttachmentSerializer {
     uploadedBy,
   }: {
     attachments: Attachment[]
-    uploadedByUserType?: CommentInitiator | null
+    uploadedByUserType: CommentInitiator | null
     uploadedBy?: string
   }): Promise<PublicAttachmentDto[]> {
     const attachmentPaths = attachments.map((attachment) => attachment.filePath)
@@ -32,16 +32,14 @@ export class PublicAttachmentSerializer {
         fileName: attachment.fileName,
         fileSize: attachment.fileSize,
         mimeType: attachment.fileType,
-        downloadUrl: attachment.deletedAt
-          ? null
-          : z
-              .string()
-              .url({ message: `Invalid downloadUrl for attachment with id ${attachment.id}` })
-              .parse(url),
+        downloadUrl: z
+          .string()
+          .url({ message: `Invalid downloadUrl for attachment with id ${attachment.id}` })
+          .parse(url),
         uploadedBy: uploadedBy || attachment.createdById,
-        uploadedByUserType: uploadedByUserType || 'internalUser', // todo: 'internalUser' literal needs to be changed later once uploadedByUserType column is introduced in attachments table
+        uploadedByUserType: uploadedByUserType,
         uploadedDate: RFC3339DateSchema.parse(toRFC3339(attachment.createdAt)),
-        deletedAt: attachment.deletedAt ? RFC3339DateSchema.parse(toRFC3339(attachment.deletedAt)) : null,
+        deletedDate: attachment.deletedAt ? RFC3339DateSchema.parse(toRFC3339(attachment.deletedAt)) : null,
       }
     })
   }

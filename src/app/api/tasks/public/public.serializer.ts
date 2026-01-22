@@ -1,4 +1,4 @@
-import { PublicAttachmentSerializer } from '@/app/api/attachments/public/attachment-public.serializer'
+import { PublicAttachmentSerializer } from '@/app/api/attachments/public/public.serializer'
 import APIError from '@/app/api/core/exceptions/api'
 import DBClient from '@/lib/db'
 import { RFC3339DateSchema } from '@/types/common'
@@ -65,6 +65,7 @@ export class PublicTaskSerializer {
       viewers: ViewersSchema.parse(task.viewers),
       attachments: await PublicAttachmentSerializer.serializeAttachments({
         attachments: task.attachments,
+        uploadedByUserType: 'internalUser', // task creator is always IU
       }),
     }
   }
