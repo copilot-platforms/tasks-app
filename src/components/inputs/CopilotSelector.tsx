@@ -1,4 +1,6 @@
 import { StyledUserCompanySelector } from '@/app/detail/ui/styledComponent'
+import { CopilotTooltip, CopilotTooltipProps } from '@/components/atoms/CopilotTooltip'
+import useClickOutside from '@/hooks/useClickOutside'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { IAssigneeCombined, InputValue, ISelectorOption } from '@/types/interfaces'
@@ -9,8 +11,6 @@ import { selectorOptionsToInputValue } from '@/utils/selector'
 import { Box, ClickAwayListener, Popper, Stack } from '@mui/material'
 import { ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
-import { CopilotTooltip, CopilotTooltipProps } from '@/components/atoms/CopilotTooltip'
-import useClickOutside from '@/hooks/useClickOutside'
 
 export const CopilotSelector = ({
   onChange,
@@ -37,26 +37,25 @@ export const CopilotSelector = ({
   const selectorAssignee = parseAssigneeToSelectorOption(assignee)
 
   return (
-    <>
-      <StyledUserCompanySelector
-        openMenuOnFocus
-        menuIsOpen={true}
-        autoFocus
-        placeholder={name}
-        initialValue={initialAssignee}
-        clientUsers={hideClientsList ? [] : selectorAssignee.clients}
-        name={name}
-        internalUsers={hideIusList ? [] : selectorAssignee.internalUsers}
-        companies={hideClientsList ? [] : selectorAssignee.companies}
-        onChange={(inputValue: InputValue[]) => {
-          setCurrentlySelected(inputValue)
-          onChange(inputValue)
-        }}
-        grouped={true}
-        limitSelectedOptions={1}
-        customLabels={getWorkspaceLabels(workspace, true)}
-      />
-    </>
+    <StyledUserCompanySelector
+      className="user-company-selector"
+      openMenuOnFocus
+      menuIsOpen={true}
+      autoFocus
+      placeholder={name}
+      initialValue={initialAssignee}
+      clientUsers={hideClientsList ? [] : selectorAssignee.clients}
+      name={name}
+      internalUsers={hideIusList ? [] : selectorAssignee.internalUsers}
+      companies={hideClientsList ? [] : selectorAssignee.companies}
+      onChange={(inputValue: InputValue[]) => {
+        setCurrentlySelected(inputValue)
+        onChange(inputValue)
+      }}
+      grouped={true}
+      limitSelectedOptions={1}
+      customLabels={getWorkspaceLabels(workspace, true)}
+    />
   )
 }
 

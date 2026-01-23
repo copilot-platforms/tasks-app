@@ -2,6 +2,7 @@ import { NoAssigneeAvatarLarge, PersonIcon, PersonIconSmall } from '@/icons'
 import { IAssigneeCombined } from '@/types/interfaces'
 import { getAssigneeInitials } from '@/utils/assignee'
 import { Avatar, Box, SxProps, Theme } from '@mui/material'
+import { clsx } from 'clsx'
 import { Avatar as AssemblyAvatar } from 'copilot-design-system'
 import { ComponentProps, ReactNode, useMemo } from 'react'
 
@@ -41,22 +42,16 @@ export const CopilotAvatar = ({ currentAssignee, alt, size = 'sm', icon, classNa
   if (!currentAssignee || (currentAssignee?.name || currentAssignee?.givenName) === 'No assignee') {
     return (
       <Box>
-        {size === 'xs' || size === '2xs' || size === '3xs' ? (
-          <PersonIconSmall />
-        ) : size === 'lg' ? (
-          <NoAssigneeAvatarLarge />
-        ) : (
-          <PersonIcon />
-        )}
+        {size === '2xs' || size === '3xs' ? <PersonIconSmall /> : size === 'lg' ? <NoAssigneeAvatarLarge /> : <PersonIcon />}
       </Box>
     )
   }
 
   return (
     <AssemblyAvatar
-      className={className}
+      className={clsx(className, size === 'xs' ? 'avatar-xs' : '')}
       alt={alt || fullName}
-      src={currentAssignee.iconImageUrl || currentAssignee.avatarImageUrl || ''}
+      src={currentAssignee.iconImageUrl || currentAssignee.avatarImageUrl || undefined}
       size={size}
       fallbackColor={currentAssignee?.fallbackColor || ''}
       text={initials}
