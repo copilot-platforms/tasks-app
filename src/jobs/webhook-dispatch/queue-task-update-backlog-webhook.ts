@@ -25,9 +25,7 @@ export const queueTaskUpdatedBacklogWebhook = task({
       where: { id: payload.taskId },
       include: {
         workflowState: true,
-        attachments: {
-          where: { commentId: null },
-        },
+        attachments: true,
       },
     })
     if (!task) {
