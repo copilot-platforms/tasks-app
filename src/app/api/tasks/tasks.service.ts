@@ -187,9 +187,7 @@ export class TasksService extends TasksSharedService {
       },
       include: {
         workflowState: true,
-        attachments: {
-          where: { commentId: null },
-        },
+        attachments: true,
       },
     })
     console.info('TasksService#createTask | Task created with ID:', newTask.id)
@@ -409,9 +407,7 @@ export class TasksService extends TasksSharedService {
         },
         include: {
           workflowState: true,
-          attachments: {
-            where: { commentId: null },
-          },
+          attachments: true,
         },
       })
       subtaskService.setTransaction(tx as PrismaClient)
@@ -469,9 +465,7 @@ export class TasksService extends TasksSharedService {
         relationLoadStrategy: 'join',
         include: {
           workflowState: true,
-          attachments: {
-            where: { commentId: null },
-          },
+          attachments: true,
         },
         data: { deletedAt: new Date(), deletedBy: deletedBy },
       })
@@ -619,9 +613,7 @@ export class TasksService extends TasksSharedService {
       },
       include: {
         workflowState: true,
-        attachments: {
-          where: { commentId: null },
-        },
+        attachments: true,
       },
     })
 
