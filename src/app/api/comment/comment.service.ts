@@ -23,7 +23,6 @@ import { TasksService } from '@api/tasks/tasks.service'
 import { ActivityType, Comment, CommentInitiator, Prisma, PrismaClient } from '@prisma/client'
 import httpStatus from 'http-status'
 import { z } from 'zod'
-import { AttachmentsService } from '@api/attachments/attachments.service'
 import { getSignedUrl } from '@/utils/signUrl'
 import { PublicTasksService } from '@/app/api/tasks/public/public.service'
 
