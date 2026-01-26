@@ -1,5 +1,5 @@
 import { AttachmentsService } from '@/app/api/attachments/attachments.service'
-import { PublicCommentSerializer } from '@/app/api/comment/public/comment-public.serializer'
+import { PublicCommentSerializer } from '@/app/api/comment/public/public.serializer'
 import { sendCommentCreateNotifications } from '@/jobs/notifications'
 import { sendReplyCreateNotifications } from '@/jobs/notifications/send-reply-create-notifications'
 import { InitiatedEntity } from '@/types/common'
