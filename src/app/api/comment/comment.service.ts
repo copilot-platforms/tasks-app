@@ -55,15 +55,18 @@ export class CommentService extends BaseService {
       include: { attachments: true },
     })
 
+    let commentToReturn = comment // return the latest comment object with attachments (if any)
     try {
       if (comment.content) {
         const newContent = await this.updateCommentIdOfAttachmentsAfterCreation(comment.content, data.taskId, comment.id)
-        await this.db.comment.update({
+        // mutate commentToReturn here with signed attachment urls
+        commentToReturn = await this.db.comment.update({
           where: { id: comment.id },
           data: {
             content: newContent,
             updatedAt: comment.createdAt, //dont updated the updatedAt, because it will show (edited) for recently created comments.
           },
+          include: { attachments: true },
         })
         console.info('CommentService#createComment | Comment content attachments updated for comment ID:', comment.id)
       }
@@ -96,11 +99,11 @@ export class CommentService extends BaseService {
 
     // dispatch a webhook event when comment is created
     await this.copilot.dispatchWebhook(DISPATCHABLE_EVENT.CommentCreated, {
-      payload: await PublicCommentSerializer.serialize(comment),
+      payload: await PublicCommentSerializer.serialize(commentToReturn),
       workspaceId: this.user.workspaceId,
     })
 
-    return comment
+    return commentToReturn
 
     // if (data.mentions) {
     //   await notificationService.createBulkNotification(NotificationTaskActions.Mentioned, task, data.mentions, {
