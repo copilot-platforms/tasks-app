@@ -3,9 +3,15 @@ import { CreateAttachmentRequestSchema } from '@/types/dto/attachments.dto'
 import { getFilePathFromUrl } from '@/utils/signedUrlReplacer'
 import { SupabaseActions } from '@/utils/SupabaseActions'
 import { Task, Comment } from '@prisma/client'
+import Bottleneck from 'bottleneck'
+import fs from 'fs'
+import path from 'path'
 
 const ATTACHMENT_TAG_REGEX = /<\s*[a-zA-Z]+\s+[^>]*data-type="attachment"[^>]*src="([^"]+)"[^>]*>/g
 const IMG_TAG_REGEX = /<img\s+[^>]*src="([^"]+)"[^>]*>/g
+
+type MinimalTask = Pick<Task, 'id' | 'body' | 'createdById' | 'workspaceId'>
+type MinimalComment = Pick<Comment, 'id' | 'content' | 'initiatorId' | 'workspaceId'>
 
 interface AttachmentRequest {
   createdById: string
@@ -51,7 +57,7 @@ async function extractAttachmentsFromContent(
   return attachments
 }
 
-async function createAttachmentRequests(tasks: Task[], comments: Comment[]): Promise<ProcessedAttachments> {
+async function createAttachmentRequests(tasks: MinimalTask[], comments: MinimalComment[]): Promise<ProcessedAttachments> {
   const taskAttachmentRequests: AttachmentRequest[] = []
   const commentAttachmentRequests: AttachmentRequest[] = []
   const filesNotFoundInBucket: string[] = []
@@ -94,7 +100,13 @@ async function createAttachmentRequests(tasks: Task[], comments: Comment[]): Pro
     console.info('🔥 Comment attachments to be populated:', commentAttachmentRequests.length)
   }
   if (filesNotFoundInBucket.length) {
-    console.warn('⚠️  Files not found in bucket:', filesNotFoundInBucket)
+    console.warn('⚠️  Files not found in bucket:', filesNotFoundInBucket.length)
+    const csvContent = 'filePath\n' + filesNotFoundInBucket.map((f) => `"${f.replace(/"/g, '""')}"`).join('\n')
+
+    const outputPath = path.join(process.cwd(), 'files_not_found.csv')
+    fs.writeFileSync(outputPath, csvContent)
+
+    console.log(`📄 CSV written to ${outputPath}`)
   }
 
   return { taskAttachmentRequests, commentAttachmentRequests, filesNotFoundInBucket }
@@ -105,38 +117,75 @@ async function createAttachmentsInDatabase(
   attachmentRequests: AttachmentRequest[],
 ) {
   let created = 0
-  let skipped = 0
+  let skippedCount = 0
+
+  const dbBottleneck = new Bottleneck({ minTime: 200, maxConcurrent: 50 })
+  const createPromises = []
+  const failedRequests: AttachmentRequest[] = []
 
   for (const { createdById, workspaceId, attachmentRequest } of attachmentRequests) {
-    try {
-      const existing = await db.attachment.findFirst({
-        where: { filePath: attachmentRequest.filePath },
-      })
-      if (existing) {
-        skipped++
-        continue
-      }
-      await db.attachment.create({
-        data: {
-          ...attachmentRequest,
+    const existing = await db.attachment.findFirst({
+      where: { filePath: attachmentRequest.filePath },
+    })
+    if (existing) {
+      skippedCount++
+      continue
+    }
+
+    const createPromise = dbBottleneck.schedule(async () => {
+      try {
+        await db.attachment.create({
+          data: {
+            ...attachmentRequest,
+            createdById,
+            workspaceId,
+          },
+        })
+        created++
+        console.info(
+          `✨ Created attachment ${created}/${attachmentRequests.length - skippedCount}: ${attachmentRequest.fileName}`,
+        )
+        return
+      } catch (error) {
+        console.error('Failed to create attachment.', attachmentRequest)
+        failedRequests.push({
+          attachmentRequest,
           createdById,
           workspaceId,
-        },
-      })
-      created++
-    } catch (error) {
-      console.error('❌ Failed to create attachment:', attachmentRequest, error)
-    }
-  }
+        })
+        return false
+      }
+    })
 
-  console.info(`📊 Created: ${created}, Skipped (already exists): ${skipped}`)
+    createPromises.push(createPromise)
+  }
+  await Promise.all(createPromises)
+  writeFailedRequestsToCSV(failedRequests)
+  console.info(`📊 Created: ${created}`)
 }
 
 async function run() {
   console.info('🧑🏻‍💻 Backfilling attachment entries for tasks and comments')
 
   const db = DBClient.getInstance()
-  const [tasks, comments] = await Promise.all([db.task.findMany(), db.comment.findMany()])
+  const [tasks, comments] = await Promise.all([
+    db.task.findMany({
+      select: {
+        id: true,
+        body: true,
+        createdById: true,
+        workspaceId: true,
+      },
+    }),
+    db.comment.findMany({
+      select: {
+        id: true,
+        content: true,
+        initiatorId: true,
+        workspaceId: true,
+      },
+    }),
+  ])
 
   const { taskAttachmentRequests, commentAttachmentRequests } = await createAttachmentRequests(tasks, comments)
 
@@ -146,3 +195,30 @@ async function run() {
 }
 
 run()
+
+export const writeFailedRequestsToCSV = (failedRequests: AttachmentRequest[], fileName = 'failed_requests.csv') => {
+  if (!failedRequests.length) return
+
+  const headers = ['createdById', 'workspaceId', 'taskId', 'commentId', 'filePath', 'fileSize', 'fileType', 'fileName']
+
+  const csvLines = failedRequests.map((req) => {
+    const { createdById, workspaceId, attachmentRequest } = req
+    return [
+      createdById,
+      workspaceId,
+      attachmentRequest.taskId ?? '',
+      attachmentRequest.commentId ?? '',
+      attachmentRequest.filePath,
+      attachmentRequest.fileSize,
+      attachmentRequest.fileType,
+      attachmentRequest.fileName,
+    ]
+      .map((v) => `"${v}"`)
+      .join(',')
+  })
+
+  const csvContent = [headers.join(','), ...csvLines].join('\n')
+
+  fs.writeFileSync(fileName, csvContent, { encoding: 'utf-8' })
+  console.log(`✅ Failed requests written to ${fileName}`)
+}
