@@ -51,7 +51,6 @@ export class PublicAttachmentSerializer {
           uploadedBy: uploadedBy || attachment.createdById,
           uploadedByUserType: uploadedByUserType,
           uploadedDate: RFC3339DateSchema.parse(toRFC3339(attachment.createdAt)),
-          deletedDate: toRFC3339(attachment.deletedAt),
         }
       })
       .filter((attachment) => attachment !== null)
