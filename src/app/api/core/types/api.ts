@@ -17,7 +17,5 @@ export enum Resource {
  * NextParam when uuid is being used as a dynamic param (slug) for accessing a resource
  */
 export type IdParams = {
-  params: {
-    id: string
-  }
+  params: Promise<{ id: string }>
 }

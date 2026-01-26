@@ -1,6 +1,8 @@
+import { UserRole } from '@/app/api/core/types/user'
 import { PublicTaskCreateDto } from '@/app/api/tasks/public/public.dto'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import AttachmentLayout from '@/components/AttachmentLayout'
+import { GhostBtn } from '@/components/buttons/GhostBtn'
 import { ManageTemplatesEndOption } from '@/components/buttons/ManageTemplatesEndOptions'
 import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 import { SecondaryBtn } from '@/components/buttons/SecondaryBtn'
@@ -14,7 +16,7 @@ import { StyledTextField } from '@/components/inputs/TextField'
 import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
-import { PersonIconSmall, CloseIcon, TempalteIconMd, AssigneePlaceholderSmall } from '@/icons'
+import { CloseIcon, PersonIconSmall, TempalteIconMd } from '@/icons'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import {
   selectCreateTask,
@@ -40,8 +42,9 @@ import {
   UserIds,
 } from '@/types/interfaces'
 import { checkEmptyAssignee, emptyAssignee, getAssigneeName } from '@/utils/assignee'
+import { deleteEditorAttachmentsHandler, uploadAttachmentHandler } from '@/utils/attachmentUtils'
+import { createUploadFn } from '@/utils/createUploadFn'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
-import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
 import {
   getSelectedUserIds,
   getSelectedViewerIds,
@@ -49,13 +52,11 @@ import {
   getSelectorAssigneeFromFilterOptions,
 } from '@/utils/selector'
 import { trimAllTags } from '@/utils/trimTags'
-import { Box, Stack, Typography, styled } from '@mui/material'
+import { Box, Stack, styled, Typography } from '@mui/material'
 import { marked } from 'marked'
 import { Dispatch, SetStateAction, useCallback, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
-import { UserRole } from '@/app/api/core/types/user'
-import { GhostBtn } from '@/components/buttons/GhostBtn'
 
 interface NewTaskFormInputsProps {
   isEditorReadonly?: boolean
@@ -120,6 +121,59 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
       : null,
   )
 
+  // this function handles the action param passed in the url and fill the values in the form
+  const handleUrlActionParam = useCallback(async () => {
+    if (urlActionParams.pf && token) {
+      const payload = JSON.parse(decodeURIComponent(urlActionParams.pf))
+
+      if (!payload.companyId && payload.clientId) {
+        const assigneeVal = assignee.find((val) => val.id === payload.clientId)
+
+        if (!assigneeVal) {
+          setErrorMessage('Assignee not found')
+          delete payload.clientId
+        } else {
+          if (Array.isArray(assigneeVal.companyIds) && assigneeVal.companyIds.length === 1) {
+            payload.companyId = assigneeVal.companyIds[0]
+          } else if (
+            assigneeVal.companyId &&
+            (!assigneeVal.companyIds || (Array.isArray(assigneeVal.companyIds) && !assigneeVal.companyIds.length))
+          ) {
+            payload.companyId = assigneeVal.companyId
+          } else if (Array.isArray(assigneeVal?.companyIds)) {
+            // If client has multiple companies, set error
+            delete payload.clientId
+            setErrorMessage('companyId must be provided for clients with more than one company')
+          } else {
+            delete payload.clientId
+            setErrorMessage('companyId must be provided when clientId is provided')
+          }
+        }
+      }
+
+      // respect the filter Ids first. This is needed for CRM deep link for respective clients
+      const assigneeFilter = {
+        [UserIds.INTERNAL_USER_ID]: payload?.internalUserId || null,
+        [UserIds.CLIENT_ID]: payload?.clientId || null,
+        [UserIds.COMPANY_ID]: payload?.companyId || null,
+      }
+
+      const taskPayload = {
+        title: payload?.name || '',
+        description: marked(payload?.description?.replaceAll('\n', '<br>') || '', { async: false }),
+        workflowStateId: workflowStates.find((state) => state.key === payload?.status)?.id || '',
+        dueDate: payload?.dueDate || null,
+        templateId: payload?.templateId || null,
+        userIds: assigneeFilter,
+        parentId: payload?.parentTaskId || null,
+      }
+
+      setAssigneeValue(getSelectorAssigneeFromFilterOptions(assignee, assigneeFilter) || null)
+      setActionParamPayload(payload)
+      store.dispatch(setAllCreateTaskFields(taskPayload))
+    }
+  }, [urlActionParams, assignee])
+
   useEffect(() => {
     if (!assignee.length) return
     if (
@@ -183,59 +237,6 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
     }
   }, [handleClose])
 
-  // this function handles the action param passed in the url and fill the values in the form
-  const handleUrlActionParam = useCallback(async () => {
-    if (urlActionParams.pf && token) {
-      const payload = JSON.parse(decodeURIComponent(urlActionParams.pf))
-
-      if (!payload.companyId && payload.clientId) {
-        const assigneeVal = assignee.find((val) => val.id === payload.clientId)
-
-        if (!assigneeVal) {
-          setErrorMessage('Assignee not found')
-          delete payload.clientId
-        } else {
-          if (Array.isArray(assigneeVal.companyIds) && assigneeVal.companyIds.length === 1) {
-            payload.companyId = assigneeVal.companyIds[0]
-          } else if (
-            assigneeVal.companyId &&
-            (!assigneeVal.companyIds || (Array.isArray(assigneeVal.companyIds) && !assigneeVal.companyIds.length))
-          ) {
-            payload.companyId = assigneeVal.companyId
-          } else if (Array.isArray(assigneeVal?.companyIds)) {
-            // If client has multiple companies, set error
-            delete payload.clientId
-            setErrorMessage('companyId must be provided for clients with more than one company')
-          } else {
-            delete payload.clientId
-            setErrorMessage('companyId must be provided when clientId is provided')
-          }
-        }
-      }
-
-      // respect the filter Ids first. This is needed for CRM deep link for respective clients
-      const assigneeFilter = {
-        [UserIds.INTERNAL_USER_ID]: payload?.internalUserId || null,
-        [UserIds.CLIENT_ID]: payload?.clientId || null,
-        [UserIds.COMPANY_ID]: payload?.companyId || null,
-      }
-
-      const taskPayload = {
-        title: payload?.name || '',
-        description: marked(payload?.description?.replaceAll('\n', '<br>') || '', { async: false }),
-        workflowStateId: workflowStates.find((state) => state.key === payload?.status)?.id || '',
-        dueDate: payload?.dueDate || null,
-        templateId: payload?.templateId || null,
-        userIds: assigneeFilter,
-        parentId: payload?.parentTaskId || null,
-      }
-
-      setAssigneeValue(getSelectorAssigneeFromFilterOptions(assignee, assigneeFilter) || null)
-      setActionParamPayload(payload)
-      store.dispatch(setAllCreateTaskFields(taskPayload))
-    }
-  }, [urlActionParams, assignee])
-
   const handleAssigneeChange = (inputValue: InputValue[]) => {
     // remove task viewers if assignee is cleared or changed to client or company
     if (inputValue.length === 0 || inputValue[0].object !== UserRole.IU) {
@@ -288,7 +289,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
         <Stack direction={'column'} rowGap={'12px'}>
           <Stack
             direction="row"
-            columnGap={2}
+            gap={2}
             position="relative"
             sx={{
               flexWrap: 'wrap',
@@ -537,6 +538,7 @@ const NewTaskHeader = ({
             buttonWidth="auto"
             useClickHandler
             padding="5px"
+            customDropdownWidth={400}
           />
         </Stack>
         <CloseIcon style={{ cursor: 'pointer' }} onClick={() => handleClose()} />
@@ -555,10 +557,10 @@ const NewTaskFormInputs = ({ isEditorReadonly }: NewTaskFormInputsProps) => {
     store.dispatch(setCreateTaskFields({ targetField: 'description', value: content }))
   }
 
-  const uploadFn =
-    token && tokenPayload?.workspaceId
-      ? (file: File) => uploadImageHandler(file, token, tokenPayload.workspaceId, null)
-      : undefined
+  const uploadFn = createUploadFn({
+    token,
+    workspaceId: tokenPayload?.workspaceId,
+  })
 
   return (
     <>
@@ -618,7 +620,7 @@ const NewTaskFormInputs = ({ isEditorReadonly }: NewTaskFormInputsProps) => {
             uploadFn={uploadFn}
             readonly={isEditorReadonly}
             deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', null, null)}
-            attachmentLayout={AttachmentLayout}
+            attachmentLayout={(props) => <AttachmentLayout {...props} />}
             maxUploadLimit={MAX_UPLOAD_LIMIT}
             parentContainerStyle={{ gap: '0px', minHeight: '60px' }}
           />

@@ -1,8 +1,16 @@
+import { AttachmentsService } from '@/app/api/attachments/attachments.service'
+import { PublicCommentSerializer } from '@/app/api/comment/public/public.serializer'
 import { sendCommentCreateNotifications } from '@/jobs/notifications'
 import { sendReplyCreateNotifications } from '@/jobs/notifications/send-reply-create-notifications'
 import { InitiatedEntity } from '@/types/common'
-import { CreateComment, UpdateComment } from '@/types/dto/comment.dto'
+import { CreateAttachmentRequestSchema } from '@/types/dto/attachments.dto'
+import { CommentsPublicFilterType, CommentWithAttachments, CreateComment, UpdateComment } from '@/types/dto/comment.dto'
+import { DISPATCHABLE_EVENT } from '@/types/webhook'
 import { getArrayDifference, getArrayIntersection } from '@/utils/array'
+import { getFileNameFromPath } from '@/utils/attachmentUtils'
+import { getFilePathFromUrl } from '@/utils/signedUrlReplacer'
+import { SupabaseActions } from '@/utils/SupabaseActions'
+import { getBasicPaginationAttributes } from '@/utils/pagination'
 import { CommentAddedSchema } from '@api/activity-logs/schemas/CommentAddedSchema'
 import { ActivityLogger } from '@api/activity-logs/services/activity-logger.service'
 import { CommentRepository } from '@api/comment/comment.repository'
@@ -12,9 +20,11 @@ import { PoliciesService } from '@api/core/services/policies.service'
 import { Resource } from '@api/core/types/api'
 import { UserAction } from '@api/core/types/user'
 import { TasksService } from '@api/tasks/tasks.service'
-import { ActivityType, Comment, CommentInitiator } from '@prisma/client'
+import { ActivityType, Comment, CommentInitiator, Prisma, PrismaClient } from '@prisma/client'
 import httpStatus from 'http-status'
 import { z } from 'zod'
+import { getSignedUrl } from '@/utils/signUrl'
+import { PublicTasksService } from '@/app/api/tasks/public/public.service'
 
 export class CommentService extends BaseService {
   async create(data: CreateComment) {
@@ -42,7 +52,25 @@ export class CommentService extends BaseService {
         // This is safe to do, since if user doesn't have both iu ID / client ID, they will be filtered out way before
         initiatorType,
       },
+      include: { attachments: true },
     })
+
+    try {
+      if (comment.content) {
+        const newContent = await this.updateCommentIdOfAttachmentsAfterCreation(comment.content, data.taskId, comment.id)
+        await this.db.comment.update({
+          where: { id: comment.id },
+          data: {
+            content: newContent,
+            updatedAt: comment.createdAt, //dont updated the updatedAt, because it will show (edited) for recently created comments.
+          },
+        })
+        console.info('CommentService#createComment | Comment content attachments updated for comment ID:', comment.id)
+      }
+    } catch (e: unknown) {
+      await this.db.comment.delete({ where: { id: comment.id } })
+      console.error('CommentService#createComment | Rolling back comment creation', e)
+    }
 
     if (!comment.parentId) {
       const activityLogger = new ActivityLogger({ taskId: data.taskId, user: this.user })
@@ -66,6 +94,12 @@ export class CommentService extends BaseService {
       ])
     }
 
+    // dispatch a webhook event when comment is created
+    await this.copilot.dispatchWebhook(DISPATCHABLE_EVENT.CommentCreated, {
+      payload: await PublicCommentSerializer.serialize(comment),
+      workspaceId: this.user.workspaceId,
+    })
+
     return comment
 
     // if (data.mentions) {
@@ -79,27 +113,45 @@ export class CommentService extends BaseService {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Delete, Resource.Comment)
 
-    const replyCounts = await this.getReplyCounts([id])
+    const commentExists = await this.db.comment.findFirst({ where: { id } })
+    if (!commentExists) throw new APIError(httpStatus.NOT_FOUND, 'The comment to delete was not found')
+
+    // delete the comment
     const comment = await this.db.comment.delete({ where: { id } })
 
-    // Delete corresponding activity log as well, so as to remove comment from UI
-    // If activity log exists but comment has a `deletedAt`, show "Comment was deleted" card instead
-    if (!replyCounts[id]) {
-      // If there are 0 replies, key won't be in object
-      await this.deleteRelatedActivityLogs(id)
-    }
+    // delete the related attachments as well
+    const attachmentService = new AttachmentsService(this.user)
+    await attachmentService.deleteAttachmentsOfComment(comment.id)
 
-    // If parent comment now has no replies and is also deleted, delete parent as well
-    if (comment.parentId) {
-      const parent = await this.db.comment.findFirst({ where: { id: comment.parentId, deletedAt: undefined } })
-      if (parent?.deletedAt) {
-        await this.deleteEmptyParentActivityLog(parent)
+    // transaction that deletes the activity logs
+    return await this.db.$transaction(async (tx) => {
+      this.setTransaction(tx as PrismaClient)
+      const replyCounts = await this.getReplyCounts([id])
+
+      // Delete corresponding activity log as well, so as to remove comment from UI
+      // If activity log exists but comment has a `deletedAt`, show "Comment was deleted" card instead
+      if (!replyCounts[id]) {
+        // If there are 0 replies, key won't be in object
+        await this.deleteRelatedActivityLogs(id)
       }
-    }
 
-    const tasksService = new TasksService(this.user)
-    await tasksService.setNewLastActivityLogUpdated(comment.taskId)
-    return comment
+      // If parent comment now has no replies and is also deleted, delete parent as well
+      if (comment.parentId) {
+        const parent = await this.db.comment.findFirst({ where: { id: comment.parentId, deletedAt: undefined } })
+        if (parent?.deletedAt) {
+          await this.deleteEmptyParentActivityLog(parent)
+        }
+      }
+
+      const tasksService = new TasksService(this.user)
+      tasksService.setTransaction(tx as PrismaClient)
+
+      await tasksService.setNewLastActivityLogUpdated(comment.taskId)
+      tasksService.unsetTransaction()
+
+      this.unsetTransaction()
+      return { ...comment, attachments: [] } // send empty attachments array
+    })
   }
 
   private async deleteEmptyParentActivityLog(parent: Comment) {
@@ -137,9 +189,10 @@ export class CommentService extends BaseService {
     return comment
   }
 
-  async getCommentById(id: string) {
+  async getCommentById({ id, includeAttachments }: { id: string; includeAttachments?: boolean }) {
     const comment = await this.db.comment.findFirst({
       where: { id, deletedAt: undefined }, // Can also get soft deleted comments
+      include: { attachments: includeAttachments },
     })
     if (!comment) return null
 
@@ -265,5 +318,135 @@ export class CommentService extends BaseService {
       }
       return { ...comment, initiator }
     })
+  }
+
+  private async updateCommentIdOfAttachmentsAfterCreation(htmlString: string, task_id: string, commentId: string) {
+    const imgTagRegex = /<img\s+[^>]*src="([^"]+)"[^>]*>/g //expression used to match all img srcs in provided HTML string.
+    const attachmentTagRegex = /<\s*[a-zA-Z]+\s+[^>]*data-type="attachment"[^>]*src="([^"]+)"[^>]*>/g //expression used to match all attachment srcs in provided HTML string.
+    let match
+    const replacements: { originalSrc: string; newUrl: string }[] = []
+
+    const newFilePaths: { originalSrc: string; newFilePath: string }[] = []
+    const copyAttachmentPromises: Promise<void>[] = []
+    const createAttachmentPayloads = []
+    const matches: { originalSrc: string; filePath: string; fileName: string }[] = []
+
+    while ((match = imgTagRegex.exec(htmlString)) !== null) {
+      const originalSrc = match[1]
+      const filePath = getFilePathFromUrl(originalSrc)
+      const fileName = filePath?.split('/').pop()
+      if (filePath && fileName) {
+        matches.push({ originalSrc, filePath, fileName })
+      }
+    }
+
+    while ((match = attachmentTagRegex.exec(htmlString)) !== null) {
+      const originalSrc = match[1]
+      const filePath = getFilePathFromUrl(originalSrc)
+      const fileName = filePath?.split('/').pop()
+      if (filePath && fileName) {
+        matches.push({ originalSrc, filePath, fileName })
+      }
+    }
+
+    for (const { originalSrc, filePath, fileName } of matches) {
+      const newFilePath = `${this.user.workspaceId}/${task_id}/comments/${commentId}/${fileName}`
+      const supabaseActions = new SupabaseActions()
+
+      const fileMetaData = await supabaseActions.getMetaData(filePath)
+      createAttachmentPayloads.push(
+        CreateAttachmentRequestSchema.parse({
+          commentId: commentId,
+          filePath: newFilePath,
+          fileSize: fileMetaData?.size,
+          fileType: fileMetaData?.contentType,
+          fileName: getFileNameFromPath(newFilePath),
+        }),
+      )
+      copyAttachmentPromises.push(supabaseActions.moveAttachment(filePath, newFilePath))
+      newFilePaths.push({ originalSrc, newFilePath })
+    }
+
+    await Promise.all(copyAttachmentPromises)
+    const attachmentService = new AttachmentsService(this.user)
+    if (createAttachmentPayloads.length) {
+      await attachmentService.createMultipleAttachments(createAttachmentPayloads)
+    }
+
+    const signedUrlPromises = newFilePaths.map(async ({ originalSrc, newFilePath }) => {
+      const newUrl = await getSignedUrl(newFilePath)
+      if (newUrl) {
+        replacements.push({ originalSrc, newUrl })
+      }
+    })
+
+    await Promise.all(signedUrlPromises)
+
+    for (const { originalSrc, newUrl } of replacements) {
+      htmlString = htmlString.replace(originalSrc, newUrl)
+    }
+    // const filePaths = newFilePaths.map(({ newFilePath }) => newFilePath)
+    // await this.db.scrapMedia.updateMany({
+    //   where: {
+    //     filePath: {
+    //       in: filePaths,
+    //     },
+    //   },
+    //   data: {
+    //     taskId: task_id,
+    //   },
+    // }) //todo: add support for commentId in scrapMedias.
+    return htmlString
+  } //todo: make this resuable since this is highly similar to what we are doing on tasks.
+
+  async getAllComments(queryFilters: CommentsPublicFilterType): Promise<CommentWithAttachments[]> {
+    const { parentId, taskId, limit, lastIdCursor, initiatorId } = queryFilters
+    const where = {
+      parentId,
+      taskId,
+      initiatorId,
+      workspaceId: this.user.workspaceId,
+    }
+
+    const pagination = getBasicPaginationAttributes(limit, lastIdCursor)
+
+    return await this.db.comment.findMany({
+      where,
+      ...pagination,
+      include: { attachments: true },
+      orderBy: { createdAt: 'desc' },
+    })
+  }
+
+  async hasMoreCommentsAfterCursor(id: string, publicFilters: Partial<CommentsPublicFilterType>): Promise<boolean> {
+    const newComment = await this.db.comment.findFirst({
+      where: { ...publicFilters, workspaceId: this.user.workspaceId },
+      cursor: { id },
+      skip: 1,
+      orderBy: { createdAt: 'desc' },
+    })
+    return !!newComment
+  }
+
+  /**
+   * If the user has permission to access the task, it means the user has access to the task's comments
+   * Therefore checking the task permission
+   */
+  async checkCommentTaskPermissionForUser(taskId: string) {
+    try {
+      const publicTask = new PublicTasksService(this.user)
+      await publicTask.getOneTask(taskId)
+    } catch (err: unknown) {
+      if (err instanceof APIError) {
+        let status: number = httpStatus.UNAUTHORIZED,
+          message = 'You are not authorized to perform this action'
+        if (err.status === httpStatus.NOT_FOUND) {
+          status = httpStatus.NOT_FOUND
+          message = 'A task for the requested comment was not found'
+        }
+        throw new APIError(status, message)
+      }
+      throw err
+    }
   }
 }

@@ -4,7 +4,11 @@ import { ActivityLogService } from '@api/activity-logs/services/activity-log.ser
 import { IdParams } from '@api/core/types/api'
 import { unstable_noStore as noStore } from 'next/cache'
 
-export const GET = async (req: NextRequest, { params: { id } }: IdParams) => {
+export const GET = async (req: NextRequest, props: IdParams) => {
+  const params = await props.params
+
+  const { id } = params
+
   noStore()
   const user = await authenticate(req)
 

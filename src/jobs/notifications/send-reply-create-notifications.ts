@@ -69,7 +69,7 @@ export const sendReplyCreateNotifications = task({
     }
 
     const commentService = new CommentService(user)
-    const parentComment = await commentService.getCommentById(comment.parentId)
+    const parentComment = await commentService.getCommentById({ id: comment.parentId })
     if (parentComment) {
       // Queue notification for parent comment initiator, if:
       // - Parent Comment hasn't been deleted yet

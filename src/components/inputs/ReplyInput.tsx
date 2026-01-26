@@ -10,32 +10,33 @@ import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { CreateComment } from '@/types/dto/comment.dto'
 import { getMentionsList } from '@/utils/getMentionList'
-import { deleteEditorAttachmentsHandler } from '@/utils/inlineImage'
+import { deleteEditorAttachmentsHandler } from '@/utils/attachmentUtils'
 import { isTapwriteContentEmpty } from '@/utils/isTapwriteContentEmpty'
 import { Avatar, Box, InputAdornment, Stack } from '@mui/material'
 import { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
+import { createUploadFn } from '@/utils/createUploadFn'
 
 interface ReplyInputProps {
+  token: string
   task_id: string
   comment: any
   createComment: (postCommentPayload: CreateComment) => void
-  uploadFn: ((file: File) => Promise<string | undefined>) | undefined
   focusReplyInput: boolean
   setFocusReplyInput: Dispatch<SetStateAction<boolean>>
 }
 
 export const ReplyInput = ({
+  token,
   task_id,
   comment,
   createComment,
-  uploadFn,
   focusReplyInput,
   setFocusReplyInput,
 }: ReplyInputProps) => {
   const [detail, setDetail] = useState('')
-  const { token, assignee } = useSelector(selectTaskBoard)
+  const { assignee, activeTask } = useSelector(selectTaskBoard)
   const windowWidth = useWindowWidth()
   const isMobile = () => {
     return /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || windowWidth < 600
@@ -98,7 +99,7 @@ export const ReplyInput = ({
     setIsUploading(uploading)
   }
 
-  const editorRef = useRef<HTMLDivElement | null>(null)
+  const editorRef = useRef<HTMLDivElement>(document.createElement('div'))
   const [isMultiline, setIsMultiline] = useState(false)
 
   useEffect(() => {
@@ -145,6 +146,12 @@ export const ReplyInput = ({
     setIsDragging(false)
     dragCounter.current = 0
   }
+
+  const uploadFn = createUploadFn({
+    token,
+    workspaceId: activeTask?.workspaceId,
+    getEntityId: () => task_id,
+  })
 
   return (
     <>

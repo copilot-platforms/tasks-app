@@ -665,7 +665,7 @@ export const SidebarSkeleton = () => {
         borderLeft: (theme) => `1px solid ${theme.color.borders.border2}`,
         height: '100vh',
         display: showSidebar ? 'block' : 'none',
-        width: isMobile && showSidebar ? '100vw' : '320px',
+        width: isMobile && showSidebar ? '100vw' : '305px',
       }}
     >
       <StyledBox sx={{ borderBottom: '0px' }}>
@@ -696,6 +696,14 @@ export const SidebarSkeleton = () => {
         <Stack direction="row" m="8x 0px" alignItems="center" columnGap="8px" minWidth="fit-content">
           <StyledText variant="md" minWidth="100px" fontWeight={400} lineHeight={'22px'}>
             Due date
+          </StyledText>
+          <Box sx={{ height: '40px', alignItems: 'center', justifyContent: 'center', display: 'flex' }}>
+            <Skeleton variant="rectangular" width={120} height={15} />
+          </Box>
+        </Stack>
+        <Stack direction="row" m="8x 0px" alignItems="center" columnGap="8px" minWidth="fit-content">
+          <StyledText variant="md" minWidth="100px" fontWeight={400} lineHeight={'22px'}>
+            Assignee
           </StyledText>
           <Box sx={{ height: '40px', alignItems: 'center', justifyContent: 'center', display: 'flex' }}>
             <Skeleton variant="rectangular" width={120} height={15} />

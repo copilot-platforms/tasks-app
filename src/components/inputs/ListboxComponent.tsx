@@ -1,4 +1,3 @@
-import CustomScrollBar from '@/hoc/CustomScrollBar'
 import { Box } from '@mui/material'
 import { useRouter } from 'next/navigation'
 
@@ -12,7 +11,8 @@ type ListboxComponentProps = React.HTMLAttributes<HTMLElement> & {
 }
 
 const ListboxComponent = React.forwardRef<HTMLDivElement, ListboxComponentProps>((props, ref) => {
-  const { children, endOption, endOptionHref, role } = props
+  const { children, endOption, endOptionHref, ...otherProps } = props
+
   const router = useRouter()
   return (
     <Box
@@ -22,8 +22,8 @@ const ListboxComponent = React.forwardRef<HTMLDivElement, ListboxComponentProps>
         maxHeight: 'none',
       }}
     >
-      <Box ref={ref}>
-        <CustomScrollBar {...props} />
+      <Box ref={ref} {...otherProps}>
+        {children}
       </Box>
       {endOption && (
         <Box ref={ref} onMouseDown={() => endOptionHref && router.push(endOptionHref)}>

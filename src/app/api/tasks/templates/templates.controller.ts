@@ -24,7 +24,8 @@ export const createTaskTemplate = async (req: NextRequest) => {
   return NextResponse.json({ data })
 }
 
-export const updateTaskTemplate = async (req: NextRequest, { params: { id } }: IdParams) => {
+export const updateTaskTemplate = async (req: NextRequest, { params }: IdParams) => {
+  const { id } = await params
   const user = await authenticate(req)
 
   const payload = UpdateTemplateRequestSchema.parse(await req.json())
@@ -34,7 +35,8 @@ export const updateTaskTemplate = async (req: NextRequest, { params: { id } }: I
   return NextResponse.json({ data })
 }
 
-export const createSubTaskTemplate = async (req: NextRequest, { params: { id } }: IdParams) => {
+export const createSubTaskTemplate = async (req: NextRequest, { params }: IdParams) => {
+  const { id } = await params
   const user = await authenticate(req)
   const payload = CreateTemplateRequestSchema.parse(await req.json())
   const templatesService = new TemplatesService(user)
@@ -42,7 +44,8 @@ export const createSubTaskTemplate = async (req: NextRequest, { params: { id } }
   return NextResponse.json({ data })
 }
 
-export const deleteTaskTemplate = async (req: NextRequest, { params: { id } }: IdParams) => {
+export const deleteTaskTemplate = async (req: NextRequest, { params }: IdParams) => {
+  const { id } = await params
   const user = await authenticate(req)
 
   const templatesService = new TemplatesService(user)
@@ -51,7 +54,8 @@ export const deleteTaskTemplate = async (req: NextRequest, { params: { id } }: I
   return new NextResponse(null, { status: httpStatus.NO_CONTENT })
 }
 
-export const applyTemplate = async (req: NextRequest, { params: { id } }: IdParams) => {
+export const applyTemplate = async (req: NextRequest, { params }: IdParams) => {
+  const { id } = await params
   const user = await authenticate(req)
   const templatesService = new TemplatesService(user)
   const data = await templatesService.getAppliedTemplateDescription(id)
@@ -59,7 +63,8 @@ export const applyTemplate = async (req: NextRequest, { params: { id } }: IdPara
   return NextResponse.json({ data })
 }
 
-export const getOneTemplate = async (req: NextRequest, { params: { id } }: IdParams) => {
+export const getOneTemplate = async (req: NextRequest, { params }: IdParams) => {
+  const { id } = await params
   const user = await authenticate(req)
   const templatesService = new TemplatesService(user)
   const data = await templatesService.getOneTemplate(id)
@@ -67,7 +72,8 @@ export const getOneTemplate = async (req: NextRequest, { params: { id } }: IdPar
   return NextResponse.json({ data })
 }
 
-export const getSubtemplates = async (req: NextRequest, { params: { id } }: IdParams) => {
+export const getSubtemplates = async (req: NextRequest, { params }: IdParams) => {
+  const { id } = await params
   const user = await authenticate(req)
   const templatesService = new TemplatesService(user)
   const data = await templatesService.getSubtemplates(id)

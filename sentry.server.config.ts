@@ -5,6 +5,8 @@
 import * as Sentry from '@sentry/nextjs'
 
 const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN || process.env.SENTRY_DSN
+const vercelEnv = process.env.NEXT_PUBLIC_VERCEL_ENV
+const isProd = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production'
 
 if (dsn) {
   Sentry.init({
@@ -19,5 +21,12 @@ if (dsn) {
     // Uncomment the line below to enable Spotlight (https://spotlightjs.com)
     // spotlight: process.env.NODE_ENV === 'development',
     ignoreErrors: [/fetch failed/i],
+
+    beforeSend(event) {
+      if (!isProd && event.type === undefined) {
+        return null
+      }
+      return event
+    },
   })
 }

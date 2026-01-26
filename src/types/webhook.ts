@@ -14,6 +14,7 @@ export enum DISPATCHABLE_EVENT {
   TaskUpdated = 'task.updated',
   TaskCompleted = 'task.completed',
   TaskDeleted = 'task.deleted',
+  CommentCreated = 'comment.created',
 }
 
 export const WebhookSchema = z.object({

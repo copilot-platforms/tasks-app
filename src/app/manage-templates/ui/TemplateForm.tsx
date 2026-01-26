@@ -8,7 +8,7 @@ import { AttachmentIcon } from '@/icons'
 import store from '@/redux/store'
 import { Close } from '@mui/icons-material'
 import { Box, Stack, Typography, styled } from '@mui/material'
-import { createTemplateErrors, TargetMethod } from '@/types/interfaces'
+import { AttachmentTypes, createTemplateErrors, TargetMethod } from '@/types/interfaces'
 import { useSelector } from 'react-redux'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import {
@@ -25,9 +25,10 @@ import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
 import { SelectorType } from '@/components/inputs/Selector'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
-import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
+import { deleteEditorAttachmentsHandler, uploadAttachmentHandler } from '@/utils/attachmentUtils'
 import AttachmentLayout from '@/components/AttachmentLayout'
 import { StyledModal } from '@/app/detail/ui/styledComponent'
+import { createUploadFn } from '@/utils/createUploadFn'
 
 export const TemplateForm = ({ handleCreate }: { handleCreate: () => void }) => {
   const { workflowStates, assignee } = useSelector(selectTaskBoard)
@@ -82,10 +83,11 @@ const NewTemplateFormInputs = () => {
   const { workflowStates, token } = useSelector(selectTaskBoard)
   const { tokenPayload } = useSelector(selectAuthDetails)
 
-  const uploadFn =
-    token && tokenPayload?.workspaceId
-      ? async (file: File) => uploadImageHandler(file, token, tokenPayload.workspaceId, null, 'templates')
-      : undefined
+  const uploadFn = createUploadFn({
+    token,
+    workspaceId: tokenPayload?.workspaceId,
+    attachmentType: AttachmentTypes.TEMPLATE,
+  })
 
   const todoWorkflowState = workflowStates.find((el) => el.key === 'todo') || workflowStates[0]
   const defaultWorkflowState = activeWorkflowStateId
@@ -166,7 +168,7 @@ const NewTemplateFormInputs = () => {
                 targetMethod == TargetMethod.POST ? null : targetTemplateId,
               )
             }
-            attachmentLayout={AttachmentLayout}
+            attachmentLayout={(props) => <AttachmentLayout {...props} />}
             maxUploadLimit={MAX_UPLOAD_LIMIT}
             parentContainerStyle={{ gap: '0px', minHeight: '60px' }}
           />

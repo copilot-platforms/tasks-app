@@ -2,6 +2,8 @@ import { StatusableError } from '@/types/CopilotApiError'
 import pRetry, { FailedAttemptError } from 'p-retry'
 import * as Sentry from '@sentry/nextjs'
 
+export const RETRY_404_ENABLED = process.env.RETRY_404 === 'true'
+
 export const withRetry = async <T>(fn: (...args: any[]) => Promise<T>, args: any[]): Promise<T> => {
   let isEventProcessorRegistered = false
 
@@ -41,7 +43,11 @@ export const withRetry = async <T>(fn: (...args: any[]) => Promise<T>, args: any
         // Typecasting because Copilot doesn't export an error class
         const err = error as StatusableError
         // Retry if statusCode is 429 (ratelimit), 408 (timeouts), or any server related (5xx) error
-        return [408, 429].includes(err.status) || (err.status >= 500 && err.status <= 511)
+        return (
+          [408, 429].includes(err.status) ||
+          (err.status >= 500 && err.status <= 511) ||
+          (RETRY_404_ENABLED && err.status === 404)
+        )
       },
     },
   )
