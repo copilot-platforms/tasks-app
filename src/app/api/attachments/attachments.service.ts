@@ -93,17 +93,15 @@ export class AttachmentsService extends BaseService {
     policyGate.authorize(UserAction.Delete, Resource.Attachments)
 
     const commentAttachment = await this.db.$transaction(async (tx) => {
-      this.setTransaction(tx as PrismaClient)
+      const commentAttachment = await tx.attachment.findMany({
+        where: { commentId: commentId, workspaceId: this.user.workspaceId },
+        select: { filePath: true },
+      })
 
-      const commentAttachment = await this.db.attachment.findMany({
+      await tx.attachment.deleteMany({
         where: { commentId: commentId, workspaceId: this.user.workspaceId },
       })
 
-      await this.db.attachment.deleteMany({
-        where: { commentId: commentId, workspaceId: this.user.workspaceId },
-      })
-
-      this.unsetTransaction()
       return commentAttachment
     })
 
@@ -115,14 +113,33 @@ export class AttachmentsService extends BaseService {
   }
 
   async deleteAttachmentsOfTask(taskIds: string[]) {
-    // Todo: delete attachments from bucket when task is deleted
-    await this.db.attachment.deleteMany({
-      where: {
-        taskId: {
-          in: taskIds,
+    const taskAttachment = await this.db.$transaction(async (tx) => {
+      const taskAttachment = await tx.attachment.findMany({
+        where: {
+          taskId: {
+            in: taskIds,
+          },
+          workspaceId: this.user.workspaceId,
         },
-        workspaceId: this.user.workspaceId,
-      },
+        select: { filePath: true },
+      })
+
+      await tx.attachment.deleteMany({
+        where: {
+          taskId: {
+            in: taskIds,
+          },
+          workspaceId: this.user.workspaceId,
+        },
+      })
+
+      return taskAttachment
     })
+
+    // directly delete attachments from bucket when deleting comments.
+    // Postgres transaction is not valid for supabase object so placing it after record deletion from db
+    const filePathArray = taskAttachment.map((el) => el.filePath)
+    const supabase = new SupabaseService()
+    await supabase.removeAttachmentsFromBucket(filePathArray)
   }
 }
