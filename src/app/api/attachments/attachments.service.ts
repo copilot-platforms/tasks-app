@@ -31,7 +31,7 @@ export class AttachmentsService extends BaseService {
     const newAttachment = await this.db.attachment.create({
       data: {
         ...data,
-        createdById: z.string().parse(this.user.internalUserId),
+        createdById: z.string().parse(this.user.internalUserId || this.user.clientId), // CU are also allowed to create attachments
         workspaceId: this.user.workspaceId,
       },
     })
@@ -41,7 +41,7 @@ export class AttachmentsService extends BaseService {
   async createMultipleAttachments(data: CreateAttachmentRequest[]) {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Create, Resource.Attachments)
-    const userId = z.string().parse(this.user.internalUserId)
+
     // TODO: @arpandhakal - $transaction here could consume a lot of sequential db connections, better to use Promise.all
     // and reuse active connections instead.
     const newAttachments = await this.db.$transaction(async (prisma) => {
@@ -49,7 +49,7 @@ export class AttachmentsService extends BaseService {
         prisma.attachment.create({
           data: {
             ...attachmentData,
-            createdById: userId,
+            createdById: z.string().parse(this.user.internalUserId || this.user.clientId), // CU are also allowed to create attachments
             workspaceId: this.user.workspaceId,
           },
         }),
