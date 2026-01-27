@@ -42,7 +42,7 @@ export type CommentResponse = z.infer<typeof CommentResponseSchema>
 export type CommentWithAttachments = Comment & { attachments: Attachment[] }
 
 export type CommentsPublicFilterType = {
-  taskId: string
+  taskId?: string
   parentId?: string
   initiatorId?: string
   limit?: number

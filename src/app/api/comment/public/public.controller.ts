@@ -1,36 +1,35 @@
 import { CommentService } from '@/app/api/comment/comment.service'
-import authenticate from '@/app/api/core/utils/authenticate'
-import { getSearchParams } from '@/utils/request'
-import { NextRequest, NextResponse } from 'next/server'
-import { decode, encode } from 'js-base64'
 import { PublicCommentSerializer } from '@/app/api/comment/public/public.serializer'
+import authenticate from '@/app/api/core/utils/authenticate'
 import { CommentsPublicFilterType } from '@/types/dto/comment.dto'
-import { IdParams } from '@/app/api/core/types/api'
 import { getPaginationLimit } from '@/utils/pagination'
+import { getSearchParams } from '@/utils/request'
+import { decode, encode } from 'js-base64'
+import { NextRequest, NextResponse } from 'next/server'
 
 type TaskAndCommentIdParams = {
-  params: Promise<{ id: string; commentId: string }>
+  params: Promise<{ id: string }>
 }
 
-export const getAllCommentsPublic = async (req: NextRequest, { params }: IdParams) => {
-  const { id: taskId } = await params
+export const getAllCommentsPublic = async (req: NextRequest) => {
   const user = await authenticate(req)
 
-  const { parentCommentId, createdBy, limit, nextToken } = getSearchParams(req.nextUrl.searchParams, [
+  const { parentCommentId, createdBy, limit, nextToken, taskId } = getSearchParams(req.nextUrl.searchParams, [
     'parentCommentId',
     'createdBy',
     'limit',
     'nextToken',
+    'taskId',
   ])
 
   const publicFilters: CommentsPublicFilterType = {
-    taskId,
+    taskId: taskId || undefined,
     parentId: parentCommentId || undefined,
     initiatorId: createdBy || undefined,
   }
 
   const commentService = new CommentService(user)
-  await commentService.checkCommentTaskPermissionForUser(taskId) // check the user accessing the comment has access to the task
+  taskId && (await commentService.checkCommentTaskPermissionForUser(taskId)) // check the user accessing the comment has access to the task
 
   const comments = await commentService.getAllComments({
     limit: getPaginationLimit(limit),
@@ -51,25 +50,27 @@ export const getAllCommentsPublic = async (req: NextRequest, { params }: IdParam
 }
 
 export const getOneCommentPublic = async (req: NextRequest, { params }: TaskAndCommentIdParams) => {
-  const { id: taskId, commentId } = await params
+  const { id } = await params
   const user = await authenticate(req)
 
   const commentService = new CommentService(user)
-  await commentService.checkCommentTaskPermissionForUser(taskId) // check the user accessing the comment has access to the task
-
-  const comment = await commentService.getCommentById({ id: commentId, includeAttachments: true })
+  const comment = await commentService.getCommentById({ id, includeAttachments: true })
   if (!comment) return NextResponse.json({ data: null })
+
+  await commentService.checkCommentTaskPermissionForUser(comment.taskId) // check the user accessing the comment has access to the task
 
   return NextResponse.json({ data: await PublicCommentSerializer.serialize(comment) })
 }
 
 export const deleteOneCommentPublic = async (req: NextRequest, { params }: TaskAndCommentIdParams) => {
-  const { id: taskId, commentId } = await params
+  const { id } = await params
   const user = await authenticate(req)
 
   const commentService = new CommentService(user)
-  await commentService.checkCommentTaskPermissionForUser(taskId) // check the user accessing the comment has access to the task
 
-  const deletedComment = await commentService.delete(commentId)
+  const deletedComment = await commentService.delete(id)
+
+  await commentService.checkCommentTaskPermissionForUser(deletedComment.taskId) // check the user accessing the comment has access to the task
+
   return NextResponse.json({ ...(await PublicCommentSerializer.serialize(deletedComment)) })
 }
