@@ -173,7 +173,7 @@ export const CommentCard = ({
 
   const replyCount = (comment.details as CommentResponse).replyCount
 
-  const cacheKey = `/api/comment/?token=${token}&parentId=${comment.details.id}`
+  const cacheKey = `/api/comments/?token=${token}&parentId=${comment.details.id}`
   const { trigger } = useSWRMutation(cacheKey, fetcher, {
     optimisticData: optimisticUpdates.filter((update) => update.tempId),
   })

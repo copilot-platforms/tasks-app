@@ -87,7 +87,7 @@ export const deleteAttachment = async (token: string, id: string) => {
 }
 
 export const postComment = async (token: string, payload: CreateComment) => {
-  const res = await fetch(`${apiUrl}/api/comment?token=${token}`, {
+  const res = await fetch(`${apiUrl}/api/comments?token=${token}`, {
     method: 'POST',
     body: JSON.stringify(payload),
   })
@@ -96,7 +96,7 @@ export const postComment = async (token: string, payload: CreateComment) => {
 }
 
 export const updateComment = async (token: string, id: string, payload: UpdateComment) => {
-  const res = await fetch(`${apiUrl}/api/comment/${id}?token=${token}`, {
+  const res = await fetch(`${apiUrl}/api/comments/${id}?token=${token}`, {
     method: 'PATCH',
     body: JSON.stringify(payload),
   })
@@ -105,7 +105,7 @@ export const updateComment = async (token: string, id: string, payload: UpdateCo
 }
 
 export const deleteComment = async (token: string, id: string) => {
-  await fetch(`${apiUrl}/api/comment/${id}?token=${token}`, {
+  await fetch(`${apiUrl}/api/comments/${id}?token=${token}`, {
     method: 'DELETE',
   })
 }
