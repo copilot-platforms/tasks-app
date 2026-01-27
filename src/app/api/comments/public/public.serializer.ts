@@ -3,6 +3,7 @@ import { PublicCommentDto, PublicCommentDtoSchema } from '@/app/api/comments/pub
 import { RFC3339DateSchema } from '@/types/common'
 import { CommentWithAttachments } from '@/types/dto/comment.dto'
 import { toRFC3339 } from '@/utils/dateHelper'
+import { sanitizeHtml } from '@/utils/santizeContents'
 import { z } from 'zod'
 
 export class PublicCommentSerializer {
@@ -12,7 +13,7 @@ export class PublicCommentSerializer {
       object: 'taskComment',
       parentCommentId: comment.parentId,
       taskId: comment.taskId,
-      content: comment.content,
+      content: sanitizeHtml(comment.content),
       createdBy: comment.initiatorId,
       createdByUserType: comment.initiatorType,
       createdDate: RFC3339DateSchema.parse(toRFC3339(comment.createdAt)),
