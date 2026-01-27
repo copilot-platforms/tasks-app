@@ -404,7 +404,7 @@ export class CommentService extends BaseService {
 
   async getAllComments(queryFilters: CommentsPublicFilterType): Promise<CommentWithAttachments[]> {
     const { parentId, taskId, limit, lastIdCursor, initiatorId } = queryFilters
-    const where = {
+    const where: Prisma.CommentWhereInput = {
       parentId,
       taskId,
       initiatorId,
@@ -412,6 +412,9 @@ export class CommentService extends BaseService {
     }
 
     const pagination = getBasicPaginationAttributes(limit, lastIdCursor)
+    if (this.user.clientId || this.user.companyId) {
+      where.task = this.getClientOrCompanyAssigneeFilter()
+    }
 
     return await this.db.comment.findMany({
       where,
@@ -422,8 +425,15 @@ export class CommentService extends BaseService {
   }
 
   async hasMoreCommentsAfterCursor(id: string, publicFilters: Partial<CommentsPublicFilterType>): Promise<boolean> {
+    const where: Prisma.CommentWhereInput = {
+      ...publicFilters,
+      workspaceId: this.user.workspaceId,
+    }
+    if (this.user.clientId || this.user.companyId) {
+      where.task = this.getClientOrCompanyAssigneeFilter()
+    }
     const newComment = await this.db.comment.findFirst({
-      where: { ...publicFilters, workspaceId: this.user.workspaceId },
+      where,
       cursor: { id },
       skip: 1,
       orderBy: { createdAt: 'desc' },
@@ -452,4 +462,44 @@ export class CommentService extends BaseService {
       throw err
     }
   }
+
+  protected getClientOrCompanyAssigneeFilter(includeViewer: boolean = true): Prisma.TaskWhereInput {
+    const clientId = z.string().uuid().safeParse(this.user.clientId).data
+    const companyId = z.string().uuid().parse(this.user.companyId)
+
+    const filters = []
+
+    if (clientId && companyId) {
+      filters.push(
+        // Get client tasks for the particular companyId
+        { clientId, companyId },
+        // Get company tasks for the client's companyId
+        { companyId, clientId: null },
+      )
+      if (includeViewer)
+        filters.push(
+          // Get tasks that includes the client as a viewer
+          {
+            viewers: {
+              hasSome: [{ clientId, companyId }, { companyId }],
+            },
+          },
+        )
+    } else if (companyId) {
+      filters.push(
+        // Get only company tasks for the client's companyId
+        { clientId: null, companyId },
+      )
+      if (includeViewer)
+        filters.push(
+          // Get tasks that includes the company as a viewer
+          {
+            viewers: {
+              hasSome: [{ companyId }],
+            },
+          },
+        )
+    }
+    return filters.length > 0 ? { OR: filters } : {}
+  } //Repeated twice because taskSharedService is an abstract class.
 }
