@@ -14,7 +14,8 @@ async function getNotificationDetail(token: string) {
   return await copilot.getIUNotification(z.string().parse(tokenPayload.notificationId), tokenPayload.workspaceId) // notification "id" is expected in tokenPayload
 }
 
-export default async function NotificationCenter({ searchParams }: { searchParams: { token: string } }) {
+export default async function NotificationCenter(props: { searchParams: Promise<{ token: string }> }) {
+  const searchParams = await props.searchParams
   const token = searchParams.token
   if (!z.string().safeParse(token).success) {
     return <SilentError message="Please provide a Valid Token" />

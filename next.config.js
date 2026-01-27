@@ -18,6 +18,14 @@ const nextConfig = {
 
     return config
   },
+  turbopack: {
+    rules: {
+      '*.svg': {
+        loaders: ['@svgr/webpack'],
+        as: '*.jsx',
+      },
+    },
+  },
 }
 
 module.exports = withSentryConfig(nextConfig, {

@@ -1,5 +1,5 @@
-import { Stack, Typography } from '@mui/material'
-import { TertiaryBtn } from '../buttons/TertiaryBtn'
+import { Stack, Tab, Tabs } from '@mui/material'
+import { FilterButtonsGroupSelector } from '@/components/inputs/FilterButtonsGroupSelector'
 
 export type FilterButtons = {
   name: string
@@ -9,22 +9,41 @@ export type FilterButtons = {
 
 type FilterButtonGroupProps = {
   filterButtons: FilterButtons[]
-  activeButtonIndex: number | undefined
+  activeButtonIndex: number
+  mobileView?: boolean
 }
 
-const FilterButtonGroup = ({ filterButtons, activeButtonIndex }: FilterButtonGroupProps) => {
+const FilterButtonGroup = ({ filterButtons, activeButtonIndex, mobileView = false }: FilterButtonGroupProps) => {
   if (!filterButtons.length) {
     return null
+  }
+
+  if (mobileView) {
+    return (
+      <Stack
+        sx={{
+          columnGap: '8px',
+          padding: '4px 20px',
+          height: '48px',
+          justifyContent: 'space-between',
+          '@media (max-width: 330px)': {
+            flexWrap: 'wrap',
+            height: 'auto',
+          },
+        }}
+        direction={'row'}
+      >
+        <FilterButtonsGroupSelector filterButtons={filterButtons} activeButtonIndex={activeButtonIndex} />
+      </Stack>
+    )
   }
 
   return (
     <Stack
       sx={(theme) => ({
-        border: `1px solid ${theme.color.borders.border}`,
-        borderRadius: 1,
         columnGap: '8px',
-        padding: '4px 4px',
-        height: '32px',
+        padding: '4px 20px',
+        height: '48px',
         justifyContent: 'space-between',
         '@media (max-width: 330px)': {
           flexWrap: 'wrap',
@@ -33,31 +52,56 @@ const FilterButtonGroup = ({ filterButtons, activeButtonIndex }: FilterButtonGro
       })}
       direction={'row'}
     >
-      {filterButtons.map((item, index) => {
-        return (
-          <TertiaryBtn
-            key={item.id}
-            buttonContent={
-              <Typography
-                variant="bodySm"
-                fontWeight={500}
-                fontSize="12px"
-                sx={{
-                  color: (theme) => (index === activeButtonIndex ? theme.color.gray[600] : theme.color.gray[500]),
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                }}
-              >
-                {item.name}
-              </Typography>
-            }
-            handleClick={() => item.onClick(index)}
-            outlined
-            enableBackground={index === activeButtonIndex}
-          />
-        )
-      })}
+      <Tabs
+        value={activeButtonIndex}
+        aria-label="Filter Tab Buttons"
+        TabIndicatorProps={{
+          sx: {
+            backgroundColor: (theme) => theme.color.gray[600],
+            height: '1px',
+          },
+        }}
+        sx={{
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: 'unset',
+          height: '46px',
+          '& .MuiTabs-flexContainer': {
+            gap: '12px',
+          },
+        }}
+      >
+        {filterButtons.map((item, index) => {
+          return (
+            <Tab
+              key={item.id}
+              value={index}
+              label={item.name}
+              onClick={() => item.onClick(index)}
+              sx={{
+                textTransform: 'none',
+                fontSize: 14,
+                fontWeight: 400,
+                lineHeight: '22px',
+                minHeight: 'unset',
+                paddingY: 0,
+                paddingX: '4px',
+                paddingBottom: '4px',
+                height: '44px',
+                minWidth: '60px',
+
+                fontColor: (theme) => theme.color.text,
+                color: (theme) => theme.color.text.text,
+
+                '&.Mui-selected': {
+                  color: (theme) => theme.color.text.text,
+                },
+              }}
+              disableRipple
+            />
+          )
+        })}
+      </Tabs>
     </Stack>
   )
 }

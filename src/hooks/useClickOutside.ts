@@ -21,7 +21,7 @@ function getEventPath(event: Event): EventTarget[] {
  * @param events - Event types to listen to (default: ["pointerdown", "touchstart"]).
  */
 export default function useClickOutside<T extends HTMLElement>(
-  refs: RefObject<T> | RefObject<T>[],
+  refs: RefObject<T | null> | RefObject<T | null>[],
   handler: (event: Event) => void,
   events: string[] = ['pointerdown', 'touchstart'],
 ): void {

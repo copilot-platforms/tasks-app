@@ -31,7 +31,6 @@ import { HeaderBreadcrumbs } from '@/components/layouts/HeaderBreadcrumbs'
 import { SilentError } from '@/components/templates/SilentError'
 import { apiUrl } from '@/config'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
-import CustomScrollBar from '@/hoc/CustomScrollBar'
 import { RealTime } from '@/hoc/RealTime'
 import { RealTimeTemplates } from '@/hoc/RealtimeTemplates'
 import { WorkspaceResponse } from '@/types/common'
@@ -78,13 +77,12 @@ async function getTaskPath(token: string, taskId: string): Promise<AncestorTaskR
   return path
 }
 
-export default async function TaskDetailPage({
-  params,
-  searchParams,
-}: {
-  params: { task_id: string; task_name: string; user_type: UserType }
-  searchParams: { token: string; isRedirect?: string; fromNotificationCenter?: string }
+export default async function TaskDetailPage(props: {
+  params: Promise<{ task_id: string; task_name: string; user_type: UserType }>
+  searchParams: Promise<{ token: string; isRedirect?: string; fromNotificationCenter?: string }>
 }) {
+  const searchParams = await props.searchParams
+  const params = await props.params
   const { token } = searchParams
   const { task_id, user_type } = params
 
@@ -144,7 +142,7 @@ export default async function TaskDetailPage({
         <RealTimeTemplates tokenPayload={tokenPayload} token={token}>
           <EscapeHandler />
           <ResponsiveStack fromNotificationCenter={fromNotificationCenter}>
-            <Box sx={{ width: '100%', display: 'flex', flex: 1, flexDirection: 'column', overflow: 'hidden' }}>
+            <Box sx={{ width: '100%', display: 'flex', flex: 1, flexDirection: 'column', overflow: 'auto' }}>
               {isPreviewMode ? (
                 <StyledBox>
                   <AppMargin size={SizeofAppMargin.HEADER} py="17.5px">
@@ -171,55 +169,53 @@ export default async function TaskDetailPage({
                 </>
               )}
 
-              <CustomScrollBar>
-                <TaskDetailsContainer
-                  sx={{
-                    padding: { xs: '20px 16px ', sm: '30px 20px' },
-                  }}
-                >
-                  <StyledTiptapDescriptionWrapper>
-                    <LastArchivedField />
-                    <TaskEditor
-                      // attachment={attachments}
-                      task_id={task_id}
-                      task={task}
-                      isEditable={params.user_type === UserType.INTERNAL_USER || !!getPreviewMode(tokenPayload)}
-                      updateTaskDetail={async (detail) => {
-                        'use server'
-                        await updateTaskDetail({ token, taskId: task_id, payload: { body: detail } })
-                      }}
-                      updateTaskTitle={async (title) => {
-                        'use server'
-                        title.trim() != '' && (await updateTaskDetail({ token, taskId: task_id, payload: { title } }))
-                      }}
-                      deleteTask={async () => {
-                        'use server'
-                        await deleteTask(token, task_id)
-                      }}
-                      postAttachment={async (postAttachmentPayload) => {
-                        'use server'
-                        await postAttachment(token, postAttachmentPayload)
-                      }}
-                      deleteAttachment={async (id: string) => {
-                        'use server'
-                        await deleteAttachment(token, id)
-                      }}
-                      userType={params.user_type}
-                      token={token}
-                    />
-                  </StyledTiptapDescriptionWrapper>
-                  {subTaskStatus.canCreateSubtask && (
-                    <Subtasks
-                      task_id={task_id}
-                      token={token}
-                      userType={tokenPayload.internalUserId ? UserRole.IU : UserRole.Client}
-                      canCreateSubtasks={params.user_type === UserType.INTERNAL_USER || !!getPreviewMode(tokenPayload)}
-                    />
-                  )}
+              <TaskDetailsContainer
+                sx={{
+                  padding: { xs: '20px 16px ', sm: '30px 20px' },
+                }}
+              >
+                <StyledTiptapDescriptionWrapper>
+                  <LastArchivedField />
+                  <TaskEditor
+                    // attachment={attachments}
+                    task_id={task_id}
+                    task={task}
+                    isEditable={params.user_type === UserType.INTERNAL_USER || !!getPreviewMode(tokenPayload)}
+                    updateTaskDetail={async (detail) => {
+                      'use server'
+                      await updateTaskDetail({ token, taskId: task_id, payload: { body: detail } })
+                    }}
+                    updateTaskTitle={async (title) => {
+                      'use server'
+                      title.trim() != '' && (await updateTaskDetail({ token, taskId: task_id, payload: { title } }))
+                    }}
+                    deleteTask={async () => {
+                      'use server'
+                      await deleteTask(token, task_id)
+                    }}
+                    postAttachment={async (postAttachmentPayload) => {
+                      'use server'
+                      await postAttachment(token, postAttachmentPayload)
+                    }}
+                    deleteAttachment={async (id: string) => {
+                      'use server'
+                      await deleteAttachment(token, id)
+                    }}
+                    userType={params.user_type}
+                    token={token}
+                  />
+                </StyledTiptapDescriptionWrapper>
+                {subTaskStatus.canCreateSubtask && (
+                  <Subtasks
+                    task_id={task_id}
+                    token={token}
+                    userType={tokenPayload.internalUserId ? UserRole.IU : UserRole.Client}
+                    canCreateSubtasks={params.user_type === UserType.INTERNAL_USER || !!getPreviewMode(tokenPayload)}
+                  />
+                )}
 
-                  <ActivityWrapper task_id={task_id} token={token} tokenPayload={tokenPayload} />
-                </TaskDetailsContainer>
-              </CustomScrollBar>
+                <ActivityWrapper task_id={task_id} token={token} tokenPayload={tokenPayload} />
+              </TaskDetailsContainer>
             </Box>
             <Box
               {...(fromNotificationCenter

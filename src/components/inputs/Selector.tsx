@@ -1,8 +1,8 @@
-import { Box, Button, Popper, Stack, Typography } from '@mui/material'
+import { Box, Button, Popper, Stack, SxProps, Theme, Typography } from '@mui/material'
 import { StyledAutocomplete } from '@/components/inputs/Autocomplete'
 import { statusIcons } from '@/utils/iconMatcher'
 import { useFocusableInput } from '@/hooks/useFocusableInput'
-import { HTMLAttributes, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { HTMLAttributes, ReactNode, useCallback, useEffect, useMemo, useRef, useState, type JSX } from 'react'
 import { StyledTextField } from './TextField'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { IAssigneeCombined, Sizes, IExtraOption, ITemplate, UserTypesName } from '@/types/interfaces'
@@ -66,6 +66,7 @@ interface Prop<T extends keyof SelectorOptionsType> {
   cursor?: Property.Cursor
   currentOption?: SelectorOptionsType[T] //option which shall be at the top of the selector without any grouping
   errorPlaceholder?: string
+  customDropdownWidth?: number
 }
 
 export default function Selector<T extends keyof SelectorOptionsType>({
@@ -98,6 +99,7 @@ export default function Selector<T extends keyof SelectorOptionsType>({
   cursor,
   currentOption,
   errorPlaceholder = 'Required',
+  customDropdownWidth,
 }: Prop<T>) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
@@ -142,7 +144,7 @@ export default function Selector<T extends keyof SelectorOptionsType>({
   }
 
   const [placement, setPlacement] = useState<Placement>('bottom')
-  const timeoutRef = useRef<NodeJS.Timeout>()
+  const timeoutRef = useRef<NodeJS.Timeout>(undefined)
 
   const handlePlacementChange = useCallback((data: ModifierArguments<any>) => {
     if (data.state?.placement && data.state.placement !== placement) {
@@ -198,18 +200,6 @@ export default function Selector<T extends keyof SelectorOptionsType>({
       setAnchorEl(null)
     }
   }
-
-  const ListWithEndOption = React.forwardRef<HTMLDivElement, JSX.IntrinsicElements['div'] & {}>((props, ref) => {
-    const { ...other } = props
-
-    return (
-      <ListboxComponent {...other} ref={ref} role="listbox" endOption={endOption} endOptionHref={endOptionHref}>
-        {props.children}
-      </ListboxComponent>
-    )
-  })
-
-  ListWithEndOption.displayName = 'ListWithEndOption'
 
   return (
     <Stack direction="column">
@@ -271,7 +261,7 @@ export default function Selector<T extends keyof SelectorOptionsType>({
         open={open}
         anchorEl={anchorEl}
         sx={{
-          width: 'fit-content',
+          width: customDropdownWidth ? `${customDropdownWidth}px` : 'fit-content',
           zIndex: '9999',
         }}
         placement="bottom-start"
@@ -286,24 +276,28 @@ export default function Selector<T extends keyof SelectorOptionsType>({
           openOnFocus
           onKeyDown={handleKeyDown}
           autoSelect={false}
-          ListboxProps={{
-            sx: {
-              maxHeight: {
-                xs: '175px',
-                sm: '291px',
+          ListboxProps={
+            {
+              endOption: endOption,
+              endOptionHref: endOptionHref,
+              sx: {
+                maxHeight: {
+                  xs: '175px',
+                  sm: '291px',
+                },
+                '& .MuiAutocomplete-option[aria-selected="true"].Mui-focused': {
+                  backgroundColor: (theme) => theme.color.background.bgHover,
+                },
+                '& .MuiAutocomplete-option[aria-selected="true"]': {
+                  backgroundColor: (theme) => theme.color.base.white,
+                },
+                '& .MuiAutocomplete-option.Mui-focused': {
+                  backgroundColor: (theme) => theme.color.background.bgHover,
+                },
+                padding: '0px',
               },
-              '& .MuiAutocomplete-option[aria-selected="true"].Mui-focused': {
-                backgroundColor: (theme) => theme.color.background.bgHover,
-              },
-              '& .MuiAutocomplete-option[aria-selected="true"]': {
-                backgroundColor: (theme) => theme.color.base.white,
-              },
-              '& .MuiAutocomplete-option.Mui-focused': {
-                backgroundColor: (theme) => theme.color.background.bgHover,
-              },
-              padding: '0px',
-            },
-          }}
+            } as ExtendedListboxProps
+          }
           options={extraOption ? [extraOption, ...processedOptions] : processedOptions}
           value={value}
           onChange={(_, newValue: unknown) => {
@@ -349,11 +343,11 @@ export default function Selector<T extends keyof SelectorOptionsType>({
               return params.children
             }
             return (
-              <>
+              <Box key={params.key}>
                 {hasNoAssignee ? (
-                  <Box key={params.key}>{params.children}</Box>
+                  <Box>{params.children}</Box>
                 ) : (
-                  <Box key={params.key} component="li">
+                  <Box>
                     <Stack direction="row" alignItems="center" columnGap={2}>
                       <Typography
                         variant={'sm'}
@@ -370,7 +364,7 @@ export default function Selector<T extends keyof SelectorOptionsType>({
                     {params.children}
                   </Box>
                 )}
-              </>
+              </Box>
             )
           }}
           inputValue={inputStatusValue}
@@ -385,7 +379,7 @@ export default function Selector<T extends keyof SelectorOptionsType>({
                 padding="4px 12px 8px 12px"
                 basePadding="8px 12px 8px 12px"
                 sx={{
-                  width: '200px',
+                  width: customDropdownWidth ? `${customDropdownWidth}px` : '200px',
                   visibility: { xs: 'none', sm: 'visible' },
                   borderRadius: '4px',
                 }}
@@ -406,9 +400,11 @@ export default function Selector<T extends keyof SelectorOptionsType>({
               setAnchorEl(null)
               setInputStatusValue('')
             }
+            const { key, ...otherProps } = props
             if ((option as IExtraOption).id === 'not_found') {
               return (
                 <Box
+                  key={key}
                   sx={{
                     color: 'gray',
                     textAlign: 'left',
@@ -426,21 +422,31 @@ export default function Selector<T extends keyof SelectorOptionsType>({
               )
             }
 
-            return extraOption && extraOptionRenderer && (option as IExtraOption)?.extraOptionFlag ? (
-              extraOptionRenderer(setAnchorEl, anchorEl, props)
-            ) : selectorType === SelectorType.ASSIGNEE_SELECTOR ? (
-              <AssigneeSelectorRenderer props={props} option={option} />
-            ) : selectorType === SelectorType.STATUS_SELECTOR ? (
-              <StatusSelectorRenderer props={props} option={option} />
-            ) : selectorType === SelectorType.TEMPLATE_SELECTOR ? (
-              <TemplateSelectorRenderer
-                props={props}
-                option={option}
-                onClickHandler={useClickHandler ? onClickHandler : undefined}
-              />
-            ) : (
-              <></>
-            )
+            if (extraOption && extraOptionRenderer && (option as IExtraOption)?.extraOptionFlag) {
+              return <div key={key}>{extraOptionRenderer(setAnchorEl, anchorEl, otherProps)}</div>
+            }
+
+            if (selectorType === SelectorType.ASSIGNEE_SELECTOR) {
+              return <AssigneeSelectorRenderer key={key} props={otherProps} option={option} />
+            }
+
+            if (selectorType === SelectorType.STATUS_SELECTOR) {
+              return <StatusSelectorRenderer key={key} props={otherProps} option={option} />
+            }
+
+            if (selectorType === SelectorType.TEMPLATE_SELECTOR) {
+              return (
+                <TemplateSelectorRenderer
+                  key={key}
+                  props={otherProps}
+                  option={option}
+                  onClickHandler={useClickHandler ? onClickHandler : undefined}
+                  width={customDropdownWidth}
+                />
+              )
+            }
+
+            return <></>
           }}
           noOptionsText={endOption && <ListWithEndOption />}
         />
@@ -453,14 +459,15 @@ const TemplateSelectorRenderer = ({
   props,
   option,
   onClickHandler,
+  width,
 }: {
   props: HTMLAttributes<HTMLLIElement>
   option: unknown
   onClickHandler?: () => void
+  width?: number
 }) => {
   return (
     <Box
-      key={(option as ITemplate).id}
       component="li"
       {...props}
       sx={{
@@ -489,7 +496,12 @@ const TemplateSelectorRenderer = ({
         <Typography
           variant="sm"
           fontWeight={400}
-          sx={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '160px' }}
+          sx={{
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            maxWidth: width ? `${width - 30}px` : '160px', //-30px used as a safe boundary so that the text does not overflow.
+          }}
         >
           {(option as ITemplate).title as string}
         </Typography>
@@ -551,4 +563,25 @@ const AssigneeSelectorRenderer = ({ props, option }: { props: HTMLAttributes<HTM
       </Stack>
     </Box>
   )
+}
+
+const ListWithEndOption = React.forwardRef<
+  HTMLDivElement,
+  JSX.IntrinsicElements['div'] & { endOption?: React.ReactNode; endOptionHref?: string }
+>((props, ref) => {
+  const { endOption, endOptionHref, ...other } = props
+
+  return (
+    <ListboxComponent {...other} ref={ref} role="listbox" endOption={endOption} endOptionHref={endOptionHref}>
+      {props.children}
+    </ListboxComponent>
+  )
+})
+
+ListWithEndOption.displayName = 'ListWithEndOption'
+
+type ExtendedListboxProps = React.HTMLAttributes<HTMLUListElement> & {
+  sx?: SxProps<Theme>
+  endOption?: React.ReactNode
+  endOptionHref?: string
 }

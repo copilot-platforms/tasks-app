@@ -92,6 +92,10 @@ export const CopilotPopSelector = ({
   const shouldCallOnChangeWithEmpty = useRef(false)
   const initialAssignee = initialValue && parseAssigneeToSelectorOptions(initialValue)
 
+  const [selectedAssignee, setSelectedAssignee] = useState<InputValue[] | undefined>(
+    initialAssignee && selectorOptionsToInputValue(initialAssignee),
+  )
+
   const handleClick = useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
       event.preventDefault()
@@ -105,9 +109,6 @@ export const CopilotPopSelector = ({
     [disabled, initialAssignee],
   )
 
-  const [selectedAssignee, setSelectedAssignee] = useState<InputValue[] | undefined>(
-    initialAssignee && selectorOptionsToInputValue(initialAssignee),
-  )
   const handleClose = useCallback(() => {
     if (shouldCallOnChangeWithEmpty.current && selectedAssignee && !selectedAssignee.length) {
       onChange(selectedAssignee)
