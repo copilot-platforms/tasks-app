@@ -13,6 +13,8 @@ const IMG_TAG_REGEX = /<img\s+[^>]*src="([^"]+)"[^>]*>/g
 type MinimalTask = Pick<Task, 'id' | 'body' | 'createdById' | 'workspaceId'>
 type MinimalComment = Pick<Comment, 'id' | 'content' | 'initiatorId' | 'workspaceId'>
 
+const LOG_EVERY = 500
+
 interface AttachmentRequest {
   createdById: string
   workspaceId: string
@@ -24,48 +26,64 @@ interface ProcessedAttachments {
   commentAttachmentRequests: AttachmentRequest[]
   filesNotFoundInBucket: string[]
 }
-
 async function extractAttachmentsFromContent(
   content: string,
   supabaseActions: SupabaseActions,
   filesNotFound: string[],
 ): Promise<Array<{ filePath: string; fileSize?: number; fileType?: string; fileName?: string }>> {
-  const attachments: Array<{ filePath: string; fileSize?: number; fileType?: string; fileName?: string }> = []
+  const metaLimiter = new Bottleneck({
+    maxConcurrent: 20,
+    minTime: 50,
+  })
+
+  const matches: string[] = []
   const regexes = [IMG_TAG_REGEX, ATTACHMENT_TAG_REGEX]
 
   for (const regex of regexes) {
     let match
     regex.lastIndex = 0
     while ((match = regex.exec(content)) !== null) {
-      const originalSrc = match[1]
-      const filePath = getFilePathFromUrl(originalSrc)
-      if (!filePath) continue
-      const fileMetaData = await supabaseActions.getMetaData(filePath)
-      if (!fileMetaData) {
-        filesNotFound.push(filePath)
-        continue
-      }
-      const fileName = filePath.split('/').pop()
-      attachments.push({
-        filePath,
-        fileSize: fileMetaData.size,
-        fileType: fileMetaData.contentType,
-        fileName,
-      })
+      matches.push(match[1])
     }
   }
-  return attachments
-}
 
+  const attachmentPromises = matches.map((originalSrc) =>
+    metaLimiter.schedule(async () => {
+      const filePath = getFilePathFromUrl(originalSrc)
+      if (!filePath) return null
+
+      const meta = await supabaseActions.getMetaData(filePath)
+      if (!meta) {
+        filesNotFound.push(filePath)
+        return null
+      }
+
+      return {
+        filePath,
+        fileSize: meta.size,
+        fileType: meta.contentType,
+        fileName: filePath.split('/').pop(),
+      }
+    }),
+  )
+
+  const results = await Promise.all(attachmentPromises)
+  return results.filter(Boolean) as any[]
+}
 async function createAttachmentRequests(tasks: MinimalTask[], comments: MinimalComment[]): Promise<ProcessedAttachments> {
+  const itemLimiter = new Bottleneck({
+    maxConcurrent: 10,
+  })
+  let processedTasks = 0
+  let processedComments = 0
   const taskAttachmentRequests: AttachmentRequest[] = []
   const commentAttachmentRequests: AttachmentRequest[] = []
   const filesNotFoundInBucket: string[] = []
   const supabaseActions = new SupabaseActions()
 
-  for (const task of tasks) {
-    const bodyString = task.body ?? ''
-    const attachments = await extractAttachmentsFromContent(bodyString, supabaseActions, filesNotFoundInBucket)
+  const processTask = async (task: MinimalTask) => {
+    const attachments = await extractAttachmentsFromContent(task.body ?? '', supabaseActions, filesNotFoundInBucket)
+
     for (const attachment of attachments) {
       taskAttachmentRequests.push({
         createdById: task.createdById,
@@ -76,11 +94,15 @@ async function createAttachmentRequests(tasks: MinimalTask[], comments: MinimalC
         }),
       })
     }
+    processedTasks++
+    if (processedTasks % LOG_EVERY === 0) {
+      console.info(`⏳ Tasks processed: ${processedTasks}/${tasks.length}`)
+    }
   }
 
-  for (const comment of comments) {
-    const contentString = comment.content ?? ''
-    const attachments = await extractAttachmentsFromContent(contentString, supabaseActions, filesNotFoundInBucket)
+  const processComment = async (comment: MinimalComment) => {
+    const attachments = await extractAttachmentsFromContent(comment.content ?? '', supabaseActions, filesNotFoundInBucket)
+
     for (const attachment of attachments) {
       commentAttachmentRequests.push({
         createdById: comment.initiatorId,
@@ -91,48 +113,72 @@ async function createAttachmentRequests(tasks: MinimalTask[], comments: MinimalC
         }),
       })
     }
+    processedComments++
+    if (processedComments % LOG_EVERY === 0) {
+      console.info(`⏳ Comments processed: ${processedComments}/${comments.length}`)
+    }
   }
 
-  if (taskAttachmentRequests.length) {
-    console.info('🔥 Task attachments to be populated:', taskAttachmentRequests.length)
-  }
-  if (commentAttachmentRequests.length) {
-    console.info('🔥 Comment attachments to be populated:', commentAttachmentRequests.length)
-  }
+  await Promise.all([
+    ...tasks.map((t) => itemLimiter.schedule(() => processTask(t))),
+    ...comments.map((c) => itemLimiter.schedule(() => processComment(c))),
+  ])
+
+  console.info('🔥 Task attachments:', taskAttachmentRequests.length)
+  console.info('🔥 Comment attachments:', commentAttachmentRequests.length)
+
   if (filesNotFoundInBucket.length) {
-    console.warn('⚠️  Files not found in bucket:', filesNotFoundInBucket.length)
     const csvContent = 'filePath\n' + filesNotFoundInBucket.map((f) => `"${f.replace(/"/g, '""')}"`).join('\n')
 
     const outputPath = path.join(process.cwd(), 'files_not_found.csv')
     fs.writeFileSync(outputPath, csvContent)
-
     console.log(`📄 CSV written to ${outputPath}`)
   }
 
   return { taskAttachmentRequests, commentAttachmentRequests, filesNotFoundInBucket }
 }
-
 async function createAttachmentsInDatabase(
   db: ReturnType<typeof DBClient.getInstance>,
   attachmentRequests: AttachmentRequest[],
 ) {
   let created = 0
   let skippedCount = 0
-
-  const dbBottleneck = new Bottleneck({ minTime: 200, maxConcurrent: 50 })
-  const createPromises = []
   const failedRequests: AttachmentRequest[] = []
 
-  for (const { createdById, workspaceId, attachmentRequest } of attachmentRequests) {
-    const existing = await db.attachment.findFirst({
-      where: { filePath: attachmentRequest.filePath },
-    })
-    if (existing) {
-      skippedCount++
-      continue
-    }
+  console.info(`🔍 Checking for existing attachments...`)
 
-    const createPromise = dbBottleneck.schedule(async () => {
+  const filePaths = attachmentRequests.map((req) => req.attachmentRequest.filePath)
+
+  const existingAttachments = await db.attachment.findMany({
+    where: {
+      filePath: {
+        in: filePaths,
+      },
+    },
+    select: {
+      filePath: true,
+    },
+  })
+
+  const existingFilePathsSet = new Set(existingAttachments.map((a) => a.filePath))
+
+  console.info(`✅ Found ${existingAttachments.length} existing attachments, will skip these`)
+
+  const newAttachmentRequests = attachmentRequests.filter((req) => {
+    const exists = existingFilePathsSet.has(req.attachmentRequest.filePath)
+    if (exists) skippedCount++
+    return !exists
+  })
+
+  console.info(`📝 Creating ${newAttachmentRequests.length} new attachments...`)
+
+  const dbBottleneck = new Bottleneck({
+    maxConcurrent: 100,
+    minTime: 5,
+  })
+
+  const createPromises = newAttachmentRequests.map(({ createdById, workspaceId, attachmentRequest }, index) =>
+    dbBottleneck.schedule(async () => {
       try {
         await db.attachment.create({
           data: {
@@ -142,12 +188,14 @@ async function createAttachmentsInDatabase(
           },
         })
         created++
-        console.info(
-          `✨ Created attachment ${created}/${attachmentRequests.length - skippedCount}: ${attachmentRequest.fileName}`,
-        )
-        return
+
+        if (created % 100 === 0) {
+          console.info(` Progress: ${created}/${newAttachmentRequests.length} attachments created`)
+        }
+
+        return true
       } catch (error) {
-        console.error('Failed to create attachment.', attachmentRequest)
+        console.error('Failed to create attachment.', attachmentRequest, error)
         failedRequests.push({
           attachmentRequest,
           createdById,
@@ -155,40 +203,88 @@ async function createAttachmentsInDatabase(
         })
         return false
       }
-    })
+    }),
+  )
 
-    createPromises.push(createPromise)
-  }
   await Promise.all(createPromises)
-  writeFailedRequestsToCSV(failedRequests)
-  console.info(`📊 Created: ${created}`)
+
+  if (failedRequests.length > 0) {
+    writeFailedRequestsToCSV(failedRequests)
+  }
+
+  console.info(`📊 Summary:`)
+  console.info(`✅ Created: ${created}`)
+  console.info(`⏭️  Skipped (already exist): ${skippedCount}`)
+  console.info(`❌ Failed: ${failedRequests.length}`)
 }
 
 async function run() {
   console.info('🧑🏻‍💻 Backfilling attachment entries for tasks and comments')
 
   const db = DBClient.getInstance()
-  const [tasks, comments] = await Promise.all([
-    db.task.findMany({
+
+  const BATCH_SIZE = 5000
+  const allTasks: MinimalTask[] = []
+  const allComments: MinimalComment[] = []
+
+  console.info('📥 Fetching tasks in batches...')
+  let lastTaskId: string | undefined = undefined
+  let taskBatchCount = 0
+
+  while (true) {
+    const tasks: MinimalTask[] = await db.task.findMany({
+      take: BATCH_SIZE,
+      ...(lastTaskId && { skip: 1, cursor: { id: lastTaskId } }),
+      orderBy: { id: 'asc' },
       select: {
         id: true,
         body: true,
         createdById: true,
         workspaceId: true,
       },
-    }),
-    db.comment.findMany({
+    })
+
+    if (tasks.length === 0) break
+
+    allTasks.push(...tasks)
+    lastTaskId = tasks[tasks.length - 1].id
+    taskBatchCount++
+    console.info(`✅ Fetched task batch ${taskBatchCount} (${tasks.length} tasks) - Total: ${allTasks.length}`)
+  }
+
+  console.info('📥 Fetching comments in batches...')
+  let lastCommentId: string | undefined = undefined
+  let commentBatchCount = 0
+
+  while (true) {
+    const comments: MinimalComment[] = await db.comment.findMany({
+      take: BATCH_SIZE,
+      ...(lastCommentId && { skip: 1, cursor: { id: lastCommentId } }),
+      orderBy: { id: 'asc' },
       select: {
         id: true,
         content: true,
         initiatorId: true,
         workspaceId: true,
       },
-    }),
-  ])
+    })
 
-  const { taskAttachmentRequests, commentAttachmentRequests } = await createAttachmentRequests(tasks, comments)
+    if (comments.length === 0) break
 
+    allComments.push(...comments)
+    lastCommentId = comments[comments.length - 1].id
+    commentBatchCount++
+    console.info(
+      `✅ Fetched comment batch ${commentBatchCount} (${comments.length} comments) - Total: ${allComments.length}`,
+    )
+  }
+
+  console.info(`Total fetched: ${allTasks.length} tasks and ${allComments.length} comments`)
+
+  console.info('Creating attachment requests.')
+  const { taskAttachmentRequests, commentAttachmentRequests } = await createAttachmentRequests(allTasks, allComments)
+
+  console.info('Creating attachments in database.')
   await createAttachmentsInDatabase(db, [...taskAttachmentRequests, ...commentAttachmentRequests])
 
   console.info('✅ Backfill complete')
