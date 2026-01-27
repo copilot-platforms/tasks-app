@@ -10,6 +10,7 @@ import {
   ViewersSchema,
 } from '@/types/dto/tasks.dto'
 import { rfc3339ToDateString, toRFC3339 } from '@/utils/dateHelper'
+import { sanitizeHtml } from '@/utils/santizeContents'
 import { copyTemplateMediaToTask } from '@/utils/signedTemplateUrlReplacer'
 import { replaceImageSrc } from '@/utils/signedUrlReplacer'
 import { getSignedUrl } from '@/utils/signUrl'
@@ -40,7 +41,7 @@ export class PublicTaskSerializer {
       id: task.id,
       object: 'task',
       name: task.title,
-      description: task.body || '',
+      description: sanitizeHtml(task.body || ''),
       parentTaskId: task.parentId,
       dueDate: toRFC3339(task.dueDate),
       label: task.label,
