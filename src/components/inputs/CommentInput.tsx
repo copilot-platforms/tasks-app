@@ -8,13 +8,11 @@ import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
 import { useWindowWidth } from '@/hooks/useWindowWidth'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
-import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 import { CreateComment } from '@/types/dto/comment.dto'
 import { getMentionsList } from '@/utils/getMentionList'
 import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
 import { isTapwriteContentEmpty } from '@/utils/isTapwriteContentEmpty'
-import { ArrowUpward } from '@mui/icons-material'
-import { Box, IconButton, InputAdornment, Stack } from '@mui/material'
+import { Stack } from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
@@ -83,6 +81,7 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
     return () => {
       window.removeEventListener('keydown', handleKeyDown)
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */ // <ignore handleSubmit>
   }, [detail, isListOrMenuActive, isFocused, isMobile]) // Depend on detail to ensure the latest state is captured
 
   const uploadFn = token
@@ -129,12 +128,9 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
   return (
     <Stack direction="row" columnGap={2} alignItems="flex-start">
       <CopilotAvatar
-        width="22px"
-        height="22px"
-        fontSize="12px"
+        size="xs"
         currentAssignee={currentUserDetails}
-        sx={{
-          border: (theme) => `1.1px solid ${theme.color.gray[200]}`,
+        style={{
           marginTop: '5px',
         }}
       />

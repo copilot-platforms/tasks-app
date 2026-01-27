@@ -52,7 +52,7 @@ import {
 } from '@/utils/shouldConfirmBeforeReassign'
 import { checkIfTaskViewer } from '@/utils/taskViewer'
 
-import { Box, Skeleton, Stack, SxProps, Theme, Typography } from '@mui/material'
+import { Box, Skeleton, Stack, SxProps, Theme } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { z } from 'zod'
@@ -374,7 +374,7 @@ export const TaskCardList = ({
                   }),
                 }}
               >
-                <CopilotAvatar currentAssignee={assigneeValue as IAssigneeCombined} />
+                <CopilotAvatar size="xs" currentAssignee={assigneeValue as IAssigneeCombined} />
               </Box>
             }
           />

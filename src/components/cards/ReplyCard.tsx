@@ -119,6 +119,7 @@ export const ReplyCard = ({
         direction="row"
         columnGap={2}
         alignItems="flex-start"
+        alignContent="center"
         sx={{
           padding: '8px',
         }}
@@ -127,12 +128,9 @@ export const ReplyCard = ({
         id={item.id}
       >
         <CopilotAvatar
-          width="20px"
-          height="20px"
-          fontSize="10px"
+          size="xs"
           currentAssignee={replyInitiator}
-          sx={{
-            border: (theme) => `1.1px solid ${theme.color.gray[200]}`,
+          style={{
             marginTop: '1px',
           }}
         />

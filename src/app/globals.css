@@ -92,6 +92,21 @@ a {
   animation: fadeHighlight 1s forwards;
 }
 
+.overlapping-avatar {
+  > *:not(:last-child) {
+    margin-right: -6px;
+  }
+}
+
+.avatar-xs,
+.user-company-selector [class*=' mui-'][class*='-control'] {
+  h1.cop-text-xs {
+    font-size: 9px;
+    line-height: 18px;
+    letter-spacing: 0;
+  }
+}
+
 @keyframes fadeHighlight {
   0% {
     background-color: transparent;
