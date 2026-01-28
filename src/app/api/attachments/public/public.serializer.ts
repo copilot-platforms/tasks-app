@@ -1,6 +1,7 @@
 import { PublicAttachmentDto } from '@/app/api/attachments/public/public.dto'
 import { RFC3339DateSchema } from '@/types/common'
 import { toRFC3339 } from '@/utils/dateHelper'
+import { sanitizeFileName } from '@/utils/sanitizeFileName'
 import { createSignedUrls } from '@/utils/signUrl'
 import { Attachment, CommentInitiator } from '@prisma/client'
 import z from 'zod'
@@ -39,7 +40,7 @@ export class PublicAttachmentSerializer {
         if (!url) return null
         return {
           id: attachment.id,
-          fileName: attachment.fileName,
+          fileName: sanitizeFileName(attachment.fileName),
           fileSize: attachment.fileSize,
           mimeType: attachment.fileType,
           downloadUrl: attachment.deletedAt
