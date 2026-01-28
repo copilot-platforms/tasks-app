@@ -32,11 +32,13 @@ export class PublicAttachmentSerializer {
       })
       .filter((path) => content?.includes(path))
 
-    const signedUrls = await PublicAttachmentSerializer.getFormattedSignedUrls(attachmentPaths)
+    const decodedPaths = attachmentPaths.map((path) => decodeURIComponent(path))
+    const signedUrls = await PublicAttachmentSerializer.getFormattedSignedUrls(decodedPaths)
 
     return attachments
       .map((attachment) => {
-        const url = signedUrls.find((item) => item.path === attachment.filePath)?.url
+        const decodedPath = decodeURIComponent(attachment.filePath)
+        const url = signedUrls.find((item) => item.path === decodedPath)?.url
         if (!url) return null
         return {
           id: attachment.id,
