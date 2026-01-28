@@ -464,7 +464,7 @@ export class CommentService extends BaseService {
   }
 
   protected getClientOrCompanyAssigneeFilter(includeViewer: boolean = true): Prisma.TaskWhereInput {
-    const clientId = z.string().uuid().safeParse(this.user.clientId).data
+    const clientId = z.string().uuid().parse(this.user.clientId)
     const companyId = z.string().uuid().parse(this.user.companyId)
 
     const filters = []
