@@ -36,9 +36,7 @@ export class SupabaseActions extends SupabaseService {
       if (metadataError) {
         console.error('Failed to update metadata:', metadataError)
       }
-    }
 
-    if (data) {
       filePayload = {
         fileSize: file.size,
         fileName: file.name,
