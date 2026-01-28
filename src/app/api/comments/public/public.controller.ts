@@ -30,7 +30,7 @@ export const getAllCommentsPublic = async (req: NextRequest) => {
 
   const commentService = new CommentService(user)
   if (taskId) {
-    taskId && (await commentService.checkCommentTaskPermissionForUser(taskId)) // check the user accessing the comment has access to the task
+    await commentService.checkCommentTaskPermissionForUser(taskId) // check the user accessing the comment has access to the task
   }
 
   const comments = await commentService.getAllComments({
