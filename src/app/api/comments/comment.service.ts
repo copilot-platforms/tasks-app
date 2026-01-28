@@ -363,7 +363,7 @@ export class CommentService extends BaseService {
           filePath: newFilePath,
           fileSize: fileMetaData?.size,
           fileType: fileMetaData?.contentType,
-          fileName: getFileNameFromPath(newFilePath),
+          fileName: fileMetaData?.metadata?.originalFileName || getFileNameFromPath(newFilePath),
         }),
       )
       copyAttachmentPromises.push(supabaseActions.moveAttachment(filePath, newFilePath))
