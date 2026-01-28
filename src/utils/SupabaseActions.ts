@@ -28,6 +28,17 @@ export class SupabaseActions extends SupabaseService {
       console.error('unable to upload the file')
     }
     if (data) {
+      const { error: metadataError } = await this.supabase.storage.from(supabaseBucket).update(data.path, file, {
+        metadata: {
+          originalFileName: file.name,
+        },
+      })
+      if (metadataError) {
+        console.error('Failed to update metadata:', metadataError)
+      }
+    }
+
+    if (data) {
       filePayload = {
         fileSize: file.size,
         fileName: file.name,
