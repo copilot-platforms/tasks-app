@@ -6,6 +6,5 @@
  * @returns The original filename
  */
 export function sanitizeFileName(fileName: string): string {
-  const withoutUuid = fileName.replace(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}_/i, '') //remove the initial UUID.
-  return withoutUuid
+  return fileName.replace(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}_/i, '') //remove the initial UUID.
 }
