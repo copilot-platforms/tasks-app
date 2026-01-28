@@ -7,10 +7,7 @@ const assemblyApiDomain = process.env.NEXT_PUBLIC_ASSEMBLY_API_DOMAIN
 const COPILOT_CLIENTS_ENDPOINT = `${assemblyApiDomain}/v1/clients?limit=10000`
 const COPILOT_IUS_ENDPOINT = `${assemblyApiDomain}/v1/internal-users?limit=10000`
 
-type WorkspaceUsersData = {
-  internalUser: any[]
-  client: any[]
-}
+type InitiatorMap = Map<string, CommentInitiator>
 
 const fetchWithWorkspaceKey = async (url: string, workspaceId: string) => {
   const resp = await fetch(url, {
@@ -27,7 +24,7 @@ const fetchWithWorkspaceKey = async (url: string, workspaceId: string) => {
 const getUsersMap = async (uniqueWorkspaceIds: string[]) => {
   const copilotBottleneck = new Bottleneck({ maxConcurrent: 6, minTime: 200 })
 
-  const workspaceUsersMap: Record<string, WorkspaceUsersData> = {}
+  const workspaceInitiatorMap: Record<string, InitiatorMap> = {}
   const failedWorkspaces: string[] = []
   let completedCount = 0
   const totalWorkspaces = uniqueWorkspaceIds.length
@@ -47,10 +44,16 @@ const getUsersMap = async (uniqueWorkspaceIds: string[]) => {
       return
     }
 
-    workspaceUsersMap[workspaceId] = {
-      internalUser,
-      client,
-    }
+    const initiatorMap: InitiatorMap = new Map()
+    internalUser.forEach((user: any) => {
+      initiatorMap.set(user.id, CommentInitiator.internalUser)
+    })
+    client.forEach((c: any) => {
+      initiatorMap.set(c.id, CommentInitiator.client)
+    })
+
+    workspaceInitiatorMap[workspaceId] = initiatorMap
+
     console.info(
       `[${completedCount}/${totalWorkspaces}] Fetched workspace ${workspaceId}: ${internalUser.length} internal users, ${client.length} clients`,
     )
@@ -58,14 +61,14 @@ const getUsersMap = async (uniqueWorkspaceIds: string[]) => {
 
   await Promise.all(uniqueWorkspaceIds.map((workspaceId) => fetchWorkspaceData(workspaceId)))
   console.info(`\nCompleted fetching workspace data:`)
-  console.info(`Successful: ${Object.keys(workspaceUsersMap).length}`)
+  console.info(`Successful: ${Object.keys(workspaceInitiatorMap).length}`)
   console.info(`Failed: ${failedWorkspaces.length}`)
-  return { workspaceUsersMap, failedWorkspaces }
+  return { workspaceInitiatorMap, failedWorkspaces }
 }
 
 const updateComments = async (
   comments: Comment[],
-  workspaceUsersMap: Record<string, WorkspaceUsersData>,
+  workspaceInitiatorMap: Record<string, InitiatorMap>,
   db: ReturnType<typeof DBClient.getInstance>,
 ) => {
   const failedEntries: Comment[] = []
@@ -75,28 +78,24 @@ const updateComments = async (
   for (const comment of comments) {
     if (comment.initiatorType !== null) continue
 
-    if (!workspaceUsersMap[comment.workspaceId]) {
+    const initiatorMap = workspaceInitiatorMap[comment.workspaceId]
+    if (!initiatorMap) {
       failedEntries.push(comment)
       continue
     }
 
-    const { internalUser, client } = workspaceUsersMap[comment.workspaceId]
+    const initiatorType = initiatorMap.get(comment.initiatorId)
 
-    const isInternalUser = internalUser.some((user: any) => user.id === comment.initiatorId)
+    if (!initiatorType) {
+      failedEntries.push(comment)
+      continue
+    }
 
-    if (isInternalUser) {
+    if (initiatorType === CommentInitiator.internalUser) {
       internalUserIds.push(comment.id)
-      continue
-    }
-
-    const isClient = client.some((c: any) => c.id === comment.initiatorId)
-
-    if (isClient) {
+    } else {
       clientIds.push(comment.id)
-      continue
     }
-
-    failedEntries.push(comment)
   }
 
   if (internalUserIds.length > 0) {
@@ -131,9 +130,9 @@ const run = async () => {
   })
 
   const uniqueWorkspaceIds = [...new Set(comments.map((t) => t.workspaceId))]
-  const { workspaceUsersMap } = await getUsersMap(uniqueWorkspaceIds)
+  const { workspaceInitiatorMap } = await getUsersMap(uniqueWorkspaceIds)
 
-  await updateComments(comments, workspaceUsersMap, db)
+  await updateComments(comments, workspaceInitiatorMap, db)
 }
 
 run()
