@@ -17,6 +17,7 @@ import { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } fr
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
 import { createUploadFn } from '@/utils/createUploadFn'
+import { AttachmentTypes } from '@/types/interfaces'
 
 interface ReplyInputProps {
   token: string
@@ -210,7 +211,7 @@ export const ReplyInput = ({
               flexGrow: 1,
             }}
             addAttachmentButton
-            deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', task_id, null)}
+            deleteEditorAttachments={(url) => deleteEditorAttachmentsHandler(url, token ?? '', AttachmentTypes.COMMENT)}
             uploadFn={uploadFn}
             maxUploadLimit={MAX_UPLOAD_LIMIT}
             endButtons={<SubmitCommentButtons handleSubmit={handleReplySubmission} disabled={isUploading} />}
