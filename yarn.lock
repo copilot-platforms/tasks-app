@@ -18,6 +18,14 @@
     "@csstools/css-tokenizer" "^3.0.3"
     lru-cache "^10.4.3"
 
+"@assembly-js/node-sdk@^3.19.1":
+  version "3.19.1"
+  resolved "https://registry.yarnpkg.com/@assembly-js/node-sdk/-/node-sdk-3.19.1.tgz#3d9ff79782250e9ee7f0afc43d050d205afdb3f8"
+  integrity sha512-8td1ks3Oj3aPmFGUXdoTC28fEH3t5keyDt4vTewfOBSZW3sW0Rxw7LP9oP4clw29KIeLQtM5BTpsP3I5VM0edw==
+  dependencies:
+    isomorphic-fetch "^3.0.0"
+    next "^14.0.2"
+
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.12.13", "@babel/code-frame@^7.27.1":
   version "7.27.1"
   resolved "https://registry.yarnpkg.com/@babel/code-frame/-/code-frame-7.27.1.tgz#200f715e66d52a23b221a9435534a91cc13ad5be"
@@ -4892,14 +4900,6 @@ copilot-design-system@^2.2.4:
     react-select "^5.8.0"
     tailwind-merge "^2.3.0"
     uuid "^9.0.1"
-
-copilot-node-sdk@^3.16.0:
-  version "3.16.0"
-  resolved "https://registry.yarnpkg.com/copilot-node-sdk/-/copilot-node-sdk-3.16.0.tgz#c1335c768bd3f9d091c154f930fce9a2633ade8d"
-  integrity sha512-wqqeJuW+uge39nC1/+cqMWSSgCCNThtCR+JykPYFB2PTj0d0tfROCXofwtqZZccUUzk/xXXkJF53QfweVxmMLg==
-  dependencies:
-    isomorphic-fetch "^3.0.0"
-    next "^14.0.2"
 
 copy-anything@^3.0.2:
   version "3.0.5"
