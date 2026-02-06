@@ -9,7 +9,7 @@ import { CopilotPopSelector } from '@/components/inputs/CopilotSelector'
 import { DatePickerComponent } from '@/components/inputs/DatePickerComponent'
 import Selector, { SelectorType } from '@/components/inputs/Selector'
 import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
-import { CustomToggle } from '@/components/inputs/CustomToggle'
+import { CopilotToggle } from '@/components/inputs/CopilotToggle'
 import { StyledTextField } from '@/components/inputs/TextField'
 import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
 import { useHandleSelectorComponent } from '@/hooks/useHandleSelectorComponent'
@@ -483,7 +483,7 @@ export const NewTaskCard = ({
           )}
         </Stack>
         {showShareToggle && (
-          <CustomToggle
+          <CopilotToggle
             label="Share with client"
             onChange={() => {
               setIsShared(!isShared)

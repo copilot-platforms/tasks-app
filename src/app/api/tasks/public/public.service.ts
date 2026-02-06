@@ -1,6 +1,5 @@
 import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 import { deleteTaskNotifications, sendTaskCreateNotifications, sendTaskUpdateNotifications } from '@/jobs/notifications'
-import { TaskWithWorkflowState } from '@/types/db'
 import { CreateTaskRequest, UpdateTaskRequest, Associations, AssociationsSchema } from '@/types/dto/tasks.dto'
 import { DISPATCHABLE_EVENT } from '@/types/webhook'
 import { UserIdsType } from '@/utils/assignee'
@@ -279,6 +278,25 @@ export class PublicTasksService extends TasksSharedService {
     return newTask
   }
 
+  private async getValidatedAssociations({
+    prevAssociations,
+    associationsResetCondition,
+  }: {
+    prevAssociations: Prisma.JsonValue[]
+    associationsResetCondition: boolean
+  }) {
+    let associations: Associations = AssociationsSchema.parse(prevAssociations)
+    if (associations) {
+      // only update of associations attribute is available. No associations in payload attribute means the data remains as it is in DB.
+      if (associationsResetCondition || !associations?.length) {
+        associations = [] // reset associations to [] if task is not reassigned to IU.
+      } else if (associations?.length) {
+        associations = await this.validateViewers(associations)
+      }
+    }
+    return associations
+  }
+
   async updateTask(id: string, data: UpdateTaskRequest) {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Update, Resource.Tasks)
@@ -314,17 +332,10 @@ export class PublicTasksService extends TasksSharedService {
       companyId: validatedIds?.companyId ?? null,
     })
 
-    let associations: Associations = AssociationsSchema.parse(prevTask.associations)
-
-    const viewersResetCondition = shouldUpdateUserIds ? !!clientId || !!companyId : !prevTask.internalUserId
-    if (data.associations) {
-      // only update of viewers attribute is available. No viewers in payload attribute means the data remains as it is in DB.
-      if (viewersResetCondition || !data.associations?.length) {
-        associations = [] // reset viewers to [] if task is not reassigned to IU.
-      } else if (data.associations?.length) {
-        associations = await this.validateViewers(data.associations)
-      }
-    }
+    const associations: Associations = await this.getValidatedAssociations({
+      prevAssociations: prevTask.associations,
+      associationsResetCondition: shouldUpdateUserIds ? !!clientId || !!companyId : !prevTask.internalUserId,
+    })
 
     const userAssignmentFields = shouldUpdateUserIds
       ? {
