@@ -232,7 +232,7 @@ export const TaskCardList = ({
           size={Sizes.MEDIUM}
           padding={'4px'}
           hoverColor={200}
-          disabled={checkIfTaskViewer(task.viewers, tokenPayload)}
+          disabled={checkIfTaskViewer(task.associations, tokenPayload)}
         />
 
         {isTemp || variant === 'subtask-board' || disableNavigation ? (

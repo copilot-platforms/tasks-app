@@ -60,10 +60,12 @@ function filterByClientVisibility(filteredTasks: TaskResponse[], filterValue: Us
 
   if (clientId) {
     filteredTasks = filteredTasks.filter(
-      (task) => task.viewers?.[0]?.clientId === clientId && task.viewers?.[0]?.companyId === companyId,
+      (task) => task.associations?.[0]?.clientId === clientId && task.associations?.[0]?.companyId === companyId,
     )
   } else if (companyId && !clientId) {
-    filteredTasks = filteredTasks.filter((task) => task.viewers?.[0]?.companyId === companyId && !task.viewers?.[0].clientId)
+    filteredTasks = filteredTasks.filter(
+      (task) => task.associations?.[0]?.companyId === companyId && !task.associations?.[0].clientId,
+    )
   }
 
   return filteredTasks
@@ -129,7 +131,7 @@ function filterByType(filteredTasks: TaskResponse[], filterValue: string): TaskR
     case FilterOptionsKeywords.CLIENT_WITH_VIEWERS:
       return filteredTasks.filter(
         (task) =>
-          !!task?.viewers?.length || task?.assigneeType?.includes('client') || task?.assigneeType?.includes('company'),
+          !!task?.associations?.length || task?.assigneeType?.includes('client') || task?.assigneeType?.includes('company'),
       )
 
     case FilterOptionsKeywords.TEAM:

@@ -480,7 +480,7 @@ export class CommentService extends BaseService {
         filters.push(
           // Get tasks that includes the client as a viewer
           {
-            viewers: {
+            associations: {
               hasSome: [{ clientId, companyId }, { companyId }],
             },
           },
@@ -494,7 +494,7 @@ export class CommentService extends BaseService {
         filters.push(
           // Get tasks that includes the company as a viewer
           {
-            viewers: {
+            associations: {
               hasSome: [{ companyId }],
             },
           },

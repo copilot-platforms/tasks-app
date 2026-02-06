@@ -1,6 +1,6 @@
 import { Token } from '@/types/common'
 import { TruncateMaxNumber } from '@/types/constants'
-import { TaskResponse, Viewers, ViewersSchema } from '@/types/dto/tasks.dto'
+import { TaskResponse, Associations, AssociationsSchema } from '@/types/dto/tasks.dto'
 import { IAssigneeCombined, ISelectorOption, UserIds, UserType } from '@/types/interfaces'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
 import { truncateText } from '@/utils/truncateText'
@@ -17,7 +17,7 @@ export const UserIdsSchema = z.object({
 
 export type UserIdsType = z.infer<typeof UserIdsSchema>
 
-export type UserIdsWithViewersType = UserIdsType & { viewers?: Viewers }
+export type UserIdsWithViewersType = UserIdsType & { viewers?: Associations }
 
 export const isAssigneeTextMatching = (newInputValue: string, assigneeValue: IAssigneeCombined): boolean => {
   const truncate = (newInputValue: string) => truncateText(newInputValue, TruncateMaxNumber.SELECTOR)
@@ -103,8 +103,8 @@ export const getAssigneeValueFromViewers = (viewer: IAssigneeCombined | null, as
   return match ?? undefined
 }
 
-export const getTaskViewers = (task: TaskResponse | Task | Pick<TaskResponse, 'viewers'>) => {
-  const taskViewers = ViewersSchema.parse(task.viewers)
+export const getTaskViewers = (task: TaskResponse | Task | Pick<TaskResponse, 'associations'>) => {
+  const taskViewers = AssociationsSchema.parse(task.associations)
   const viewer = !!taskViewers?.length ? taskViewers[0] : undefined
   return viewer
 }

@@ -1,7 +1,7 @@
 import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
 import { deleteTaskNotifications, sendTaskCreateNotifications, sendTaskUpdateNotifications } from '@/jobs/notifications'
 import { TaskWithWorkflowState } from '@/types/db'
-import { CreateTaskRequest, CreateTaskRequestSchema, UpdateTaskRequest, Viewers, ViewersSchema } from '@/types/dto/tasks.dto'
+import { CreateTaskRequest, UpdateTaskRequest, Associations, AssociationsSchema } from '@/types/dto/tasks.dto'
 import { DISPATCHABLE_EVENT } from '@/types/webhook'
 import { UserIdsType } from '@/utils/assignee'
 import { isPastDateString } from '@/utils/dateHelper'
@@ -170,13 +170,13 @@ export class PublicTasksService extends TasksSharedService {
       console.info('TasksService#createTask | createdById overridden for public API:', createdById)
     }
 
-    let viewers: Viewers = []
-    if (data.viewers?.length) {
+    let viewers: Associations = []
+    if (data.associations?.length) {
       if (!validatedIds.internalUserId) {
         throw new APIError(httpStatus.BAD_REQUEST, `Task cannot be created with viewers if its not assigned to an IU.`)
       }
-      viewers = await this.validateViewers(data.viewers)
-      console.info('PublicTasksService#createTask | Viewers validated for task:', viewers)
+      viewers = await this.validateViewers(data.associations)
+      console.info('PublicTasksService#createTask | Associations validated for task:', viewers)
     }
 
     // Create a new task associated with current workspaceId. Also inject current request user as the creator.
@@ -191,7 +191,7 @@ export class PublicTasksService extends TasksSharedService {
         source: Source.api,
         assigneeId,
         assigneeType,
-        viewers: viewers,
+        associations: viewers,
         ...validatedIds,
         ...(opts?.manualTimestamp && { createdAt: opts.manualTimestamp }),
         ...(await getTaskTimestamps('create', this.user, data, undefined, workflowStateStatus)),
@@ -314,15 +314,15 @@ export class PublicTasksService extends TasksSharedService {
       companyId: validatedIds?.companyId ?? null,
     })
 
-    let viewers: Viewers = ViewersSchema.parse(prevTask.viewers)
+    let associations: Associations = AssociationsSchema.parse(prevTask.associations)
 
     const viewersResetCondition = shouldUpdateUserIds ? !!clientId || !!companyId : !prevTask.internalUserId
-    if (data.viewers) {
+    if (data.associations) {
       // only update of viewers attribute is available. No viewers in payload attribute means the data remains as it is in DB.
-      if (viewersResetCondition || !data.viewers?.length) {
-        viewers = [] // reset viewers to [] if task is not reassigned to IU.
-      } else if (data.viewers?.length) {
-        viewers = await this.validateViewers(data.viewers)
+      if (viewersResetCondition || !data.associations?.length) {
+        associations = [] // reset viewers to [] if task is not reassigned to IU.
+      } else if (data.associations?.length) {
+        associations = await this.validateViewers(data.associations)
       }
     }
 
@@ -371,7 +371,7 @@ export class PublicTasksService extends TasksSharedService {
           archivedBy,
           completedBy,
           completedByUserType,
-          viewers,
+          associations,
           ...userAssignmentFields,
           ...(await getTaskTimestamps('update', this.user, data, prevTask)),
         },
