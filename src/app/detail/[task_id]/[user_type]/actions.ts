@@ -4,7 +4,7 @@ import { advancedFeatureFlag, apiUrl } from '@/config'
 import { ScrapMediaRequest } from '@/types/common'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { CreateComment, UpdateComment } from '@/types/dto/comment.dto'
-import { UpdateTaskRequest, Viewers } from '@/types/dto/tasks.dto'
+import { UpdateTaskRequest, Associations } from '@/types/dto/tasks.dto'
 
 export const updateTaskDetail = async ({
   token,
@@ -48,7 +48,7 @@ export const updateAssignee = async (
   internalUserId: string | null,
   clientId: string | null,
   companyId: string | null,
-  viewers?: Viewers,
+  associations?: Associations,
 ) => {
   await fetch(`${apiUrl}/api/tasks/${task_id}?token=${token}`, {
     method: 'PATCH',
@@ -56,7 +56,7 @@ export const updateAssignee = async (
       internalUserId,
       clientId,
       companyId,
-      ...(viewers && { viewers: !internalUserId ? [] : viewers }), // if assignee is not internal user, remove viewers. Only include viewers if viewer are changed. Not including viewer means not chaning the current state of viewers in DB.
+      ...(associations && { associations: !internalUserId ? [] : associations }), // if assignee is not internal user, remove associations. Only include associations if viewer are changed. Not including viewer means not chaning the current state of associations in DB.
     }),
   })
 }

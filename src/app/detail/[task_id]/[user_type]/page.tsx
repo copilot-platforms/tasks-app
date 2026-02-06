@@ -125,7 +125,7 @@ export default async function TaskDetailPage(props: {
   }))
 
   // flag that determines if the current user is the task viewer
-  const isViewer = checkIfTaskViewer(task.viewers, tokenPayload)
+  const isViewer = checkIfTaskViewer(task.associations, tokenPayload)
 
   return (
     <DetailStateUpdate
