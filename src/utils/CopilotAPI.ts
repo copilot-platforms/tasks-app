@@ -37,8 +37,8 @@ import {
 } from '@/types/common'
 import { DISPATCHABLE_EVENT } from '@/types/webhook'
 import Bottleneck from 'bottleneck'
-import type { CopilotAPI as SDK } from 'copilot-node-sdk'
-import { copilotApi } from 'copilot-node-sdk'
+import type { AssemblyAPI as SDK } from '@assembly-js/node-sdk'
+import { assemblyApi } from '@assembly-js/node-sdk'
 import { z } from 'zod'
 
 export class CopilotAPI {
@@ -48,7 +48,7 @@ export class CopilotAPI {
     private token: string,
     customApiKey?: string,
   ) {
-    this.copilot = copilotApi({ apiKey: customApiKey ?? apiKey, token })
+    this.copilot = assemblyApi({ apiKey: customApiKey ?? apiKey, token })
   }
 
   private async _manualFetch(route: string, query?: Record<string, string>, workspaceId?: string) {
@@ -193,7 +193,7 @@ export class CopilotAPI {
 
   async _getCustomFields(): Promise<CustomFieldResponse> {
     console.info('CopilotAPI#_getCustomFields', this.token)
-    return CustomFieldResponseSchema.parse(await this.copilot.listCustomFields())
+    return CustomFieldResponseSchema.parse(await this.copilot.listCustomFields({}))
   }
 
   async _getInternalUsers(args: CopilotListArgs = {}): Promise<InternalUsersResponse> {
