@@ -1,14 +1,14 @@
 import { Toggle } from 'copilot-design-system'
 
-type CustomToggleProps = {
+type CopilotToggleProps = {
   label: string
   onChange: () => void
   checked: boolean
 }
 
-export const CustomToggle = ({ label, onChange, checked }: CustomToggleProps) => {
+export const CopilotToggle = ({ label, onChange, checked }: CopilotToggleProps) => {
   return (
-    <div className="custom-toggle-wrapper">
+    <div className="copilot-toggle-wrapper">
       <Toggle label={label} onChange={onChange} checked={checked} />
     </div>
   )
