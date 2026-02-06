@@ -11,7 +11,7 @@ import User from '@api/core/models/User.model'
 import { BaseService } from '@api/core/services/base.service'
 import { ActivityType, AssigneeType, Task, WorkflowState } from '@prisma/client'
 import { ViewerAddedSchema, ViewerRemovedSchema } from '@api/activity-logs/schemas/ViewerSchema'
-import { ViewersSchema } from '@/types/dto/tasks.dto'
+import { AssociationsSchema } from '@/types/dto/tasks.dto'
 
 /**
  * Wrapper over ActivityLogger to implement a clean abstraction for task creation / update events
@@ -55,9 +55,9 @@ export class TasksActivityLogger extends BaseService {
       }
     }
 
-    if (Array.isArray(this.task.viewers) && Array.isArray(prevTask.viewers)) {
-      const currentViewers = ViewersSchema.parse(this.task.viewers) || []
-      const prevViewers = ViewersSchema.parse(prevTask.viewers) || []
+    if (Array.isArray(this.task.associations) && Array.isArray(prevTask.associations)) {
+      const currentViewers = AssociationsSchema.parse(this.task.associations) || []
+      const prevViewers = AssociationsSchema.parse(prevTask.associations) || []
 
       if (
         (!!currentViewers.length || !!prevViewers.length) &&
