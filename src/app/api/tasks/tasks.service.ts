@@ -5,10 +5,9 @@ import { TaskWithWorkflowState } from '@/types/db'
 import {
   AncestorTaskResponse,
   CreateTaskRequest,
-  CreateTaskRequestSchema,
   UpdateTaskRequest,
-  Viewers,
-  ViewersSchema,
+  Associations,
+  AssociationsSchema,
 } from '@/types/dto/tasks.dto'
 import { DISPATCHABLE_EVENT } from '@/types/webhook'
 import { UserIdsType } from '@/utils/assignee'
@@ -159,13 +158,16 @@ export class TasksService extends TasksSharedService {
     // NOTE: This block strictly doesn't allow clients to create tasks
     let createdById = z.string().parse(this.user.internalUserId)
 
-    let viewers: Viewers = []
-    if (data.viewers?.length) {
-      if (!validatedIds.internalUserId) {
-        throw new APIError(httpStatus.BAD_REQUEST, `Task cannot be created with viewers if its not assigned to an IU.`)
+    let associations: Associations = []
+    if (data.associations?.length) {
+      if (!!data.isShared && !validatedIds.internalUserId) {
+        throw new APIError(
+          httpStatus.BAD_REQUEST,
+          `Task cannot be created and shared with associations if its not assigned to an IU.`,
+        )
       }
-      viewers = await this.validateViewers(data.viewers)
-      console.info('TasksService#createTask | Viewers validated for task:', viewers)
+      associations = await this.validateViewers(data.associations)
+      console.info('TasksService#createTask | Associations validated for task:', associations)
     }
 
     // Create a new task associated with current workspaceId. Also inject current request user as the creator.
@@ -180,7 +182,8 @@ export class TasksService extends TasksSharedService {
         source: Source.web,
         assigneeId,
         assigneeType,
-        viewers: viewers,
+        associations,
+        isShared: data.isShared,
         ...validatedIds,
         ...(opts?.manualTimestamp && { createdAt: opts.manualTimestamp }),
         ...(await getTaskTimestamps('create', this.user, data, undefined, workflowStateStatus)),
@@ -344,14 +347,14 @@ export class TasksService extends TasksSharedService {
       companyId: validatedIds?.companyId ?? null,
     })
 
-    let viewers: Viewers = ViewersSchema.parse(prevTask.viewers)
+    let associations: Associations = AssociationsSchema.parse(prevTask.associations)
     const viewersResetCondition = shouldUpdateUserIds ? !!clientId || !!companyId : !prevTask.internalUserId
-    if (data.viewers) {
-      // only update of viewers attribute is available. No viewers in payload attribute means the data remains as it is in DB.
-      if (viewersResetCondition || !data.viewers?.length) {
-        viewers = [] // reset viewers to [] if task is not reassigned to IU.
-      } else if (data.viewers?.length) {
-        viewers = await this.validateViewers(data.viewers)
+    if (data.associations) {
+      // only update of associations attribute is available. No associations in payload attribute means the data remains as it is in DB.
+      if (viewersResetCondition || !data.associations?.length) {
+        associations = [] // reset associations to [] if task is not reassigned to IU.
+      } else if (data.associations?.length) {
+        associations = await this.validateViewers(data.associations)
       }
     }
 
@@ -401,7 +404,7 @@ export class TasksService extends TasksSharedService {
           archivedBy,
           completedBy,
           completedByUserType,
-          viewers,
+          associations,
           ...userAssignmentFields,
           ...(await getTaskTimestamps('update', this.user, data, prevTask)),
         },
@@ -518,7 +521,7 @@ export class TasksService extends TasksSharedService {
           { assigneeId, assigneeType: AssigneeType.company },
           { companyId: assigneeId, clientId: null },
           {
-            viewers: {
+            associations: {
               hasSome: [{ clientId: null, companyId: assigneeId }],
             },
           },
@@ -554,12 +557,12 @@ export class TasksService extends TasksSharedService {
   async resetAllSharedTasks(assigneeId: string) {
     const tasks = await this.db.task.findMany({
       where: {
-        viewers: { hasSome: [{ clientId: assigneeId }, { companyId: assigneeId }] },
+        associations: { hasSome: [{ clientId: assigneeId }, { companyId: assigneeId }] },
         workspaceId: this.user.workspaceId,
       },
     })
     if (!tasks.length) {
-      // If viewers doesn't have an associated task at all, skip logic
+      // If associations doesn't have an associated task at all, skip logic
       return []
     }
     const taskIds = tasks.map((task) => task.id)
@@ -570,7 +573,7 @@ export class TasksService extends TasksSharedService {
         },
       },
       data: {
-        viewers: [], //note : if we support multiple viewers in the future, make sure to only pop out the deleted viewer among other viewers.
+        associations: [], //note : if we support multiple associations in the future, make sure to only pop out the deleted association among other associations.
       },
     })
     return tasks
@@ -585,7 +588,7 @@ export class TasksService extends TasksSharedService {
     const { completedBy, completedByUserType } = await this.getCompletionInfo(targetWorkflowStateId)
 
     // Query previous task
-    const filters = this.buildTaskPermissions(id, false) // condition 'false' to exclude viewers from the query to get prev task. This will prevent viewer to update the task workflow status
+    const filters = this.buildTaskPermissions(id, false) // condition 'false' to exclude associations from the query to get prev task. This will prevent association to update the task workflow status
     const prevTask = await this.db.task.findFirst({
       where: filters,
       relationLoadStrategy: 'join',
@@ -654,7 +657,7 @@ export class TasksService extends TasksSharedService {
             clientId: true,
             companyId: true,
             internalUserId: true,
-            viewers: true,
+            associations: true,
           },
         }),
       ) as Promise<AncestorTaskResponse>[],
