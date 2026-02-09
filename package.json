@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@assembly-js/node-sdk": "^3.19.1",
     "@cyntler/react-doc-viewer": "^1.17.0",
     "@emotion/react": "^11.11.3",
     "@emotion/styled": "^11.11.0",
@@ -18,7 +19,6 @@
     "@vercel/postgres": "^0.8.0",
     "bottleneck": "^2.19.5",
     "copilot-design-system": "^2.2.4",
-    "copilot-node-sdk": "^3.16.0",
     "dayjs": "^1.11.10",
     "deep-equal": "^2.2.3",
     "fetch-retry": "^6.0.0",
