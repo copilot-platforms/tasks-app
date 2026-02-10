@@ -17,7 +17,7 @@ export const UserIdsSchema = z.object({
 
 export type UserIdsType = z.infer<typeof UserIdsSchema>
 
-export type UserIdsWithViewersType = UserIdsType & { viewers?: Associations }
+export type UserIdsWithAssociationSharedType = UserIdsType & { associations?: Associations; isShared?: boolean }
 
 export const isAssigneeTextMatching = (newInputValue: string, assigneeValue: IAssigneeCombined): boolean => {
   const truncate = (newInputValue: string) => truncateText(newInputValue, TruncateMaxNumber.SELECTOR)

@@ -56,22 +56,33 @@ export class TasksActivityLogger extends BaseService {
     }
 
     if (Array.isArray(this.task.associations) && Array.isArray(prevTask.associations)) {
-      const currentViewers = AssociationsSchema.parse(this.task.associations) || []
-      const prevViewers = AssociationsSchema.parse(prevTask.associations) || []
+      const currentAssociations = AssociationsSchema.parse(this.task.associations) || []
+      const prevAssociations = AssociationsSchema.parse(prevTask.associations) || []
+      const currentShared = this.task.isShared
+      const prevShared = prevTask.isShared
 
+      // handles the case to show activity log when a task is shared with association
       if (
-        (!!currentViewers.length || !!prevViewers.length) &&
-        (currentViewers[0]?.clientId !== prevViewers[0]?.clientId ||
-          currentViewers[0]?.companyId !== prevViewers[0]?.companyId)
+        (!!currentAssociations.length || !!prevAssociations.length) &&
+        (currentAssociations[0]?.clientId !== prevAssociations[0]?.clientId ||
+          currentAssociations[0]?.companyId !== prevAssociations[0]?.companyId ||
+          currentShared !== prevShared) &&
+        (currentShared || prevShared)
       ) {
-        const currentViewerId = currentViewers[0]?.clientId || currentViewers[0]?.companyId || null
-        const previousViewerId = prevViewers[0]?.clientId || prevViewers[0]?.companyId || null
-        if (currentViewerId) {
-          if (previousViewerId) await this.logTaskViewerRemoved(previousViewerId) // if previous viewer exists, log removed event
-          await this.logTaskViewerUpdated(previousViewerId, currentViewerId)
+        const currentAssociationId = currentAssociations[0]?.clientId || currentAssociations[0]?.companyId || null
+        const prevAssociationId = prevAssociations[0]?.clientId || prevAssociations[0]?.companyId || null
+
+        if (currentAssociationId) {
+          if (prevAssociationId && currentAssociationId !== prevAssociationId && prevShared)
+            await this.logTaskViewerRemoved(prevAssociationId) // if previous viewer exists, log removed event
+          if (currentShared) {
+            await this.logTaskViewerUpdated(prevAssociationId, currentAssociationId)
+          } else {
+            await this.logTaskViewerRemoved(currentAssociationId)
+          }
           setUpdate()
-        } else {
-          await this.logTaskViewerRemoved(previousViewerId)
+        } else if (prevAssociationId && prevShared) {
+          await this.logTaskViewerRemoved(prevAssociationId)
           setUpdate()
         }
       }

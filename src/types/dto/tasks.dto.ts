@@ -98,9 +98,9 @@ export const UpdateTaskRequestSchema = z
     clientId: z.string().uuid().nullish(),
     companyId: z.string().uuid().nullish(),
     associations: AssociationsSchema, //right now, we only need the feature to have max of 1 viewer per task
+    isShared: z.boolean().optional(),
   })
   .superRefine(validateUserIds)
-  .superRefine(validateAssociationAndTaskShare)
 
 export type UpdateTaskRequest = z.infer<typeof UpdateTaskRequestSchema>
 
@@ -129,6 +129,7 @@ export const TaskResponseSchema = z.object({
   clientId: z.string().uuid().nullish(),
   companyId: z.string().uuid().nullish(),
   associations: AssociationsSchema,
+  isShared: z.boolean().optional(),
 })
 
 export type TaskResponse = z.infer<typeof TaskResponseSchema>
