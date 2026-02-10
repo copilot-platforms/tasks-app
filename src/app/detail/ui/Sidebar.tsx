@@ -27,10 +27,11 @@ import {
   getUserIds,
   isEmptyAssignee,
   UserIdsType,
-  UserIdsWithViewersType,
+  UserIdsWithAssociationSharedType,
 } from '@/utils/assignee'
 import { createDateFromFormattedDateString, formatDate } from '@/utils/dateHelper'
 import { NoAssignee } from '@/utils/noAssignee'
+import { Box, Divider, Skeleton, Stack, styled, SxProps, Typography } from '@mui/material'
 import {
   getSelectedUserIds,
   getSelectedViewerIds,
@@ -42,10 +43,10 @@ import {
   shouldConfirmBeforeReassignment,
   shouldConfirmViewershipBeforeReassignment,
 } from '@/utils/shouldConfirmBeforeReassign'
-import { Box, Skeleton, Stack, styled, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { z } from 'zod'
+import { CopilotToggle } from '@/components/inputs/CopilotToggle'
 
 type StyledTypographyProps = {
   display?: string
@@ -73,7 +74,7 @@ export const Sidebar = ({
   selectedWorkflowState: WorkflowStateResponse
   selectedAssigneeId: string | undefined
   updateWorkflowState: (workflowState: WorkflowStateResponse) => void
-  updateAssignee: (userIds: UserIdsWithViewersType) => void
+  updateAssignee: (userIds: UserIdsWithAssociationSharedType) => void
   updateTask: (payload: UpdateTaskRequest) => void
   disabled: boolean
   workflowDisabled?: boolean
@@ -101,7 +102,12 @@ export const Sidebar = ({
   const [assigneeValue, setAssigneeValue] = useState<IAssigneeCombined | undefined>()
   const [selectedAssignee, setSelectedAssignee] = useState<UserIdsType | undefined>(undefined)
 
-  const [taskViewerValue, setTaskViewerValue] = useState<IAssigneeCombined | null>(null)
+  const [taskAssociationValue, setTaskAssociationValue] = useState<IAssigneeCombined | null>(null)
+  const [isTaskShared, setIsTaskShared] = useState(false)
+
+  const baseAssociationCondition = assigneeValue && assigneeValue.type === FilterByOptions.IUS
+  const showShareToggle = baseAssociationCondition && taskAssociationValue
+  const showAssociation = !assigneeValue || baseAssociationCondition
 
   const { renderingItem: _statusValue, updateRenderingItem: updateStatusValue } = useHandleSelectorComponent({
     // item: selectedWorkflowState,
@@ -129,18 +135,21 @@ export const Sidebar = ({
     if (activeTask && assignee.length > 0) {
       const currentAssignee = getSelectorAssigneeFromTask(assignee, activeTask)
       setAssigneeValue(currentAssignee)
-      setTaskViewerValue(getSelectorViewerFromTask(assignee, activeTask) || null)
+      const currentAssociations = getSelectorViewerFromTask(assignee, activeTask) || null
+      setTaskAssociationValue(currentAssociations)
+      setIsTaskShared(!!activeTask.isShared)
     }
   }, [assignee, activeTask])
 
   const windowWidth = useWindowWidth()
   const isMobile = windowWidth < 800 && windowWidth !== 0
 
-  const checkViewersCompatibility = (userIds: UserIdsType): UserIdsWithViewersType => {
+  const checkViewersCompatibility = (userIds: UserIdsType): UserIdsWithAssociationSharedType => {
     // remove task viewers if assignee is cleared or changed to client or company
     if (!userIds.internalUserId) {
-      setTaskViewerValue(null)
-      return { ...userIds, viewers: [] } // remove viewers if assignee is cleared or changed to client or company
+      setTaskAssociationValue(null)
+      setIsTaskShared(false)
+      return { ...userIds, associations: [], isShared: false } // remove viewers if assignee is cleared or changed to client or company
     }
     return userIds // no viewers change. keep viewers as is.
   }
@@ -176,7 +185,7 @@ export const Sidebar = ({
     const previousAssignee = assignee.find((assignee) => assignee.id == getAssigneeId(getUserIds(activeTask)))
     const nextAssignee = getSelectorAssignee(assignee, inputValue)
     const shouldShowConfirmModal = shouldConfirmBeforeReassignment(previousAssignee, nextAssignee)
-    const shouldShowConfirmViewershipModal = shouldConfirmViewershipBeforeReassignment(taskViewerValue, nextAssignee)
+    const shouldShowConfirmViewershipModal = shouldConfirmViewershipBeforeReassignment(taskAssociationValue, nextAssignee)
     if (shouldShowConfirmModal) {
       setSelectedAssignee(newUserIds)
       store.dispatch(toggleShowConfirmAssignModal())
@@ -189,18 +198,32 @@ export const Sidebar = ({
     }
   }
 
-  const handleTaskViewerChange = (inputValue: InputValue[]) => {
-    if (assigneeValue && assigneeValue.type === FilterByOptions.IUS) {
+  const handleTaskAssociationChange = (inputValue: InputValue[]) => {
+    if (showAssociation) {
       const newTaskViewerIds = getSelectedViewerIds(inputValue)
-      setTaskViewerValue(getSelectorAssignee(assignee, inputValue) || null)
+      setTaskAssociationValue(getSelectorAssignee(assignee, inputValue) || null)
 
       newTaskViewerIds &&
         updateAssignee({
-          internalUserId: assigneeValue.id,
+          internalUserId: assigneeValue ? assigneeValue.id : null,
           clientId: null,
           companyId: null,
-          viewers: newTaskViewerIds,
+          associations: newTaskViewerIds,
+          isShared: isTaskShared,
         })
+    }
+  }
+
+  const handleTaskShared = () => {
+    if (showShareToggle) {
+      setIsTaskShared((prev) => !prev)
+
+      updateAssignee({
+        internalUserId: assigneeValue.id,
+        clientId: null,
+        companyId: null,
+        isShared: !isTaskShared,
+      })
     }
   }
 
@@ -307,28 +330,28 @@ export const Sidebar = ({
           >
             <CopilotPopSelector
               hideIusList
-              name="Set client visibility"
-              onChange={handleTaskViewerChange}
+              name="Set related to"
+              onChange={handleTaskAssociationChange}
               disabled={(disabled && !previewMode) || fromNotificationCenter}
-              initialValue={taskViewerValue || undefined}
+              initialValue={taskAssociationValue || undefined}
               buttonContent={
                 <SelectorButton
                   disabled={(disabled && !previewMode) || fromNotificationCenter}
                   height={'30px'}
-                  startIcon={<CopilotAvatar size="xs" currentAssignee={taskViewerValue || undefined} />}
+                  startIcon={<CopilotAvatar size="xs" currentAssignee={taskAssociationValue || undefined} />}
                   buttonContent={
                     <Typography
                       variant="md"
                       lineHeight="22px"
                       sx={{
-                        color: (theme) => (taskViewerValue ? theme.color.gray[600] : theme.color.gray[400]),
+                        color: (theme) => (taskAssociationValue ? theme.color.gray[600] : theme.color.gray[400]),
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
                         maxWidth: '135px',
                       }}
                     >
-                      {getAssigneeName(taskViewerValue || undefined, 'Set client visibility')}
+                      {getAssigneeName(taskAssociationValue || undefined, 'Set related to')}
                     </Typography>
                   }
                 />
@@ -366,8 +389,8 @@ export const Sidebar = ({
                 </>
               ) : (
                 <>
-                  <strong>{getAssigneeName(getAssigneeValueFromViewers(taskViewerValue, assignee))}</strong> will also lose
-                  visibility to the task.
+                  <strong>{getAssigneeName(getAssigneeValueFromViewers(taskAssociationValue, assignee))}</strong> will also
+                  lose visibility to the task.
                 </>
               )
             }
@@ -517,10 +540,10 @@ export const Sidebar = ({
           )}
         </Stack>
 
-        {assigneeValue && assigneeValue.type === FilterByOptions.IUS && (
-          <Stack direction="row" m="8px 0px" alignItems="center" columnGap="8px">
+        {showAssociation && (
+          <Stack direction="row" m="8px 0px 16px" alignItems="center" columnGap="8px">
             <StyledText variant="md" minWidth="100px" fontWeight={400} lineHeight={'22px'}>
-              Client visibility
+              Related to
             </StyledText>
             {assignee.length > 0 ? ( // show skeleton if assignee list is empty
               <Box
@@ -535,22 +558,22 @@ export const Sidebar = ({
               >
                 <CopilotPopSelector
                   hideIusList
-                  name="Set client visibility"
-                  onChange={handleTaskViewerChange}
+                  name="Set related to"
+                  onChange={handleTaskAssociationChange}
                   disabled={(disabled && !previewMode) || fromNotificationCenter} // allow visibility change in preview mode
-                  initialValue={taskViewerValue || undefined}
+                  initialValue={taskAssociationValue || undefined}
                   buttonContent={
                     <SelectorButton
                       disabled={(disabled && !previewMode) || fromNotificationCenter}
                       padding="0px"
-                      startIcon={<CopilotAvatar size="xs" currentAssignee={taskViewerValue || undefined} />}
+                      startIcon={<CopilotAvatar size="xs" currentAssignee={taskAssociationValue || undefined} />}
                       outlined={true}
                       buttonContent={
                         <Typography
                           variant="md"
                           lineHeight="22px"
                           sx={{
-                            color: (theme) => (taskViewerValue ? theme.color.gray[600] : theme.color.gray[400]),
+                            color: (theme) => (taskAssociationValue ? theme.color.gray[600] : theme.color.gray[400]),
                             textOverflow: 'ellipsis',
                             whiteSpace: 'nowrap',
                             overflow: 'hidden',
@@ -558,7 +581,7 @@ export const Sidebar = ({
                             fontWeight: 400,
                           }}
                         >
-                          {getAssigneeName(taskViewerValue || undefined, 'Set client visibility')}
+                          {getAssigneeName(taskAssociationValue || undefined, 'Set related to')}
                         </Typography>
                       }
                     />
@@ -569,6 +592,12 @@ export const Sidebar = ({
               <SidebarElementSkeleton />
             )}
           </Stack>
+        )}
+        {showShareToggle && (
+          <>
+            <Divider sx={{ borderColor: (theme) => theme.color.borders.border, height: '1px' }} />
+            <CopilotToggle label="Share with client" onChange={handleTaskShared} checked={isTaskShared} className="pt-4" />
+          </>
         )}
       </AppMargin>
       <StyledModal
@@ -601,8 +630,8 @@ export const Sidebar = ({
               </>
             ) : (
               <>
-                <strong>{getAssigneeName(getAssigneeValueFromViewers(taskViewerValue, assignee))}</strong> will also lose
-                visibility to the task.
+                <strong>{getAssigneeName(getAssigneeValueFromViewers(taskAssociationValue, assignee))}</strong> will also
+                lose visibility to the task.
               </>
             )
           }
