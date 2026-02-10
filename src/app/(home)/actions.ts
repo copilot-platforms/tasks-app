@@ -1,9 +1,9 @@
 'use server'
+
 import { apiUrl } from '@/config'
 import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { CreateTaskRequest, UpdateTaskRequest } from '@/types/dto/tasks.dto'
 import { CreateViewSettingsDTO } from '@/types/dto/viewSettings.dto'
-import { AssigneeType } from '@prisma/client'
 
 export const handleCreate = async (
   token: string,
@@ -18,6 +18,7 @@ export const handleCreate = async (
         body: JSON.stringify(payload),
       },
     )
+
     return await response.json()
   } catch (e: unknown) {
     console.error('Something went wrong while creating task!', e)

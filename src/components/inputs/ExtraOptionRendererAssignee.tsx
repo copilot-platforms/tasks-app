@@ -1,4 +1,4 @@
-import { Avatar, Box, Stack, Typography } from '@mui/material'
+import { Box, Stack, Typography } from '@mui/material'
 import React, { HTMLAttributes, MouseEvent } from 'react'
 import { CopilotAvatar } from '../atoms/CopilotAvatar'
 

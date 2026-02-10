@@ -8,7 +8,6 @@ import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
 import { useWindowWidth } from '@/hooks/useWindowWidth'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
-import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { CreateComment } from '@/types/dto/comment.dto'
 import { deleteEditorAttachmentsHandler, uploadAttachmentHandler } from '@/utils/attachmentUtils'
 import { createUploadFn } from '@/utils/createUploadFn'
@@ -84,6 +83,7 @@ export const CommentInput = ({ createComment, task_id, token }: Prop) => {
     return () => {
       window.removeEventListener('keydown', handleKeyDown)
     }
+    /* eslint-disable-next-line react-hooks/exhaustive-deps */ // <ignore handleSubmit>
   }, [detail, isListOrMenuActive, isFocused, isMobile]) // Depend on detail to ensure the latest state is captured
 
   const uploadFn = createUploadFn({
@@ -128,12 +128,9 @@ export const CommentInput = ({ createComment, task_id, token }: Prop) => {
   return (
     <Stack direction="row" columnGap={2} alignItems="flex-start">
       <CopilotAvatar
-        width="22px"
-        height="22px"
-        fontSize="12px"
+        size="xs"
         currentAssignee={currentUserDetails}
-        sx={{
-          border: (theme) => `1.1px solid ${theme.color.gray[200]}`,
+        style={{
           marginTop: '5px',
         }}
       />

@@ -52,7 +52,7 @@ import {
 } from '@/utils/shouldConfirmBeforeReassign'
 import { checkIfTaskViewer } from '@/utils/taskViewer'
 
-import { Box, Skeleton, Stack, SxProps, Theme, Typography } from '@mui/material'
+import { Box, Skeleton, Stack, SxProps, Theme } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { z } from 'zod'
@@ -259,11 +259,7 @@ export const TaskCardList = ({
                 flexShrink: 1,
               }}
             >
-              <TaskTitle
-                variant={variant == 'task' ? 'list' : 'subtasks'}
-                title={task.title}
-                isClient={mode === UserRole.Client}
-              />
+              <TaskTitle variant={variant == 'task' ? 'list' : 'subtasks'} title={task.title} />
 
               {(task.subtaskCount > 0 || task.isArchived) && (
                 <Stack direction="row" sx={{ display: 'flex', gap: '12px', flexShrink: 0, alignItems: 'center' }}>
@@ -316,7 +312,7 @@ export const TaskCardList = ({
         }}
       >
         {task.dueDate && (
-          <Box sx={{ minWidth: '55px', display: 'flex', justifyContent: 'flex-end' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', whiteSpace: 'nowrap' }}>
             <DatePickerComponent
               getDate={(date) => {
                 const isoDate = DateStringSchema.parse(formatDate(date))
@@ -374,7 +370,7 @@ export const TaskCardList = ({
                   }),
                 }}
               >
-                <CopilotAvatar currentAssignee={assigneeValue as IAssigneeCombined} />
+                <CopilotAvatar size="xs" currentAssignee={assigneeValue as IAssigneeCombined} />
               </Box>
             }
           />
