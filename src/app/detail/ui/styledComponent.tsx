@@ -53,7 +53,7 @@ export const StyledTiptapDescriptionWrapper = styled(Box)(({ theme }) => ({
 
 export const VerticalLine = styled('div')(({ theme }) => ({
   position: 'absolute',
-  left: '11px',
+  left: '9px',
   top: '12px',
   bottom: 0,
   width: '1px',
