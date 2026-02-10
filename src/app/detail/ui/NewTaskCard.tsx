@@ -22,7 +22,8 @@ import { CreateTaskRequest, Viewers } from '@/types/dto/tasks.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
 import { FilterByOptions, IAssigneeCombined, InputValue, ITemplate, UserIds } from '@/types/interfaces'
 import { getAssigneeName, UserIdsType } from '@/utils/assignee'
-import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
+import { deleteEditorAttachmentsHandler, uploadAttachmentHandler } from '@/utils/attachmentUtils'
+import { createUploadFn } from '@/utils/createUploadFn'
 import {
   getSelectedUserIds,
   getSelectedViewerIds,
@@ -103,10 +104,10 @@ export const NewTaskCard = ({
     }))
   }
 
-  const uploadFn =
-    token && tokenPayload?.workspaceId
-      ? (file: File) => uploadImageHandler(file, token, tokenPayload.workspaceId, null)
-      : undefined
+  const uploadFn = createUploadFn({
+    token,
+    workspaceId: tokenPayload?.workspaceId,
+  })
 
   const todoWorkflowState = workflowStates.find((el) => el.key === 'todo') || workflowStates[0]
 

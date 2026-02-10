@@ -1,7 +1,7 @@
 import { CreateCommentSchema, UpdateCommentSchema } from '@/types/dto/comment.dto'
 import { getSearchParams } from '@/utils/request'
 import { signMediaForComments } from '@/utils/signedUrlReplacer'
-import { CommentService } from '@api/comment/comment.service'
+import { CommentService } from '@/app/api/comments/comment.service'
 import { IdParams } from '@api/core/types/api'
 import authenticate from '@api/core/utils/authenticate'
 import httpStatus from 'http-status'

@@ -9,6 +9,7 @@ import APIError from '@api/core/exceptions/api'
 import httpStatus from 'http-status'
 import { SupabaseService } from '@api/core/services/supabase.service'
 import { signedUrlTtl } from '@/constants/attachments'
+import { PrismaClient } from '@prisma/client'
 
 export class AttachmentsService extends BaseService {
   async getAttachments(taskId: string) {
@@ -30,7 +31,7 @@ export class AttachmentsService extends BaseService {
     const newAttachment = await this.db.attachment.create({
       data: {
         ...data,
-        createdById: z.string().parse(this.user.internalUserId),
+        createdById: z.string().parse(this.user.internalUserId || this.user.clientId), // CU are also allowed to create attachments
         workspaceId: this.user.workspaceId,
       },
     })
@@ -40,7 +41,7 @@ export class AttachmentsService extends BaseService {
   async createMultipleAttachments(data: CreateAttachmentRequest[]) {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Create, Resource.Attachments)
-    const userId = z.string().parse(this.user.internalUserId)
+
     // TODO: @arpandhakal - $transaction here could consume a lot of sequential db connections, better to use Promise.all
     // and reuse active connections instead.
     const newAttachments = await this.db.$transaction(async (prisma) => {
@@ -48,7 +49,7 @@ export class AttachmentsService extends BaseService {
         prisma.attachment.create({
           data: {
             ...attachmentData,
-            createdById: userId,
+            createdById: z.string().parse(this.user.internalUserId || this.user.clientId), // CU are also allowed to create attachments
             workspaceId: this.user.workspaceId,
           },
         }),
@@ -85,5 +86,60 @@ export class AttachmentsService extends BaseService {
     policyGate.authorize(UserAction.Create, Resource.Attachments)
     const { data } = await supabase.supabase.storage.from(supabaseBucket).createSignedUrl(filePath, signedUrlTtl)
     return data?.signedUrl
+  }
+
+  async deleteAttachmentsOfComment(commentId: string) {
+    const policyGate = new PoliciesService(this.user)
+    policyGate.authorize(UserAction.Delete, Resource.Attachments)
+
+    const commentAttachment = await this.db.$transaction(async (tx) => {
+      const commentAttachment = await tx.attachment.findMany({
+        where: { commentId: commentId, workspaceId: this.user.workspaceId },
+        select: { filePath: true },
+      })
+
+      await tx.attachment.deleteMany({
+        where: { commentId: commentId, workspaceId: this.user.workspaceId },
+      })
+
+      return commentAttachment
+    })
+
+    // directly delete attachments from bucket when deleting comments.
+    // Postgres transaction is not valid for supabase object so placing it after record deletion from db
+    const filePathArray = commentAttachment.map((el) => el.filePath)
+    const supabase = new SupabaseService()
+    await supabase.removeAttachmentsFromBucket(filePathArray)
+  }
+
+  async deleteAttachmentsOfTask(taskIds: string[]) {
+    const taskAttachment = await this.db.$transaction(async (tx) => {
+      const taskAttachment = await tx.attachment.findMany({
+        where: {
+          taskId: {
+            in: taskIds,
+          },
+          workspaceId: this.user.workspaceId,
+        },
+        select: { filePath: true },
+      })
+
+      await tx.attachment.deleteMany({
+        where: {
+          taskId: {
+            in: taskIds,
+          },
+          workspaceId: this.user.workspaceId,
+        },
+      })
+
+      return taskAttachment
+    })
+
+    // directly delete attachments from bucket when deleting comments.
+    // Postgres transaction is not valid for supabase object so placing it after record deletion from db
+    const filePathArray = taskAttachment.map((el) => el.filePath)
+    const supabase = new SupabaseService()
+    await supabase.removeAttachmentsFromBucket(filePathArray)
   }
 }

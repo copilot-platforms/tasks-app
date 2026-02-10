@@ -1,3 +1,4 @@
+import { PublicAttachmentSerializer } from '@/app/api/attachments/public/public.serializer'
 import APIError from '@/app/api/core/exceptions/api'
 import DBClient from '@/lib/db'
 import { RFC3339DateSchema } from '@/types/common'
@@ -9,11 +10,12 @@ import {
   ViewersSchema,
 } from '@/types/dto/tasks.dto'
 import { rfc3339ToDateString, toRFC3339 } from '@/utils/dateHelper'
+import { sanitizeHtml } from '@/utils/santizeContents'
 import { copyTemplateMediaToTask } from '@/utils/signedTemplateUrlReplacer'
 import { replaceImageSrc } from '@/utils/signedUrlReplacer'
 import { getSignedUrl } from '@/utils/signUrl'
 import { PublicTaskCreateDto, PublicTaskDto, PublicTaskDtoSchema, PublicTaskUpdateDto } from '@api/tasks/public/public.dto'
-import { Task, WorkflowState } from '@prisma/client'
+import { Attachment, Task, WorkflowState } from '@prisma/client'
 import httpStatus from 'http-status'
 import { z } from 'zod'
 
@@ -31,13 +33,15 @@ export const workflowStateTypeMap: Record<PublicTaskDto['status'], WorkflowState
   completed: 'completed',
 })
 
+export type TaskWithWorkflowStateAndAttachments = Task & { workflowState: WorkflowState; attachments: Attachment[] }
+
 export class PublicTaskSerializer {
-  static serializeUnsafe(task: Task & { workflowState: WorkflowState }): PublicTaskDto {
+  static async serializeUnsafe(task: TaskWithWorkflowStateAndAttachments): Promise<PublicTaskDto> {
     return {
       id: task.id,
       object: 'task',
       name: task.title,
-      description: task.body || '',
+      description: sanitizeHtml(task.body || ''),
       parentTaskId: task.parentId,
       dueDate: toRFC3339(task.dueDate),
       label: task.label,
@@ -60,15 +64,21 @@ export class PublicTaskSerializer {
       clientId: task.clientId,
       companyId: task.companyId,
       viewers: ViewersSchema.parse(task.viewers),
+      attachments: await PublicAttachmentSerializer.serializeAttachments({
+        attachments: task.attachments,
+        uploadedByUserType: 'internalUser', // task creator is always IU
+        content: task.body,
+      }),
     }
   }
 
-  static serialize(task: Task & { workflowState: WorkflowState }): PublicTaskDto {
-    return PublicTaskDtoSchema.parse(PublicTaskSerializer.serializeUnsafe(task))
+  static async serialize(task: TaskWithWorkflowStateAndAttachments): Promise<PublicTaskDto> {
+    return PublicTaskDtoSchema.parse(await PublicTaskSerializer.serializeUnsafe(task))
   }
 
-  static serializeMany(tasks: (Task & { workflowState: WorkflowState })[]): PublicTaskDto[] {
-    return z.array(PublicTaskDtoSchema).parse(tasks.map((task) => PublicTaskSerializer.serializeUnsafe(task)))
+  static async serializeMany(tasks: TaskWithWorkflowStateAndAttachments[]): Promise<PublicTaskDto[]> {
+    const serializedTasks = await Promise.all(tasks.map(async (task) => PublicTaskSerializer.serializeUnsafe(task)))
+    return z.array(PublicTaskDtoSchema).parse(serializedTasks)
   }
 
   static async getWorkflowStateIdForStatus(

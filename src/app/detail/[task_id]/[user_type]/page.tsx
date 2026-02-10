@@ -31,6 +31,7 @@ import { HeaderBreadcrumbs } from '@/components/layouts/HeaderBreadcrumbs'
 import { SilentError } from '@/components/templates/SilentError'
 import { apiUrl } from '@/config'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
+import { AttachmentProvider } from '@/hoc/PostAttachmentProvider'
 import { RealTime } from '@/hoc/RealTime'
 import { RealTimeTemplates } from '@/hoc/RealtimeTemplates'
 import { WorkspaceResponse } from '@/types/common'
@@ -213,8 +214,14 @@ export default async function TaskDetailPage(props: {
                     canCreateSubtasks={params.user_type === UserType.INTERNAL_USER || !!getPreviewMode(tokenPayload)}
                   />
                 )}
-
-                <ActivityWrapper task_id={task_id} token={token} tokenPayload={tokenPayload} />
+                <AttachmentProvider
+                  postAttachment={async (postAttachmentPayload) => {
+                    'use server'
+                    await postAttachment(token, postAttachmentPayload)
+                  }}
+                >
+                  <ActivityWrapper task_id={task_id} token={token} tokenPayload={tokenPayload} />
+                </AttachmentProvider>
               </TaskDetailsContainer>
             </Box>
             <Box

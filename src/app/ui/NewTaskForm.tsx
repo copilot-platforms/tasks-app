@@ -42,8 +42,9 @@ import {
   UserIds,
 } from '@/types/interfaces'
 import { checkEmptyAssignee, emptyAssignee, getAssigneeName } from '@/utils/assignee'
+import { deleteEditorAttachmentsHandler, uploadAttachmentHandler } from '@/utils/attachmentUtils'
+import { createUploadFn } from '@/utils/createUploadFn'
 import { getAssigneeTypeCorrected } from '@/utils/getAssigneeTypeCorrected'
-import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
 import {
   getSelectedUserIds,
   getSelectedViewerIds,
@@ -560,10 +561,10 @@ const NewTaskFormInputs = ({ isEditorReadonly }: NewTaskFormInputsProps) => {
     store.dispatch(setCreateTaskFields({ targetField: 'description', value: content }))
   }
 
-  const uploadFn =
-    token && tokenPayload?.workspaceId
-      ? (file: File) => uploadImageHandler(file, token, tokenPayload.workspaceId, null)
-      : undefined
+  const uploadFn = createUploadFn({
+    token,
+    workspaceId: tokenPayload?.workspaceId,
+  })
 
   return (
     <>

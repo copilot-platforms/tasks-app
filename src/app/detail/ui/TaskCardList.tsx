@@ -259,11 +259,7 @@ export const TaskCardList = ({
                 flexShrink: 1,
               }}
             >
-              <TaskTitle
-                variant={variant == 'task' ? 'list' : 'subtasks'}
-                title={task.title}
-                isClient={mode === UserRole.Client}
-              />
+              <TaskTitle variant={variant == 'task' ? 'list' : 'subtasks'} title={task.title} />
 
               {(task.subtaskCount > 0 || task.isArchived) && (
                 <Stack direction="row" sx={{ display: 'flex', gap: '12px', flexShrink: 0, alignItems: 'center' }}>
@@ -316,7 +312,7 @@ export const TaskCardList = ({
         }}
       >
         {task.dueDate && (
-          <Box sx={{ minWidth: '55px', display: 'flex', justifyContent: 'flex-end' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end', whiteSpace: 'nowrap' }}>
             <DatePickerComponent
               getDate={(date) => {
                 const isoDate = DateStringSchema.parse(formatDate(date))

@@ -9,7 +9,7 @@ import {
   SchemaByActivityType,
 } from '@api/activity-logs/const'
 import { LogResponse, LogResponseSchema } from '@api/activity-logs/schemas/LogResponseSchema'
-import { CommentService } from '@api/comment/comment.service'
+import { CommentService } from '@/app/api/comments/comment.service'
 import APIError from '@api/core/exceptions/api'
 import User from '@api/core/models/User.model'
 import { BaseService } from '@api/core/services/base.service'

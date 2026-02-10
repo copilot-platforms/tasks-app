@@ -10,6 +10,7 @@ import useScrollToElement from '@/hooks/useScrollToElement'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { selectTaskDetails } from '@/redux/features/taskDetailsSlice'
 import { Token } from '@/types/common'
+import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { CreateComment } from '@/types/dto/comment.dto'
 import { fetcher } from '@/utils/fetcher'
 import { generateRandomString } from '@/utils/generateRandomString'
@@ -226,6 +227,7 @@ export const ActivityWrapper = ({
                   >
                     {item.type === ActivityType.COMMENT_ADDED ? (
                       <Comments
+                        token={token}
                         comment={item}
                         createComment={handleCreateComment}
                         deleteComment={(commentId, replyId, softDelete) =>
@@ -242,7 +244,7 @@ export const ActivityWrapper = ({
                 </Collapse>
               ))}
             </TransitionGroup>
-            <CommentInput createComment={handleCreateComment} task_id={task_id} />
+            <CommentInput createComment={handleCreateComment} task_id={task_id} token={token} />
           </Stack>
         )}
       </Stack>

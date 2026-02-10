@@ -14,11 +14,12 @@ import { CreateAttachmentRequest } from '@/types/dto/attachments.dto'
 import { TaskResponse } from '@/types/dto/tasks.dto'
 import { UserType } from '@/types/interfaces'
 import { getDeleteMessage } from '@/utils/dialogMessages'
-import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
+import { deleteEditorAttachmentsHandler, getAttachmentPayload, uploadAttachmentHandler } from '@/utils/attachmentUtils'
 import { Box } from '@mui/material'
 import { MouseEvent, useCallback, useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
+import { createUploadFn } from '@/utils/createUploadFn'
 
 interface Prop {
   task_id: string
@@ -135,14 +136,16 @@ export const TaskEditor = ({
     debouncedResetTypingFlag()
   }
 
-  const uploadFn = token
-    ? async (file: File) => {
-        setActiveUploads((prev) => prev + 1)
-        const fileUrl = await uploadImageHandler(file, token ?? '', task.workspaceId, task_id)
-        setActiveUploads((prev) => prev - 1)
-        return fileUrl
-      }
-    : undefined
+  const uploadFn = createUploadFn({
+    token,
+    workspaceId: task.workspaceId,
+    getEntityId: () => task_id,
+    onUploadStart: () => setActiveUploads((prev) => prev + 1),
+    onUploadEnd: () => setActiveUploads((prev) => prev - 1),
+    onSuccess: (fileUrl, file) => {
+      postAttachment(getAttachmentPayload(fileUrl, file, task_id))
+    },
+  })
 
   return (
     <>

@@ -11,6 +11,15 @@ export const getSignedUrl = async (filePath: string) => {
   return url
 } // used to replace urls for images in task body
 
+export const createSignedUrls = async (filePaths: string[]) => {
+  const supabase = new SupabaseService()
+  const { data, error } = await supabase.supabase.storage.from(supabaseBucket).createSignedUrls(filePaths, signedUrlTtl)
+  if (error) {
+    throw new Error(error.message)
+  }
+  return data
+}
+
 export const getFileNameFromSignedUrl = (url: string) => {
   // Aggressive regex that selects string from last '/'' to url param (starting with ?)
   const regex = /.*\/([^\/\?]+)(?:\?.*)?$/

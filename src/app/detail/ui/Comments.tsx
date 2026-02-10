@@ -10,6 +10,7 @@ import { useSelector } from 'react-redux'
 import { VerticalLine } from './styledComponent'
 
 interface Prop {
+  token: string
   comment: LogResponse
   createComment: (postCommentPayload: CreateComment) => void
   deleteComment: (id: string, replyId?: string, softDelete?: boolean) => void
@@ -18,7 +19,7 @@ interface Prop {
   optimisticUpdates: OptimisticUpdate[]
 }
 
-export const Comments = ({ comment, createComment, deleteComment, task_id, stableId, optimisticUpdates }: Prop) => {
+export const Comments = ({ token, comment, createComment, deleteComment, task_id, stableId, optimisticUpdates }: Prop) => {
   const { assignee } = useSelector(selectTaskBoard)
   const commentInitiator = assignee.find((assignee) => assignee.id == comment.userId)
   return (
@@ -35,6 +36,7 @@ export const Comments = ({ comment, createComment, deleteComment, task_id, stabl
         />
 
         <CommentCard
+          token={token}
           data-comment-card="true"
           comment={comment}
           createComment={createComment}

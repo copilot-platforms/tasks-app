@@ -13,7 +13,9 @@ import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { selectCreateTemplate } from '@/redux/features/templateSlice'
 import { CreateTemplateRequest } from '@/types/dto/templates.dto'
 import { WorkflowStateResponse } from '@/types/dto/workflowStates.dto'
-import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
+import { AttachmentTypes } from '@/types/interfaces'
+import { deleteEditorAttachmentsHandler, uploadAttachmentHandler } from '@/utils/attachmentUtils'
+import { createUploadFn } from '@/utils/createUploadFn'
 import { Box, Stack, Typography } from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
@@ -60,10 +62,11 @@ export const NewTemplateCard = ({
       [field]: value,
     }))
   }
-  const uploadFn =
-    token && tokenPayload?.workspaceId
-      ? (file: File) => uploadImageHandler(file, token, tokenPayload.workspaceId, null, 'templates')
-      : undefined
+  const uploadFn = createUploadFn({
+    token,
+    workspaceId: tokenPayload?.workspaceId,
+    attachmentType: AttachmentTypes.TEMPLATE,
+  })
 
   const todoWorkflowState = workflowStates.find((el) => el.key === 'todo') || workflowStates[0]
 

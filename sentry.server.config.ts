@@ -4,9 +4,9 @@
 
 import * as Sentry from "@sentry/nextjs";
 
-const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN || process.env.SENTRY_DSN;
-const vercelEnv = process.env.NEXT_PUBLIC_VERCEL_ENV;
-const isProd = process.env.NEXT_PUBLIC_VERCEL_ENV === "production";
+const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN || process.env.SENTRY_DSN
+const vercelEnv = process.env.NEXT_PUBLIC_VERCEL_ENV
+const isProd = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production'
 
 if (dsn) {
 	Sentry.init({
@@ -24,9 +24,9 @@ if (dsn) {
 
 		beforeSend(event) {
 			if (!isProd && event.type === undefined) {
-				return null;
+				return null
 			}
-			return event;
+			return event
 		},
-	});
+	})
 }
