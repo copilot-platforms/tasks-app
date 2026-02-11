@@ -435,6 +435,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
                   )
                 }
                 checked={store.getState().createTask.isShared}
+                className="p-1.5 py-2" // px-1.5 is not working
               />
             </Stack>
           )}

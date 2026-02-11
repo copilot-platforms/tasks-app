@@ -49,6 +49,7 @@ export const updateAssignee = async (
   clientId: string | null,
   companyId: string | null,
   associations?: Associations,
+  isShared?: boolean,
 ) => {
   await fetch(`${apiUrl}/api/tasks/${task_id}?token=${token}`, {
     method: 'PATCH',
@@ -57,6 +58,7 @@ export const updateAssignee = async (
       clientId,
       companyId,
       ...(associations && { associations: !internalUserId ? [] : associations }), // if assignee is not internal user, remove associations. Only include associations if viewer are changed. Not including viewer means not chaning the current state of associations in DB.
+      ...(isShared && { isShared }),
     }),
   })
 }

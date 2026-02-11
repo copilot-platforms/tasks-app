@@ -313,6 +313,13 @@ export class TasksService extends TasksSharedService {
     }
   }
 
+  private validateTaskShare(prevTask: Task, isTaskShared?: boolean) {
+    if (prevTask.associations.length) {
+      return !!isTaskShared
+    }
+    throw new APIError(httpStatus.BAD_REQUEST, 'Cannot share task when it has no association')
+  }
+
   async updateOneTask(id: string, data: UpdateTaskRequest) {
     const policyGate = new PoliciesService(this.user)
     policyGate.authorize(UserAction.Update, Resource.Tasks)
@@ -405,6 +412,7 @@ export class TasksService extends TasksSharedService {
           completedBy,
           completedByUserType,
           associations,
+          isShared: data.isShared !== undefined ? this.validateTaskShare(prevTask, data.isShared) : false,
           ...userAssignmentFields,
           ...(await getTaskTimestamps('update', this.user, data, prevTask)),
         },

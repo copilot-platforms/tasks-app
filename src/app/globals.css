@@ -98,7 +98,6 @@ a {
 
 /* Custom toggle wrapper to override design system styles */
 .copilot-toggle-wrapper {
-  padding: 8px 6px 8px;
   & .cop-font-medium {
     font-weight: 400;
     color: var(--text-secondary);
