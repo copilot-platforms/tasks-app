@@ -34,7 +34,7 @@ export const shouldConfirmBeforeReassignment = (
   }
 }
 
-export const shouldConfirmAssociationBeforeReassignment = (
+export const shouldConfirmTaskSharedBeforeReassignment = (
   association: IAssigneeCombined | null,
   isTaskShared: boolean,
   currentAssignee?: IAssigneeCombined,

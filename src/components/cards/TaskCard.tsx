@@ -51,7 +51,7 @@ import {
 } from '@/utils/selector'
 import {
   shouldConfirmBeforeReassignment,
-  shouldConfirmAssociationBeforeReassignment,
+  shouldConfirmTaskSharedBeforeReassignment,
 } from '@/utils/shouldConfirmBeforeReassign'
 import z from 'zod'
 import { StyledModal } from '@/app/detail/ui/styledComponent'
@@ -147,7 +147,7 @@ export const TaskCard = ({ task, href, workflowState, mode, subtasks, workflowDi
     const previousAssignee = assignee.find((assignee) => assignee.id == getAssigneeId(getUserIds(task)))
     const nextAssignee = getSelectorAssignee(assignee, inputValue)
     const shouldShowConfirmModal = shouldConfirmBeforeReassignment(previousAssignee, nextAssignee)
-    const shouldShowConfirmAssociationModal = shouldConfirmAssociationBeforeReassignment(
+    const showAssociationConfirmModal = shouldConfirmTaskSharedBeforeReassignment(
       getSelectorAssociationFromTask(assignee, task) ?? null,
       !!task.isShared,
       nextAssignee,
@@ -155,7 +155,7 @@ export const TaskCard = ({ task, href, workflowState, mode, subtasks, workflowDi
     if (shouldShowConfirmModal) {
       setSelectedAssignee(newUserIds)
       store.dispatch(setConfirmAssigneeModalId(task.id))
-    } else if (shouldShowConfirmAssociationModal) {
+    } else if (showAssociationConfirmModal) {
       setSelectedAssignee(newUserIds)
       store.dispatch(setConfirmAssociationModalId(task.id))
     } else {
