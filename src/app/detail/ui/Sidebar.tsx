@@ -434,8 +434,8 @@ export const Sidebar = ({
                 </>
               ) : (
                 <>
-                  <strong>{getAssigneeName(getAssigneeValueFromAssociations(taskAssociationValue, assignee))}</strong> will
-                  also lose visibility to the task.
+                  The task will be stopped sharing with{' '}
+                  <strong>{getAssigneeName(getAssigneeValueFromAssociations(taskAssociationValue, assignee))}</strong>
                 </>
               )
             }

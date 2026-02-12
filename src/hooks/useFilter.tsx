@@ -19,7 +19,7 @@ interface KeywordMatchable {
 const FilterFunctions = {
   [FilterOptions.ASSIGNEE]: filterByAssignee,
   [FilterOptions.CREATOR]: filterByCreator,
-  [FilterOptions.VISIBILITY]: filterByClientVisibility,
+  [FilterOptions.ASSOCIATION]: filterByClientAssociation,
   [FilterOptions.KEYWORD]: filterByKeyword,
   [FilterOptions.TYPE]: filterByType,
 }
@@ -50,7 +50,7 @@ function filterByAssignee(filteredTasks: TaskResponse[], filterValue: UserIdsTyp
   return filteredTasks
 }
 
-function filterByClientVisibility(filteredTasks: TaskResponse[], filterValue: UserIdsType): TaskResponse[] {
+function filterByClientAssociation(filteredTasks: TaskResponse[], filterValue: UserIdsType): TaskResponse[] {
   const assigneeUserIds = filterValue
 
   if (checkEmptyAssignee(assigneeUserIds)) {
@@ -155,7 +155,7 @@ export const useFilter = (filterOptions: IFilterOptions, isPreviewMode: boolean)
         const assigneeFilterValue = UserIdsSchema.parse(filterValue)
         filteredTasks = FilterFunctions[FilterOptions.ASSIGNEE](filteredTasks, assigneeFilterValue)
       }
-      if (filterType === FilterOptions.CREATOR || filterType === FilterOptions.VISIBILITY) {
+      if (filterType === FilterOptions.CREATOR || filterType === FilterOptions.ASSOCIATION) {
         const assigneeFilterValue = UserIdsSchema.parse(filterValue)
         filteredTasks = FilterFunctions[filterType](filteredTasks, assigneeFilterValue)
       }
