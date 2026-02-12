@@ -106,7 +106,7 @@ export const isEmptyAssignee = (userIds?: UserIdsType) => {
   return Object.values(userIds).every((value) => value === null)
 }
 
-export const getAssigneeValueFromViewers = (viewer: IAssigneeCombined | null, assignee: IAssigneeCombined[]) => {
+export const getAssigneeValueFromAssociations = (viewer: IAssigneeCombined | null, assignee: IAssigneeCombined[]) => {
   if (!viewer) {
     return NoAssignee
   }

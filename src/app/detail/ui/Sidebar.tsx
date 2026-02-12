@@ -23,7 +23,7 @@ import { FilterByOptions, IAssigneeCombined, InputValue, Sizes, UserType } from 
 import {
   getAssigneeId,
   getAssigneeName,
-  getAssigneeValueFromViewers,
+  getAssigneeValueFromAssociations,
   getUserIds,
   isEmptyAssignee,
   UserIdsType,
@@ -37,16 +37,17 @@ import {
   getSelectedViewerIds,
   getSelectorAssignee,
   getSelectorAssigneeFromTask,
-  getSelectorViewerFromTask,
+  getSelectorAssociationFromTask,
 } from '@/utils/selector'
 import {
   shouldConfirmBeforeReassignment,
-  shouldConfirmViewershipBeforeReassignment,
+  shouldConfirmAssociationBeforeReassignment,
 } from '@/utils/shouldConfirmBeforeReassign'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { z } from 'zod'
 import { CopilotToggle } from '@/components/inputs/CopilotToggle'
+import { SelectorFieldType } from '@/types/common'
 
 type StyledTypographyProps = {
   display?: string
@@ -97,7 +98,8 @@ export const Sidebar = ({
     (activeTask?.assigneeId === tokenPayload?.clientId || activeTask?.assigneeId === tokenPayload?.companyId)
 
   const [dueDate, setDueDate] = useState<Date | string | undefined>()
-  const [showConfirmViewershipModal, setShowConfirmViewershipModal] = useState(false) //this is used only in sidebar.
+  const [showAssociationConfirmationModal, setAssociationConfirmationModal] = useState(false) //this is used only in sidebar.
+  const [selectorFieldType, setSelectorFieldType] = useState<SelectorFieldType | null>(null)
 
   const [assigneeValue, setAssigneeValue] = useState<IAssigneeCombined | undefined>()
   const [selectedAssignee, setSelectedAssignee] = useState<UserIdsType | undefined>(undefined)
@@ -135,7 +137,7 @@ export const Sidebar = ({
     if (activeTask && assignee.length > 0) {
       const currentAssignee = getSelectorAssigneeFromTask(assignee, activeTask)
       setAssigneeValue(currentAssignee)
-      const currentAssociations = getSelectorViewerFromTask(assignee, activeTask) || null
+      const currentAssociations = getSelectorAssociationFromTask(assignee, activeTask) || null
       setTaskAssociationValue(currentAssociations)
       setIsTaskShared(!!activeTask.isShared)
     }
@@ -144,20 +146,46 @@ export const Sidebar = ({
   const windowWidth = useWindowWidth()
   const isMobile = windowWidth < 800 && windowWidth !== 0
 
-  const checkViewersCompatibility = (userIds: UserIdsType): UserIdsWithAssociationSharedType => {
-    // remove task viewers if assignee is cleared or changed to client or company
-    if (!userIds.internalUserId) {
-      setTaskAssociationValue(null)
-      setIsTaskShared(false)
-      return { ...userIds, associations: [], isShared: false } // remove viewers if assignee is cleared or changed to client or company
+  const checkForAssociationAndShared = (userIds: UserIdsType): UserIdsWithAssociationSharedType => {
+    const { internalUserId, clientId, companyId } = userIds
+    const noAssignee = !internalUserId && !clientId && !companyId
+
+    if (!internalUserId) {
+      const temp: Partial<UserIdsWithAssociationSharedType> = {}
+
+      if (isTaskShared) {
+        temp.isShared = false
+        setIsTaskShared(false)
+      }
+
+      if (!noAssignee) {
+        temp.associations = [] // remove association only if assignee is non empty and not IU
+        setTaskAssociationValue(null)
+      }
+      return { ...userIds, ...temp } // remove task shared if assignee is cleared or changed to client or company
     }
-    return userIds // no viewers change. keep viewers as is.
+    return userIds
   }
 
   const handleConfirmAssigneeChange = (userIds: UserIdsType) => {
-    updateAssignee(checkViewersCompatibility(userIds))
+    updateAssignee(checkForAssociationAndShared(userIds))
     setAssigneeValue(getAssigneeValue(userIds) as IAssigneeCombined)
-    showConfirmAssignModal ? store.dispatch(toggleShowConfirmAssignModal()) : setShowConfirmViewershipModal(false)
+    showConfirmAssignModal ? store.dispatch(toggleShowConfirmAssignModal()) : setAssociationConfirmationModal(false)
+    setSelectorFieldType(null)
+  }
+
+  const handleConfirmAssociationChange = () => {
+    updateAssignee({
+      internalUserId: assigneeValue ? assigneeValue.id : null,
+      clientId: null,
+      companyId: null,
+      isShared: false,
+      associations: [],
+    })
+    setIsTaskShared(false)
+    setTaskAssociationValue(null)
+    setSelectorFieldType(null)
+    setAssociationConfirmationModal(false)
   }
 
   useEffect(() => {
@@ -180,51 +208,63 @@ export const Sidebar = ({
   }
 
   if (!activeTask || !isHydrated) return <SidebarSkeleton />
+
   const handleAssigneeChange = (inputValue: InputValue[]) => {
+    setSelectorFieldType(SelectorFieldType.ASSIGNEE)
     const newUserIds = getSelectedUserIds(inputValue)
     const previousAssignee = assignee.find((assignee) => assignee.id == getAssigneeId(getUserIds(activeTask)))
     const nextAssignee = getSelectorAssignee(assignee, inputValue)
     const shouldShowConfirmModal = shouldConfirmBeforeReassignment(previousAssignee, nextAssignee)
-    const shouldShowConfirmViewershipModal = shouldConfirmViewershipBeforeReassignment(taskAssociationValue, nextAssignee)
+    const shouldShowConfirmAssociationModal = shouldConfirmAssociationBeforeReassignment(
+      taskAssociationValue,
+      isTaskShared,
+      nextAssignee,
+    )
     if (shouldShowConfirmModal) {
       setSelectedAssignee(newUserIds)
       store.dispatch(toggleShowConfirmAssignModal())
-    } else if (shouldShowConfirmViewershipModal) {
+    } else if (shouldShowConfirmAssociationModal) {
       setSelectedAssignee(newUserIds)
-      setShowConfirmViewershipModal(true)
+      setAssociationConfirmationModal(true)
     } else {
       setAssigneeValue(getAssigneeValue(newUserIds) as IAssigneeCombined)
-      updateAssignee(checkViewersCompatibility(newUserIds))
+      updateAssignee(checkForAssociationAndShared(newUserIds))
+      if (newUserIds.clientId || newUserIds.companyId) {
+        setTaskAssociationValue(null)
+      }
+      setSelectorFieldType(null)
     }
   }
 
   const handleTaskAssociationChange = (inputValue: InputValue[]) => {
-    if (showAssociation) {
-      const newTaskViewerIds = getSelectedViewerIds(inputValue)
-      setTaskAssociationValue(getSelectorAssignee(assignee, inputValue) || null)
+    setSelectorFieldType(SelectorFieldType.ASSOCIATION)
+    const newTaskAssociationIds = getSelectedViewerIds(inputValue)
 
-      newTaskViewerIds &&
-        updateAssignee({
-          internalUserId: assigneeValue ? assigneeValue.id : null,
-          clientId: null,
-          companyId: null,
-          associations: newTaskViewerIds,
-          isShared: isTaskShared,
-        })
+    const showModal = shouldConfirmAssociationBeforeReassignment(taskAssociationValue, isTaskShared)
+    if (showModal) {
+      setAssociationConfirmationModal(true)
+    } else if (newTaskAssociationIds) {
+      setTaskAssociationValue(getSelectorAssignee(assignee, inputValue) || null)
+      updateAssignee({
+        internalUserId: assigneeValue ? assigneeValue.id : null,
+        clientId: null,
+        companyId: null,
+        associations: newTaskAssociationIds,
+        isShared: newTaskAssociationIds.length ? isTaskShared : false,
+      })
+      setSelectorFieldType(null)
     }
   }
 
   const handleTaskShared = () => {
-    if (showShareToggle) {
-      setIsTaskShared((prev) => !prev)
+    setIsTaskShared((prev) => !prev)
 
-      updateAssignee({
-        internalUserId: assigneeValue.id,
-        clientId: null,
-        companyId: null,
-        isShared: !isTaskShared,
-      })
-    }
+    updateAssignee({
+      internalUserId: assigneeValue?.id || null,
+      clientId: null,
+      companyId: null,
+      isShared: !isTaskShared,
+    })
   }
 
   if (!showSidebar || fromNotificationCenter) {
@@ -360,9 +400,9 @@ export const Sidebar = ({
           </Box>
         )}
         <StyledModal
-          open={showConfirmAssignModal || showConfirmViewershipModal}
+          open={showConfirmAssignModal || showAssociationConfirmationModal}
           onClose={() =>
-            showConfirmAssignModal ? store.dispatch(toggleShowConfirmAssignModal()) : setShowConfirmViewershipModal(false)
+            showConfirmAssignModal ? store.dispatch(toggleShowConfirmAssignModal()) : setAssociationConfirmationModal(false)
           }
           aria-labelledby="confirm-reassignment-modal"
           aria-describedby="confirm-reassignment"
@@ -370,14 +410,19 @@ export const Sidebar = ({
           <ConfirmUI
             handleCancel={() => {
               setSelectedAssignee(undefined)
-              showConfirmAssignModal ? store.dispatch(toggleShowConfirmAssignModal()) : setShowConfirmViewershipModal(false)
+              setSelectorFieldType(null)
+              showConfirmAssignModal
+                ? store.dispatch(toggleShowConfirmAssignModal())
+                : setAssociationConfirmationModal(false)
             }}
             handleConfirm={() => {
-              if (selectedAssignee) {
+              if (selectorFieldType === SelectorFieldType.ASSIGNEE && selectedAssignee) {
                 handleConfirmAssigneeChange(selectedAssignee)
+              } else if (selectorFieldType === SelectorFieldType.ASSOCIATION) {
+                handleConfirmAssociationChange()
               }
             }}
-            buttonText={showConfirmViewershipModal ? 'Remove' : 'Reassign'}
+            buttonText={showAssociationConfirmationModal ? 'Remove' : 'Reassign'}
             description={
               showConfirmAssignModal ? (
                 <>
@@ -389,13 +434,17 @@ export const Sidebar = ({
                 </>
               ) : (
                 <>
-                  <strong>{getAssigneeName(getAssigneeValueFromViewers(taskAssociationValue, assignee))}</strong> will also
-                  lose visibility to the task.
+                  <strong>{getAssigneeName(getAssigneeValueFromAssociations(taskAssociationValue, assignee))}</strong> will
+                  also lose visibility to the task.
                 </>
               )
             }
-            title={showConfirmViewershipModal && isEmptyAssignee(selectedAssignee) ? 'Remove assignee?' : 'Reassign task?'}
-            variant={showConfirmViewershipModal ? 'danger' : 'default'}
+            title={
+              showAssociationConfirmationModal && isEmptyAssignee(selectedAssignee) && selectorFieldType
+                ? `Remove ${selectorFieldType}?`
+                : 'Reassign task?'
+            }
+            variant={showAssociationConfirmationModal ? 'danger' : 'default'}
           />
         </StyledModal>
       </Stack>
@@ -601,9 +650,9 @@ export const Sidebar = ({
         )}
       </AppMargin>
       <StyledModal
-        open={showConfirmAssignModal || showConfirmViewershipModal}
+        open={showConfirmAssignModal || showAssociationConfirmationModal}
         onClose={() =>
-          showConfirmAssignModal ? store.dispatch(toggleShowConfirmAssignModal()) : setShowConfirmViewershipModal(false)
+          showConfirmAssignModal ? store.dispatch(toggleShowConfirmAssignModal()) : setAssociationConfirmationModal(false)
         }
         aria-labelledby="confirm-reassignment-modal"
         aria-describedby="confirm-reassignment"
@@ -611,14 +660,17 @@ export const Sidebar = ({
         <ConfirmUI
           handleCancel={() => {
             setSelectedAssignee(undefined)
-            showConfirmAssignModal ? store.dispatch(toggleShowConfirmAssignModal()) : setShowConfirmViewershipModal(false)
+            setSelectorFieldType(null)
+            showConfirmAssignModal ? store.dispatch(toggleShowConfirmAssignModal()) : setAssociationConfirmationModal(false)
           }}
           handleConfirm={() => {
-            if (selectedAssignee) {
+            if (selectorFieldType === SelectorFieldType.ASSOCIATION) {
+              handleConfirmAssociationChange()
+            } else if (selectorFieldType === SelectorFieldType.ASSIGNEE && selectedAssignee) {
               handleConfirmAssigneeChange(selectedAssignee)
             }
           }}
-          buttonText={showConfirmViewershipModal ? 'Remove' : 'Reassign'}
+          buttonText={showAssociationConfirmationModal ? 'Remove' : 'Reassign'}
           description={
             showConfirmAssignModal ? (
               <>
@@ -630,13 +682,17 @@ export const Sidebar = ({
               </>
             ) : (
               <>
-                <strong>{getAssigneeName(getAssigneeValueFromViewers(taskAssociationValue, assignee))}</strong> will also
-                lose visibility to the task.
+                The task will be stopped sharing with{' '}
+                <strong>{getAssigneeName(getAssigneeValueFromAssociations(taskAssociationValue, assignee))}</strong>.
               </>
             )
           }
-          title={showConfirmViewershipModal && isEmptyAssignee(selectedAssignee) ? 'Remove assignee?' : 'Reassign task?'}
-          variant={showConfirmViewershipModal ? 'danger' : 'default'}
+          title={
+            showAssociationConfirmationModal && selectorFieldType && isEmptyAssignee(selectedAssignee)
+              ? `Remove ${selectorFieldType}?`
+              : 'Reassign task?'
+          }
+          variant={showAssociationConfirmationModal ? 'danger' : 'default'}
         />
       </StyledModal>
       {isAssignedToCU && userType == UserType.CLIENT_USER && !previewMode && (
