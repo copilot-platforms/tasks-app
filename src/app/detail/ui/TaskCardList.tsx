@@ -48,7 +48,7 @@ import {
 } from '@/utils/selector'
 import {
   shouldConfirmBeforeReassignment,
-  shouldConfirmAssociationBeforeReassignment,
+  shouldConfirmTaskSharedBeforeReassignment,
 } from '@/utils/shouldConfirmBeforeReassign'
 import { checkIfTaskViewer } from '@/utils/taskViewer'
 
@@ -138,7 +138,7 @@ export const TaskCardList = ({
     const previousAssignee = assignee.find((assignee) => assignee.id == getAssigneeId(getUserIds(task)))
     const nextAssignee = getSelectorAssignee(assignee, inputValue)
     const shouldShowConfirmModal = shouldConfirmBeforeReassignment(previousAssignee, nextAssignee)
-    const shouldShowConfirmAssociationModal = shouldConfirmAssociationBeforeReassignment(
+    const showAssociationConfirmModal = shouldConfirmTaskSharedBeforeReassignment(
       getSelectorAssociationFromTask(assignee, task) ?? null,
       !!task.isShared,
       nextAssignee,
@@ -146,7 +146,7 @@ export const TaskCardList = ({
     if (shouldShowConfirmModal) {
       setSelectedAssignee(newUserIds)
       store.dispatch(setConfirmAssigneeModalId(task.id))
-    } else if (shouldShowConfirmAssociationModal) {
+    } else if (showAssociationConfirmModal) {
       setSelectedAssignee(newUserIds)
       store.dispatch(setConfirmAssociationModalId(task.id))
     } else {
