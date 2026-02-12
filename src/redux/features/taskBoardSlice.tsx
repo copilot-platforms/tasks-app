@@ -27,7 +27,7 @@ interface IInitialState {
   accesibleTaskIds: string[]
   accessibleTasks: TaskResponse[]
   confirmAssignModalId: string | undefined
-  confirmViewershipModalId: string | undefined
+  confirmAssociationModalId: string | undefined
   assigneeCache: Record<string, IAssigneeCombined>
   previewClientCompany: PreviewClientCompanyType
   urlActionParams: UrlActionParamsType
@@ -63,7 +63,7 @@ const initialState: IInitialState = {
   accesibleTaskIds: [],
   accessibleTasks: [],
   confirmAssignModalId: '',
-  confirmViewershipModalId: '',
+  confirmAssociationModalId: '',
   assigneeCache: {},
   urlActionParams: {
     action: '',
@@ -221,8 +221,8 @@ const taskBoardSlice = createSlice({
       state.confirmAssignModalId = action.payload
     },
 
-    setConfirmViewershipModalId: (state, action: { payload: string | undefined }) => {
-      state.confirmViewershipModalId = action.payload
+    setConfirmAssociationModalId: (state, action: { payload: string | undefined }) => {
+      state.confirmAssociationModalId = action.payload
     },
 
     setAssigneeCache: (state, action: { payload: { key: string; value: IAssigneeCombined } }) => {
@@ -255,7 +255,7 @@ export const {
   setAccesibleTaskIds,
   setAccessibleTasks,
   setConfirmAssigneeModalId,
-  setConfirmViewershipModalId,
+  setConfirmAssociationModalId,
   setAssigneeCache,
   setPreviewClientCompany,
   setUrlActionParams,
