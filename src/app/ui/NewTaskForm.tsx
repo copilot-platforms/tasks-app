@@ -383,7 +383,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
                 <CopilotPopSelector
                   hideIusList
                   disabled={!!previewMode}
-                  name="Set client visibility"
+                  name="Set related to"
                   initialValue={taskViewerValue || undefined}
                   onChange={(inputValue) => {
                     const newUserIds = getSelectedViewerIds(inputValue)

@@ -53,7 +53,7 @@ export enum FileTypes {
 
 export enum FilterOptions {
   ASSIGNEE = 'assignee',
-  VISIBILITY = 'visibility',
+  ASSOCIATION = 'association',
   CREATOR = 'creator',
   KEYWORD = 'keyword',
   TYPE = 'type',
@@ -92,7 +92,7 @@ export enum AttachmentTypes {
 export type IFilterOptions = {
   [key in FilterOptions]: key extends FilterOptions.ASSIGNEE
     ? UserIdsType
-    : key extends FilterOptions.VISIBILITY
+    : key extends FilterOptions.ASSOCIATION
       ? UserIdsType
       : key extends FilterOptions.CREATOR
         ? UserIdsType
