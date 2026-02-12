@@ -57,8 +57,8 @@ export const updateAssignee = async (
       internalUserId,
       clientId,
       companyId,
-      ...(associations && { associations: !internalUserId ? [] : associations }), // if assignee is not internal user, remove associations. Only include associations if viewer are changed. Not including viewer means not chaning the current state of associations in DB.
-      ...(isShared && { isShared }),
+      ...(associations && { associations: clientId || companyId ? [] : associations }), // if assignee is not internal user, remove associations. Only include associations if viewer are changed. Not including viewer means not chaning the current state of associations in DB.
+      ...(isShared !== undefined && { isShared }),
     }),
   })
 }

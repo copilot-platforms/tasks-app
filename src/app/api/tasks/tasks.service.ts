@@ -313,11 +313,22 @@ export class TasksService extends TasksSharedService {
     }
   }
 
-  private validateTaskShare(prevTask: Task, isTaskShared?: boolean) {
-    if (prevTask.associations.length) {
-      return !!isTaskShared
+  private validateTaskShare(prevTask: Task, data: UpdateTaskRequest) {
+    const isTaskShared = data.isShared
+
+    if (isTaskShared === undefined) return undefined
+
+    if (isTaskShared) {
+      const isEligibleForShare = !!(
+        (prevTask.associations.length && prevTask.internalUserId) ||
+        (data.associations?.length && data.internalUserId)
+      )
+      if (!isEligibleForShare) {
+        throw new APIError(httpStatus.BAD_REQUEST, 'Cannot share task with assocations')
+      }
+      return true
     }
-    throw new APIError(httpStatus.BAD_REQUEST, 'Cannot share task when it has no association')
+    return false
   }
 
   async updateOneTask(id: string, data: UpdateTaskRequest) {
@@ -355,7 +366,9 @@ export class TasksService extends TasksSharedService {
     })
 
     let associations: Associations = AssociationsSchema.parse(prevTask.associations)
-    const viewersResetCondition = shouldUpdateUserIds ? !!clientId || !!companyId : !prevTask.internalUserId
+
+    // check if current or previous assignee is a client or company
+    const viewersResetCondition = shouldUpdateUserIds ? !!clientId || !!companyId : prevTask.clientId || prevTask.companyId
     if (data.associations) {
       // only update of associations attribute is available. No associations in payload attribute means the data remains as it is in DB.
       if (viewersResetCondition || !data.associations?.length) {
@@ -412,7 +425,7 @@ export class TasksService extends TasksSharedService {
           completedBy,
           completedByUserType,
           associations,
-          isShared: data.isShared !== undefined ? this.validateTaskShare(prevTask, data.isShared) : false,
+          isShared: this.validateTaskShare(prevTask, data),
           ...userAssignmentFields,
           ...(await getTaskTimestamps('update', this.user, data, prevTask)),
         },
