@@ -36,8 +36,8 @@ export class ViewSettingsService extends BaseService {
     if (filterOptions && !filterOptions.creator) {
       viewSettings.filterOptions = { ...filterOptions, [FilterOptions.CREATOR]: emptyAssignee }
     }
-    if (filterOptions && !filterOptions.visibility) {
-      viewSettings.filterOptions = { ...filterOptions, [FilterOptions.VISIBILITY]: emptyAssignee }
+    if (filterOptions && !filterOptions.association) {
+      viewSettings.filterOptions = { ...filterOptions, [FilterOptions.ASSOCIATION]: emptyAssignee }
     }
 
     return viewSettings
@@ -84,7 +84,7 @@ export class ViewSettingsService extends BaseService {
           clientId: null,
           companyId: null,
         },
-        [FilterOptions.VISIBILITY]: {
+        [FilterOptions.ASSOCIATION]: {
           internalUserId: null,
           clientId: null,
           companyId: null,

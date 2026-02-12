@@ -16,7 +16,7 @@ export const FilterTypeSection = ({ setFilterMode, filterModes }: FilterTypeSect
     filterOptions: { type },
   } = useSelector(selectTaskBoard)
 
-  const disabled = type === FilterOptionsKeywords.CLIENTS ? [FilterType.Visibility] : []
+  const disabled = type === FilterOptionsKeywords.CLIENTS ? [FilterType.Association] : []
   const removed = type.length > 20 ? [FilterType.Assignee] : []
 
   return (
@@ -68,7 +68,7 @@ export const FilterTypeSection = ({ setFilterMode, filterModes }: FilterTypeSect
                 <CopilotTooltip
                   content={
                     <div>
-                      <div>Client visibility is only available</div>
+                      <div>Client association is only available</div>
                       <div>for tasks assigned to internal users.</div>
                     </div>
                   }

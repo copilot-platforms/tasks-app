@@ -325,7 +325,7 @@ export type ViewSettingUserIdsType = z.infer<typeof ViewSettingUserIds>
  */
 export enum FilterType {
   Assignee = 'Assignee',
-  Visibility = 'Client Visibility',
+  Association = 'Association',
   Creator = 'Creator',
 }
 
