@@ -126,7 +126,6 @@ const taskBoardSlice = createSlice({
       state.showUnarchived = showUnarchived
       state.showSubtasks = showSubtasks
       state.filterOptions = filterOptions
-      // taskBoardSlice.caseReducers.updateFilterOption(state, { payload: { filterOptions } })
     },
 
     setViewSettingsTemp: (state, action: { payload: CreateViewSettingsDTO }) => {
