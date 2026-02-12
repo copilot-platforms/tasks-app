@@ -41,7 +41,7 @@ import {
 } from '@/utils/selector'
 import {
   shouldConfirmBeforeReassignment,
-  shouldConfirmAssociationBeforeReassignment,
+  shouldConfirmTaskSharedBeforeReassignment,
 } from '@/utils/shouldConfirmBeforeReassign'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
@@ -215,7 +215,7 @@ export const Sidebar = ({
     const previousAssignee = assignee.find((assignee) => assignee.id == getAssigneeId(getUserIds(activeTask)))
     const nextAssignee = getSelectorAssignee(assignee, inputValue)
     const shouldShowConfirmModal = shouldConfirmBeforeReassignment(previousAssignee, nextAssignee)
-    const shouldShowConfirmAssociationModal = shouldConfirmAssociationBeforeReassignment(
+    const showAssociationConfirmModal = shouldConfirmTaskSharedBeforeReassignment(
       taskAssociationValue,
       isTaskShared,
       nextAssignee,
@@ -223,7 +223,7 @@ export const Sidebar = ({
     if (shouldShowConfirmModal) {
       setSelectedAssignee(newUserIds)
       store.dispatch(toggleShowConfirmAssignModal())
-    } else if (shouldShowConfirmAssociationModal) {
+    } else if (showAssociationConfirmModal) {
       setSelectedAssignee(newUserIds)
       setAssociationConfirmationModal(true)
     } else {
@@ -240,7 +240,7 @@ export const Sidebar = ({
     setSelectorFieldType(SelectorFieldType.ASSOCIATION)
     const newTaskAssociationIds = getSelectedViewerIds(inputValue)
 
-    const showModal = shouldConfirmAssociationBeforeReassignment(taskAssociationValue, isTaskShared)
+    const showModal = shouldConfirmTaskSharedBeforeReassignment(taskAssociationValue, isTaskShared)
     if (showModal) {
       setAssociationConfirmationModal(true)
     } else if (newTaskAssociationIds) {
