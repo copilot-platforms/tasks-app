@@ -20,6 +20,7 @@ const FilterFunctions = {
   [FilterOptions.ASSIGNEE]: filterByAssignee,
   [FilterOptions.CREATOR]: filterByCreator,
   [FilterOptions.ASSOCIATION]: filterByClientAssociation,
+  [FilterOptions.IS_SHARED]: filterByClientAssociation,
   [FilterOptions.KEYWORD]: filterByKeyword,
   [FilterOptions.TYPE]: filterByType,
 }
@@ -50,7 +51,11 @@ function filterByAssignee(filteredTasks: TaskResponse[], filterValue: UserIdsTyp
   return filteredTasks
 }
 
-function filterByClientAssociation(filteredTasks: TaskResponse[], filterValue: UserIdsType): TaskResponse[] {
+function filterByClientAssociation(
+  filteredTasks: TaskResponse[],
+  filterValue: UserIdsType,
+  includeShared?: boolean,
+): TaskResponse[] {
   const assigneeUserIds = filterValue
 
   if (checkEmptyAssignee(assigneeUserIds)) {
@@ -59,13 +64,19 @@ function filterByClientAssociation(filteredTasks: TaskResponse[], filterValue: U
   const { [UserIds.CLIENT_ID]: clientId, [UserIds.COMPANY_ID]: companyId } = assigneeUserIds
 
   if (clientId) {
-    filteredTasks = filteredTasks.filter(
-      (task) => task.associations?.[0]?.clientId === clientId && task.associations?.[0]?.companyId === companyId,
-    )
+    filteredTasks = filteredTasks.filter((task) => {
+      const isAssociated = task.associations?.[0]?.clientId === clientId && task.associations?.[0]?.companyId === companyId
+      if (includeShared) return isAssociated && task.isShared
+
+      return isAssociated
+    })
   } else if (companyId && !clientId) {
-    filteredTasks = filteredTasks.filter(
-      (task) => task.associations?.[0]?.companyId === companyId && !task.associations?.[0].clientId,
-    )
+    filteredTasks = filteredTasks.filter((task) => {
+      const isAssociated = task.associations?.[0]?.companyId === companyId && !task.associations?.[0].clientId
+      if (includeShared) return isAssociated && task.isShared
+
+      return isAssociated
+    })
   }
 
   return filteredTasks
@@ -155,9 +166,17 @@ export const useFilter = (filterOptions: IFilterOptions, isPreviewMode: boolean)
         const assigneeFilterValue = UserIdsSchema.parse(filterValue)
         filteredTasks = FilterFunctions[FilterOptions.ASSIGNEE](filteredTasks, assigneeFilterValue)
       }
-      if (filterType === FilterOptions.CREATOR || filterType === FilterOptions.ASSOCIATION) {
+      if (
+        filterType === FilterOptions.CREATOR ||
+        filterType === FilterOptions.ASSOCIATION ||
+        filterType === FilterOptions.IS_SHARED
+      ) {
+        let includeShared = false
+        if (filterType === FilterOptions.IS_SHARED) {
+          includeShared = true
+        }
         const assigneeFilterValue = UserIdsSchema.parse(filterValue)
-        filteredTasks = FilterFunctions[filterType](filteredTasks, assigneeFilterValue)
+        filteredTasks = FilterFunctions[filterType](filteredTasks, assigneeFilterValue, includeShared)
       }
       if (filterType === FilterOptions.KEYWORD) {
         filteredTasks = FilterFunctions[FilterOptions.KEYWORD](

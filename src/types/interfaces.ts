@@ -54,6 +54,7 @@ export enum FileTypes {
 export enum FilterOptions {
   ASSIGNEE = 'assignee',
   ASSOCIATION = 'association',
+  IS_SHARED = 'isShared',
   CREATOR = 'creator',
   KEYWORD = 'keyword',
   TYPE = 'type',
@@ -96,7 +97,9 @@ export type IFilterOptions = {
       ? UserIdsType
       : key extends FilterOptions.CREATOR
         ? UserIdsType
-        : string
+        : key extends FilterOptions.IS_SHARED
+          ? UserIdsType
+          : string
 }
 
 export interface IAssignee {

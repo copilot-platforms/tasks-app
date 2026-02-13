@@ -39,6 +39,9 @@ export class ViewSettingsService extends BaseService {
     if (filterOptions && !filterOptions.association) {
       viewSettings.filterOptions = { ...filterOptions, [FilterOptions.ASSOCIATION]: emptyAssignee }
     }
+    if (filterOptions && !filterOptions.isShared) {
+      viewSettings.filterOptions = { ...filterOptions, [FilterOptions.IS_SHARED]: emptyAssignee }
+    }
 
     return viewSettings
   }
@@ -79,21 +82,10 @@ export class ViewSettingsService extends BaseService {
       workspaceId: this.user.workspaceId,
       viewMode: this.DEFAULT_VIEW_MODE,
       filterOptions: {
-        [FilterOptions.ASSIGNEE]: {
-          internalUserId: null,
-          clientId: null,
-          companyId: null,
-        },
-        [FilterOptions.ASSOCIATION]: {
-          internalUserId: null,
-          clientId: null,
-          companyId: null,
-        },
-        [FilterOptions.CREATOR]: {
-          internalUserId: null,
-          clientId: null,
-          companyId: null,
-        },
+        [FilterOptions.ASSIGNEE]: emptyAssignee,
+        [FilterOptions.ASSOCIATION]: emptyAssignee,
+        [FilterOptions.IS_SHARED]: emptyAssignee,
+        [FilterOptions.CREATOR]: emptyAssignee,
         [FilterOptions.KEYWORD]: '',
         [FilterOptions.TYPE]: '',
       },
