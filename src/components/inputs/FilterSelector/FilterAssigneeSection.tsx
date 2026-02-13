@@ -20,6 +20,7 @@ export const filterOptionsMap = {
   [FilterType.Assignee]: FilterOptions.ASSIGNEE,
   [FilterType.Creator]: FilterOptions.CREATOR,
   [FilterType.Association]: FilterOptions.ASSOCIATION,
+  [FilterType.IsShared]: FilterOptions.IS_SHARED,
 }
 
 export const FilterAssigneeSection = ({ filterMode, setAnchorEl }: FilterAssigneeSectionProps) => {
@@ -35,7 +36,8 @@ export const FilterAssigneeSection = ({ filterMode, setAnchorEl }: FilterAssigne
   const hideClientsAndCompanies =
     filterMode === FilterType.Creator || (type === FilterOptionsKeywords.TEAM && filterMode === FilterType.Assignee)
   const hideIus =
-    filterMode === FilterType.Association || (type === FilterOptionsKeywords.CLIENTS && filterMode === FilterType.Assignee)
+    [FilterType.Association, FilterType.IsShared].includes(filterMode) ||
+    (type === FilterOptionsKeywords.CLIENTS && filterMode === FilterType.Assignee)
 
   const handleChange = (inputValue: InputValue[]) => {
     const newUserIds = getSelectedUserIds(inputValue)

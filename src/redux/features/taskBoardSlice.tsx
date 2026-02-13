@@ -43,6 +43,7 @@ const initialState: IInitialState = {
   filterOptions: {
     [FilterOptions.ASSIGNEE]: emptyAssignee,
     [FilterOptions.ASSOCIATION]: emptyAssignee,
+    [FilterOptions.IS_SHARED]: emptyAssignee,
     [FilterOptions.CREATOR]: emptyAssignee,
     [FilterOptions.KEYWORD]: '',
     [FilterOptions.TYPE]: '',

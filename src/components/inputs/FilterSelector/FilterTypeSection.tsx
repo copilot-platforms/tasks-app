@@ -16,7 +16,7 @@ export const FilterTypeSection = ({ setFilterMode, filterModes }: FilterTypeSect
     filterOptions: { type },
   } = useSelector(selectTaskBoard)
 
-  const disabled = type === FilterOptionsKeywords.CLIENTS ? [FilterType.Association] : []
+  const disabled = type === FilterOptionsKeywords.CLIENTS ? [FilterType.Association, FilterType.IsShared] : []
   const removed = type.length > 20 ? [FilterType.Assignee] : []
 
   return (
