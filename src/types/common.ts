@@ -328,3 +328,8 @@ export enum FilterType {
   Visibility = 'Client Visibility',
   Creator = 'Creator',
 }
+
+export enum SelectorFieldType {
+  ASSIGNEE = 'assignee',
+  ASSOCIATION = 'association',
+}
