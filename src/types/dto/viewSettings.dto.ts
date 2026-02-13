@@ -4,7 +4,8 @@ import { z } from 'zod'
 
 export const FilterOptionsSchema = z.object({
   assignee: UserIdsSchema,
-  visibility: UserIdsSchema,
+  association: UserIdsSchema,
+  isShared: UserIdsSchema,
   creator: UserIdsSchema,
   keyword: z.string(),
   type: z.string(),

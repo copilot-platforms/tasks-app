@@ -42,7 +42,8 @@ const initialState: IInitialState = {
   filteredTasks: [], //contains tasks which are client-side filtered. is modified from the useFilter custom hook.
   filterOptions: {
     [FilterOptions.ASSIGNEE]: emptyAssignee,
-    [FilterOptions.VISIBILITY]: emptyAssignee,
+    [FilterOptions.ASSOCIATION]: emptyAssignee,
+    [FilterOptions.IS_SHARED]: emptyAssignee,
     [FilterOptions.CREATOR]: emptyAssignee,
     [FilterOptions.KEYWORD]: '',
     [FilterOptions.TYPE]: '',
@@ -157,12 +158,12 @@ const taskBoardSlice = createSlice({
         }
       }
       if (
-        (filterOptions && filterOptions.visibility === undefined) ||
-        (filterOptions?.visibility && !getAssignee(filterOptions.visibility))
+        (filterOptions && filterOptions.association === undefined) ||
+        (filterOptions?.association && !getAssignee(filterOptions.association))
       ) {
         updatedFilterOptions = {
           ...updatedFilterOptions,
-          visibility: emptyAssignee,
+          association: emptyAssignee,
         }
       }
       if (
