@@ -45,7 +45,8 @@ export const FilterChip = ({ type, assignee }: FilterChipProps) => {
   const hideClientsAndCompanies =
     type === FilterType.Creator || (filterOptions.type === FilterOptionsKeywords.TEAM && type === FilterType.Assignee)
   const hideIus =
-    type === FilterType.Association || (filterOptions.type === FilterOptionsKeywords.CLIENTS && type === FilterType.Assignee)
+    [FilterType.Association, FilterType.IsShared].includes(type) ||
+    (filterOptions.type === FilterOptionsKeywords.CLIENTS && type === FilterType.Assignee)
 
   return (
     <>

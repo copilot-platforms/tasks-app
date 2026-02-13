@@ -13,7 +13,7 @@ type FilterSelectorProps = {
   disabled?: boolean
 }
 
-const FILTER_MODES = [FilterType.Assignee, FilterType.Association, FilterType.Creator]
+const FILTER_MODES = [FilterType.Assignee, FilterType.Association, FilterType.IsShared, FilterType.Creator]
 
 export const FilterSelector = ({ disabled }: FilterSelectorProps) => {
   const [filterMode, setFilterMode] = useState<FilterType | null>(null)
@@ -22,13 +22,14 @@ export const FilterSelector = ({ disabled }: FilterSelectorProps) => {
   const id = open ? 'filter-selector-popper' : ''
 
   const {
-    filterOptions: { assignee, creator, association },
+    filterOptions: { assignee, creator, association, isShared },
   } = useSelector(selectTaskBoard)
 
   const filterModes = FILTER_MODES.filter((mode) => {
     if (mode === FilterType.Assignee && !isEmptyAssignee(assignee)) return false
     if (mode === FilterType.Creator && !isEmptyAssignee(creator)) return false
     if (mode === FilterType.Association && !isEmptyAssignee(association)) return false
+    if (mode === FilterType.IsShared && !isEmptyAssignee(isShared)) return false
     return true
   })
 
