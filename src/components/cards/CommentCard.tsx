@@ -19,6 +19,7 @@ import { MenuBox } from '@/components/inputs/MenuBox'
 import { ReplyInput } from '@/components/inputs/ReplyInput'
 import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
 import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
+import { usePostAttachment } from '@/hoc/PostAttachmentProvider'
 import { useWindowWidth } from '@/hooks/useWindowWidth'
 import { PencilIcon, ReplyIcon, TrashIcon } from '@/icons'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
@@ -26,11 +27,12 @@ import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { selectTaskDetails, setExpandedComments, setOpenImage } from '@/redux/features/taskDetailsSlice'
 import store from '@/redux/store'
 import { CommentResponse, CreateComment, UpdateComment } from '@/types/dto/comment.dto'
-import { IAssigneeCombined } from '@/types/interfaces'
+import { AttachmentTypes, IAssigneeCombined } from '@/types/interfaces'
 import { getAssigneeName } from '@/utils/assignee'
+import { deleteEditorAttachmentsHandler, getAttachmentPayload } from '@/utils/attachmentUtils'
+import { createUploadFn } from '@/utils/createUploadFn'
 import { fetcher } from '@/utils/fetcher'
 import { getTimeDifference } from '@/utils/getTimeDifference'
-import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
 import { isTapwriteContentEmpty } from '@/utils/isTapwriteContentEmpty'
 import { checkOptimisticStableId, OptimisticUpdate } from '@/utils/optimisticCommentUtils'
 import { ReplyResponse } from '@api/activity-logs/schemas/CommentAddedSchema'
@@ -44,6 +46,7 @@ import { Tapwrite } from 'tapwrite'
 import { z } from 'zod'
 
 export const CommentCard = ({
+  token,
   comment,
   createComment,
   deleteComment,
@@ -52,6 +55,7 @@ export const CommentCard = ({
   commentInitiator,
   'data-comment-card': dataCommentCard, //for selection of the element while highlighting the container in notification
 }: {
+  token: string
   comment: LogResponse
   createComment: (postCommentPayload: CreateComment) => void
   deleteComment: (id: string, replyId?: string, softDelete?: boolean) => void
@@ -72,13 +76,15 @@ export const CommentCard = ({
   const { tokenPayload } = useSelector(selectAuthDetails)
   const canEdit = tokenPayload?.internalUserId == comment?.userId || tokenPayload?.clientId == comment?.userId
   const canDelete = tokenPayload?.internalUserId == comment?.userId
-  const { assignee, activeTask, token } = useSelector(selectTaskBoard)
+  const { assignee, activeTask } = useSelector(selectTaskBoard)
   const { expandedComments } = useSelector(selectTaskDetails)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   const [isFocused, setIsFocused] = useState(false)
 
   const [deletedReplies, setDeletedReplies] = useState<string[]>([])
+
+  const { postAttachment } = usePostAttachment()
 
   const windowWidth = useWindowWidth()
   const isMobile = () => {
@@ -105,14 +111,23 @@ export const CommentCard = ({
     return () => clearInterval(intervalId)
   }, [comment.createdAt])
 
-  const uploadFn = token
-    ? async (file: File) => {
-        if (activeTask) {
-          const fileUrl = await uploadImageHandler(file, token, activeTask.workspaceId, task_id)
-          return fileUrl
-        }
-      }
-    : undefined
+  const commentIdRef = useRef(comment.details.id)
+
+  useEffect(() => {
+    commentIdRef.current = comment.details.id
+  }, [comment.details.id]) //done because tapwrite only takes uploadFn once on mount where commentId will be temp from optimistic update. So we need an actual commentId for uploadFn to work.
+
+  const uploadFn = createUploadFn({
+    token,
+    workspaceId: activeTask?.workspaceId,
+    getEntityId: () => z.string().parse(commentIdRef.current),
+    attachmentType: AttachmentTypes.COMMENT,
+    parentTaskId: task_id,
+    onSuccess: (fileUrl, file) => {
+      const commentId = z.string().parse(commentIdRef.current)
+      postAttachment(getAttachmentPayload(fileUrl, file, commentId, AttachmentTypes.COMMENT))
+    },
+  })
 
   const cancelEdit = () => {
     setIsReadOnly(true)
@@ -158,7 +173,7 @@ export const CommentCard = ({
 
   const replyCount = (comment.details as CommentResponse).replyCount
 
-  const cacheKey = `/api/comment/?token=${token}&parentId=${comment.details.id}`
+  const cacheKey = `/api/comments/?token=${token}&parentId=${comment.details.id}`
   const { trigger } = useSWRMutation(cacheKey, fetcher, {
     optimisticData: optimisticUpdates.filter((update) => update.tempId),
   })
@@ -352,8 +367,8 @@ export const CommentCard = ({
               return (
                 <Collapse key={checkOptimisticStableId(item, optimisticUpdates)}>
                   <ReplyCard
+                    token={token}
                     item={item}
-                    uploadFn={uploadFn}
                     task_id={task_id}
                     handleImagePreview={handleImagePreview}
                     deleteReply={deleteComment}
@@ -368,10 +383,10 @@ export const CommentCard = ({
           ((comment as LogResponse).details.replies as LogResponse[]).length > 0) ||
         showReply ? (
           <ReplyInput
+            token={token}
             comment={comment}
             task_id={task_id}
             createComment={createComment}
-            uploadFn={uploadFn}
             focusReplyInput={focusReplyInput}
             setFocusReplyInput={setFocusedReplyInput}
           />

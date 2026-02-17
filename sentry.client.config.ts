@@ -27,8 +27,8 @@ if (dsn) {
 		integrations: [
 			Sentry.browserTracingIntegration({
 				beforeStartSpan: (e) => {
-					console.info("SentryBrowserTracingSpan", e.name);
-					return e;
+					console.info('SentryBrowserTracingSpan', e.name)
+					return e
 				},
 			}),
 			//   Sentry.replayIntegration({
@@ -43,14 +43,14 @@ if (dsn) {
 
 		beforeSend(event) {
 			if (!isProd && event.type === undefined) {
-				return null;
+				return null
 			}
 			event.tags = {
 				...event.tags,
 				// Adding additional app_env tag for cross-checking
-				app_env: isProd ? "production" : vercelEnv || "development",
-			};
-			return event;
+				app_env: isProd ? 'production' : vercelEnv || 'development',
+			}
+			return event
 		},
-	});
+	})
 }

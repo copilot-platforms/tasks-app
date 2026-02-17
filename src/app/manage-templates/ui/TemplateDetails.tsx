@@ -10,8 +10,9 @@ import { selectTaskDetails, setOpenImage, setShowConfirmDeleteModal } from '@/re
 import { clearTemplateFields, selectCreateTemplate } from '@/redux/features/templateSlice'
 import store from '@/redux/store'
 import { CreateTemplateRequest } from '@/types/dto/templates.dto'
-import { ITemplate } from '@/types/interfaces'
-import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
+import { AttachmentTypes, ITemplate } from '@/types/interfaces'
+import { deleteEditorAttachmentsHandler, uploadAttachmentHandler } from '@/utils/attachmentUtils'
+import { createUploadFn } from '@/utils/createUploadFn'
 import { Box } from '@mui/material'
 import { MouseEvent, useCallback, useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
@@ -109,14 +110,14 @@ export default function TemplateDetails({
     debouncedResetTypingFlag()
   }
 
-  const uploadFn = token
-    ? async (file: File) => {
-        setActiveUploads((prev) => prev + 1)
-        const fileUrl = await uploadImageHandler(file, token ?? '', template.workspaceId, template_id, 'templates')
-        setActiveUploads((prev) => prev - 1)
-        return fileUrl
-      }
-    : undefined
+  const uploadFn = createUploadFn({
+    token,
+    workspaceId: template.workspaceId,
+    getEntityId: () => template_id,
+    attachmentType: AttachmentTypes.TEMPLATE,
+    onUploadStart: () => setActiveUploads((prev) => prev + 1),
+    onUploadEnd: () => setActiveUploads((prev) => prev - 1),
+  })
 
   return (
     <>

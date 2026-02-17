@@ -11,15 +11,17 @@ import { EditCommentButtons } from '@/components/buttonsGroup/EditCommentButtons
 import { MenuBox } from '@/components/inputs/MenuBox'
 import { ConfirmDeleteUI } from '@/components/layouts/ConfirmDeleteUI'
 import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
+import { usePostAttachment } from '@/hoc/PostAttachmentProvider'
 import { useWindowWidth } from '@/hooks/useWindowWidth'
 import { PencilIcon, TrashIcon } from '@/icons'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { UpdateComment } from '@/types/dto/comment.dto'
-import { IAssigneeCombined } from '@/types/interfaces'
+import { AttachmentTypes, IAssigneeCombined } from '@/types/interfaces'
 import { getAssigneeName } from '@/utils/assignee'
+import { deleteEditorAttachmentsHandler, getAttachmentPayload } from '@/utils/attachmentUtils'
+import { createUploadFn } from '@/utils/createUploadFn'
 import { getTimeDifference } from '@/utils/getTimeDifference'
-import { deleteEditorAttachmentsHandler } from '@/utils/inlineImage'
 import { isTapwriteContentEmpty } from '@/utils/isTapwriteContentEmpty'
 import { Box, Stack } from '@mui/material'
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react'
@@ -28,16 +30,16 @@ import { Tapwrite } from 'tapwrite'
 import { z } from 'zod'
 
 export const ReplyCard = ({
+  token,
   item,
-  uploadFn,
   task_id,
   handleImagePreview,
   deleteReply,
   setDeletedReplies,
   replyInitiator,
 }: {
+  token: string
   item: ReplyResponse
-  uploadFn: ((file: File) => Promise<string | undefined>) | undefined
   task_id: string
   handleImagePreview: (e: React.MouseEvent<unknown>) => void
   deleteReply: (id: string, replyId: string) => void
@@ -47,7 +49,7 @@ export const ReplyCard = ({
   const [isReadOnly, setIsReadOnly] = useState<boolean>(true)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
-  const { token } = useSelector(selectTaskBoard)
+  const { activeTask } = useSelector(selectTaskBoard)
   const [showConfirmDeleteModal, setShowConfirmDeleteModal] = useState(false)
   const { tokenPayload } = useSelector(selectAuthDetails)
   const windowWidth = useWindowWidth()
@@ -56,6 +58,12 @@ export const ReplyCard = ({
   const [isListOrMenuActive, setIsListOrMenuActive] = useState(false)
   const [isFocused, setIsFocused] = useState(false)
   const editRef = useRef<HTMLDivElement>(document.createElement('div'))
+
+  const commentIdRef = useRef(item.id)
+
+  useEffect(() => {
+    commentIdRef.current = item.id
+  }, [item.id])
 
   const canEdit = tokenPayload?.internalUserId == item?.initiatorId || tokenPayload?.clientId == item?.initiatorId
 
@@ -74,6 +82,8 @@ export const ReplyCard = ({
   }
 
   const canDelete = tokenPayload?.internalUserId == item?.initiatorId
+
+  const { postAttachment } = usePostAttachment()
 
   const handleEdit = async () => {
     if (isTapwriteContentEmpty(editedContent)) {
@@ -112,6 +122,18 @@ export const ReplyCard = ({
       window.removeEventListener('keydown', handleKeyDown)
     }
   }, [editedContent, isListOrMenuActive, isFocused, isMobile])
+
+  const uploadFn = createUploadFn({
+    token,
+    workspaceId: activeTask?.workspaceId,
+    getEntityId: () => z.string().parse(commentIdRef.current),
+    attachmentType: AttachmentTypes.COMMENT,
+    parentTaskId: task_id,
+    onSuccess: (fileUrl, file) => {
+      const commentId = z.string().parse(commentIdRef.current)
+      postAttachment(getAttachmentPayload(fileUrl, file, commentId, AttachmentTypes.COMMENT))
+    },
+  })
 
   return (
     <>

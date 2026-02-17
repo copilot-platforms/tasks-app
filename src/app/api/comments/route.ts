@@ -1,5 +1,5 @@
 import { withErrorHandler } from '@/app/api/core/utils/withErrorHandler'
-import { createComment, getFilteredComments } from '@/app/api/comment/comment.controller'
+import { createComment, getFilteredComments } from '@/app/api/comments/comment.controller'
 
 export const maxDuration = 300
 

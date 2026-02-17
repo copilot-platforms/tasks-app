@@ -9,8 +9,9 @@ import { useWindowWidth } from '@/hooks/useWindowWidth'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { CreateComment } from '@/types/dto/comment.dto'
+import { deleteEditorAttachmentsHandler, uploadAttachmentHandler } from '@/utils/attachmentUtils'
+import { createUploadFn } from '@/utils/createUploadFn'
 import { getMentionsList } from '@/utils/getMentionList'
-import { deleteEditorAttachmentsHandler, uploadImageHandler } from '@/utils/inlineImage'
 import { isTapwriteContentEmpty } from '@/utils/isTapwriteContentEmpty'
 import { Stack } from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
@@ -18,15 +19,16 @@ import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
 
 interface Prop {
+  token: string
   createComment: (postCommentPayload: CreateComment) => void
   task_id: string
 }
 
-export const CommentInput = ({ createComment, task_id }: Prop) => {
+export const CommentInput = ({ createComment, task_id, token }: Prop) => {
   const [detail, setDetail] = useState('')
   const [isListOrMenuActive, setIsListOrMenuActive] = useState(false)
   const { tokenPayload } = useSelector(selectAuthDetails)
-  const { assignee, token, activeTask } = useSelector(selectTaskBoard)
+  const { assignee, activeTask } = useSelector(selectTaskBoard)
   const currentUserId = tokenPayload?.internalUserId ?? tokenPayload?.clientId
   const currentUserDetails = assignee.find((el) => el.id === currentUserId)
   const [isUploading, setIsUploading] = useState(false)
@@ -84,14 +86,12 @@ export const CommentInput = ({ createComment, task_id }: Prop) => {
     /* eslint-disable-next-line react-hooks/exhaustive-deps */ // <ignore handleSubmit>
   }, [detail, isListOrMenuActive, isFocused, isMobile]) // Depend on detail to ensure the latest state is captured
 
-  const uploadFn = token
-    ? async (file: File) => {
-        if (activeTask) {
-          const fileUrl = await uploadImageHandler(file, token ?? '', activeTask.workspaceId, task_id)
-          return fileUrl
-        }
-      }
-    : undefined
+  const uploadFn = createUploadFn({
+    token,
+    workspaceId: activeTask?.workspaceId,
+    getEntityId: () => task_id,
+  })
+
   const [isDragging, setIsDragging] = useState(false)
   const dragCounter = useRef(0)
 

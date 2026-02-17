@@ -2,8 +2,8 @@ import { NotificationSender, NotificationSenderSchema } from '@/types/common'
 import { getAssigneeName } from '@/utils/assignee'
 import { copilotBottleneck } from '@/utils/bottleneck'
 import { CopilotAPI } from '@/utils/CopilotAPI'
-import { CommentRepository } from '@api/comment/comment.repository'
-import { CommentService } from '@api/comment/comment.service'
+import { CommentRepository } from '@/app/api/comments/comment.repository'
+import { CommentService } from '@/app/api/comments/comment.service'
 import User from '@api/core/models/User.model'
 import { TasksService } from '@api/tasks/tasks.service'
 import { Comment, CommentInitiator, Task } from '@prisma/client'
@@ -69,7 +69,7 @@ export const sendReplyCreateNotifications = task({
     }
 
     const commentService = new CommentService(user)
-    const parentComment = await commentService.getCommentById(comment.parentId)
+    const parentComment = await commentService.getCommentById({ id: comment.parentId })
     if (parentComment) {
       // Queue notification for parent comment initiator, if:
       // - Parent Comment hasn't been deleted yet

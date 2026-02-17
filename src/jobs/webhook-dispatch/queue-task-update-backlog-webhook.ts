@@ -23,7 +23,10 @@ export const queueTaskUpdatedBacklogWebhook = task({
     // Extract the latest task data
     const task = await db.task.findFirst({
       where: { id: payload.taskId },
-      include: { workflowState: true },
+      include: {
+        workflowState: true,
+        attachments: true,
+      },
     })
     if (!task) {
       throw new Error('Failed to find task for task update backlog webhook')
@@ -32,7 +35,7 @@ export const queueTaskUpdatedBacklogWebhook = task({
     // Dispatch webhooks
     const copilot = new CopilotAPI(payload.user.token)
     await copilot.dispatchWebhook(DISPATCHABLE_EVENT.TaskUpdated, {
-      payload: PublicTaskSerializer.serialize(task),
+      payload: await PublicTaskSerializer.serialize(task),
       workspaceId: payload.user.workspaceId,
     })
 

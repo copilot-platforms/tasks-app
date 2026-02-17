@@ -14,6 +14,11 @@ export class SupabaseActions extends SupabaseService {
     return data
   }
 
+  async getMetaData(filePath: string) {
+    const { data, error } = await this.supabase.storage.from(supabaseBucket).info(filePath)
+    return data
+  }
+
   async uploadAttachment(file: File, signedUrl: ISignedUrlUpload, task_id: string | null) {
     let filePayload
     const { data, error } = await this.supabase.storage
@@ -23,6 +28,15 @@ export class SupabaseActions extends SupabaseService {
       console.error('unable to upload the file')
     }
     if (data) {
+      const { error: metadataError } = await this.supabase.storage.from(supabaseBucket).update(data.path, file, {
+        metadata: {
+          originalFileName: file.name,
+        },
+      })
+      if (metadataError) {
+        console.error('Failed to update metadata:', metadataError)
+      }
+
       filePayload = {
         fileSize: file.size,
         fileName: file.name,
