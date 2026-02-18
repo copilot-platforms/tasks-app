@@ -336,7 +336,9 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
                 onChange={handleAssigneeChange}
                 buttonContent={
                   <SelectorButton
-                    startIcon={assigneeValue ? <CopilotAvatar currentAssignee={assigneeValue} /> : <PersonIconSmall />}
+                    startIcon={
+                      assigneeValue ? <CopilotAvatar size="xs" currentAssignee={assigneeValue} /> : <PersonIconSmall />
+                    }
                     height="30px"
                     padding="4px 8px"
                     buttonContent={
@@ -375,7 +377,9 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
                   buttonContent={
                     <SelectorButton
                       disabled={!!previewMode}
-                      startIcon={taskViewerValue ? <CopilotAvatar currentAssignee={taskViewerValue} /> : <PersonIconSmall />}
+                      startIcon={
+                        taskViewerValue ? <CopilotAvatar size="xs" currentAssignee={taskViewerValue} /> : <PersonIconSmall />
+                      }
                       height="30px"
                       padding="4px 8px"
                       buttonContent={

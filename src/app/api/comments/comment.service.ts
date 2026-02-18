@@ -197,7 +197,7 @@ export class CommentService extends BaseService {
       where: { id, deletedAt: undefined }, // Can also get soft deleted comments
       include: { attachments: includeAttachments },
     })
-    if (!comment) return null
+    if (!comment) throw new APIError(httpStatus.NOT_FOUND, 'The requested comment was not found')
 
     let initiator
     if (comment?.initiatorType === CommentInitiator.internalUser) {

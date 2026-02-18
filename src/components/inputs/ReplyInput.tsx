@@ -1,18 +1,14 @@
-import { commentAddedResponseSchema } from '@/app/api/activity-logs/schemas/CommentAddedSchema'
-import { CustomDivider } from '@/app/detail/ui/styledComponent'
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import AttachmentLayout from '@/components/AttachmentLayout'
-import { PrimaryBtn } from '@/components/buttons/PrimaryBtn'
 import { SubmitCommentButtons } from '@/components/buttonsGroup/SubmitCommentButtons'
 import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
 import { useWindowWidth } from '@/hooks/useWindowWidth'
 import { selectAuthDetails } from '@/redux/features/authDetailsSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { CreateComment } from '@/types/dto/comment.dto'
-import { getMentionsList } from '@/utils/getMentionList'
 import { deleteEditorAttachmentsHandler } from '@/utils/attachmentUtils'
 import { isTapwriteContentEmpty } from '@/utils/isTapwriteContentEmpty'
-import { Avatar, Box, InputAdornment, Stack } from '@mui/material'
+import { Box, Stack } from '@mui/material'
 import { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Tapwrite } from 'tapwrite'
@@ -172,17 +168,8 @@ export const ReplyInput = ({
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       >
-        <CopilotAvatar
-          width="20px"
-          height="20px"
-          fontSize="10px"
-          currentAssignee={currentUserDetails}
-          sx={{
-            border: (theme) => `1.1px solid ${theme.color.gray[200]}`,
-            marginTop: '6px',
-          }}
-        />
-        <Box sx={{}} onBlur={() => setFocusReplyInput(false)} onFocus={() => setFocusReplyInput(true)} width={'100%'}>
+        <CopilotAvatar size="xs" style={{ marginTop: '6px' }} currentAssignee={currentUserDetails} />
+        <Box onBlur={() => setFocusReplyInput(false)} onFocus={() => setFocusReplyInput(true)} width={'100%'}>
           <Tapwrite
             editorRef={editorRef}
             content={detail}

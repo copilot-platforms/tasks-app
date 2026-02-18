@@ -232,7 +232,7 @@ export const TaskCard = ({ task, href, workflowState, mode, subtasks, workflowDi
                         }),
                       }}
                     >
-                      <CopilotAvatar currentAssignee={assigneeValue as IAssigneeCombined} />
+                      <CopilotAvatar size="xs" currentAssignee={assigneeValue as IAssigneeCombined} />
                     </Box>
                   }
                 />

@@ -1,13 +1,13 @@
 import { CopilotAvatar } from '@/components/atoms/CopilotAvatar'
 import { CommentCard } from '@/components/cards/CommentCard'
+import { TrashIcon2 } from '@/icons'
+import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { CreateComment } from '@/types/dto/comment.dto'
+import { OptimisticUpdate } from '@/utils/optimisticCommentUtils'
 import { LogResponse } from '@api/activity-logs/schemas/LogResponseSchema'
 import { Stack } from '@mui/material'
-import { VerticalLine } from './styledComponent'
-import { OptimisticUpdate } from '@/utils/optimisticCommentUtils'
-import { TrashIcon2 } from '@/icons'
 import { useSelector } from 'react-redux'
-import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
+import { VerticalLine } from './styledComponent'
 
 interface Prop {
   token: string
@@ -27,15 +27,11 @@ export const Comments = ({ token, comment, createComment, deleteComment, task_id
       <VerticalLine />
       <Stack direction="row" columnGap={2} padding={'0px 0px 12px 0px'} width={'100%'}>
         <CopilotAvatar
-          width="22px"
-          height="22px"
-          fontSize="12px"
+          size="xs"
           currentAssignee={commentInitiator}
-          sx={{
-            border: (theme) => `1.1px solid ${theme.color.gray[200]}`,
+          style={{
             marginTop: '8px',
           }}
-          size="large"
           icon={comment.details.deletedAt ? <TrashIcon2 /> : undefined}
         />
 
