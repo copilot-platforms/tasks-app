@@ -80,7 +80,7 @@ export default async function Main(props: {
   const searchParams = await props.searchParams
   const token = searchParams.token
 
-  const parsedToken = z.string().safeParse(searchParams.token)
+  const parsedToken = z.string().safeParse(token)
   if (!parsedToken.success) {
     return <SilentError message="Please provide a Valid Token" />
   }
