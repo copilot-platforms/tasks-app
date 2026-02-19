@@ -1,8 +1,8 @@
 import { maxSubTaskDepth } from '@/constants/tasks'
 import { MAX_FETCH_ASSIGNEE_COUNT } from '@/constants/users'
-import { InternalUsers, Uuid } from '@/types/common'
+import { InternalUsers, TempClientFilter, Uuid } from '@/types/common'
 import { CreateAttachmentRequestSchema } from '@/types/dto/attachments.dto'
-import { CreateTaskRequest, CreateTaskRequestSchema, Viewers } from '@/types/dto/tasks.dto'
+import { CreateTaskRequest, CreateTaskRequestSchema, Associations } from '@/types/dto/tasks.dto'
 import { getFileNameFromPath } from '@/utils/attachmentUtils'
 import { buildLtree, buildLtreeNodeString } from '@/utils/ltree'
 import { getFilePathFromUrl } from '@/utils/signedUrlReplacer'
@@ -29,7 +29,7 @@ export abstract class TasksSharedService extends BaseService {
    * If user is a client, return filter for just the tasks assigned to this clientId.
    * If user is a client and has a companyId, return filter for just the tasks assigned to this clientId `OR` to this companyId
    */
-  protected buildTaskPermissions(id?: string, includeViewer: boolean = true) {
+  protected buildTaskPermissions(id?: string, includeAssociatedTask: boolean = true) {
     const user = this.user
 
     // Default filters
@@ -39,15 +39,16 @@ export abstract class TasksSharedService extends BaseService {
     }
 
     if (user.clientId || user.companyId) {
-      filters = { ...filters, ...this.getClientOrCompanyAssigneeFilter(includeViewer) }
+      filters = { ...filters, ...this.getClientOrCompanyAssigneeFilter(includeAssociatedTask) }
     }
 
     return filters
   }
 
-  protected getClientOrCompanyAssigneeFilter(includeViewer: boolean = true): Prisma.TaskWhereInput {
+  protected getClientOrCompanyAssigneeFilter(includeAssociatedTask: boolean = true): Prisma.TaskWhereInput {
     const clientId = z.string().uuid().safeParse(this.user.clientId).data
     const companyId = z.string().uuid().parse(this.user.companyId)
+    const isCuPortal = !this.user.internalUserId && (clientId || companyId)
 
     const filters = []
 
@@ -58,29 +59,32 @@ export abstract class TasksSharedService extends BaseService {
         // Get company tasks for the client's companyId
         { companyId, clientId: null },
       )
-      if (includeViewer)
-        filters.push(
-          // Get tasks that includes the client as a viewer
-          {
-            viewers: {
-              hasSome: [{ clientId, companyId }, { companyId }],
-            },
+
+      // Get tasks that includes the client as a association
+      if (includeAssociatedTask) {
+        const tempClientFilter: TempClientFilter = {
+          associations: {
+            hasSome: [{ clientId, companyId }, { companyId }],
           },
-        )
+        }
+        if (isCuPortal) tempClientFilter.isShared = true
+        filters.push(tempClientFilter)
+      }
     } else if (companyId) {
       filters.push(
         // Get only company tasks for the client's companyId
         { clientId: null, companyId },
       )
-      if (includeViewer)
-        filters.push(
-          // Get tasks that includes the company as a viewer
-          {
-            viewers: {
-              hasSome: [{ companyId }],
-            },
+      if (includeAssociatedTask) {
+        const tempCompanyFilter: TempClientFilter = {
+          associations: {
+            hasSome: [{ companyId }],
           },
-        )
+        }
+        if (isCuPortal) tempCompanyFilter.isShared = true
+        // Get tasks that includes the company as a viewer
+        filters.push(tempCompanyFilter)
+      }
     }
     return filters.length > 0 ? { OR: filters } : {}
   }
@@ -156,7 +160,7 @@ export abstract class TasksSharedService extends BaseService {
                 },
                 {
                   NOT: {
-                    viewers: {
+                    associations: {
                       hasSome: [
                         { clientId: this.user.clientId, companyId: this.user.companyId },
                         { companyId: this.user.companyId },
@@ -357,26 +361,26 @@ export abstract class TasksSharedService extends BaseService {
     return { completedBy: null, completedByUserType: null, workflowStateStatus: workflowState.type }
   }
 
-  protected async validateViewers(viewers: Viewers) {
-    if (!viewers?.length) return []
-    const viewer = viewers[0]
+  protected async validateAssociations(associations: Associations) {
+    if (!associations?.length) return []
+    const association = associations[0]
     try {
-      if (viewer.clientId) {
-        const client = await this.copilot.getClient(viewer.clientId) //support looping viewers and filtering from getClients instead of doing getClient if we do support many viewers in the future.
-        if (!client.companyIds?.includes(viewers[0].companyId)) {
-          throw new APIError(httpStatus.BAD_REQUEST, 'Invalid companyId for the provided viewer.')
+      if (association.clientId) {
+        const client = await this.copilot.getClient(association.clientId) //support looping associations and filtering from getClients instead of doing getClient if we do support many associations in the future.
+        if (!client.companyIds?.includes(associations[0].companyId)) {
+          throw new APIError(httpStatus.BAD_REQUEST, 'Invalid companyId for the provided association.')
         }
       } else {
-        await this.copilot.getCompany(viewer.companyId)
+        await this.copilot.getCompany(association.companyId)
       }
     } catch (err) {
       if (err instanceof APIError) {
         throw err
       }
-      throw new APIError(httpStatus.BAD_REQUEST, `Viewer should be a CU.`)
+      throw new APIError(httpStatus.BAD_REQUEST, `Association should be a CU.`)
     }
 
-    return viewers
+    return associations
   }
 
   protected async updateTaskIdOfAttachmentsAfterCreation(htmlString: string, task_id: string) {
@@ -495,7 +499,7 @@ export abstract class TasksSharedService extends BaseService {
   protected async createSubtasksFromTemplate(data: TaskTemplate, parentTask: Task, manualTimestamp: Date) {
     const { workspaceId, title, body, workflowStateId } = data
     const previewMode = Boolean(this.user.clientId || this.user.companyId)
-    const { id: parentId, internalUserId, clientId, companyId, viewers } = parentTask
+    const { id: parentId, internalUserId, clientId, companyId, associations } = parentTask
 
     try {
       const createTaskPayload = CreateTaskRequestSchema.parse({
@@ -509,7 +513,7 @@ export abstract class TasksSharedService extends BaseService {
           internalUserId,
           clientId,
           companyId,
-          viewers,
+          associations,
         }), //On CRM view, we set assignee and viewers for subtasks same as the parent task.
       })
 

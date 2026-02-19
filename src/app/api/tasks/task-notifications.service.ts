@@ -1,6 +1,6 @@
 import { Uuid } from '@/types/common'
 import { TaskWithWorkflowState } from '@/types/db'
-import { TaskResponseSchema, Viewers, ViewersSchema, ViewerType } from '@/types/dto/tasks.dto'
+import { TaskResponseSchema, Associations, AssociationsSchema, ViewerType } from '@/types/dto/tasks.dto'
 import { getTaskViewers } from '@/utils/assignee'
 import { CopilotAPI } from '@/utils/CopilotAPI'
 import User from '@api/core/models/User.model'
@@ -37,7 +37,7 @@ export class TaskNotificationsService extends BaseService {
   private async checkParentAccessible(task: TaskWithWorkflowState): Promise<boolean> {
     if (!task.assigneeId || !task.parentId) return false
 
-    const viewers = ViewersSchema.parse(task.viewers)
+    const viewers = AssociationsSchema.parse(task.associations)
     const checkParentViewers = (
       clientId: string | null,
       companyIds?: string[],
@@ -60,11 +60,11 @@ export class TaskNotificationsService extends BaseService {
     if (task.assigneeType === AssigneeType.client || task.assigneeType === AssigneeType.company || !!viewers?.length) {
       const parentTask = await this.db.task.findFirst({
         where: { id: task.parentId, workspaceId: this.user.workspaceId },
-        select: { assigneeId: true, assigneeType: true, viewers: true },
+        select: { assigneeId: true, assigneeType: true, associations: true },
       })
       if (!parentTask) return false
 
-      const parentViewer = getTaskViewers(TaskResponseSchema.pick({ viewers: true }).parse(parentTask))
+      const parentViewer = getTaskViewers(TaskResponseSchema.pick({ associations: true }).parse(parentTask))
 
       if (task.assigneeType === AssigneeType.client) {
         const client = await this.copilot.getClient(task.assigneeId)
@@ -121,8 +121,9 @@ export class TaskNotificationsService extends BaseService {
     // If task is a subtask for a client/company and isn't visible on task board (is disjoint)
     if (await this.checkParentAccessible(task)) return
 
-    const viewers = ViewersSchema.parse(task.viewers)
-    if (viewers?.length && !isReassigned) {
+    const viewers = AssociationsSchema.parse(task.associations)
+    const isShared = task.isShared
+    if (viewers?.length && !isReassigned && isShared) {
       const clientId = viewers[0].clientId
       const sendViewersNotifications = clientId
         ? this.sendUserTaskSharedNotification
@@ -158,7 +159,7 @@ export class TaskNotificationsService extends BaseService {
     }
     const updatedViewers = getTaskViewers(updatedTask)
     const prevViewers = getTaskViewers(prevTask)
-
+    const becameShared = !prevTask.isShared && updatedTask.isShared
     const isViewersUpdated =
       !!updatedViewers &&
       ((!!updatedViewers.clientId && prevViewers?.clientId !== updatedViewers?.clientId) ||
@@ -166,11 +167,13 @@ export class TaskNotificationsService extends BaseService {
     // Return if not workflowState / assignee updated
 
     const isReassigned = prevTask.assigneeId !== updatedTask.assigneeId
-    if (prevTask.workflowStateId === updatedTask.workflowStateId && !isReassigned && !isViewersUpdated) return
+    if (prevTask.workflowStateId === updatedTask.workflowStateId && !isReassigned && !isViewersUpdated && !becameShared)
+      return
 
     // Case 2
     // -Handle viewers changed, or viewers updated in a task.
-    if (isViewersUpdated) {
+    // if the task became shared, or task the viewer changed in a shared task condition:
+    if (updatedViewers && (becameShared || (updatedTask.isShared && isViewersUpdated))) {
       const clientId = updatedViewers.clientId
       const sendViewersNotifications = clientId
         ? this.sendUserTaskSharedNotification
@@ -354,7 +357,7 @@ export class TaskNotificationsService extends BaseService {
     }
   }
 
-  private sendUserTaskSharedNotification = async (task: Task, viewers: Viewers) => {
+  private sendUserTaskSharedNotification = async (task: Task, viewers: Associations) => {
     if (!viewers?.length) return
 
     const notificationType = NotificationTaskActions.Shared

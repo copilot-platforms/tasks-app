@@ -19,7 +19,8 @@ interface KeywordMatchable {
 const FilterFunctions = {
   [FilterOptions.ASSIGNEE]: filterByAssignee,
   [FilterOptions.CREATOR]: filterByCreator,
-  [FilterOptions.VISIBILITY]: filterByClientVisibility,
+  [FilterOptions.ASSOCIATION]: filterByClientAssociation,
+  [FilterOptions.IS_SHARED]: filterByClientAssociation,
   [FilterOptions.KEYWORD]: filterByKeyword,
   [FilterOptions.TYPE]: filterByType,
 }
@@ -50,7 +51,11 @@ function filterByAssignee(filteredTasks: TaskResponse[], filterValue: UserIdsTyp
   return filteredTasks
 }
 
-function filterByClientVisibility(filteredTasks: TaskResponse[], filterValue: UserIdsType): TaskResponse[] {
+function filterByClientAssociation(
+  filteredTasks: TaskResponse[],
+  filterValue: UserIdsType,
+  includeShared?: boolean,
+): TaskResponse[] {
   const assigneeUserIds = filterValue
 
   if (checkEmptyAssignee(assigneeUserIds)) {
@@ -59,11 +64,19 @@ function filterByClientVisibility(filteredTasks: TaskResponse[], filterValue: Us
   const { [UserIds.CLIENT_ID]: clientId, [UserIds.COMPANY_ID]: companyId } = assigneeUserIds
 
   if (clientId) {
-    filteredTasks = filteredTasks.filter(
-      (task) => task.viewers?.[0]?.clientId === clientId && task.viewers?.[0]?.companyId === companyId,
-    )
+    filteredTasks = filteredTasks.filter((task) => {
+      const isAssociated = task.associations?.[0]?.clientId === clientId && task.associations?.[0]?.companyId === companyId
+      if (includeShared) return isAssociated && task.isShared
+
+      return isAssociated
+    })
   } else if (companyId && !clientId) {
-    filteredTasks = filteredTasks.filter((task) => task.viewers?.[0]?.companyId === companyId && !task.viewers?.[0].clientId)
+    filteredTasks = filteredTasks.filter((task) => {
+      const isAssociated = task.associations?.[0]?.companyId === companyId && !task.associations?.[0].clientId
+      if (includeShared) return isAssociated && task.isShared
+
+      return isAssociated
+    })
   }
 
   return filteredTasks
@@ -129,11 +142,14 @@ function filterByType(filteredTasks: TaskResponse[], filterValue: string): TaskR
     case FilterOptionsKeywords.CLIENT_WITH_VIEWERS:
       return filteredTasks.filter(
         (task) =>
-          !!task?.viewers?.length || task?.assigneeType?.includes('client') || task?.assigneeType?.includes('company'),
+          !!task?.associations?.length || task?.assigneeType?.includes('client') || task?.assigneeType?.includes('company'),
       )
 
     case FilterOptionsKeywords.TEAM:
       return filteredTasks.filter((task) => task?.assigneeType?.includes('internalUser'))
+
+    case FilterOptionsKeywords.UNASSIGNED:
+      return filteredTasks.filter((task) => !task.assigneeId)
 
     default:
       return filteredTasks.filter((task) => task.assigneeId == assigneeType)
@@ -153,9 +169,17 @@ export const useFilter = (filterOptions: IFilterOptions, isPreviewMode: boolean)
         const assigneeFilterValue = UserIdsSchema.parse(filterValue)
         filteredTasks = FilterFunctions[FilterOptions.ASSIGNEE](filteredTasks, assigneeFilterValue)
       }
-      if (filterType === FilterOptions.CREATOR || filterType === FilterOptions.VISIBILITY) {
+      if (
+        filterType === FilterOptions.CREATOR ||
+        filterType === FilterOptions.ASSOCIATION ||
+        filterType === FilterOptions.IS_SHARED
+      ) {
+        let includeShared = false
+        if (filterType === FilterOptions.IS_SHARED) {
+          includeShared = true
+        }
         const assigneeFilterValue = UserIdsSchema.parse(filterValue)
-        filteredTasks = FilterFunctions[filterType](filteredTasks, assigneeFilterValue)
+        filteredTasks = FilterFunctions[filterType](filteredTasks, assigneeFilterValue, includeShared)
       }
       if (filterType === FilterOptions.KEYWORD) {
         filteredTasks = FilterFunctions[FilterOptions.KEYWORD](

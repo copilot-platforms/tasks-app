@@ -325,6 +325,20 @@ export type ViewSettingUserIdsType = z.infer<typeof ViewSettingUserIds>
  */
 export enum FilterType {
   Assignee = 'Assignee',
-  Visibility = 'Client Visibility',
+  Association = 'Related to',
+  IsShared = 'Shared with',
   Creator = 'Creator',
 }
+
+export enum SelectorFieldType {
+  ASSIGNEE = 'assignee',
+  ASSOCIATION = 'association',
+}
+
+export const TempClientFilterSchema = z.object({
+  associations: z.object({
+    hasSome: z.array(z.object({ clientId: z.string().uuid().optional(), companyId: z.string().uuid() })),
+  }),
+  isShared: z.boolean().optional(),
+})
+export type TempClientFilter = z.infer<typeof TempClientFilterSchema>
