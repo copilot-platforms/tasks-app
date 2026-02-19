@@ -12,6 +12,7 @@ import { CopilotPopSelector } from '@/components/inputs/CopilotSelector'
 import { DatePickerComponent } from '@/components/inputs/DatePickerComponent'
 import Selector, { SelectorType } from '@/components/inputs/Selector'
 import { WorkflowStateSelector } from '@/components/inputs/Selector-WorkflowState'
+import { CopilotToggle } from '@/components/inputs/CopilotToggle'
 import { StyledTextField } from '@/components/inputs/TextField'
 import { MAX_UPLOAD_LIMIT } from '@/constants/attachments'
 import { AppMargin, SizeofAppMargin } from '@/hoc/AppMargin'
@@ -25,6 +26,7 @@ import {
   setAppliedTitle,
   setCreateTaskFields,
   setErrors,
+  setMultipleCreateTaskFields,
 } from '@/redux/features/createTaskSlice'
 import { selectTaskBoard } from '@/redux/features/taskBoardSlice'
 import { selectCreateTemplate } from '@/redux/features/templateSlice'
@@ -205,7 +207,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
 
           store.dispatch(
             setCreateTaskFields({
-              targetField: 'viewers',
+              targetField: 'associations',
               value: getSelectedViewerIds([{ ...taskViewerValue, object: correctedViewerObject }]),
             }),
           )
@@ -239,9 +241,17 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
 
   const handleAssigneeChange = (inputValue: InputValue[]) => {
     // remove task viewers if assignee is cleared or changed to client or company
-    if (inputValue.length === 0 || inputValue[0].object !== UserRole.IU) {
+    if (inputValue.length === 0) {
+      store.dispatch(setCreateTaskFields({ targetField: 'isShared', value: false }))
+    }
+    if (inputValue.length && inputValue[0].object !== UserRole.IU) {
       setTaskViewerValue(null)
-      store.dispatch(setCreateTaskFields({ targetField: 'viewers', value: [] }))
+      store.dispatch(
+        setMultipleCreateTaskFields([
+          { targetField: 'associations', value: [] },
+          { targetField: 'isShared', value: false },
+        ]),
+      )
     }
 
     // if preview mode, auto-select current CU as viewer
@@ -254,10 +264,13 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
           ) ?? null,
         )
       store.dispatch(
-        setCreateTaskFields({
-          targetField: 'viewers',
-          value: [{ clientId: previewClientCompany.clientId || undefined, companyId: previewClientCompany.companyId }],
-        }),
+        setMultipleCreateTaskFields([
+          {
+            targetField: 'associations',
+            value: [{ clientId: previewClientCompany.clientId || undefined, companyId: previewClientCompany.companyId }],
+          },
+          { targetField: 'isShared', value: true },
+        ]),
       )
     }
 
@@ -266,6 +279,11 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
     setAssigneeValue(selectedAssignee || null)
     store.dispatch(setCreateTaskFields({ targetField: 'userIds', value: newUserIds }))
   }
+
+  // client association conditions
+  const baseCondition = assigneeValue && assigneeValue.type === FilterByOptions.IUS
+  const showSharedToggle = baseCondition && taskViewerValue
+  const showAssociation = !assigneeValue || baseCondition
 
   return (
     <NewTaskContainer>
@@ -360,18 +378,18 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
                 }
               />
             </Stack>
-            {assigneeValue && assigneeValue.type === FilterByOptions.IUS && (
+            {showAssociation && (
               <Stack alignSelf="flex-start">
                 <CopilotPopSelector
                   hideIusList
                   disabled={!!previewMode}
-                  name="Set client visibility"
+                  name="Set related to"
                   initialValue={taskViewerValue || undefined}
                   onChange={(inputValue) => {
                     const newUserIds = getSelectedViewerIds(inputValue)
                     const selectedTaskViewers = getSelectorAssignee(assignee, inputValue)
                     setTaskViewerValue(selectedTaskViewers || null)
-                    store.dispatch(setCreateTaskFields({ targetField: 'viewers', value: newUserIds }))
+                    store.dispatch(setCreateTaskFields({ targetField: 'associations', value: newUserIds }))
                   }}
                   buttonContent={
                     <SelectorButton
@@ -393,7 +411,7 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
                             maxWidth: { xs: '60px', sm: '100px' },
                           }}
                         >
-                          {getAssigneeName(taskViewerValue as IAssigneeCombined, 'Client visibility')}
+                          {getAssigneeName(taskViewerValue as IAssigneeCombined, 'Related to')}
                         </Typography>
                       }
                     />
@@ -402,6 +420,25 @@ export const NewTaskForm = ({ handleCreate, handleClose }: NewTaskFormProps) => 
               </Stack>
             )}
           </Stack>
+          {showSharedToggle && (
+            <Stack
+              sx={{
+                backgroundColor: (theme) => theme.color.background.bgCallout,
+                borderRadius: '4px',
+              }}
+            >
+              <CopilotToggle
+                label="Share with client"
+                onChange={() =>
+                  store.dispatch(
+                    setCreateTaskFields({ targetField: 'isShared', value: !store.getState().createTask.isShared }),
+                  )
+                }
+                checked={store.getState().createTask.isShared}
+                className="p-1.5 py-2" // px-1.5 is not working
+              />
+            </Stack>
+          )}
           {errorMessage && (
             <StyledHelperText sx={{ paddingTop: '6px', textAlign: 'left', marginLeft: '0px' }}>
               {errorMessage}

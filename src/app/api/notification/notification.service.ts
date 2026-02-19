@@ -17,7 +17,7 @@ import { AssigneeType, ClientNotification, Task } from '@prisma/client'
 import Bottleneck from 'bottleneck'
 import httpStatus from 'http-status'
 import { z } from 'zod'
-import { Viewers, ViewersSchema } from '@/types/dto/tasks.dto'
+import { AssociationsSchema } from '@/types/dto/tasks.dto'
 import { getTaskViewers } from '@/utils/assignee'
 
 export class NotificationService extends BaseService {
@@ -75,7 +75,7 @@ export class NotificationService extends BaseService {
 
       console.info('NotificationService#create | Created single notification:', notification)
 
-      const taskViewers = ViewersSchema.parse(task.viewers)
+      const taskViewers = AssociationsSchema.parse(task.associations)
 
       // 3. Save notification to ClientNotification or InternalUserNotification table. Check for notification.recipientClientId too
       if (task.assigneeType === AssigneeType.client && !!notification.recipientClientId && !opts.disableInProduct) {
@@ -381,7 +381,7 @@ export class NotificationService extends BaseService {
           throw new APIError(httpStatus.NOT_FOUND, `Unknown assignee type: ${task.assigneeType}`)
       }
     }
-    const viewers = ViewersSchema.parse(task.viewers)
+    const viewers = AssociationsSchema.parse(task.associations)
 
     switch (action) {
       case NotificationTaskActions.Shared:
@@ -550,14 +550,14 @@ export class NotificationService extends BaseService {
     senderCompanyId?: string,
   ): NotificationRequestBody {
     // Assume client notification then change details body if IU
-    const viewers = ViewersSchema.parse(task.viewers)
-    const viewer = viewers?.[0]
+    const associations = AssociationsSchema.parse(task.associations)
+    const association = associations?.[0]
     const notificationDetails: NotificationRequestBody = {
       senderId,
       senderCompanyId,
       senderType: this.user.role,
       recipientClientId: recipientId ?? undefined,
-      recipientCompanyId: task.companyId ?? viewer?.companyId ?? undefined,
+      recipientCompanyId: task.companyId ?? association?.companyId ?? undefined,
       // If any of the given action is not present in details obj, that type of notification is not sent
       deliveryTargets: deliveryTargets || {},
     }

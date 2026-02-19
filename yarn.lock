@@ -18,6 +18,14 @@
     "@csstools/css-tokenizer" "^3.0.3"
     lru-cache "^10.4.3"
 
+"@assembly-js/node-sdk@^3.19.1":
+  version "3.19.1"
+  resolved "https://registry.yarnpkg.com/@assembly-js/node-sdk/-/node-sdk-3.19.1.tgz#3d9ff79782250e9ee7f0afc43d050d205afdb3f8"
+  integrity sha512-8td1ks3Oj3aPmFGUXdoTC28fEH3t5keyDt4vTewfOBSZW3sW0Rxw7LP9oP4clw29KIeLQtM5BTpsP3I5VM0edw==
+  dependencies:
+    isomorphic-fetch "^3.0.0"
+    next "^14.0.2"
+
 "@babel/code-frame@^7.0.0", "@babel/code-frame@^7.12.13", "@babel/code-frame@^7.27.1":
   version "7.27.1"
   resolved "https://registry.yarnpkg.com/@babel/code-frame/-/code-frame-7.27.1.tgz#200f715e66d52a23b221a9435534a91cc13ad5be"
@@ -4894,9 +4902,9 @@ copilot-design-system@^2.3.4:
     uuid "^9.0.1"
 
 copilot-node-sdk@^3.16.0:
-  version "3.16.0"
-  resolved "https://registry.yarnpkg.com/copilot-node-sdk/-/copilot-node-sdk-3.16.0.tgz#c1335c768bd3f9d091c154f930fce9a2633ade8d"
-  integrity sha512-wqqeJuW+uge39nC1/+cqMWSSgCCNThtCR+JykPYFB2PTj0d0tfROCXofwtqZZccUUzk/xXXkJF53QfweVxmMLg==
+  version "3.19.1"
+  resolved "https://registry.yarnpkg.com/copilot-node-sdk/-/copilot-node-sdk-3.19.1.tgz#4467873d003379dac4db57a99a620685b8ae2cd9"
+  integrity sha512-NV5jS50wMxAf+327fPjoizOJgC/+uaENqAJjjofurD38pnLKp5PpVjru02L4wBQOL0le9EaU59VE9tLmjmS4+Q==
   dependencies:
     isomorphic-fetch "^3.0.0"
     next "^14.0.2"
@@ -9519,6 +9527,11 @@ tailwind-merge@^2.3.0:
   version "2.6.0"
   resolved "https://registry.yarnpkg.com/tailwind-merge/-/tailwind-merge-2.6.0.tgz#ac5fb7e227910c038d458f396b7400d93a3142d5"
   integrity sha512-P+Vu1qXfzediirmHOC3xKGAYeZtPcV9g76X+xg2FD4tYgR71ewMA35Y3sCz3zhiN/dwefRpJX0yBcgwi1fXNQA==
+
+tailwind-merge@^3.4.0:
+  version "3.4.0"
+  resolved "https://registry.yarnpkg.com/tailwind-merge/-/tailwind-merge-3.4.0.tgz#5a264e131a096879965f1175d11f8c36e6b64eca"
+  integrity sha512-uSaO4gnW+b3Y2aWoWfFpX62vn2sR3skfhbjsEnaBI81WD1wBLlHZe5sWf0AqjksNdYTbGBEd0UasQMT3SNV15g==
 
 tailwindcss@^3.3.0:
   version "3.4.17"

@@ -7,7 +7,7 @@ import {
   CreateTaskRequestSchema,
   UpdateTaskRequest,
   UpdateTaskRequestSchema,
-  ViewersSchema,
+  AssociationsSchema,
 } from '@/types/dto/tasks.dto'
 import { rfc3339ToDateString, toRFC3339 } from '@/utils/dateHelper'
 import { sanitizeHtml } from '@/utils/santizeContents'
@@ -63,7 +63,7 @@ export class PublicTaskSerializer {
       internalUserId: task.internalUserId,
       clientId: task.clientId,
       companyId: task.companyId,
-      viewers: ViewersSchema.parse(task.viewers),
+      viewers: AssociationsSchema.parse(task.associations),
       attachments: await PublicAttachmentSerializer.serializeAttachments({
         attachments: task.attachments,
         uploadedByUserType: 'internalUser', // task creator is always IU

@@ -30,7 +30,7 @@ export class RealtimeHandler {
 
   private isViewer(newTask: RealTimeTaskResponse): boolean {
     return this.tokenPayload.clientId || !!getPreviewMode(this.tokenPayload)
-      ? (newTask.viewers?.some(
+      ? (newTask.associations?.some(
           (viewer) =>
             (viewer.clientId === this.tokenPayload.clientId && viewer.companyId === this.tokenPayload.companyId) ||
             (!viewer.clientId && viewer.companyId === this.tokenPayload.companyId),
